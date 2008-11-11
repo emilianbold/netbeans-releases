@@ -49,6 +49,7 @@ import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.View;
 import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
 /**
@@ -86,6 +87,7 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
                 "foo_id INT NOT NULL, " +
                 "bar_name  VARCHAR(16), " +
                 "FOREIGN KEY (foo_id) REFERENCES foo(id))");
+        stmt.executeUpdate("CREATE VIEW barview AS SELECT * FROM bar");
         metadata = new JDBCMetadata(conn, null);
         defaultCatalogName = mysqlDatabase;
     }
@@ -113,6 +115,12 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         Table barTable = schema.getTable("bar");
         assertTrue(tables.contains(barTable));
         assertSame(schema, barTable.getParent());
+
+        Collection<View> views = schema.getViews();
+        assertNames(new HashSet<String>(Arrays.asList("barview")), views);
+        View barView = schema.getView("barview");
+        assertTrue(views.contains(barView));
+        assertSame(schema, barView.getParent());
 
         Collection<Column> columns = barTable.getColumns();
         assertNames(Arrays.asList("i+d", "foo_id", "bar_name"), columns);

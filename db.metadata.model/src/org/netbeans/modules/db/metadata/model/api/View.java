@@ -37,43 +37,71 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.spi;
+package org.netbeans.modules.db.metadata.model.api;
 
 import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Catalog;
-import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
-import org.netbeans.modules.db.metadata.model.api.View;
+import org.netbeans.modules.db.metadata.model.spi.ViewImplementation;
 
 /**
  *
  * @author Andrei Badea
  */
-public abstract class SchemaImplementation {
+public class View extends MetadataElement {
 
-    private Schema schema;
+    final ViewImplementation impl;
 
-    public final Schema getSchema() {
-        if (schema == null) {
-            schema = MetadataAccessor.getDefault().createSchema(this);
-        }
-        return schema;
+    View(ViewImplementation impl) {
+        this.impl = impl;
     }
 
-    public abstract Catalog getParent();
+    /**
+     * Returns the schema containing this table.
+     *
+     * @return the parent schema.
+     */
+    public Schema getParent() {
+        return impl.getParent();
+    }
 
-    public abstract String getName();
+    /**
+     * Returns the name of this table; never {@code null}.
+     *
+     * @return the name.
+     */
+    public String getName() {
+        return impl.getName();
+    }
 
-    public abstract View getView(String name);
+    /**
+     * Returns the columns in this table.
+     *
+     * @return the columns.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
+     */
+    public Collection<Column> getColumns() {
+        return impl.getColumns();
+    }
 
-    public abstract Collection<View> getViews();
+    /**
+     * Returns the column with the given name.
+     *
+     * @param name a column name.
+     * @return a column named {@code name} or {@code null} if there is no such column.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
+     */
+    public Column getColumn(String name) {
+        return impl.getColumn(name);
+    }
 
-    public abstract boolean isDefault();
+    /**
+     * Refresh the table metadata from the database
+     */
+    public void refresh() {
+        impl.refresh();
+    }
 
-    public abstract boolean isSynthetic();
-
-    public abstract Collection<Table> getTables();
-
-    public abstract Table getTable(String name);
+    @Override
+    public String toString() {
+        return "View[name='" + getName() + "']"; // NOI18N
+    }
 }

@@ -37,67 +37,36 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model;
+package org.netbeans.modules.db.metadata.model.spi;
 
-import org.netbeans.modules.db.metadata.model.api.Catalog;
+import java.util.Collection;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
-import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.View;
-import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
-import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
-import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
-import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
-import org.netbeans.modules.db.metadata.model.spi.ViewImplementation;
 
 /**
  *
  * @author Andrei Badea
  */
-public abstract class MetadataAccessor {
+public abstract class ViewImplementation {
 
-    private static volatile MetadataAccessor accessor;
+    private View table;
 
-    public static void setDefault(MetadataAccessor accessor) {
-        if (MetadataAccessor.accessor != null) {
-            throw new IllegalStateException();
+    public final View getView() {
+        if (table == null) {
+            table = MetadataAccessor.getDefault().createView(this);
         }
-        MetadataAccessor.accessor = accessor;
+        return table;
     }
 
-    public static MetadataAccessor getDefault() {
-        if (accessor != null) {
-            return accessor;
-        }
-        Class c = Metadata.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
-        return accessor;
-    }
+    public abstract Schema getParent();
 
-    public abstract MetadataModel createMetadataModel(MetadataModelImplementation impl);
+    public abstract String getName();
 
-    public abstract Metadata createMetadata(MetadataImplementation impl);
+    public abstract Collection<Column> getColumns();
 
-    public abstract Catalog createCatalog(CatalogImplementation impl);
+    public abstract Column getColumn(String name);
 
-    public abstract Schema createSchema(SchemaImplementation impl);
-
-    public abstract Table createTable(TableImplementation impl);
-
-    public abstract Column createColumn(ColumnImplementation impl);
-
-    public abstract View createView(ViewImplementation impl);
-
-    public abstract CatalogImplementation getCatalogImpl(Catalog catalog);
-
-    public abstract SchemaImplementation getSchemaImpl(Schema schema);
-
-    public abstract TableImplementation getTableImpl(Table table);
+    public abstract void refresh();
 }
