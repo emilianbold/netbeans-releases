@@ -2087,6 +2087,7 @@ public class GdbDebugger implements PropertyChangeListener {
     /**
      * @deprecated use requestValueEx instead
      */
+    @Deprecated
     public String requestValue(String name) {
         try {
             return requestValueEx(name);

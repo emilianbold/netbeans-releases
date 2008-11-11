@@ -145,20 +145,16 @@ public class ConfigurationDescriptorProvider {
     }
     
     public static ConfigurationAuxObjectProvider[] getAuxObjectProviders() {
-        HashSet auxObjectProviders = new HashSet();
-        Lookup.Template template = new Lookup.Template(ConfigurationAuxObjectProvider.class);
-        Lookup.Result result = Lookup.getDefault().lookup(template);
-        Collection collection = result.allInstances();
+        HashSet<ConfigurationAuxObjectProvider> auxObjectProviders = new HashSet<ConfigurationAuxObjectProvider>();
+        Collection<? extends ConfigurationAuxObjectProvider> collection =
+                Lookup.getDefault().lookupAll(ConfigurationAuxObjectProvider.class);
 //      System.err.println("-------------------------------collection " + collection);
-        Iterator iterator = collection.iterator();
+        Iterator<? extends ConfigurationAuxObjectProvider> iterator = collection.iterator();
         while (iterator.hasNext()) {
-            Object caop = iterator.next();
-            if (caop instanceof ConfigurationAuxObjectProvider) {
-                auxObjectProviders.add(caop);
-            }
+            auxObjectProviders.add(iterator.next());
         }
 //      System.err.println("-------------------------------auxObjectProviders " + auxObjectProviders);
-        return (ConfigurationAuxObjectProvider[])auxObjectProviders.toArray(new ConfigurationAuxObjectProvider[auxObjectProviders.size()]);
+        return auxObjectProviders.toArray(new ConfigurationAuxObjectProvider[auxObjectProviders.size()]);
     }
 
     public static void recordMetrics(String msg, ConfigurationDescriptor descr) {

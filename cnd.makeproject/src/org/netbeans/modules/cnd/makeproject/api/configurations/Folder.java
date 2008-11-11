@@ -590,7 +590,7 @@ public class Folder {
     /*
      * Returns a set of all files in this logical folder and subfolders as FileObjetc's
      */
-    public Set/*<DataObject>*/ getAllItemsAsDataObjectSet(boolean projectFilesOnly, String MIMETypeFilter) {
+    public Set<DataObject> getAllItemsAsDataObjectSet(boolean projectFilesOnly, String MIMETypeFilter) {
         Vector files = new Vector();
         
         if (!projectFilesOnly || isProjectFiles()) {

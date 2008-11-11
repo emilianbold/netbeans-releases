@@ -79,6 +79,7 @@ import org.openide.windows.OutputWriter;
  * Handles hyperlinks and so on.
  * @deprecated this class will be removed from open package, because not used anywhere in cnd cluster
  */
+@Deprecated
 public class OutputWindowOutputStream extends OutputStream {
     
     private OutputWriter writer;
