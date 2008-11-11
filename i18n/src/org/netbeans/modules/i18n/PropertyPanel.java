@@ -487,10 +487,15 @@ public class PropertyPanel extends JPanel {
             ErrorManager.getDefault().notify(ex);
             return;
         }
-        DataObject resource = SelectorUtils.selectOrCreateBundle(file, template);
-//      DataObject resource = SelectorUtils.selectBundle(this.project, file);
+
+        DataObject resource = SelectorUtils.selectOrCreateBundle(
+                file,
+                template,
+                i18nString.getSupport().getResourceHolder().getResource());
+
+        //      DataObject resource = SelectorUtils.selectBundle(this.project, file);
         if (resource != null) {
-	    changeResource(resource);
+            changeResource(resource);
         }
 
     }
