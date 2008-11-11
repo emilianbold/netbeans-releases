@@ -48,6 +48,7 @@ import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ViewImplementation;
 
 /**
  * Encapsulates information about the metadata in a database. The meaning
@@ -114,10 +115,6 @@ public class Metadata {
         impl.refresh();
     }
 
-    public void refreshTable(String tablename) {
-        impl.refreshTable(tablename);
-    }
-
     private static final class MetadataAccessorImpl extends MetadataAccessor {
 
         @Override
@@ -143,6 +140,12 @@ public class Metadata {
         @Override
         public Table createTable(TableImplementation impl) {
             return new Table(impl);
+        }
+
+
+        @Override
+        public View createView(ViewImplementation impl) {
+            return new View(impl);
         }
 
         @Override
