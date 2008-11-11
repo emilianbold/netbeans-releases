@@ -45,7 +45,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.ActionsManagerListener;
@@ -67,20 +66,20 @@ import org.openide.util.NbBundle;
 public class DebuggerOutput extends LazyActionsManagerListener implements PropertyChangeListener {
 
     // set of all IOManagers
-    private static Set          managers = new HashSet();
+    // TODO: IOManager does not override hashCode and equals, so HashSet does not work here
+    private static final Set<IOManager> managers = new HashSet<IOManager>();
     private GdbDebugger         debugger;
     private IOManager           ioManager;
 
     public DebuggerOutput(ContextProvider contextProvider) {
-        this.debugger = (GdbDebugger) contextProvider.lookupFirst(null, GdbDebugger.class);
+        this.debugger = contextProvider.lookupFirst(null, GdbDebugger.class);
         
         // close old tabs
         if (DebuggerManager.getDebuggerManager().getSessions().length == 1) {
-            Iterator i = managers.iterator();
-            while (i.hasNext()) {
-                ((IOManager) i.next()).close();
+            for (IOManager curManager : managers) {
+                curManager.close();
             }
-            managers = new HashSet();
+            managers.clear();
         }
         
         // open new tab

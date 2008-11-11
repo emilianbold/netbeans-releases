@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
-import java.util.Vector;
+import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
 
@@ -74,7 +75,7 @@ public class BreakpointsNodeModel implements NodeModel {
         "org/netbeans/modules/debugger/resources/breakpointsView/DisabledConditionalBreakpoint"; // NOI18N
     
 
-    private Vector listeners = new Vector();
+    private Collection<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
 
     static int log10(int n) {
         int l = 1;
@@ -105,7 +106,7 @@ public class BreakpointsNodeModel implements NodeModel {
             LineBreakpoint b = (LineBreakpoint) o;
             int lineNum = b.getLineNumber();
             String line = Integer.toString(lineNum);
-            Integer maxInt = (Integer) BreakpointsTreeModelFilter.MAX_LINES.get(b);
+            Integer maxInt = BreakpointsTreeModelFilter.MAX_LINES.get(b);
             if (maxInt != null) {
                 int max = maxInt.intValue();
                 int num0 = log10(max) - log10(lineNum);
@@ -227,10 +228,8 @@ public class BreakpointsNodeModel implements NodeModel {
 //    
     
     void fireNodeChanged(GdbBreakpoint b) {
-        Vector v = (Vector) listeners.clone();
-        int i, k = v.size();
-        for (i = 0; i < k; i++) {
-            ((ModelListener) v.get(i)).modelChanged(new ModelEvent.NodeChanged(this, b));
+        for (ModelListener listener : listeners) {
+            listener.modelChanged(new ModelEvent.NodeChanged(this, b));
         }
     }
     

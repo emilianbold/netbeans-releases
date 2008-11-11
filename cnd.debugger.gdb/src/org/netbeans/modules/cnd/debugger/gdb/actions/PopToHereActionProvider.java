@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.debugger.gdb.actions;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
@@ -109,11 +108,10 @@ public class PopToHereActionProvider extends GdbDebuggerActionProvider {
         });
     }    
     protected void checkEnabled(GdbDebugger.State debuggerState) {
-        Iterator i = getActions().iterator();
-        while (i.hasNext()) {
-            setEnabled(i.next(), debuggerState == GdbDebugger.State.STOPPED &&
-                    getDebugger().getStackDepth() > 1);
+        boolean enable = debuggerState == GdbDebugger.State.STOPPED &&
+                    getDebugger().getStackDepth() > 1;
+        for (Object action : getActions()) {
+            setEnabled(action, enable);
         }
     }
-    
 }
