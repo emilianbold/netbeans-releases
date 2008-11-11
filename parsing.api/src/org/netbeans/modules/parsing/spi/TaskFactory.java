@@ -61,7 +61,7 @@ public abstract class TaskFactory {
      * @param source        A {@link Source}.
      * @return              {@link SchedulerTask}s for given {@link Source}s
      */
-    public abstract Collection<SchedulerTask> create (Snapshot snapshot);
+    public abstract Collection<? extends SchedulerTask> create (Snapshot snapshot);
 
 }
 

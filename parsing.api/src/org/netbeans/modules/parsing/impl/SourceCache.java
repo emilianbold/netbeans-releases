@@ -302,7 +302,7 @@ public final class SourceCache {
             pendingTasks = new HashSet<SchedulerTask> ();
             Lookup lookup = MimeLookup.getLookup (mimeType);
             for (TaskFactory factory : lookup.lookupAll (TaskFactory.class)) {
-                Collection<SchedulerTask> newTasks = factory.create (getSnapshot());
+                Collection<? extends SchedulerTask> newTasks = factory.create (getSnapshot());
                 if (newTasks != null) {
                     tasks.addAll (newTasks);
                     pendingTasks.addAll (newTasks);
