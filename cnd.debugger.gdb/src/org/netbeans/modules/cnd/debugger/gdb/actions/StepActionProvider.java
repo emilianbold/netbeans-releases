@@ -48,9 +48,11 @@ package org.netbeans.modules.cnd.debugger.gdb.actions;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
@@ -161,15 +163,22 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
                 }
             }
         });
-    }    
+    }
+    
     protected void checkEnabled(GdbDebugger.State debuggerState) {
         boolean enabled = debuggerState == GdbDebugger.State.STOPPED;
         for (Object action : getActions()) {
             if (action == ActionsManager.ACTION_STEP_OUT) {
-                setEnabled(action, enabled && getDebugger().isStepOutValid());
+                setEnabled(action, enabled && isStepOutValid());
             } else {
                 setEnabled(action, enabled);
             }
         }
+    }
+
+    public boolean isStepOutValid() {
+        List<CallStackFrame> callstack = getDebugger().getCallStack();
+        return callstack.size() == 1 ||
+                (callstack.size() > 1 && callstack.get(1).isValid());
     }
 }

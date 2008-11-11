@@ -489,10 +489,6 @@ public class GdbDebugger implements PropertyChangeListener {
         return platform;
     }
 
-    /*public InputOutput getIO() {
-    return iotab;
-    }*/
-
     public PathMap getPathMap() {
         return pathMap;
     }
@@ -910,25 +906,6 @@ public class GdbDebugger implements PropertyChangeListener {
         gdb.exec_continue();
     }
 
-    public void unexpectedGdbExit(int rc) {
-        String msg;
-
-        if (rc < 0) {
-            msg = NbBundle.getMessage(GdbDebugger.class, "ERR_UnexpectedGdbExit");  // NOI18N
-        } else {
-            msg = NbBundle.getMessage(GdbDebugger.class, "ERR_UnexpectedGdbExitRC", rc);  // NOI18N
-        }
-
-        NotifyDescriptor nd = new NotifyDescriptor(msg,
-                NbBundle.getMessage(GdbDebugger.class, "TITLE_UnexpectedGdbFailure"), // NOI18N
-                NotifyDescriptor.DEFAULT_OPTION,
-                NotifyDescriptor.ERROR_MESSAGE,
-                new Object[] { NotifyDescriptor.OK_OPTION },
-                NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notify(nd);
-        finish(false);
-    }
-
     /** Sends request to get arguments and local variables */
     private void updateLocalVariables(int frame) {
         synchronized (LOCK) {
@@ -1009,19 +986,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     cplusplus = true;
                     DebuggerManager.getDebuggerManager().getCurrentSession().setCurrentLanguage("C++"); // NOI18N
                 }
-            }
-            // Should now work in the last if-branch
-            /*else if (afterDoneMsg.startsWith(",shlib-info=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
-            String info = msg.substring(6);
-            //CommandBuffer cb = gdb.getCommandBuffer(token);
-            if (cb != null) {
-            //                    cb.append(info);
-            //                    cb.done();
-            if (token == shareToken) {
-            shareTab = createShareTab(info);
-            }
-            }
-            }*/ else if (msg.startsWith(Disassembly.RESPONSE_HEADER)) {
+            } else if (msg.startsWith(Disassembly.RESPONSE_HEADER)) {
                 disassembly.update(msg);
             } else if (msg.startsWith(Disassembly.REGISTER_NAMES_HEADER)) {
                 disassembly.updateRegNames(msg);
@@ -1442,7 +1407,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * out of. This makes the behavior match the Java debugger in NB.
      */
     public void stepOut() {
-        if (!callstack.isEmpty() || isValidStackFrame(callstack.get(1))) {
+        if (!callstack.isEmpty() || callstack.get(1).isValid()) {
             setState(State.RUNNING);
             gdb.stack_select_frame(0);
             gdb.exec_finish();
@@ -2236,27 +2201,6 @@ public class GdbDebugger implements PropertyChangeListener {
         return callstack;
     }
 
-    /**
-     * Returns call stack for this debugger.
-     *
-     * @param from Starting frame
-     * @param to Ending frame (one beyond what we want)
-     * @return call stack
-     */
-    public CallStackFrame[] getCallStackFrames(int from, int to) {
-        int cnt = to - from;
-
-        if ((from + cnt) <= getStackDepth()) {
-            CallStackFrame[] frames = new CallStackFrame[cnt];
-            for (int i = 0; i < cnt; i++) {
-                frames[i] = callstack.get(from + i);
-            }
-            return frames;
-        } else {
-            return new CallStackFrame[0];
-        }
-    }
-
     public int getStackDepth() {
         return callstack.size();
     }
@@ -2281,7 +2225,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * @param Frame to make current (or null)
      */
     public void setCurrentCallStackFrame(CallStackFrame callStackFrame) {
-        if (isValidStackFrame(callStackFrame)) {
+        if (callStackFrame.isValid()) {
             CallStackFrame old = setCurrentCallStackFrameNoFire(callStackFrame);
             updateLocalVariables(callStackFrame.getFrameNumber());
             if (old == callStackFrame) {
@@ -2308,17 +2252,8 @@ public class GdbDebugger implements PropertyChangeListener {
         return old;
     }
 
-    public boolean isValidStackFrame(CallStackFrame csf) {
-        return csf.getFileName() != null && csf.getFullname() != null && csf.getFunctionName() != null;
-    }
-
-    public boolean isStepOutValid() {
-        return callstack.size() == 1 ||
-                (callstack.size() > 1 && isValidStackFrame(callstack.get(1)));
-    }
-
     public void popTopmostCall() {
-        if (!callstack.isEmpty() && isValidStackFrame(callstack.get(1))) {
+        if (!callstack.isEmpty() && callstack.get(1).isValid()) {
             gdb.stack_select_frame(0);
             gdb.exec_finish();
         } else {
@@ -2391,43 +2326,6 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     /**
-     *  Get the directory we run in.
-     */
-    public String getRunDirectory() {
-        return runDirectory;
-    }
-
-    /**
-     * Returns <code>true</code> if this debugger supports fix & continue
-     * (HotSwap).
-     *
-     * @return <code>true</code> if this debugger supports fix & continue
-     */
-    public boolean canFixClasses() {
-        return false;
-    }
-
-    /**
-     * Returns <code>true</code> if this debugger supports Pop action.
-     *
-     * @return <code>true</code> if this debugger supports Pop action
-     */
-    public boolean canPopFrames() {
-        return true;
-    }
-
-    /**
-     * Determines if the target debuggee can be modified.
-     *
-     * @return <code>true</code> if the target debuggee can be modified or when
-     *         this information is not available (on JDK 1.4).
-     * @since 2.3
-     */
-    public boolean canBeModified() {
-        return true;
-    }
-
-    /**
      * Adds property change listener.
      *
      * @param propertyName a name of property to listen on
@@ -2469,15 +2367,15 @@ public class GdbDebugger implements PropertyChangeListener {
         pcs.firePropertyChange(name, o, n);
     }
 
-    public boolean isCygwin() {
+    private boolean isCygwin() {
         return cygwin;
     }
 
-    public boolean isMinGW() {
+    private boolean isMinGW() {
         return mingw;
     }
 
-    public boolean isSolaris() {
+    private boolean isSolaris() {
         return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC;
     }
 
@@ -2508,7 +2406,7 @@ public class GdbDebugger implements PropertyChangeListener {
         return pae.getID() == DEBUG_ATTACH;
     }
 
-    private double parseGdbVersionString(String msg) {
+    private static double parseGdbVersionString(String msg) {
         double ver = 0.0;
         int first = msg.indexOf('.');
         int last = first + 1;
@@ -2536,9 +2434,8 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     private static class ShareInfo {
-
-        private String path;
-        private String addr;
+        private final String path;
+        private final String addr;
         private List<String> sourceDirs;
         private Project project;
 
@@ -2587,6 +2484,7 @@ public class GdbDebugger implements PropertyChangeListener {
                         conf = (MakeConfiguration) o;
                         if (conf.isDynamicLibraryConfiguration()) {
                             String proot = FileUtil.getFileDisplayName(proj.getProjectDirectory());
+                            // TODO: possible bug, consider using IPEUtils
                             String output = proot + "/" + conf.getLinkerConfiguration().getOutputValue(); // NOI18N
                             output = conf.expandMacros(output); // expand macros (FIXUP: needs verification)
                             if (output.equals(path)) {
