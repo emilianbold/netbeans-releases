@@ -48,9 +48,8 @@ import org.mozilla.nb.javascript.Token;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
@@ -70,7 +69,7 @@ public class AstElement extends JsElement {
     protected Node node;
     protected String name;
     protected String in;
-    protected CompilationInfo info;
+    protected JsParseResult info;
     protected String signature;
     protected ElementKind kind;
     protected String type;
@@ -80,7 +79,7 @@ public class AstElement extends JsElement {
     @SuppressWarnings("unchecked")
     protected Set<Modifier> modifiers;
 
-    AstElement(CompilationInfo info, Node node) {
+    AstElement(JsParseResult info, Node node) {
         this.info = info;
         this.node = node;
     }
@@ -182,7 +181,7 @@ public class AstElement extends JsElement {
         return "JsElement:" + getName() + "(" + getKind() + ")"; // NOI18N
     }
 
-    public CompilationInfo getInfo() {
+    public JsParseResult getParseResult() {
         return info;
     }
     
@@ -240,7 +239,7 @@ public class AstElement extends JsElement {
         }
     }
     
-    private void initDocProps(CompilationInfo info) {
+    private void initDocProps(JsParseResult info) {
         if (node == null) {
             return;
         }
@@ -259,7 +258,7 @@ public class AstElement extends JsElement {
         }
     }
     
-    public static AstElement createElement(CompilationInfo info, Node node, String name, String in, AnalysisResult result) {
+    public static AstElement createElement(JsParseResult info, Node node, String name, String in, AnalysisResult result) {
         //assert node.element == null : node + " in " + info.getText(); // Don't expect to be called multiple times on the same element
         // For incremental compilation this is no longer true
         if (node.element != null) {
@@ -279,7 +278,7 @@ public class AstElement extends JsElement {
     }
     
     @SuppressWarnings("fallthrough")
-    public static AstElement getElement(CompilationInfo info, Node node) {
+    public static AstElement getElement(JsParseResult info, Node node) {
         if (node.element != null) {
             return (AstElement)node.element;
         }

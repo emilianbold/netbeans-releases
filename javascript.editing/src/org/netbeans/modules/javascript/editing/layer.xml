@@ -124,7 +124,7 @@
         </folder>        
     </folder>
 
-    <folder name="GsfPlugins">
+    <folder name="CslPlugins">
         <folder name="text">
             <folder name="javascript">
                 <file name="language.instance">

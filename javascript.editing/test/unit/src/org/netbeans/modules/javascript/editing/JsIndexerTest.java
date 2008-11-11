@@ -42,8 +42,8 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.List;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.IndexDocument;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.IndexDocument;
 
 /**
  * @author Tor Norbye

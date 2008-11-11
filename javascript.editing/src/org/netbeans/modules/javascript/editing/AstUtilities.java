@@ -42,28 +42,26 @@ package org.netbeans.modules.javascript.editing;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node.LabelledNode;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.SourceModel;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.SourceModelFactory;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.ParserFile;
+import org.netbeans.modules.csl.api.SourceModel;
+import org.netbeans.modules.csl.api.SourceModelFactory;
+import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.TaskScheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -79,46 +77,33 @@ public final class AstUtilities {
 
     public static final String DOT_PROTOTYPE = ".prototype"; // NOI18N
 
-    public static int getAstOffset(CompilationInfo info, int lexOffset) {
-        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
-        if (result == null) {
-            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
-        }
+    public static int getAstOffset(Parser.Result info, int lexOffset) {
+        JsParseResult result = getParseResult(info);
         if (result != null) {
-            TranslatedSource ts = result.getTranslatedSource();
-            if (ts != null) {
-                return ts.getAstOffset(lexOffset);
-            }
+            return result.getSnapshot().getEmbeddedOffset(lexOffset);
         }
-              
         return lexOffset;
     }
 
-    public static OffsetRange getAstOffsets(CompilationInfo info, OffsetRange lexicalRange) {
-        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
-        if (result == null) {
-            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
-        }
+    public static OffsetRange getAstOffsets(Parser.Result info, OffsetRange lexicalRange) {
+        JsParseResult result = getParseResult(info);
         if (result != null) {
-            TranslatedSource ts = result.getTranslatedSource();
-            if (ts != null) {
-                int rangeStart = lexicalRange.getStart();
-                int start = ts.getAstOffset(rangeStart);
-                if (start == rangeStart) {
-                    return lexicalRange;
-                } else if (start == -1) {
-                    return OffsetRange.NONE;
-                } else {
-                    // Assumes the translated range maintains size
-                    return new OffsetRange(start, start+lexicalRange.getLength());
-                }
+            int rangeStart = lexicalRange.getStart();
+            int start = result.getSnapshot().getEmbeddedOffset(rangeStart);
+            if (start == rangeStart) {
+                return lexicalRange;
+            } else if (start == -1) {
+                return OffsetRange.NONE;
+            } else {
+                // Assumes the translated range maintains size
+                return new OffsetRange(start, start+lexicalRange.getLength());
             }
         }
         return lexicalRange;
     }
 
     /** SLOW - used from tests only right now */
-    public static boolean isGlobalVar(CompilationInfo info, Node node) {
+    public static boolean isGlobalVar(Parser.Result info, Node node) {
         if (!isNameNode(node)) {
             return false;
         }
@@ -138,7 +123,7 @@ public final class AstUtilities {
     /** 
      * Return the comment sequence (if any) for the comment prior to the given offset.
      */
-    public static TokenSequence<? extends JsCommentTokenId> getCommentFor(CompilationInfo info, BaseDocument doc, Node node) {
+    public static TokenSequence<? extends JsCommentTokenId> getCommentFor(JsParseResult info, BaseDocument doc, Node node) {
         int astOffset = node.getSourceStart();
         int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
         if (lexOffset == -1 || lexOffset > doc.getLength()) {
@@ -176,96 +161,62 @@ public final class AstUtilities {
         }
     }
     
-    public static Node getRoot(CompilationInfo info) {
-//        ParserResult result = info.getParserResult();
-//
-//        if (result == null) {
-//            return null;
-//        }
-//
-//        return getRoot(result);
-        Node root = getRoot(info, JsTokenId.JAVASCRIPT_MIME_TYPE);
-        if (root == null && JsUtils.isJsonFile(info.getFileObject())) {
-            root = getRoot(info, JsTokenId.JSON_MIME_TYPE);
-        }
-
-        return root;
+    public static JsParseResult getParseResult(Parser.Result info) {
+        assert info instanceof JsParseResult : "Expecting JsParseResult, but have " + info; //NOI18N
+        return (JsParseResult) info;
     }
 
-    public static JsParseResult getParseResult(CompilationInfo info) {
-        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
-        if (result == null && JsUtils.isJsonFile(info.getFileObject())) {
-            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
-        }
-
-        if (result == null) {
-            return null;
-        } else {
-            return ((JsParseResult)result);
-        }
-    }
-
-    public static Node getRoot(CompilationInfo info, String mimeType) {
-        ParserResult result = info.getEmbeddedResult(mimeType, 0);
-
-        if (result == null) {
-            return null;
-        }
-        
-        return getRoot(result);
-    }
-    
-    public static Node getRoot(ParserResult r) {
-        assert r instanceof JsParseResult;
-
-        JsParseResult result = (JsParseResult)r;
-        
-        return result.getRootNode();
-    }
-
-    public static Node getForeignNode(final IndexedElement o, CompilationInfo[] compilationInfoRet) {
+    public static Node getForeignNode(final IndexedElement o, JsParseResult[] compilationInfoRet) {
         ParserFile file = o.getFile();
 
         if (file == null) {
             return null;
         }
-        
+
         FileObject fo = file.getFileObject();
         if (fo == null) {
             return null;
         }
 
-        SourceModel model = SourceModelFactory.getInstance().getModel(fo);
+        SourceModel model = SourceModelFactory.getInstance().getModel (fo);
         if (model == null) {
             return null;
         }
-        final CompilationInfo[] infoHolder = new CompilationInfo[1];
+        final ParserResult[] infoHolder = new ParserResult[1];
         try {
-            model.runUserActionTask(new CancellableTask<CompilationInfo>() {
-                public void cancel() {
+            model.runUserActionTask(new ParserResultTask<ParserResult>() {
+                public @Override int getPriority() {
+                    return 0;
                 }
 
-                public void run(CompilationInfo info) throws Exception {
-                    infoHolder[0] = info;
+                public @Override void run(ParserResult result) {
+                    infoHolder[0] = result;
                 }
+
+                public @Override void cancel() {
+                }
+
+
+                public @Override Class<? extends TaskScheduler> getSchedulerClass() {
+                    return null;
+                }
+
             }, true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return null;
         }
 
-        CompilationInfo info = infoHolder[0];
-        if (compilationInfoRet != null) {
-            compilationInfoRet[0] = info;
-        }
-        ParserResult result = AstUtilities.getParseResult(info);
-
-        if (result == null) {
+        JsParseResult info = AstUtilities.getParseResult(infoHolder[0]);
+        if (info == null) {
             return null;
         }
 
-        Node root = AstUtilities.getRoot(result);
+        if (compilationInfoRet != null) {
+            compilationInfoRet[0] = info;
+        }
 
+        Node root = info.getRootNode();
         if (root == null) {
             return null;
         }
@@ -276,10 +227,9 @@ public final class AstUtilities {
             return null;
         }
 //        Node node = AstUtilities.findBySignature(root, signature);
-        JsParseResult rpr = (JsParseResult)result;
         boolean lookForFunction = o.getKind() == ElementKind.CONSTRUCTOR || o.getKind() == ElementKind.METHOD;
         if (lookForFunction) {
-            for (AstElement element : rpr.getStructure().getElements()) {
+            for (AstElement element : info.getStructure().getElements()) {
                 if (element instanceof FunctionAstElement) {
                     FunctionAstElement func = (FunctionAstElement) element;
                     if (signature.equals(func.getSignature())) {
@@ -289,20 +239,19 @@ public final class AstUtilities {
             }
         }
 
-        for (AstElement element : rpr.getStructure().getElements()) {
+        for (AstElement element : info.getStructure().getElements()) {
             if (signature.equals(element.getSignature())) {
                 return element.getNode();
             }
         }
-        
+
         return null;
     }
 
     /**
      * Return a range that matches the given node's source buffer range
      */
-    @SuppressWarnings("unchecked")
-    public static OffsetRange getRange(CompilationInfo info, Node node) {
+    public static OffsetRange getRange(Node node) {
         return new OffsetRange(node.getSourceStart(), node.getSourceEnd());
     }
 
@@ -451,15 +400,6 @@ public final class AstUtilities {
         return ""; // NOI18N
     }
 
-    /**
-     * Return a range that matches the given node's source buffer range
-     */
-    @SuppressWarnings("unchecked")
-    public static OffsetRange getRange(Node node) {
-        assert node.getSourceEnd() >= node.getSourceStart() : "Invalid offsets for " + node;
-        return new OffsetRange(node.getSourceStart(), node.getSourceEnd());
-    }
-    
     public static FunctionNode findMethodAtOffset(Node root, int offset) {
         AstPath path = new AstPath(root, offset);
         Iterator<Node> it = path.leafToRoot();

@@ -44,7 +44,7 @@ package org.netbeans.modules.javascript.editing;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.csl.api.CompilationInfo;
 
 /**
  *

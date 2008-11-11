@@ -44,9 +44,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.EditHistory;
-import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.csl.api.EditHistory;
+import org.netbeans.modules.csl.api.IncrementalEmbeddingModel;
+import org.netbeans.modules.csl.api.TranslatedSource;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 
 /**

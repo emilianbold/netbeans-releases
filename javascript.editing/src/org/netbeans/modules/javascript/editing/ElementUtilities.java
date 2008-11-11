@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -49,12 +48,10 @@ import java.util.List;
 import javax.swing.text.Document;
 import org.mozilla.nb.javascript.Node;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -67,7 +64,7 @@ public final class ElementUtilities {
         // Utility class, not instantiatable
     }
 
-    public static Element getElement(CompilationInfo info, ElementHandle handle) {
+    public static Element getElement(JsParseResult info, ElementHandle handle) {
         Element element = null;
         if (handle instanceof ElementHandle.UrlHandle) {
             String url = ((ElementHandle.UrlHandle)handle).getUrl();
@@ -95,7 +92,7 @@ public final class ElementUtilities {
      *   to choose among many alternatives. May be null, in which case the element had
      *   better be an IndexedElement.
      */
-    public static List<String> getComments(CompilationInfo info, Element element) {
+    public static List<String> getComments(JsParseResult info, Element element) {
         assert info != null || element instanceof IndexedElement;
         
         if (element == null) {
@@ -111,7 +108,7 @@ public final class ElementUtilities {
             }
         }
         
-        CompilationInfo[] infoRet = new CompilationInfo[1];
+        JsParseResult[] infoRet = new JsParseResult[1];
         Node node = getNode(info, element, infoRet);
         info = infoRet[0];
         if (node == null) {
@@ -323,7 +320,7 @@ public final class ElementUtilities {
         return sb.toString();
     }
 
-    private static Node getNode(CompilationInfo info, Element element, @NonNull CompilationInfo[] infoRet) {
+    private static Node getNode(JsParseResult info, Element element, @NonNull JsParseResult[] infoRet) {
         infoRet[0] = info;
         Node node = null;
 
@@ -334,7 +331,7 @@ public final class ElementUtilities {
             IndexedElement match = null;
             Node root = null;
             if (info != null) {
-                root = AstUtilities.getRoot(info);
+                root = info.getRootNode();
                 match = findDocumentationEntry(root, indexedElement);
             }
 
@@ -349,7 +346,7 @@ public final class ElementUtilities {
         return node;
     }
     
-    private static BaseDocument getBaseDocument(CompilationInfo info, Element element) {
+    private static BaseDocument getBaseDocument(JsParseResult info, Element element) {
         Document doc = null;
         BaseDocument baseDoc = null;
 
@@ -357,7 +354,7 @@ public final class ElementUtilities {
             doc = ((IndexedFunction)element).getDocument();
             info = null;
         } else if (info != null) {
-            doc = info.getDocument();
+            doc = info.getSnapshot().getSource().getDocument();
         }
 
         if (doc instanceof BaseDocument) {

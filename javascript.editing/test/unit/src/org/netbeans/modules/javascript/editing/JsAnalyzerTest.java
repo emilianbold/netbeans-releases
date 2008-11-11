@@ -43,8 +43,8 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.csl.api.CompilationInfo;
+import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
 
 /**

@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
-import org.netbeans.modules.gsf.GsfTestCompilationInfo;
+import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.csl.GsfTestCompilationInfo;
 
 /**
  *

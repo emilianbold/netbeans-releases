@@ -39,10 +39,10 @@
 
 package org.netbeans.modules.javascript.editing.embedding;
 
-import org.netbeans.modules.gsf.api.EditHistory;
-import org.netbeans.modules.gsf.api.EmbeddingModel;
-import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.csl.api.EditHistory;
+import org.netbeans.modules.csl.api.EmbeddingModel;
+import org.netbeans.modules.csl.api.IncrementalEmbeddingModel;
+import org.netbeans.modules.csl.api.TranslatedSource;
 
 /**
  *
