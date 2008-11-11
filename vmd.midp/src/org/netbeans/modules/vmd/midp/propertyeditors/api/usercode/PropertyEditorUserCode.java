@@ -162,8 +162,6 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
         if (customEditor == null) {
             initCustomEditor();
         }
-        PropertyValue value = (PropertyValue) getValue();
-        customEditor.updateState(value);
         return customEditor;
     }
 

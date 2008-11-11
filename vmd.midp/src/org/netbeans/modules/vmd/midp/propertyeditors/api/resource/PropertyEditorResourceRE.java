@@ -71,13 +71,11 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 import org.netbeans.modules.vmd.midp.propertyeditors.DatabindingElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.DatabindingElementUI;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.FontEditorElement;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.ImageEditorElement;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement.DesignComponentWrapper;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorRE;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorRE.DesignComponentWrapper;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.TickerEditorElement;
+import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.ImageEE;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -85,20 +83,19 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-@Deprecated
-public class PropertyEditorResource extends PropertyEditorUserCode implements PropertyEditorElement {
+public class PropertyEditorResourceRE extends PropertyEditorUserCode implements PropertyEditorElement {
 
     private Map<String, DesignComponent> createdComponents;
     private final TypeID componentTypeID;
     private String noneComponentAsText;
     private String newComponentAsText;
-    private ResourceEditorPanel rePanel;
+    private ResourceEditorPanelRE rePanel;
     private JRadioButton radioButton;
-    private PropertyEditorResourceElement perElement;
+    private PropertyEditorRE perElement;
     private DatabindingElement databindingElement;
     private boolean databinding;
 
-    private PropertyEditorResource(PropertyEditorResourceElement perElement,
+    private PropertyEditorResourceRE(PropertyEditorRE perElement,
             String newComponentAsText,
             String noneComponentAsText,
             String userCodeLabel,
@@ -124,24 +121,24 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         createdComponents = new HashMap<String, DesignComponent>();
     }
 
-    public static final PropertyEditorResource createInstance(PropertyEditorResourceElement perElement, String newComponentAsText, String noneComponentAsText, String userCodeLabel) {
-        return new PropertyEditorResource(perElement, newComponentAsText, noneComponentAsText, userCodeLabel, false);
+    public static final PropertyEditorResourceRE createInstance(PropertyEditorRE perElement, String newComponentAsText, String noneComponentAsText, String userCodeLabel) {
+        return new PropertyEditorResourceRE(perElement, newComponentAsText, noneComponentAsText, userCodeLabel, false);
     }
 
-    public static final DesignPropertyEditor createFontPropertyEditor() {
-        return new PropertyEditorResource(new FontEditorElement(), NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_UCLABEL"), false); //NOI18N
-    }
-
-    public static final DesignPropertyEditor createTickerPropertyEditor() {
-        return new PropertyEditorResource(new TickerEditorElement(), NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_UCLABEL"), false); //NOI18N
-    }
+//    public static final DesignPropertyEditor createFontPropertyEditor() {
+//        return new PropertyEditorResourceRE(new FontEditorElement(), NbBundle.getMessage(PropertyEditorResourceRE.class, "LBL_FONTRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceRE.class, "LBL_FONTRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceRE.class, "LBL_FONTRESOURCEPE_UCLABEL"), false); //NOI18N
+//    }
+//
+//    public static final DesignPropertyEditor createTickerPropertyEditor() {
+//        return new PropertyEditorResourceRE(new TickerEditorElement(), NbBundle.getMessage(PropertyEditorResourceRE.class, "LBL_TICKERRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceRE.class, "LBL_TICKERRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceRE.class, "LBL_TICKERRESOURCEPE_UCLABEL"), false); //NOI18N
+//    }
 
     public static final DesignPropertyEditor createImagePropertyEditor() {
-        return new PropertyEditorResource(new ImageEditorElement(), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_UCLABEL"), false); //NOI18N
+        return new PropertyEditorResourceRE(new ImageEE(), NbBundle.getMessage(PropertyEditorResourceRE.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceRE.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceRE.class, "LBL_IMAGERESOURCEPE_UCLABEL"), false); //NOI18N
     }
 
     public static final DesignPropertyEditor createImagePropertyEditorWithDatabinding() {
-        return new PropertyEditorResource(new ImageEditorElement(), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_UCLABEL"), true); //NOI18N
+        return new PropertyEditorResourceRE(new ImageEE(), NbBundle.getMessage(PropertyEditorResourceRE.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceRE.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceRE.class, "LBL_IMAGERESOURCEPE_UCLABEL"), true); //NOI18N
     }
 
     @Override
@@ -175,13 +172,14 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
     public final Component getCustomEditor() {
         if (radioButton == null) {
             radioButton = new JRadioButton();
-            rePanel = new ResourceEditorPanel(perElement, noneComponentAsText, radioButton);
+            perElement.customEditorNotification();
+            rePanel = new ResourceEditorPanelRE(perElement, noneComponentAsText, radioButton);
             Mnemonics.setLocalizedText(radioButton,
-                    NbBundle.getMessage(PropertyEditorResource.class, "LBL_RB_RESOURCE")); // NOI18N
+                    NbBundle.getMessage(PropertyEditorResourceRE.class, "LBL_RB_RESOURCE")); // NOI18N
             radioButton.getAccessibleContext().setAccessibleName(
-                    NbBundle.getMessage(PropertyEditorResource.class, "ACSN_RB_RESOURCE"));
+                    NbBundle.getMessage(PropertyEditorResourceRE.class, "ACSN_RB_RESOURCE"));
             radioButton.getAccessibleContext().setAccessibleDescription(
-                    NbBundle.getMessage(PropertyEditorResource.class, "ACSD_RB_RESOURCE"));
+                    NbBundle.getMessage(PropertyEditorResourceRE.class, "ACSD_RB_RESOURCE"));
             perElement.addPropertyEditorResourceElementListener(rePanel);
             if (databinding) {
                 Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(2);
@@ -192,11 +190,12 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
             } else {
                 initElements(Collections.<PropertyEditorElement>singleton(this));
             }
+        } else {
+            perElement.customEditorNotification();
         }
         if (getValue() instanceof PropertyValue) {
             updateState((PropertyValue) getValue());
         }
-        perElement.getCustomEdiotrNotification();
         return super.getCustomEditor();
     }
 
@@ -277,7 +276,7 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
 
                     if (createdComponent != null) {
                         initInstanceNameForComponent(createdComponent);
-                        PropertyEditorResource.this.setValue(PropertyValue.createComponentReference(createdComponent));
+                        PropertyEditorResourceRE.this.setValue(PropertyValue.createComponentReference(createdComponent));
                     }
                 }
             });
