@@ -208,6 +208,7 @@ public class PartialImageGridPreview extends AbstractImagePreviewComponent {
 	}
 	
 	
+        @Override
 	public void paintComponent(Graphics g) {
 		//int rounding = 20;
 		//g.setColor(Color.BLACK);
@@ -217,6 +218,7 @@ public class PartialImageGridPreview extends AbstractImagePreviewComponent {
 			//this.createPreview();
 			int offX = (this.getWidth() - this.preview.getWidth(this)) / 2;
 			int offY = (this.getHeight() - this.preview.getHeight(this)) / 2;
+                        g.clearRect(0, 0, this.getWidth(), this.getWidth());
 			g.drawImage(this.preview, offX, offY, this);
 		}
 	}
