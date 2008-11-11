@@ -78,9 +78,7 @@ import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 
 import java.util.*;
 import org.netbeans.modules.vmd.midp.codegen.MidpDatabindingCodeSupport;
-import org.netbeans.modules.vmd.midp.components.databinding.DataSetAbstractCD;
 import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
-import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
 import org.openide.util.NbBundle;
 
 
@@ -122,11 +120,8 @@ public class ItemCD extends ComponentDescriptor {
     public static final String PROP_COMMANDS = "commands"; // NOI18N
     public static final String PROP_DEFAULT_COMMAND = "defaultCommand"; //NOI18N
     public static final String PROP_ITEM_COMMAND_LISTENER = "itemCommandListener"; //NOI18N
-
     public static final String PROP_APPEARANCE_MODE = "appearanceMode"; // NOI18N
-    
     public static final String PROP_OLD_ITEM_COMMAND_LISTENER = "itemCommandlistener"; //NOI18N
-
     public static final PropertyValue UNLOCKED_VALUE = MidpTypes.createIntegerValue(-1);
     
     static {

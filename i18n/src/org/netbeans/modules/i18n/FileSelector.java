@@ -47,6 +47,9 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -56,6 +59,7 @@ import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
@@ -63,13 +67,17 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.properties.PropertiesDataObject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.NodeNotFoundException;
+import org.openide.nodes.NodeOp;
 
 /**
  * Panel for selecting a properties file (by browsing a project tree). Also
@@ -97,19 +105,96 @@ public class FileSelector extends JPanel implements PropertyChangeListener, Expl
     private JTextField fileNameTextField;
 
     public FileSelector(FileObject fileInProject, DataObject template) {
-        this(SelectorUtils.bundlesNode(null, fileInProject, template == null), template);
+        this(fileInProject, template, null);
     }
 
+    public FileSelector(FileObject fileInProject, 
+                        DataObject template,
+                        FileObject preselectedFile) {
+        this(SelectorUtils.bundlesNode(null, fileInProject, template == null), template);
+        if (preselectedFile != null) {
+            preselectFile(preselectedFile);
+        } else {
+            preselectDefaultBundle(fileInProject);
+        }
+    }
+
+    public void preselectFile(FileObject fo) {
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        if (cp == null) {
+            return;
+        }
+        String packagePath = cp.getResourceName(fo.getParent()) 
+                                + "/" + fo.getName(); //NOI18N
+        String[] packagePathArr = packagePath.split("/"); //NOI18N
+        Node[] roots = manager.getRootContext().getChildren().getNodes();
+
+        // try search inside every "src" subnode in tree ...
+        for (Node possibleRoot : roots) {
+            try {
+                Node foundNode = NodeOp.findPath(possibleRoot, packagePathArr);
+
+                if (foundNode != null) {
+                    manager.setSelectedNodes(new Node[]{foundNode});
+                    break;
+                }
+            } catch (NodeNotFoundException ex) {
+                //Exceptions.printStackTrace(ex);
+            } catch (PropertyVetoException ex) {
+                //Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    public void preselectDefaultBundle(FileObject fo) {
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        if (cp == null) {
+            return;
+        }
+        String packageName = cp.getResourceName(fo.getParent());
+        Node root = manager.getRootContext();
+        List<String> path = new ArrayList();
+        for (FileObject fo2 : cp.getRoots()) {
+            if (FileUtil.isParentOf(fo2, fo)) {
+                path.add(fo2.getName());
+                break;
+            }
+        }
+        assert path.size() == 1;
+        path.addAll(Arrays.<String>asList(packageName.split("/"))); //NOI18N
+        path.add("Bundle"); // NOI18N
+        try {
+            manager.setSelectedNodes(new Node[] {NodeOp.findPath(root, path.toArray(new String[path.size()]))});
+            return;
+        } catch (PropertyVetoException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NodeNotFoundException e) {
+            //Ignore it
+        }
+        // removes Bundle and selects package:
+        path = path.subList(0, path.size()-1);
+        try {
+            Node found = NodeOp.findPath(root,path.toArray(new String[path.size()]));
+            manager.setExploredContext(found);
+            manager.setSelectedNodes(new Node[] {found});
+            return;
+        } catch (PropertyVetoException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NodeNotFoundException ex) {
+            // Ignore it
+        }
+        try {
+            manager.setSelectedNodes(new Node[] {root});
+        } catch (PropertyVetoException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
     private FileSelector(Node root, DataObject template) {
         this.template = template;
 
         manager = new ExplorerManager();
         manager.setRootContext(root);
-        try {
-            manager.setSelectedNodes (new Node[] { root });
-        } catch(PropertyVetoException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
         manager.addPropertyChangeListener(this);
 
         if (template != null) {

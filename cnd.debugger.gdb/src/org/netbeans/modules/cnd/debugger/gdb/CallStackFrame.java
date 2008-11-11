@@ -144,6 +144,10 @@ public class CallStackFrame {
     public void makeCurrent() {
         debugger.setCurrentCallStackFrame(this);
     }
+
+    public boolean isValid() {
+        return getFileName() != null && getFullname() != null && getFunctionName() != null;
+    }
     
     /** UNCOMMENT WHEN THIS METHOD IS NEEDED. IT'S ALREADY IMPLEMENTED IN THE IMPL. CLASS.
      * Determine, if this stack frame can be poped off the stack.

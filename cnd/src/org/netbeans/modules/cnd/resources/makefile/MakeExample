@@ -1,4 +1,3 @@
-# line comment
 # Environment
 RM=rm
 CC=gcc
@@ -11,8 +10,8 @@ include Makefile
 
 # Clean Targets
 .clean-conf:
-	${RM} -r build/Debug
-	${RM} -r dist/Debug/GNU-Solaris-x86
+	-${RM} -r build/Debug
+	-${RM} -r dist/Debug/GNU-Solaris-x86
 
 .DONE:
-        echo "Done"
+	echo "Done"

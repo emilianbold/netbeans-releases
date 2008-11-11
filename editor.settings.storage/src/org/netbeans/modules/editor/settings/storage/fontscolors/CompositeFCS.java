@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor.settings.storage.fontscolors;
 
 import java.awt.Color;
+import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.lang.reflect.Field;
@@ -86,9 +87,15 @@ public final class CompositeFCS extends FontColorSettings {
     /** The name of the default coloring. */
     private static final String DEFAULT = "default"; //NOI18N
     
-    private static final int DEFAULT_FONT_SIZE = UIManager.get("customFontSize") != null ? //NOI18N
-        ((Integer) UIManager.get("customFontSize")).intValue() : //NOI18N
-        UIManager.getFont("TextField.font").getSize(); //NOI18N
+    private static final int DEFAULT_FONT_SIZE;
+    static {
+        if (GraphicsEnvironment.isHeadless()) {
+            DEFAULT_FONT_SIZE = 12;
+        } else {
+            Integer i = (Integer)UIManager.get("customFontSize"); //NOI18N
+            DEFAULT_FONT_SIZE= (i != null) ? i : UIManager.getFont("TextField.font").getSize(); //NOI18N
+        }
+    }
     
     private static final AttributeSet HARDCODED_DEFAULT_COLORING = AttributesUtilities.createImmutable(
         StyleConstants.NameAttribute, DEFAULT,

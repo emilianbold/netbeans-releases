@@ -98,7 +98,7 @@ public class CppSettings extends SharedClassObject {
     /** Initialize each property */
     @Override
     protected void initialize() {
-	super.initialize();
+        super.initialize();
 //        if (Boolean.getBoolean("netbeans.cnd.enable_fortran")) { // NOI18N
 //            setFortranEnabled(true); // DEBUG
 //        }
@@ -109,7 +109,7 @@ public class CppSettings extends SharedClassObject {
         // See IZ 120502
         if (cppSettings == null) {
             cppSettings = findObject(CppSettings.class, true);
-    }
+        }
         return cppSettings;
     }
     
@@ -376,8 +376,9 @@ public class CppSettings extends SharedClassObject {
      */
     public void setReplaceableStringsTable(String table) {
         String t = getReplaceableStringsTable();
-        if (t.equals(table))
+        if (t.equals(table)) {
             return;
+        }
         //putProperty(PROP_REPLACEABLE_STRINGS_TABLE, table, true);
         getPreferences().put(PROP_REPLACEABLE_STRINGS_TABLE, table);
         firePropertyChange(PROP_REPLACEABLE_STRINGS_TABLE, t, table);
@@ -433,7 +434,7 @@ public class CppSettings extends SharedClassObject {
         //putProperty(PROP_FORTRAN_ENABLED, Boolean.valueOf(enabled), true);
         boolean oldValue = isFortranEnabled();
         getPreferences().putBoolean(PROP_FORTRAN_ENABLED, enabled);
-        firePropertyChange(PROP_FORTRAN_ENABLED, new Boolean(oldValue), new Boolean(enabled));
+        firePropertyChange(PROP_FORTRAN_ENABLED, Boolean.valueOf(oldValue), Boolean.valueOf(enabled));
     }
     
 
@@ -468,7 +469,7 @@ public class CppSettings extends SharedClassObject {
         //putProperty(PROP_FREE_FORMAT_FORTRAN, state ? Boolean.TRUE : Boolean.FALSE);
         boolean oldValue = isFreeFormatFortran();
         getPreferences().putBoolean(PROP_FREE_FORMAT_FORTRAN, state);
-        firePropertyChange(PROP_FREE_FORMAT_FORTRAN, new Boolean(oldValue), new Boolean(state));
+        firePropertyChange(PROP_FREE_FORMAT_FORTRAN, Boolean.valueOf(oldValue), Boolean.valueOf(state));
      }
     
     public boolean isGdbRequired() {
@@ -481,7 +482,7 @@ public class CppSettings extends SharedClassObject {
         //putProperty(PROP_GDB_REQUIRED, Boolean.valueOf(enabled));
         boolean oldValue = isGdbRequired();
         getPreferences().putBoolean(PROP_GDB_REQUIRED, enabled);
-        firePropertyChange(PROP_GDB_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
+        firePropertyChange(PROP_GDB_REQUIRED, Boolean.valueOf(oldValue), Boolean.valueOf(enabled));
     }
     
 //    public boolean isCRequired() {
@@ -541,11 +542,11 @@ public class CppSettings extends SharedClassObject {
      *  @return value of OPTION_CPP_SETTINGS_NAME
      */
     public String displayName () {
-	return getString("OPTION_CPP_SETTINGS_NAME");		        //NOI18N
+        return getString("OPTION_CPP_SETTINGS_NAME"); //NOI18N
     }
     
     public HelpCtx getHelpCtx () {
-	return new HelpCtx ("Welcome_opt_editing_sources");	        //NOI18N
+        return new HelpCtx("Welcome_opt_editing_sources"); //NOI18N
     }
 
     private Preferences getPreferences() {
@@ -558,9 +559,9 @@ public class CppSettings extends SharedClassObject {
     
     /** @return localized string */
     static String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(CppSettings.class);
-	}
-	return bundle.getString(s);
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(CppSettings.class);
+        }
+        return bundle.getString(s);
     }
 }
