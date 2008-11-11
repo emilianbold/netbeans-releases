@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.connections.sftp;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.io.File;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -53,8 +54,10 @@ import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
+import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -63,10 +66,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class SftpConfigurationPanel extends JPanel implements RemoteConfigurationPanel {
-    private static final long serialVersionUID = 62874685129730L;
-
-    private static final int MINIMUM_PORT = 0;
-    private static final int MAXIMUM_PORT = 65535;
+    private static final long serialVersionUID = 628112658730L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private String error = null;
@@ -101,31 +101,45 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
     public boolean isValidConfiguration() {
         // remember password is dangerous
         // just warning - do it every time
-        if (validateRememberPassword()) {
-            setWarning(null);
-        }
+        String err = RemoteValidator.validateRememberPassword(passwordTextField.getPassword());
+        setWarning(err);
 
-        if (!validateHost()) {
+        err = RemoteValidator.validateHost(hostTextField.getText());
+        if (err != null) {
+            setError(err);
             return false;
         }
 
-        if (!validatePort()) {
+        err = RemoteValidator.validatePort(portTextField.getText());
+        if (err != null) {
+            setError(err);
             return false;
         }
 
-        if (!validateUser()) {
+        err = RemoteValidator.validateUser(userTextField.getText());
+        if (err != null) {
+            setError(err);
             return false;
         }
 
-        // XXX known hosts + private key
+        if (!validateIdentityFile()) {
+            return false;
+        }
+
+        if (!validateKnownHostsFile()) {
+            return false;
+        }
 
         if (!validateInitialDirectory()) {
             return false;
         }
 
-        if (!validateTimeout()) {
+        err = RemoteValidator.validateTimeout(timeoutTextField.getText());
+        if (err != null) {
+            setError(err);
             return false;
         }
+        setError(null);
         return true;
     }
 
@@ -153,39 +167,25 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         changeSupport.fireChange();
     }
 
-    private boolean validateRememberPassword() {
-        if (getPassword().length() > 0) {
-            setWarning(NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_PasswordRememberDangerous"));
+    private boolean validateIdentityFile() {
+        return validateFile(getIdentityFile(), NbBundle.getMessage(SftpConfiguration.class, "LBL_IdentityFile"));
+    }
+
+    private boolean validateKnownHostsFile() {
+        return validateFile(getKnownHostsFile(), NbBundle.getMessage(SftpConfiguration.class, "LBL_KnownHostsFile"));
+    }
+
+    private boolean validateFile(String path, String label) {
+        if (!PhpProjectUtils.hasText(path)) {
+            return true;
+        }
+        File file = new File(path);
+        if (!file.isFile()) {
+            setError(NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_FileNotFile", label));
             return false;
         }
-        return true;
-    }
-
-    private boolean validateHost() {
-        if (getHostName().trim().length() == 0) {
-            setError(NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_NoHostName"));
-            return false;
-        }
-        return true;
-    }
-
-    private boolean validatePort() {
-        String err = null;
-        try {
-            int port = Integer.parseInt(getPort());
-            if (port < MINIMUM_PORT || port > MAXIMUM_PORT) { // see InetSocketAddress
-                err = NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_PortInvalid", String.valueOf(MINIMUM_PORT), String.valueOf(MAXIMUM_PORT));
-            }
-        } catch (NumberFormatException nfe) {
-            err = NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_PortNotNumeric");
-        }
-        setError(err);
-        return err == null;
-    }
-
-    private boolean validateUser() {
-        if (getUserName().trim().length() == 0) {
-            setError(NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_NoUserName"));
+        if (!file.isAbsolute()) {
+            setError(NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_FileNotAbsolute", label));
             return false;
         }
         return true;
@@ -200,20 +200,6 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         return true;
     }
 
-    private boolean validateTimeout() {
-        String err = null;
-        try {
-            int timeout = Integer.parseInt(getTimeout());
-            if (timeout < 0) {
-                err = NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_TimeoutNotPositive");
-            }
-        } catch (NumberFormatException nfe) {
-            err = NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_TimeoutNotNumeric");
-        }
-        setError(err);
-        return err == null;
-    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -226,48 +212,45 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
 
 
 
+
         hostLabel = new JLabel();
         hostTextField = new JTextField();
         portLabel = new JLabel();
         portTextField = new JTextField();
         userLabel = new JLabel();
         userTextField = new JTextField();
-        identityFileLabel = new JLabel();
-        identityFileTextField = new JTextField();
-        identityFileBrowseButton = new JButton();
         passwordLabel = new JLabel();
         passwordTextField = new JPasswordField();
         passwordLabelInfo = new JLabel();
+        identityFileLabel = new JLabel();
+        identityFileTextField = new JTextField();
+        identityFileBrowseButton = new JButton();
+        knownHostsFileLabel = new JLabel();
+        knownHostsFileTextField = new JTextField();
+        knownHostsFileBrowseButton = new JButton();
         initialDirectoryLabel = new JLabel();
         initialDirectoryTextField = new JTextField();
         timeoutLabel = new JLabel();
         timeoutTextField = new JTextField();
-        knownHostsFileLabel = new JLabel();
-        knownHostsFileTextField = new JTextField();
-        knownHostsFileBrowseButton = new JButton();
         warningLabel = new JLabel();
         Mnemonics.setLocalizedText(hostLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.hostLabel.text")); // NOI18N
         hostTextField.setMinimumSize(new Dimension(150, 19));
         Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.portLabel.text"));
         Mnemonics.setLocalizedText(userLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.userLabel.text"));
-        identityFileLabel.setLabelFor(identityFileTextField);
+        Mnemonics.setLocalizedText(passwordLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabel.text"));
+        Mnemonics.setLocalizedText(passwordLabelInfo, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabelInfo.text"));
+        passwordLabelInfo.setEnabled(false);
 
+        identityFileLabel.setLabelFor(identityFileTextField);
 
 
 
         Mnemonics.setLocalizedText(identityFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileLabel.text")); // NOI18N
         identityFileTextField.setText(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileTextField.text")); // NOI18N
         Mnemonics.setLocalizedText(identityFileBrowseButton, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileBrowseButton.text"));
-        Mnemonics.setLocalizedText(passwordLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabel.text"));
-        Mnemonics.setLocalizedText(passwordLabelInfo, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabelInfo.text"));
-        passwordLabelInfo.setEnabled(false);
-
-
-        Mnemonics.setLocalizedText(initialDirectoryLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.initialDirectoryLabel.text"));
-        Mnemonics.setLocalizedText(timeoutLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.timeoutLabel.text"));
-        timeoutTextField.setMinimumSize(new Dimension(20, 19));
-
         knownHostsFileLabel.setLabelFor(knownHostsFileTextField);
+
+
 
 
 
@@ -275,6 +258,9 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         Mnemonics.setLocalizedText(knownHostsFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileLabel.text"));
         knownHostsFileTextField.setText(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileTextField.text")); // NOI18N
         Mnemonics.setLocalizedText(knownHostsFileBrowseButton, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileBrowseButton.text"));
+        Mnemonics.setLocalizedText(initialDirectoryLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.initialDirectoryLabel.text"));
+        Mnemonics.setLocalizedText(timeoutLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.timeoutLabel.text"));
+        timeoutTextField.setMinimumSize(new Dimension(20, 19));
         Mnemonics.setLocalizedText(warningLabel, "warning");
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -282,37 +268,43 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(warningLabel)
             .add(layout.createSequentialGroup()
+                .add(passwordLabel)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(knownHostsFileLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(knownHostsFileTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.UNRELATED)
+                .add(knownHostsFileBrowseButton)
+                .add(0, 0, 0))
+            .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(hostLabel)
                     .add(userLabel)
-                    .add(passwordLabel)
                     .add(initialDirectoryLabel)
                     .add(timeoutLabel)
-                    .add(identityFileLabel)
-                    .add(knownHostsFileLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
+                    .add(identityFileLabel))
+                .add(25, 25, 25)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(passwordLabelInfo)
-                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
+                        .add(passwordLabelInfo)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                            .add(GroupLayout.LEADING, identityFileTextField, GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, userTextField, GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, hostTextField, GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, passwordTextField, GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, initialDirectoryTextField, GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, timeoutTextField, GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
-                            .add(knownHostsFileTextField, GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE))
+                            .add(GroupLayout.LEADING, identityFileTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, userTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, hostTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, timeoutTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                            .add(passwordTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                            .add(initialDirectoryTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE))
                         .addPreferredGap(LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(layout.createParallelGroup(GroupLayout.LEADING, false)
-                                .add(layout.createSequentialGroup()
-                                    .add(portLabel)
-                                    .addPreferredGap(LayoutStyle.RELATED)
-                                    .add(portTextField))
-                                .add(identityFileBrowseButton))
-                            .add(knownHostsFileBrowseButton))
-                        .add(0, 0, 0)))
-                .add(0, 0, 0))
+                        .add(layout.createParallelGroup(GroupLayout.LEADING, false)
+                            .add(layout.createSequentialGroup()
+                                .add(portLabel)
+                                .addPreferredGap(LayoutStyle.RELATED)
+                                .add(portTextField))
+                            .add(identityFileBrowseButton))
+                        .add(0, 0, 0))))
         );
 
         layout.linkSize(new Component[] {identityFileBrowseButton, knownHostsFileBrowseButton}, GroupLayout.HORIZONTAL);
@@ -331,15 +323,20 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
                     .add(userTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(passwordLabel)
+                    .add(passwordTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(passwordLabelInfo)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(identityFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .add(identityFileLabel)
                     .add(identityFileBrowseButton))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(passwordLabel)
-                    .add(passwordTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(passwordLabelInfo)
+                    .add(knownHostsFileLabel)
+                    .add(knownHostsFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .add(knownHostsFileBrowseButton))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(initialDirectoryLabel)
@@ -348,11 +345,6 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(timeoutTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .add(timeoutLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(knownHostsFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(knownHostsFileBrowseButton)
-                    .add(knownHostsFileLabel))
                 .addPreferredGap(LayoutStyle.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(warningLabel)
                 .addContainerGap())

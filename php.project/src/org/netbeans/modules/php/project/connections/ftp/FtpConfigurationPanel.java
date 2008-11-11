@@ -54,6 +54,7 @@ import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
+import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.awt.Mnemonics;
@@ -64,10 +65,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class FtpConfigurationPanel extends JPanel implements RemoteConfigurationPanel {
-    private static final long serialVersionUID = 6234263856159730L;
-
-    private static final int MINIMUM_PORT = 0;
-    private static final int MAXIMUM_PORT = 65535;
+    private static final long serialVersionUID = 623426654872730L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private String error = null;
@@ -104,15 +102,18 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
     public boolean isValidConfiguration() {
         // remember password is dangerous
         // just warning - do it every time
-        if (validateRememberPassword()) {
-            setWarning(null);
-        }
+        String err = RemoteValidator.validateRememberPassword(passwordTextField.getPassword());
+        setWarning(err);
 
-        if (!validateHost()) {
+        err = RemoteValidator.validateHost(hostTextField.getText());
+        if (err != null) {
+            setError(err);
             return false;
         }
 
-        if (!validatePort()) {
+        err = RemoteValidator.validatePort(portTextField.getText());
+        if (err != null) {
+            setError(err);
             return false;
         }
 
@@ -124,9 +125,12 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
             return false;
         }
 
-        if (!validateTimeout()) {
+        err = RemoteValidator.validateTimeout(timeoutTextField.getText());
+        if (err != null) {
+            setError(err);
             return false;
         }
+        setError(null);
         return true;
     }
 
@@ -171,42 +175,13 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         changeSupport.fireChange();
     }
 
-    private boolean validateRememberPassword() {
-        if (getPassword().length() > 0) {
-            setWarning(NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_PasswordRememberDangerous"));
-            return false;
-        }
-        return true;
-    }
-
-    private boolean validateHost() {
-        if (getHostName().trim().length() == 0) {
-            setError(NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_NoHostName"));
-            return false;
-        }
-        return true;
-    }
-
-    private boolean validatePort() {
-        String err = null;
-        try {
-            int port = Integer.parseInt(getPort());
-            if (port < MINIMUM_PORT || port > MAXIMUM_PORT) { // see InetSocketAddress
-                err = NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_PortInvalid", String.valueOf(MINIMUM_PORT), String.valueOf(MAXIMUM_PORT));
-            }
-        } catch (NumberFormatException nfe) {
-            err = NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_PortNotNumeric");
-        }
-        setError(err);
-        return err == null;
-    }
-
     private boolean validateUser() {
         if (isAnonymousLogin()) {
             return true;
         }
-        if (getUserName().trim().length() == 0) {
-            setError(NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_NoUserName"));
+        String err = RemoteValidator.validateUser(userTextField.getText());
+        if (err != null) {
+            setError(err);
             return false;
         }
         return true;
@@ -219,20 +194,6 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
             return false;
         }
         return true;
-    }
-
-    private boolean validateTimeout() {
-        String err = null;
-        try {
-            int timeout = Integer.parseInt(getTimeout());
-            if (timeout < 0) {
-                err = NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_TimeoutNotPositive");
-            }
-        } catch (NumberFormatException nfe) {
-            err = NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_TimeoutNotNumeric");
-        }
-        setError(err);
-        return err == null;
     }
 
     /** This method is called from within the constructor to
