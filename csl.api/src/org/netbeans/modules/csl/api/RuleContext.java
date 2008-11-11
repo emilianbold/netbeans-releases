@@ -41,7 +41,6 @@ package org.netbeans.modules.csl.api;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.modules.csl.spi.ParserResult;
 
@@ -80,10 +79,10 @@ public class RuleContext {
 //    /** All the embedded parser results for this compilation info */
 //    @NonNull
 //    public Collection<? extends ParserResult> parserResults;
-    
-    /** The FIRST parser result (if parserResults.size() > 0) or null */
-    @CheckForNull
-    public ParserResult parserResult;
+//
+//    /** The FIRST parser result (if parserResults.size() > 0) or null */
+//    @CheckForNull
+//    public ParserResult parserResult;
 
     // Fields useful for subclasses
     // TODO - push into subclasses?

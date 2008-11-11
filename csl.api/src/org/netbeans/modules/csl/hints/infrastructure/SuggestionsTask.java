@@ -43,6 +43,7 @@ package org.netbeans.modules.csl.hints.infrastructure;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.HintsProvider;
@@ -50,20 +51,24 @@ import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.napi.gsfret.source.support.CaretAwareSourceTaskFactory;
-import org.netbeans.modules.csl.editor.semantic.ScanningCancellableTask;
-import org.netbeans.napi.gsfret.source.support.SelectionAwareSourceTaskFactory;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
+import org.openide.filesystems.FileObject;
 
 /**
  * Task which delegates to the language plugins for actual suggestions-computation
  * 
  * @author Tor Norbye
  */
-public class SuggestionsTask extends ScanningCancellableTask<CompilationInfo> {
+public class SuggestionsTask extends ParserResultTask<ParserResult> {
     
+    private static final Logger LOG = Logger.getLogger(SuggestionsTask.class.getName());
+    private boolean cancelled = false;
+
     public SuggestionsTask() {
     }
     
@@ -79,22 +84,27 @@ public class SuggestionsTask extends ScanningCancellableTask<CompilationInfo> {
         return null;
     }
     
-    public void run(CompilationInfo info) throws Exception {
+    public @Override void run(ParserResult result) {
         resume();
         
-        Document doc = info.getDocument();
+        Document doc = result.getSnapshot().getSource().getDocument();
         if (doc == null) {
             return;
         }
 
-        // Do we have a selection? If so, don't do suggestions
-        int[] range = SelectionAwareSourceTaskFactory.getLastSelection(info.getFileObject());
-        if (range != null && range.length == 2 && range[0] != -1 && range[1] != -1 && range[0] != range[1]) {
-            HintsController.setErrors(info.getFileObject(), SuggestionsTask.class.getName(), Collections.<ErrorDescription>emptyList());
+        FileObject fileObject = result.getSnapshot().getSource().getFileObject();
+        if (fileObject == null) {
             return;
         }
 
-        int pos = CaretAwareSourceTaskFactory.getLastPosition(info.getFileObject());
+        // Do we have a selection? If so, don't do suggestions
+        int[] range = SelectionHintsTask.getSelectedTextRange(fileObject);
+        if (range != null && range.length == 2 && range[0] != -1 && range[1] != -1 && range[0] != range[1]) {
+            HintsController.setErrors(fileObject, SuggestionsTask.class.getName(), Collections.<ErrorDescription>emptyList());
+            return;
+        }
+
+        int pos = ((CursorMovedSchedulerEvent) result.getEvent()).getCaretOffset();
         if (pos == -1) {
             return;
         }
@@ -110,24 +120,44 @@ public class SuggestionsTask extends ScanningCancellableTask<CompilationInfo> {
         if (manager == null) {
             return;
         }
-        RuleContext ruleContext = manager.createRuleContext(info, language, pos, -1, -1);
+        RuleContext ruleContext = manager.createRuleContext(result, language, pos, -1, -1);
         if (ruleContext == null) {
             return;
         }
-        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+        List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
         List<Hint> hints = new ArrayList<Hint>();
         
         provider.computeSuggestions(manager, ruleContext, hints, pos);
 
         for (Hint hint : hints) {
             ErrorDescription desc = manager.createDescription(hint, ruleContext, false);
-            result.add(desc);
+            descriptions.add(desc);
         }
         
         if (isCancelled()) {
             return;
         }
         
-        HintsController.setErrors(info.getFileObject(), SuggestionsTask.class.getName(), result);
+        HintsController.setErrors(result.getSnapshot().getSource().getFileObject(), SuggestionsTask.class.getName(), descriptions);
+    }
+
+    public @Override int getPriority() {
+        return Integer.MAX_VALUE;
+    }
+
+    public @Override Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    public @Override synchronized void cancel() {
+        cancelled = true;
+    }
+
+    private synchronized void resume() {
+        cancelled = false;
+    }
+
+    private synchronized boolean isCancelled() {
+        return cancelled;
     }
 }

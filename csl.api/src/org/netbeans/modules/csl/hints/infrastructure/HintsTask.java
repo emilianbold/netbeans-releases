@@ -41,15 +41,24 @@
 package org.netbeans.modules.csl.hints.infrastructure;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.modules.csl.editor.semantic.ScanningCancellableTask;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 
@@ -58,49 +67,90 @@ import org.netbeans.spi.editor.hints.HintsController;
  * 
  * @author Tor Norbye
  */
-public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
+public class HintsTask extends ParserResultTask<ParserResult> {
+
+    private static final Logger LOG = Logger.getLogger(HintsTask.class.getName());
+    private boolean cancelled = false;
     
     public HintsTask() {
     }
     
-    public void run(CompilationInfo info) throws Exception {
+    public @Override void run(ParserResult result) {
         resume();
         
-        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-        Set<String> mimeTypes = info.getEmbeddedMimeTypes();
-        for (String mimeType : mimeTypes) {
-            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
-            if (language == null) {
-                continue;
-            }
-            
-            HintsProvider provider = language.getHintsProvider();
+        final List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
 
-            if (provider == null) {
-                continue;
-            }
+        try {
+            ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
+                public @Override void run(ResultIterator resultIterator) throws ParseException {
+                    Language language = LanguageRegistry.getInstance().getLanguageByMimeType(resultIterator.getSnapshot().getMimeType());
+                    if (language == null) {
+                        return;
+                    }
 
-            GsfHintsManager manager = language.getHintsManager();
-            if (manager == null) {
-                continue;
-            }
-            RuleContext ruleContext = manager.createRuleContext(info, language, -1, -1, -1);
-            List<Hint> hints = new ArrayList<Hint>();
+                    HintsProvider provider = language.getHintsProvider();
 
-            if (ruleContext != null) {
-                provider.computeHints(manager, ruleContext, hints);
-            }
-            
-            if (isCancelled()) {
-                return;
-            }
+                    if (provider == null) {
+                        return;
+                    }
 
-            for (Hint hint : hints) {
-                ErrorDescription desc = manager.createDescription(hint, ruleContext, false);
-                result.add(desc);
-            }
+                    GsfHintsManager manager = language.getHintsManager();
+                    if (manager == null) {
+                        return;
+                    }
+                    
+                    Parser.Result r = resultIterator.getParserResult();
+                    if (!(r instanceof ParserResult)) {
+                        return;
+                    }
+
+                    ParserResult parserResult = (ParserResult) r;
+                    RuleContext ruleContext = manager.createRuleContext(parserResult, language, -1, -1, -1);
+                    if (ruleContext == null) {
+                        return;
+                    }
+                    
+                    List<Hint> hints = new ArrayList<Hint>();
+                    provider.computeHints(manager, ruleContext, hints);
+
+                    if (isCancelled()) {
+                        return;
+                    }
+
+                    for (Hint hint : hints) {
+                        ErrorDescription desc = manager.createDescription(hint, ruleContext, false);
+                        descriptions.add(desc);
+                    }
+
+                    for(Embedding e : resultIterator.getEmbeddings()) {
+                        run(resultIterator.getResultIterator(e));
+                    }
+                }
+            });
+        } catch (ParseException e) {
+            LOG.log(Level.WARNING, null, e);
         }
-        
-        HintsController.setErrors(info.getFileObject(), HintsTask.class.getName(), result);
+
+        HintsController.setErrors(result.getSnapshot().getSource().getFileObject(), HintsTask.class.getName(), descriptions);
+    }
+
+    public @Override int getPriority() {
+        return Integer.MAX_VALUE;
+    }
+
+    public @Override Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    public @Override synchronized void cancel() {
+        cancelled = true;
+    }
+
+    private synchronized void resume() {
+        cancelled = false;
+    }
+
+    private synchronized boolean isCancelled() {
+        return cancelled;
     }
 }

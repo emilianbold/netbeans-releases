@@ -47,15 +47,13 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import java.util.EnumMap;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -63,13 +61,19 @@ import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.api.ParserResult;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
@@ -89,10 +93,9 @@ import org.openide.text.NbDocument;
  * @author leon chiver
  * @author Tor Norbye
  */
-public final class GsfHintsProvider implements CancellableTask<CompilationInfo> {
+public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
     
-    public static ErrorManager ERR = ErrorManager.getDefault().getInstance("org.netbeans.modules.gsfret.hints"); // NOI18N
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.gsfret.hints"); // NOI18N
+    public static Logger LOG = Logger.getLogger(GsfHintsProvider.class.getName()); // NOI18N
     
     private FileObject file;
     
@@ -114,9 +117,9 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
 //        errorKind2Severity.put(Error/*Diagnostic*/.Kind.OTHER, Severity.WARNING);
     }
     
-    List<ErrorDescription> computeErrors(CompilationInfo info, Document doc, ParserResult result, List<Error> errors, List<ErrorDescription> descs) {
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log(ErrorManager.INFORMATIONAL, "errors = " + errors);
+    List<ErrorDescription> computeErrors(Document doc, ParserResult result, List<? extends Error> errors, List<ErrorDescription> descs) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "errors = " + errors);
         }
         
         for (Error/*Diagnostic*/ d : errors) {
@@ -124,8 +127,8 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
                 return null;
             }
             
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "d = " + d);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "d = " + d);
 
                 //Map<String, List<ErrorRule>> code2Rules = RulesManager.getInstance().getErrors();
             }
@@ -134,9 +137,9 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
             
             //List<ErrorRule> rules = code2Rules.get(d.getKey());
             
-            //if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                //ERR.log(ErrorManager.INFORMATIONAL, "code= " + d.getKey());
-                //ERR.log(ErrorManager.INFORMATIONAL, "rules = " + rules);
+            //if (LOG.isLoggable(Level.FINE)) {
+                //LOG.log(Level.FINE, "code= " + d.getKey());
+                //LOG.log(Level.FINE, "rules = " + rules);
             //}
             
             //int position = (int)d.getPosition();
@@ -144,16 +147,11 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
             int astEndOffset = d.getEndPosition();
             
             int position, endPosition;
-            if (result.getTranslatedSource() != null) {
-                position = result.getTranslatedSource().getLexicalOffset(astOffset);
-                if (position == -1) {
-                    continue;
-                }
-                endPosition = position+(astEndOffset-astOffset);
-            } else {
-                position = astOffset;
-                endPosition = astEndOffset;
+            position = result.getSnapshot().getOriginalOffset(astOffset);
+            if (position == -1) {
+                continue;
             }
+            endPosition = position+(astEndOffset-astOffset);
             
             LazyFixList ehm;
             
@@ -163,12 +161,12 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
                 ehm = ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList());
             //}
             
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "ehm=" + ehm);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "ehm=" + ehm);
             }
             
             final String desc = d.getDisplayName();
-            final Position[] range = getLine(info, d, doc, position, endPosition);
+            final Position[] range = getLine(result, d, doc, position, endPosition);
             
             if (isCanceled()) {
                 return null;
@@ -192,7 +190,7 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
         return DataLoadersBridge.getDefault().getDocument(file);
     }
     
-    private Position[] getLine(CompilationInfo info, Error d, final Document doc, int startOffset, int endOffset) {
+    private Position[] getLine(ParserResult info, Error d, final Document doc, int startOffset, int endOffset) {
         StyledDocument sdoc = (StyledDocument) doc;
         int lineNumber = NbDocument.findLineNumber(sdoc, startOffset);
         int lineOffset = NbDocument.findLineOffset(sdoc, lineNumber);
@@ -223,9 +221,9 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
             }
         }
         
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log(ErrorManager.INFORMATIONAL, "startOffset = " + startOffset );
-            ERR.log(ErrorManager.INFORMATIONAL, "endOffset = " + endOffset );
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "startOffset = " + startOffset );
+            LOG.log(Level.FINE, "endOffset = " + endOffset );
         }
         
         final int startOffsetFinal = startOffset;
@@ -241,11 +239,11 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
                 int len = doc.getLength();
                 
                 if (startOffsetFinal > len || endOffsetFinal > len) {
-                    if (!isCanceled() && ERR.isLoggable(ErrorManager.WARNING)) {
-                        ERR.log(ErrorManager.WARNING, "document changed, but not canceled?" );
-                        ERR.log(ErrorManager.WARNING, "len = " + len );
-                        ERR.log(ErrorManager.WARNING, "startOffset = " + startOffsetFinal );
-                        ERR.log(ErrorManager.WARNING, "endOffset = " + endOffsetFinal );
+                    if (!isCanceled() && LOG.isLoggable(Level.WARNING)) {
+                        LOG.log(Level.WARNING, "document changed, but not canceled?" );
+                        LOG.log(Level.WARNING, "len = " + len );
+                        LOG.log(Level.WARNING, "startOffset = " + startOffsetFinal );
+                        LOG.log(Level.WARNING, "endOffset = " + endOffsetFinal );
                     }
                     cancel();
                     
@@ -256,7 +254,7 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
                     result[0] = NbDocument.createPosition(doc, startOffsetFinal, Bias.Forward);
                     result[1] = NbDocument.createPosition(doc, endOffsetFinal, Bias.Backward);
                 } catch (BadLocationException e) {
-                    ERR.notify(ErrorManager.ERROR, e);
+                    LOG.log(Level.WARNING, null, e);
                 }
             }
         });
@@ -278,48 +276,47 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
         cancel = false;
     }
     
-    public void run(CompilationInfo info) {
+    public @Override void run(ParserResult result) {
         resume();
         
-        Document doc = getDocument();
+        final Document doc = getDocument();
         
         if (doc == null) {
-            Logger.getLogger(GsfHintsProvider.class.getName()).log(Level.INFO, "SemanticHighlighter: Cannot get document!");
+            LOG.log(Level.INFO, "SemanticHighlighter: Cannot get document!");
             return ;
         }
         
-        long start = System.currentTimeMillis();
+//        long start = System.currentTimeMillis();
+        final List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
         
-        
+        try {
+            ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
+                public @Override void run(ResultIterator resultIterator) throws ParseException {
+                    Language language = LanguageRegistry.getInstance().getLanguageByMimeType(resultIterator.getSnapshot().getMimeType());
+                    HintsProvider provider = language.getHintsProvider();
+                    if (provider == null) {
+                        return;
+                    }
 
-        Set<String> mimeTypes = info.getEmbeddedMimeTypes();
-        LanguageRegistry registry = LanguageRegistry.getInstance();
-        List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
-        
-        for (String mimeType : mimeTypes) {
-            Language language = registry.getLanguageByMimeType(mimeType);
-            HintsProvider provider = language.getHintsProvider();
-            GsfHintsManager manager = null;
-            RuleContext ruleContext = null;
-            if (provider != null) {
-                manager = language.getHintsManager();
-                if (manager == null) {
-                    continue;
-                }
-                ruleContext = manager.createRuleContext(info, language, -1, -1, -1);
-                if (ruleContext == null) {
-                    continue;
-                }
-            }
+                    GsfHintsManager manager = language.getHintsManager();
+                    if (manager == null) {
+                        return;
+                    }
 
-            for (ParserResult result : info.getEmbeddedResults(mimeType)) {
-                assert result != null;
-                
-                List<Error> errors = result.getDiagnostics();
-                List<ErrorDescription> desc = new ArrayList<ErrorDescription>();
-                if (provider != null) {
-                    assert ruleContext != null;
-                    ruleContext.parserResult = result;
+                    Parser.Result r = resultIterator.getParserResult();
+                    if (!(r instanceof ParserResult)) {
+                        return;
+                    }
+
+                    ParserResult parserResult = (ParserResult) r;
+                    RuleContext ruleContext = manager.createRuleContext(parserResult, language, -1, -1, -1);
+                    if (ruleContext == null) {
+                        return;
+                    }
+
+                    List<? extends Error> errors = parserResult.getDiagnostics();
+                    List<ErrorDescription> desc = new ArrayList<ErrorDescription>();
+
                     List<Error> unhandled = new ArrayList<Error>();
                     List<Hint> hints = new ArrayList<Hint>();
                     provider.computeErrors(manager, ruleContext, hints, unhandled);
@@ -329,26 +326,43 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
                         ErrorDescription errorDesc = manager.createDescription(hint, ruleContext, allowDisableEmpty);
                         descriptions.add(errorDesc);
                     }
-                }
-                // Process errors without codes
-                desc = computeErrors(info, doc, result, errors, desc);
-                if (desc == null) {
-                    //meaning: cancelled
-                    return;
-                }
-                
-                if (isCanceled()) {
-                    return;
-                }
 
-                descriptions.addAll(desc);
-            }
+                    // Process errors without codes
+                    desc = computeErrors(doc, parserResult, errors, desc);
+                    if (desc == null) {
+                        //meaning: cancelled
+                        return;
+                    }
+
+                    if (isCanceled()) {
+                        return;
+                    }
+
+                    descriptions.addAll(desc);
+
+                    for(Embedding e : resultIterator.getEmbeddings()) {
+                        run(resultIterator.getResultIterator(e));
+                    }
+                }
+            });
+        } catch (ParseException e) {
+            LOG.log(Level.WARNING, null, e);
         }
+
         HintsController.setErrors(doc, "csl-hints", descriptions);
-        
-        long end = System.currentTimeMillis();
-        
-        //TimesCollector.getDefault().reportTime(info.getFileObject(), "com-hints", "Hints", end - start);
+
+//        long end = System.currentTimeMillis();
+//        TimesCollector.getDefault().reportTime(info.getFileObject(), "com-hints", "Hints", end - start);
+    }
+
+    @Override
+    public int getPriority() {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
     }
 }
 

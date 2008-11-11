@@ -41,36 +41,48 @@ package org.netbeans.modules.csl.hints.infrastructure;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.modules.csl.editor.semantic.ScanningCancellableTask;
-import org.netbeans.napi.gsfret.source.support.SelectionAwareSourceTaskFactory;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Tor Norbye
  */
-public class SelectionHintsTask extends ScanningCancellableTask<CompilationInfo> {
+public class SelectionHintsTask extends ParserResultTask<ParserResult> {
+    
+    private static final Logger LOG = Logger.getLogger(SelectionHintsTask.class.getName());
+    private boolean cancelled = false;
     
     public SelectionHintsTask() {
     }
     
-    public void run(CompilationInfo info) throws Exception {
+    public @Override void run(ParserResult result) {
         resume();
         
-        Document doc = info.getDocument();
+        Document doc = result.getSnapshot().getSource().getDocument();
         if (doc == null) {
             return;
         }
 
-        int[] range = SelectionAwareSourceTaskFactory.getLastSelection(info.getFileObject());
+        FileObject fileObject = result.getSnapshot().getSource().getFileObject();
+        if (fileObject == null) {
+            return;
+        }
         
+        int[] range = getSelectedTextRange(fileObject);
         if (range == null || range.length != 2 || range[0] == -1 || range[1] == -1) {
             return;
         }
@@ -90,16 +102,16 @@ public class SelectionHintsTask extends ScanningCancellableTask<CompilationInfo>
             return;
         }
 
-        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+        List<ErrorDescription> description = new ArrayList<ErrorDescription>();
         List<Hint> hints = new ArrayList<Hint>();
         
         if (start != end) {
-            RuleContext ruleContext = manager.createRuleContext(info, language, -1, start, end);
+            RuleContext ruleContext = manager.createRuleContext(result, language, -1, start, end);
             if (ruleContext != null) {
                 provider.computeSelectionHints(manager, ruleContext, hints, Math.min(start,end), Math.max(start,end));
                 for (Hint hint : hints) {
                     ErrorDescription desc = manager.createDescription(hint, ruleContext, false);
-                    result.add(desc);
+                    description.add(desc);
                 }
             }
         }
@@ -108,6 +120,42 @@ public class SelectionHintsTask extends ScanningCancellableTask<CompilationInfo>
             return;
         }
         
-        HintsController.setErrors(info.getFileObject(), SelectionHintsTask.class.getName(), result);
+        HintsController.setErrors(fileObject, SelectionHintsTask.class.getName(), description);
+    }
+
+    public @Override int getPriority() {
+        return Integer.MAX_VALUE;
+    }
+
+    public @Override Class<? extends Scheduler> getSchedulerClass() {
+        // XXX: this should be in fact EDITOR_SELECTION_TASK_SCHEDULER, but we dont' have this
+        // in Parsing API yet
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    public @Override synchronized void cancel() {
+        cancelled = true;
+    }
+
+    private synchronized void resume() {
+        cancelled = false;
+    }
+
+    private synchronized boolean isCancelled() {
+        return cancelled;
+    }
+
+    public static int[] getSelectedTextRange(FileObject fileObject) {
+        // XXX: fix this when Parsing API provides EDITOR_SELECTION_TASK_SCHEDULER
+        try {
+            EditorCookie ec = DataLoadersBridge.getDefault().getCookie(fileObject, EditorCookie.class);
+            JEditorPane [] panes = ec.getOpenedPanes();
+            if (panes.length > 0) {
+                return new int [] { panes[0].getSelectionStart(), panes[0].getSelectionEnd() };
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+        return null;
     }
 }

@@ -39,24 +39,24 @@
 
 package org.netbeans.modules.csl.hints.infrastructure;
 
-import org.netbeans.modules.csl.api.CancellableTask;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.modules.csl.api.Phase;
-import org.netbeans.napi.gsfret.source.Source.Priority;
-import org.netbeans.napi.gsfret.source.support.SelectionAwareSourceTaskFactory;
-import org.openide.filesystems.FileObject;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  *
  * @author Tor Norbye
  */
-public class SelectionHintsTaskFactory extends SelectionAwareSourceTaskFactory {
+public class SelectionHintsTaskFactory extends TaskFactory {
     
     public SelectionHintsTaskFactory() {
-        super(Phase.UP_TO_DATE, Priority.MIN);
+        super(); // XXX: Phase.UP_TO_DATE, Priority.MIN
     }
     
-    protected CancellableTask<CompilationInfo> createTask(FileObject file) {
-        return new SelectionHintsTask();
+    @Override
+    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        return Collections.singleton(new SelectionHintsTask());
     }
 }
