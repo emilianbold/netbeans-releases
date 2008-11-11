@@ -190,6 +190,16 @@ public abstract class POMComponentImpl extends AbstractDocumentComponent<POMComp
         }
     }
 
+    public int findChildElementPosition(QName qname) {
+        List<POMExtensibilityElement> els = getChildren(POMExtensibilityElement.class);
+        for (POMExtensibilityElement el : els) {
+            if (el.getQName().equals(qname)) {
+                return el.findPosition();
+            }
+        }
+        return -1;
+    }
+
     protected final Collection<Class<? extends POMComponent>> getClassesBefore(Class<? extends POMComponent>[] ordering, Class current) {
         ArrayList<Class<? extends POMComponent>> toRet = new ArrayList<Class<? extends POMComponent>>();
         for (Class<? extends POMComponent> ord : ordering) {

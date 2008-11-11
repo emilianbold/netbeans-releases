@@ -94,5 +94,11 @@ public interface POMComponent extends DocumentComponent<POMComponent> {
 
     String getChildElementText(QName qname);
     void setChildElementText(String propertyName, String text, QName qname);
-
+    /**
+     * find the location in document for the given simple child element
+     *
+     * @param qname
+     * @return position in document or -1 if not present.
+     */
+    int findChildElementPosition(QName qname);
 }
