@@ -41,8 +41,13 @@
 
 package org.netbeans.modules.css.editor.test;
 
+import org.netbeans.api.lexer.Language;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.lexer.api.CSSTokenId;
+import org.netbeans.modules.editor.NbEditorDocument;
 
 /**
  * Common ancestor for all test classes.
@@ -54,19 +59,18 @@ public class TestBase extends NbTestCase {
     static {
         MockServices.setServices(new Class[] {RepositoryImpl.class});
     }
-
-    private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
     
+    private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
+
     public TestBase(String name) {
         super(name);
     }
 
-//    protected BaseDocument createDocument() {
-//        NbEditorDocument doc = new NbEditorDocument(CssKit.class);
-//        doc.putProperty(PROP_MIME_TYPE, BaseKit.getKit(HTMLKit.class).getContentType());
-//        doc.putProperty(Language.class, HTMLTokenId.language()); //hack for LanguageManager - shoudl be removed
-//        
-//        return doc;
-//    }
+    protected BaseDocument createDocument() {
+        NbEditorDocument doc = new NbEditorDocument(Css.CSS_MIME_TYPE);
+        doc.putProperty(PROP_MIME_TYPE, Css.CSS_MIME_TYPE);
+        doc.putProperty(Language.class, CSSTokenId.language());
+        return doc;
+    }
     
 }

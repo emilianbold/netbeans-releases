@@ -45,7 +45,8 @@ import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.Vector;
+import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -65,10 +66,10 @@ public class ThreadsNodeModel implements NodeModel {
     public static final String RUNNING_THREAD =
         "org/netbeans/modules/debugger/resources/threadsView/RunningThread"; // NOI18N
 
-    private final Vector listeners = new Vector();
+    private final Collection<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
     
     public ThreadsNodeModel(ContextProvider lookupProvider) {
-        GdbDebugger debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        GdbDebugger debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
         new Listener(this, debugger);
     }
     
@@ -132,11 +133,9 @@ public class ThreadsNodeModel implements NodeModel {
     }
     
     private void fireTreeChanged() {
-        Vector v = (Vector) listeners.clone();
-        int i, k = v.size();
-        for (i = 0; i < k; i++) {
-	    ((ModelListener) v.get(i)).modelChanged(null);
-	}
+        for (ModelListener listener : listeners) {
+            listener.modelChanged(null);
+        }
     }
     
     private String bold(String value) {
@@ -186,17 +185,17 @@ public class ThreadsNodeModel implements NodeModel {
      */
     private static class Listener implements PropertyChangeListener {
         
-        private WeakReference ref;
-        private GdbDebugger debugger;
+        private final WeakReference<ThreadsNodeModel> ref;
+        private final GdbDebugger debugger;
         
         private Listener(ThreadsNodeModel tnm, GdbDebugger debugger) {
-            ref = new WeakReference(tnm);
+            this.ref = new WeakReference<ThreadsNodeModel>(tnm);
             this.debugger = debugger;
             debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
         }
         
         private ThreadsNodeModel getModel() {
-            ThreadsNodeModel tnm = (ThreadsNodeModel) ref.get();
+            ThreadsNodeModel tnm = ref.get();
             if (tnm == null) {
                 debugger.removePropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
             }

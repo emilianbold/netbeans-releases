@@ -5,7 +5,6 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.ui;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
@@ -208,7 +207,7 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
         }
     }
     
-    private static final Comparator REGISTER_COMPARATOR = new Comparator<RegisterValue>() {
+    private static final Comparator<RegisterValue> REGISTER_COMPARATOR = new Comparator<RegisterValue>() {
         public int compare(RegisterValue o1, RegisterValue o2) {
             return o1.getName().compareTo(o2.getName());
         }

@@ -6,13 +6,22 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 public class Utils {
-	private static boolean useSystemExit = true;
+
+    /**
+     * Constructor is private to prevent creating instances of this class.
+     */
+    private Utils() {
+    }
+
+    private static boolean useSystemExit = true;
 	private static boolean useDirectClassLoading = false;
 	static {
-		if ("true".equalsIgnoreCase(System.getProperty("ANTLR_DO_NOT_EXIT", "false")))
+		if ("true".equalsIgnoreCase(System.getProperty("ANTLR_DO_NOT_EXIT", "false"))) {
 			useSystemExit = false;
-		if ("true".equalsIgnoreCase(System.getProperty("ANTLR_USE_DIRECT_CLASS_LOADING", "false")))
+        }
+		if ("true".equalsIgnoreCase(System.getProperty("ANTLR_USE_DIRECT_CLASS_LOADING", "false"))) {
 			useDirectClassLoading = true;
+        }
 	}
 
 	/** Thanks to Max Andersen at JBOSS and Scott Stanchfield */
@@ -34,14 +43,16 @@ public class Utils {
 	}
 
 	public static void error(String message) {
-		if (useSystemExit)
+		if (useSystemExit) {
 			System.exit(1);
+        }
 		throw new RuntimeException("ANTLR Panic: " + message);
 	}
 
 	public static void error(String message, Throwable t) {
-		if (useSystemExit)
+		if (useSystemExit) {
 			System.exit(1);
+        }
 		throw new RuntimeException("ANTLR Panic", t);
 	}
         

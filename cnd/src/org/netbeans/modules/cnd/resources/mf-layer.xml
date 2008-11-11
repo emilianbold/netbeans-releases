@@ -248,12 +248,9 @@ made subject to such option by the copyright holder.
                         <file name="org-netbeans-modules-cnd-editor-makefile-preferences.xml" url="makefile/Makefile-editor-preferences.xml"/>
                     </folder>
                 </folder>
-                
-                <file name="EditorKit.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.makefile.MakefileKit"/>
-                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.makefile.MakefileKit"/>
-                    <attr name="beaninfo" boolvalue="false"/>
-                </file>
+
+                <file name="language.nbs" url="makefile/Makefile.nbs"/>
+                <file name="org-netbeans-modules-cnd-editor-makefile-MakefileIndentTaskFactory.instance"/>
             </folder>
             
             <folder name="sh">
@@ -329,11 +326,6 @@ made subject to such option by the copyright holder.
         <folder name="IndentEngine">
             <file name="org-netbeans-modules-cnd-editor-fortran-FIndentEngine.settings" url="FIndentEngine.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.fortran.Bundle"/>
-                <attr name="hidden" boolvalue="true"/>
-            </file>
-            
-            <file name="org-netbeans-modules-cnd-editor-makefile-MakefileIndentEngine.settings" url="MakefileIndentEngine.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.makefile.Bundle"/>
                 <attr name="hidden" boolvalue="true"/>
             </file>
         </folder> <!-- IndentEngine -->

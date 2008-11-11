@@ -57,8 +57,9 @@ public class AllSourceFileFilter extends SourceFileFilter {
     private static String[] suffixes = null;
 
     public static AllSourceFileFilter getInstance() {
-        if (instance == null)
+        if (instance == null) {
             instance = new AllSourceFileFilter();
+        }
         return instance;
     }
 
@@ -68,23 +69,24 @@ public class AllSourceFileFilter extends SourceFileFilter {
     
     
     public String[] getSuffixes() {
-        if (suffixes == null)
+        if (suffixes == null) {
             suffixes = getAllSuffixes();
+        }
         return suffixes;
     }
     
     public static String[] getAllSuffixes() {
-        List suffixes = new ArrayList();
-        addSuffices(suffixes, CCDataLoader.getInstance().getExtensions());
-        addSuffices(suffixes, CDataLoader.getInstance().getExtensions());
-        addSuffices(suffixes, HDataLoader.getInstance().getExtensions());
-        addSuffices(suffixes, FortranDataLoader.getInstance().getExtensions());
-        return (String[])suffixes.toArray(new String[suffixes.size()]);
+        List<String> allSuffixes = new ArrayList<String>();
+        addSuffices(allSuffixes, CCDataLoader.getInstance().getExtensions());
+        addSuffices(allSuffixes, CDataLoader.getInstance().getExtensions());
+        addSuffices(allSuffixes, HDataLoader.getInstance().getExtensions());
+        addSuffices(allSuffixes, FortranDataLoader.getInstance().getExtensions());
+        return allSuffixes.toArray(new String[allSuffixes.size()]);
     }
     
-    private static void addSuffices(List suffixes, ExtensionList list) {
-        for (Enumeration e = list.extensions(); e != null &&  e.hasMoreElements();) {
-            String ex = (String) e.nextElement();
+    private static void addSuffices(List<String> suffixes, ExtensionList list) {
+        for (Enumeration<String> e = list.extensions(); e != null && e.hasMoreElements();) {
+            String ex = e.nextElement();
             suffixes.add(ex);
         }
     }
