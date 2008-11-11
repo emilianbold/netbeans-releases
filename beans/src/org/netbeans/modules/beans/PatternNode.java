@@ -43,13 +43,12 @@ package org.netbeans.modules.beans;
 
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
-import java.beans.*;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import javax.swing.Action;
 import org.openide.nodes.*;
-import org.openide.actions.*;
 import org.openide.util.actions.SystemAction;
 
 /** Superclass of nodes representing bean patterns.
@@ -68,12 +67,12 @@ public class PatternNode extends AbstractNode {
                 SystemAction.get(CutAction.class),
                 SystemAction.get(CopyAction.class),
                 null,
-                */
                 SystemAction.get(DeleteAction.class),
                 SystemAction.get(RenameAction.class),
                 null,
                 //SystemAction.get(ToolsAction.class),
                 SystemAction.get(PropertiesAction.class),
+                */
             };
 
 
@@ -95,7 +94,7 @@ public class PatternNode extends AbstractNode {
         this.pattern = pattern;
         this.writeable = writeable;
         
-        setActions(DEFAULT_ACTIONS);
+//        setActions(DEFAULT_ACTIONS);
 
         //this.pattern.addPropertyChangeListener(new WeakListeners.PropertyChange (this));
 //        this.pattern.addPropertyChangeListener( WeakListeners.propertyChange (this, this.pattern));
@@ -139,15 +138,16 @@ public class PatternNode extends AbstractNode {
         return super.getShortDescription(); // If not ovewloaded in ancestors
     }
 
-    public javax.swing.Action getPreferredAction() {
-        return SystemAction.get(OpenAction.class);
-    }
+//    public javax.swing.Action getPreferredAction() {
+//        return SystemAction.get(OpenAction.class);
+//    }
     
     /** Test whether this node can be renamed.
     * The default implementation assumes it can if this node is {@link #writeable}.
     *
     * @return <code>true</code> if this node can be renamed
     */
+    @Override
     public boolean canRename() {
         return writeable;
     }
@@ -157,6 +157,7 @@ public class PatternNode extends AbstractNode {
     *
     * @return <code>true</code> if this node can be renamed
     */
+    @Override
     public boolean canDestroy () {
         return writeable;
     }
@@ -166,6 +167,7 @@ public class PatternNode extends AbstractNode {
     * @return {@link ExTransferable.Single} with one flavor, {@link NodeTransfer#nodeCopyFlavor}
     * @throws IOException if it could not copy
     */
+    @Override
     public Transferable clipboardCopy () throws IOException {
         //PENDING
         return super.clipboardCopy();
@@ -176,6 +178,7 @@ public class PatternNode extends AbstractNode {
     * @return {@link ExTransferable.Single} with one flavor, {@link NodeTransfer#nodeCopyFlavor}
     * @throws IOException if it could not cut
     */
+    @Override
     public Transferable clipboardCut () throws IOException {
         if (!writeable)
             throw new IOException();
@@ -188,6 +191,7 @@ public class PatternNode extends AbstractNode {
     * The default implementation returns <code>true</code>.
     * @return <code>true</code> if it can
     */
+    @Override
     public boolean canCopy () {
         return true;
     }
@@ -196,18 +200,25 @@ public class PatternNode extends AbstractNode {
     * The default implementation assumes it can if this node is {@link #writeable}.
     * @return <code>true</code> if it can
     */
+    @Override
     public boolean canCut () {
         return writeable;
     }
 
-    /** Set all actions for this node.
-    * @param actions new list of actions
-    */
-    public void setActions(SystemAction[] actions) {
-        systemActions = actions;
+    @Override
+    public Action[] getActions(boolean context) {
+        return DEFAULT_ACTIONS;
     }
 
+//    /** Set all actions for this node.
+//    * @param actions new list of actions
+//    */
+//    public void setActions(SystemAction[] actions) {
+//        systemActions = actions;
+//    }
+
     /** Sets the name of the node */
+    @Override
     public final void setName( String name ) {
 //        try {
 //            BeanUtils.beginTrans(true);
