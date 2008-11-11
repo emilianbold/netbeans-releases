@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.project.connections.sftp;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -48,6 +49,7 @@ import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -55,6 +57,7 @@ import org.openide.windows.InputOutput;
  */
 public final class SftpConnectionProvider implements RemoteConnectionProvider {
     private static final String SFTP_CONNECTION_TYPE = "SFTP"; // NOI18N
+    private static final SshFiles UNKNOWN_SSH_FILES = new SshFiles();
 
     static final String TYPE = "type"; // NOI18N
     static final String HOST = "host"; // NOI18N
@@ -79,7 +82,7 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
     ));
     private static final int DEFAULT_PORT = 22;
     private static final int DEFAULT_TIMEOUT = 30;
-    private static final String DEFAULT_INITIAL_DIRECTORY = "/"; // NOI18N
+    private static final String DEFAULT_INITIAL_DIRECTORY = "/var/www"; // NOI18N
 
     private SftpConnectionProvider() {
     }
@@ -97,14 +100,14 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
     }
 
     public RemoteConfiguration createRemoteConfiguration(ConfigManager.Configuration configuration) {
+        SshFiles sshFiles = getDefaultSshFiles();
         configuration.putValue(TYPE, SFTP_CONNECTION_TYPE);
         configuration.putValue(HOST, ""); // NOI18N
         configuration.putValue(PORT, String.valueOf(DEFAULT_PORT));
         configuration.putValue(USER, ""); // NOI18N
         configuration.putValue(PASSWORD, ""); // NOI18N
-        // XXX improve it!
-        configuration.putValue(KNOWN_HOSTS_FILE, ""); // NOI18N
-        configuration.putValue(IDENTITY_FILE, ""); // NOI18N
+        configuration.putValue(KNOWN_HOSTS_FILE, sshFiles.getKnownHostsFile());
+        configuration.putValue(IDENTITY_FILE, sshFiles.getIdentityFile());
         configuration.putValue(INITIAL_DIRECTORY, DEFAULT_INITIAL_DIRECTORY);
         configuration.putValue(TIMEOUT, String.valueOf(DEFAULT_TIMEOUT));
 
@@ -137,5 +140,65 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
     private boolean accept(ConfigManager.Configuration configuration) {
         String type = configuration.getValue(TYPE);
         return SFTP_CONNECTION_TYPE.equals(type);
+    }
+
+    private SshFiles getDefaultSshFiles() {
+        if (Utilities.isWindows()) {
+            return getDefaultWindowsSshFiles();
+        } else if (Utilities.isUnix()) {
+            return getDefaultUnixSshFiles();
+        }
+        return UNKNOWN_SSH_FILES;
+    }
+
+    private SshFiles getDefaultUnixSshFiles() {
+        String identityFile = ""; // NOI18N
+        String knownHostsFile = ""; // NOI18N
+
+        File sshDir = new File(System.getProperty("user.home"), ".ssh"); // NOI18N
+        File dsaKey = new File(sshDir, "id_dsa"); // NOI18N
+        File rsaKey = new File(sshDir, "id_rsa"); // NOI18N
+        if (dsaKey.isFile()) {
+            identityFile = dsaKey.getAbsolutePath();
+        } else if (rsaKey.isFile()) {
+            identityFile = rsaKey.getAbsolutePath();
+        }
+        File knownHosts = new File(sshDir, "known_hosts"); // NOI18N
+        if (knownHosts.isFile()) {
+            knownHostsFile = knownHosts.getAbsolutePath();
+        }
+
+        return new SshFiles(identityFile, knownHostsFile);
+    }
+
+    // XXX who knows? who cares...
+    private SshFiles getDefaultWindowsSshFiles() {
+        return UNKNOWN_SSH_FILES;
+    }
+
+    private static final class SshFiles {
+        private final String identityFile;
+        private final String knownHostsFile;
+
+        /** Constructor for no SSH files. */
+        public SshFiles() {
+            this("", ""); // NOI18N
+        }
+
+        public SshFiles(String identityFile, String knownHostsFile) {
+            assert identityFile != null;
+            assert knownHostsFile != null;
+
+            this.identityFile = identityFile;
+            this.knownHostsFile = knownHostsFile;
+        }
+
+        public String getIdentityFile() {
+            return identityFile;
+        }
+
+        public String getKnownHostsFile() {
+            return knownHostsFile;
+        }
     }
 }
