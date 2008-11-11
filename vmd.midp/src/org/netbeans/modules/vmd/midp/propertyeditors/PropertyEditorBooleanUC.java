@@ -315,8 +315,10 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         }
 
         void cleanUp() {
-            checkBox.removeActionListener(this);
-            checkBox = null;
+            if (checkBox != null) {
+                checkBox.removeActionListener(this);
+                checkBox = null;
+            }
             this.removeAll();
         }
 
