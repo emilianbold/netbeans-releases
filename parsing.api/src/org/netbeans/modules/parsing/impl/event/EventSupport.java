@@ -152,10 +152,14 @@ public final class EventSupport {
      */
     private void resetStateImpl() {
         if (!k24) {
-            SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CurrentEditorTaskScheduller.class);
-            SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CurrentDocumentScheduller.class);
-            SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(SelectedNodesScheduller.class);
-            SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CursorSensitiveScheduller.class);
+            //todo: threading flags cleaned in the TaskProcessor.resetStateImpl
+            final boolean reschedule = SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.RESCHEDULE_FINISHED_TASKS);
+            if (reschedule) {
+                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CurrentEditorTaskScheduller.class);
+                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CurrentDocumentScheduller.class);
+                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(SelectedNodesScheduller.class);
+                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CursorSensitiveScheduller.class);
+            }
             TaskProcessor.resetStateImpl (this.source);
         }
     }
