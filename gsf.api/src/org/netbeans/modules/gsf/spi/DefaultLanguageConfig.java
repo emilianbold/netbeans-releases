@@ -74,6 +74,12 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
         return null;
     }
 
+    //the method is not added to the GsfLanguage interface so far
+    //so compatibility is preserved
+    public CommentHandler getCommentHandler() {
+        return null;
+    }
+
     public boolean isIdentifierChar(char c) {
         return Character.isJavaIdentifierPart(c);
     }
