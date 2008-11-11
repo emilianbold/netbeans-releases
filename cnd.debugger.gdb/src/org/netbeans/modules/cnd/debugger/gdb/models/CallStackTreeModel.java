@@ -69,7 +69,7 @@ public class CallStackTreeModel implements TreeModel {
     
    
     public CallStackTreeModel(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
     /** 
@@ -163,17 +163,17 @@ public class CallStackTreeModel implements TreeModel {
      */
     private static class Listener implements PropertyChangeListener {
         
-        private GdbDebugger debugger;
-        private WeakReference model;
+        private final GdbDebugger debugger;
+        private final WeakReference<CallStackTreeModel> model;
         
         public Listener(CallStackTreeModel tm, GdbDebugger debugger) {
             this.debugger = debugger;
-            model = new WeakReference(tm);
+            model = new WeakReference<CallStackTreeModel>(tm);
             debugger.addPropertyChangeListener(this);
         }
         
         private CallStackTreeModel getModel() {
-            CallStackTreeModel tm = (CallStackTreeModel) model.get();
+            CallStackTreeModel tm = model.get();
             if (tm == null) {
                 destroy();
             }

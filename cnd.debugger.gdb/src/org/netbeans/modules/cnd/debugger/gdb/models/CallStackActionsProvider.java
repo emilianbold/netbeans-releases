@@ -93,7 +93,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     private final GdbDebugger debugger;
 
     public CallStackActionsProvider(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
     public Action[] getActions(Object node) throws UnknownTypeException {

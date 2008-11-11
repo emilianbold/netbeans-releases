@@ -44,10 +44,11 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import java.util.WeakHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.DebuggerManager;
@@ -74,14 +75,14 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
 
     private final GdbDebugger debugger;
     private Listener listener;
-    private final Vector<ModelListener> listeners = new Vector<ModelListener>();
+    private final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
     private final Map<Watch, AbstractVariable> watchToVariable = new WeakHashMap<Watch, AbstractVariable>(); 
     private final Set<Object> expandedNodes = new WeakSet<Object>();
     private final Set<Object> collapsedNodes = new WeakSet<Object>();
     private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public WatchesTreeModel(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
         debugger.addPropertyChangeListener(this);
     }
 
@@ -213,30 +214,24 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
     }
     
     protected void fireTreeChanged() {
-        Vector v = (Vector) listeners.clone();
-        int i, k = v.size();
         log.fine("WTM.fireTreeChanged[" + Thread.currentThread().getName() + "]:");
         ModelEvent event = new ModelEvent.TreeChanged(this);
-        for (i = 0; i < k; i++) {
-            ((ModelListener) v.get(i)).modelChanged (event);
+        for (ModelListener l : listeners) {
+            l.modelChanged(event);
         }
     }
     
     private void fireWatchesChanged() {
-        Vector v = (Vector) listeners.clone();
-        int i, k = v.size();
         ModelEvent event = new ModelEvent.NodeChanged(this, ROOT, ModelEvent.NodeChanged.CHILDREN_MASK);
-        for (i = 0; i < k; i++) {
-            ((ModelListener) v.get(i)).modelChanged(event);
+        for (ModelListener l : listeners) {
+            l.modelChanged(event);
         }
     }
         
     void fireTableValueChanged(Object node, String propertyName) {
-        Vector v = (Vector) listeners.clone();
         log.fine("WTM.fireTableValueChanged[" + Thread.currentThread().getName() + "]:");
-        int i, k = v.size();
-        for (i = 0; i < k; i++) {
-            ((ModelListener) v.get(i)).modelChanged(new ModelEvent.TableValueChanged(this, node, propertyName));
+        for (ModelListener l : listeners) {
+            l.modelChanged(new ModelEvent.TableValueChanged(this, node, propertyName));
         }
     }
   

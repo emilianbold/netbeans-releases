@@ -109,11 +109,10 @@ public class PopToHereActionProvider extends GdbDebuggerActionProvider {
         });
     }    
     protected void checkEnabled(GdbDebugger.State debuggerState) {
-        Iterator i = getActions().iterator();
-        while (i.hasNext()) {
-            setEnabled(i.next(), debuggerState == GdbDebugger.State.STOPPED &&
-                    getDebugger().getStackDepth() > 1);
+        boolean enable = debuggerState == GdbDebugger.State.STOPPED &&
+                    getDebugger().getStackDepth() > 1;
+        for (Object action : getActions()) {
+            setEnabled(action, enable);
         }
     }
-    
 }

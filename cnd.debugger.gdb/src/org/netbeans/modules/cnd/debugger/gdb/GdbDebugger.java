@@ -165,14 +165,14 @@ public class GdbDebugger implements PropertyChangeListener {
     private final PropertyChangeSupport pcs;
     private String runDirectory;
     private String baseDir;
-    private final ArrayList<CallStackFrame> callstack = new ArrayList<CallStackFrame>();
+    private final List<CallStackFrame> callstack = new ArrayList<CallStackFrame>();
     private final GdbEngineProvider gdbEngineProvider;
     private CallStackFrame currentCallStackFrame;
     public final Object LOCK = new Object();
     private long programPID = 0;
     private double gdbVersion = 6.4;
     private boolean continueAfterFirstStop = true;
-    private final ArrayList<GdbVariable> localVariables = new ArrayList<GdbVariable>();
+    private final List<GdbVariable> localVariables = new ArrayList<GdbVariable>();
     private final Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
     private final Map<Integer, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<Integer, BreakpointImpl>());
     private final List<String> temporaryBreakpoints = new ArrayList<String>();
@@ -240,10 +240,10 @@ public class GdbDebugger implements PropertyChangeListener {
 
         setStarting();
         try {
-            pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+            pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
             hkey = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getName();
             pathMap = HostInfoProvider.getDefault().getMapper(hkey);
-            iotab = (InputOutput) lookupProvider.lookupFirst(null, InputOutput.class);
+            iotab = lookupProvider.lookupFirst(null, InputOutput.class);
             if (iotab != null) {
                 iotab.setErrSeparated(false);
             }
@@ -289,7 +289,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 boolean isSharedLibrary = false;
                 final String path = getFullPath(runDirectory, pae.getExecutable());
 
-                programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
+                programPID = lookupProvider.lookupFirst(null, Long.class);
                 if (((MakeConfiguration) pae.getConfiguration()).isDynamicLibraryConfiguration()) {
                     pgm = getExePath(programPID);
                     gdb.file_exec_and_symbols(pgm);
@@ -419,7 +419,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);
                 } catch (Exception ex) {
                     ErrorManager.getDefault().notify(ex);
-                    ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
+                    (lookupProvider.lookupFirst(null, Session.class)).kill();
                 }
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     String msg = gdb.info_threads().getResponse(); // we get the PID from this...
@@ -502,7 +502,7 @@ public class GdbDebugger implements PropertyChangeListener {
         if (currentEngine == null) {
             return null;
         }
-        return (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
+        return currentEngine.lookupFirst(null, GdbDebugger.class);
     }
 
     private String getCompilerSetPath(ProjectActionEvent pae) {
@@ -865,7 +865,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 firePropertyChange(PROP_KILLTERM, true, false);
             }
             if (gdb != null) {
-                ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+                ProjectActionEvent pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                 if (state == State.RUNNING) {
                     gdb.exec_interrupt();
                     if (pae.getID() != DEBUG_ATTACH) {
@@ -884,7 +884,7 @@ public class GdbDebugger implements PropertyChangeListener {
             programPID = 0;
             removeRTCBreakpoint();
             gdbEngineProvider.getDestructor().killEngine();
-            GdbActionHandler gah = (GdbActionHandler) lookupProvider.lookupFirst(null, GdbActionHandler.class);
+            GdbActionHandler gah = lookupProvider.lookupFirst(null, GdbActionHandler.class);
             if (gah != null) { // gah is null if we attached (but we don't need it then)
                 gah.executionFinished(0);
             }
@@ -1052,7 +1052,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                         "ERR_CantAttach"))); // NOI18N
-                ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
+                (lookupProvider.lookupFirst(null, Session.class)).kill();
             } else if (msg.startsWith("\"No symbol ") && msg.endsWith(" in current context.\"")) { // NOI18N
                 String type = msg.substring(13, msg.length() - 23);
                 log.warning("Failed type lookup for " + type);
@@ -1063,7 +1063,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                         "ERR_CorruptedStack"))); // NOI18N
-                ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
+                (lookupProvider.lookupFirst(null, Session.class)).kill();
             } else if (msg.contains("error reading line numbers")) { // NOI18N
                 DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
@@ -1072,7 +1072,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                         "ERR_NoSymbolTable"))); // NOI18N
-                ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
+                (lookupProvider.lookupFirst(null, Session.class)).kill();
             } else if (msg.contains("Cannot access memory at address")) { // NOI18N
                 // ignore - probably dereferencing an uninitialized pointer
             } else if (msg.contains("mi_cmd_break_insert: Garbage following <location>")) { // NOI18N
@@ -1937,8 +1937,7 @@ public class GdbDebugger implements PropertyChangeListener {
     public static void attach(String pid, ProjectInformation pinfo) throws DebuggerStartException {
         Project project = pinfo.getProject();
         ConfigurationDescriptorProvider cdp =
-                (ConfigurationDescriptorProvider) project.getLookup().
-                lookup(ConfigurationDescriptorProvider.class);
+                project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (cdp != null) {
             MakeConfigurationDescriptor mcd =
                     (MakeConfigurationDescriptor) cdp.getConfigurationDescriptor();
@@ -2075,7 +2074,7 @@ public class GdbDebugger implements PropertyChangeListener {
     public List<GdbVariable> getLocalVariables() {
         assert !(Thread.currentThread().getName().equals("GdbReaderRP"));
         synchronized (localVariables) {
-            return (List<GdbVariable>) localVariables.clone();
+            return new ArrayList<GdbVariable>(localVariables);
         }
     }
 
@@ -2233,7 +2232,7 @@ public class GdbDebugger implements PropertyChangeListener {
      *
      * @return call stack
      */
-    public ArrayList<CallStackFrame> getCallStack() {
+    public List<CallStackFrame> getCallStack() {
         return callstack;
     }
 
@@ -2505,7 +2504,7 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     private boolean isAttaching() {
-        ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+        ProjectActionEvent pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
         return pae.getID() == DEBUG_ATTACH;
     }
 
@@ -2563,7 +2562,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 sourceDirs = new ArrayList<String>();
 
                 if (project != null) {
-                    NativeProject nativeProject = (NativeProject) project.getLookup().lookup(NativeProject.class);
+                    NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
                     if (nativeProject != null) {
                         sourceDirs.add(nativeProject.getProjectRoot());
                         for (String dir : nativeProject.getSourceRoots()) {
@@ -2581,7 +2580,7 @@ public class GdbDebugger implements PropertyChangeListener {
             MakeConfiguration conf;
 
             for (Project proj : OpenProjects.getDefault().getOpenProjects()) {
-                ProjectConfigurationProvider pcp = (ProjectConfigurationProvider) proj.getLookup().lookup(ProjectConfigurationProvider.class);
+                ProjectConfigurationProvider pcp = proj.getLookup().lookup(ProjectConfigurationProvider.class);
                 if (pcp != null) {
                     o = pcp.getActiveConfiguration();
                     if (o instanceof MakeConfiguration) {
