@@ -703,8 +703,8 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 if (!m.find(0)) {
                     return null;
                 }
+                m.reset();
                 matcher = m;
-                matcher.reset();
                 lastSearchString = s;
                 return matcher;
             }
