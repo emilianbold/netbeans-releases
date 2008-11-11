@@ -427,22 +427,13 @@ public class SftpClient implements RemoteClient {
             JOptionPane.showMessageDialog(null, message);
         }
 
-        final GridBagConstraints gbc =
-                new GridBagConstraints(0, 0, 1, 1, 1, 1,
-                GridBagConstraints.NORTHWEST,
-                GridBagConstraints.NONE,
-                new Insets(0, 0, 0, 0), 0, 0);
+        // taken from examples from JSCh library
+        final GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 1, 1,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
         private Container panel;
 
         public String[] promptKeyboardInteractive(String destination, String name, String instruction,
                 String[] prompt, boolean[] echo) {
-
-System.out.println("promptKeyboardInteractive");
-System.out.println("destination: "+destination);
-System.out.println("name: "+name);
-System.out.println("instruction: "+instruction);
-System.out.println("prompt.length: "+prompt.length);
-System.out.println("prompt: "+prompt[0]);
 
             panel = new JPanel();
             panel.setLayout(new GridBagLayout());
@@ -475,7 +466,7 @@ System.out.println("prompt: "+prompt[0]);
             }
 
             if (JOptionPane.showConfirmDialog(null, panel,
-                    destination + ": " + name,
+                    destination + ": " + name, // NOI18N
                     JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
                 String[] response = new String[prompt.length];
