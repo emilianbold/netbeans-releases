@@ -63,7 +63,7 @@ import org.openide.util.RequestProcessor;
  * @author Gordon Prieur (copied from Jan Jancura's and Martin Entlicher's JPDA implementation)
  */
 public class CallStackTreeModel implements TreeModel {
-    private GdbDebugger     debugger;
+    private final GdbDebugger     debugger;
     private final Collection listeners = new HashSet();
     private Listener            listener;
     
@@ -78,7 +78,7 @@ public class CallStackTreeModel implements TreeModel {
      */
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent.equals(ROOT)) {
-	    return debugger.getCallStackFrames(from, to);
+	    return getCallStackFrames(from, to);
         } else {
 	    throw new UnknownTypeException(parent);
 	}
@@ -154,6 +154,27 @@ public class CallStackTreeModel implements TreeModel {
         ModelEvent ev = new ModelEvent.TreeChanged(this);
         for (int i = 0; i < ls.length; i++) {
             ((ModelListener) ls[i]).modelChanged(ev);
+        }
+    }
+
+    /**
+     * Returns call stack for this debugger.
+     *
+     * @param from Starting frame
+     * @param to Ending frame (one beyond what we want)
+     * @return call stack
+     */
+    private CallStackFrame[] getCallStackFrames(int from, int to) {
+        int cnt = to - from;
+
+        if ((from + cnt) <= debugger.getStackDepth()) {
+            CallStackFrame[] frames = new CallStackFrame[cnt];
+            for (int i = 0; i < cnt; i++) {
+                frames[i] = debugger.getCallStack().get(from + i);
+            }
+            return frames;
+        } else {
+            return new CallStackFrame[0];
         }
     }
     
