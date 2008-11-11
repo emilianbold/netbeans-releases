@@ -45,7 +45,6 @@ import java.beans.PropertyChangeEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -152,9 +151,8 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
     
     static BreakpointsReader findBreakpointsReader() {
         BreakpointsReader breakpointsReader = null;
-        Iterator i = DebuggerManager.getDebuggerManager().lookup(null, Reader.class).iterator();
-        while (i.hasNext ()) {
-            Reader r = (Reader) i.next ();
+        List<? extends Reader> readers = DebuggerManager.getDebuggerManager().lookup(null, Reader.class);
+        for (Reader r : readers) {
             String[] ns = r.getSupportedClassNames ();
             if (ns.length == 1 && GdbBreakpoint.class.getName().equals(ns[0])) {
                 breakpointsReader = (BreakpointsReader) r;
