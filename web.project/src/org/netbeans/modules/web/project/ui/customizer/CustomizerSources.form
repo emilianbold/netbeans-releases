@@ -27,8 +27,8 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="webInfTextField" alignment="0" pref="360" max="32767" attributes="2"/>
-                                  <Component id="jTextFieldWebPages" alignment="0" pref="360" max="32767" attributes="2"/>
+                                  <Component id="webInfTextField" alignment="0" pref="380" max="32767" attributes="2"/>
+                                  <Component id="jTextFieldWebPages" alignment="0" pref="380" max="32767" attributes="2"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
@@ -37,7 +37,7 @@
                               </Group>
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="projectLocation" pref="436" max="32767" attributes="0"/>
+                          <Component id="projectLocation" pref="465" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="testRootsPanel" alignment="0" max="32767" attributes="0"/>
@@ -150,6 +150,11 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="webInfTextField">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="AD_CustomizerSources_webInfFolder" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JButton" name="webInfBrowseButton">
       <Properties>
@@ -160,6 +165,11 @@
           <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="LBL_WebInf_Browse_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="AD_CustomizerSources_webInfFolderBrowse" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="webInfBrowseButtonActionPerformed"/>
       </Events>
@@ -169,9 +179,9 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="jLabel2" alignment="0" pref="560" max="32767" attributes="0"/>
+              <Component id="jLabel2" alignment="0" pref="563" max="32767" attributes="0"/>
               <Group type="102" alignment="1" attributes="0">
-                  <Component id="jScrollPane1" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" pref="456" max="32767" attributes="0"/>
                   <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" max="-2" attributes="0">
                       <Component id="addSourceRoot" alignment="1" max="32767" attributes="1"/>
@@ -307,7 +317,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="jLabel3" alignment="0" pref="560" max="32767" attributes="0"/>
+              <Component id="jLabel3" alignment="0" pref="563" max="32767" attributes="0"/>
               <Group type="102" alignment="1" attributes="0">
                   <Component id="jScrollPane2" pref="456" max="32767" attributes="0"/>
                   <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
@@ -460,8 +470,8 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="encoding" pref="251" max="32767" attributes="0"/>
-                          <Component id="jComboBoxSourceLevel" alignment="0" pref="251" max="32767" attributes="0"/>
+                          <Component id="encoding" pref="302" max="32767" attributes="0"/>
+                          <Component id="jComboBoxSourceLevel" alignment="0" pref="302" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -525,6 +535,11 @@
                   <StringArray count="0"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="AD_Encoding" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
           </SubComponents>
         </Container>
@@ -534,6 +549,11 @@
               <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="CustomizerSources.includeExcludeButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="AD_InclExclButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="includeExcludeButtonActionPerformed"/>
           </Events>
