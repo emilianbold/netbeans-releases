@@ -70,22 +70,22 @@ public class CustomJavac extends Javac {
 
     @Override
     protected void compile() {
+        if (processorPath != null && processorPath.size() > 0) {
+            createCompilerArg().setValue("-processorpath");
+            createCompilerArg().setPath(processorPath);
+        }
+        createCompilerArg().setValue("-implicit:class");
         String specifiedCompiler = getProject().getProperty("build.compiler");
         if (specifiedCompiler != null) {
             if (specifiedCompiler.equals("extJavac")) {
                 log("JSR 269 not found, loading from " + javacClasspath);
                 createCompilerArg().setValue("-J-Xbootclasspath/p:" + javacClasspath);
             } else {
-                log("Warning: build.compiler=" + specifiedCompiler + " so disabling JSR 269 annotation processing", Project.MSG_WARN);
+                log("Warning: build.compiler=" + specifiedCompiler + " so JSR 269 annotation processing may not work", Project.MSG_WARN);
             }
             super.compile();
             return;
         }
-        if (processorPath != null && processorPath.size() > 0) {
-            createCompilerArg().setValue("-processorpath");
-            createCompilerArg().setPath(processorPath);
-        }
-        createCompilerArg().setValue("-implicit:class");
         try {
             Class.forName("javax.tools.JavaCompiler");
             // Fine, have 269 in process, proceed...

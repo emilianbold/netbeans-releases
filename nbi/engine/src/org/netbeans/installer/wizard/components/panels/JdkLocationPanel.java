@@ -263,36 +263,48 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         
         jdkLocation = getJavaAlreadySelectedForProduct();
         if (jdkLocation != null) {
+            LogManager.log("... use Java that is already selected for the product: "  + jdkLocation);
             return jdkLocation;
         }
 
         jdkLocation = getJavaFromSystemProperty();
         if (jdkLocation != null) {
+            LogManager.log("... use Java that is passed via a system property: "  + jdkLocation);
             return jdkLocation;
         }
 
         jdkLocation = getJavaAlreadySelectedGlobal();
         if (jdkLocation != null) {
+            LogManager.log("... use Java that is already selected for another product which be installed: " + jdkLocation);
             return jdkLocation;
         }
 
         jdkLocation = getJavaBundledAndInstalled();
         if (jdkLocation != null) {
+            LogManager.log("... use Java that is bundled and installed: "  + jdkLocation);
             return jdkLocation;
         }
 
         jdkLocation = getJavaFromInstalledProductProperties();
         if (jdkLocation != null) {
+            LogManager.log("... use Java from properties of installed products: "  + jdkLocation);
             return jdkLocation;
         }
 
         jdkLocation = getJavaPreferredVersionLocation();
         if (jdkLocation != null) {
+            LogManager.log("... use Java based on the preferred version: "  + jdkLocation);
             return jdkLocation;
         }
         
         jdkLocation = getJavaFirstItemInTheList();
-        return (jdkLocation != null) ? jdkLocation : new File(StringUtils.EMPTY_STRING);
+        if (jdkLocation != null) {
+            LogManager.log("... use Java from the first item in the overall list: "  + jdkLocation);
+            return jdkLocation;
+        } else {
+            LogManager.log("... no Java found");
+            return new File(StringUtils.EMPTY_STRING);
+        }
     }
     
     private File getJavaFirstItemInTheList() {

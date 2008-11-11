@@ -55,6 +55,8 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElement;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
+import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionResultSet;
+import org.netbeans.modules.db.sql.editor.api.completion.SubstitutionHandler;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 
 /**
@@ -65,11 +67,11 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
 
     private final List<SQLCompletionItem> items = new ArrayList<SQLCompletionItem>();
     private final Quoter quoter;
-    private final int itemOffset;
+    private final SubstitutionHandler substitutionHandler;
 
-    public SQLCompletionItems(Quoter quoter, int itemOffset) {
+    public SQLCompletionItems(Quoter quoter, SubstitutionHandler substitutionHandler) {
         this.quoter = quoter;
-        this.itemOffset = itemOffset;
+        this.substitutionHandler = substitutionHandler;
     }
 
     public Set<String> addCatalogs(Metadata metadata, Set<String> restrict, String prefix, final boolean quote, final int substitutionOffset) {
@@ -77,7 +79,7 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         filterMetadata(metadata.getCatalogs(), restrict, prefix, new Handler<Catalog>() {
             public void handle(Catalog catalog) {
                 String catalogName = catalog.getName();
-                items.add(SQLCompletionItem.catalog(catalogName, doQuote(catalogName, quote), itemOffset + substitutionOffset));
+                items.add(SQLCompletionItem.catalog(catalogName, doQuote(catalogName, quote), substitutionOffset, substitutionHandler));
             }
         });
         return result;
@@ -89,7 +91,7 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
             public void handle(Schema schema) {
                 if (!schema.isSynthetic()) {
                     String schemaName = schema.getName();
-                    items.add(SQLCompletionItem.schema(schemaName, doQuote(schemaName, quote), itemOffset + substitutionOffset));
+                    items.add(SQLCompletionItem.schema(schemaName, doQuote(schemaName, quote), substitutionOffset, substitutionHandler));
                 }
             }
         });
@@ -100,7 +102,7 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         filterMetadata(schema.getTables(), restrict, prefix, new Handler<Table>() {
             public void handle(Table table) {
                 String tableName = table.getName();
-                items.add(SQLCompletionItem.table(tableName, doQuote(tableName, quote), itemOffset + substitutionOffset));
+                items.add(SQLCompletionItem.table(tableName, doQuote(tableName, quote), substitutionOffset, substitutionHandler));
             }
         });
     }
@@ -109,7 +111,7 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         filterMap(aliases, null, prefix, new ParamHandler<String, QualIdent>() {
             public void handle(String alias, QualIdent tableName) {
                 // Issue 145173: do not quote aliases.
-                items.add(SQLCompletionItem.alias(alias, tableName, alias, itemOffset + substitutionOffset));
+                items.add(SQLCompletionItem.alias(alias, tableName, alias, substitutionOffset, substitutionHandler));
             }
         });
     }
@@ -129,12 +131,16 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         filterMetadata(table.getColumns(), null, prefix, new Handler<Column>() {
             public void handle(Column column) {
                 String columnName = column.getName();
-                items.add(SQLCompletionItem.column(qualTableName, columnName, doQuote(columnName, quote), itemOffset + substitutionOffset));
+                items.add(SQLCompletionItem.column(qualTableName, columnName, doQuote(columnName, quote), substitutionOffset, substitutionHandler));
             }
         });
     }
 
     public void fill(CompletionResultSet resultSet) {
+        resultSet.addAllItems(items);
+    }
+
+    public void fill(SQLCompletionResultSet resultSet) {
         resultSet.addAllItems(items);
     }
 
