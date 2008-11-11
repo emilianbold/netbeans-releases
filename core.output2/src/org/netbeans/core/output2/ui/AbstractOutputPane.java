@@ -569,8 +569,14 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             }
         }
     }
-    
+
+    /** last pressed position for hyperlink test */
+    private int lastPressedPos = -1;
+
     public void mousePressed(MouseEvent e) {
+        if (e.getSource() == textView && SwingUtilities.isLeftMouseButton(e)) {
+            lastPressedPos = textView.viewToModel(e.getPoint());
+        }
         if (locked && !e.isPopupTrigger()) {
             Element el = getDocument().getDefaultRootElement().getElement(getLineCount()-1);
             getCaret().setDot(el.getStartOffset());
@@ -595,13 +601,14 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     public final void mouseReleased(MouseEvent e) {
         if (e.getSource() == textView && SwingUtilities.isLeftMouseButton(e)) {
             int pos = textView.viewToModel(e.getPoint());
-            if (pos != -1) {
+            if (pos != -1 && pos == lastPressedPos) {
                 int line = textView.getDocument().getDefaultRootElement().getElementIndex(pos);
                 if (line >= 0) {
                     lineClicked(line, e.getPoint());
                     e.consume(); //do NOT allow this window's caret to steal the focus from editor window
                 }
             }
+            lastPressedPos = -1;
         }
         if (e.isPopupTrigger()) {
             Point p = SwingUtilities.convertPoint((Component) e.getSource(), 
