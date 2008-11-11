@@ -604,6 +604,9 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     public void lineUpdated(int lineStart, int lineLength, boolean isFinished) {
         synchronized (readLock()) {
             int charLineLength = toCharIndex(lineLength);
+            if (isFinished) {
+                charLineLength -= 1;
+            }
             updateLastLine(lineStartList.size() - 1, charLineLength);
             if (isFinished) {
                 lineStartList.add(lineStart + lineLength);
