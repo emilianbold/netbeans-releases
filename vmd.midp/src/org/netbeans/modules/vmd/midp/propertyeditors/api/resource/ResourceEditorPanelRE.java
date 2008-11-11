@@ -78,27 +78,27 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.actions.GoToSourceSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement.DesignComponentWrapper;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorRE;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorRE.DesignComponentWrapper;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementEvent;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementListener;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
+
 /**
  *
- * @author Anton Chechel
+ * @author Karol Harezlak
  */
-@Deprecated
-class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElementListener, ListSelectionListener, ActionListener, UserCodeAwareness, CleanUp {
+class ResourceEditorPanelRE extends JPanel implements PropertyEditorResourceElementListener, ListSelectionListener, ActionListener, UserCodeAwareness, CleanUp {
 
     private static final String ACTION_ADD_RESOURCE = "addResource"; // NOI18N
     private static final String ACTION_REMOVE_RESOURCE = "removeResource"; // NOI18N
     private static final String COMPONENT_CARD = "componentCard"; // NOI18N
     private static final String USER_CODE_CARD = "userCodeCard"; // NOI18N
     private static long componentIDCounter = -10000L;
-    private PropertyEditorResourceElement element;
+    private PropertyEditorRE element;
     private Map<String, DesignComponentWrapper> wrappersMap;
     private Set<String> changedComponents;
     private String noneComponentAsText;
@@ -109,8 +109,7 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
     private CardLayout ucCardLayout;
 
     
-
-    ResourceEditorPanel(PropertyEditorResourceElement element, String noneComponentAsText, JRadioButton radioButton) {
+    ResourceEditorPanelRE(PropertyEditorRE element, String noneComponentAsText, JRadioButton radioButton) {
         if (noneComponentAsText == null || noneComponentAsText.length() == 0) {
             throw new IllegalArgumentException("Incorrect value of noneComponentAsText: " + noneComponentAsText); // NOI18N
         }
@@ -134,7 +133,10 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
         if (wrappersMap != null) {
             wrappersMap.clear();
         }
-        element = null;
+        if (element != null) {
+            element.getJComponent().removeAll();
+            element = null;
+        }
         wrappersMap = null;
         changedComponents = null;
         componentsList = null;
@@ -154,9 +156,9 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
         componentsList.setCellRenderer(new ComponentsListRenderer());
 
         componentsList.getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(ResourceEditorPanel.class, "ASCN_ResourcesList"));
+                NbBundle.getMessage(ResourceEditorPanelRE.class, "ASCN_ResourcesList"));
         componentsList.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(ResourceEditorPanel.class, "ASCD_ResourcesList"));
+                NbBundle.getMessage(ResourceEditorPanelRE.class, "ASCD_ResourcesList"));
         //componentsList.addListSelectionListener(this);
 //        componentsList.setPreferredSize(new Dimension(120, 140));
         JScrollPane scrollPane = new JScrollPane();
@@ -173,11 +175,11 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
 
         JButton addButton = new JButton();
         Mnemonics.setLocalizedText(addButton,
-                NbBundle.getMessage(ResourceEditorPanel.class, "LBL_ADD_COMPONENT")); // NOI18N
+                NbBundle.getMessage(ResourceEditorPanelRE.class, "LBL_ADD_COMPONENT")); // NOI18N
         addButton.getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(ResourceEditorPanel.class, "ACSN_ADD_COMPONENT")); // NOI18N
+                NbBundle.getMessage(ResourceEditorPanelRE.class, "ACSN_ADD_COMPONENT")); // NOI18N
         addButton.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(ResourceEditorPanel.class, "ACSD_ADD_COMPONENT")); // NOI18N
+                NbBundle.getMessage(ResourceEditorPanelRE.class, "ACSD_ADD_COMPONENT")); // NOI18N
         addButton.setActionCommand(ACTION_ADD_RESOURCE);
         addButton.addActionListener(this);
         constraints.insets = new Insets(6, 0, 0, 12);
@@ -192,11 +194,11 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
 
         JButton removeButton = new JButton();
         Mnemonics.setLocalizedText(removeButton,
-                NbBundle.getMessage(ResourceEditorPanel.class, "LBL_REMOVE_COMPONENT")); // NOI18N
+                NbBundle.getMessage(ResourceEditorPanelRE.class, "LBL_REMOVE_COMPONENT")); // NOI18N
         removeButton.getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(ResourceEditorPanel.class, "ACSN_REMOVE_COMPONENT")); // NOI18N
+                NbBundle.getMessage(ResourceEditorPanelRE.class, "ACSN_REMOVE_COMPONENT")); // NOI18N
         removeButton.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(ResourceEditorPanel.class, "ACSD_REMOVE_COMPONENT")); // NOI18N
+                NbBundle.getMessage(ResourceEditorPanelRE.class, "ACSD_REMOVE_COMPONENT")); // NOI18N
         removeButton.setActionCommand(ACTION_REMOVE_RESOURCE);
         removeButton.addActionListener(this);
         constraints.insets = new Insets(6, 0, 0, 12);
@@ -231,12 +233,12 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
         this.addAncestorListener(new AncestorListener() {
 
             public void ancestorAdded(AncestorEvent event) {
-                componentsList.removeListSelectionListener(ResourceEditorPanel.this);
-                componentsList.addListSelectionListener(ResourceEditorPanel.this);
+                componentsList.removeListSelectionListener(ResourceEditorPanelRE.this);
+                componentsList.addListSelectionListener(ResourceEditorPanelRE.this);
             }
 
             public void ancestorRemoved(AncestorEvent event) {
-                componentsList.removeListSelectionListener(ResourceEditorPanel.this);
+                componentsList.removeListSelectionListener(ResourceEditorPanelRE.this);
             }
 
             public void ancestorMoved(AncestorEvent event) {

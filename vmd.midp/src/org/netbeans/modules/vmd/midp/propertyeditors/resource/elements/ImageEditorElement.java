@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.midp.propertyeditors.resource.elements;
 
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorRE;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -84,6 +85,11 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Anton Chechel
+ */
+@Deprecated
+/**
+ * Use ImageEE instead
+ *
  */
 public class ImageEditorElement extends PropertyEditorResourceElement implements Runnable, CleanUp {
 
@@ -242,7 +248,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         chooserButton.setEnabled(isEnabled);
     }
 
-    private void updateModel(DesignDocument document) {
+    public void updateModel(DesignDocument document) {
         boolean isEnabled = pathTextComboBox.isEnabled();
         pathTextComboBox.setEnabled(false);
         doNotFireEvent = true;
@@ -667,6 +673,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
             fireElementChanged(componentID, ImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(text != null ? text : "")); // NOI18N
             updatePreview();
         }
+        this.repaint();
     }
 
     private void previewPanelComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_previewPanelComponentResized
