@@ -41,6 +41,8 @@ package org.netbeans.modules.php.project.connections.sftp;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -56,6 +58,8 @@ import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
+import org.netbeans.modules.php.project.ui.LastUsedFolders;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.awt.Mnemonics;
@@ -244,12 +248,16 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         identityFileLabel.setLabelFor(identityFileTextField);
 
 
-
-        Mnemonics.setLocalizedText(identityFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(identityFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileLabel.text"));
         identityFileTextField.setText(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileTextField.text")); // NOI18N
         Mnemonics.setLocalizedText(identityFileBrowseButton, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileBrowseButton.text"));
-        knownHostsFileLabel.setLabelFor(knownHostsFileTextField);
+        identityFileBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                identityFileBrowseButtonActionPerformed(evt);
+            }
+        });
 
+        knownHostsFileLabel.setLabelFor(knownHostsFileTextField);
 
 
 
@@ -258,6 +266,11 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         Mnemonics.setLocalizedText(knownHostsFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileLabel.text"));
         knownHostsFileTextField.setText(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileTextField.text")); // NOI18N
         Mnemonics.setLocalizedText(knownHostsFileBrowseButton, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileBrowseButton.text"));
+        knownHostsFileBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                knownHostsFileBrowseButtonActionPerformed(evt);
+            }
+        });
         Mnemonics.setLocalizedText(initialDirectoryLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.initialDirectoryLabel.text"));
         Mnemonics.setLocalizedText(timeoutLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.timeoutLabel.text"));
         timeoutTextField.setMinimumSize(new Dimension(20, 19));
@@ -350,6 +363,22 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void identityFileBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_identityFileBrowseButtonActionPerformed
+        File newFile = Utils.browseFileAction(this, LastUsedFolders.getPrivateKey(), NbBundle.getMessage(SftpConfigurationPanel.class, "LBL_SelectIdentityFile"));
+        if (newFile != null) {
+            setIdentityFile(newFile.getAbsolutePath());
+            LastUsedFolders.setPrivateKey(newFile);
+        }
+    }//GEN-LAST:event_identityFileBrowseButtonActionPerformed
+
+    private void knownHostsFileBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_knownHostsFileBrowseButtonActionPerformed
+        File newFile = Utils.browseFileAction(this, LastUsedFolders.getKnownHosts(), NbBundle.getMessage(SftpConfigurationPanel.class, "LBL_SelectKnownHostsFile"));
+        if (newFile != null) {
+            setKnownHostsFile(newFile.getAbsolutePath());
+            LastUsedFolders.setKnownHosts(newFile);
+        }
+    }//GEN-LAST:event_knownHostsFileBrowseButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

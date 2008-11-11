@@ -190,6 +190,9 @@
           <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.identityFileBrowseButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="identityFileBrowseButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="knownHostsFileLabel">
       <Properties>
@@ -214,6 +217,9 @@
           <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.knownHostsFileBrowseButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="knownHostsFileBrowseButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="initialDirectoryLabel">
       <Properties>
