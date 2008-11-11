@@ -82,7 +82,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
     protected abstract void performAction(final Document originalDoc, final JTextComponent target, final int offset);
 
     public void performClickAction(Document originalDoc, final int offset, HyperlinkType type) {
-        if (!(originalDoc instanceof Document)) {
+        if (originalDoc == null) {
             return;
         }
 

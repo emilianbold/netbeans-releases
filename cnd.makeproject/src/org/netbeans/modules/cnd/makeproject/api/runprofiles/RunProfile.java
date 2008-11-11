@@ -814,7 +814,7 @@ public class RunProfile implements ConfigurationAuxObject {
         }
         
         public Boolean getValue() {
-            return new Boolean(getBuildFirst());
+            return Boolean.valueOf(getBuildFirst());
         }
         
         public void setValue(Boolean v) {
