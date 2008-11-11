@@ -314,25 +314,26 @@ public final class SourceCache {
 
     //tzezula: probably has race condition
     public void scheduleTasks (Class<? extends Scheduler> schedulerType) {
-        final List<SchedulerTask> reschedule = new ArrayList<SchedulerTask> ();
+        final List<SchedulerTask> remove = new ArrayList<SchedulerTask> ();
         final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
         synchronized (this) {
             if (tasks == null)
                 createTasks ();
-            for (SchedulerTask task : tasks)
-                if (task.getSchedulerClass () == schedulerType ||
-                    task instanceof EmbeddingProvider
-                ) {
-                    if (pendingTasks.remove (task))
+            for (SchedulerTask task : tasks) {
+                if (task.getSchedulerClass () == schedulerType || task instanceof EmbeddingProvider) {
+                    if (pendingTasks.remove (task)) {
                         add.add (task);
-                    else
-                        reschedule.add (task);
+                    }
+                    else {
+                        remove.add (task);
+                        add.add (task);
+                    }
                 }
+            }
         }
-        if (!add.isEmpty ())
-            TaskProcessor.addPhaseCompletionTasks (add, this, schedulerType);
-        if (!reschedule.isEmpty ())
-            TaskProcessor.rescheduleTasks (reschedule, source, schedulerType);
+        if (!add.isEmpty ()) {
+            TaskProcessor.updatePhaseCompletionTask(add, remove, source, this, schedulerType);
+        }
     }
     
     @Override
@@ -344,9 +345,9 @@ public final class SourceCache {
     
     //@NotThreadSafe - has to be called in GuardedBy(this)
     private void removeTasks () {
-        if (tasks != null)
-            for (SchedulerTask task : tasks)
-                TaskProcessor.removePhaseCompletionTask (task, source);
+        if (tasks != null) {
+            TaskProcessor.removePhaseCompletionTasks (tasks, source);
+        }
         tasks = null;
     }
 }

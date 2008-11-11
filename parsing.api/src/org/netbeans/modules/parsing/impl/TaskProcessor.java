@@ -274,7 +274,8 @@ public class TaskProcessor {
      * @task The task to run.
      * @source The source on which the task operates
      */ 
-    public static void addPhaseCompletionTasks(final Collection<SchedulerTask> tasks, final SourceCache cache, Class<? extends Scheduler> schedulerType) {
+    public static void addPhaseCompletionTasks(final Collection<SchedulerTask> tasks, final SourceCache cache,
+            boolean bridge, Class<? extends Scheduler> schedulerType) {
         Parameters.notNull("task", tasks);   //NOI18N
         Parameters.notNull("cache", cache);   //NOI18N
         List<Request> requests = new ArrayList<Request> ();
@@ -284,7 +285,7 @@ public class TaskProcessor {
                 if (includedTasks == null || !includedTasks.matcher(taskClassName).matches())
                     continue;
             }
-            requests.add (new Request (task, cache, true, schedulerType));
+            requests.add (new Request (task, cache, true, bridge, schedulerType));
         }
         if (!requests.isEmpty ())
             handleAddRequests (requests);
@@ -295,34 +296,36 @@ public class TaskProcessor {
      * Removes a aask from scheduled requests.
      * @param task The task to be removed.
      */
-    public static void removePhaseCompletionTask(final SchedulerTask task, final Source source) {
-        Parameters.notNull("task", task);
-        Parameters.notNull("source", source);
-        final String taskClassName = task.getClass().getName();
-        if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
-            if (includedTasks == null || !includedTasks.matcher(taskClassName).matches()) {
-                return;
-            }
-        }
+    public static void removePhaseCompletionTasks(final Collection<? extends SchedulerTask> tasks, final Source source) {
+        Parameters.notNull("task", tasks);
+        Parameters.notNull("source", source);        
         synchronized (INTERNAL_LOCK) {
-            boolean found = false;
             Collection<Request> rqs = finishedRequests.get(source);
-            if (rqs != null) {
-                for (Iterator<Request> it = rqs.iterator(); it.hasNext(); ) {
-                    Request rq = it.next();
-                    if (rq.task == task) {
-                        it.remove();
-                        found = true;
+            boolean found = false;
+            for (SchedulerTask task : tasks) {
+                final String taskClassName = task.getClass().getName();
+                if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
+                    if (includedTasks == null || !includedTasks.matcher(taskClassName).matches()) {
+                        continue;
+                    }
+                }
+                if (rqs != null) {
+                    for (Iterator<Request> it = rqs.iterator(); it.hasNext(); ) {
+                        Request rq = it.next();
+                        if (rq.task == task) {
+                            it.remove();
+                            found = true;
 //todo: Some tasks are duplicated (racecondition?), remove even them.
 //todo: Prevent duplication of tasks
 //                      break;                        
+                        }
                     }
                 }
+                if (!found) {
+                    toRemove.add (task);
+                }
+                SourceAccessor.getINSTANCE().taskRemoved(source);
             }
-            if (!found) {
-                toRemove.add (task);
-            }
-            SourceAccessor.getINSTANCE().taskRemoved(source);
         }
     }
     
@@ -366,6 +369,20 @@ public class TaskProcessor {
             }
         }
     }
+
+    public static void updatePhaseCompletionTask (final Collection<SchedulerTask>add, final Collection<SchedulerTask>remove,
+            final Source source, SourceCache cache, Class<? extends Scheduler> schedulerType) {
+        Parameters.notNull("add", add);
+        Parameters.notNull("remove", remove);
+        Parameters.notNull("source", source);
+        Parameters.notNull("cache", cache);
+        Parameters.notNull("schedulerType", schedulerType);
+        synchronized (INTERNAL_LOCK) {
+            removePhaseCompletionTasks(remove, source);
+            addPhaseCompletionTasks(add, cache, false, schedulerType);
+        }
+
+    }
     
     //Changes handling
     
@@ -404,8 +421,8 @@ public class TaskProcessor {
             synchronized (source) {
                 reschedule = SourceAccessor.getINSTANCE().testAndCleanFlags(source,SourceFlags.RESCHEDULE_FINISHED_TASKS,
                         EnumSet.of(SourceFlags.RESCHEDULE_FINISHED_TASKS, SourceFlags.CHANGE_EXPECTED));
-            }
-            Collection<Request> cr;            
+            }            
+            Collection<Request> cr;
             if (reschedule) {                
                 if ((cr=finishedRequests.remove(source)) != null && cr.size()>0)  {
                     requests.addAll(cr);
@@ -414,7 +431,7 @@ public class TaskProcessor {
             if ((cr=waitingRequests.remove(source)) != null && cr.size()>0)  {
                 requests.addAll(cr);
             }
-        }
+                }
     }
     
     //DO NOT CALL DIRECTLY - called by Source
@@ -437,7 +454,7 @@ public class TaskProcessor {
     
     static void scheduleSpecialTask (final SchedulerTask task) {
         assert task != null;
-        final Request rq = new Request(task, null, false, null);
+        final Request rq = new Request(task, null, false, true, null);
         handleAddRequests (Collections.<Request>singletonList (rq));
     }
     
@@ -681,26 +698,26 @@ public class TaskProcessor {
                                         parserLock.unlock();
                                     }
                                     //Maybe should be in finally to prevent task lost when parser crashes
-                                    if (r.reschedule) {                                            
-                                        synchronized (INTERNAL_LOCK) {
-                                            reschedule|= currentRequest.setCurrentTask(null);
-                                            synchronized (source) {
-                                                if (reschedule || SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID)) {
-                                                    //The JavaSource was changed or canceled rechedule it now
-                                                    requests.add(r);
-                                                }
-                                                else {
-                                                    //Up to date JavaSource add it to the finishedRequests
-                                                    Collection<Request> rc = finishedRequests.get (r.cache.getSnapshot ().getSource ());
-                                                    if (rc == null) {
-                                                        rc = new LinkedList<Request> ();
-                                                        finishedRequests.put (r.cache.getSnapshot ().getSource (), rc);
+                                    if (r.reschedule) {
+                                            synchronized (INTERNAL_LOCK) {
+                                                reschedule|= currentRequest.setCurrentTask(null);
+                                                synchronized (source) {
+                                                    if (reschedule || SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID)) {
+                                                        //The JavaSource was changed or canceled rechedule it now
+                                                        requests.add(r);
                                                     }
-                                                    rc.add(r);
+                                                    else if (r.bridge) {
+                                                        //Up to date JavaSource add it to the finishedRequests
+                                                        Collection<Request> rc = finishedRequests.get (r.cache.getSnapshot ().getSource ());
+                                                        if (rc == null) {
+                                                            rc = new LinkedList<Request> ();
+                                                            finishedRequests.put (r.cache.getSnapshot ().getSource (), rc);
+                                                        }
+                                                        rc.add(r);
+                                                    }
                                                 }
                                             }
                                         }
-                                   }
                                    else {
                                         SourceAccessor.getINSTANCE().taskRemoved(source);
                                    }
@@ -749,11 +766,12 @@ public class TaskProcessor {
             @Override
             public void run(Result result) {
             }
-        },null, false, null);
+        },null, false, false, null);
         
         private final SchedulerTask task;
         private final SourceCache cache;
         private final boolean reschedule;
+        private final boolean bridge;
         private Class<? extends Scheduler> schedulerType;
         
         /**
@@ -762,18 +780,20 @@ public class TaskProcessor {
          * @param source on which the task should be performed
          * @param reschedule when true the task is periodic request otherwise one time request
          */
-        public Request (final SchedulerTask task, final SourceCache cache, final boolean reschedule, Class<? extends Scheduler> schedulerType) {
+        public Request (final SchedulerTask task, final SourceCache cache, final boolean reschedule, boolean bridge,
+            Class<? extends Scheduler> schedulerType) {
             assert task != null;
             this.task = task;
             this.cache = cache;
             this.reschedule = reschedule;
+            this.bridge = bridge;
             this.schedulerType = schedulerType;
         }
         
         private Request () {  
             task = null;
             cache = null;
-            reschedule = false;
+            reschedule = bridge = false;
         }
         
         public @Override String toString () {            

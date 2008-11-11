@@ -118,13 +118,13 @@ public class Utilities {
         assert task != null;
         assert source != null;
         SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);
-        TaskProcessor.addPhaseCompletionTasks (Collections.<SchedulerTask>singleton (task), cache, null);
+        TaskProcessor.addPhaseCompletionTasks (Collections.<SchedulerTask>singleton (task), cache, true, null);
     }
     
     public static void removeParserResultTask (final ParserResultTask<?> task, final Source source) {
         assert task != null;
         assert source != null;
-        TaskProcessor.removePhaseCompletionTask(task, source);
+        TaskProcessor.removePhaseCompletionTasks(Collections.singleton(task), source);
     }
     
     public static void rescheduleTask (final ParserResultTask<?> task, final Source source) {

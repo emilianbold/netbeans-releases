@@ -44,7 +44,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -57,6 +56,8 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.CurrentEditorTaskScheduller;
+import org.netbeans.modules.parsing.impl.SelectedNodesScheduller;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
@@ -149,6 +150,8 @@ public final class EventSupport {
      */
     private void resetStateImpl() {
         if (!k24) {
+            SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CurrentEditorTaskScheduller.class);
+            SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(SelectedNodesScheduller.class);
             TaskProcessor.resetStateImpl (this.source);
         }
     }
