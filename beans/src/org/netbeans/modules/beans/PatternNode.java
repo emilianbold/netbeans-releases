@@ -193,7 +193,7 @@ public class PatternNode extends AbstractNode {
     */
     @Override
     public boolean canCopy () {
-        return true;
+        return false;
     }
 
     /** Test whether this node can be cut.
