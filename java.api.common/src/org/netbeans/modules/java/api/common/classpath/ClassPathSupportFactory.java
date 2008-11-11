@@ -73,7 +73,21 @@ public final class ClassPathSupportFactory {
      * @return classpath implementation
      */
     public static ClassPathImplementation createSourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper, PropertyEvaluator evaluator) {
-        return new SourcePathImplementation(sourceRoots, projectHelper, evaluator);
+        return createSourcePathImplementation(sourceRoots, projectHelper, evaluator, false);
+    }
+
+    /**
+     * Creates implementation of SOURCE classpath for given source roots and project
+     * assuming build classes folder is stored in property <code>build.dir</code>.
+     *
+     * @param sourceRoots project source roots
+     * @param projectHelper AntProjectHelper
+     * @param evaluator PropertyEvaluator
+     * @param canHaveWebServices should <code>generated/wsimport/service</code> sources folder be supported?
+     * @return classpath implementation
+     */
+    public static ClassPathImplementation createSourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper, PropertyEvaluator evaluator, boolean canHaveWebServices) {
+        return new SourcePathImplementation(sourceRoots, projectHelper, evaluator, canHaveWebServices);
     }
 
 }

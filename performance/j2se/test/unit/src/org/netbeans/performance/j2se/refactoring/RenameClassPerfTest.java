@@ -38,38 +38,38 @@
  */
 package org.netbeans.performance.j2se.refactoring;
 
-import java.io.*;
-import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.*;
 import org.netbeans.junit.NbPerformanceTest;
-import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.performance.j2se.Utilities.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
-
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
+ 
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.File;
 import java.io.IOException;
+import junit.framework.Assert;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Pavel Flaska
  */
-public class RenameClassPerfTest extends RefactoringTestCase implements NbPerformanceTest {
+public class RenameClassPerfTest extends RefPerfTestCase {
 
-    private final MyHandler handler;
-    private List<PerformanceData> data = new ArrayList<PerformanceData>();
-    private static int size=0;
+    private static int size = 0;
+    
+    static {
+        RenameClassPerfTest.class.getClassLoader().setDefaultAssertionStatus(true);
+        System.setProperty("org.openide.util.Lookup", TestLkp.class.getName());
+        Assert.assertEquals(TestLkp.class, Lookup.getDefault().getClass());
+    }
 
     public RenameClassPerfTest(String name) {
         super(name);
-        handler = new MyHandler();
-        handler.setLevel(Level.FINE);
     }
 
     public static NbTestSuite suite() {
@@ -88,7 +88,7 @@ public class RenameClassPerfTest extends RefactoringTestCase implements NbPerfor
         timer.setLevel(Level.FINE);
         timer.addHandler(handler);
 
-        FileObject test = getFileInProject("jEdit41", "/src/org/gjt/sp/jedit/jEdit.java");
+        FileObject test = getProjectDir().getFileObject("/src/org/gjt/sp/jedit/jEdit.java");
         final RenameRefactoring renameRefactoring = new RenameRefactoring(Lookups.singleton(test));
         perform(renameRefactoring, new ParameterSetter() {
 
@@ -165,45 +165,5 @@ public class RenameClassPerfTest extends RefactoringTestCase implements NbPerfor
 
     }
 
-
-
-    public PerformanceData[] getPerformanceData() {
-        return data.toArray(new PerformanceData[0]);
-    }
-
-    private static class MyHandler extends Handler {
-
-        private Map<String, Long> map = new HashMap<String, Long>();
-
-        @Override
-        public void publish(LogRecord record) {
-            Long data;
-
-            for (Object o : record.getParameters()) {
-                if (o instanceof Long) {
-                    data = (Long) o;
-                    map.put(record.getMessage(), data);
-                }
-            }
-        }
-
-        public Long get(String key) {
-            return map.get(key);
-        }
-
-        @Override
-        public void flush() {
-        }
-
-        @Override
-        public void close() throws SecurityException {
-        }
-    }
-
-}
-
-interface ParameterSetter {
-
-       void setParameters();
 
 }

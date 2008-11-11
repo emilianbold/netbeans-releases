@@ -50,6 +50,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
+import org.netbeans.modules.db.sql.editor.api.completion.SubstitutionHandler;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
@@ -77,39 +78,40 @@ public abstract class SQLCompletionItem implements CompletionItem {
     private static final ImageIcon ALIAS_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/alias.png")); // NOI18N
     private static final ImageIcon COLUMN_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/sql/editor/completion/resources/column.png")); // NOI18N
 
-    private final String substitutionText;
-    private final int substitutionOffset;
+    private final SubstitutionHandler substHandler;
+    private final String substText;
+    private final int substOffset;
 
-    public static SQLCompletionItem catalog(String catalogName, String substitutionText, int substitutionOffset) {
-        return new Catalog(catalogName, substitutionText, substitutionOffset);
+    public static SQLCompletionItem catalog(String catalogName, String substText, int substOffset, SubstitutionHandler substHandler) {
+        return new Catalog(catalogName, substText, substOffset, substHandler);
     }
 
-    public static SQLCompletionItem schema(String schemaName, String substitutionText, int substitutionOffset) {
-        return new Schema(schemaName, substitutionText, substitutionOffset);
+    public static SQLCompletionItem schema(String schemaName, String substText, int substOffset, SubstitutionHandler substHandler) {
+        return new Schema(schemaName, substText, substOffset, substHandler);
     }
 
-    public static SQLCompletionItem table(String tableName, String substitutionText, int substitutionOffset) {
-        return new Table(tableName, substitutionText, substitutionOffset);
+    public static SQLCompletionItem table(String tableName, String substText, int substOffset, SubstitutionHandler substHandler) {
+        return new Table(tableName, substText, substOffset, substHandler);
     }
 
-    public static SQLCompletionItem alias(String alias, QualIdent tableName, String substitutionText, int substitutionOffset) {
-        return new Alias(alias, tableName, substitutionText, substitutionOffset);
+    public static SQLCompletionItem alias(String alias, QualIdent tableName, String substText, int substOffset, SubstitutionHandler substHandler) {
+        return new Alias(alias, tableName, substText, substOffset, substHandler);
     }
 
-    public static SQLCompletionItem column(QualIdent tableName, String columnName, String substitutionText, int substitutionOffset) {
-        return new Column(tableName, columnName, substitutionText, substitutionOffset);
+    public static SQLCompletionItem column(QualIdent tableName, String columnName, String substText, int substOffset, SubstitutionHandler substHandler) {
+        return new Column(tableName, columnName, substText, substOffset, substHandler);
     }
 
-    protected SQLCompletionItem(String substitutionText, int substitutionOffset) {
-        this.substitutionText = substitutionText;
-        this.substitutionOffset = substitutionOffset;
+    protected SQLCompletionItem(String substText, int substOffset, SubstitutionHandler substHandler) {
+        this.substText = substText;
+        this.substOffset = substOffset;
+        this.substHandler = substHandler;
     }
 
     public void defaultAction(JTextComponent component) {
         Completion.get().hideDocumentation();
         Completion.get().hideCompletion();
-        int caretOffset = component.getSelectionEnd();
-        substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null);
+        substHandler.substituteText(component, substOffset, substText);
     }
 
     public void processKeyEvent(KeyEvent evt) {
@@ -145,7 +147,7 @@ public abstract class SQLCompletionItem implements CompletionItem {
     }
 
     public CharSequence getInsertPrefix() {
-        return substitutionText;
+        return substText;
     }
 
     protected abstract ImageIcon getImageIcon();
@@ -154,25 +156,8 @@ public abstract class SQLCompletionItem implements CompletionItem {
 
     protected abstract String getRightHtmlText();
 
-    private void substituteText(JTextComponent component, final int offset, final int len, final String toAdd) {
-        final CharSequence prefix = getInsertPrefix();
-        if (prefix ==  null) {
-            return;
-        }
-        final BaseDocument baseDoc = (BaseDocument) component.getDocument();
-        baseDoc.runAtomicAsUser(new Runnable() {
-            public void run() {
-                try {
-                    baseDoc.remove(offset, len);
-                    baseDoc.insertString(offset, prefix.toString(), null);
-                    if (toAdd != null) {
-                        baseDoc.insertString(offset, toAdd, null);
-                    }
-                } catch (BadLocationException ex) {
-                    // No can do, document may have changed.
-                }
-            }
-        });
+    private void substituteText(JTextComponent component, final int offset, final int len) {
+
     }
 
     private static final class Catalog extends SQLCompletionItem {
@@ -180,8 +165,8 @@ public abstract class SQLCompletionItem implements CompletionItem {
         private final String catalogName;
         private String leftText;
 
-        public Catalog(String catalogName, String substitutionText, int substitutionOffset) {
-            super(substitutionText, substitutionOffset);
+        public Catalog(String catalogName, String substText, int substOffset, SubstitutionHandler substHandler) {
+            super(substText, substOffset, substHandler);
             this.catalogName = catalogName;
         }
 
@@ -218,8 +203,8 @@ public abstract class SQLCompletionItem implements CompletionItem {
         private final String schemaName;
         private String leftText;
 
-        public Schema(String schemaName, String substitutionText, int substitutionOffset) {
-            super(substitutionText, substitutionOffset);
+        public Schema(String schemaName, String substText, int substOffset, SubstitutionHandler substHandler) {
+            super(substText, substOffset, substHandler);
             this.schemaName = schemaName;
         }
 
@@ -256,8 +241,8 @@ public abstract class SQLCompletionItem implements CompletionItem {
         private final String tableName;
         private String leftText;
 
-        public Table(String tableName, String substitutionText, int substitutionOffset) {
-            super(substitutionText, substitutionOffset);
+        public Table(String tableName, String substText, int substOffset, SubstitutionHandler substHandler) {
+            super(substText, substOffset, substHandler);
             this.tableName = tableName;
         }
 
@@ -296,8 +281,8 @@ public abstract class SQLCompletionItem implements CompletionItem {
         private final QualIdent tableName;
         private String rightText;
 
-        public Alias(String alias, QualIdent tableName, String substitutionText, int substitutionOffset) {
-            super(substitutionText, substitutionOffset);
+        public Alias(String alias, QualIdent tableName, String substText, int substOffset, SubstitutionHandler substHandler) {
+            super(substText, substOffset, substHandler);
             this.alias = alias;
             this.tableName = tableName;
         }
@@ -337,8 +322,8 @@ public abstract class SQLCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
 
-        public Column(QualIdent tableName, String columnName, String substitutionText, int substitutionOffset) {
-            super(substitutionText, substitutionOffset);
+        public Column(QualIdent tableName, String columnName, String substText, int substOffset, SubstitutionHandler substHandler) {
+            super(substText, substOffset, substHandler);
             this.tableName = tableName;
             this.columnName = columnName;
         }

@@ -54,7 +54,6 @@ import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
-import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -66,9 +65,9 @@ import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author Pavel Benes, suchys
+ * @author Pavel Benes, suchys, akorostelev
  */
-public class SaveAnimationAsImageAction extends CookieAction {
+public class SaveAnimationAsImageAction extends AbstractSaveAction {
     
     /** Creates a new instance of SaveAnimationAsImage */
     public SaveAnimationAsImageAction() {
@@ -156,55 +155,4 @@ public class SaveAnimationAsImageAction extends CookieAction {
         return false;
     }
 
-    private void resumeAnimatorState(SVGDataObject doj, int state, float time){
-        // resume cached state only if it was running or paused
-        if (state == PerseusController.ANIMATION_RUNNING){
-            startAnimator(doj, time);
-        } else if (state == PerseusController.ANIMATION_PAUSED){
-            pauseAnimation(doj, time);
-        }
-    }
-    
-    private PerseusController getPerseusController(SVGDataObject doj){
-        assert doj != null;
-        return doj.getSceneManager().getPerseusController();
-    }
-    
-    private int getAnimatorState(SVGDataObject doj){
-        PerseusController pc = getPerseusController(doj);
-        if (pc != null){
-            return pc.getAnimatorState();
-        }
-        return PerseusController.ANIMATION_NOT_RUNNING;
-    }
-    
-    private float stopAnimator(SVGDataObject doj){
-        float stoppedTime = 0;
-        PerseusController pc = getPerseusController(doj);
-        if (pc != null){
-            stoppedTime = pc.getAnimatorTime();
-            pc.stopAnimator();
-        }
-        return stoppedTime;
-    }
-
-    private void startAnimator(SVGDataObject doj, float time){
-        assert doj != null;
-        PerseusController pc = doj.getSceneManager().getPerseusController();
-        if (pc != null){
-            pc.setAnimatorTime(time);
-            pc.startAnimator();
-        }
-    }
-
-    private void pauseAnimation(SVGDataObject doj, float time){
-        assert doj != null;
-        PerseusController pc = doj.getSceneManager().getPerseusController();
-        if (pc != null){
-            pc.setAnimatorTime(time);
-            pc.startAnimator();
-            pc.pauseAnimator();
-        }
-    }
-    
 }

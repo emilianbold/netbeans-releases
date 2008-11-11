@@ -12,6 +12,7 @@ import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenWay;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -32,6 +33,11 @@ public class CGSInfo {
     final private List<Property> possibleSetters;
     final private List<Property> possibleGettersSetters;
     final private JTextComponent textComp;
+    /**
+     * how to generate  getters and setters method name
+     */
+    private CGSGenerator.GenWay howToGenerate;
+    private boolean generateDoc;
 
     private CGSInfo(JTextComponent textComp) {
         properties = new ArrayList<Property>();
@@ -41,6 +47,8 @@ public class CGSInfo {
         className = null;
         this.textComp = textComp;
         hasConstructor = false;
+        this.generateDoc = true;
+        this.howToGenerate = CGSGenerator.GenWay.AS_JAVA;
     }
 
     public static CGSInfo getCGSInfo(JTextComponent textComp) {
@@ -73,6 +81,21 @@ public class CGSInfo {
         return hasConstructor;
     }
 
+    public GenWay getHowToGenerate() {
+        return howToGenerate;
+    }
+
+    public void setHowToGenerate(GenWay howGenerate) {
+        this.howToGenerate = howGenerate;
+    }
+
+    public boolean isGenerateDoc() {
+        return generateDoc;
+    }
+
+    public void setGenerateDoc(boolean generateDoc) {
+        this.generateDoc = generateDoc;
+    }
 
 
     /**

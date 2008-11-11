@@ -224,8 +224,8 @@ public final class RubySession {
     }
 
     private String getDebuggeePath() {
-        RubyDebugTarget debugTarged = proxy.getDebugTarget();
-        String debuggee = debugTarged.getDebuggedFile();
+        RubyDebugTarget debugTarget = proxy.getDebugTarget();
+        String debuggee = debugTarget.getDebuggedFile();
         if (debuggee == null) {
             return "[Remotely attached]";
         }
@@ -234,7 +234,7 @@ public final class RubySession {
         if (debuggeeF.isAbsolute()) {
             path = debuggeeF.getAbsolutePath();
         } else {
-            path = new File(debugTarged.getBaseDir(), debugTarged.getDebuggedFile()).getAbsolutePath();
+            path = new File(debugTarget.getBaseDir(), debugTarget.getDebuggedFile()).getAbsolutePath();
         }
         return path;
     }
