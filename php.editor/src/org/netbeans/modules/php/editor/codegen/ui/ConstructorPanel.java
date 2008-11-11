@@ -80,7 +80,7 @@ public class ConstructorPanel extends javax.swing.JPanel {
     }
 
     private void initPanel(CGSGenerator.GenType genType) {
-    String panelTitle = "";                     //NOI18N
+        String panelTitle = "";                     //NOI18N
         boolean customizeMethodGeneration = true;
         String name = properties.get(0).getName();
         DefaultComboBoxModel model = new DefaultComboBoxModel();
@@ -110,17 +110,19 @@ public class ConstructorPanel extends javax.swing.JPanel {
         }
         this.label.setText(panelTitle);
         this.pGSCustomize.setVisible(customizeMethodGeneration);
-        cbMethodGeneration.setModel(model);
-        int index = 0;
-        if (cgsInfo.getHowToGenerate() != null) {
-            for (CGSGenerator.GenWay genWay : CGSGenerator.GenWay.values()) {
-                if (genWay.equals(cgsInfo.getHowToGenerate())) {
-                    break;
+        if (customizeMethodGeneration) {
+            cbMethodGeneration.setModel(model);
+            int index = 0;
+            if (cgsInfo.getHowToGenerate() != null) {
+                for (CGSGenerator.GenWay genWay : CGSGenerator.GenWay.values()) {
+                    if (genWay.equals(cgsInfo.getHowToGenerate())) {
+                        break;
+                    }
+                    index++;
                 }
-                index++;
             }
+            cbMethodGeneration.setSelectedIndex(index);
         }
-        cbMethodGeneration.setSelectedIndex(index);
         cbGenerateDoc.setSelected(cgsInfo.isGenerateDoc());
         cbGenerateDoc.setVisible(false);
     }
