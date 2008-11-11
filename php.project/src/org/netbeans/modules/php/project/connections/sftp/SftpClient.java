@@ -144,7 +144,7 @@ public class SftpClient implements RemoteClient {
         } catch (JSchException exc) {
             disconnect();
             LOGGER.log(Level.FINE, "Exception while connecting", exc);
-            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotConnect", configuration.getHost()), exc, getReplyString());
+            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotConnect", configuration.getHost()), exc);
         }
 
     }
@@ -199,7 +199,7 @@ public class SftpClient implements RemoteClient {
             return sftpClient.pwd();
         } catch (SftpException ex) {
             LOGGER.log(Level.FINE, "Error while pwd", ex);
-            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotPwd", configuration.getHost()), ex, getReplyString());
+            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotPwd", configuration.getHost()), ex);
         }
     }
 
@@ -209,7 +209,7 @@ public class SftpClient implements RemoteClient {
             return true;
         } catch (SftpException ex) {
             LOGGER.log(Level.FINE, "Error while storing file " + remote, ex);
-            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotStoreFile", remote), ex, getReplyString());
+            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotStoreFile", remote), ex);
         }
     }
 
@@ -244,7 +244,7 @@ public class SftpClient implements RemoteClient {
             }
         } catch (SftpException ex) {
             LOGGER.log(Level.FINE, "Error while listing files for " + pathInfo, ex);
-            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotListFiles", pathInfo.getFullPath()), ex, getReplyString());
+            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotListFiles", pathInfo.getFullPath()), ex);
         }
         return result;
     }
@@ -255,7 +255,7 @@ public class SftpClient implements RemoteClient {
             return true;
         } catch (SftpException ex) {
             LOGGER.log(Level.FINE, "Error while retrieving file " + remote, ex);
-            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotStoreFile", remote), ex, getReplyString());
+            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotStoreFile", remote), ex);
         }
     }
 

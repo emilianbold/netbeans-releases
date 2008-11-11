@@ -222,10 +222,12 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         String msg = null;
         int msgType = 0;
         if (exception != null) {
-            if (exception.getRemoteServerAnswer() == null) {
-                msg = exception.getMessage();
+            if (exception.getRemoteServerAnswer() != null) {
+                msg = NbBundle.getMessage(RemoteConnectionsPanel.class, "MSG_TestConnectionFailedServerAnswer", exception.getMessage(), exception.getRemoteServerAnswer());
+            } else if (exception.getCause() != null) {
+                msg = NbBundle.getMessage(RemoteConnectionsPanel.class, "MSG_TestConnectionFailedCause", exception.getMessage(), exception.getCause().getMessage());
             } else {
-                msg = NbBundle.getMessage(RemoteConnectionsPanel.class, "MSG_TestConnectionFailed", exception.getMessage(), exception.getRemoteServerAnswer());
+                msg = exception.getMessage();
             }
             msgType = NotifyDescriptor.ERROR_MESSAGE;
         } else {

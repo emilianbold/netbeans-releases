@@ -214,10 +214,8 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
     private void initComponents() {
 
 
-
-
-
         hostLabel = new JLabel();
+        knownHostsFileLabel = new JLabel();
         hostTextField = new JTextField();
         portLabel = new JLabel();
         portTextField = new JTextField();
@@ -229,7 +227,6 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         identityFileLabel = new JLabel();
         identityFileTextField = new JTextField();
         identityFileBrowseButton = new JButton();
-        knownHostsFileLabel = new JLabel();
         knownHostsFileTextField = new JTextField();
         knownHostsFileBrowseButton = new JButton();
         initialDirectoryLabel = new JLabel();
@@ -237,7 +234,14 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         timeoutLabel = new JLabel();
         timeoutTextField = new JTextField();
         warningLabel = new JLabel();
+
         Mnemonics.setLocalizedText(hostLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.hostLabel.text")); // NOI18N
+        knownHostsFileLabel.setLabelFor(knownHostsFileTextField);
+
+
+
+
+        Mnemonics.setLocalizedText(knownHostsFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileLabel.text")); // NOI18N
         hostTextField.setMinimumSize(new Dimension(150, 19));
         Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.portLabel.text"));
         Mnemonics.setLocalizedText(userLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.userLabel.text"));
@@ -248,23 +252,15 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         identityFileLabel.setLabelFor(identityFileTextField);
 
 
+
+
         Mnemonics.setLocalizedText(identityFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileLabel.text"));
-        identityFileTextField.setText(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileTextField.text")); // NOI18N
         Mnemonics.setLocalizedText(identityFileBrowseButton, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileBrowseButton.text"));
         identityFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 identityFileBrowseButtonActionPerformed(evt);
             }
         });
-
-        knownHostsFileLabel.setLabelFor(knownHostsFileTextField);
-
-
-
-
-
-        Mnemonics.setLocalizedText(knownHostsFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileLabel.text"));
-        knownHostsFileTextField.setText(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileTextField.text")); // NOI18N
         Mnemonics.setLocalizedText(knownHostsFileBrowseButton, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileBrowseButton.text"));
         knownHostsFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -284,39 +280,36 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
                 .add(passwordLabel)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
-                .add(knownHostsFileLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(knownHostsFileTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(knownHostsFileBrowseButton)
-                .add(0, 0, 0))
-            .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(hostLabel)
                     .add(userLabel)
                     .add(initialDirectoryLabel)
                     .add(timeoutLabel)
-                    .add(identityFileLabel))
-                .add(25, 25, 25)
+                    .add(identityFileLabel)
+                    .add(knownHostsFileLabel))
+                .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(passwordLabelInfo)
                         .addContainerGap())
-                    .add(layout.createSequentialGroup()
+                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                            .add(GroupLayout.LEADING, identityFileTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, userTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, hostTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, timeoutTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
-                            .add(passwordTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
-                            .add(initialDirectoryTextField, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE))
+                            .add(knownHostsFileTextField, GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, identityFileTextField, GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, userTextField, GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, hostTextField, GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, timeoutTextField, GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
+                            .add(passwordTextField, GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
+                            .add(initialDirectoryTextField, GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))
                         .addPreferredGap(LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(GroupLayout.LEADING, false)
-                            .add(layout.createSequentialGroup()
-                                .add(portLabel)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(portTextField))
-                            .add(identityFileBrowseButton))
+                        .add(layout.createParallelGroup(GroupLayout.LEADING)
+                            .add(GroupLayout.TRAILING, layout.createParallelGroup(GroupLayout.LEADING, false)
+                                .add(layout.createSequentialGroup()
+                                    .add(portLabel)
+                                    .addPreferredGap(LayoutStyle.RELATED)
+                                    .add(portTextField))
+                                .add(identityFileBrowseButton))
+                            .add(GroupLayout.TRAILING, knownHostsFileBrowseButton))
                         .add(0, 0, 0))))
         );
 
@@ -347,9 +340,9 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
                     .add(identityFileBrowseButton))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(knownHostsFileLabel)
                     .add(knownHostsFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(knownHostsFileBrowseButton))
+                    .add(knownHostsFileBrowseButton)
+                    .add(knownHostsFileLabel))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(initialDirectoryLabel)
