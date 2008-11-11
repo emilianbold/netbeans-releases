@@ -86,7 +86,7 @@ public class ConfigurationMakefileWriterTest {
     public void tearDown() {
     }
 
-    public void test(String flavorName, int platform, String golden) {
+    private void testAppWithLibraries(String flavorName, int platform, String golden) {
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
         // Setup project
         String libsuffix = "so";
@@ -127,7 +127,7 @@ public class ConfigurationMakefileWriterTest {
         CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);
         CompilerSet compilerSet = CompilerSet.getCustomCompilerSet("/tmp", flavor, "MyCompilerSet");
         CompilerSetManager.getDefault().add(compilerSet);
-        conf.getCompilerSet().setNameAndFlavor("MyCompilerSet|GNU", 51);
+        conf.getCompilerSet().setNameAndFlavor("MyCompilerSet|" + flavorName, 51);
         conf.getPlatform().setValue(platform);
 
         // Setup streams
@@ -176,8 +176,67 @@ public class ConfigurationMakefileWriterTest {
     }
 
 
+    private void testDynamicLibrary(String flavorName, int platform, String golden) {
+        System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
+        // Setup project
+        MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor("/tmp/Xxx");
+        MakeConfiguration conf = new MakeConfiguration("/tmp/Xxx", "Default", MakeConfiguration.TYPE_DYNAMIC_LIB);  // NOI18N
+        makeConfigurationDescriptor.init(conf);
+        makeConfigurationDescriptor.getLogicalFolders().addItem(new Item("test.cc"));
+
+        CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);
+        CompilerSet compilerSet = CompilerSet.getCustomCompilerSet("/tmp", flavor, "MyCompilerSet");
+        CompilerSetManager.getDefault().add(compilerSet);
+        conf.getCompilerSet().setNameAndFlavor("MyCompilerSet|" + flavorName, 51);
+        conf.getPlatform().setValue(platform);
+
+        // Setup streams
+        PipedOutputStream pipedOutputStream = new PipedOutputStream();
+        PipedInputStream pipedInputStream = new PipedInputStream();
+        try {
+            pipedOutputStream.connect(pipedInputStream);
+        }
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(pipedOutputStream));
+        BufferedReader rw = new BufferedReader(new InputStreamReader(pipedInputStream));
+
+        // Generate (parts of) makefile
+        try {
+            ConfigurationMakefileWriter configurationMakefileWriter = new ConfigurationMakefileWriter(makeConfigurationDescriptor);
+            configurationMakefileWriter.writeLinkTarget(conf, bw, conf.getLinkerConfiguration().getOutputValue());
+            bw.flush();
+            bw.close();
+        }
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+
+        // Read and test result
+        StringBuilder result = new StringBuilder();
+        try {
+            while (true) {
+                String  line = rw.readLine();
+                if (line == null) {
+                    rw.close();
+                    break;
+                }
+                result.append(line + "\n");
+            }
+        }
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+
+        System.out.println(result);
+        assert result.toString().equals(golden);
+    }
+
+
     @Test
-    public void testGNU_MacOSX() {
+    public void testMain_GNU_MacOSX() {
         StringBuilder golden = new StringBuilder();
         golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -L../hello3lib/dist/Debug/... -lhello3lib\n");
         golden.append("dist/Default/${PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
@@ -187,11 +246,11 @@ public class ConfigurationMakefileWriterTest {
         golden.append("dist/Default/${PLATFORM}/xxx: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
         golden.append("\t${LINK.cc} -o dist/Default/${PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
-        test("GNU", Platform.PLATFORM_MACOSX, golden.toString());
+        testAppWithLibraries("GNU", Platform.PLATFORM_MACOSX, golden.toString());
     }
 
     @Test
-    public void testSunStudio_Solaris_Intel() {
+    public void testMain_SunStudio_Solaris_Intel() {
         StringBuilder golden = new StringBuilder();
         golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -Wl,-rpath ../hello3lib/dist/Debug/... -L../hello3lib/dist/Debug/... -lhello3lib\n");
         golden.append("dist/Default/${PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
@@ -201,11 +260,25 @@ public class ConfigurationMakefileWriterTest {
         golden.append("dist/Default/${PLATFORM}/xxx: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
         golden.append("\t${LINK.cc} -o dist/Default/${PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
-        test("SunStudio", Platform.PLATFORM_SOLARIS_INTEL, golden.toString());
+        testAppWithLibraries("SunStudio", Platform.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
 
     @Test
-    public void testMinGW_Windows() {
+    public void testMain_GNU_Solaris_Intel() {
+        StringBuilder golden = new StringBuilder();
+        golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -Wl,-rpath ../hello3lib/dist/Debug/... -L../hello3lib/dist/Debug/... -lhello3lib\n");
+        golden.append("dist/Default/${PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
+        golden.append("\n");
+        golden.append("dist/Default/${PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.so\n");
+        golden.append("\n");
+        golden.append("dist/Default/${PLATFORM}/xxx: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
+        golden.append("\t${LINK.cc} -o dist/Default/${PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        testAppWithLibraries("GNU", Platform.PLATFORM_SOLARIS_INTEL, golden.toString());
+    }
+
+    @Test
+    public void testMain_MinGW_Windows() {
         StringBuilder golden = new StringBuilder();
         golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -L../hello3lib/dist/Debug/... -lhello3lib\n");
         golden.append("dist/Default/${PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
@@ -215,20 +288,67 @@ public class ConfigurationMakefileWriterTest {
         golden.append("dist/Default/${PLATFORM}/xxx: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
         golden.append("\t${LINK.cc} -o dist/Default/${PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
-        test("MinGW", Platform.PLATFORM_WINDOWS, golden.toString());
+        testAppWithLibraries("MinGW", Platform.PLATFORM_WINDOWS, golden.toString());
     }
 
     @Test
-    public void testGNU_Solaris_Intel() {
+    public void testMain_Cygwin_Windows() {
         StringBuilder golden = new StringBuilder();
-        golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -Wl,-rpath ../hello3lib/dist/Debug/... -L../hello3lib/dist/Debug/... -lhello3lib\n");
+        golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -L../hello3lib/dist/Debug/... -lhello3lib\n");
         golden.append("dist/Default/${PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
         golden.append("\n");
-        golden.append("dist/Default/${PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.so\n");
+        golden.append("dist/Default/${PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.dll\n");
         golden.append("\n");
         golden.append("dist/Default/${PLATFORM}/xxx: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
         golden.append("\t${LINK.cc} -o dist/Default/${PLATFORM}/xxx ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
-        test("GNU", Platform.PLATFORM_SOLARIS_INTEL, golden.toString());
+        testAppWithLibraries("Cygwin", Platform.PLATFORM_WINDOWS, golden.toString());
     }
+
+
+    @Test
+    public void testDynLib_GNU_MacOSX() {
+        StringBuilder golden = new StringBuilder();
+        golden.append("dist/Default/${PLATFORM}/libXxx.dylib: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
+        golden.append("\t${LINK.cc} -dynamiclib -install_name libXxx.dylib -o dist/Default/${PLATFORM}/libXxx.dylib -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        testDynamicLibrary("GNU", Platform.PLATFORM_MACOSX, golden.toString());
+    }
+
+    @Test
+    public void testDynLib_SunStudio_Solaris_Intel() {
+        StringBuilder golden = new StringBuilder();
+        golden.append("dist/Default/${PLATFORM}/libXxx.so: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
+        golden.append("\t${LINK.cc} -dynamiclib -install_name -o dist/Default/${PLATFORM}/libXxx.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        testDynamicLibrary("SunStudio", Platform.PLATFORM_SOLARIS_INTEL, golden.toString());
+    }
+
+    @Test
+    public void testDynLib_GNU_Solaris_Intel() {
+        StringBuilder golden = new StringBuilder();
+        golden.append("dist/Default/${PLATFORM}/libXxx.so: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
+        golden.append("\t${LINK.cc} -dynamiclib -install_name -o dist/Default/${PLATFORM}/libXxx.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        testDynamicLibrary("GNU", Platform.PLATFORM_SOLARIS_INTEL, golden.toString());
+    }
+
+    @Test
+    public void testDynLib_MinGW_Windows() {
+        StringBuilder golden = new StringBuilder();
+        golden.append("dist/Default/${PLATFORM}/libXxx.dll: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
+        golden.append("\t${LINK.cc} -dynamiclib -install_name -o dist/Default/${PLATFORM}/libXxx.dll -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        testDynamicLibrary("MinGW", Platform.PLATFORM_WINDOWS, golden.toString());
+    }
+
+    @Test
+    public void testDynLib_Cygwin_Windows() {
+        StringBuilder golden = new StringBuilder();
+        golden.append("dist/Default/${PLATFORM}/libXxx.dll: ${OBJECTFILES}\n");
+        golden.append("\t${MKDIR} -p dist/Default/${PLATFORM}\n");
+        golden.append("\t${LINK.cc} -dynamiclib -install_name -o dist/Default/${PLATFORM}/libXxx.dll -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} \n");
+        testDynamicLibrary("Cygwin", Platform.PLATFORM_WINDOWS, golden.toString());
+    }
+
 }
