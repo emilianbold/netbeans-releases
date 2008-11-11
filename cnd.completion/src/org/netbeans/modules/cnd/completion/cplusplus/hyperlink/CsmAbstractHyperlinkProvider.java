@@ -173,7 +173,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
             ((AbstractDocument) doc).readLock();
         }
         try {
-            return CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
+            return CndTokenUtilities.getTokenCheckPrev(doc, offset,true);
         } finally {
             if (doc instanceof AbstractDocument) {
                 ((AbstractDocument) doc).readUnlock();
