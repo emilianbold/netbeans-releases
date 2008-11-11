@@ -66,9 +66,12 @@ import javax.swing.JTextField;
 import org.apache.commons.net.ProtocolCommandEvent;
 import org.apache.commons.net.ProtocolCommandListener;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.common.PasswordPanel;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -78,6 +81,7 @@ import org.openide.windows.InputOutput;
 public class SftpClient implements RemoteClient {
     private static final Logger LOGGER = Logger.getLogger(SftpClient.class.getName());
 
+    private static final com.jcraft.jsch.Logger DEV_NULL_LOGGER = new DevNullLogger();
     private final SftpConfiguration configuration;
     private final InputOutput io;
     private Session sftpSession;
@@ -115,11 +119,10 @@ public class SftpClient implements RemoteClient {
         Channel channel = null;
         jsch = new JSch();
         try {
-            // XXX
-//            if (io != null) {
-//                JSch.setLogger(new SftpLogger(io));
-//                LOGGER.log(Level.FINE, "Protocol command listener added");
-//            }
+            if (io != null) {
+                JSch.setLogger(new SftpLogger(io));
+                LOGGER.log(Level.FINE, "Protocol command listener added");
+            }
             sftpSession = jsch.getSession(username, host, port);
             if (PhpProjectUtils.hasText(knownHostsFile)) {
                 jsch.setKnownHosts(knownHostsFile);
@@ -130,7 +133,7 @@ public class SftpClient implements RemoteClient {
             if (PhpProjectUtils.hasText(password)) {
                 sftpSession.setPassword(password);
             }
-            sftpSession.setUserInfo(new MyUserInfo());
+            sftpSession.setUserInfo(new SftpUserInfo(configuration.getDisplayName(), username));
             sftpSession.setTimeout(timeout);
             sftpSession.connect();
 
@@ -139,12 +142,7 @@ public class SftpClient implements RemoteClient {
             sftpClient = (ChannelSftp) channel;
 
         } catch (JSchException exc) {
-            if (sftpClient != null && sftpClient.isConnected()) {
-                sftpClient.disconnect();
-            }
-            if (sftpSession != null && sftpSession.isConnected()) {
-                sftpSession.disconnect();
-            }
+            disconnect();
             LOGGER.log(Level.FINE, "Exception while connecting", exc);
             throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotConnect", configuration.getHost()), exc, getReplyString());
         }
@@ -153,6 +151,7 @@ public class SftpClient implements RemoteClient {
 
     public void connect() throws RemoteException {
         init();
+        assert sftpClient.isConnected();
         try {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Remote server version is " + sftpClient.getServerVersion());
@@ -164,15 +163,15 @@ public class SftpClient implements RemoteClient {
     }
 
     public void disconnect() throws RemoteException {
-        if (sftpClient == null) {
+        if (sftpSession == null) {
             // nothing to do
             LOGGER.log(Level.FINE, "Remote client not created yet => nothing to do");
             return;
         }
         LOGGER.log(Level.FINE, "Remote client trying to disconnect");
-        if (sftpClient.isConnected()) {
+        if (sftpSession.isConnected()) {
             LOGGER.log(Level.FINE, "Remote client connected -> disconnecting");
-            sftpClient.disconnect();
+            JSch.setLogger(DEV_NULL_LOGGER);
             sftpSession.disconnect();
             LOGGER.log(Level.FINE, "Remote client disconnected");
         }
@@ -276,7 +275,7 @@ public class SftpClient implements RemoteClient {
             return true;
         } catch (SftpException ex) {
             LOGGER.log(Level.FINE, "Error while creating directory " + pathname, ex);
-            throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotCreateDirectory", pathname), ex, getReplyString());
+            return false;
         }
     }
 
@@ -351,7 +350,7 @@ public class SftpClient implements RemoteClient {
         }
 
         public boolean isEnabled(int level) {
-            return level > com.jcraft.jsch.Logger.DEBUG;
+            return level >= com.jcraft.jsch.Logger.INFO;
         }
 
         public void log(int level, String message) {
@@ -364,24 +363,48 @@ public class SftpClient implements RemoteClient {
         }
     }
 
-    public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    /**
+     * Because {@link java.nio.channels.ClosedByInterruptException} is raised while disconnecting SFTP session
+     * (this exception makes oproblems to NB output window).
+     * @see #disconnect()
+     */
+    private static final class DevNullLogger implements com.jcraft.jsch.Logger {
+
+        public boolean isEnabled(int level) {
+            return false;
+        }
+
+        public void log(int level, String message) {
+        }
+    }
+
+    private static final class SftpUserInfo implements UserInfo, UIKeyboardInteractive {
+        private final String configurationName;
+        private final String userName;
+        private String passwd;
+
+        public SftpUserInfo(String configurationName, String userName) {
+            assert configurationName != null;
+            assert userName != null;
+
+            this.configurationName = configurationName;
+            this.userName = userName;
+        }
 
         public String getPassword() {
             return passwd;
         }
 
-        public boolean promptYesNo(String str) {
-            Object[] options = {"yes", "no"};
-            int foo = JOptionPane.showOptionDialog(null,
-                    str,
-                    "Warning",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.WARNING_MESSAGE,
-                    null, options, options[0]);
-            return foo == 0;
+        public boolean promptYesNo(String message) {
+            NotifyDescriptor descriptor = new NotifyDescriptor(
+                    message,
+                    NbBundle.getMessage(SftpClient.class, "LBL_Warning"),
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE,
+                    new Object[] {NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
+                    NotifyDescriptor.YES_OPTION);
+            return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION;
         }
-        String passwd;
-        JTextField passwordField = (JTextField) new JPasswordField(20);
 
         public String getPassphrase() {
             return null;
@@ -392,21 +415,18 @@ public class SftpClient implements RemoteClient {
         }
 
         public boolean promptPassword(String message) {
-            Object[] ob = {passwordField};
-            int result =
-                    JOptionPane.showConfirmDialog(null, ob, message,
-                    JOptionPane.OK_CANCEL_OPTION);
-            if (result == JOptionPane.OK_OPTION) {
-                passwd = passwordField.getText();
-                return true;
-            } else {
-                return false;
+            PasswordPanel passwordPanel = new PasswordPanel(configurationName, userName);
+            boolean ok = passwordPanel.open();
+            if (ok) {
+                passwd = passwordPanel.getPassword();
             }
+            return ok;
         }
 
         public void showMessage(String message) {
             JOptionPane.showMessageDialog(null, message);
         }
+
         final GridBagConstraints gbc =
                 new GridBagConstraints(0, 0, 1, 1, 1, 1,
                 GridBagConstraints.NORTHWEST,
@@ -414,11 +434,8 @@ public class SftpClient implements RemoteClient {
                 new Insets(0, 0, 0, 0), 0, 0);
         private Container panel;
 
-        public String[] promptKeyboardInteractive(String destination,
-                String name,
-                String instruction,
-                String[] prompt,
-                boolean[] echo) {
+        public String[] promptKeyboardInteractive(String destination, String name, String instruction,
+                String[] prompt, boolean[] echo) {
 
 System.out.println("promptKeyboardInteractive");
 System.out.println("destination: "+destination);
