@@ -52,8 +52,8 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
@@ -79,11 +79,11 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         goToDeclaration(doc, target, offset);
     }
 
-    protected boolean isValidToken(Token<CppTokenId> token) {
+    protected boolean isValidToken(TokenItem<CppTokenId> token) {
         return isSupportedToken(token);
     }
 
-    public static boolean isSupportedToken(Token<CppTokenId> token) {
+    public static boolean isSupportedToken(TokenItem<CppTokenId> token) {
         if (token != null) {
             switch (token.id()) {
                 case IDENTIFIER:
@@ -99,12 +99,12 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         if (!preJump(doc, target, offset, "opening-csm-element")) { //NOI18N
             return false;
         }
-        Token<CppTokenId> jumpToken = getJumpToken();
+        TokenItem<CppTokenId> jumpToken = getJumpToken();
         CsmOffsetable item = (CsmOffsetable) findTargetObject(doc, jumpToken, offset, true);
         return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
     }
 
-    /*package*/ CsmObject findTargetObject(final Document doc, final Token<CppTokenId> jumpToken, final int offset, boolean toOffsetable) {
+    /*package*/ CsmObject findTargetObject(final Document doc, final TokenItem<CppTokenId> jumpToken, final int offset, boolean toOffsetable) {
         CsmObject item = null;
         assert jumpToken != null;
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
@@ -190,9 +190,10 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         return item;
     }
 
-    protected String getTooltipText(Document doc, Token<CppTokenId> token, int offset) {
+    protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset) {
         CsmObject item = findTargetObject(doc, token, offset, false);
         CharSequence msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
         return msg == null ? null : msg.toString();
     }
+
 }

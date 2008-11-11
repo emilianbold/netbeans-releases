@@ -44,8 +44,8 @@ import java.io.IOException;
 import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -80,11 +80,11 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     public CsmIncludeHyperlinkProvider() {
     }
 
-    protected boolean isValidToken(Token<CppTokenId> token) {
+    protected boolean isValidToken(TokenItem<CppTokenId> token) {
         return isSupportedToken(token);
     }
 
-    public static boolean isSupportedToken(Token<CppTokenId> token) {
+    public static boolean isSupportedToken(TokenItem<CppTokenId> token) {
         if (token != null) {
             switch (token.id()) {
                 case PREPROCESSOR_INCLUDE:
@@ -188,7 +188,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }
     };
 
-    protected String getTooltipText(Document doc, Token<CppTokenId> token, int offset) {
+    protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset) {
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, true);
         CsmInclude target = null;
         if (csmFile != null) {
