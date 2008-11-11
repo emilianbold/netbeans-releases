@@ -2147,7 +2147,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     return "";
                 }
             } else {
-                return info;
+                return info.substring(7, info.length() - 1);
             }
         } else {
             return null;
