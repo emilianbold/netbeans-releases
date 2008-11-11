@@ -285,7 +285,7 @@ public class Utils {
         System.setProperty("nbi.dont.use.system.exit", "true");
         System.setProperty("nbi.utils.log.to.console", "false");
         System.setProperty("servicetag.allow.register", "false");
-        System.setProperty("show.uninstallation.survey", "false")
+        System.setProperty("show.uninstallation.survey", "false");
         System.setProperty("user.home", data.getWorkDirCanonicalPath());
         
         if (Boolean.valueOf(System.getProperty("test.use.build.number"))) {
