@@ -180,14 +180,14 @@ final class MetaInfServicesLookup extends AbstractLookup {
                 if (realMcCoy != clazz) {
                     // Either the interface class is not available at all in our loader,
                     // or it is not the same version as we expected. Don't provide results.
-                    if (LOGGER.isLoggable(Level.FINER)) {
+                    if (LOGGER.isLoggable(Level.WARNING)) {
                         if (realMcCoy != null) {
-                            LOGGER.log(Level.FINER,
+                            LOGGER.log(Level.WARNING,
                                 clazz.getName() + " is not the real McCoy! Actually found it in " +
                                 realMcCoy.getClassLoader()
                             ); // NOI18N
                         } else {
-                            LOGGER.log(Level.FINER, clazz.getName() + " could not be found in " + loader); // NOI18N
+                            LOGGER.log(Level.WARNING, clazz.getName() + " could not be found in " + loader); // NOI18N
                         }
                     }
 
