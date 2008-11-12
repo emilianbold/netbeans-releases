@@ -82,6 +82,8 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.Reformat;
 
 /** C++ editor kit with appropriate document */
 public class CCKit extends NbEditorKit {
@@ -171,12 +173,6 @@ public class CCKit extends NbEditorKit {
             sup = new CCSyntaxSupport(doc);
         }
         return sup;
-    }
-
-    /** Create the formatter appropriate for this kit */
-    @Override
-    public Formatter createFormatter() {
-        return new CCFormatter(this.getClass());
     }
 
     protected Action getCommentAction() {
@@ -284,16 +280,12 @@ public class CCKit extends NbEditorKit {
                             }
 
                             int pos = startPos;
-                            Formatter formatter = doc.getFormatter();
-                            formatter.reformatLock();
+                            Reformat reformat = Reformat.get(doc);
+                            reformat.lock();
                             try {
-                                while (pos < endPosition.getOffset()) {
-                                    int stopPos = endPosition.getOffset();
-                                    int reformattedLen = formatter.reformat(doc, pos, stopPos);
-                                    pos = pos + reformattedLen;
-                                }
+                                reformat.reformat(pos, endPosition.getOffset());
                             } finally {
-                                formatter.reformatUnlock();
+                                reformat.unlock();
                             }
 
                             // Restore the line
@@ -322,10 +314,8 @@ public class CCKit extends NbEditorKit {
                 // but ATM there is no way to transfer this info from here to FormatSupport 
                 // correctly over FormatWriter because it's final class for some reasons.
                 // But java editor has the same bug, so one day we may have such possibility 
-                doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, Boolean.TRUE);
                 doc.putProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY, Boolean.TRUE);
                 super.checkIndentHotChars(target, typedText);
-                doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, null);
                 doc.putProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY, null);
             }
 

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,28 +31,85 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor.cplusplus;
+package org.netbeans.modules.cnd.editor.indent;
 
-import org.netbeans.modules.editor.FormatterIndentEngine;
-import org.openide.util.HelpCtx;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 
 /**
  *
  * @author Alexander Simon
  */
-public abstract class BaseIndentEngine extends FormatterIndentEngine {
+public final class TokenItem {
 
-    static final long serialVersionUID = -794367501912140447L;
+    private final int index;
+    private final CppTokenId tokenId;
+    protected final TokenSequence<CppTokenId> tokenSeq;
+    private final boolean skipPP;
 
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("Welcome_opt_indent_cpp"); // NOI18N
+    public TokenItem(TokenSequence<CppTokenId> ts, boolean skipPP) {
+        index = ts.index();
+        tokenId = ts.token().id();
+        this.tokenSeq = ts;
+        this.skipPP = skipPP;
     }
 
+    public TokenSequence<CppTokenId> getTokenSequence() {
+        return tokenSeq;
+    }
+    
+    private void go() {
+        tokenSeq.moveIndex(index);
+        tokenSeq.moveNext();
+    }
+
+    public CppTokenId getTokenID() {
+        return tokenId;
+    }
+
+    public int index() {
+        return index;
+    }
+
+    public TokenItem getNext() {
+        go();
+        while (tokenSeq.moveNext()) {
+            if (!skipPP || tokenSeq.token().id() != CppTokenId.PREPROCESSOR_DIRECTIVE) {
+                return new TokenItem(tokenSeq, skipPP);
+            }
+        }
+        return null;
+    }
+
+    public TokenItem getPrevious() {
+        go();
+        while (tokenSeq.movePrevious()) {
+            if (!skipPP || tokenSeq.token().id() != CppTokenId.PREPROCESSOR_DIRECTIVE) {
+                return new TokenItem(tokenSeq, skipPP);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof TokenItem) {
+            return ((TokenItem) obj).index == index;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 43 * hash + this.index;
+        hash = 43 * hash + (this.tokenId != null ? this.tokenId.hashCode() : 0);
+        return hash;
+    }
 }
