@@ -91,13 +91,24 @@ public final class Utils {
     }
 
     /**
+     * @return the selected file or <code>null</code>.
+     */
+    public static File browseFileAction(final Component parent, File currentDirectory, String title) {
+        return browseAction(parent, currentDirectory, title, JFileChooser.FILES_ONLY);
+    }
+
+    /**
      * @return the selected folder or <code>null</code>.
      */
     public static File browseLocationAction(final Component parent, File currentDirectory, String title) {
+        return browseAction(parent, currentDirectory, title, JFileChooser.DIRECTORIES_ONLY);
+    }
+
+    private static File browseAction(final Component parent, File currentDirectory, String title, int mode) {
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setDialogTitle(title);
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setFileSelectionMode(mode);
         if (currentDirectory != null
                 && currentDirectory.exists()) {
             chooser.setSelectedFile(currentDirectory);

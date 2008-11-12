@@ -74,7 +74,7 @@ public class RepositoryCacheMap<K,V>  {
     
     private static final boolean ASSERTIONS = Boolean.getBoolean("cnd.repository.cache.map.assert");
     
-    static private final class RepositoryCacheValue<V>  implements Comparable {
+    static private final class RepositoryCacheValue<V>  implements Comparable<RepositoryCacheValue<V>> {
         
         public V                   value;
         public AtomicInteger       frequency;
@@ -98,12 +98,13 @@ public class RepositoryCacheMap<K,V>  {
                 ownValue = bornStamp;
                 objValue = elemToCompare.bornStamp;
                 
-                if (ownValue < objValue)
+                if (ownValue < objValue) {
                     return -1;
-                else if (ownValue > objValue)
+                } else if (ownValue > objValue) {
                     return 1;
-                else
+                } else {
                     return 0;
+                }
             } else {
                 return 1;
             }
@@ -113,16 +114,16 @@ public class RepositoryCacheMap<K,V>  {
             final int ownValue = bornStamp;
             final int objValue = elemToCompare.bornStamp;
             
-            if (ownValue < objValue)
+            if (ownValue < objValue) {
                 return -1;
-            else if (ownValue > objValue)
+            } else if (ownValue > objValue) {
                 return 1;
-            else
+            } else {
                 return 0;
+            }
         }
         
-        public int compareTo(final Object o) {
-            final RepositoryCacheValue<V> elemToCompare = (RepositoryCacheValue<V>) o;
+        public int compareTo(final RepositoryCacheValue<V> elemToCompare) {
             final boolean ownChildhood = newBorn.get();
             final boolean objChildhood = elemToCompare.newBorn.get();
             
@@ -136,6 +137,7 @@ public class RepositoryCacheMap<K,V>  {
                 return compareAdults(elemToCompare);
             }
         }
+
     }
     
     
@@ -149,7 +151,7 @@ public class RepositoryCacheMap<K,V>  {
     }
 
     public V get(final K key) {
-        RepositoryCacheValue<V> value = (RepositoryCacheValue<V>)keyToValue.get(key);
+        RepositoryCacheValue<V> value = keyToValue.get(key);
         if (value != null) {
             valueToKey.remove(value);
             value.frequency.incrementAndGet();
@@ -192,7 +194,7 @@ public class RepositoryCacheMap<K,V>  {
     }
     
     public V remove(Object key) {
-        RepositoryCacheValue<V> entry = (RepositoryCacheValue<V> )keyToValue.remove(key);
+        RepositoryCacheValue<V> entry = keyToValue.remove(key);
         if (entry != null) {
             valueToKey.remove(entry);
             return entry.value;
@@ -238,12 +240,13 @@ public class RepositoryCacheMap<K,V>  {
     }
             
     private void softAssert(boolean condition, String message) {
-	if( ASSERTIONS && ! condition ) {
-	    Exception ex = new Exception();
-	    StackTraceElement[] trace = ex.getStackTrace();
-	    System.err.println(message);
-            for (int i=1; i < trace.length; i++)
-                System.err.println("\tat " + trace[i]); //NOI18N
-	}
+        if( ASSERTIONS && ! condition ) {
+            Exception ex = new Exception();
+            StackTraceElement[] trace = ex.getStackTrace();
+            System.err.println(message);
+                for (int i=1; i < trace.length; i++) {
+                    System.err.println("\tat " + trace[i]); //NOI18N
+                }
+        }
     }
 }

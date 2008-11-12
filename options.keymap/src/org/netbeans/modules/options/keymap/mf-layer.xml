@@ -102,5 +102,15 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-options-keymap-ActionsSearchProvider.instance"/>
         </folder>
     </folder>
-        
+
+    <folder name="xml">
+        <folder name="entities">
+            <folder name="NetBeans">
+                <file name="DTD_Keymap_Preferences_1_0" url="nbres:/org/netbeans/modules/options/keymap/KeymapPreferences-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Keymap Preferences 1.0//EN"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>

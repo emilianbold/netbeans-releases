@@ -18,23 +18,22 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jScrollPane1" alignment="1" pref="472" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" alignment="1" pref="507" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jSeparator1" alignment="0" pref="466" max="32767" attributes="0"/>
+                          <Component id="jSeparator1" alignment="0" pref="501" max="32767" attributes="0"/>
                           <Component id="spShortcuts" alignment="0" min="-2" pref="175" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="lProfile" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="cbProfile" pref="200" max="32767" attributes="0"/>
+                              <Component id="cbProfile" pref="290" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="bDuplicate" min="-2" max="-2" attributes="0"/>
+                              <Component id="manageButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="bDelete" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace pref="12" max="32767" attributes="0"/>
+                              <EmptySpace pref="47" max="32767" attributes="0"/>
                               <Component id="searchLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="searchField" linkSize="1" min="-2" pref="120" max="-2" attributes="0"/>
@@ -59,8 +58,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lProfile" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cbProfile" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="bDuplicate" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="bDelete" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="manageButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
@@ -99,17 +97,10 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="bDuplicate">
+    <Component class="javax.swing.JButton" name="manageButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/options/keymap/Bundle.properties" key="CTL_Duplicate" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="bDelete">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/options/keymap/Bundle.properties" key="CTL_Delete" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

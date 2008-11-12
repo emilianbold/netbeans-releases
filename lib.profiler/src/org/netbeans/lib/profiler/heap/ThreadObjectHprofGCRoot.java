@@ -22,9 +22,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,26 +38,57 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.cplusplus;
+package org.netbeans.lib.profiler.heap;
 
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.modules.cnd.utils.MIMENames;
+import java.util.HashMap;
+import java.util.Map;
 
-/** C++ indentation engine that delegates to C++ formatter */
-public class CCIndentEngine extends BaseIndentEngine {
 
-    private static final CCIndentEngine instance = new CCIndentEngine();
+/**
+ *
+ * @author Tomas Hurka
+ */
+class ThreadObjectHprofGCRoot extends HprofGCRoot implements ThreadObjectGCRoot {
     
-    public static final CCIndentEngine getIndentEngine(){
-        return instance;
-    }
-    
-    public CCIndentEngine() {
-        setAcceptedMimeTypes(new String[] { MIMENames.CPLUSPLUS_MIME_TYPE });
+    ThreadObjectHprofGCRoot(HprofHeap h, long offset) {
+        super(h,offset);
     }
 
-    protected ExtFormatter createFormatter() {
-	return (CCFormatter) Formatter.getFormatter(CCKit.class);
+    //~ Methods ------------------------------------------------------------------------------------------------------------------
+
+    public StackTraceElement[] getStackTrace() {
+        int stackTraceSerialNumber = getStackTraceSerialNumber();
+        
+        if (stackTraceSerialNumber != 0) {
+            StackTrace stackTrace = heap.getStackTraceSegment().getStackTraceBySerialNumber(stackTraceSerialNumber);
+            StackFrame[] frames = stackTrace.getStackFrames();
+            StackTraceElement[] stackElements = new StackTraceElement[frames.length];
+
+            for (int i=0;i<frames.length;i++) {
+                StackFrame f = frames[i];
+                String className = f.getClassName();
+                String method = f.getMethodName();
+                String source = f.getSourceFile();
+                int number = f.getLineNumber();
+                
+                if (number == StackFrame.NATIVE_METHOD) {
+                    number = -2;
+                } else if (number == StackFrame.NO_LINE_INFO || number == StackFrame.UNKNOWN_LOCATION) {
+                    number = -1;
+                }
+                stackElements[i] = new StackTraceElement(className,method,source,number);
+            }
+            return stackElements;
+        }
+        return null;
     }
+    
+    private int getThreadSerialNumber() {
+        return heap.dumpBuffer.getInt(fileOffset + 1 + heap.dumpBuffer.getIDSize());
+    }
+
+    private int getStackTraceSerialNumber() {
+        return heap.dumpBuffer.getInt(fileOffset + 1 + heap.dumpBuffer.getIDSize() + 4);
+    }    
+
 }

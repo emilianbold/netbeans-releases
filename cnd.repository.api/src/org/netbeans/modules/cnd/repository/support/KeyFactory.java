@@ -67,7 +67,7 @@ public abstract class  KeyFactory extends AbstractObjectFactory {
         if (defaultFactory != null) {
             return defaultFactory;
         }
-        defaultFactory = (KeyFactory) Lookup.getDefault().lookup(KeyFactory.class);
+        defaultFactory = Lookup.getDefault().lookup(KeyFactory.class);
         if (defaultFactory == null) {
             throw new UnsupportedOperationException("There is no KeyFactory implementation to be used"); //NOI18N
         }

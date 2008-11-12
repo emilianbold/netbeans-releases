@@ -213,12 +213,12 @@ final class ComponentLine {
 
     @Override
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < length(); i++) {
-            buffer.append(mySymbols.get(i).getChar());
+            builder.append(mySymbols.get(i).getChar());
         }
-        return buffer.toString();
+        return builder.toString();
     }
 
     void show() {

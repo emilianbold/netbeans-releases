@@ -51,7 +51,6 @@ public class CCBaseDocumentUnitTestCase
         extends BaseDocumentUnitTestCase 
 {
     private boolean isPlusPlus;
-    private EditorKit editorKit;
     
     public CCBaseDocumentUnitTestCase(String testMethodName) {
         super(testMethodName);

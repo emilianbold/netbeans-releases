@@ -72,7 +72,7 @@ public abstract class CsmReferenceRepository {
         if (defaultRepository != null) {
             return defaultRepository;
         }
-        defaultRepository = (CsmReferenceRepository) Lookup.getDefault().lookup(CsmReferenceRepository.class);
+        defaultRepository = Lookup.getDefault().lookup(CsmReferenceRepository.class);
         return defaultRepository == null ? EMPTY : defaultRepository;
     }
     

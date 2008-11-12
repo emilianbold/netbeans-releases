@@ -22,9 +22,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,40 +38,31 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.cplusplus;
+package org.netbeans.lib.profiler.heap;
 
-import java.beans.BeanDescriptor;
-import java.util.MissingResourceException;
-import org.netbeans.modules.editor.FormatterIndentEngineBeanInfo;
-import org.openide.util.NbBundle;
 
 /**
- * Beaninfo for CCIndentEngine.
- *
- * duped from editor/src/org/netbeans/modules/editor/java/JavaIndentEngineBeanInfo.java
+ * This represents one Thred Object GC root. It has kind ({@link GCRoot#THREAD_OBJECT}) and also corresponding
+ * {@link Instance}, which is actual GC root.
+ * @author Tomas Hurka
  */
-public class CCIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
+public interface ThreadObjectGCRoot extends GCRoot {
 
-    @Override
-    public BeanDescriptor getBeanDescriptor() {
-	BeanDescriptor beanDescriptor = new BeanDescriptor(getBeanClass());
-	beanDescriptor.setDisplayName(getString("LAB_CCIndentEngine")); // NOI18N
-	beanDescriptor.setShortDescription(getString("HINT_CCIndentEngine"));// NOI18N
-	beanDescriptor.setValue("global", Boolean.TRUE); // NOI18N
-        return beanDescriptor;
-    }
+    //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    protected Class getBeanClass() {
-        return CCIndentEngine.class;
-    }
-
-    @Override
-    protected String getString(String key) {
-        try {
-            return NbBundle.getBundle(CCIndentEngineBeanInfo.class).getString(key);
-        } catch (MissingResourceException e) {
-            return super.getString(key);
-        }
-    }
+    /**
+     * Returns an array of stack trace elements,
+     * each representing one stack frame.  The zeroth element of the array
+     * (assuming the array's length is non-zero) represents the top of the
+     * stack, which is the last method invocation in the sequence.  Typically,
+     * this is the point at which this throwable was created and thrown.
+     * The last element of the array (assuming the array's length is non-zero)
+     * represents the bottom of the stack, which is the first method invocation
+     * in the sequence.
+     * <br>
+     * Speed:normal
+     * @return an array of stack trace elements representing the stack trace
+     *         pertaining to this throwable.
+     */
+    StackTraceElement[] getStackTrace();
 }
-

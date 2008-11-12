@@ -1,0 +1,313 @@
+[<style> h1{| } </style>, border, <style> h1{border: } </style>, 440]
+azimuth
+background
+background-attachment
+background-color
+background-image
+background-position
+background-repeat
+border
+border-bottom
+border-bottom-color
+border-bottom-style
+border-bottom-width
+border-collapse
+border-color
+border-left
+border-left-color
+border-left-style
+border-left-width
+border-right
+border-right-color
+border-right-style
+border-right-width
+border-spacing
+border-style
+border-top
+border-top-color
+border-top-style
+border-top-width
+border-width
+bottom
+caption-side
+clear
+clip
+color
+content
+counter-increment
+counter-reset
+cue
+cue-after
+cue-before
+cursor
+direction
+display
+elevation
+empty-cells
+float
+font
+font-family
+font-size
+font-style
+font-variant
+font-weight
+height
+left
+letter-spacing
+line-height
+list-style
+list-style-image
+list-style-position
+list-style-type
+margin
+margin-bottom
+margin-left
+margin-right
+margin-top
+max-height
+max-width
+min-height
+min-width
+orphans
+outline
+outline-color
+outline-style
+outline-width
+overflow
+padding
+padding-bottom
+padding-left
+padding-right
+padding-top
+page
+page-break-after
+page-break-before
+page-break-inside
+pause
+pause-after
+pause-before
+pitch
+pitch-range
+play-during
+position
+quotes
+richness
+right
+speak
+speak-header
+speak-numeral
+speak-punctuation
+speech-rate
+stress
+table-layout
+text-align
+text-decoration
+text-indent
+text-transform
+top
+unicode-bidi
+vertical-align
+visibility
+voice-family
+volume
+white-space
+widows
+width
+word-spacing
+z-index
+End cursor position = 459
+[<style> h1{border: |} </style>, color red, <style> h1{border: red} </style>, 568]
+color aqua
+color black
+color blue
+border-style dashed
+border-style dotted
+border-style double
+color fuchsia
+color gray
+color green
+border-style groove
+border-style hidden
+border inherit
+border-style inset
+color lime
+color maroon
+border-width medium
+color navy
+border-style none
+color olive
+color orange
+border-style outset
+color purple
+color red
+color rgb
+border-style ridge
+color silver
+border-style solid
+color teal
+border-width thick
+border-width thin
+border-top-color transparent
+color white
+color yellow
+End cursor position = 591
+[<style> @| </style>, @import, <style> @import </style>, 675]
+@charset
+@font-face
+@import
+@media
+@page
+End cursor position = 691
+[<table style="|"></table>, background, <table style="background:"></table>, 826]
+azimuth
+background
+background-attachment
+background-color
+background-image
+background-position
+background-repeat
+border
+border-bottom
+border-bottom-color
+border-bottom-style
+border-bottom-width
+border-collapse
+border-color
+border-left
+border-left-color
+border-left-style
+border-left-width
+border-right
+border-right-color
+border-right-style
+border-right-width
+border-spacing
+border-style
+border-top
+border-top-color
+border-top-style
+border-top-width
+border-width
+bottom
+caption-side
+clear
+clip
+color
+content
+counter-increment
+counter-reset
+cue
+cue-after
+cue-before
+cursor
+direction
+display
+elevation
+empty-cells
+float
+font
+font-family
+font-size
+font-style
+font-variant
+font-weight
+height
+left
+letter-spacing
+line-height
+list-style
+list-style-image
+list-style-position
+list-style-type
+margin
+margin-bottom
+margin-left
+margin-right
+margin-top
+max-height
+max-width
+min-height
+min-width
+orphans
+outline
+outline-color
+outline-style
+outline-width
+overflow
+padding
+padding-bottom
+padding-left
+padding-right
+padding-top
+page
+page-break-after
+page-break-before
+page-break-inside
+pause
+pause-after
+pause-before
+pitch
+pitch-range
+play-during
+position
+quotes
+richness
+right
+speak
+speak-header
+speak-numeral
+speak-punctuation
+speech-rate
+stress
+table-layout
+text-align
+text-decoration
+text-indent
+text-transform
+top
+unicode-bidi
+vertical-align
+visibility
+voice-family
+volume
+white-space
+widows
+width
+word-spacing
+z-index
+End cursor position = 852
+[<table style="background:|"></table>, background-repeat no-repeat, <table style="background:no-repeat"></table>, 990]
+color aqua
+color black
+color blue
+background-position bottom
+background-position center
+background-attachment fixed
+color fuchsia
+color gray
+color green
+background inherit
+background-position left
+color lime
+color maroon
+color navy
+background-repeat no-repeat
+background-image none
+color olive
+color orange
+color purple
+color red
+background-repeat repeat
+background-repeat repeat-x
+background-repeat repeat-y
+color rgb
+background-position right
+background-attachment scroll
+color silver
+color teal
+background-position top
+background-color transparent
+background-image url
+color white
+color yellow
+End cursor position = 1025

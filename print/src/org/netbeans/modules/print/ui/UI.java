@@ -369,21 +369,21 @@ public final class UI {
         }
         int k = 0;
         int found = source.indexOf(searchFor, k);
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
 
         while (true) {
             if (found == -1) {
                 break;
             }
-            buffer.append(source.substring(k, found));
-            buffer.append(replaceWith);
+            builder.append(source.substring(k, found));
+            builder.append(replaceWith);
 
             k = found + searchFor.length();
             found = source.indexOf(searchFor, k);
         }
         if (k > 0) {
-            buffer.append(source.substring(k));
-            return buffer.toString();
+            builder.append(source.substring(k));
+            return builder.toString();
         } else {
             return source;
         }
