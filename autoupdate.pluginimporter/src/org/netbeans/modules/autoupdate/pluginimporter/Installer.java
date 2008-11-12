@@ -119,6 +119,7 @@ public class Installer extends ModuleInstall {
 
             if (importFrom == null || ! importFrom.exists ()) {
                 // nothing to do => return
+                LOG.fine ("Nothing to import from " + importFrom); // NOI18N
                 return ;
             }
             try {
@@ -150,8 +151,13 @@ public class Installer extends ModuleInstall {
                         LOG.info ("Plugins for import with broken dependencies: " + importer.getBrokenPlugins ());
                     }
                     if ( ! importer.getPluginsToImport ().isEmpty () ||  ! importer.getPluginsAvailableToInstall ().isEmpty ()) {
+                        LOG.info ((importer.getPluginsToImport ().size () + importer.getPluginsAvailableToInstall ().size ()) +
+                                " available plugins for import in " + importFrom); // NOI18N
                         ImportManager notifier = new ImportManager (importFrom, getUserDir (), importer);
                         notifier.notifyAvailable ();
+                    } else {
+                        LOG.fine ((importer.getPluginsToImport ().size () + importer.getPluginsAvailableToInstall ().size ()) +
+                                " available plugins for import in " + importFrom); // NOI18N
                     }
                 } catch (Exception x) {
                     LOG.log (Level.INFO, x.getLocalizedMessage () + " while importing plugins from " + importFrom, x);
