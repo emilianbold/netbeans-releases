@@ -213,10 +213,12 @@ public class JavaSourceTest extends NbTestCase {
         suite.addTest(new JavaSourceTest("testRescheduleDoesNotStore"));
 //        suite.addTest(new JavaSourceTest("testNestedActions"));                           failing due to missing shared flag
 //        suite.addTest(new JavaSourceTest("testCouplingErrors"));                          failing even in main
-        suite.addTest(new JavaSourceTest("testRunWhenScanFinished"));                
+        suite.addTest(new JavaSourceTest("testRunWhenScanFinished"));
         suite.addTest(new JavaSourceTest("testNested2"));
-        suite.addTest(new JavaSourceTest("testIndexCancel"));                            
+        suite.addTest(new JavaSourceTest("testIndexCancel"));
         suite.addTest(new JavaSourceTest("testRegisterSameTask"));
+        suite.addTest(new JavaSourceTest("testIncrementalReparse"));
+        suite.addTest(new JavaSourceTest("testCreateTaggedController"));
         return suite;
     }
 
@@ -1444,7 +1446,7 @@ public class JavaSourceTest extends NbTestCase {
             public void close() throws SecurityException {
             }
         };
-        final Logger logger = Logger.getLogger(JavaSource.class.getName());
+        final Logger logger = Logger.getLogger(JavacParser.class.getName());
         logger.setLevel (Level.FINEST);
         logger.addHandler(handler);
         try {
