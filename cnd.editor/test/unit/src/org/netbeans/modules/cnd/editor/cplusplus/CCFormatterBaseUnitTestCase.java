@@ -106,6 +106,13 @@ public class CCFormatterBaseUnitTestCase extends BaseDocumentUnitTestCase {
         try {
             int offset = getCaretOffset();
             getDocument().insertString(offset, "\n", null); // NOI18N
+//            Indent indent = Indent.get(getDocument());
+//            indent.lock();
+//            try {
+//                indent.reindent(offset-1);
+//            } finally {
+//                indent.unlock();
+//            }
             CppIndentTask task = new CppIndentTask(getDocument());
             task.reindent(offset+1);
         } catch (BadLocationException ex) {

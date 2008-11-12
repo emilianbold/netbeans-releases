@@ -42,11 +42,11 @@
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 /** Syntax analyzes forCC source files */
+@Deprecated
 public class CSyntax extends CCSyntax {
 
     /** Creates a new instance of CSyntax */
     public CSyntax() {
-        tokenContextPath = CCTokenContext.contextPath;
-        lang = IS_C;
+        super(Language.C, CCTokenContext.contextPath);
     }    
 }

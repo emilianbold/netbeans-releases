@@ -57,17 +57,6 @@ public class CCBaseDocumentUnitTestCase
         this.isPlusPlus = true;
     }
     
-    protected void setLanguage(String lang) {
-        if (lang.equals(CCSyntax.IS_CPLUSPLUS)) {
-            this.isPlusPlus = true;
-        } else if (lang.equals(CSyntax.IS_C)) {
-            this.isPlusPlus = false;
-        } else {
-            fail("Unsupported language " + lang);
-            this.isPlusPlus = false;
-        }        
-    }
-    
     /**
      * Create editor kit instance to be returned
      * by {@link #getEditorKit()}.

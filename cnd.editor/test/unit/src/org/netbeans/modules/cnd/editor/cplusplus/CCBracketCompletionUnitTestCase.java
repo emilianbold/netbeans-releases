@@ -29,7 +29,7 @@
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.editor.TokenID;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 
@@ -791,9 +791,9 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     private boolean isSkipRightBracketOrParen(boolean parenthesis) {
-        TokenID bracketTokenId = parenthesis
-        ? CCTokenContext.RPAREN
-        : CCTokenContext.RBRACKET;
+        CppTokenId bracketTokenId = parenthesis
+        ? CppTokenId.RPAREN
+        : CppTokenId.RBRACKET;
         
         try {
             return BracketCompletion.isSkipClosingBracket(getDocument(),
