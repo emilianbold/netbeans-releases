@@ -82,7 +82,7 @@ public enum GspTokenId implements TokenId {
     GTAG("gtag"),
     ERROR("gsp_error");
 
-    public static final String MIME_TYPE = "application/x-gsp"; // NOI18N
+    public static final String MIME_TYPE = "text/x-gsp"; // NOI18N
     
     private final String primaryCategory;
     

@@ -3,6 +3,6 @@
 <MIME-resolver>
     <file>
         <ext name="gsp"/>
-        <resolver mime="application/x-gsp"/>
+        <resolver mime="text/x-gsp"/>
     </file>
 </MIME-resolver>
