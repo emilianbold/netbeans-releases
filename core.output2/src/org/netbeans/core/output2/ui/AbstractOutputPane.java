@@ -41,9 +41,7 @@
 
 package org.netbeans.core.output2.ui;
 
-import java.awt.Rectangle;
 import javax.swing.plaf.TextUI;
-
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -409,6 +407,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         if (fontHeight == -1) {
             fontHeight = g.getFontMetrics(textView.getFont()).getHeight();
             fontWidth = g.getFontMetrics(textView.getFont()).charWidth('m'); //NOI18N
+            getVerticalScrollBar().setUnitIncrement(fontHeight);
         }
         super.paint(g);
     }
@@ -653,8 +652,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 
         int currPosition = sbmodel.getValue();
         if (e.getSource() == textView) {
-            int newPosition = Math.max (0, Math.min (sbmodel.getMaximum(),
-                currPosition + (e.getUnitsToScroll() * textView.getFontMetrics(textView.getFont()).getHeight())));
+            int newPosition = Math.max(0, Math.min(sbmodel.getMaximum(), currPosition + (e.getUnitsToScroll() * fontHeight)));
             // height is a magic constant because of #57532
             sbmodel.setValue (newPosition);
             if (newPosition + range >= max) {
