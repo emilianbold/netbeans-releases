@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.vmd.midp.propertyeditors.resource.elements;
 
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorRE;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -86,10 +85,10 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-@Deprecated
+
 /**
- * Use ImageEE instead
- *
+ * Use PropertyEdiotrWrapperRE.createImageElement()
+ * @deprecated
  */
 public class ImageEditorElement extends PropertyEditorResourceElement implements Runnable, CleanUp {
 
