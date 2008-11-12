@@ -271,7 +271,10 @@ public class CompilationInfo {
         
     /**
      * Returns {@link JavaSource} for which this {@link CompilationInfo} was created.
-     * @return JavaSource
+     * @return JavaSource or null
+     * @deprecated Works only when the CompilationInfo was created by JavaSource using
+     * the compatibility bridge, when the CompilationInfo was created by the parsing api
+     * it returns null. Use {@link CompilationInfo#getSnapshot()} instead.
      */
     public JavaSource getJavaSource() {
         checkConfinement();
