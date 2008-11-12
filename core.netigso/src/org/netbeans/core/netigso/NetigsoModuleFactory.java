@@ -131,12 +131,14 @@ public class NetigsoModuleFactory extends ModuleFactory {
     private static final class BundleModule extends Module {
         final Bundle bundle;
         private BundleLoader loader;
+        private Manifest manifest;
 
         public BundleModule(File jar, ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
             super(mgr, ev, history, reloadable, autoload, eager);
             try {
                 BundleContext bc = getContainer().getBundleContext();
                 bundle = bc.installBundle(jar.toURI().toURL().toExternalForm());
+                manifest = new Manifest();
             } catch (BundleException ex) {
                 throw (IOException)new IOException(ex.getMessage()).initCause(ex);
             }
@@ -159,11 +161,12 @@ public class NetigsoModuleFactory extends ModuleFactory {
 
         @Override
         public int getCodeNameRelease() {
-            String version = (String)bundle.getHeaders().get("Bundle-Version"); // NOI18N
-            if (version == null) {
-                return -1;
+            String version = (String)bundle.getHeaders().get("Bundle-SymbolicName"); // NOI18N
+            int slash = version.lastIndexOf('/');
+            if (slash != -1) {
+                return Integer.parseInt(version.substring(slash + 1));
             }
-            return Integer.parseInt(version.split("\\.")[0]);
+            return -1;
         }
 
         @Override
@@ -179,7 +182,7 @@ public class NetigsoModuleFactory extends ModuleFactory {
 
         @Override
         public List<File> getAllJars() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return Collections.emptyList();
         }
 
         @Override
@@ -237,7 +240,7 @@ public class NetigsoModuleFactory extends ModuleFactory {
 
         @Override
         public Manifest getManifest() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return manifest;
         }
 
         @Override

@@ -105,9 +105,14 @@ public class NetigsoTest extends SetupHid {
             String mf = "Bundle-SymbolicName: org.foo\n" +
                 "Bundle-Version: 1.1.0\n" +
                 "Export-Package: org.foo";
+            String mfBar =
+                "OpenIDE-Module: org.baz/1\n" +
+                "OpenIDE-Module-Name: Depends on bar test module\n" +
+                "OpenIDE-Module-Module-Dependencies: org.foo\n" +
+                "some";
 
             File j1 = changeManifest(new File(jars, "simple-module.jar"), mf);
-            File j2 = new File(jars, "depends-on-simple-module.jar");
+            File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
             m1 = mgr.create(j1, null, false, false, false);
             m2 = mgr.create(j2, null, false, false, false);
             HashSet<Module> b = new HashSet<Module>(Arrays.asList(m1, m2));
@@ -142,7 +147,7 @@ public class NetigsoTest extends SetupHid {
             String mfBar =
                 "OpenIDE-Module: org.baz/1\n" +
                 "OpenIDE-Module-Name: Depends on bar test module\n" +
-                "OpenIDE-Module-Module-Dependencies: org.foo/1 > 1.1\n" +
+                "OpenIDE-Module-Module-Dependencies: org.foo > 1.0\n" +
                 "some";
 
             File j1 = changeManifest(new File(jars, "simple-module.jar"), mf);

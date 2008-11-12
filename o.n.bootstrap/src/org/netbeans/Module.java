@@ -232,7 +232,7 @@ public abstract class Module extends ModuleInfo {
     }
     
     public Set<Dependency> getDependencies() {
-        return new HashSet<Dependency>(Arrays.asList(dependenciesA));
+        return new HashSet<Dependency>(Arrays.asList(getDependenciesArray()));
     }
     public final Dependency[]  getDependenciesArray() {
         return dependenciesA == null ? new Dependency[0] : dependenciesA;
