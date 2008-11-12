@@ -183,7 +183,37 @@ public class RestUtils {
         
         return false;
     }
-    
+
+    public static boolean isServerTomcat(Project project) {
+        RestSupport support = getRestSupport(project);
+
+        if (support != null) {
+            return support.isServerTomcat();
+        }
+
+        return false;
+    }
+
+    public static boolean isServerGFV3(Project project) {
+        RestSupport support = getRestSupport(project);
+
+        if (support != null) {
+            return support.isServerGFV3();
+        }
+
+        return false;
+    }
+
+    public static boolean isServerGFV2(Project project) {
+        RestSupport support = getRestSupport(project);
+
+        if (support != null) {
+            return support.isServerGFV2();
+        }
+
+        return false;
+    }
+
     public static Datasource getDatasource(Project project, String jndiName) {
         RestSupport support = getRestSupport(project);
         

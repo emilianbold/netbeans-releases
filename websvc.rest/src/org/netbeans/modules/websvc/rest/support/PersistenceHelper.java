@@ -75,11 +75,10 @@ public class PersistenceHelper {
     private static final String NON_JTA_DATA_SOURCE_TAG = "non-jta-data-source";        //NOI18N
 
     private static final String CLASS_TAG = "class";    //NOI18N
-
     private static final String PROVIDER_TAG = "provider";  //NOI18N
+    private static final String DEFAULT_GFV2_PROVIDER = "oracle.toplink.essentials.PersistenceProvider"; //NOI18N
 
-    private static final String DEFAULT_PROVIDER = "oracle.toplink.essentials.PersistenceProvider"; //NOI18N
-
+    private static final String DEFAULT_GFV3_PROVIDER = "org.eclipse.persistence.jpa.PersistenceProvider";  //NOI18N
     private Project project;
     private DOMHelper helper;
 
@@ -105,7 +104,11 @@ public class PersistenceHelper {
                 if (nodes.getLength() > 0) {
                     provider = helper.getValue((Element) nodes.item(0));
                 } else {
-                    provider = DEFAULT_PROVIDER;
+                    if (RestUtils.isServerGFV3(project)) {
+                        provider = DEFAULT_GFV3_PROVIDER;
+                    } else {
+                        provider = DEFAULT_GFV3_PROVIDER;
+                    }
                 }
 
                 Datasource datasource = null;
@@ -127,17 +130,16 @@ public class PersistenceHelper {
 
     public void configure(Collection<String> classNames, boolean useResourceLocalTx) throws IOException {
         if (helper == null) return;
-
         // Required by Spring
-        setDefaultProvider();
-
+        if (RestUtils.hasSpringSupport(project)) {
+            setDefaultProvider();
+        }
 
         // Need to do this for Tomcat
-        unsetExcludeEnlistedClasses();
-
-         // Required for Spring + Hibernate
-        addEntityClasses(classNames);
-
+        if (RestUtils.isServerTomcat(project)) {
+            unsetExcludeEnlistedClasses();
+            addEntityClasses(classNames);
+        }
 
         if (useResourceLocalTx)
             switchToResourceLocalTransaction();
@@ -193,7 +195,9 @@ public class PersistenceHelper {
         NodeList nodes = puElement.getElementsByTagName(PROVIDER_TAG);
 
         if (nodes.getLength() == 0) {
-            puElement.insertBefore(helper.createElement(PROVIDER_TAG, DEFAULT_PROVIDER),
+
+            puElement.insertBefore(helper.createElement(PROVIDER_TAG, 
+                    (RestUtils.isServerGFV3(project) ? DEFAULT_GFV3_PROVIDER : DEFAULT_GFV2_PROVIDER)),
                     puElement.getFirstChild());
         }
     }

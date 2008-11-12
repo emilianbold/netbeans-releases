@@ -72,8 +72,10 @@ import org.openide.util.Exceptions;
  */
 public class WebProjectRestSupport extends RestSupport {
 
-    public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";
+    public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";   //NOI18N
+
     public static final String DIRECTORY_DEPLOYMENT_SUPPORTED = "directory.deployment.supported"; // NOI18N
+
 
     /** Creates a new instance of WebProjectRestSupport */
     public WebProjectRestSupport(Project project) {
@@ -368,4 +370,6 @@ public class WebProjectRestSupport extends RestSupport {
             }
         }
     }
+
+   
 }
