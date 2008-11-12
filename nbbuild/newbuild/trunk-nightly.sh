@@ -65,13 +65,13 @@ if [ -n $BUILD_ID ]; then
 fi
 
 cd $TRUNK_NIGHTLY_DIRNAME
-bash build-nbi.sh
-ERROR_CODE=$?
-
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - NBI installers build failed"
-    exit $ERROR_CODE;
-fi
+#bash build-nbi.sh
+#ERROR_CODE=$?
+#
+#if [ $ERROR_CODE != 0 ]; then
+#    echo "ERROR: $ERROR_CODE - NBI installers build failed"
+#    exit $ERROR_CODE;
+#fi
 
 if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
