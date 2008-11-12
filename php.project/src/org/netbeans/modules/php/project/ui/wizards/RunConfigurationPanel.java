@@ -53,7 +53,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.connections.ConfigManager;
-import org.netbeans.modules.php.project.connections.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
 import org.netbeans.modules.php.project.ui.LocalServer;

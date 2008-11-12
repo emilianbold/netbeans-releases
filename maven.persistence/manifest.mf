@@ -1,7 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.maven.persistence/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/maven/persistence/Bundle.properties
-OpenIDE-Module-Layer: org/netbeans/modules/maven/persistence/layer.xml
 OpenIDE-Module-Public-Packages: -
 AutoUpdate-Show-In-Client: false
 OpenIDE-Module-Specification-Version: 1.1
