@@ -176,6 +176,7 @@ public class ActionMappings extends javax.swing.JPanel {
         titles.put(ActionProvider.COMMAND_TEST, NbBundle.getMessage(ActionMappings.class, "COM_Test_project"));
         titles.put(ActionProvider.COMMAND_TEST_SINGLE, NbBundle.getMessage(ActionMappings.class, "COM_Test_file"));
         titles.put("profile", NbBundle.getMessage(ActionMappings.class, "COM_Profile_project"));
+        titles.put("javadoc", NbBundle.getMessage(ActionMappings.class, "COM_Javadoc_project"));
         comConfiguration.setEditable(false);
         comConfiguration.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -591,6 +592,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             addSingleAction(ActionProvider.COMMAND_DEBUG_SINGLE, model);
             addSingleAction(ActionProvider.COMMAND_DEBUG_TEST_SINGLE, model);
             addSingleAction("profile", model);
+            addSingleAction("javadoc", model);
         }
         List customs = getActionMappings().getActions();
         if (customs != null) {

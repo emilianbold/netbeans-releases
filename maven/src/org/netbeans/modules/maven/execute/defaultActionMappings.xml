@@ -76,6 +76,7 @@ made subject to such option by the copyright holder.
             <packaging>*</packaging>
         </packagings>
         <goals>
+            <goal>generate-sources</goal>
             <goal>javadoc:javadoc</goal>
         </goals>
     </action>
