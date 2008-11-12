@@ -38,12 +38,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.ruby.platform.execution;
 
-import org.netbeans.modules.ruby.platform.execution.ExecutionUtils;
+import java.util.concurrent.Future;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.RubyTestBase;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.openide.util.Utilities;
@@ -58,8 +62,7 @@ public class ExecutionUtilsTest extends RubyTestBase {
         String[] expectedJars = {
             "bsf.jar",
             "jruby.jar",
-            "profile.jar",
-        };
+            "profile.jar",};
         Arrays.sort(expectedJars);
         File jrubyLib = new File(TestUtil.getXTestJRubyHome(), "lib");
         String cp = ExecutionUtils.computeJRubyClassPath(null, jrubyLib);
@@ -78,5 +81,27 @@ public class ExecutionUtilsTest extends RubyTestBase {
         for (int i = 0; i < jars.length; i++) {
             assertTrue(jars[i] + " ends with " + expectedJars[i], jars[i].endsWith(expectedJars[i]));
         }
+    }
+
+    public void testAdditionalEnvironment() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyExecutionDescriptor descriptor = new RubyExecutionDescriptor(platform);
+
+        descriptor.cmd(platform.getInterpreterFile());
+        String gemPath = getWorkDirPath() + File.separator + "fake-repo";
+        descriptor.addAdditionalEnv(Collections.<String, String>singletonMap("GEM_PATH", gemPath));
+
+        List<String> argList = new ArrayList<String>();
+        argList.add("-e");
+        File file = new File(getWorkDir(), "gp.txt");
+        argList.add("File.open('" + file.getAbsolutePath() + "', 'w'){|f|f.printf ENV['GEM_PATH']}");
+        descriptor.additionalArgs(argList.toArray(new String[argList.size()]));
+        RubyProcessCreator rpc = new RubyProcessCreator(descriptor);
+        org.netbeans.modules.extexecution.api.ExecutionService service = 
+                org.netbeans.modules.extexecution.api.ExecutionService.newService(rpc, descriptor.toExecutionDescriptor(), null);
+        Future<Integer> execution = service.run();
+        execution.get();
+        assertTrue(execution.isDone());
+        assertEquals("right GEM_PATH", gemPath, slurp(file));
     }
 }

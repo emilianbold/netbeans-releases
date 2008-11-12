@@ -70,12 +70,10 @@ import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
+import org.netbeans.modules.ruby.platform.execution.ExecutionUtils.FileLocation;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputProcessor;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
-import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
 import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.openide.DialogDescriptor;
@@ -93,7 +91,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
-import org.openide.windows.OutputListener;
 
 
 public final class GenerateAction extends NodeAction {
@@ -448,7 +445,7 @@ public final class GenerateAction extends NodeAction {
                 }
 
                 if (!line.trim().startsWith("skip")) { // NOI18N
-                    locations.add(new FileLocation(file, lineno, -1));
+                    locations.add(new FileLocation(file, lineno));
                 }
 
                 return Collections.<ConvertedLine>singletonList(

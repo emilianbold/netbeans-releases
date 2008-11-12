@@ -88,7 +88,6 @@ public class RubyExecutionDescriptor {
     private boolean appendJdkToPath;
     private String encoding;
     private boolean useInterpreter;
-    List<OutputRecognizer> outputRecognizers;
     private boolean runThroughRuby = true;
     private final List<LineConvertor> outConvertors = new ArrayList<LineConvertor>();
     private final List<LineConvertor> errConvertors = new ArrayList<LineConvertor>();
@@ -123,7 +122,6 @@ public class RubyExecutionDescriptor {
         this.displayName = displayName;
         this.pwd = pwd;
         this.script = script;
-        this.outputRecognizers = new ArrayList<OutputRecognizer>();
         this.useInterpreter = true;
         assert (pwd == null) || pwd.isDirectory() : pwd + " is a directory";
         if (platform.hasRubyGemsInstalled()) {
@@ -168,11 +166,6 @@ public class RubyExecutionDescriptor {
 
     public RubyExecutionDescriptor addStandardRecognizers() {
         addStandardConvertors = true;
-        return this;
-    }
-
-    public RubyExecutionDescriptor addOutputRecognizer(OutputRecognizer recognizer) {
-        outputRecognizers.add(recognizer);
         return this;
     }
 
@@ -401,14 +394,6 @@ public class RubyExecutionDescriptor {
         return this;
     }
 
-//    public List<LineConvertor> getErrConvertors() {
-//        return errConvertors;
-//    }
-//
-//    public List<LineConvertor> getOutConvertors() {
-//        return outConvertors;
-//    }
-//
     public void setErrProcessorFactory(InputProcessorFactory errProcessorFactory) {
         this.errProcessorFactory = errProcessorFactory;
     }

@@ -128,7 +128,9 @@ public class RubyProcessCreator implements Callable<Process> {
             builder = builder.addArgument(arg);
 
         }
-        builder = builder.workingDirectory(descriptor.getPwd());
+        if (descriptor.getPwd() != null) {
+            builder = builder.workingDirectory(descriptor.getPwd());
+        }
         for (Entry<String, String> entry : descriptor.getAdditionalEnvironment().entrySet()) {
             builder = builder.addEnvironmentVariable(entry.getKey(), entry.getValue());
         }

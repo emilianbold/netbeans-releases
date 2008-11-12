@@ -110,7 +110,6 @@ public class AutoTestSupport {
         desc.fileLocator(fileLocator);
         desc.classPath(classPath); // Applies only to JRuby
         desc.showProgress(false);
-        desc.addOutputRecognizer(new TestNotifier(false, false));
         desc.addStandardRecognizers();
         LineConvertor testNotifier = new TestNotifierLineConvertor(false, false);
         desc.addOutConvertor(testNotifier);

@@ -41,37 +41,31 @@
 
 package org.netbeans.modules.ruby.platform.execution;
 
-import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.ruby.platform.RubyExecution;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
 
 /**
+ * Tests for the {@link ExecutionUtils#getLocation(java.lang.String) } method.
+ *
  * @author Tor Norbye
  */
-public class RegexpOutputRecognizerTest extends NbTestCase {
+public class GetLocationTest extends NbTestCase {
 
-    public RegexpOutputRecognizerTest(String testName) {
+    public GetLocationTest(String testName) {
         super(testName);
     }
 
     private void assertRecognized(String toRecognize, String file, int line) {
-        FileLocation location = null;
-        for (RegexpOutputRecognizer outputRecognizer : RubyExecution.getStandardRubyRecognizers()) {
-            location = outputRecognizer.processLine(toRecognize);
-            if (location != null) break;
-        }
+        ExecutionUtils.FileLocation location = ExecutionUtils.getLocation(toRecognize);
+
         assertNotNull(location);
         assertEquals(file, location.file);
         assertEquals(line, location.line);
     }
 
     private void assertNotRecognized(String toRecognize) {
-        for (RegexpOutputRecognizer outputRecognizer : RubyExecution.getStandardRubyRecognizers()) {
-            assertNull(outputRecognizer.processLine(toRecognize));
-        }
+        assertNull(ExecutionUtils.getLocation(toRecognize));
     }
 
     private String touch(String pathInWorkDir) throws IOException {

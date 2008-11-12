@@ -256,7 +256,9 @@ public class RSpecSupport {
             desc.allowInput();
             desc.fileLocator(fileLocator);
             desc.addStandardRecognizers();
-            desc.addOutputRecognizer(new TestNotifier(true, true));
+            LineConvertor convertor = new TestNotifierLineConvertor(true, true);
+            desc.addOutConvertor(convertor);
+            desc.addErrConvertor(convertor);
 
         }
         

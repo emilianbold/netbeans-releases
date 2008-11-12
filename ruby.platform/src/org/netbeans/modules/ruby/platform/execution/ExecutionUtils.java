@@ -48,7 +48,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -68,9 +67,9 @@ public final class ExecutionUtils {
 
     private static final Pattern[] LOCATION_RECOGNIZER_PATTERNS = new Pattern[]{
         RubyLineConvertorFactory.RAILS_RECOGNIZER,
+        RubyLineConvertorFactory.RUBY_COMPILER_WIN_MY,
         RubyLineConvertorFactory.RUBY_COMPILER,
-        RubyLineConvertorFactory.RUBY_COMPILER_WIN,
-        RubyLineConvertorFactory.RUBY_COMPILER_WIN_MY};
+        RubyLineConvertorFactory.RUBY_COMPILER_WIN};
 
     /** When not set (the default) do stdio syncing for native Ruby binaries */
     private static final boolean SYNC_RUBY_STDIO = System.getProperty("ruby.no.sync-stdio") == null; // NOI18N
