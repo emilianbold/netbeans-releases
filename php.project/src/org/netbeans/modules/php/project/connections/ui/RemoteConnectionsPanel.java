@@ -283,7 +283,6 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         configurationPanel.store(cfg);
     }
 
-    // XXX
     private void switchConfigurationPanel() {
         configurationPanel.removeChangeListener(this);
 
