@@ -75,26 +75,4 @@ public class SpaceAndLineSeparatorUnitTestCase extends TestCase {
         assertTrue("Character.isWhitespace for '\\r' must be true", res);
     }
     
-    public void testSyntaxIsSpaceChar() {
-        boolean res = CCSyntax.isSpaceChar(' ');
-        assertTrue("CCSyntax.isSpaceChar for ' ' must be true", res);
-        res = CCSyntax.isSpaceChar('\n');
-        assertFalse("CCSyntax.isSpaceChar for '\\n' must be false ", res);
-        res = CCSyntax.isSpaceChar('\t');
-        assertTrue("CCSyntax.isSpaceChar for '\\t' must be true", res);
-        res = CCSyntax.isSpaceChar('\r');
-        assertFalse("CCSyntax.isSpaceChar for '\\r' must be false", res);
-    }
-    
-    public void testSyntaxLineSeparator() {
-        boolean res = CCSyntax.isLineSeparator(' ');
-        assertFalse("CCSyntax.isLineSeparator for ' ' must be false", res);
-        res = CCSyntax.isLineSeparator('\n');
-        assertTrue("CCSyntax.isLineSeparator for '\\n' must be true ", res);
-        res = CCSyntax.isLineSeparator('\t');
-        assertFalse("CCSyntax.isLineSeparator for '\\t' must be false", res);
-        res = CCSyntax.isLineSeparator('\r');
-        assertTrue("CCSyntax.isLineSeparator for '\\r' must be true", res);
-    }    
-    
 }
