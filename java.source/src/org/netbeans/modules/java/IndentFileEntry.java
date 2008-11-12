@@ -58,6 +58,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.FileEntry;
 import org.openide.text.IndentEngine;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -179,8 +180,11 @@ public abstract class IndentFileEntry extends FileEntry.Format {
         return fo;
     }
     
+    /** The prefix of all magic strings */
+    private final static String MAGIC_PREFIX = "//GEN-"; // NOI18N
+
     static String fixupGuardedBlocks(String indentedLine) {
-        int offset = indentedLine.indexOf(Util.MAGIC_PREFIX);
+        int offset = indentedLine.indexOf(MAGIC_PREFIX);
         if (offset == -1)
             return indentedLine;
         // move the guarded block at the end of the first line in the string
@@ -213,8 +217,8 @@ public abstract class IndentFileEntry extends FileEntry.Format {
             return writer.toString();
         } catch (Exception ex) {
 	    ErrorManager.getDefault().annotate(
-		ex, ErrorManager.WARNING, "Indentation engine error",  // NOI18N
-                    Util.getString("EXMSG_IndentationEngineError"), ex, null);
+		ex, ErrorManager.WARNING, "Indentation engine error",
+                    NbBundle.getMessage(IndentFileEntry.class, "EXMSG_IndentationEngineError"), ex, null);// NOI18N
             ErrorManager.getDefault().notify(ex);
             return text;
         }
