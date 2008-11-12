@@ -65,11 +65,11 @@ import org.openide.util.NbBundle;
 public class NavigatorComponent implements NavigatorPanel, LookupListener {
     
     /** Lookup template to search for java data objects. shared with InheritanceTreePanel */
-    private Lookup.Template CTemplate = new Lookup.Template(CDataObject.class);
+    private Lookup.Template<CDataObject> CTemplate = new Lookup.Template<CDataObject>(CDataObject.class);
     private Lookup.Result CContext;
-    private Lookup.Template CCTemplate = new Lookup.Template(CCDataObject.class);
+    private Lookup.Template<CCDataObject> CCTemplate = new Lookup.Template<CCDataObject>(CCDataObject.class);
     private Lookup.Result CCContext;
-    private Lookup.Template HTemplate = new Lookup.Template(HDataObject.class);
+    private Lookup.Template<HDataObject> HTemplate = new Lookup.Template<HDataObject>(HDataObject.class);
     private Lookup.Result HContext;
     /** UI of this navigator panel */
     private NavigatorPanelUI panelUI;

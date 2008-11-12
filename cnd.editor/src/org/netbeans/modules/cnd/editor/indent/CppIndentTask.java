@@ -94,7 +94,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                 } else {
                     int indent = findIndent(token) + 1;
                     try {
-                        if (!"*".equals(doc.getText(caretOffset, 1))) {
+                        if (!"*".equals(doc.getText(caretOffset, 1))) { // NOI18N
                             doc.insertString(caretOffset, "* ", null); // NOI18N
                         }
                     } catch (BadLocationException ex) {
