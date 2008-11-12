@@ -22,7 +22,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -39,25 +38,70 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.webmvc;
+package org.netbeans.lib.profiler.heap;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import java.util.Map;
+
 
 /**
  *
- * @author Andrei Badea
+ * @author Tomas Hurka
+ * @author Toms Hurka
  */
-@LookupProvider.Registration(projectType="org-netbeans-modules-web-project")
-public class ProjectLookupProvider implements LookupProvider {
+class StackTraceSegment extends TagBounds {
+    //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project project = baseContext.lookup(Project.class);
-        if (project == null) {
-            throw new IllegalStateException("Lookup " + baseContext + " does not contain a Project");
+    HprofHeap hprofHeap;
+    final int threadSerialNumberOffset;
+    final int stackTraceSerialNumberOffset;
+    final int lengthOffset;
+    final int framesListOffset;
+    final int numberOfFramesOffset;
+    final int timeOffset;
+
+    //~ Constructors -------------------------------------------------------------------------------------------------------------
+
+    StackTraceSegment(HprofHeap heap, long start, long end) {
+        super(HprofHeap.STACK_TRACE, start, end);
+
+        int idSize = heap.dumpBuffer.getIDSize();
+        hprofHeap = heap;
+        timeOffset = 1;
+        lengthOffset = timeOffset + 4;
+        stackTraceSerialNumberOffset = lengthOffset + 4;
+        threadSerialNumberOffset = stackTraceSerialNumberOffset + 4;
+        numberOfFramesOffset = threadSerialNumberOffset + 4;
+        framesListOffset = numberOfFramesOffset + 4;
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------------------------------------
+
+    StackTrace getStackTraceBySerialNumber(long stackTraceSerialNumber) {
+        long[] offset = new long[] { startOffset };
+
+        while (offset[0] < endOffset) {
+            long start = offset[0];
+            long serialNumber = readStackTraceTag(offset);
+
+            if (serialNumber == stackTraceSerialNumber) {
+                return new StackTrace(this, start);
+            }
         }
-        return Lookups.singleton(new WebProjectSpringConfigFileProvider(project));
+        return null;
+    }
+
+    private HprofByteBuffer getDumpBuffer() {
+        HprofByteBuffer dumpBuffer = hprofHeap.dumpBuffer;
+
+        return dumpBuffer;
+    }
+
+    private long readStackTraceTag(long[] offset) {
+        long start = offset[0];
+
+        if (hprofHeap.readTag(offset) != HprofHeap.STACK_TRACE) {
+            return 0;
+        }
+        return getDumpBuffer().getID(start + stackTraceSerialNumberOffset);
     }
 }

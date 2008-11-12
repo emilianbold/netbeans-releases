@@ -54,6 +54,7 @@ import org.openide.util.lookup.Lookups;
  * 
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
+@LookupProvider.Registration(projectType={"org-netbeans-modules-maven","org-netbeans-modules-java-j2seproject"})
 public class HibernateProjectLookupExtender implements LookupProvider {
 
     public Lookup createAdditionalLookup(Lookup baseContext) {

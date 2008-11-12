@@ -22,7 +22,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -39,25 +38,31 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.webmvc;
+package org.netbeans.lib.profiler.heap;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
- *
- * @author Andrei Badea
+ * This represents one Thred Object GC root. It has kind ({@link GCRoot#THREAD_OBJECT}) and also corresponding
+ * {@link Instance}, which is actual GC root.
+ * @author Tomas Hurka
  */
-@LookupProvider.Registration(projectType="org-netbeans-modules-web-project")
-public class ProjectLookupProvider implements LookupProvider {
+public interface ThreadObjectGCRoot extends GCRoot {
 
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project project = baseContext.lookup(Project.class);
-        if (project == null) {
-            throw new IllegalStateException("Lookup " + baseContext + " does not contain a Project");
-        }
-        return Lookups.singleton(new WebProjectSpringConfigFileProvider(project));
-    }
+    //~ Methods ------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Returns an array of stack trace elements,
+     * each representing one stack frame.  The zeroth element of the array
+     * (assuming the array's length is non-zero) represents the top of the
+     * stack, which is the last method invocation in the sequence.  Typically,
+     * this is the point at which this throwable was created and thrown.
+     * The last element of the array (assuming the array's length is non-zero)
+     * represents the bottom of the stack, which is the first method invocation
+     * in the sequence.
+     * <br>
+     * Speed:normal
+     * @return an array of stack trace elements representing the stack trace
+     *         pertaining to this throwable.
+     */
+    StackTraceElement[] getStackTrace();
 }

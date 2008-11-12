@@ -22,7 +22,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -39,69 +38,73 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans;
+package org.netbeans.lib.profiler.heap;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import java.util.Map;
+
 
 /**
  *
- * @author Andrei Badea
+ * @author Tomas Hurka
+ * @author Toms Hurka
  */
-public class ProjectLookupProvider implements LookupProvider {
+class StackFrameSegment extends TagBounds {
+    //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private final Kind kind;
-    
-    @LookupProvider.Registration(projectType={
-        "org-netbeans-modules-java-j2seproject",
-        "org-netbeans-modules-j2ee-ejbjarproject"
-    })
-    public static ProjectLookupProvider standard() {
-        return new ProjectLookupProvider(Kind.NON_WEB);
+    HprofHeap hprofHeap;
+    final int methodIDOffset;
+    final int stackFrameIDOffset;
+    final int lengthOffset;
+    final int sourceIDOffset;
+    final int methodSignatureIDOffset;
+    final int timeOffset;
+    final int classSerialNumberOffset;
+    final int lineNumberOffset;
+
+    //~ Constructors -------------------------------------------------------------------------------------------------------------
+
+    StackFrameSegment(HprofHeap heap, long start, long end) {
+        super(HprofHeap.STACK_TRACE, start, end);
+
+        int idSize = heap.dumpBuffer.getIDSize();
+        hprofHeap = heap;
+        timeOffset = 1;
+        lengthOffset = timeOffset + 4;
+        stackFrameIDOffset = lengthOffset + 4;
+        methodIDOffset = stackFrameIDOffset + idSize;
+        methodSignatureIDOffset = methodIDOffset + idSize;
+        sourceIDOffset = methodSignatureIDOffset + idSize;
+        classSerialNumberOffset = sourceIDOffset + idSize;
+        lineNumberOffset = classSerialNumberOffset + 4;
     }
 
-    @LookupProvider.Registration(projectType="org-netbeans-modules-web-project")
-    public static ProjectLookupProvider web() {
-        return new ProjectLookupProvider(Kind.WEB);
-    }
+    //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    @LookupProvider.Registration(projectType="org-netbeans-modules-maven")
-    public static ProjectLookupProvider simple() {
-        return new ProjectLookupProvider(Kind.SIMPLE);
-    }
+    StackFrame getStackFrameByID(long stackFrameID) {
+        long[] offset = new long[] { startOffset };
 
-    private ProjectLookupProvider(Kind kind) {
-        this.kind = kind;
-    }
+        while (offset[0] < endOffset) {
+            long start = offset[0];
+            long frameID = readStackFrameTag(offset);
 
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project project = baseContext.lookup(Project.class);
-        if (project == null) {
-            throw new IllegalStateException("Lookup " + baseContext + " does not contain a Project");
+            if (frameID == stackFrameID) {
+                return new StackFrame(this, start);
+            }
         }
-        List<Object> instances = new ArrayList<Object>(3);
-        instances.add(new ProjectSpringScopeProvider(project));
-        if (kind != Kind.SIMPLE) {
-            instances.add(new RecommendedTemplatesImpl(kind == Kind.WEB));
-            instances.add(new SpringConfigFileLocationProviderImpl(project));
-        }
-        return Lookups.fixed(instances.toArray(new Object[instances.size()]));
+        return null;
     }
 
-    enum Kind {
+    private HprofByteBuffer getDumpBuffer() {
+        return  hprofHeap.dumpBuffer;
+    }
 
-        // For most projects.
-        NON_WEB,
+    private long readStackFrameTag(long[] offset) {
+        long start = offset[0];
 
-        // For web projects, whose config file providers are provided by the Web MVC support
-        // (since it needs to use the WebModule API).
-        WEB,
+        if (hprofHeap.readTag(offset) != HprofHeap.STACK_FRAME) {
+            return 0;
+        }
 
-        // For Maven projects, which implement everything.
-        SIMPLE
+        return getDumpBuffer().getID(start + stackFrameIDOffset);
     }
 }

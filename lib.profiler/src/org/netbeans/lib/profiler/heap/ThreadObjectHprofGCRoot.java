@@ -22,7 +22,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -39,25 +38,57 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.webmvc;
+package org.netbeans.lib.profiler.heap;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  *
- * @author Andrei Badea
+ * @author Tomas Hurka
  */
-@LookupProvider.Registration(projectType="org-netbeans-modules-web-project")
-public class ProjectLookupProvider implements LookupProvider {
-
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project project = baseContext.lookup(Project.class);
-        if (project == null) {
-            throw new IllegalStateException("Lookup " + baseContext + " does not contain a Project");
-        }
-        return Lookups.singleton(new WebProjectSpringConfigFileProvider(project));
+class ThreadObjectHprofGCRoot extends HprofGCRoot implements ThreadObjectGCRoot {
+    
+    ThreadObjectHprofGCRoot(HprofHeap h, long offset) {
+        super(h,offset);
     }
+
+    //~ Methods ------------------------------------------------------------------------------------------------------------------
+
+    public StackTraceElement[] getStackTrace() {
+        int stackTraceSerialNumber = getStackTraceSerialNumber();
+        
+        if (stackTraceSerialNumber != 0) {
+            StackTrace stackTrace = heap.getStackTraceSegment().getStackTraceBySerialNumber(stackTraceSerialNumber);
+            StackFrame[] frames = stackTrace.getStackFrames();
+            StackTraceElement[] stackElements = new StackTraceElement[frames.length];
+
+            for (int i=0;i<frames.length;i++) {
+                StackFrame f = frames[i];
+                String className = f.getClassName();
+                String method = f.getMethodName();
+                String source = f.getSourceFile();
+                int number = f.getLineNumber();
+                
+                if (number == StackFrame.NATIVE_METHOD) {
+                    number = -2;
+                } else if (number == StackFrame.NO_LINE_INFO || number == StackFrame.UNKNOWN_LOCATION) {
+                    number = -1;
+                }
+                stackElements[i] = new StackTraceElement(className,method,source,number);
+            }
+            return stackElements;
+        }
+        return null;
+    }
+    
+    private int getThreadSerialNumber() {
+        return heap.dumpBuffer.getInt(fileOffset + 1 + heap.dumpBuffer.getIDSize());
+    }
+
+    private int getStackTraceSerialNumber() {
+        return heap.dumpBuffer.getInt(fileOffset + 1 + heap.dumpBuffer.getIDSize() + 4);
+    }    
+
 }
