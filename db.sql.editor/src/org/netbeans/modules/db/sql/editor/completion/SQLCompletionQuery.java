@@ -119,13 +119,13 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         resultSet.finish();
     }
 
-    public void query(SQLCompletionResultSet resultSet, String statement, int caretOffset, SubstitutionHandler substitutionHandler) {
-        doQuery(SQLCompletionEnv.forStatement(statement, caretOffset, substitutionHandler));
+    public void query(SQLCompletionResultSet resultSet, SQLCompletionEnv newEnv) {
+        doQuery(newEnv);
         if (items != null) {
             items.fill(resultSet);
         }
         if (anchorOffset != -1) {
-            resultSet.setAnchorOffset(env.getStatementOffset() + anchorOffset);
+            resultSet.setAnchorOffset(newEnv.getStatementOffset() + anchorOffset);
         }
     }
 

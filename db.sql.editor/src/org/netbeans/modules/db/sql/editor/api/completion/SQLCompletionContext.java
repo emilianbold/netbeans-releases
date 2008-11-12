@@ -48,25 +48,37 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 public class SQLCompletionContext {
 
     private final DatabaseConnection dbconn;
-    private final CharSequence charSequence;
+    private final CharSequence statement;
     private final int offset;
 
-    public static SQLCompletionContext create(DatabaseConnection dbconn, CharSequence charSequence, int offset) {
-        return new SQLCompletionContext(dbconn, charSequence, offset);
+    public static SQLCompletionContext empty() {
+        return new SQLCompletionContext(null, null, 0);
     }
 
-    private SQLCompletionContext(DatabaseConnection dbconn, CharSequence charSequence, int offset) {
+    private SQLCompletionContext(DatabaseConnection dbconn, CharSequence statement, int offset) {
         this.dbconn = dbconn;
-        this.charSequence = charSequence;
+        this.statement = statement;
         this.offset = offset;
+    }
+
+    public SQLCompletionContext setDatabaseConnection(DatabaseConnection dbconn) {
+        return new SQLCompletionContext(dbconn, this.statement, this.offset);
+    }
+
+    public SQLCompletionContext setStatement(CharSequence statement) {
+        return new SQLCompletionContext(this.dbconn, statement, this.offset);
+    }
+
+    public SQLCompletionContext setOffset(int offset) {
+        return new SQLCompletionContext(this.dbconn, this.statement, offset);
     }
 
     public DatabaseConnection getDatabaseConnection() {
         return dbconn;
     }
 
-    public CharSequence getCharSequence() {
-        return charSequence;
+    public CharSequence getStatement() {
+        return statement;
     }
 
     public int getOffset() {

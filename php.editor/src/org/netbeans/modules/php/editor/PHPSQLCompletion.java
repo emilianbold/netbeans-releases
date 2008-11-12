@@ -158,30 +158,43 @@ public class PHPSQLCompletion implements CompletionProvider {
 
         @Override
         protected void query(CompletionResultSet resultSet, Document document, int caretOffset) {
-            if (!NO_COMPLETION) {
-                SubstitutionHandlerImpl substHandler = compute(document, caretOffset);
-                if (substHandler != null) {
-                    int statementCaretOffset = caretOffset - substHandler.getStatementOffset();
-                    if (statementCaretOffset >= 0) { // Just in case.
-                        DatabaseConnection dbconn = ConnectionManager.getDefault().getConnection(DERBY_CONNECTION);
-                        if (dbconn != null) {
-                            SQLCompletionContext context = SQLCompletionContext.create(dbconn, substHandler.getStatement(), statementCaretOffset);
-                            SQLCompletion completion = SQLCompletion.create(context);
-                            SQLCompletionResultSet sqlResultSet = SQLCompletionResultSet.create();
-                            completion.query(sqlResultSet, substHandler);
-                            resultSet.addAllItems(sqlResultSet.getItems());
-                            resultSet.setAnchorOffset(substHandler.getStatementOffset() + sqlResultSet.getAnchorOffset());
-                        } else {
-                            StatusDisplayer.getDefault().setStatusText("Connection not found: " + DERBY_CONNECTION); // NOI18N
-                        }
-                    }
-                }
-            }
+            doQuery(resultSet, document, caretOffset);
             resultSet.finish();
         }
 
-        private SubstitutionHandlerImpl compute(final Document document, final int caretOffset) {
-            final SubstitutionHandlerImpl[] result = { null };
+        private void doQuery(CompletionResultSet resultSet, Document document, int caretOffset) {
+            if (NO_COMPLETION) {
+                return;
+            }
+            EmbeddedSQLStatement substHandler = computeSQLStatement(document, caretOffset);
+            if (substHandler == null) {
+                return;
+            }
+            int statementCaretOffset = caretOffset - substHandler.getStatementOffset();
+            if (statementCaretOffset < 0) { // Just in case.
+                return;
+            }
+            SQLCompletionContext context = SQLCompletionContext.empty();
+            context = context.setStatement(substHandler.getStatement());
+            if (!SQLCompletion.canComplete(context)) {
+                return;
+            }
+            context = context.setOffset(statementCaretOffset);
+            DatabaseConnection dbconn = ConnectionManager.getDefault().getConnection(DERBY_CONNECTION);
+            if (dbconn == null) {
+                StatusDisplayer.getDefault().setStatusText("Connection not found: " + DERBY_CONNECTION); // NOI18N
+                return;
+            }
+            context = context.setDatabaseConnection(dbconn);
+            SQLCompletion completion = SQLCompletion.create(context);
+            SQLCompletionResultSet sqlResultSet = SQLCompletionResultSet.create();
+            completion.query(sqlResultSet, substHandler);
+            resultSet.addAllItems(sqlResultSet.getItems());
+            resultSet.setAnchorOffset(substHandler.getStatementOffset() + sqlResultSet.getAnchorOffset());
+        }
+
+        private EmbeddedSQLStatement computeSQLStatement(final Document document, final int caretOffset) {
+            final EmbeddedSQLStatement[] result = { null };
             document.render(new Runnable() {
                 public void run() {
                     TokenSequence<PHPTokenId> seq = LexUtilities.getPHPTokenSequence(document, caretOffset);
@@ -213,19 +226,19 @@ public class PHPSQLCompletion implements CompletionProvider {
                     if (contentEnd <= contentStart || caretOffset < contentStart || caretOffset > contentEnd) {
                         return;
                     }
-                    result[0] = new SubstitutionHandlerImpl(document, contentStart, contentEnd);
+                    result[0] = new EmbeddedSQLStatement(document, contentStart, contentEnd);
                 }
             });
             return result[0];
         }
     }
 
-    private static final class SubstitutionHandlerImpl implements SubstitutionHandler {
+    private static final class EmbeddedSQLStatement implements SubstitutionHandler {
 
         private final String statement;
         private final int statementOffset;
 
-        public SubstitutionHandlerImpl(Document document, int statementOffset, int statementEnd) {
+        public EmbeddedSQLStatement(Document document, int statementOffset, int statementEnd) {
             try {
                 this.statement = document.getText(statementOffset, statementEnd - statementOffset);
             } catch (BadLocationException e) {
