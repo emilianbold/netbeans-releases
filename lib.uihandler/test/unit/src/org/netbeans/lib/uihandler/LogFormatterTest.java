@@ -69,14 +69,14 @@ public class LogFormatterTest extends NbTestCase {
         thrown.initCause(new AssertionError("CAUSE PROBLEM"));
         rec.setThrown(thrown);
         String result = new LogFormatter().format(rec);
-        assertTrue(result.contains("java.lang.NullPointerException: TESTING"));
-        assertTrue(result.contains("<level>SEVERE</level>"));
-        assertTrue(result.contains("<method>testFormat</method>"));
-        assertTrue(result.contains("<message>java.lang.AssertionError: CAUSE PROBLEM</message>"));
-        assertTrue(result.contains("<more>19</more>"));
-        assertTrue(result.contains(" <class>junit.framework.TestSuite</class>"));
-        assertTrue(result.contains("<class>sun.reflect.NativeMethodAccessorImpl</class>"));
-        assertFalse(result.contains("<more>20</more>"));
+        assertTrue(result, result.contains("java.lang.NullPointerException: TESTING"));
+        assertTrue(result, result.contains("<level>SEVERE</level>"));
+        assertTrue(result, result.contains("<method>testFormat</method>"));
+        assertTrue(result, result.contains("<message>java.lang.AssertionError: CAUSE PROBLEM</message>"));
+        assertTrue(result, result.contains("<more>19</more>"));
+        assertTrue(result, result.contains(" <class>junit.framework.TestSuite</class>"));
+        assertTrue(result, result.contains("<class>sun.reflect.NativeMethodAccessorImpl</class>"));
+        assertFalse(result, result.contains("<more>20</more>"));
     }
         
     
