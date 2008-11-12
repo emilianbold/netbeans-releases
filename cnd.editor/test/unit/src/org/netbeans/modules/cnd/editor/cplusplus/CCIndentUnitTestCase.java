@@ -57,7 +57,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
         assertDocumentTextAndCaret("Incorrect new-line indent",
                 "/**\n"
                 + " * text\n"
-                + " *|\n"
+                + " * |\n"
                 + " */\n"
                 );
         

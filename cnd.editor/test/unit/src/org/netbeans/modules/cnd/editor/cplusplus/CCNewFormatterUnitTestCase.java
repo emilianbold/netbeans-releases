@@ -46,20 +46,6 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         super(testMethodName);
     }
 
-    /**
-     * Perform reformatting of the whole document's text.
-     */
-    @Override
-    protected void reformat() {
-        Reformatter f = new Reformatter(getDocument(), CodeStyle.getDefault(getDocument()));
-        try {
-            f.reformat();
-        } catch (BadLocationException e) {
-            e.printStackTrace(getLog());
-            fail(e.getMessage());
-	}
-    }
-
     @Override
     protected void assertDocumentText(String msg, String expectedText) {
         super.assertDocumentText(msg, expectedText);

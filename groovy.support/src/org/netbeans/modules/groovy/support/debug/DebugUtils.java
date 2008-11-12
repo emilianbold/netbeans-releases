@@ -41,6 +41,8 @@ package org.netbeans.modules.groovy.support.debug;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -51,6 +53,8 @@ import org.openide.filesystems.URLMapper;
  * @author Martin Adamek
  */
 public class DebugUtils {
+
+    private static final Logger LOGGER = Logger.getLogger(DebugUtils.class.getName());
 
     public static FileObject getFileObjectFromUrl(String url) {
         
@@ -69,7 +73,12 @@ public class DebugUtils {
         FileObject fo = getFileObjectFromUrl(url);
         String relativePath = url;
         if (fo != null) {
-            FileObject root = ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo);
+            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+            if (cp == null) {
+                LOGGER.log(Level.FINE, "No classpath for {0}", url);
+                return null;
+            }
+            FileObject root = cp.findOwnerRoot(fo);
             if (root == null) {
                 return null;
             }

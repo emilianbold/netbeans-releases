@@ -47,7 +47,7 @@ import org.openide.util.actions.Presenter;
 public class CodeAssistanceSubmenuAction extends NodeAction {
 
     private LazyPopupMenu popupMenu;
-    private final Collection<Action> items = new ArrayList(5);
+    private final Collection<Action> items = new ArrayList<Action>(5);
     @Override
     public JMenuItem getPopupPresenter() {
         createSubMenu();

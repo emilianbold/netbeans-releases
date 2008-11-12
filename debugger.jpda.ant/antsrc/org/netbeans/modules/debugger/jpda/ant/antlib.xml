@@ -2,6 +2,7 @@
 <antlib>
     <taskdef name="nbjpdaconnect" classname="org.netbeans.modules.debugger.jpda.ant.JPDAConnect"/>
     <taskdef name="nbjpdastart" classname="org.netbeans.modules.debugger.jpda.ant.JPDAStart"/>
+    <typedef name="sourcepath" classname="org.netbeans.modules.debugger.jpda.ant.JPDAStart$Sourcepath"/>
     <taskdef name="nbjpdareload" classname="org.netbeans.modules.debugger.jpda.ant.JPDAReload"/>
     <taskdef name="nbjpdaappreloaded" classname="org.netbeans.modules.debugger.jpda.ant.JPDAAppReloaded"/>
 </antlib>

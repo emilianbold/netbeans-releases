@@ -58,6 +58,12 @@ import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
  *
  * @author Anton Chechel
  */
+
+/**
+ * Use PropertyEdiotrWrapperRE.createTickerElement()
+ * @deprecated
+ */
+@Deprecated
 public class TickerEditorElement extends PropertyEditorResourceElement implements DocumentListener, CleanUp {
 
     private long componentID;
