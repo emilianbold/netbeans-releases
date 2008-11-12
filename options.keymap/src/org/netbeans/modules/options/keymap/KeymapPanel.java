@@ -39,7 +39,6 @@
 package org.netbeans.modules.options.keymap;
 
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
