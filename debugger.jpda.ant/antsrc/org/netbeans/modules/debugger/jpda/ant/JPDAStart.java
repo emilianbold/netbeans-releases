@@ -504,12 +504,6 @@ public class JPDAStart extends Task implements Runnable {
         Path classpath,
         Path sourcepath
     ) {
-        if (sourcepath != null) {
-            return convertToClassPath (project, sourcepath);
-        } else {
-            return convertToSourcePath (project, classpath);
-        }
-        /*
         ClassPath cp = convertToSourcePath (project, classpath);
         ClassPath sp = convertToClassPath (project, sourcepath);
         
@@ -517,7 +511,6 @@ public class JPDAStart extends Task implements Runnable {
             new ClassPath[] {cp, sp}
         );
         return sourcePath;
-         */
     }
 
     static ClassPath createJDKSourcePath (
