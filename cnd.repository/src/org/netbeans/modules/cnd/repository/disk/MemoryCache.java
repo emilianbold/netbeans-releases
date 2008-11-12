@@ -63,9 +63,9 @@ import org.netbeans.modules.cnd.repository.util.Pair;
 public final class MemoryCache {
     private static final boolean STATISTIC = false;
     
-    private static class SoftValue extends SoftReference {
+    private static class SoftValue<T> extends SoftReference<T> {
         private final Key key;
-        private SoftValue(Object k, Key key, ReferenceQueue q) {
+        private SoftValue(T k, Key key, ReferenceQueue<T> q) {
             super(k, q);
             this.key = key;
         }
@@ -100,7 +100,7 @@ public final class MemoryCache {
     
     private final SlicedMap cache = new SlicedMap();
     private final Lock refQueueLock;
-    private final ReferenceQueue refQueue;
+    private final ReferenceQueue<Persistent> refQueue;
     
     // Cache statistics
     private int readCnt = 0;
@@ -108,7 +108,7 @@ public final class MemoryCache {
     
     public MemoryCache() {
         refQueueLock = new ReentrantLock();
-        refQueue = new ReferenceQueue();
+        refQueue = new ReferenceQueue<Persistent>();
     }
     
     public void hang(Key key, Persistent obj) {
@@ -123,7 +123,7 @@ public final class MemoryCache {
     
     public void put(Key key, Persistent obj, boolean primary) {
         Slice s = cache.getSilce(key);
-        SoftValue value = new SoftValue(obj, key, refQueue);
+        SoftValue<Persistent> value = new SoftValue<Persistent>(obj, key, refQueue);
         s.w.lock();
         try {
             s.storage.put(key, value);
@@ -136,7 +136,7 @@ public final class MemoryCache {
     }
     
     public Persistent get(Key key) {
-        if (STATISTIC) readCnt++;
+        if (STATISTIC) {readCnt++;}
         Slice s = cache.getSilce(key);
         Object value;
         s.r.lock();
@@ -146,10 +146,10 @@ public final class MemoryCache {
             s.r.unlock();
         }
         if (value instanceof Persistent) {
-            if (STATISTIC) readHitCnt++;
+            if (STATISTIC) {readHitCnt++;}
             return (Persistent) value;
         } else if (value instanceof SoftReference) {
-            Persistent result = ((SoftReference<Persistent>) value).get();
+            Persistent result = (Persistent) ((SoftReference) value).get();
             if( STATISTIC && result != null ) {
                 readHitCnt++;
             }
@@ -242,7 +242,7 @@ public final class MemoryCache {
                     s.r.unlock();
                 }
                 if (value instanceof Persistent ) {
-                    result.add(new Pair(key, (Persistent) value));
+                    result.add(new Pair<Key,Persistent>(key, (Persistent) value));
                     s.w.lock();
                     try {
                         s.storage.remove(key);
