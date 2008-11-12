@@ -39,10 +39,6 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
-import org.netbeans.modules.cnd.editor.reformat.Reformatter;
-
 /**
  *
  * @author as204739
@@ -51,19 +47,5 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 
     public CCNewFormatterSingleTestCase(String testMethodName) {
         super(testMethodName);
-    }
-
-    /**
-     * Perform reformatting of the whole document's text.
-     */
-    @Override
-    protected void reformat() {
-        Reformatter f = new Reformatter(getDocument(), CodeStyle.getDefault(getDocument()));
-        try {
-            f.reformat();
-        } catch (BadLocationException e) {
-            e.printStackTrace(getLog());
-            fail(e.getMessage());
-	}
     }
 }

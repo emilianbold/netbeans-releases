@@ -63,7 +63,4 @@ made subject to such option by the copyright holder.
     <entry name="code-folding-enable" value="true" javaType="java.lang.Boolean" />
     <entry name="pair-characters-completion" value="true" javaType="java.lang.Boolean" />
     <entry name="javadoc-auto-popup" value="false" javaType="java.lang.Boolean" />
-    <entry name="indentEngine" 
-           value="org.netbeans.modules.cnd.editor.cplusplus.CIndentEngine.getIndentEngine" 
-           javaType="methodvalue" />
 </editor-preferences>

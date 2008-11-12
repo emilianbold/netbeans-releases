@@ -29,7 +29,6 @@
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.editor.Formatter;
 import org.netbeans.editor.TokenID;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
@@ -779,13 +778,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
         getDocument ().insertString(pos, String.valueOf(ch), null);
         BracketCompletion.charInserted(getDocument(), pos, getCaret(), ch);
         if (isIndent) {
-            Formatter f = getDocument().getFormatter();
-            f.indentLock();
-            try {
-                getDocument().getFormatter().indentLine(getDocument(), pos);
-            } finally {
-                f.indentUnlock();
-            }
+            super.indentNewLine();
         }
     }
 
@@ -795,10 +788,6 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     
     private boolean isSkipRightParen() {
         return isSkipRightBracketOrParen(true);
-    }
-    
-    private boolean isSkipRightBracket() {
-        return isSkipRightBracketOrParen(false);
     }
     
     private boolean isSkipRightBracketOrParen(boolean parenthesis) {
