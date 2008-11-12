@@ -90,6 +90,8 @@ import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.jellytools.PluginsOperator;
+
 
 
 /**
@@ -239,6 +241,12 @@ public class CommonUtilities {
         tco.close();
     }
     
+    public static void installPlugin(String name) {
+       PluginsOperator po = PluginsOperator.invoke();
+       po.install(name);
+       po.close();
+    }   
+
     private static void closeToolbar(String menu){
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
         JMenuBarOperator menuBar = new JMenuBarOperator(mainWindow.getJMenuBar());

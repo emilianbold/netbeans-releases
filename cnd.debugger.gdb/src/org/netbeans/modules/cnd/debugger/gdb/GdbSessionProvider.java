@@ -49,22 +49,23 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 
 public class GdbSessionProvider extends SessionProvider {
 
-    private ContextProvider contextProvider;
     private String sessionName = NbBundle.getMessage(GdbSessionProvider.class, "CTL_GDB_SESSION"); // NOI18N
-    private String locationName = NbBundle.getMessage(GdbSessionProvider.class, "CTL_GDB_SESSION"); // NOI18N
-    private String [] supportedLanguages = new String [] { "C++", "C", "Fortran" }; // NOI18N
-    private ProjectActionEvent projectActionEvent;
+    //private String locationName = NbBundle.getMessage(GdbSessionProvider.class, "CTL_GDB_SESSION"); // NOI18N
+    private final String [] supportedLanguages = new String [] { "C++", "C", "Fortran" }; // NOI18N
+    private final ProjectActionEvent projectActionEvent;
 
     public GdbSessionProvider(ContextProvider contextProvider) {
-        this.contextProvider = contextProvider;
-        projectActionEvent = (ProjectActionEvent) contextProvider.lookupFirst(null, ProjectActionEvent.class);
+        projectActionEvent = contextProvider.lookupFirst(null, ProjectActionEvent.class);
     };
 
     public String getSessionName () {
         String sn = null;
-        if (projectActionEvent != null)
+        if (projectActionEvent != null) {
             sn = projectActionEvent.getExecutable();
-        if (sn == null) return sessionName;
+        }
+        if (sn == null) {
+            return sessionName;
+        }
         if (sn.length() > 8) {
             // Name is too long - get base name
             if (sn.lastIndexOf('/') >= 0) {

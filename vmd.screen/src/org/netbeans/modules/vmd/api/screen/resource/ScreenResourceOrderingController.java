@@ -85,7 +85,11 @@ public abstract class ScreenResourceOrderingController {
         
         public List<ScreenResourceItemPresenter> getOrdered(DesignComponent component, Collection<ScreenResourceItemPresenter> items) {
             List<ScreenResourceItemPresenter> list = new ArrayList<ScreenResourceItemPresenter>(items.size());
-           
+            //Fix for issue Issue 149281
+            if (component == null || component.readProperty(propertyName) == null || component.readProperty(propertyName).getArray() == null) {
+                return list;
+            }
+            //End of the Fix for issue Issue 149281
             List<PropertyValue> array = new ArrayList<PropertyValue>(component.readProperty(propertyName).getArray());
             for (PropertyValue value : array) {
                 DesignComponent commandEventSource = value.getComponent();

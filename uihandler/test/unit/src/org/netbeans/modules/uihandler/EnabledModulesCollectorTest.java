@@ -61,6 +61,7 @@ public class EnabledModulesCollectorTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath());
         clearWorkDir();
@@ -71,16 +72,14 @@ public class EnabledModulesCollectorTest extends NbTestCase {
         installer.restored();
     }
 
-    protected void tearDown() throws Exception {
-    }
-    
     public void testSetOfEnabledModulesIsListed() {
         // just log something
         Logger.getLogger("org.netbeans.ui.empty").warning("say anything");
-        
+
+        Installer.logDeactivated();
         assertTrue("ok", installer.closing());
         
-        List<LogRecord> rec = Installer.getLogs();
+        List<LogRecord> rec = ScreenSizeTest.removeScreenSizeLogs(Installer.getLogs());
         if (rec.get(0).getMessage().equals("say anything")) {
             rec.remove(0);
         }
@@ -150,10 +149,12 @@ public class EnabledModulesCollectorTest extends NbTestCase {
         public MyModule2() {
             INSTANCE2 = this;
         }
+        @Override
         public String getCodeNameBase() {
             return "my.module2";
         }
         
+        @Override
         public boolean isEnabled() {
             return false;
         }

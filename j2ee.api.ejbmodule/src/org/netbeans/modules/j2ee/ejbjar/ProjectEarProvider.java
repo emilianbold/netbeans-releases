@@ -46,6 +46,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.spi.ejbjar.EarProvider.class)
 public class ProjectEarProvider implements EarProvider {
 
     public ProjectEarProvider () {

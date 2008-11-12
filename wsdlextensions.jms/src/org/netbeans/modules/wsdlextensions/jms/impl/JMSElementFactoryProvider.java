@@ -34,6 +34,7 @@ import org.w3c.dom.Element;
  */
 public class JMSElementFactoryProvider {
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class BindingFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(JMSQName.BINDING.getQName());
@@ -43,6 +44,7 @@ public class JMSElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AddressFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(JMSQName.ADDRESS.getQName());
@@ -52,6 +54,7 @@ public class JMSElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class OperationFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(JMSQName.OPERATION.getQName());
@@ -61,6 +64,7 @@ public class JMSElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class MessageFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(JMSQName.MESSAGE.getQName());
@@ -70,6 +74,7 @@ public class JMSElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class OptionsFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(JMSQName.OPTIONS.getQName());
@@ -79,6 +84,7 @@ public class JMSElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class OptionFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(JMSQName.OPTION.getQName());
@@ -88,6 +94,7 @@ public class JMSElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class JNDIEnvFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(JMSQName.JNDIENV.getQName());
@@ -97,6 +104,7 @@ public class JMSElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class JNDIEnvEntryFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(JMSQName.JNDIENVENTRY.getQName());
@@ -106,6 +114,7 @@ public class JMSElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class MapMessageFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(JMSQName.MAPMESSAGE.getQName());
@@ -115,6 +124,7 @@ public class JMSElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class MapMessagePartFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(JMSQName.MAPPART.getQName());
@@ -124,6 +134,7 @@ public class JMSElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class PropertiesFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(JMSQName.PROPERTIES.getQName());
@@ -133,6 +144,7 @@ public class JMSElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class PropertyFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(JMSQName.PROPERTY.getQName());

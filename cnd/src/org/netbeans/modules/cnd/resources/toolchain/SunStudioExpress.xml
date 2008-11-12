@@ -72,8 +72,8 @@ made subject to such option by the copyright holder.
         </warning_level>
         <architecture>
             <default flags="" default="true"/>
-            <bits_32 flags=""/>
-            <bits_64 flags="-xarch=generic64"/>
+            <bits_32 flags="-m32"/>
+            <bits_64 flags="-m64"/>
         </architecture>
         <strip flags="-s"/>
         <multithreading>
@@ -120,8 +120,8 @@ made subject to such option by the copyright holder.
         </warning_level>
         <architecture>
             <default flags="" default="true"/>
-            <bits_32 flags=""/>
-            <bits_64 flags="-xarch=generic64"/>
+            <bits_32 flags="-m32"/>
+            <bits_64 flags="-m64"/>
         </architecture>
         <strip flags="-s"/>
         <multithreading>
@@ -172,8 +172,8 @@ made subject to such option by the copyright holder.
         </warning_level>
         <architecture>
             <default flags="" default="true"/>
-            <bits_32 flags=""/>
-            <bits_64 flags="-xarch=generic64"/>
+            <bits_32 flags="-m32"/>
+            <bits_64 flags="-m64"/>
         </architecture>
         <strip flags="-s"/>
     </fortran>

@@ -44,8 +44,6 @@ package org.netbeans.modules.cnd.debugger.gdb.timer;
 /** An instance of GdbTimer which does nothing. This should be called when timing isn't enabled */
 class GdbDummyTimer extends GdbTimer {
     
-    GdbDummyTimer() {}
-    
     public void reset() {}
     
     /** Start the timer running */

@@ -40,6 +40,8 @@ package org.netbeans.modules.uihandler;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -86,6 +88,17 @@ public class ScreenSizeTest extends NbTestCase {
         for (Object object : params) {
             assertTrue(object instanceof Number);
         }
+    }
+
+    public static List<LogRecord> removeScreenSizeLogs(List<LogRecord> logs){
+        Iterator<LogRecord> it = logs.iterator();
+        while (it.hasNext()){
+            LogRecord logRecord = it.next();
+            if (logRecord.getMessage().equals(ScreenSize.MESSAGE)) {
+                it.remove();
+            }
+        }
+        return logs;
     }
 }
 

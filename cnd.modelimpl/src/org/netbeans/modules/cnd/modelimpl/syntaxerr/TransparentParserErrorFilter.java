@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
  * that just creates an error for each RecognitionException
  * @author Vladimir Kvashin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ParserErrorFilter.class)
 public class TransparentParserErrorFilter extends BaseParserErrorFilter {
 
     private static final boolean ENABLE = DebugUtils.getBoolean("cnd.parser.error.transparent", true);

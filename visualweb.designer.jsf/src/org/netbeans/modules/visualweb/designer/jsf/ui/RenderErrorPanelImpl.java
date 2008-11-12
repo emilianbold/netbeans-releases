@@ -48,6 +48,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
@@ -137,26 +139,31 @@ public class RenderErrorPanelImpl extends JPanel implements ActionListener, JsfF
             Exception e = renderFailureProvider.getRenderFailureException();
             MarkupDesignBean bean = renderFailureProvider.getRenderFailureComponent();
 
-            StringWriter sw = new StringWriter();
-            e.printStackTrace(new PrintWriter(sw));
-            String trace = sw.toString();
-            // XXX #6416590 Very suspicious potentionaly dangerous code.
-            // Why to hide the internals from stack, if they might be cause of the issue??
-//            // Chop off Creator internals
-//            while (true) {
-//                int insync = trace.indexOf("org.netbeans.modules.visualweb.insync"); // NOI18N
-//                if (insync != -1) {
-//                    int cause = trace.indexOf("Caused"); // NOI18N
-//                    if (cause == -1) {
-//                        trace = trace.substring(0, insync-3);
-//                    } else {
-//                        trace = trace.substring(0, insync-3) + "\n" + trace.substring(cause);
-//                    }
-//                } else {
-//                    break;
-//                }
-//            }
-            exceptions.setText(trace);
+            if (e == null) {
+                // XXX #150606 Error, but no exception with it.
+                log(new IllegalStateException("There is no render failure exception for render failure component, bean=" + bean)); // NOI18N
+            } else {
+                StringWriter sw = new StringWriter();
+                e.printStackTrace(new PrintWriter(sw));
+                String trace = sw.toString();
+                // XXX #6416590 Very suspicious potentionaly dangerous code.
+                // Why to hide the internals from stack, if they might be cause of the issue??
+    //            // Chop off Creator internals
+    //            while (true) {
+    //                int insync = trace.indexOf("org.netbeans.modules.visualweb.insync"); // NOI18N
+    //                if (insync != -1) {
+    //                    int cause = trace.indexOf("Caused"); // NOI18N
+    //                    if (cause == -1) {
+    //                        trace = trace.substring(0, insync-3);
+    //                    } else {
+    //                        trace = trace.substring(0, insync-3) + "\n" + trace.substring(cause);
+    //                    }
+    //                } else {
+    //                    break;
+    //                }
+    //            }
+                exceptions.setText(trace);
+            }
             String instanceName = bean.getInstanceName();
             textArea.setText(NbBundle.getMessage(RenderErrorPanelImpl.class, "CompErrorDescription", 
                        instanceName, e.toString()));
@@ -239,6 +246,10 @@ public class RenderErrorPanelImpl extends JPanel implements ActionListener, JsfF
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(jScrollPane1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+    private static void log(Exception ex) {
+        Logger.getLogger(RenderErrorPanelImpl.class.getName()).log(Level.INFO, null, ex);
+    }
 
 
     // XXX

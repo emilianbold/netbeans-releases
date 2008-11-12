@@ -68,6 +68,7 @@ import org.openide.modules.InstalledFileLocator;
  *
  * @author Jesse Glick, Martin Krauskopf
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class)
 public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryImplementation {
     
     public JavadocForBinaryQuery.Result findJavadoc(final URL root) {

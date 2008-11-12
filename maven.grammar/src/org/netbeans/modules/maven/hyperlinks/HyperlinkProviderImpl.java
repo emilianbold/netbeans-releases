@@ -41,11 +41,11 @@ package org.netbeans.modules.maven.hyperlinks;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.HtmlBrowser;
@@ -65,96 +65,94 @@ public class HyperlinkProviderImpl implements HyperlinkProvider {
     }
 
     public boolean isHyperlinkPoint(Document doc, int offset) {
-        if (!(doc instanceof BaseDocument) || !isPomFile(doc)) {
+        if (!isPomFile(doc)) {
             return false;
         }
-        BaseDocument bdoc = (BaseDocument) doc;
-        ExtSyntaxSupport sup = (ExtSyntaxSupport)bdoc.getSyntaxSupport();
-        TokenItem token;
-        try {
-            token = sup.getTokenChain(offset, offset + 1);
-            //if (debug) debug ("token: "  +token.getTokenID().getNumericID() + ":" + token.getTokenID().getName());
-            // when it's not a value -> do nothing.
-            if (token == null) {
-                return false;
-            }
-            TokenItem previous = token.getPrevious();
-            if (previous != null && previous.getImage().equals(">")) { //NOI18N
-                //we are in element text
-                FileObject fo = getProjectDir(doc);
-                if (getPath(fo, token.getImage()) != null) {
-                    return true;
-                } 
-            }
-            // urls get opened..
-            if (token.getImage() != null && 
-                    (token.getImage().startsWith("http://") || //NOI18N
-                    (token.getImage().startsWith("https://")))) { //NOI18N
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
+        xml.move(offset);
+        xml.moveNext();
+        Token<XMLTokenId> token = xml.token();
+        // when it's not a value -> do nothing.
+        if (token == null) {
+            return false;
+        }
+        if (token.id() == XMLTokenId.TEXT) {
+            //we are in element text
+            FileObject fo = getProjectDir(doc);
+            String text = token.text().toString();
+            if (getPath(fo, text) != null) {
                 return true;
             }
-        } catch (BadLocationException ex) {
-            ex.printStackTrace();
+            // urls get opened..
+            if (text != null &&
+                    (text.startsWith("http://") || //NOI18N
+                    (text.startsWith("https://")))) { //NOI18N
+                return true;
+            }
         }
-            
-        
         return false;
     }
 
     public int[] getHyperlinkSpan(Document doc, int offset) {
-        if (!(doc instanceof BaseDocument) || !isPomFile(doc)) {
+        if (!isPomFile(doc)) {
             return null;
         }
-        
-        BaseDocument bdoc = (BaseDocument) doc;
-        ExtSyntaxSupport sup = (ExtSyntaxSupport)bdoc.getSyntaxSupport();
-        TokenItem token;
-        try {
-            token = sup.getTokenChain(offset, offset + 1);
-            if (token == null) {
-                return null;
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
+        xml.move(offset);
+        xml.moveNext();
+        Token<XMLTokenId> token = xml.token();
+        // when it's not a value -> do nothing.
+        if (token == null) {
+            return null;
+        }
+        if (token.id() == XMLTokenId.TEXT) {
+            //we are in element text
+            FileObject fo = getProjectDir(doc);
+            String text = token.text().toString();
+            if (getPath(fo, text) != null) {
+                return new int[] { xml.offset(), xml.offset() + text.length() };
             }
-            TokenItem previous = token.getPrevious();
-            if (previous != null && previous.getImage().equals(">")) {//NOI18N
-                //we are in element text
-                FileObject fo = getProjectDir(doc);
-                if (getPath(fo, token.getImage()) != null) {
-                    return new int[] {token.getOffset(), token.getNext().getOffset()};
-                } 
+            // urls get opened..
+            if (text != null &&
+                    (text.startsWith("http://") || //NOI18N
+                    (text.startsWith("https://")))) { //NOI18N
+                return new int[] { xml.offset(), xml.offset() + text.length() };
             }
-            if (token.getImage() != null && 
-                    (token.getImage().startsWith("http://") || //NOI18N
-                    (token.getImage().startsWith("https://")))) { //NOI18N
-                return new int[] {token.getOffset(), token.getNext().getOffset()};
-            }
-        } catch (BadLocationException ex) {
-            ex.printStackTrace();
         }
         return null;
     }
 
     public void performClickAction(Document doc, int offset) {
-        if (!(doc instanceof BaseDocument) || !isPomFile(doc)) {
+        if (!isPomFile(doc)) {
             return;
         }
-        
-        BaseDocument bdoc = (BaseDocument) doc;
-        ExtSyntaxSupport sup = (ExtSyntaxSupport)bdoc.getSyntaxSupport();
-        TokenItem token;
-        try {
-            token = sup.getTokenChain(offset, offset + 1);
-            if (token == null) {
-                return;
-            }
-            TokenItem previous = token.getPrevious();
-            if (previous != null && previous.getImage().equals(">")) { //NOI18N
-                //we are in element text
-                FileObject fo = getProjectDir(doc);
-                String path = token.getImage();
-                if (previous.getPrevious().getImage().equals("<module")) { //NOI18N
-                    path = path + "/pom.xml"; //NOI18N
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
+        xml.move(offset);
+        xml.moveNext();
+        Token<XMLTokenId> token = xml.token();
+        // when it's not a value -> do nothing.
+        if (token == null) {
+            return;
+        }
+        if (token.id() == XMLTokenId.TEXT) {
+            //we are in element text
+            FileObject fo = getProjectDir(doc);
+            String text = token.text().toString();
+            if (getPath(fo, text) != null) {
+                xml.movePrevious();
+                token = xml.token();
+                if (token != null && token.id() == XMLTokenId.TAG && token.text().equals(">")) {
+                    xml.movePrevious();
+                    token = xml.token();
+                    if (token != null && token.id() == XMLTokenId.TAG && token.text().equals("<module")) {
+                        text = text + "/pom.xml"; //NOI18N
+                    }
                 }
-                if (getPath(fo, path) != null) {
-                    FileObject file = getPath(fo, path);
+                if (getPath(fo, text) != null) {
+                    FileObject file = getPath(fo, text);
                     DataObject dobj;
                     try {
                         dobj = DataObject.find(file);
@@ -165,22 +163,20 @@ public class HyperlinkProviderImpl implements HyperlinkProvider {
                     } catch (DataObjectNotFoundException ex) {
                         ex.printStackTrace();
                     }
-                } 
+                }
             }
-            if (token.getImage() != null && 
-                    (token.getImage().startsWith("http://") || //NOI18N
-                    (token.getImage().startsWith("https://")))) { //NOI18N
+            // urls get opened..
+            if (text != null &&
+                    (text.startsWith("http://") || //NOI18N
+                    (text.startsWith("https://")))) { //NOI18N
                 try {
-                    URL url = new URL(token.getImage());
+                    URL url = new URL(text);
                     HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                 } catch (MalformedURLException ex) {
                     ex.printStackTrace();
                 }
             }
-        } catch (BadLocationException ex) {
-            ex.printStackTrace();
         }
-        return;
     }
     
     private FileObject getProjectDir(Document doc) {

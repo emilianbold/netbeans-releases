@@ -441,6 +441,7 @@ public class ApplicationProxy implements Application {
         }
     }
     
+    @Override
     public Object clone() {
         ApplicationProxy proxy = null;
         if (app == null)

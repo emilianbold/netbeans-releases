@@ -51,6 +51,7 @@ import org.openide.loaders.DataObject;
  * 
  * @author quynguyen
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.FileEncodingQueryImplementation.class, position=199)
 public class JsfJspTemplateEncodingQueryImplementation extends FileEncodingQueryImplementation {
     static final ThreadLocal<FileObject> TEMPLATE_FILEOBJECT = new ThreadLocal<FileObject>();
     

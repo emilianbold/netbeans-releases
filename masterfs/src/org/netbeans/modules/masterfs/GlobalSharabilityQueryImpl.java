@@ -58,6 +58,7 @@ import org.openide.util.Lookup;
  *
  * @author Radek Matous
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.SharabilityQueryImplementation.class, position=0)
 public class GlobalSharabilityQueryImpl implements SharabilityQueryImplementation {
     private GlobalVisibilityQueryImpl visibilityQuery;
     /** Creates a new instance of GlobalSharabilityQueryImpl */

@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -56,6 +58,8 @@ import org.openide.util.NbBundle;
  * @author mkuchtiak
  */
 public class DDUtils {
+    
+    private static final Logger LOG = Logger.getLogger(DDUtils.class.getName());
     
     public static String[] getUrlPatterns(WebApp webApp, Servlet servlet) {
         if (servlet.getServletName()==null) return new String[]{};
@@ -256,7 +260,9 @@ public class DDUtils {
                     }
                 }
             }
-        } catch (java.io.IOException ex) {}
+        } catch (java.io.IOException ex) {
+            LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
+        }
         org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message(
                 org.openide.util.NbBundle.getMessage(DDUtils.class,"MSG_sourceNotFound")));
     }
@@ -266,7 +272,10 @@ public class DDUtils {
         FileObject docBase = null;
         try {
             docBase = getDocumentBase(dObj);
-        } catch (java.io.IOException ex) {return;}
+        } catch (java.io.IOException ex) {
+            LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
+            return;
+        }
         if (docBase!=null) {
             FileObject target = docBase.getFileObject(fileName.trim());
             if (target!=null) {
@@ -278,7 +287,9 @@ public class DDUtils {
                         cookie.open();
                         return;
                     }
-                } catch (org.openide.loaders.DataObjectNotFoundException ex) {}
+                } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                    LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
+                }
             }
         }
         org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message(
@@ -289,7 +300,10 @@ public class DDUtils {
         FileObject docBase = null;
         try {
             docBase = getDocumentBase(dObj);
-        } catch (java.io.IOException ex) {return;}
+        } catch (java.io.IOException ex) {
+            LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
+            return;
+        }
         if (!tok.hasMoreTokens()) return;
         boolean found=false;
         if (docBase!=null)
@@ -306,7 +320,9 @@ public class DDUtils {
                             cookie.open();
                             found=true;
                         }
-                    } catch (org.openide.loaders.DataObjectNotFoundException ex) {}
+                    } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                        LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
+                    }
                 }
             }
             }
@@ -393,7 +409,6 @@ public class DDUtils {
     /** removes all filter mappings for given servlet name
      */
     public static void removeFilterMappingsForServlet(WebApp webApp, String servletName) {
-        java.util.Stack deletedRows = new java.util.Stack();
         if (servletName==null) return;
         FilterMapping[] oldMaps = webApp.getFilterMapping();
         for (int i=0;i<oldMaps.length;i++) {

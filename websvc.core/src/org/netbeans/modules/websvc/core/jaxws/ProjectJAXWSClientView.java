@@ -53,6 +53,7 @@ import org.openide.nodes.Node;
  *
  * @author mkuchtiak
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.ProjectClientViewProvider.class)
 public class ProjectJAXWSClientView implements JAXWSClientViewImpl, ProjectClientViewProvider {
     
     /** Creates a new instance of ProjectJAXWSView */

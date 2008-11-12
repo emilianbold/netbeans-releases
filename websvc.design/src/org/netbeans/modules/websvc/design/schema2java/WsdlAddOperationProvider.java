@@ -48,13 +48,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.netbeans.modules.websvc.core.AddOperationActionProvider;
-import org.netbeans.modules.websvc.core.AddOperationCookie;
+import org.netbeans.modules.websvc.spi.support.AddOperationActionProvider;
+import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import org.netbeans.modules.websvc.design.view.actions.AddOperationAction;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.AddOperationActionProvider.class)
 public class WsdlAddOperationProvider implements AddOperationActionProvider {
     
     public AddOperationCookie getAddOperationCookie(FileObject fileObject) {

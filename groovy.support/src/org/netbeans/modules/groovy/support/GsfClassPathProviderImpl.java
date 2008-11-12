@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Adamek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider.class)
 public class GsfClassPathProviderImpl implements ClassPathProvider {
 
     public ClassPath findClassPath(FileObject file, String type) {

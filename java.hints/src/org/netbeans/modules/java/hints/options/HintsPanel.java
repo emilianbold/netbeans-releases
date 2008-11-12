@@ -73,8 +73,8 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         
         descriptionTextArea.setContentType("text/html"); // NOI18N
 
-        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
-            setOpaque( false );
+//        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+//            setOpaque( false );
         
         errorTree.setCellRenderer( this );
         errorTree.setRootVisible( false );

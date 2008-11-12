@@ -667,6 +667,9 @@ function download_file(filename) {
     if(overriden_language!=DEFAULT_LANGUAGE) {
         download_url += "&" + PAGELANG_SEP + overriden_language;
     }
+    if(ADD_VERSION_INFO_TO_URL == 1) {
+        download_url += "&version=" + BUILD_DISPLAY_VERSION_SHORT;
+    }
     window.location = download_url;
 }
 
@@ -696,6 +699,9 @@ function download(option) {
     var overriden_language=get_overridden_language();
     if(overriden_language!=DEFAULT_LANGUAGE) {
         download_url += "&" + PAGELANG_SEP + overriden_language;
+    }
+    if(ADD_VERSION_INFO_TO_URL == 1) {
+        download_url += "&version=" + BUILD_DISPLAY_VERSION_SHORT;
     }
     window.location = download_url;
 }

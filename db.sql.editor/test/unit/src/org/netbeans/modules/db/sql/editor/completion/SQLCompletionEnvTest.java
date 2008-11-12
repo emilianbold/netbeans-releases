@@ -58,17 +58,17 @@ public class SQLCompletionEnvTest extends TestCase {
         Document doc = new ModificationTextDocument();
         doc.insertString(0, "select a from b", null);
         for (int i = 0; i < 6; i++) {
-            SQLCompletionEnv env = SQLCompletionEnv.create(doc, i);
+            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
             assertTrue(env.isSelect());
             assertNull(env.getContext());
         }
         for (int i = 6; i < 13; i++) {
-            SQLCompletionEnv env = SQLCompletionEnv.create(doc, i);
+            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
             assertTrue(env.isSelect());
             assertEquals(Context.SELECT, env.getContext());
         }
         for (int i = 13; i < doc.getLength(); i++ ) {
-            SQLCompletionEnv env = SQLCompletionEnv.create(doc, i);
+            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
             assertTrue(env.isSelect());
             assertEquals(Context.FROM, env.getContext());
         }

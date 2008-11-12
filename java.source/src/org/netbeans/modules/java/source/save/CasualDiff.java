@@ -320,9 +320,18 @@ public class CasualDiff {
         int localPointer = bounds[0];
         
         int[] qualBounds = getBounds(oldT.getQualifiedIdentifier());
-        copyTo(localPointer, qualBounds[0]);
+        if (oldT.staticImport == newT.staticImport) {
+            copyTo(localPointer, qualBounds[0]);
+        } else {
+            if (oldT.staticImport) {
+                //removing "static":
+                moveFwdToToken(tokenSequence, localPointer, JavaTokenId.STATIC);
+                copyTo(localPointer, tokenSequence.offset());
+            } else {
+                //TODO: adding "static"
+            }
+        }
         localPointer = diffTree(oldT.getQualifiedIdentifier(), newT.getQualifiedIdentifier(), qualBounds);
-        // TODO: Missing implementation. Static import change not covered!
         copyTo(localPointer, bounds[1]);
         
         return bounds[1];
@@ -333,6 +342,7 @@ public class CasualDiff {
     
     protected int diffClassDef(JCClassDecl oldT, JCClassDecl newT, int[] bounds) {
         int localPointer = bounds[0];
+        final Name origOuterClassName = origClassName;
         int insertHint = localPointer;
         // skip the section when printing anonymous class
         if (anonClass == false) {
@@ -442,8 +452,7 @@ public class CasualDiff {
             copyTo(localPointer, insertHint);
         localPointer = diffList(filterHidden(oldT.defs), filterHidden(newT.defs), insertHint, est, Measure.MEMBER, printer);
         printer.enclClassName = origName;
-        // the reference is no longer needed.
-        origClassName = null;
+        origClassName = origOuterClassName;
         printer.undent(old);
         if (localPointer != -1 && localPointer < origText.length()) {
             if (origText.charAt(localPointer) == '}') {
@@ -1180,9 +1189,20 @@ public class CasualDiff {
                 localPointer = diffTree(l1.head, l2.head, new int[] { localPointer, getBounds(l1.head)[1] });
             }
         }
-        if (oldT.elems != null && oldT.elems.head != null) {
-            copyTo(localPointer, getOldPos(oldT.elems.head));
-            localPointer = diffParameterList(oldT.elems, newT.elems, null, getOldPos(oldT.elems.head), Measure.ARGUMENT);
+        if (oldT.elems != null) {
+            if (oldT.elems.head != null) {
+                copyTo(localPointer, getOldPos(oldT.elems.head));
+                localPointer = diffParameterList(oldT.elems, newT.elems, null, getOldPos(oldT.elems.head), Measure.ARGUMENT);
+            } else {
+                if (newT.elems != null && !newT.elems.isEmpty()) {
+                    //empty initializer array, adding the first element to it
+                    //find {:
+                    moveFwdToToken(tokenSequence, localPointer, JavaTokenId.LBRACE);
+                    tokenSequence.moveNext();
+                    copyTo(localPointer, localPointer = tokenSequence.offset());
+                    localPointer = diffParameterList(oldT.elems, newT.elems, null, localPointer, Measure.ARGUMENT);
+                }
+            }
         }
         copyTo(localPointer, bounds[1]);
         return bounds[1];

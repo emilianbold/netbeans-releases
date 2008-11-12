@@ -98,41 +98,34 @@ public class WebSetupTest extends JellyTestCase  {
     }
     
     public void testAddAppServer() {
-        
         CommonUtilities.addApplicationServer();
     }    
-        
+
+    public void testAddTomcatServer() {
+        CommonUtilities.addTomcatServer();
+    }
+
     public void testOpenVisualWebProject() {
-        //openProject("VisualWebProject");
         
         String projectsDir = workdir + File.separator+ "VisualWebProject";
         Object prj=ProjectSupport.openProject(projectsDir);
         assertNotNull(prj);
         CommonUtilities.waitProjectTasksFinished();        
-//        VWPUtilities.waitProjectOpenedScanFinished(workdir+ java.io.File.separator +"VisualWebProject");
-//        VWPUtilities.waitForPendingBackgroundTasks();
-//        VWPUtilities.verifyAndResolveMissingWebServer("VisualWebProject", "GlassFish V2");
-//        VWPUtilities.waitForPendingBackgroundTasks();
-   
     }
     
     public void testOpenLargeVisualWebProject() {
-        //openProject("UltraLargeWA");
         
         String projectsDir = workdir + File.separator+ "UltraLargeWA";
         Object prj=ProjectSupport.openProject(projectsDir);
         assertNotNull(prj);
         CommonUtilities.waitProjectTasksFinished();        
-//        VWPUtilities.waitProjectOpenedScanFinished(workdir+ java.io.File.separator +"UltraLargeWA");
-//        VWPUtilities.waitForPendingBackgroundTasks();
-//        VWPUtilities.verifyAndResolveMissingWebServer("UltraLargeWA", "GlassFish V2");
-//        VWPUtilities.waitForPendingBackgroundTasks();        
     }
     public void testOpenHugeVisualWebProject() {
-//        VWPUtilities.verifyAndResolveMissingWebServer("HugeApp", "GlassFish V2");
-//        VWPUtilities.waitForPendingBackgroundTasks();
-//        VWPUtilities.verifyAndResolveMissingWebServer("HugeApp", "GlassFish V2");
-//        VWPUtilities.waitForPendingBackgroundTasks();        
+
+        String projectsDir = workdir + File.separator+ "HugeApp";
+        Object prj=ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);
+        CommonUtilities.waitProjectTasksFinished();
     }
     private void openProject(String projectName) {
         String projectsDir = workdir + File.separator+projectName;

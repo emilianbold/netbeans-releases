@@ -75,6 +75,8 @@ import org.xml.sax.SAXException;
  * projects by delegating some functionality to registered Ant project types.
  * @author Jesse Glick
  */
+// to be more eager then Maven project(666). Cf. 151211
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.ProjectFactory.class, position=600)
 public final class RakeBasedProjectFactorySingleton implements ProjectFactory {
     
     public static final String PROJECT_XML_PATH = "nbproject/project.xml"; // NOI18N

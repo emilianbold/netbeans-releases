@@ -55,9 +55,7 @@ import javax.swing.event.EventListenerList;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
-import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  * FileBuffer implementation
@@ -90,11 +88,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
             }
         }
         // TODO: think over when do invalidate? before informing listeners or after
-        if (TraceFlags.USE_AST_CACHE) {
-            CacheManager.getInstance().invalidate(getFile().getAbsolutePath());
-        } else {
-            APTDriver.getInstance().invalidateAPT(this);
-        }
+        APTDriver.getInstance().invalidateAPT(this);
     }
 
     @Override

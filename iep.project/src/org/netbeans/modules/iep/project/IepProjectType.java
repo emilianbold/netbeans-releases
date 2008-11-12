@@ -29,6 +29,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  *
  * @author Bing Lu
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public class IepProjectType implements AntBasedProjectType {
     public static final String TYPE = "org.netbeans.modules.iep.project";
     public static final String PROJECT_CONFIGURATION_NAME = "data";

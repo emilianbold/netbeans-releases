@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.websvc.core;
 
+import org.netbeans.modules.websvc.spi.support.AddOperationActionProvider;
+import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import java.util.Collection;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;

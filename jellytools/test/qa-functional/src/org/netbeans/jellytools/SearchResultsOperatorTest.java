@@ -51,6 +51,19 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class SearchResultsOperatorTest extends JellyTestCase {
 
+    public static final String[] tests = new String[] {
+        "testBtStopSearch",
+        "testBtShowDetails",
+        "testBtModifySearch",
+        "testTreeResult",
+        "testSelectResult",
+        "testOpenResult",
+        "testModifySearch",
+        "testShowDetails",
+        "testWaitEndOfSearch",
+        "testVerify"
+    };
+    
     /** Use for internal test execution inside IDE
      * @param args command line arguments
      */
@@ -78,16 +91,7 @@ public class SearchResultsOperatorTest extends JellyTestCase {
         return suite;
          */
         return createModuleTest(SearchResultsOperatorTest.class, 
-        "testBtStopSearch",
-        "testBtShowDetails",
-        "testBtModifySearch",
-        "testTreeResult",
-        "testSelectResult",
-        "testOpenResult",
-        "testModifySearch",
-        "testShowDetails",
-        "testWaitEndOfSearch",
-        "testVerify");
+        tests);
     }
     
     /** Creates new SearchResultsOperatorTest */

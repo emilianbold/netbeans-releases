@@ -46,14 +46,13 @@
  */
 package org.netbeans.modules.cnd.debugger.gdb.actions;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.Set;
 
 import org.openide.util.RequestProcessor;
 
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.spi.debugger.ContextProvider;
 
 /**
@@ -78,9 +77,7 @@ public class PauseActionProvider extends GdbDebuggerActionProvider {
      * @return set of actions supported by this ActionsProvider
      */
     public Set getActions() {
-        return new HashSet (Arrays.asList (new Object[] {
-            ActionsManager.ACTION_PAUSE
-        }));
+        return Collections.singleton(ActionsManager.ACTION_PAUSE);
     }
 
     /**
@@ -108,6 +105,7 @@ public class PauseActionProvider extends GdbDebuggerActionProvider {
      *        done.
      * @since 1.5
      */
+    @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -119,10 +117,10 @@ public class PauseActionProvider extends GdbDebuggerActionProvider {
             }
         });
     }    
-    protected void checkEnabled(String debuggerState) {
-        Iterator i = getActions().iterator();
-        while (i.hasNext()) {
-            setEnabled(i.next(), debuggerState == getDebugger().STATE_RUNNING);
+    protected void checkEnabled(GdbDebugger.State debuggerState) {
+        boolean enable = debuggerState == GdbDebugger.State.RUNNING;
+        for (Object action : getActions()) {
+            setEnabled(action, enable);
         }
     }
 }

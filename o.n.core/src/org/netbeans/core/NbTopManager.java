@@ -216,6 +216,7 @@ public abstract class NbTopManager {
     /**
      * Implementation of URL displayer, which shows documents in the configured web browser.
      */
+    @org.openide.util.lookup.ServiceProvider(service=org.openide.awt.HtmlBrowser.URLDisplayer.class)
     public static final class NbURLDisplayer extends HtmlBrowser.URLDisplayer {
         /** Default constructor for lookup. */
         public NbURLDisplayer() {}
@@ -237,6 +238,7 @@ public abstract class NbTopManager {
     /**
      * Default status displayer implementation; GUI is in StatusLine.
      */
+    @org.openide.util.lookup.ServiceProvider(service=org.openide.awt.StatusDisplayer.class)
     public static final class NbStatusDisplayer extends org.openide.awt.StatusDisplayer {
         /** Default constructor for lookup. */
         public NbStatusDisplayer() {}
@@ -431,6 +433,7 @@ public abstract class NbTopManager {
      * Default implementation of the lifecycle manager interface that knows
      * how to save all modified DataObject's, and to exit the IDE safely.
      */
+    @org.openide.util.lookup.ServiceProvider(service=org.openide.LifecycleManager.class)
     public static final class NbLifecycleManager extends LifecycleManager {
         /** Default constructor for lookup. */
         public NbLifecycleManager() {}

@@ -49,6 +49,7 @@ import org.openide.util.Lookup;
  *
  * @author vita
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.MimeDataProvider.class)
 public class DefaultMimeDataProvider implements MimeDataProvider {
 
     /** Creates a new instance of DefaultMimeDataProvider */

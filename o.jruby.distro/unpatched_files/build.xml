@@ -148,7 +148,7 @@
 
   <target name="compile-jruby" depends="compile-tasks, compile-annotation-binder, check-for-optional-packages">
     <!-- Generate binding logic ahead of time -->
-    <apt factory="org.jruby.anno.AnnotationBinder" destdir="${jruby.classes.dir}" debug="true" source="${javac.version}" target="${javac.version}" deprecation="true" encoding="UTF-8">
+    <apt factory="org.jruby.anno.AnnotationBinder" destdir="${jruby.classes.dir}" debug="true" source="${javac.version}" target="${javac.version}" deprecation="true" encoding="UTF-8" memoryMaximumSize="256m">
       <classpath refid="build.classpath"/>
       <classpath path="${jruby.classes.dir}"/>
       <src path="${src.dir}"/>

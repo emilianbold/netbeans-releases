@@ -57,6 +57,7 @@ import org.openide.util.Cancellable;
  *
  * @author Sergey Grinev
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position=30)
 public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory {
 
     @Override

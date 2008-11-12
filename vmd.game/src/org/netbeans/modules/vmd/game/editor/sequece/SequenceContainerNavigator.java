@@ -45,6 +45,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
+import org.netbeans.modules.vmd.game.editor.common.NonEmptyStringTableCellEditor;
 import org.netbeans.modules.vmd.game.model.SequenceContainer;
 import org.netbeans.modules.vmd.game.model.adapter.SequenceContainerTableAdapter;
 import org.openide.util.NbBundle;
@@ -88,6 +89,8 @@ public class SequenceContainerNavigator extends JTable {
 		this.setDefaultEditor(Boolean.class, new SequenceDefaultTableEditor());
 		
 		this.setDefaultEditor(Integer.class, new SequenceDelayTableEditor());
+                
+                this.setDefaultEditor(String.class, new NonEmptyStringTableCellEditor());
 	}
 
 }

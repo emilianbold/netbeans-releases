@@ -65,7 +65,6 @@ public class AppClientProxy implements AppClient {
     private int ddStatus;
     
     private static final Logger LOGGER = Logger.getLogger(AppClientProxy.class.getName());
-//    private static CommonDDAccess cDDA = new
     
     /**
      * Creates a new instance of AppClientProxy
@@ -407,6 +406,7 @@ public class AppClientProxy implements AppClient {
         }
     }
     
+    @Override
     public Object clone() {
         AppClientProxy proxy = null;
         if (app == null)

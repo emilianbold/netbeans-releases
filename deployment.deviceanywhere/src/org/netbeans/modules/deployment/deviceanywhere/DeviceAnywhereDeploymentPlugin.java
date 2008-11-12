@@ -61,6 +61,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
  *
  * @author Petr Suchomel
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.deployment.DeploymentPlugin.class, position=100)
 public class DeviceAnywhereDeploymentPlugin implements DeploymentPlugin, CustomizerPanel {
     
     static final String PROP_DEVICE = "deployment.deviceanywhere.device"; //NOI18N

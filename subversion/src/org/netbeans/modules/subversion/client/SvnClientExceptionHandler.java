@@ -94,7 +94,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Tomas Stupka
  */
 public class SvnClientExceptionHandler {
-    
     private final ISVNClientAdapter adapter;
     private final SvnClient client;
     private final SvnClientDescriptor desc;    
@@ -566,10 +565,15 @@ public class SvnClientExceptionHandler {
         return EX_UNKNOWN;
     }
     
-    private static boolean isCancelledAction(String msg) {
+    public static boolean isCancelledAction(String msg) {
         return msg.equals(ACTION_CANCELED_BY_USER);
     }
-    
+
+    static boolean isOperationCancelled(String message) {
+        message = message.toLowerCase();
+        return message.indexOf("operation canceled") > -1;
+    }
+
     private static boolean isAuthentication(String msg) {   
         msg = msg.toLowerCase();       
         return msg.indexOf("authentication error from server: username not found") > - 1 || // NOI18N

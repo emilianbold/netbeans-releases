@@ -93,25 +93,6 @@
 	<mapID target="uml_diagrams_class_ww_attributes" url="diagrams/class_ww_attributes.html"/>
 	<mapID target="uml_diagrams_class_ww_diagram_elements" url="diagrams/class_ww_diagram_elements.html"/>
 	<mapID target="uml_diagrams_class_ww_operations" url="diagrams/class_ww_operations.html"/>
-	<mapID target="uml_diagrams_collaboration_adding_classifier" url="diagrams/collaboration_adding_classifier.html"/>
-	<mapID target="uml_diagrams_collaboration_adding_operations" url="diagrams/collaboration_adding_operations.html"/>
-	<mapID target="uml_diagrams_collaboration_changing_classifier_type_to_add" url="diagrams/collaboration_changing_classifier_type_to_add.html"/>
-	<mapID target="uml_diagrams_collaboration_connecting_lifelines" url="diagrams/collaboration_connecting_lifelines.html"/>
-	<mapID target="uml_diagrams_collaboration_converting_between_sequence_collaboration" url="diagrams/collaboration_converting_between_sequence_collaboration.html"/>
-	<mapID target="uml_diagrams_collaboration_naming_operations" url="diagrams/collaboration_naming_operations.html"/>
-	<mapID target="uml_diagrams_collaboration_ww_diagram_elements" url="diagrams/collaboration_ww_diagram_elements.html"/>
-	<mapID target="uml_diagrams_collaboration_ww_messages" url="diagrams/collaboration_ww_messages.html"/>
-	<mapID target="uml_diagrams_component_adding_components" url="diagrams/component_adding_components.html"/>
-	<mapID target="uml_diagrams_component_adding_interfaces_to_components" url="diagrams/component_adding_interfaces_to_components.html"/>
-	<mapID target="uml_diagrams_component_connecting_dependencies" url="diagrams/component_connecting_dependencies.html"/>
-	<mapID target="uml_diagrams_component_connecting_interface_to_component" url="diagrams/component_connecting_interface_to_component.html"/>
-	<mapID target="uml_diagrams_component_modeling_connections" url="diagrams/component_modeling_connections.html"/>
-	<mapID target="uml_diagrams_component_naming_components" url="diagrams/component_naming_components.html"/>
-	<mapID target="uml_diagrams_component_naming_ports" url="diagrams/component_naming_ports.html"/>
-	<mapID target="uml_diagrams_component_resizing_ports" url="diagrams/component_resizing_ports.html"/>
-	<mapID target="uml_diagrams_component_ww_components_dependencies" url="diagrams/component_ww_components_dependencies.html"/>
-	<mapID target="uml_diagrams_component_ww_diagram_elements" url="diagrams/component_ww_diagram_elements.html"/>
-	<mapID target="uml_diagrams_component_ww_ports_interfaces" url="diagrams/component_ww_ports_interfaces.html"/>
 	<mapID target="uml_diagrams_creating_diagram_elements" url="diagrams/creating_diagram_elements.html"/>
 	<mapID target="uml_diagrams_creating_diagram_from_selected_elements" url="diagrams/creating_diagram_from_selected_elements.html"/>
 	<mapID target="uml_diagrams_creating_diagrams" url="diagrams/creating_diagrams.html"/>
@@ -120,15 +101,6 @@
 	<mapID target="uml_diagrams_defining_stereotype_icons" url="diagrams/defining_stereotype_icons.html"/>
 	<mapID target="uml_diagrams_deleting_diagram_elements" url="diagrams/deleting_diagram_elements.html"/>
 	<mapID target="uml_diagrams_deleting_diagrams" url="diagrams/deleting_diagrams.html"/>
-	<mapID target="uml_diagrams_deployment_adding_artifacts" url="diagrams/deployment_adding_artifacts.html"/>
-	<mapID target="uml_diagrams_deployment_adding_nodes" url="diagrams/deployment_adding_nodes.html"/>
-	<mapID target="uml_diagrams_deployment_adding_specs" url="diagrams/deployment_adding_specs.html"/>
-	<mapID target="uml_diagrams_deployment_connecting_nodes" url="diagrams/deployment_connecting_nodes.html"/>
-	<mapID target="uml_diagrams_deployment_naming_nodes" url="diagrams/deployment_naming_nodes.html"/>
-	<mapID target="uml_diagrams_deployment_nesting_components_inside_nodes" url="diagrams/deployment_nesting_components_inside_nodes.html"/>
-	<mapID target="uml_diagrams_deployment_ww_artifacts_specs" url="diagrams/deployment_ww_artifacts_specs.html"/>
-	<mapID target="uml_diagrams_deployment_ww_diagram_elements" url="diagrams/deployment_ww_diagram_elements.html"/>
-	<mapID target="uml_diagrams_deployment_ww_nodes_associations" url="diagrams/deployment_ww_nodes_associations.html"/>
 	<mapID target="uml_diagrams_editing_diagram_elements" url="diagrams/editing_diagram_elements.html"/>
 	<mapID target="uml_diagrams_editing_diagram_elements_changing_size" url="diagrams/editing_diagram_elements_changing_size.html"/>
 	<mapID target="uml_diagrams_editing_diagram_elements_copying" url="diagrams/editing_diagram_elements_copying.html"/>
@@ -178,7 +150,7 @@
 	<mapID target="uml_editors_windows_navigating_within_diagrams" url="editors_windows/navigating_within_diagrams.html"/>
 	<mapID target="uml_editors_windows_stacking_diagram_elements" url="editors_windows/stacking_diagram_elements.html"/>
 	<mapID target="uml_editors_windows_using_diagram_windows" url="editors_windows/using_diagram_windows.html"/>
-	<mapID target="uml_editors_windows_using_overview_window" url="editors_windows/using_overview_window.html"/>
+	<mapID target="uml_editors_windows_using_navigator_window" url="editors_windows/using_navigator_window.html"/>
 	<mapID target="uml_editors_windows_ww_editors_windows" url="editors_windows/ww_editors_windows.html"/>
 	<mapID target="uml_editors_windows_zooming_in_diagrams" url="editors_windows/zooming_in_diagrams.html"/>
 	<mapID target="uml_gloss_guard_condition" url="glossary/gloss_guard_condition.html"/>

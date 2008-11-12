@@ -61,6 +61,7 @@ import org.openide.util.Exceptions;
  * or ${netbeans.dirs}.
  * @author  Tomas Zezula
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.URLMapper.class)
 public class NbinstURLMapper extends URLMapper {
     
     public static final String PROTOCOL = "nbinst";     //NOI18N

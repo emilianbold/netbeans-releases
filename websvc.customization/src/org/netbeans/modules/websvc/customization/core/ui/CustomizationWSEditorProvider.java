@@ -59,6 +59,7 @@ import org.openide.nodes.Node;
  *
  * @author Roderico Cruz
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider.class)
 public class CustomizationWSEditorProvider
         implements WSEditorProvider{
     

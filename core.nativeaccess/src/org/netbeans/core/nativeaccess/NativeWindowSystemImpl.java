@@ -54,6 +54,7 @@ import org.openide.util.Utilities;
  * 
  * @author S. Aubrecht
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.core.windows.nativeaccess.NativeWindowSystem.class)
 public class NativeWindowSystemImpl extends NativeWindowSystem {
 
     private static final Logger LOG = Logger.getLogger(NativeWindowSystemImpl.class.getName());

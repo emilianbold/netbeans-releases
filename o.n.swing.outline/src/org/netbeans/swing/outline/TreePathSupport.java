@@ -80,7 +80,7 @@ public final class TreePathSupport {
     private OutlineModel mdl;
     private Map<TreePath,Boolean> expandedPaths = new HashMap<TreePath,Boolean>();
     private List<TreeExpansionListener> eListeners = new ArrayList<TreeExpansionListener>();
-    private List<TreeExpansionListener> weListeners = new ArrayList<TreeExpansionListener>();
+    private List<TreeWillExpandListener> weListeners = new ArrayList<TreeWillExpandListener>();
     private AbstractLayoutCache layout;
     
     /** Creates a new instance of TreePathSupport */
@@ -307,11 +307,11 @@ public final class TreePathSupport {
         eListeners.remove(l);
     }
     
-    public synchronized void addTreeWillExpandListener (TreeExpansionListener l) {
+    public synchronized void addTreeWillExpandListener (TreeWillExpandListener l) {
         weListeners.add(l);
     }
     
-    public synchronized void removeTreeWillExpandListener (TreeExpansionListener l) {
+    public synchronized void removeTreeWillExpandListener (TreeWillExpandListener l) {
         weListeners.remove(l);
     }
 }

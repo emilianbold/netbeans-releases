@@ -44,6 +44,7 @@ package org.netbeans.modules.ruby;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,11 +60,13 @@ import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.StrNode;
 import org.jruby.nb.ast.types.INameNode;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.ruby.lexer.LexUtilities;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.ruby.elements.AstElement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -96,7 +99,7 @@ public class AstUtilitiesTest extends RubyTestBase {
 
     public void testFindbySignatureNested() throws Exception {
         Node root = getRootNode("testfiles/resolv.rb");
-        Node node = AstUtilities.findBySignature(root, "Resolv::DNS::lazy_initialize");
+        Node node = AstUtilities.findBySignature(root, "Resolv::DNS#lazy_initialize");
         assertNotNull(node);
         assertEquals("lazy_initialize", ((INameNode)node).getName());
     }
@@ -350,6 +353,22 @@ public class AstUtilitiesTest extends RubyTestBase {
                     fail(t.getMessage() + " while parsing " + FileUtil.getFileDisplayName(file) + " and node=" + node + " with parent" + parent + " at offset " + parentOffset.toString());
                 }
             }
+            //ParserResult result = info.getEmbeddedResult(RubyInstallation.RUBY_MIME_TYPE, 0);
+            //LinkedList<AstElement> list = new LinkedList<AstElement>();
+            //RubyParseResult rpr = (RubyParseResult)result;
+            //list.addAll(rpr.getStructure().getElements());
+            //while (!list.isEmpty()) {
+            //    AstElement el = list.removeFirst();
+            //    String signature = el.getFqn();
+            //    if (signature == null) {
+            //        signature = el.getIn() + "." + el.getName();
+            //    }
+            //    if (signature.length() > 0 && !".".equals(signature)) {
+            //        assertNotNull(el.toString(), signature);
+            //        AstUtilities.findBySignature(root, signature);
+            //    }
+            //    list.addAll(el.getChildren());
+            //}
         }
     }
 

@@ -79,6 +79,11 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
         clearWorkDir();
     }
 
+    @Override
+    protected boolean runInEQ() {
+        return false;
+    }
+
     protected Project getTestProject(String path) {
         FileObject fo = getTestFile(path);
         Project p = FileOwnerQuery.getOwner(fo);

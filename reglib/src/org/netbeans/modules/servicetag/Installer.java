@@ -491,7 +491,7 @@ class Installer {
 
         String filename = "/org/netbeans/modules/servicetag/resources/javase_" +
                 version + "_swordfish.properties";
-        InputStream in = Installer.class.getClass().getResourceAsStream(filename);
+        InputStream in = Installer.class.getResourceAsStream(filename);
         if (in == null) {
             return null;
         }
@@ -817,7 +817,7 @@ class Installer {
             BufferedReader br = null;
             PrintWriter pw = null;
             try {
-                in = Installer.class.getClass().getResourceAsStream(resource + ".html");
+                in = Installer.class.getResourceAsStream(resource + ".html");
                 if (in == null) {
                     // if the resource file is missing
                     if (isVerbose()) {

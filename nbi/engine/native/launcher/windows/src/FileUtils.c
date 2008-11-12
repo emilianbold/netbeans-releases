@@ -219,12 +219,13 @@ WCHAR * getParentDirectory(WCHAR * dir) {
 }
 WCHAR * normalizePath(WCHAR * dir) {
     WCHAR * directory = NULL;
-    WCHAR * ptr1, *ptr2;
+    WCHAR * ptr1, *ptr2, *ptr3;
     DWORD i=0;
     DWORD len;
     ptr1 = wcsstr(dir, L":\\");
     ptr2 = wcsstr(dir, L":/");
-    if(ptr1==NULL && ptr2==NULL) { //relative path
+    ptr3 = wcsstr(dir, L"\\\\");
+    if(ptr1==NULL && ptr2==NULL && dir!=ptr3) { //relative path
         directory = appendStringW(getCurrentDirectory(), FILE_SEP);
         directory = appendStringW(directory, dir);
     } else {

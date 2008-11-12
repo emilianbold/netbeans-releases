@@ -51,7 +51,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 
 public class LiveRangeSidebarFactory implements SideBarFactory {
 
-    public static String LIVE_RANGE_SIDEBAR = "LIVE_RANGE_SIDEBAR"; // NOI18N
+    public static final String LIVE_RANGE_SIDEBAR = "LIVE_RANGE_SIDEBAR"; // NOI18N
     
     public JComponent createSideBar(JTextComponent target) {        
         CodeAnnotationSidebar sb = new CodeAnnotationSidebar(target);        

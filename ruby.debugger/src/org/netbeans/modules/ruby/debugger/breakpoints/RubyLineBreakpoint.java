@@ -95,7 +95,7 @@ public final class RubyLineBreakpoint extends RubyBreakpoint implements IRubyLin
     }
 
     public @Override String toString() {
-        return getFilePath() + ':' + getLineNumber();
+        return "RubyLineBreakpoint[path: " + getFilePath() + ", line: " + getLineNumber() + ']'; // NOI18N
     }
 
 }

@@ -54,7 +54,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.MasterFileSystem;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.netbeans.modules.mobility.project.TestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -71,16 +70,12 @@ public class J2MEClassPathProviderTest extends NbTestCase {
     static J2MEClassPathProvider instance = null;
     static FileObject projDir = null;
     
-    static
-    {
-        TestUtil.setLookup( new Object[] {            
-        }, J2MEClassPathProviderTest.class.getClassLoader());
-        assertNotNull(MasterFileSystem.settingsFactory(null));
+    static {
+        TestUtil.setLookup(new Object[]{}, J2MEClassPathProviderTest.class.getClassLoader());
     }
     
     public J2MEClassPathProviderTest(String testName) {
         super(testName);
-        
         TestUtil.setEnv();
     }
     
@@ -103,9 +98,6 @@ public class J2MEClassPathProviderTest extends NbTestCase {
         ep.setProperty("platforms.test.home","home");
         ep.setProperty("platform.bootclasspath","${platform.home}/bin");
         aph.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
-    }
-    
-    protected void tearDown() throws Exception {
     }
     
     public static Test suite() {

@@ -51,6 +51,7 @@ import javax.swing.JSeparator;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.util.NbBundle;
@@ -106,25 +107,28 @@ public class SetConfigurationAction extends AbstractAction implements Presenter.
 	    return;
 
 	ConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
-	Configuration[] confs = projectDescriptor.getConfs().getConfs();
-        // Fill menu with items
-        for ( int i = 0; i < confs.length; i++ ) {
-            JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(confs[i].getName(), confs[i].isDefault());
-            subMenu.add(jmi);
-            jmi.putClientProperty(PROJECT_KEY, projectDescriptor);
-            jmi.addActionListener(jmiActionListener);
+	Configuration[] confs = null;
+        if (projectDescriptor != null && projectDescriptor.getState() != State.READING) {
+            confs = projectDescriptor.getConfs().getConfs();
+            // Fill menu with items
+            for ( int i = 0; i < confs.length; i++ ) {
+                JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(confs[i].getName(), confs[i].isDefault());
+                subMenu.add(jmi);
+                jmi.putClientProperty(PROJECT_KEY, projectDescriptor);
+                jmi.addActionListener(jmiActionListener);
+            }
+            // Now add the Configurations.. action. Do it in it's own menu item othervise it will get shifted to the right.
+            subMenu.add(new JSeparator());
+            JMenuItem profilesMenuItem = new JMenuItem(NbBundle.getMessage(SetConfigurationAction.class, "LBL_ConfigurationsAction_Name")); // NOI18N
+            subMenu.add(profilesMenuItem);
+            profilesMenuItem.addActionListener(new ActionListener() {
+                public void actionPerformed (ActionEvent event) {
+                    CommonProjectActions.customizeProjectAction().actionPerformed(new ActionEvent(this, -1, null));
+                }
+            });
         }
-	// Now add the Configurations.. action. Do it in it's own menu item othervise it will get shifted to the right.
-	subMenu.add(new JSeparator());
-	JMenuItem profilesMenuItem = new JMenuItem(NbBundle.getMessage(SetConfigurationAction.class, "LBL_ConfigurationsAction_Name")); // NOI18N
-	subMenu.add(profilesMenuItem);
-	profilesMenuItem.addActionListener(new ActionListener() {
-	    public void actionPerformed (ActionEvent event) {
-		CommonProjectActions.customizeProjectAction().actionPerformed(new ActionEvent(this, -1, null));
-	    }
-	});
 
-        subMenu.setEnabled(confs.length > 0 );
+        subMenu.setEnabled(confs != null && confs.length > 0 );
     }
     
     // Innerclasses ------------------------------------------------------------

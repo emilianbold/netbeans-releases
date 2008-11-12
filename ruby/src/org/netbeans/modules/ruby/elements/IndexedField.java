@@ -29,6 +29,7 @@ package org.netbeans.modules.ruby.elements;
 
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -41,15 +42,15 @@ public class IndexedField extends IndexedElement {
     private boolean inherited;
 
     private IndexedField(String name, RubyIndex index, String fileUrl, String fqn,
-        String clz, String require, String attributes, int flags) {
-        super(index, fileUrl, fqn, clz, require, attributes, flags);
+        String clz, String require, String attributes, int flags, FileObject context) {
+        super(index, fileUrl, fqn, clz, require, attributes, flags, context);
         this.name = name;
     }
 
     public static IndexedField create(RubyIndex index, String name, String fqn, String clz,
-        String fileUrl, String require, String attributes, int flags) {
+        String fileUrl, String require, String attributes, int flags, FileObject context) {
         IndexedField m =
-            new IndexedField(name, index, fileUrl, fqn, clz, require, attributes, flags);
+            new IndexedField(name, index, fileUrl, fqn, clz, require, attributes, flags, context);
 
         return m;
     }
@@ -112,7 +113,14 @@ public class IndexedField extends IndexedElement {
     public void setInherited(boolean inherited) {
         this.inherited = inherited;
     }
+
+    // For testsuite
     public static String decodeFlags(int flags) {
         return IndexedElement.decodeFlags(flags);
+    }
+
+    // For testsuite
+    public static int stringToFlags(String string) {
+        return IndexedElement.stringToFlags(string);
     }
 }

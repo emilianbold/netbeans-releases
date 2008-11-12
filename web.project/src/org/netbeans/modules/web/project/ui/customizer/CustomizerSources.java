@@ -70,6 +70,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
@@ -106,23 +107,27 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         jTextFieldWebPages.setDocument(uiProperties.WEB_DOCBASE_DIR_MODEL);
         webInfTextField.setDocument(uiProperties.WEBINF_DIR_MODEL);
         
-        WebSourceRootsUi.EditMediator emSR = WebSourceRootsUi.registerEditMediator(
+        SourceRootsUi.EditMediator emSR = SourceRootsUi.registerEditMediator(
                 (WebProject)uiProperties.getProject(),
                 ((WebProject)uiProperties.getProject()).getSourceRoots(),
                 sourceRoots,
                 addSourceRoot,
                 removeSourceRoot,
                 upSourceRoot,
-                downSourceRoot);
+                downSourceRoot,
+                null,
+                true);
         
-        WebSourceRootsUi.EditMediator emTSR = WebSourceRootsUi.registerEditMediator(
+        SourceRootsUi.EditMediator emTSR = SourceRootsUi.registerEditMediator(
                 (WebProject)uiProperties.getProject(),
                 ((WebProject)uiProperties.getProject()).getTestSourceRoots(),
                 testRoots,
                 addTestRoot,
                 removeTestRoot,
                 upTestRoot,
-                downTestRoot);
+                downTestRoot,
+                null,
+                true);
         
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );
@@ -321,9 +326,9 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         sourceRootsPanel.setLayout(sourceRootsPanelLayout);
         sourceRootsPanelLayout.setHorizontalGroup(
             sourceRootsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 560, Short.MAX_VALUE)
+            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 563, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, sourceRootsPanelLayout.createSequentialGroup()
-                .add(jScrollPane1)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(sourceRootsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(addSourceRoot, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -417,8 +422,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                     .add(jLabel5))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(encoding, 0, 251, Short.MAX_VALUE)
-                    .add(jComboBoxSourceLevel, 0, 251, Short.MAX_VALUE)))
+                    .add(encoding, 0, 302, Short.MAX_VALUE)
+                    .add(jComboBoxSourceLevel, 0, 302, Short.MAX_VALUE)))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -434,6 +439,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
 
         jComboBoxSourceLevel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AN_SourceLevel")); // NOI18N
         jComboBoxSourceLevel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AD_SourceLevel")); // NOI18N
+        encoding.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AD_Encoding")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(includeExcludeButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.includeExcludeButton")); // NOI18N
         includeExcludeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -446,7 +452,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         testRootsPanel.setLayout(testRootsPanelLayout);
         testRootsPanelLayout.setHorizontalGroup(
             testRootsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 560, Short.MAX_VALUE)
+            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 563, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, testRootsPanelLayout.createSequentialGroup()
                 .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -486,6 +492,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         removeTestRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_removeTestRoot")); // NOI18N
         upTestRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_upTestRoot")); // NOI18N
         downTestRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_downTestRoot")); // NOI18N
+        includeExcludeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AD_InclExclButton")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -502,14 +509,14 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(webInfTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
-                                    .add(jTextFieldWebPages, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE))
+                                    .add(webInfTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                                    .add(jTextFieldWebPages, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                                     .add(webInfBrowseButton)
                                     .add(jButtonBrowse))
                                 .add(0, 0, 0))
-                            .add(projectLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)))
+                            .add(projectLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 465, Short.MAX_VALUE)))
                     .add(testRootsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(sourceRootsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .add(0, 0, 0))
@@ -539,6 +546,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         projectLocation.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_projectLocation")); // NOI18N
         jTextFieldWebPages.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_webPagesFolder")); // NOI18N
         jButtonBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_webPagesFolderBrowse")); // NOI18N
+        webInfTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_webInfFolder")); // NOI18N
+        webInfBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_webInfFolderBrowse")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void webInfBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webInfBrowseButtonActionPerformed

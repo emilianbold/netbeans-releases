@@ -52,6 +52,7 @@ import org.openide.nodes.Node;
  *
  * @author Lukas Jungmann
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientViewProvider.class)
 public class CustomJAXWSClientViewProvider implements JAXWSClientViewProvider {
     
     /** Creates a new instance of CustomJAXWSClientViewProvider */

@@ -54,8 +54,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
 import javax.swing.BorderFactory;
@@ -84,6 +84,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -528,7 +529,7 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
     //!!!!!!!!!   HelpCtx !!!!!!!!!!!!!!!!
     private Node createRootNode() {
         DataFolder df = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(REGISTRATION_FOLDER));
-        return new FNode(df.getNodeDelegate(), new ConfigurationChildren(df));
+        return new FNode(df.getNodeDelegate(), Children.create(new ConfigurationChildFactory(df), true));
     }
 
     private static class FNode extends FilterNode {
@@ -536,48 +537,50 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
             super(original, children);
         }
         
+        @Override
         public boolean canCopy() {
             return false;
         }
 
+        @Override
         public boolean canDestroy() {
             return false;
         }
 
+        @Override
         public boolean canCut() {
             return false;
         }
 
+        @Override
         public boolean canRename() {
             return false;
         }
 
         
     }
-    
-    /** Children used for configuration
-     */
-    private static class ConfigurationChildren extends Children.Keys {
 
-        private final DataFolder df;
-        
-        public ConfigurationChildren(DataFolder df) {
-            this.df = df;
+    private static final class ConfigurationChildFactory extends ChildFactory<DataFolder> {
+        private final DataFolder parent;
+        private ConfigurationChildFactory(DataFolder parent) {
+            this.parent = parent;
         }
-        
-        // Children.Keys impl --------------------------------------------------
-        
-        public void addNotify() {
-            setKeys(df.getChildren());
+
+        @Override
+        protected boolean createKeys(List<DataFolder> toPopulate) {
+            for (DataObject dob : parent.getChildren()) {
+                if (dob instanceof DataFolder) {
+                    toPopulate.add ((DataFolder) dob);
+                }
+            }
+            return true;
         }
-        
-        public void removeNotify() {
-            setKeys( Collections.EMPTY_LIST );
+
+        @Override
+        protected Node createNodeForKey(DataFolder key) {
+            return new FNode(key.getNodeDelegate(), Children.create(new ConfigurationChildFactory(key), true));
         }
-        
-        protected Node[] createNodes( final Object key ) {
-            return key instanceof DataFolder ? new Node[] {new FNode(((DataFolder)key).getNodeDelegate(), new ConfigurationChildren((DataFolder)key))} : null;
-        }
+
     }
     
     private static class ConfigurationCellRenderer extends DefaultListCellRenderer {
@@ -586,6 +589,7 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
             //Just to avoid creation of accessor class
         }
         
+        @Override
         public Component getListCellRendererComponent( final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
             super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );
             if (value instanceof ProjectConfiguration) {

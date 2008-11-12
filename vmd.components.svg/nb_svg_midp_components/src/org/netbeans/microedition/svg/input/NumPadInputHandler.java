@@ -156,6 +156,21 @@ public class NumPadInputHandler extends TextInputHandler {
         }
         return false;
     }
+    
+    public void handlePointerPress( PointerEvent event ) {
+        event.getComponent().requestFocus();
+        super.handlePointerPress(event);
+    }
+    
+    public void handlePointerRelease( PointerEvent event ) {
+        if( event.getClickCount() == 1 ){
+            if ( event.getComponent() instanceof SVGTextField  ) {
+                SVGTextField field = (SVGTextField) event.getComponent();
+                field.setCaretPosition( field.getText().length() );
+            }
+        }
+        super.handlePointerRelease(event);
+    }
 
     protected void setCaretPosition( SVGComponent comp , int position){
         if ( comp instanceof SVGTextField  ) {

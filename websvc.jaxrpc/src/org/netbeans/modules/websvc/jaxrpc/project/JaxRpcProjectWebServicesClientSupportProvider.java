@@ -48,6 +48,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportProvider;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.client.WebServicesClientSupportProvider.class)
 public class JaxRpcProjectWebServicesClientSupportProvider implements WebServicesClientSupportProvider {
 
     public JaxRpcProjectWebServicesClientSupportProvider() {

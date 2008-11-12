@@ -1,0 +1,146 @@
+Code completion result for source line:
+(1..10).|a
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     add(E)                                     boolean
+METHOD     add(int, E)                                void
+METHOD     addAll(Collection<? extends E>             boolean
+METHOD     addAll(int, Collection<? exten             boolean
+METHOD     addShutdownHook(Closure)                   void
+METHOD     any()                                      boolean
+METHOD     any(Closure)                               boolean
+METHOD     asImmutable()                              List
+METHOD     asList()                                   List
+METHOD     asSynchronized()                           List
+METHOD     asType(Class)                              Object
+METHOD     clear()                                    void
+METHOD     collect(Closure)                           List
+METHOD     collect(Collection, Closure)               Collection
+METHOD     collectAll(Closure)                        List
+METHOD     collectAll(Collection, Closure             Collection
+METHOD     combinations()                             List
+METHOD     contains(Object)                           boolean
+METHOD     containsAll(Collection<?>)                 boolean
+METHOD     containsWithinBounds(Object)               boolean
+METHOD     count(Object)                              int
+METHOD     disjoint(Collection)                       boolean
+METHOD     dump()                                     String
+METHOD     each(Closure)                              Object
+METHOD     eachWithIndex(Closure)                     Object
+METHOD     equals(List)                               boolean
+METHOD     equals(Object)                             boolean
+METHOD     equals(Object[])                           boolean
+METHOD     every()                                    boolean
+METHOD     every(Closure)                             boolean
+METHOD     execute()                                  Process
+METHOD     find(Closure)                              Object
+METHOD     findAll(Closure)                           List
+METHOD     findIndexOf(Closure)                       int
+METHOD     findIndexOf(int, Closure)                  int
+METHOD     findIndexValues(Closure)                   List
+METHOD     findIndexValues(int, Closure)              List
+METHOD     findLastIndexOf(Closure)                   int
+METHOD     findLastIndexOf(int, Closure)              int
+METHOD     first()                                    Object
+METHOD     flatten()                                  Collection
+METHOD     flatten(Closure)                           Collection
+METHOD     get(int)                                   E
+METHOD     getAt(Collection)                          List
+METHOD     getAt(IntRange)                            List
+METHOD     getAt(String)                              List
+METHOD     getAt(int)                                 Object
+METHOD     getClass()                                 Class<? extends Object>
+METHOD     getFrom()                                  Comparable
+METHOD     getMetaClass()                             MetaClass
+METHOD     getMetaPropertyValues()                    List
+METHOD     getProperties()                            Map
+METHOD     getTo()                                    Comparable
+METHOD     grep(Object)                               Collection
+METHOD     groupBy(Closure)                           Map
+METHOD     hashCode()                                 int
+METHOD     head()                                     Object
+METHOD     identity(Closure)                          Object
+METHOD     indexOf(Object)                            int
+METHOD     inject(Object, Closure)                    Object
+METHOD     inspect()                                  String
+METHOD     intersect(Collection)                      Collection
+METHOD     invokeMethod(String, Object)               Object
+METHOD     is(Object)                                 boolean
+METHOD     isCase(Object)                             boolean
+METHOD     isEmpty()                                  boolean
+METHOD     isReverse()                                boolean
+METHOD     iterator()                                 Iterator
+METHOD     join(String)                               String
+METHOD     last()                                     Object
+METHOD     lastIndexOf(Object)                        int
+METHOD     leftShift(Object)                          Collection
+METHOD     listIterator()                             ListIterator<E>
+METHOD     listIterator(int)                          ListIterator<E>
+METHOD     max()                                      Object
+METHOD     max(Closure)                               Object
+METHOD     max(Comparator)                            Object
+METHOD     min()                                      Object
+METHOD     min(Closure)                               Object
+METHOD     min(Comparator)                            Object
+METHOD     minus(Collection)                          List
+METHOD     minus(Object)                              List
+METHOD     multiply(Number)                           List
+METHOD     notify()                                   void
+METHOD     notifyAll()                                void
+METHOD     plus(Collection)                           Collection
+METHOD     plus(Object)                               Collection
+METHOD     pop()                                      Object
+METHOD     print(Object)                              void
+METHOD     print(PrintWriter)                         void
+METHOD     printf(String, Object)                     void
+METHOD     printf(String, Object)                     void
+METHOD     println()                                  void
+METHOD     println(Object)                            void
+METHOD     println(PrintWriter)                       void
+METHOD     push(Object)                               boolean
+METHOD     putAt(EmptyRange, Object)                  void
+METHOD     putAt(IntRange, Collection)                void
+METHOD     putAt(IntRange, Object)                    void
+METHOD     putAt(List, List)                          void
+METHOD     putAt(List, Object)                        void
+METHOD     putAt(String, Object)                      void
+METHOD     putAt(int, Object)                         void
+METHOD     remove(Object)                             boolean
+METHOD     remove(int)                                E
+METHOD     removeAll(Collection<?>)                   boolean
+METHOD     retainAll(Collection<?>)                   boolean
+METHOD     reverse()                                  List
+METHOD     reverseEach(Closure)                       List
+METHOD     set(int, E)                                E
+METHOD     size()                                     int
+METHOD     sleep(long)                                void
+METHOD     sleep(long, Closure)                       void
+METHOD     sort()                                     List
+METHOD     sort(Closure)                              List
+METHOD     sort(Comparator)                           List
+METHOD     sprintf(String, Object)                    String
+METHOD     sprintf(String, Object)                    String
+METHOD     step(int)                                  List
+METHOD     step(int, Closure)                         void
+METHOD     subList(int, int)                          List<E>
+METHOD     sum()                                      Object
+METHOD     sum(Closure)                               Object
+METHOD     sum(Object)                                Object
+METHOD     sum(Object, Closure)                       Object
+METHOD     tail()                                     List
+METHOD     toArray()                                  Object[]
+METHOD     toArray(T[])                               T[]
+METHOD     toList()                                   List
+METHOD     toListString()                             String
+METHOD     toString()                                 String
+METHOD     transpose()                                List
+METHOD     unique()                                   Collection
+METHOD     unique(Closure)                            Collection
+METHOD     unique(Comparator)                         Collection
+METHOD     use(Class, Closure)                        Object
+METHOD     use(List, Closure)                         Object
+METHOD     use(Object[])                              Object
+METHOD     wait()                                     void
+METHOD     wait(long)                                 void
+METHOD     wait(long, int)                            void
+METHOD     with(Closure)                              Object

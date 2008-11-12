@@ -46,10 +46,10 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.actions.CommandUtils;
-import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.ui.actions.DebugFileCommand;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
-import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
+import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -283,8 +283,8 @@ public class SrcNode extends FilterNode {
                 // not available for multiple selected nodes => create new instance every time
                 toAdd = new Action[] {
                     null,
-                    ProjectSensitiveActions.projectCommandAction(RunSingleCommand.ID, RunSingleCommand.DISPLAY_NAME, null),
-                    ProjectSensitiveActions.projectCommandAction(DebugSingleCommand.ID, DebugSingleCommand.DISPLAY_NAME, null),
+                    ProjectSensitiveActions.projectCommandAction(RunFileCommand.ID, RunFileCommand.DISPLAY_NAME, null),
+                    ProjectSensitiveActions.projectCommandAction(DebugFileCommand.ID, DebugFileCommand.DISPLAY_NAME, null),
                 };
             } else {
                 toAdd = new Action[0];

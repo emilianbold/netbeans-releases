@@ -40,9 +40,6 @@
  */
 package org.netbeans.modules.print.provider;
 
-import java.awt.Color;
-import java.awt.Font;
-
 import java.text.AttributedCharacterIterator;
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,13 +47,14 @@ import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.openide.cookies.EditorCookie;
-import org.openide.text.AttributedCharacters;
-import org.netbeans.editor.BaseDocument;
+import org.openide.util.Lookup;
 
 import org.netbeans.modules.print.util.Config;
 import static org.netbeans.modules.print.ui.UI.*;
@@ -99,17 +97,57 @@ public final class TextProvider extends ComponentProvider {
         }
         int length = end - start;
 
-        if (document instanceof BaseDocument && length < MAX_LENGTH) {
-            PrintContainer container = new PrintContainer();
-            ((BaseDocument) document).print(container, false, true, start, end);
-            return new ComponentDocument(container.getIterators());
-        } else {
-            try {
-                return new ComponentDocument(component.getText(start, length));
-            } catch (BadLocationException e) {
-                return null;
+        if (length < MAX_LENGTH) {
+            AttributedCharacterIterator[] iterators = getIterators(document, start, end);
+//out();
+//out("iterators: " + iterators);
+//out();
+            if (iterators != null) {
+                return new ComponentDocument(iterators);
             }
         }
+        try {
+            return new ComponentDocument(component.getText(start, length));
+        } catch (BadLocationException e) {
+            return null;
+        }
+    }
+
+    private AttributedCharacterIterator[] getIterators(Document document, int start, int end) {
+        ActionListener action = (ActionListener) Lookup.getDefault().lookup(ActionListener.class);
+//out();
+//out();
+//out("Action: " + action);
+//out();
+//out();
+        if (action == null) {
+            return null;
+        }
+        if ( !action.getClass().getName().contains(".print.")) { // NOI18N
+            return null;
+        }
+        List<Object> source = new ArrayList<Object>();
+        source.add(document);
+        source.add(new Integer(start));
+        source.add(new Integer(end));
+        ActionEvent event = new ActionEvent(source, 0, null);
+        action.actionPerformed(event);
+        Object object = event.getSource();
+
+        if ( !(object instanceof List)) {
+            return null;
+        }
+        List list = (List) object;
+
+        if (list.size() != 2*2) {
+            return null;
+        }
+        Object param = list.get(1 + 2);
+
+        if ( !(param instanceof AttributedCharacterIterator[])) {
+            return null;
+        }
+        return (AttributedCharacterIterator[]) param;
     }
 
     private JTextComponent getTextComponent() {
@@ -128,42 +166,6 @@ public final class TextProvider extends ComponentProvider {
             return null;
         }
         return ((String) document.getProperty(Document.TitleProperty)).replace('\\', '/'); // NOI18N
-    }
-
-    // --------------------------------------------------------------------------------------
-    private static final class PrintContainer implements org.netbeans.editor.PrintContainer {
-
-        private List<AttributedCharacters> myCharactersList;
-        private AttributedCharacters myCharacters;
-
-        PrintContainer() {
-            myCharacters = new AttributedCharacters();
-            myCharactersList = new ArrayList<AttributedCharacters>();
-        }
-
-        public void add(char[] chars, Font font, Color foreColor, Color backColor) {
-//out(getString(foreColor) + " " + getString(backColor) + " " + getString(font) + " " + new String(chars));
-            myCharacters.append(chars, font, foreColor);
-        }
-
-        public void eol() {
-//out();
-            myCharactersList.add(myCharacters);
-            myCharacters = new AttributedCharacters();
-        }
-
-        public boolean initEmptyLines() {
-            return false;
-        }
-
-        AttributedCharacterIterator[] getIterators() {
-            AttributedCharacterIterator[] iterators = new AttributedCharacterIterator[myCharactersList.size()];
-
-            for (int i = 0; i < myCharactersList.size(); i++) {
-                iterators[i] = myCharactersList.get(i).iterator();
-            }
-            return iterators;
-        }
     }
 
     private EditorCookie myEditor;

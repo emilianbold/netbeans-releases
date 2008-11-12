@@ -79,6 +79,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  * @author Leonid Mesnik
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider.class)
 public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     private static final boolean TRACE = Boolean.getBoolean("cnd.standalone.trace"); //NOI18N

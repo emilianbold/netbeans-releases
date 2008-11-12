@@ -54,7 +54,7 @@ import java.util.List;
 public class cc extends GeneralPHP
 {
 
-  static final protected int COMPLETE_CC_LIST_SIZE = 5207;
+  static final protected int COMPLETE_CC_LIST_SIZE = 5512;
     
   public cc( String arg0 )
   {

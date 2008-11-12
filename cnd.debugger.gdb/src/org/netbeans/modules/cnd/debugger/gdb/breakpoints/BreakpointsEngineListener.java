@@ -70,7 +70,7 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     private HashMap<Breakpoint, BreakpointImpl> breakpointToImpl = new HashMap<Breakpoint, BreakpointImpl>();
 
     public BreakpointsEngineListener(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
         //session = (Session) lookupProvider.lookupFirst(null, Session.class);
         debugger.addPropertyChangeListener(this);
         //breakpointsReader = PersistenceManager.findBreakpointsReader();
@@ -89,7 +89,7 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     public void propertyChange(PropertyChangeEvent evt) {
         String pname = evt.getPropertyName();
         if (pname.equals(GdbDebugger.PROP_STATE)) {
-            if (evt.getNewValue() == GdbDebugger.STATE_LOADING) {
+            if (evt.getNewValue() == GdbDebugger.State.LOADING) {
                 int count = createBreakpointImpls();
                 DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_BREAKPOINTS, this);
                 if (count == 0) { // no breakpoints

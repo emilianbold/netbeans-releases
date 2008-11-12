@@ -47,6 +47,7 @@ import org.netbeans.modules.visualweb.insync.models.FacesModel;
  *
  * @author Peter Zavadsky
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.visualweb.insync.models.FacesModel.JsfSupportProvider.class)
 public class JsfSupportProviderImpl implements FacesModel.JsfSupportProvider {
     
     /** Creates a new instance of JsfSupportProviderImpl */

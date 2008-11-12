@@ -50,6 +50,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  * @see WebProjectType
  * @author vince kraemer
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public final class EarProjectType implements AntBasedProjectType {
 
     public static final String TYPE = "org.netbeans.modules.j2ee.earproject";

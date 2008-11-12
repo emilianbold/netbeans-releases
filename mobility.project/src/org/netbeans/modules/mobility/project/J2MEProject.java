@@ -57,10 +57,8 @@ import java.net.URLStreamHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -81,10 +79,7 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformConfigurator;
-import org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformUtil;
 import org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor;
-import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -99,10 +94,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.mobility.project.ui.J2MECustomizerProvider;
 import org.netbeans.modules.mobility.project.ui.J2MEPhysicalViewProvider;
 import org.netbeans.modules.mobility.project.queries.CompiledSourceForBinaryQuery;
@@ -112,11 +104,11 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.netbeans.modules.mobility.project.classpath.J2MEClassPathProvider;
 import org.netbeans.modules.mobility.project.deployment.DeploymentPropertiesHandler;
-import org.netbeans.modules.mobility.project.deployment.MobilityDeploymentProperties;
 import org.netbeans.modules.mobility.project.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.mobility.project.queries.FileBuiltQueryImpl;
 import org.netbeans.modules.mobility.project.queries.FileEncodingQueryImpl;
 import org.netbeans.modules.mobility.project.security.KeyStoreRepository;
+import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.mobility.deployment.DeploymentPlugin;
 import org.netbeans.spi.mobility.project.ProjectLookupProvider;
@@ -126,13 +118,12 @@ import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.openide.ErrorManager;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
@@ -140,11 +131,11 @@ import org.w3c.dom.Node;
 
 /**
  * Represents one plain J2ME project.
- * @author Jesse Glick, Adam Sotona
+ * @author Jesse Glick, Adam Sotona, Tim Boudreau
  */
 public final class J2MEProject implements Project, AntProjectListener {
-    
-    static final Icon J2ME_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage( "org/netbeans/modules/mobility/project/ui/resources/mobile-project.png" )); // NOI18N
+    final Icon J2ME_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage(
+            "org/netbeans/modules/mobility/project/ui/resources/mobile-project.png" )); // NOI18N
     private static final URLStreamHandler COMPOSED_STREAM_HANDLER = new URLStreamHandler() {
         protected URLConnection openConnection(URL u) throws IOException {
             return new ComposedConnection(u);
@@ -167,7 +158,6 @@ public final class J2MEProject implements Project, AntProjectListener {
     private static final Map<FileObject, Boolean> folders = new WeakHashMap<FileObject, Boolean>();
     private final ReferenceHelper refHelper;
     private final PropertyChangeSupport pcs;
-    public FileBuiltQueryImpl fileBuiltQuery;
     
     private TextSwitcher textSwitcher;
     
@@ -205,6 +195,127 @@ public final class J2MEProject implements Project, AntProjectListener {
             }
         }
         return result;
+    }
+
+    public boolean isConfigBroken (ProjectConfiguration cfg) {
+        cfg = cfg == null ? configHelper.getActiveConfiguration() : cfg;
+        String[] breakableConfigProperties = getBreakableProperties (cfg);
+        String[] breakableConfigPlatformProperties = getBreakablePlatformProperties (cfg);
+        boolean result = BrokenReferencesSupport.isBroken( helper, refHelper, 
+                breakableConfigProperties, breakableConfigPlatformProperties);
+        //also check for unresolved ant properties
+        return result || breakableConfigProperties != null &&
+                breakableConfigProperties[1] != null && 
+                breakableConfigProperties[1].contains("${");
+    }
+
+    public boolean hasBrokenLinks() {
+        return BrokenReferencesSupport.isBroken(helper, refHelper,
+                getBreakableProperties(), getBreakablePlatformProperties());
+    }
+
+    private String[] getBreakableProperties(ProjectConfiguration cfg) {
+        String s[] = new String[3];
+        s[0] = DefaultPropertiesDescriptor.SRC_DIR;
+        s[1] = usedLibs(cfg);
+        if (configHelper.getDefaultConfiguration().equals(cfg)) {
+            s[2] = DefaultPropertiesDescriptor.SIGN_KEYSTORE;
+        } else {
+            s[2] = J2MEProjectProperties.CONFIG_PREFIX + cfg.getDisplayName() +
+                    "." + DefaultPropertiesDescriptor.SIGN_KEYSTORE; //NOI18N
+        }
+        return s;
+    }
+
+    private String usedActive(final ProjectConfiguration cfg) {
+        String libs;
+        /* Check for default lib config */
+        if (cfg.equals(getConfigurationHelper().getDefaultConfiguration())) {
+            libs = DefaultPropertiesDescriptor.PLATFORM_ACTIVE;
+        } else {
+            libs = helper.getStandardPropertyEvaluator().getProperty(
+                    J2MEProjectProperties.CONFIG_PREFIX + cfg.getDisplayName() +
+                    "." + DefaultPropertiesDescriptor.PLATFORM_ACTIVE);
+            if (libs == null) {
+                libs = DefaultPropertiesDescriptor.PLATFORM_ACTIVE;
+            } else {
+                libs = J2MEProjectProperties.CONFIG_PREFIX + 
+                        cfg.getDisplayName() + "." +
+                        DefaultPropertiesDescriptor.PLATFORM_ACTIVE;
+            }
+        }
+        return libs;
+    }
+
+    private String[] getBreakablePlatformProperties(ProjectConfiguration cfg) {
+        String s[]=new String[1];
+        s[0]=usedActive(cfg);
+        return s;
+    }
+
+    public String[] getBreakableProperties() {
+        final ProjectConfiguration pc[] = configHelper.getConfigurations().toArray(
+                new ProjectConfiguration[0]);
+        String s[] = new String[2*pc.length+1];
+        s[0] = DefaultPropertiesDescriptor.SRC_DIR;
+        for (int i= 0; i<pc.length; i++) {
+            if (configHelper.getDefaultConfiguration().equals(pc[i])) {
+                s[2*i+1] = DefaultPropertiesDescriptor.LIBS_CLASSPATH;
+                s[2*i+2] = DefaultPropertiesDescriptor.SIGN_KEYSTORE;
+            } else {
+                s[2*i+1] = J2MEProjectProperties.CONFIG_PREFIX + 
+                        pc[i].getDisplayName() + "." +
+                        DefaultPropertiesDescriptor.LIBS_CLASSPATH; //NOI18N
+                s[2*i+2] = J2MEProjectProperties.CONFIG_PREFIX + 
+                        pc[i].getDisplayName() + "." +
+                        DefaultPropertiesDescriptor.SIGN_KEYSTORE; //NOI18N
+            }
+        }
+        return s;
+    }
+
+    public String[] getBreakablePlatformProperties() {
+        final ProjectConfiguration pc[] =
+                configHelper.getConfigurations().toArray(new ProjectConfiguration[0]);
+        String s[] = new String[pc.length];
+        for (int i= 0; i<pc.length; i++) {
+            if (configHelper.getDefaultConfiguration().equals(pc[i])) {
+                s[i] = DefaultPropertiesDescriptor.PLATFORM_ACTIVE;
+            } else {
+                s[i] = J2MEProjectProperties.CONFIG_PREFIX + 
+                        pc[i].getDisplayName() + "." +
+                        DefaultPropertiesDescriptor.PLATFORM_ACTIVE; //NOI18N
+            }
+        }
+        return s;
+    }
+
+    public boolean isUsingDefaultLibs(ProjectConfiguration config) {
+        ProjectConfiguration cfg = config == null ? getConfigurationHelper().getActiveConfiguration() : config;
+        return cfg == null ? false : usedLibs(cfg) == null;
+    }
+
+    public boolean canModifyLibraries(ProjectConfiguration config) {
+        return !isUsingDefaultLibs(config);
+    }
+
+    public boolean isInDefaultConfiguration() {
+        return configHelper.getDefaultConfiguration().equals(configHelper.getActiveConfiguration());
+    }
+
+    public String usedLibs(final ProjectConfiguration cfg) {
+        if (cfg == null) {
+            return null;
+        }
+        String libs;
+        /* Check for default lib config */
+        if (cfg.getDisplayName().equals(getConfigurationHelper().getDefaultConfiguration().getDisplayName())) {
+            libs = helper.getStandardPropertyEvaluator().getProperty(DefaultPropertiesDescriptor.LIBS_CLASSPATH);
+        } else {
+            libs = helper.getStandardPropertyEvaluator().getProperty(J2MEProjectProperties.CONFIG_PREFIX +
+                    cfg.getDisplayName() + "." + DefaultPropertiesDescriptor.LIBS_CLASSPATH); //NOI18N
+        }
+        return libs;
     }
     
     protected static void addRoots(final AntProjectHelper helper) {
@@ -255,7 +366,6 @@ public final class J2MEProject implements Project, AntProjectListener {
         midletsCacheHelper = new MIDletsCacheHelper(helper, configHelper);
         helper.addAntProjectListener(new CDCMainClassHelper(helper));
         pcs = new PropertyChangeSupport(this);
-        fileBuiltQuery = new FileBuiltQueryImpl(helper, configHelper);
         this.lookup = this.createLookup(aux);
         helper.addAntProjectListener(this);
     }
@@ -275,19 +385,22 @@ public final class J2MEProject implements Project, AntProjectListener {
     public ProjectConfigurationsHelper getConfigurationHelper() {
         return configHelper;
     }
-    
+
     private Lookup createLookup(final AuxiliaryConfiguration aux) {
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, helper.getStandardPropertyEvaluator());
-        sourcesHelper.addPrincipalSourceRoot("${src.dir}", NbBundle.getMessage(J2MEProject.class, "LBL_J2MEProject_Source_Packages"), /*XXX*/null, null); //NOI18N
-        // XXX add build dir too?
-        sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(J2MEProject.class, "LBL_J2MEProject_Source_Packages"), /*XXX*/null, null); //NOI18N
-        
+        sourcesHelper.addPrincipalSourceRoot("${src.dir}", NbBundle.getMessage(J2MEProject.class, "LBL_J2MEProject_Source_Packages"), null, null); //NOI18N
+        sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(J2MEProject.class, "LBL_J2MEProject_Source_Packages"), null, null); //NOI18N
         final SubprojectProvider spp = refHelper.createSubprojectProvider();
         
         Object stdLookups[]=new Object[] {
             new Info(),
             aux,
             spp,
+            configHelper,
+            helper,
+            midletsCacheHelper,
+            refHelper,
+            new FileBuiltQueryImpl(helper, configHelper),
             new J2MEActionProvider( this, helper ),
             new J2MEPhysicalViewProvider(this, helper, refHelper, configHelper),
             new J2MECustomizerProvider( this, helper, refHelper, configHelper),
@@ -298,14 +411,9 @@ public final class J2MEProject implements Project, AntProjectListener {
             new ProjectOpenedHookImpl(),
             new JavadocForBinaryQueryImpl(this, helper),
             helper.createSharabilityQuery(helper.getStandardPropertyEvaluator(), new String[]{"${src.dir}"}, new String[]{"${dist.root.dir}", "${build.root.dir}", "${deployment.copy.target}"}), //NOI18N
-            configHelper,
-            helper,
             sourcesHelper.createSources(),
             new RecommendedTemplatesImpl(),
             new SourceLevelQueryImpl(helper),
-            midletsCacheHelper,
-            fileBuiltQuery,
-            refHelper,
             new J2MEProjectClassPathExtender(this, helper, refHelper, configHelper),
             new J2MEProjectOperations(this, helper, refHelper),
             new PreprocessorFileFilterImplementation(configHelper, helper),
@@ -318,7 +426,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             list.addAll(provider.createLookupElements(this,helper,refHelper,configHelper));
         }
         return Lookups.fixed(list.toArray());
-        
+//        return new AnalysisLookup (list.toArray());
     }
     
     /** Store configured project name. */
@@ -588,6 +696,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             
             // register project's classpaths to GlobalPathRegistry
             final J2MEClassPathProvider cpProvider = lookup.lookup(J2MEClassPathProvider.class);
+            assert cpProvider != null;
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[] {cpProvider.getBootClassPath()});
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {cpProvider.getSourcepath()});
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] {cpProvider.getCompileTimeClasspath()});
@@ -595,7 +704,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             configHelper.addPropertyChangeListener(textSwitcher = new TextSwitcher(J2MEProject.this, helper));
 
             final J2MEPhysicalViewProvider phvp  = lookup.lookup(J2MEPhysicalViewProvider.class);
-            if (phvp.hasBrokenLinks()) {
+            if (hasBrokenLinks()) {
                 BrokenReferencesSupport.showAlert();
             }
             
@@ -731,6 +840,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             return JavaProjectConstants.ARTIFACT_TYPE_JAR;
         }
         
+        @Override
         public Project getProject() {
             return J2MEProject.this;
         }
@@ -739,6 +849,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             return configuration == null ? super.getID() : super.getID() + "." + configuration;//NOI18N
         }
         
+        @Override
         public URI[] getArtifactLocations() {
             final PropertyEvaluator eval = helper.getStandardPropertyEvaluator();
             String path = "dist/"; //NOI18N
@@ -750,6 +861,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             return new URI[] {getScriptLocation().getParentFile().toURI().relativize(helper.resolveFile(locationResolved).toURI())};
         }
         
+        @Override
         public Properties getProperties() {
             final Properties p = new Properties();
             p.put(DefaultPropertiesDescriptor.CONFIG_ACTIVE, configuration == null ? "" : configuration);

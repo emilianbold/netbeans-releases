@@ -184,8 +184,9 @@ public class GenerateCodeAction extends CookieAction
         
         else
         {
+            File normalizedFile = FileUtil.normalizeFile(new File(targetFolderName));
             FileObject targetSrcFolderFO = 
-                FileUtil.toFileObject(new File(targetFolderName));
+                FileUtil.toFileObject(normalizedFile);
 
             if (targetSrcFolderFO == null || !targetSrcFolderFO.isValid())
             {

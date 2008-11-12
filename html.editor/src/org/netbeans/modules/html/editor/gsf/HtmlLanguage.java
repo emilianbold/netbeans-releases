@@ -43,27 +43,26 @@ package org.netbeans.modules.html.editor.gsf;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.gsf.spi.CommentHandler;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 
 public class HtmlLanguage extends DefaultLanguageConfig {
-    
-    //XXX no line comment in html!
-    private static final String LINE_COMMENT_PREFIX = "<!--";
     
     public HtmlLanguage() {
     }
 
     @Override
-    public Language getLexerLanguage() {
-        return HTMLTokenId.language();
+    public CommentHandler getCommentHandler() {
+        return new HtmlCommentHandler();
     }
 
     @Override
-    public String getLineCommentPrefix() {
-        return LINE_COMMENT_PREFIX;
+    public Language getLexerLanguage() {
+        return HTMLTokenId.language();
     }
 
     @Override
@@ -111,5 +110,9 @@ public class HtmlLanguage extends DefaultLanguageConfig {
     @Override
     public CodeCompletionHandler getCompletionHandler() {
         return new HtmlGsfCompletionHandler();
+    }
+
+    public KeystrokeHandler getKeystrokeHandler() {
+        return new HtmlKeystrokeHandler();
     }
 }

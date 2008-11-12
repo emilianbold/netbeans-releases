@@ -62,7 +62,7 @@ import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3R
 public final class ModelHandleUtils {
     
     private ModelHandleUtils() {}
-    
+
     public static ModelHandle createModelHandle(Project prj) throws IOException, XmlPullParserException {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         Model model = project.getEmbedder().readModel(project.getPOMFile());

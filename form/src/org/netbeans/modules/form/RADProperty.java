@@ -44,6 +44,8 @@ package org.netbeans.modules.form;
 
 import java.beans.*;
 import java.lang.reflect.*;
+import java.util.ArrayList;
+import java.util.List;
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.form.editors.*;
@@ -253,7 +255,28 @@ public class RADProperty extends FormProperty {
             }
         }
 
+        if ((prEd == null) && (descriptor.getPropertyType().isEnum())) {
+            prEd = createDefaultEnumEditor(descriptor.getPropertyType());
+        }
+
         return prEd;
+    }
+
+    static PropertyEditor createDefaultEnumEditor(Class enumClass) {
+        try {
+            Method method = enumClass.getMethod("values"); // NOI18N
+            Enum[] values = (Enum[]) method.invoke(null);
+            List<Object> list = new ArrayList<Object>(3*values.length);
+            for (Enum value : values) {
+                list.add(value.toString());
+                list.add(value);
+                list.add(enumClass.getName().replace('$', '.') + '.' + value.name());
+            }
+            return new EnumEditor(list.toArray());
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        return null;
     }
 
     protected PropertyEditor createEnumEditor(PropertyDescriptor descriptor) {

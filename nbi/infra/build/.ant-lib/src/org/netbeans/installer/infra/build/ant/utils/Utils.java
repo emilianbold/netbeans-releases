@@ -785,7 +785,7 @@ public final class Utils {
     
     public static int getPermissions(final File file) {
         try {
-            final Results results = run(getLsExecutable(), "-ld", file.getAbsolutePath());
+            final Results results = run(file.getParentFile(), getLsExecutable(), "-ld", file.getName());
             
             final String output = results.getStdout().toString().trim();
             

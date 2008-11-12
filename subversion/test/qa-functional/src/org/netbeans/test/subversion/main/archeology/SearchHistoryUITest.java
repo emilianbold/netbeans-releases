@@ -18,6 +18,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
@@ -131,7 +132,9 @@ public class SearchHistoryUITest extends JellyTestCase{
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);
         } finally {
-            TestKit.closeProject(PROJECT_NAME);
+            try {
+                TestKit.closeProject(PROJECT_NAME);
+            } catch (TimeoutExpiredException e) {/* OK */}
         }    
     }
 }

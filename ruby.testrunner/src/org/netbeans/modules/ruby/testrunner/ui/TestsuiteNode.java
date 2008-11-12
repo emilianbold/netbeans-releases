@@ -42,6 +42,10 @@
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.Action;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
@@ -225,8 +229,42 @@ final class TestsuiteNode extends AbstractNode {
     private boolean containsFailed() {
         return (report != null) && (report.failures + report.errors != 0);
     }
-    
-    public SystemAction[] getActions(boolean context) {
-        return new SystemAction[0];
+
+    private Report.Testcase getFirstTestCase() {
+        return report.getTests().isEmpty() ? null : report.getTests().iterator().next();
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        Report.Testcase testcase = getFirstTestCase();
+        if (testcase == null) {
+            // need to have at least one test case to locate the test file
+            return null;
+        }
+        if (TestType.RSPEC == testcase.getType()) {
+            //XXX: not the exact location of the class
+            return new JumpToCallStackAction(this, TestMethodNode.getTestLocation(testcase, report.getProject()), 1);
+        }
+        return new JumpToTestAction(getFirstTestCase(), report.getProject(), NbBundle.getMessage(TestsuiteNode.class, "LBL_GoToSource"), true);
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        if (context) {
+            return new Action[0];
+        }
+        List<Action> actions = new ArrayList<Action>(3);
+        Action preferred = getPreferredAction();
+        if (preferred != null) {
+            actions.add(preferred);
+        }
+        Report.Testcase testcase = getFirstTestCase();
+        // these actions are enable only if the suite had at least one test (otherwise
+        // we can't reliably locate the test file)
+        if (testcase != null) {
+            actions.add(new RunTestSuiteAction(testcase, report.getProject(), NbBundle.getMessage(TestMethodNode.class, "LBL_RerunTest"), false));
+            actions.add(new RunTestSuiteAction(testcase, report.getProject(), NbBundle.getMessage(TestMethodNode.class, "LBL_DebugTest"), true));
+        }
+        return actions.toArray(new Action[actions.size()]);
     }
 }

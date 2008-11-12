@@ -60,6 +60,7 @@ import java.util.Set;
  *
  * @author Peter Zavadsky
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.windows.TopComponent.Registry.class)
 public final class RegistryImpl extends Object implements TopComponent.Registry {
     
     // fields

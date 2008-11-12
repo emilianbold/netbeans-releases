@@ -181,7 +181,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
             src.setSystemId(base.toString());
             return src;
         } catch (IOException ex) {
-            ERR.log (Level.SEVERE, null, ex);
+            ERR.log (Level.SEVERE, "Cannot estabilish input stream for " + toParse , ex);
             return new InputSource();
         }
     }

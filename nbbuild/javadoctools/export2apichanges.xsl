@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -103,8 +103,10 @@ made subject to such option by the copyright holder.
                 made for </xsl:text>
                 <a href="http://www.netbeans.org/download/release41/javadoc/apichanges.html">release 4.1</a>,
                 <a href="http://www.netbeans.org/download/5_0/javadoc/apichanges.html">release 5.0</a>, 
-                <a href="http://www.netbeans.org/download/5_5/javadoc/apichanges.html">release 5.5</a>, and
-                <a href="http://bits.netbeans.org/6.0/javadoc/apichanges.html">release 6.0</a>.
+                <a href="http://www.netbeans.org/download/5_5/javadoc/apichanges.html">release 5.5</a>,
+                <a href="http://bits.netbeans.org/6.0/javadoc/apichanges.html">release 6.0</a>,
+                <a href="http://bits.netbeans.org/6.1/javadoc/apichanges.html">release 6.1</a>, and
+                <a href="http://bits.netbeans.org/6.5/javadoc/apichanges.html">release 6.5</a>.
             <xsl:call-template name="do-the-table" />
             </body>
             </html>

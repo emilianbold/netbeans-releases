@@ -207,7 +207,7 @@ public class NbRegistrationAction extends WizardAction {
                     type = registry.getStringValue(registry.HKEY_CLASSES_ROOT, ".html", "");
                 }
 
-                LogManager.log(".. html type : " + type);
+                LogManager.log("... html type : " + type);
                 if (type != null && !type.equals("")) {
                     String command = null;
                     String userCmdKey = "Software\\Classes\\" + type + "\\shell\\open\\command";
@@ -241,7 +241,7 @@ public class NbRegistrationAction extends WizardAction {
                         return true;
                     }
                 }
-            } else if (SystemUtils.isLinux() || SystemUtils.isSolaris()) {
+            } else if (SystemUtils.isUnix()) {
                 return browseUnix(uri);
             }
         } catch (NativeException e) {
@@ -263,7 +263,7 @@ public class NbRegistrationAction extends WizardAction {
     }
 
     public static File getUnixBrowser() {
-        final String[] possibleBrowsers = (SystemUtils.isLinux() ? POSSIBLE_BROWSER_LOCATIONS_LINUX : (SystemUtils.isSolaris() ? POSSIBLE_BROWSER_LOCATIONS_SOLARIS : new String[]{}));
+        final String[] possibleBrowsers = (SystemUtils.isLinux() ? POSSIBLE_BROWSER_LOCATIONS_LINUX : (SystemUtils.isSolaris() ? POSSIBLE_BROWSER_LOCATIONS_SOLARIS : (SystemUtils.isMacOS() ? POSSIBLE_BROWSER_LOCATIONS_MACOSX : new String[]{})));
         for (String s : possibleBrowsers) {
             File f = new File(s);
             if (f.exists()) {
@@ -304,5 +304,8 @@ public class NbRegistrationAction extends WizardAction {
         "/usr/bin/mozilla",
         "/usr/local/mozilla/mozilla",
         "/opt/bin/mozilla"
+    };
+    public static final String[] POSSIBLE_BROWSER_LOCATIONS_MACOSX = new String[]{
+        "/usr/bin/open"
     };
 }

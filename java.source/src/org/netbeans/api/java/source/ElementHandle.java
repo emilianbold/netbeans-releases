@@ -103,8 +103,8 @@ public final class ElementHandle<T extends Element> {
         ElementHandleAccessor.INSTANCE = new ElementHandleAccessorImpl ();
     }
     
-    private ElementKind kind;
-    private String[] signatures;
+    private final ElementKind kind;
+    private final String[] signatures;
         
        
     private ElementHandle(final ElementKind kind, String[] signatures) {

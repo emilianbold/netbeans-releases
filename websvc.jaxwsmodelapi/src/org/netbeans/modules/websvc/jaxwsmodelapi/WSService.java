@@ -51,7 +51,7 @@ public interface WSService {
     
     public Object getInternalJAXWSService();
     
-    public List<WSPort> getPorts();
+    public List<? extends WSPort> getPorts();
     
     public String getName();
     

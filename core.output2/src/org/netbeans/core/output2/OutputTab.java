@@ -177,7 +177,10 @@ final class OutputTab extends AbstractOutputTab {
     }
 
     public void caretEnteredLine(int line) {
-        findOutputWindow().caretEnteredLine(this, line);
+        OutputWindow ow = findOutputWindow();
+        if (ow != null) {
+            ow.caretEnteredLine(this, line);
+        }
     }
     
     private int firstNavigableListenerLine = -1;

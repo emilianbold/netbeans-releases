@@ -359,6 +359,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         Registry.getInstance().getProducts(dependencies.get(0));
                 if (sources.size() > 0) {
                     final Product nbProduct = sources.get(0);
+                    if(nbProduct.getStatus() != Status.INSTALLED) {
+                        continue;
+                    }
                     List<Product> dependents = Registry.getInstance().getInavoidableDependents(nbProduct);
                     boolean requiresJDK = false;
                     for (Product pr : dependents) {

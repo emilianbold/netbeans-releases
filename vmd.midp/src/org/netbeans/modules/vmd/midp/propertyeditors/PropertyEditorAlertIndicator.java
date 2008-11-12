@@ -81,9 +81,6 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
     private PropertyEditorAlertIndicator(String rbLabel) {
         super(NbBundle.getMessage(PropertyEditorAlertIndicator.class, "LBL_VALUE_ALERT_INDICATOR_UCLABEL")); // NOI18N
         this.rbLabel = rbLabel;
-        initComponents();
-
-        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     public static PropertyEditorAlertIndicator createInstance(String rbLabel) {
@@ -292,6 +289,15 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
         return MidpPropertyEditorSupport.singleSelectionEditAsTextOnly();
     }
 
+    @Override
+    public Component getCustomEditor() {
+        if (customEditor == null) {
+            initComponents();
+            initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+        return super.getCustomEditor();
+    }
+
     private class CustomEditor extends JPanel implements ActionListener {
 
         private JCheckBox checkBox;
@@ -322,7 +328,7 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
         }
 
         public void setValue(PropertyValue value) {
-            checkBox.setSelected(value != null && value.getPrimitiveValue() != null && MidpTypes.getBoolean(value));
+            checkBox.setSelected(value != null &&  value.getComponent() != null );
         }
 
         public String getText() {

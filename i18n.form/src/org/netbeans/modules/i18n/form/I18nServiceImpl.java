@@ -81,6 +81,7 @@ import org.openide.filesystems.FileUtil;
  * internationalization of forms while i18n module owns all the technical means
  * (i18n values, property editors, bundle files).
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.I18nService.class)
 public class I18nServiceImpl implements I18nService {
 
     // remembered original state for changes made for given source data objects
@@ -160,7 +161,14 @@ public class I18nServiceImpl implements I18nService {
         if (value == null || value.getKey() == null)
             return value;
 
-        FormI18nString i18nString = new FormI18nString((FormI18nString)value);
+        FormI18nString i18nString;
+        if (value instanceof FormI18nInteger) {
+            i18nString = new FormI18nInteger((FormI18nInteger)value);
+        } else if (value instanceof FormI18nMnemonic) {
+            i18nString = new FormI18nMnemonic((FormI18nMnemonic)value);
+        } else {
+            i18nString = new FormI18nString((FormI18nString)value);
+        }
         JavaResourceHolder rh = (JavaResourceHolder) i18nString.getSupport().getResourceHolder();
         rh.setLocalization(localeSuffix);
         i18nString.setValue(rh.getValueForKey(i18nString.getKey()));

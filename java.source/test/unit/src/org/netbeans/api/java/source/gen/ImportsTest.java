@@ -43,6 +43,7 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
 
@@ -51,6 +52,7 @@ import com.sun.source.tree.VariableTree;
 import java.io.File;
 import java.io.IOException;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -105,6 +107,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ImportsTest("testRenameIdentifier2"));
 //        suite.addTest(new ImportsTest("testAtVeryBeginning"));
 //        suite.addTest(new ImportsTest("testPackageInfo"));
+//        suite.addTest(new ImportsTest("testRemoveAndAdd"));
         return suite;
     }
 
@@ -1283,6 +1286,47 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
+    public void testRemoveAndAdd() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "import java.lang.annotation.RetentionPolicy;\n" +
+            "import static java.lang.annotation.RetentionPolicy.*;\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "import java.lang.annotation.RetentionPolicy;\n" +
+            "public class Test {\n" +
+            "    RetentionPolicy p;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                CompilationUnitTree nue = workingCopy.getTreeMaker().CompilationUnit(cut.getPackageName(), Collections.<ImportTree>emptyList(), cut.getTypeDecls(), cut.getSourceFile());
+                
+                workingCopy.rewrite(cut, nue);
+
+                ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
+                ExpressionTree type = make.QualIdent(workingCopy.getElements().getTypeElement("java.lang.annotation.RetentionPolicy"));
+                VariableTree var = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "p",type, null);
+                ClassTree nueCT = make.addClassMember(ct,var);
+
+                workingCopy.rewrite(ct, nueCT);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }

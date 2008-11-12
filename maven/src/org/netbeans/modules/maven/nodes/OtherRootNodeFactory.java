@@ -131,7 +131,7 @@ public class OtherRootNodeFactory implements NodeFactory {
         @Override
         public void addNotify() {
             NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
-            watch.addPropertyChangeListener(project, this);
+            NbMavenProject.addPropertyChangeListener(project, this);
             watch.addWatchedPath(MAIN); //NOI18N
             watch.addWatchedPath(TEST); //NOI18N    
             checkFileObject(MAIN);
@@ -141,7 +141,7 @@ public class OtherRootNodeFactory implements NodeFactory {
         @Override
         public void removeNotify() {
             NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
-            watch.removePropertyChangeListener(project, this);
+            NbMavenProject.removePropertyChangeListener(project, this);
             watch.removeWatchedPath(MAIN); //NOI18N
             watch.removeWatchedPath(TEST); //NOI18N            
             FileObject fo = project.getProjectDirectory().getFileObject(MAIN);

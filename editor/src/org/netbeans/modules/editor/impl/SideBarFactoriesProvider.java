@@ -61,6 +61,7 @@ import org.openide.loaders.DataObject;
  *
  * @author Martin Roskanin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
 public final class SideBarFactoriesProvider implements Class2LayerFolder<SideBarFactoriesProvider>, InstanceProvider<SideBarFactoriesProvider> {
 
     private static final Logger LOG = Logger.getLogger(SideBarFactoriesProvider.class.getName());

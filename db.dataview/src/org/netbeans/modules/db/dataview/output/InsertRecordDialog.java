@@ -46,6 +46,8 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -334,7 +336,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             if(conn != null) {
                 DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
                 typeInfo = dbMeta.buildDBSpecificDatatypeMap();
-            }
+            } 
         } catch (SQLException ex) {
             // ignore
         }
@@ -435,6 +437,33 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
 
             public void keyReleased(KeyEvent ke) {
                 refreshSQL();
+            }
+        });
+
+        colValueTextField[i].addMouseListener(new MouseListener() {
+
+            public void mouseClicked(MouseEvent evt) {
+                if (evt.getClickCount() >= 2) {
+                    if (col.isGenerated() || !col.isNullable()) {
+                        Toolkit.getDefaultToolkit().beep();
+                    } else if (!colValueTextField[index].isEditable()) {
+                        colValueTextField[index].setText(""); // NOI18N
+                        colValueTextField[index].setEditable(true);
+                        colValueTextField[index].requestFocus();
+                    }
+                }
+            }
+
+            public void mousePressed(MouseEvent arg0) {
+            }
+
+            public void mouseReleased(MouseEvent arg0) {
+            }
+
+            public void mouseEntered(MouseEvent arg0) {
+            }
+
+            public void mouseExited(MouseEvent arg0) {
             }
         });
     }

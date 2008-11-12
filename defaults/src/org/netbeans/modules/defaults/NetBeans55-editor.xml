@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="caret-color-insert-mode" foreColor="black"/>
     <fontcolor name="text-limit-line-color" foreColor="ffffa8a8"/>
     <fontcolor name="nbeditor-bracesMatching-match" bgColor="ff4BFF0F"/>
-    <fontcolor name="nbeditor-bracesMatching-mismatch" bgColor="red"/>
+    <fontcolor name="nbeditor-bracesMatching-mismatch" bgColor="ffD83636"/>
     <fontcolor name="hyperlinks" foreColor="blue" underline="blue"/>
     <fontcolor name="synchronized-text-blocks-ext" foreColor="ffCC0099"/>
     <fontcolor name="synchronized-text-blocks-ext-slave" foreColor="ff996600"/>

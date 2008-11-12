@@ -49,6 +49,7 @@ import org.openide.util.Lookup;
  *
  * @author mkleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=72)
 public class ProfilerActionsProvider extends AbstractMavenActionsProvider {
 
 

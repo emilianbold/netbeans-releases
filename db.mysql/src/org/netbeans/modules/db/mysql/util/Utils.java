@@ -40,8 +40,10 @@
 package org.netbeans.modules.db.mysql.util;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,14 +60,20 @@ import org.openide.util.Utilities;
  */
 public class Utils {
     private static Logger LOGGER = Logger.getLogger(Utils.class.getName());
+
+    public static String getHostIpAddress(String hostname) throws UnknownHostException {
+        InetAddress inetaddr = InetAddress.getByName(hostname);
+        return inetaddr.getHostAddress();
+    }
     
     public static RuntimeException launderThrowable(Throwable t) {
+        assert (t != null);
         if (t instanceof RuntimeException)
             return (RuntimeException)t;
         else if (t instanceof Error)
             throw (Error)t;
         else
-            throw new IllegalStateException("Unexpected checked exception", t);
+            throw new RuntimeException("Unexpected exception: " + t.getClass().getName() + ": " + t.getMessage(), t);
     }
 
     public static void displayError(String msg, Exception ex) {

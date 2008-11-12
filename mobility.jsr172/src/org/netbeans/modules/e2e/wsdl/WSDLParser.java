@@ -10,6 +10,10 @@
 package org.netbeans.modules.e2e.wsdl;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -85,9 +89,11 @@ public class WSDLParser extends DefaultHandler {
     private static final String FAULT               = "fault";
     
     private List<WSDL2Java.ValidationResult> validationResults;    
+    private URL                              myOriginalWsdlUri;
     
-    public WSDLParser() {
+    public WSDLParser( URL originalWsdlUri ) {
         validationResults = new ArrayList<WSDL2Java.ValidationResult>();
+        myOriginalWsdlUri = originalWsdlUri;
     }
     
     public Definition parse( String uri ) throws WSDLException {
@@ -102,8 +108,11 @@ public class WSDLParser extends DefaultHandler {
             
             SAXParser parser = spf.newSAXParser();
             parser.parse( uri, this );
-            try {                
-                schemaParser.parseLocation( uri, definition.getTargetNamespace() );
+            try {
+                /*
+                 * Fix for IZ#120452 - JSR172: Client isn't generated when there is a relative path to xsd in wsdl
+                 */
+                schemaParser.parseLocation( myOriginalWsdlUri, definition.getTargetNamespace() );
             } catch (SchemaException ex) {
                 throw new WSDLException( ex );
             }
@@ -336,8 +345,14 @@ public class WSDLParser extends DefaultHandler {
                     try {
                         String namespace = attributes.getValue( "namespace" );
                         String location = attributes.getValue( "location" );
-                        WSDLParser parser = new WSDLParser();
-                        Definition d = parser.parse( location );
+
+                        /*
+                         * Fix for IZ#153030 - JSR172: WSDL Validation failed if it contains imported wsdl with relative path
+                         */
+                        URI u = myOriginalWsdlUri.toURI();
+                        URI sl = u.resolve( location );
+                        WSDLParser parser = new WSDLParser( sl.toURL() );
+                        Definition d = parser.parse( sl.toString() );
                         
                         for( Binding b : d.getBindings().values()) definition.addBinding( b );
                         for( Message m : d.getMessages().values()) definition.addMessage( m );
@@ -350,6 +365,12 @@ public class WSDLParser extends DefaultHandler {
                         validationResults.addAll( parser.getValidationResults());
                         return;
                     } catch( WSDLException e ) {
+                        Exceptions.printStackTrace( e );
+                    }
+                    catch (URISyntaxException e ){
+                        Exceptions.printStackTrace( e );
+                    }
+                    catch ( MalformedURLException e ){
                         Exceptions.printStackTrace( e );
                     }
                 }

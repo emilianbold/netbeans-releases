@@ -138,7 +138,9 @@ public class WatchPanel {
         CallStackFrame csf = null;
         if (en != null) {
             JPDADebugger d = en.lookupFirst(null, JPDADebugger.class);
-            csf = d.getCurrentCallStackFrame();
+            if (d != null) {
+                csf = d.getCurrentCallStackFrame();
+            }
         }
         if (csf != null) {
             String language = DebuggerManager.getDebuggerManager ().getCurrentSession().getCurrentLanguage();

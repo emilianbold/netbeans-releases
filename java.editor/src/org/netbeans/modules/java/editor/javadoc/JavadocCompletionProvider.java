@@ -40,6 +40,7 @@
 package org.netbeans.modules.java.editor.javadoc;
 
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -62,7 +63,7 @@ public final class JavadocCompletionProvider implements CompletionProvider {
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         char c;
         if (typedText != null && typedText.length() == 1
-                && ((c = typedText.charAt(0)) == '.' || c == '#' || c == '@')
+                && Utilities.getJavadocCompletionAutoPopupTriggers().indexOf(typedText.charAt(0)) >= 0
                 && JavadocCompletionUtils.isJavadocContext(component.getDocument(), component.getCaretPosition())) {
             return COMPLETION_QUERY_TYPE;
         }

@@ -153,7 +153,7 @@ public abstract class ViewNode extends AbstractNode {
     }
     
     public void goToLine() {
-        getLine().show(Line.SHOW_GOTO);
+        getLine().show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
     }
     
     private Line lineNumberToLine() {

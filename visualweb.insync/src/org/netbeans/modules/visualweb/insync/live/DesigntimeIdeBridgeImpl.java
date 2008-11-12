@@ -57,6 +57,7 @@ import org.openide.util.NbBundle;
  *
  * @author Peter Zavadsky
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.visualweb.api.designtime.idebridge.DesigntimeIdeBridge.class)
 public class DesigntimeIdeBridgeImpl implements DesigntimeIdeBridge {
 
     /** Creates a new instance of DesigntimeServiceImpl */

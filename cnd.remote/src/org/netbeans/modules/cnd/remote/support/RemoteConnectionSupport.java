@@ -69,7 +69,7 @@ public abstract class RemoteConnectionSupport {
     private boolean failed = false;
     private String failureReason;
     private Integer timeout = Integer.getInteger("cnd.remote.timeout"); // NOI18N
-    protected static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    protected static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     public RemoteConnectionSupport(String key, int port) {
         this.key = key;

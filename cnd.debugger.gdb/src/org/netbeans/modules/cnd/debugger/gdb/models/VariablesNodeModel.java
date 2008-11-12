@@ -76,7 +76,7 @@ public class VariablesNodeModel implements ExtendedNodeModel {
     public static final String ERROR =
             "org/netbeans/modules/cnd/debugger/gdb/resources/error_small_16.png"; // NOI18N
     
-    private RequestProcessor evaluationRP = new RequestProcessor();
+    private final RequestProcessor evaluationRP = new RequestProcessor();
     private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
     
     // Localizable messages
@@ -89,9 +89,9 @@ public class VariablesNodeModel implements ExtendedNodeModel {
             "CTL_LocalsModel_Column_Name_Desc"); // NOI18N
     
     // Non-localized magic strings
-    private final String strNoInfo = "NoInfo"; // NOI18N
-    private final String strSubArray = "SubArray"; // NOI18N
-    private final String strNoCurrentThread = "No current thread"; // NOI18N
+    private static final String strNoInfo = "NoInfo"; // NOI18N
+    private static final String strSubArray = "SubArray"; // NOI18N
+    private static final String strNoCurrentThread = "No current thread"; // NOI18N
     
     public VariablesNodeModel(ContextProvider lookupProvider) {
     }

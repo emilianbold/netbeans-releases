@@ -58,7 +58,7 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  * Shows Search results in a JList.
- * 
+ *
  * @author Tomas Stupka
  */
 class SvnSearchView implements ComponentListener {
@@ -67,25 +67,25 @@ class SvnSearchView implements ComponentListener {
     private ISVNLogMessage[] lm;
     private AttributeSet searchHiliteAttrs;
     private JScrollPane pane;
-                            
-                            
+
+
     public SvnSearchView() {
         FontColorSettings fcs = (FontColorSettings) MimeLookup.getMimeLookup("text/x-java").lookup(FontColorSettings.class); // NOI18N
         searchHiliteAttrs = fcs.getFontColors("highlight-search"); // NOI18N
-        
+
         resultsList = new JList(new SvnSearchListModel());
         resultsList.setFixedCellHeight(-1);
         resultsList.setCellRenderer(new SvnSearchListCellRenderer());
         resultsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SvnSearchView.class, "ACSN_SummaryView_ListName"));
         resultsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SvnSearchView.class, "ACSD_SummaryView_ListDesc"));
-        resultsList.addComponentListener(this);        
+        resultsList.addComponentListener(this);
         pane = new JScrollPane(resultsList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     }
 
     JComponent getComponent() {
         return pane;
     }
-    
+
     public void componentResized(ComponentEvent e) {
         int [] selection = resultsList.getSelectedIndices();
         resultsList.setModel(new SvnSearchListModel());
@@ -103,7 +103,7 @@ class SvnSearchView implements ComponentListener {
     public void componentShown(ComponentEvent e) {
         // not interested
     }
-    
+
     public void setResults(ISVNLogMessage[] lm) {
         this.lm = lm;
         resultsList.setModel(new SvnSearchListModel());
@@ -135,14 +135,14 @@ class SvnSearchView implements ComponentListener {
             if(lm == null) {
                 return 0;
             }
-            return lm.length; 
+            return lm.length;
         }
 
         public Object getElementAt(int index) {
             return lm[index];
         }
     }
-    
+
     private class SvnSearchListCellRenderer extends JPanel implements ListCellRenderer {
 
         private static final String FIELDS_SEPARATOR = "        "; // NOI18N
@@ -152,16 +152,23 @@ class SvnSearchView implements ComponentListener {
         private Style normalStyle;
         private Style boldStyle;
         private Style hiliteStyle;
-        
+
         private JTextPane textPane = new JTextPane();
-        
-        private DateFormat defaultFormat;        
+
+        private DateFormat defaultFormat;
+
+        private Color selectionBackground;
+        private Color selectionForeground;
 
         public SvnSearchListCellRenderer() {
+            JList list = new JList();
+            selectionBackground = list.getSelectionBackground();
+            selectionForeground = list.getSelectionForeground();
+
             selectedStyle = textPane.addStyle("selected", null); // NOI18N
-            StyleConstants.setForeground(selectedStyle, UIManager.getColor("List.selectionForeground")); // NOI18N
+            StyleConstants.setForeground(selectedStyle, selectionForeground); // NOI18N
             normalStyle = textPane.addStyle("normal", null); // NOI18N
-            StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground")); // NOI18N
+            StyleConstants.setBackground(selectedStyle, selectionBackground); // NOI18N
             boldStyle = textPane.addStyle("filename", normalStyle); // NOI18N
             StyleConstants.setBold(boldStyle, true);
             defaultFormat = DateFormat.getDateTimeInstance();
@@ -171,18 +178,18 @@ class SvnSearchView implements ComponentListener {
             if(c != null) StyleConstants.setBackground(hiliteStyle, c);
             c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
             if(c != null) StyleConstants.setForeground(hiliteStyle, c);
-            
+
             setLayout(new BorderLayout());
             add(textPane);
             textPane.setBorder(null);
         }
-        
+
         public Color darker(Color c) {
-            return new Color(Math.max((int)(c.getRed() * DARKEN_FACTOR), 0), 
+            return new Color(Math.max((int)(c.getRed() * DARKEN_FACTOR), 0),
                  Math.max((int)(c.getGreen() * DARKEN_FACTOR), 0),
                  Math.max((int)(c.getBlue() * DARKEN_FACTOR), 0));
         }
-        
+
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if(value instanceof ISVNLogMessage) {
                 ISVNLogMessage message = (ISVNLogMessage) value;
@@ -190,7 +197,7 @@ class SvnSearchView implements ComponentListener {
 
                 Style style;
                 if (isSelected) {
-                    textPane.setBackground(UIManager.getColor("List.selectionBackground")); // NOI18N
+                    textPane.setBackground(selectionBackground); // NOI18N
                     style = selectedStyle;
                 } else {
                     Color c = UIManager.getColor("List.background"); // NOI18N
@@ -209,7 +216,7 @@ class SvnSearchView implements ComponentListener {
                 } catch (BadLocationException e) {
                     Subversion.LOG.log(Level.SEVERE, null, e);
                 }
-                
+
                 if (message.getMessage() != null) {
                     int width = resultsList.getWidth();
                     if (width > 0) {
@@ -223,7 +230,7 @@ class SvnSearchView implements ComponentListener {
                         textPane.setPreferredSize(new Dimension(width - 50, ph));
                     }
                 }
-                
+
             }
             return this;
         }

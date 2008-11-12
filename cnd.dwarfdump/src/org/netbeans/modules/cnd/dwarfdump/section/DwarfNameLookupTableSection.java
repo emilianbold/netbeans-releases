@@ -49,6 +49,7 @@
 
 package org.netbeans.modules.cnd.dwarfdump.section;
 
+import java.io.ByteArrayOutputStream;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfNameLookupTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
@@ -131,6 +132,14 @@ public class DwarfNameLookupTableSection extends ElfSection {
         for (DwarfNameLookupTable table : tables) {
             table.dump(out);
         }
+    }
+
+    @Override
+    public String toString() {
+        ByteArrayOutputStream st = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(st);
+        dump(out);
+        return st.toString();
     }
 
     public DwarfNameLookupTable getNameLookupTableFor(long info_offset) {

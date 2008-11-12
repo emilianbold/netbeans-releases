@@ -418,6 +418,9 @@ private class Listener implements ListSelectionListener,  TableModelListener {
                     }
                     sb.append("<b>" + getMessage("SettingsTab_UpdateUnitProvider_URL") + // NOI18N
                             " </b><a href=\"" + u.toExternalForm() + "\">" + u.toExternalForm() + "</a><br>"); // NOI18N
+                    editAction.setEnabled (true);
+                } else {
+                    editAction.setEnabled (false);
                 }
 
                 details.setText(sb.toString());
@@ -512,6 +515,9 @@ private class Listener implements ListSelectionListener,  TableModelListener {
             if (rowIndex != -1) {
                 final UpdateUnitProvider provider = getSettingsTableModel().getUpdateUnitProvider(rowIndex);
                 if (provider == null) return;
+                if (provider.getProviderURL() == null) {
+                    return ;
+                }
                 final UpdateUnitProviderPanel panel = new UpdateUnitProviderPanel(provider.isEnabled(),
                         provider.getDisplayName(), // display name
                         provider.getProviderURL().toExternalForm(), // URL

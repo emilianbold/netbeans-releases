@@ -42,6 +42,7 @@
 package org.netbeans.test.cvsmodule;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
@@ -152,7 +153,12 @@ public class TagTest extends JellyTestCase {
         tmp.deleteOnExit();
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
         cvss.stop();
-        in.close();
+        try {
+            Thread.sleep(1000);
+            in.close();
+        } catch (IOException e) {
+            //
+        }
         moduleCheck.setModule("ForImport");        
         moduleCheck.setLocalFolder(work.getAbsolutePath()); // NOI18N
         
@@ -176,7 +182,12 @@ public class TagTest extends JellyTestCase {
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Checking out finished");
         cvss.stop();
-        in.close();
+        try {
+            Thread.sleep(1000);
+            in.close();
+        } catch (IOException e) {
+            //
+        }
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
@@ -196,9 +207,9 @@ public class TagTest extends JellyTestCase {
         to.setTagName("TagTest");
         
         //System.out.println("Error in dialog buttons - OK -> Tag, Help -> missing!!!");
-        JButtonOperator btnTag = new JButtonOperator(to, "Tag");
-        JButtonOperator btnHelp = new JButtonOperator(to, "Help");
-        JButtonOperator btnCancel = new JButtonOperator(to, "Cancel");
+        new JButtonOperator(to, "Tag");
+        new JButtonOperator(to, "Help");
+        new JButtonOperator(to, "Cancel");
         
         to.checkAvoidTaggingLocallyModifiedFiles(false);
         //

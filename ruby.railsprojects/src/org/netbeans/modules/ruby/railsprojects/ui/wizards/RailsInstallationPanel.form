@@ -35,7 +35,7 @@
                       </Group>
                       <EmptySpace min="-2" pref="162" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator1" alignment="0" pref="440" max="32767" attributes="0"/>
+                  <Component id="jSeparator1" alignment="0" pref="458" max="32767" attributes="0"/>
                   <Component id="jrubyLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jrubySslLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="sslButton" alignment="0" min="-2" max="-2" attributes="0"/>

@@ -66,12 +66,8 @@ public class Notificator {
     
     private int transactionLevel = 0;
     private ChangeEventImpl currEvent;
-    private ModelImpl model;
     
     private Notificator() {
-        if (CsmModelAccessor.getModel() instanceof ModelImpl) {
-            model = (ModelImpl) CsmModelAccessor.getModel();
-        }
     }
     
     public static Notificator instance() {

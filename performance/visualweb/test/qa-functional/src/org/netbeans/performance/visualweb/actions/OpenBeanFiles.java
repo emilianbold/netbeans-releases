@@ -41,6 +41,9 @@
 
 package org.netbeans.performance.visualweb.actions;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
+
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -48,11 +51,16 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
 /**
  *
  * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
-public class OpenBeanFiles  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class OpenBeanFiles  extends PerformanceTestCase {
     
     private String beanName;
     private String beanFileName;
@@ -76,7 +84,29 @@ public class OpenBeanFiles  extends org.netbeans.modules.performance.utilities.P
         WAIT_AFTER_OPEN=2000;
         WAIT_AFTER_PREPARE=3000;        
     }
-    
+
+        class PhaseHandler extends Handler {
+
+            public boolean published = false;
+
+            public void publish(LogRecord record) {
+
+            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]"))
+               ActionTracker.getInstance().stopRecording();
+
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+
+        }
+
+    PhaseHandler phaseHandler=new PhaseHandler();
+
+
     public void testApplicationBean() {
         beanName = "ApplicationBean1.java"; //NOI18N
         beanFileName = "ApplicationBean1.java";
@@ -106,6 +136,8 @@ public class OpenBeanFiles  extends org.netbeans.modules.performance.utilities.P
     
     public void prepare() {
         log("::prepare");
+        Logger.getLogger("TIMER").setLevel(Level.FINE);
+        Logger.getLogger("TIMER").addHandler(phaseHandler);
         beanPath = "Source Packages"+"|"+"visualwebproject"+"|"+beanName;
         log("Bean Path = "+beanPath);
         Node projectRoot = null;
@@ -159,6 +191,7 @@ public class OpenBeanFiles  extends org.netbeans.modules.performance.utilities.P
     
     protected void shutdown(){
         log(":: shutdown");
+        Logger.getLogger("TIMER").removeHandler(phaseHandler);
         EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();
     }

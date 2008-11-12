@@ -49,6 +49,7 @@ import org.netbeans.modules.bpel.model.api.support.Utils;
  * variable declaration check for various nonstandart situations.
  * One of situations here: OnEvent that implicitly declare varaibles in its child-scope.  
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.InnerEventDispatcher.class)
 public class DuplicateVariableDeclarationCheck extends InnerEventDispatcherAdapter {
 
     /* (non-Javadoc)

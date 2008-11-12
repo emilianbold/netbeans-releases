@@ -45,7 +45,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.openide.ErrorManager;
 
 public class SunCCCompiler extends SunCCCCompiler {

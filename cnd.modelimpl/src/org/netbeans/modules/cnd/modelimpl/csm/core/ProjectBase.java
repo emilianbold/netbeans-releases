@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
-import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -920,8 +919,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     //@Deprecated
     public final APTPreprocHandler getPreprocHandler(File file) {
+        return createPreprocHandler(file, getFileContainer().getPreprocState(file));
+    }
+    
+    /* package */ final APTPreprocHandler createPreprocHandler(File file, APTPreprocHandler.State state) {
         APTPreprocHandler preprocHandler = createEmptyPreprocHandler(file);
-        APTPreprocHandler.State state = getFileContainer().getPreprocState(file);
 	if( state != null ) {
             if( state.isCleaned() ) {
                 return restorePreprocHandler(file, preprocHandler, state);
@@ -934,7 +936,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (TRACE_PP_STATE_OUT) System.err.printf("null state for %s, returning default one", file);
 	return preprocHandler;
     }
-
+    
     
     public final Collection<APTPreprocHandler> getPreprocHandlers(File file) {
         Collection<APTPreprocHandler.State> states = getFileContainer().getPreprocStates(file);
@@ -1076,6 +1078,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             synchronized (entry.getLock()) {
                 comparisonResult = fillStatesToKeep(newState, entry.getStates(), statesToKeep, newStateFound);
                 if (comparisonResult == ComparisonResult.BETTER) {
+                    entry.setPendingReparse(true); // #148608 Instable test regressions on CLucene
                     // some of the old states are worse than the new one; we'll deinitely parse
                     if (TraceFlags.SMART_HEADERS_PARSE) {
                         entry.setStates(statesToKeep, new FileContainer.StatePair(newState, null));
@@ -1119,8 +1122,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 // it's locked; "good" states are are in statesToKeep, "bad" states don't matter
 
                 assert comparisonResult != ComparisonResult.WORSE;
-                
-                boolean clean;
+
+                // if another thread decided that it should be REparsed, let's fo it
+                // (#148608 Instable test regressions on CLucene)
+                boolean clean = entry.isPendingReparse();
+                entry.setPendingReparse(false);
 
                 Collection<APTPreprocHandler.State> statesToParse = new ArrayList<APTPreprocHandler.State>();
                 statesToParse.add(newState);
@@ -1129,13 +1135,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     clean = true;
                 } else {  // comparisonResult == SAME
                     if (TraceFlags.SMART_HEADERS_PARSE) {
-                        comparisonResult = fillStatesToKeep(pcState, new ArrayList(statesToKeep), statesToKeep);
+                        comparisonResult = fillStatesToKeep(pcState, new ArrayList<FileContainer.StatePair>(statesToKeep), statesToKeep);
                         switch (comparisonResult) {
                             case BETTER:
                                 clean = true;
                                 break;
                             case SAME:
-                                clean = false;
+                                //clean is set by isPendingReparse() call
                                 break;
                             case WORSE:
                                 return csmFile;
@@ -1372,9 +1378,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
     
-    private static final boolean isValid(APTPreprocHandler.State state) {
-        return state != null && state.isValid();
-    }
+//    private static final boolean isValid(APTPreprocHandler.State state) {
+//        return state != null && state.isValid();
+//    }
     
     public ProjectBase findFileProject(CharSequence absPath) {
         // check own files
@@ -1735,15 +1741,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return requiredUnits;
     }
 
-    private void disposeFiles() {
-        Collection<FileImpl> list = getFileContainer().getFileImpls();
-        getFileContainer().clear();
-        for (FileImpl file : list){
-            file.onProjectClose();
-            APTDriver.getInstance().invalidateAPT(file.getBuffer());
-        }
-        //clearNativeFileContainer();
-    }
+//    private void disposeFiles() {
+//        Collection<FileImpl> list = getFileContainer().getFileImpls();
+//        getFileContainer().clear();
+//        for (FileImpl file : list){
+//            file.onProjectClose();
+//            APTDriver.getInstance().invalidateAPT(file.getBuffer());
+//        }
+//        //clearNativeFileContainer();
+//    }
 
     private NamespaceImpl _getGlobalNamespace() {
         NamespaceImpl ns = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(globalNamespaceUID);
@@ -2162,6 +2168,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public static ProjectBase getStartProject(StartEntry startEntry) {
+        if (startEntry == null) {
+            return null;
+        }
         Key key = startEntry.getStartFileProject();
         ProjectBase prj = (ProjectBase)RepositoryUtils.get(key);
         return prj;
@@ -2169,11 +2178,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public APTFile getAPTLight(CsmFile csmFile) throws IOException {
         APTFile aptLight = null;
-        if (TraceFlags.USE_AST_CACHE) {
-            aptLight = CacheManager.getInstance().findAPTLight(csmFile);
-        } else {
-            aptLight = APTDriver.getInstance().findAPTLight(((FileImpl)csmFile).getBuffer());
-        }
+        aptLight = APTDriver.getInstance().findAPTLight(((FileImpl)csmFile).getBuffer());
         return aptLight;
     }
 

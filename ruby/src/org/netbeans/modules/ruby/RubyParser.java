@@ -134,6 +134,7 @@ public final class RubyParser implements Parser {
                 result = parseBuffer(context, Sanitize.NONE);
             } catch (IOException ioe) {
                 listener.exception(ioe);
+                result = createParseResult(file, null, null, null, null);
             }
 
             ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);

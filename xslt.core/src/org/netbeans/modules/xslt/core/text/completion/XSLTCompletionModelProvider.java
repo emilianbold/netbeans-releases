@@ -61,6 +61,7 @@ import org.openide.util.lookup.Lookups;
 /**
  * @author Alex Petrov (05.05.2008)
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.class)
 public class XSLTCompletionModelProvider extends CompletionModelProvider implements 
     XSLTCompletionConstants {
     private static Map<String, String>

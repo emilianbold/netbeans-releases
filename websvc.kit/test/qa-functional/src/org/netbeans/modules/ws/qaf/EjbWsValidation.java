@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ws.qaf;
 
@@ -43,11 +43,10 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -55,8 +54,11 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase.ProjectType;
 
 /**
+ *  Basic validation suite for web services support in the IDE
  *
- * @author lukas
+ *  Duration of this test suite: aprox. 7min
+ *
+ * @author lukas.jungmann@sun.com
  */
 public class EjbWsValidation extends WsValidation {
 
@@ -93,17 +95,30 @@ public class EjbWsValidation extends WsValidation {
     }
 
     @Override
+    protected String getWsURL() {
+        String suffix = "?wsdl"; //NOI18N
+        if (REGISTERED_SERVER.equals(ServerType.GLASSFISH)) {
+            suffix = "?Tester"; //NOI18N
+        }
+        return "http://localhost:8080/" + getWsName() + "Service" + "/" + getWsName() + suffix; //NOI18N
+    }
+
+    @Override
     protected String getWsClientPackage() {
         return getWsPackage(); //NOI18N
     }
-    
+
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(EjbWsValidation.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH,
+                NbModuleSuite.createConfiguration(EjbWsValidation.class),
                 "testCreateNewWs",
                 "testAddOperation",
+                "testSetSOAP",
+                "testGenerateWSDL",
                 "testStartServer",
                 "testWsHandlers",
                 "testDeployWsProject",
+                "testTestWS",
                 "testCreateWsClient",
                 "testRefreshClientAndReplaceWSDL",
                 "testCallWsOperationInSessionEJB",
@@ -112,34 +127,8 @@ public class EjbWsValidation extends WsValidation {
                 "testWsClientHandlers",
                 "testDeployWsClientProject",
                 "testUndeployProjects",
-                "testStopServer"
-                ).enableModules(".*").clusters(".*"));
+                "testStopServer").enableModules(".*").clusters(".*"));
     }
-
-//    /** Creates suite from particular test cases. You can define order of testcases here. */
-//    public static TestSuite suite() {
-//        TestSuite suite = new NbTestSuite();
-//        suite.addTest(new EjbWsValidation("testCreateNewWs")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testAddOperation")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testStartServer")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testWsHandlers")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testDeployWsProject")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testCreateWsClient")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testRefreshClientAndReplaceWSDL")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testCallWsOperationInSessionEJB")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testCallWsOperationInJavaClass")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testWsFromEJBinClientProject")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testWsClientHandlers")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testDeployWsClientProject")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testUndeployProjects")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testStopServer")); //NOI18N
-//        return suite;
-//    }
-//
-//    /* Method allowing test execution directly from the IDE. */
-//    public static void main(java.lang.String[] args) {
-//        TestRunner.run(suite());
-//    }
 
     public void testWsFromEJBinClientProject() {
         String wsName = "WsFromEJB"; //NOI18N
@@ -183,6 +172,7 @@ public class EjbWsValidation extends WsValidation {
      * Tests Call Web Service Operation action in a servlet
      */
     public void testCallWsOperationInSessionEJB() {
+        assertServerRunning();
         //create a session bean
         String ejbName = "NewSession";
         //Enterprise
@@ -212,20 +202,10 @@ public class EjbWsValidation extends WsValidation {
     }
 
     protected void addBusinessMethod(EditorOperator eo, String mName, String mRetVal) {
-        //EJB Methods
-        String actionGroupName = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_EJBActionGroup");
         //Add Business Method...
         String actionName = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddBusinessMethodAction");
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ie) {
-        }
-        try {
-            new ActionNoBlock(null, actionGroupName + "|" + actionName).performPopup(eo);
-        } catch (TimeoutExpiredException tee) {
-            eo.select(16);
-            new ActionNoBlock(null, actionGroupName + "|" + actionName).performPopup(eo);
-        }
+        eo.setCaretPosition(16, 1);
+        GenerateCodeOperator.openDialog(actionName, eo);
         addMethod(eo, actionName, mName, mRetVal);
     }
 }

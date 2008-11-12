@@ -50,6 +50,7 @@ import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
  * Factory for simple Ruby projects.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.ruby.spi.project.support.rake.RakeBasedProjectType.class)
 public final class RubyProjectType implements RakeBasedProjectType {
 
     public static final String TYPE = "org.netbeans.modules.ruby.rubyproject"; // NOI18N

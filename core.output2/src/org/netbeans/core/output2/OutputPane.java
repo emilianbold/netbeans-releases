@@ -40,7 +40,6 @@
  */
 package org.netbeans.core.output2;
 
-import java.awt.Point;
 import java.awt.event.MouseEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Segment;
@@ -51,13 +50,12 @@ import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import org.openide.util.NbPreferences;
 
 
-class OutputPane extends AbstractOutputPane implements ComponentListener {
+class OutputPane extends AbstractOutputPane {
+    @Override
     protected void documentChanged() {
         super.documentChanged();
         findOutputTab().documentChanged();
@@ -260,7 +258,6 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
     private static final boolean GTK = "GTK".equals(UIManager.getLookAndFeel().getID());
     protected JEditorPane createTextView() {
         JEditorPane result = GTK ? new GEP() : new JEditorPane();
-        result.addComponentListener(this);
         
         // we don't want the background to be gray even though the text there is not editable
         result.setDisabledTextColor(result.getBackground());
@@ -325,34 +322,6 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
             return retValue;
         }
         
-    }
-    
-
-    private int prevW = -1;
-    public void componentResized(ComponentEvent e) {
-        int w = textView.getWidth();
-        if (prevW != w) {
-            if (isWrapped()) {
-                WrappedTextView view = ((OutputEditorKit) getEditorKit()).view();
-                if (view != null) {
-                    view.setChanged();
-                    textView.repaint();
-                }
-            }
-        }
-        prevW = w;
-    }
-
-    public void componentMoved(ComponentEvent e) {
-        //do nothing
-    }
-
-    public void componentShown(ComponentEvent e) {
-        //do nothing
-    }
-
-    public void componentHidden(ComponentEvent e) {
-        //do nothing
     }
     
     private static final class GEP extends JEditorPane {

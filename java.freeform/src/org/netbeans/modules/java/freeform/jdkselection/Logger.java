@@ -50,6 +50,7 @@ import org.apache.tools.ant.module.spi.AntSession;
  * Suppresses some new Ant messages introduced by jdk.xml that are undesirable.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=90)
 public class Logger extends AntLogger {
 
     /** Public for lookup */

@@ -86,7 +86,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 
@@ -98,7 +97,7 @@ public final class SuiteProject implements Project {
     
     public static final String SUITE_ICON_PATH =
             "org/netbeans/modules/apisupport/project/suite/resources/suite.png"; // NOI18N
-    
+
     private final AntProjectHelper helper;
     private Lookup lookup;
     private final PropertyEvaluator eval;
@@ -180,7 +179,7 @@ public final class SuiteProject implements Project {
         }
         return p;
     }
-    
+
     private PropertyEvaluator createEvaluator() {
         PropertyProvider predefs = helper.getStockPropertyPreprovider();
         File dir = getProjectDirectoryFile();

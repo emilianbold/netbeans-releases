@@ -41,13 +41,11 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
-import org.netbeans.core.spi.multiview.*;
 import org.openide.nodes.*;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.ddloaders.web.*;
 import org.netbeans.modules.xml.multiview.ui.*;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
-import org.netbeans.modules.xml.multiview.Error;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
@@ -98,6 +96,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
         return view;
     }
     
+    @Override
     public void componentShowing() {
         super.componentShowing();
         dObj.setLastOpenView(index);
@@ -127,11 +126,13 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
         
     }
     
+    @Override
     public void componentOpened() {
         super.componentOpened();
         dObj.getWebApp().addPropertyChangeListener(this);
     }
     
+    @Override
     public void componentClosed() {
         super.componentClosed();
         dObj.getWebApp().removePropertyChangeListener(this);
@@ -152,9 +153,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
     }
 
     class ReferencesView extends SectionView {
-        private SectionContainer serviceRefCont;
         private Node envEntriesNode, resRefsNode, resEnvRefsNode, ejbRefsNode, messageDestRefsNode;
-        private SectionPanel filterMappingSectionPanel;
         
         ReferencesView (WebApp webApp) {
             super(factory);
@@ -206,6 +205,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
             setDisplayName(NbBundle.getMessage(ReferencesMultiViewElement.class,"TTL_EnvEntries"));
             setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramNode.gif"); //NOI18N
         }    
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"envEntriesNode"); //NOI18N
         }
@@ -217,6 +217,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
             setDisplayName(NbBundle.getMessage(ReferencesMultiViewElement.class,"TTL_ResRefs"));
             setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramNode.gif"); //NOI18N
         }
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"resRefsNode"); //NOI18N
         }
@@ -228,6 +229,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
             setDisplayName(NbBundle.getMessage(ReferencesMultiViewElement.class,"TTL_ResEnvRefs"));
             setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramNode.gif"); //NOI18N
         }
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"resEnvRefsNode"); //NOI18N
         }
@@ -239,6 +241,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
             setDisplayName(NbBundle.getMessage(ReferencesMultiViewElement.class,"TTL_EjbRefs"));
             setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramNode.gif"); //NOI18N
         }
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"ejbRefsNode"); //NOI18N
         }
@@ -250,6 +253,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
             setDisplayName(NbBundle.getMessage(ReferencesMultiViewElement.class,"TTL_MessageDestRefs"));
             setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramNode.gif"); //NOI18N
         }
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"messageDestRefsNode"); //NOI18N
         }

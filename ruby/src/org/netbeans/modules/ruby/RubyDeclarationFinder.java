@@ -86,19 +86,23 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedField;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
+import org.netbeans.modules.ruby.elements.RubyElement;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.Call;
 import org.netbeans.modules.ruby.lexer.RubyCommentTokenId;
@@ -273,7 +277,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                 // No parse tree - try to just use the syntax info to do a simple index lookup
                 // for methods and classes
                 String text = doc.getText(range.getStart(), range.getLength());
-                RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
+                RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
 
                 if ((index == null) || (text.length() == 0)) {
                     return DeclarationLocation.NONE;
@@ -312,7 +316,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                 return DeclarationLocation.NONE;
             }
 
-            RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
+            RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
 
             int tokenOffset = lexOffset;
 
@@ -596,7 +600,73 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
 
         return DeclarationLocation.NONE;
     }
-    
+
+    /** 
+     * Compute the declaration location for a test string (such as MosModule::TestBaz/test_qux).
+     * 
+     * @param fileInProject a file in the project where to perform the search
+     * @param testString a string represening a test class and method, such as TestFoo/test_bar
+     * @param classLocation if true, returns the location of the class rather then the method.
+     */
+    public static DeclarationLocation getTestDeclaration(FileObject fileInProject, String testString, boolean classLocation) {
+        int methodIndex = testString.indexOf('/'); //NOI18N
+        if (methodIndex == -1) {
+            return DeclarationLocation.NONE;
+        }
+
+        Index gsfIndex = SourceModelFactory.getInstance().getIndex(fileInProject, RubyInstallation.RUBY_MIME_TYPE);
+        if (gsfIndex == null) {
+            return DeclarationLocation.NONE;
+        }
+
+        String className = testString.substring(0, methodIndex);
+        String methodName = testString.substring(methodIndex+1);
+
+        RubyIndex index = RubyIndex.get(gsfIndex, fileInProject);
+        Set<IndexedMethod> methods = index.getMethods(methodName, className, NameKind.EXACT_NAME, RubyIndex.SOURCE_SCOPE);
+        DeclarationLocation methodLocation = getLocation(methods);
+        if (!classLocation || methodLocation.getFileObject() == null) {
+            return methodLocation;
+        }
+        
+        Set<IndexedClass> classes =
+                index.getClasses(className, NameKind.EXACT_NAME, false, false, true, RubyIndex.SOURCE_SCOPE, null);
+        DeclarationLocation classDeclarationLocation = getLocation(classes);
+        if (methodLocation.getFileObject().equals(classDeclarationLocation.getFileObject())) {
+            return classDeclarationLocation;
+        }
+
+        for (AlternativeLocation alt : classDeclarationLocation.getAlternativeLocations()) {
+            if (methodLocation.getFileObject().equals(alt.getLocation().getFileObject())) {
+                return alt.getLocation();
+            }
+        }
+
+        return classDeclarationLocation;
+    }
+
+    private static DeclarationLocation getLocation(Set<? extends IndexedElement> elements) {
+        DeclarationLocation loc = DeclarationLocation.NONE;
+        for (IndexedElement element : elements) {
+            FileObject fo = element.getFileObject();
+            if (fo == null) {
+                continue;
+            }
+            if (loc == DeclarationLocation.NONE) {
+                int offset = -1;
+                Node node = AstUtilities.getForeignNode(element, (Node[])null);
+                if (node != null) {
+                    offset = AstUtilities.getRange(node).getStart();
+                }
+                loc = new DeclarationLocation(fo, offset, element);
+            } else {
+                AlternativeLocation alternate = new RubyAltLocation(element, false);
+                loc.addAlternative(alternate);
+            }
+        }
+        return loc;
+    }
+
     private DeclarationLocation findRailsFile(CompilationInfo info, BaseDocument doc, TokenHierarchy<Document> th, int lexOffset, int astOffset) {
         RailsTarget target = findRailsTarget(doc, th, lexOffset);
         if (target != null) {
@@ -1138,7 +1208,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                 // No parse tree - try to just use the syntax info to do a simple index lookup
                 // for methods and classes
                 String text = doc.getText(range.getStart(), range.getLength());
-                RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
+                RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
 
                 if ((index == null) || (text.length() == 0)) {
                     return null;
@@ -1161,7 +1231,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                 } // TODO: @ - field?
             }
 
-            RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
+            RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
 
             TokenHierarchy<Document> th = TokenHierarchy.get(doc);
 
@@ -1352,7 +1422,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
         Node closest = root;
         int astOffset = 0;
         int lexOffset = 0;
-        RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
+        RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
 
         if (root == null) {
             return DeclarationLocation.NONE;

@@ -72,6 +72,7 @@ import org.netbeans.modules.php.model.SourceElement;
  * 
  * @author Victor G. Vasilyev 
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.editor.completion.CompletionResultProvider.class)
 public class ScopeResolutionOperatorContext extends MemberAccessExpressionScope 
         implements CompletionResultProvider {
 

@@ -37,6 +37,7 @@ package org.netbeans.libs.freemarker;
 import javax.script.*;
 import java.util.*;
 
+@org.openide.util.lookup.ServiceProvider(service=javax.script.ScriptEngineFactory.class)
 public class FreemarkerFactory implements ScriptEngineFactory {
     public String getEngineName() { 
         return "freemarker";

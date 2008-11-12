@@ -466,11 +466,13 @@ public class TreeFactory {
         ListBuffer<JCExpression> dims = new ListBuffer<JCExpression>();
         for (ExpressionTree t : dimensions)
             dims.append((JCExpression)t);
-        ListBuffer<JCExpression> elems = new ListBuffer<JCExpression>();
-        if (initializers != null)
+        ListBuffer<JCExpression> elems = null;
+        if (initializers != null) {
+            elems = new ListBuffer<JCExpression>();
             for (ExpressionTree t : initializers)
                 elems.append((JCExpression)t);
-        return make.NewArray((JCExpression)elemtype, dims.toList(), elems.toList());
+        }
+        return make.NewArray((JCExpression)elemtype, dims.toList(), elems != null ? elems.toList() : null);
     }
     
     public NewClassTree NewClass(ExpressionTree enclosingExpression, 

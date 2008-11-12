@@ -57,8 +57,12 @@ import org.openide.util.Utilities;
  * @author Petr Hrebejk
  */
 public class InstanceWatcher {
+    private final Map<Reference<Object>, Boolean> references;
+    private Map<Reference<Object>, Boolean> getReferences() {
+        assert Thread.holdsLock(this);
+        return references;
+    }
 
-    private Map<Reference<Object>, Boolean> references;
     
     private transient List<WeakReference<ChangeListener>> changeListenerList;
 
@@ -70,12 +74,12 @@ public class InstanceWatcher {
            
     public synchronized void add( Object instance ) {
         if ( ! contains( instance ) ) {
-            references.put(new CleanableWeakReference(instance), true);
+            getReferences().put(new CleanableWeakReference(instance), true);
         }
     }
     
     private synchronized boolean contains( Object o ) {
-        for( Reference r : references.keySet() ) {
+        for( Reference r : getReferences().keySet() ) {
             if ( r.get() == o ) {
                 return true;
             }
@@ -84,12 +88,12 @@ public class InstanceWatcher {
     }
     
     public synchronized int size() {
-        return references.size();
+        return getReferences().size();
     }
     
-    public Collection<?> getInstances() {
-        List<Object> l = new ArrayList<Object>(references.size());
-        for (Reference wr : references.keySet()) {
+    public synchronized Collection<?> getInstances() {
+        List<Object> l = new ArrayList<Object>(getReferences().size());
+        for (Reference wr : getReferences().keySet()) {
             Object inst = wr.get();
             if (inst != null) l.add(inst);
         }
@@ -164,6 +168,13 @@ public class InstanceWatcher {
         }
     }
 
+    final void cleanUp(CleanableWeakReference cwr) {
+        synchronized (this) {
+            getReferences().remove(cwr);
+        }
+        fireChangeListenerStateChanged();
+    }
+
     // Private innerclasses ----------------------------------------------------
     
     private final class CleanableWeakReference extends WeakReference<Object> implements Runnable {
@@ -173,8 +184,7 @@ public class InstanceWatcher {
         }
 
         public void run() {
-            references.remove(this);
-            fireChangeListenerStateChanged();
+            cleanUp(this);
         }
 
     }

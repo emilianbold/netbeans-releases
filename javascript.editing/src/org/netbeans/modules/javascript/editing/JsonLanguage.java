@@ -41,6 +41,7 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.ParserFile;
@@ -88,5 +89,10 @@ public class JsonLanguage extends JsLanguage {
     @Override
     public StructureScanner getStructureScanner() {
         return new JsonAnalyzer();
+    }
+
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return null;
     }
 }

@@ -43,6 +43,7 @@ import org.openide.util.NbBundle;
  *
  * @author Andrei Badea
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.explorer.ExtendedDelete.class)
 public class DriverExtendedDeleteImpl implements ExtendedDelete {
 
     public DriverExtendedDeleteImpl() {

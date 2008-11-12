@@ -338,6 +338,10 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
         }
         initialWidgetLocation = null;
         
+        if(widget.getPreferredLocation() == null)
+        {
+            return false;
+        }
         Point sceneLocation = widget.getParentWidget().convertLocalToScene(widget.getPreferredLocation());
         
         if(debugging == true)

@@ -429,6 +429,15 @@ public class GeneralXMLTest extends JellyTestCase {
           sApplication + "|Source Packages|" + sApplication + "|" + sName + "." + sNewExtension
         );
       prn.select( );
+
+      // Check file content
+      if( !sNewExtension.equals( "html" ) )
+      {
+        EditorOperator eoCode = new EditorOperator( sName + "." + sNewExtension );
+        String sText = eoCode.getText( );
+        if( sText.matches( "[ \t\r\n]*" ) )
+          fail( "Invalid (empty) content of file named \"" + sName + "." + sNewExtension + "\"" );
+      }
     }
 
     public void CreateSchemaInternal(

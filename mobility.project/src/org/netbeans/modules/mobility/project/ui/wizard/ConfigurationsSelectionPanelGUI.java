@@ -52,6 +52,7 @@ import java.awt.Image;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
@@ -65,11 +66,13 @@ import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.Descript
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.TreeTableView;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -78,11 +81,7 @@ import org.openide.util.Utilities;
  *
  * @author  Adam Sotona
  */
-public class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerManager.Provider {
-    
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(500, 340);
-    private static final String SELECTION = NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_CfgSelectionPanel_Selection"); //NOI18N
-    private static final String TEMPLATE_FILEOBJECT_PROPERTY = "template_fileobject"; //NOI18N
+public final class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerManager.Provider {
     private final ExplorerManager manager = new ExplorerManager();
     private final TreeTableView treeView;
     private final Set<String> bannedNames;
@@ -94,10 +93,6 @@ public class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerM
         this(Collections.EMPTY_SET);
     }
     
-    public java.awt.Dimension getPreferredSize() {
-        return PREF_DIM;
-    }
-    
     public ConfigurationsSelectionPanelGUI(Set<String> bannedNames) {
         this.bannedNames = bannedNames;
         initComponents();
@@ -107,18 +102,9 @@ public class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerM
         treeView.setRootVisible(false);
         treeView.setDefaultActionAllowed(false);
         treeView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        treeView.setProperties(new Property[]{ new PropertySupport.ReadWrite<Boolean>("selection", Boolean.class, SELECTION, SELECTION){ //NOI18N
-            public void setValue(Boolean value) {}
-            public Boolean getValue() {return true;}
-        }});
+        treeView.setProperties(new Property[]{ new SelectedProp (null, null)});
         templatesPanel.add(treeView, BorderLayout.CENTER);
-        AbstractNode root = new AbstractNode(new Children.Keys<ProjectConfigurationFactory>(){
-            {setKeys(Lookup.getDefault().lookupAll(ProjectConfigurationFactory.class));}
-            protected Node[] createNodes(ProjectConfigurationFactory key) {
-                ProjectConfigurationFactory.CategoryDescriptor cat = key.getRootCategory();
-                return cat == null ? null : new Node[] {new CategoryNode(key.getRootCategory())};
-            }
-        });
+        Node root = new AbstractNode (Children.create(new RootChildren(), true));
         root.setName(NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_CfgSelectionPanel_Templates")); //NOI18N
         manager.setRootContext(root);
         treeView.setPreferredSize(new Dimension(480, 350));
@@ -126,28 +112,65 @@ public class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerM
         treeView.setTableColumnPreferredWidth(0, 60);
     }
 
-    private class CategoryNode extends AbstractNode {
+    private final class RootChildren extends ChildFactory<ProjectConfigurationFactory> {
+        @Override
+        protected Node createNodeForKey(ProjectConfigurationFactory key) {
+            ProjectConfigurationFactory.CategoryDescriptor cat = key.getRootCategory();
+            return cat == null ? null : new CategoryNode (key.getRootCategory());
+        }
+
+        @Override
+        protected boolean createKeys(List<ProjectConfigurationFactory> toPopulate) {
+            toPopulate.addAll(Lookup.getDefault().lookupAll(ProjectConfigurationFactory.class));
+            return true;
+        }
+    }
+
+    private final class CategoryNode extends AbstractNode {
         public CategoryNode(final ProjectConfigurationFactory.CategoryDescriptor cat) {
-            super(new Children.Keys<ProjectConfigurationFactory.Descriptor>(){
-                {setKeys(cat.getChildren());}
-                protected Node[] createNodes(Descriptor key) {
-                    Node n = key instanceof CategoryDescriptor ? new CategoryNode((CategoryDescriptor)key) : key instanceof ConfigurationTemplateDescriptor && Utilities.isJavaIdentifier(((ConfigurationTemplateDescriptor)key).getCfgName())? new TemplateNode((ConfigurationTemplateDescriptor)key) : null;
-                    return n == null ? null : new Node[] {n};
-                }
-            });
+            super (Children.create(new CategoryChildren(cat), true));
             setDisplayName(cat.getDisplayName());
         }
   
+        @Override
         public Image getIcon(int type) {
             return NewConfigurationPanel.CLOSED_ICON == null ? super.getIcon(type) : NewConfigurationPanel.CLOSED_ICON;
         }
 
+        @Override
         public Image getOpenedIcon(int type) {
             return NewConfigurationPanel.OPENED_ICON == null ? super.getOpenedIcon(type) : NewConfigurationPanel.OPENED_ICON;
         }
   }
+
+    private final class CategoryChildren extends ChildFactory<ProjectConfigurationFactory.Descriptor> {
+        private final CategoryDescriptor cat;
+        CategoryChildren(CategoryDescriptor cat) {
+            this.cat = cat;
+        }
+
+        @Override
+        protected Node createNodeForKey(Descriptor key) {
+            if (key instanceof CategoryDescriptor) {
+                return new CategoryNode ((CategoryDescriptor) key);
+            } else if (key instanceof ConfigurationTemplateDescriptor) {
+                ConfigurationTemplateDescriptor desc = (ConfigurationTemplateDescriptor) key;
+                if (Utilities.isJavaIdentifier(desc.getCfgName())) {
+                    return new TemplateNode (desc);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected boolean createKeys(List<Descriptor> toPopulate) {
+            toPopulate.addAll (cat.getChildren());
+            return true;
+        }
+
+    }
     
-    private class TemplateNode extends AbstractNode {
+    private final class TemplateNode extends AbstractNode {
         private ConfigurationTemplateDescriptor cfgTmp;
         public TemplateNode(ConfigurationTemplateDescriptor cfgTmp) {
             super(Children.LEAF);
@@ -155,39 +178,57 @@ public class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerM
             setDisplayName(cfgTmp.getDisplayName().equals(cfgTmp.getCfgName()) ? cfgTmp.getDisplayName() : NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_CfgSlePanel_TemplateNodePattern", cfgTmp.getDisplayName(), cfgTmp.getCfgName())); //NOI18N
         }
         
+        @Override
         protected Sheet createSheet() {
             Sheet s = Sheet.createDefault();
             Sheet.Set ss = s.get(Sheet.PROPERTIES);
-            ss.put(new PropertySupport.ReadWrite<Boolean>("selection", Boolean.class, SELECTION, SELECTION) { //NOI18N
-                public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
-                    return selection.contains(cfgTmp);
-                }
-                public void setValue(Boolean val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                    if (val) selection.add(cfgTmp);
-                    else selection.remove(cfgTmp);
-                    fireChange();
-                }
-            });
+            ss.put(new SelectedProp(cfgTmp, selection));
             return s;
         }
-
     }
+
+    private final class SelectedProp extends PropertySupport.ReadWrite<Boolean> {
+        private final ConfigurationTemplateDescriptor cfgTmp;
+        private Set<ConfigurationTemplateDescriptor> selection;
+        private SelectedProp (ConfigurationTemplateDescriptor cfgTmp, Set<ConfigurationTemplateDescriptor> selection) {
+            this (cfgTmp, selection, NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_CfgSelectionPanel_Selection"));
+        }
+        private SelectedProp (ConfigurationTemplateDescriptor cfgTmp, Set<ConfigurationTemplateDescriptor> selection, String name) {
+            super ("selection", Boolean.class, name, name);
+            this.selection = selection;
+            this.cfgTmp = cfgTmp;
+        }
+
+        public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
+            return selection == null ? Boolean.TRUE : selection.contains(cfgTmp);
+        }
+
+        public void setValue(Boolean val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            if (val) {
+                selection.add(cfgTmp);
+            } else {
+                selection.remove(cfgTmp);
+            }
+            fireChange();
+        }
+    }
+
+    private final ChangeSupport change = new ChangeSupport(this);
     
     private void fireChange() {
-        for (ChangeListener l : listeners) {
-            l.stateChanged(new ChangeEvent(this));
-        }
+        change.fireChange();
     }
     
     public void addChangeListener(ChangeListener l) {
-        listeners.add(l);
+        change.addChangeListener(l);
     }
     
     public void removeChangeListener(ChangeListener l) {
-        listeners.remove(l);
+        change.removeChangeListener(l);
     }
     
-    public boolean isValid() {
+    public boolean valid() {
+        //Note - changed from isValid() to avoid accidental override
         HashSet<String> names = new HashSet(bannedNames);
         for (ConfigurationTemplateDescriptor cfg : selection) {
             if (!names.add(cfg.getCfgName())) return false;

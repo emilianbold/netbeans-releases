@@ -57,6 +57,7 @@ import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
  *
  * @author jqian
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public class CasaSemanticValidator implements Validator {    
     
     public String getName() {

@@ -55,13 +55,13 @@ public abstract class BasicCompilerConfiguration {
     private String baseDir;
     private BasicCompilerConfiguration master;
 
-    public static int DEVELOPMENT_MODE_FAST = 0;
-    public static int DEVELOPMENT_MODE_DEBUG = 1;
-    public static int DEVELOPMENT_MODE_DEBUG_PERF = 2;
-    public static int DEVELOPMENT_MODE_TEST = 3;
-    public static int DEVELOPMENT_MODE_RELEASE_DIAG = 4;
-    public static int DEVELOPMENT_MODE_RELEASE = 5;
-    public static int DEVELOPMENT_MODE_RELEASE_PERF = 6;
+    public static final int DEVELOPMENT_MODE_FAST = 0;
+    public static final int DEVELOPMENT_MODE_DEBUG = 1;
+    public static final int DEVELOPMENT_MODE_DEBUG_PERF = 2;
+    public static final int DEVELOPMENT_MODE_TEST = 3;
+    public static final int DEVELOPMENT_MODE_RELEASE_DIAG = 4;
+    public static final int DEVELOPMENT_MODE_RELEASE = 5;
+    public static final int DEVELOPMENT_MODE_RELEASE_PERF = 6;
     private static final String[] DEVELOPMENT_MODE_NAMES = {
 	getString("FastBuildTxt"),
 	getString("DebugTxt"),
@@ -73,12 +73,12 @@ public abstract class BasicCompilerConfiguration {
     };
     private IntConfiguration developmentMode;
 
-    public static int WARNING_LEVEL_NO = 0;
-    public static int WARNING_LEVEL_DEFAULT = 1;
-    public static int WARNING_LEVEL_MORE = 2;
-    public static int WARNING_LEVEL_TAGS = 3;
-    public static int WARNING_LEVEL_CONVERT = 4;
-    public static int WARNING_LEVEL_32_64 = 5;
+    public static final int WARNING_LEVEL_NO = 0;
+    public static final int WARNING_LEVEL_DEFAULT = 1;
+    public static final int WARNING_LEVEL_MORE = 2;
+    public static final int WARNING_LEVEL_TAGS = 3;
+    public static final int WARNING_LEVEL_CONVERT = 4;
+    public static final int WARNING_LEVEL_32_64 = 5;
     private static final String[] WARNING_LEVEL_NAMES = {
 	getString("NoWarningsTxt"),
 	getString("SomeWarningsTxt"),
@@ -87,9 +87,9 @@ public abstract class BasicCompilerConfiguration {
     };
     private IntConfiguration warningLevel;
 
-    public static int BITS_DEFAULT = 0;
-    public static int BITS_32 = 1;
-    public static int BITS_64 = 2;
+    public static final int BITS_DEFAULT = 0;
+    public static final int BITS_32 = 1;
+    public static final int BITS_64 = 2;
     private static final String[] BITS_NAMES = {
 	getString("BITS_DEFAULT"),
 	getString("BITS_32"),

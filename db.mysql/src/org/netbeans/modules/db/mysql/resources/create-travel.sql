@@ -43,7 +43,7 @@ create table travel.triptype (
   name                        VARCHAR(15),
   description                 VARCHAR(50),
   lastupdated                 TIMESTAMP
-);
+) Engine = "InnoDB";
 
 alter table travel.triptype
   add constraint travel_triptypePK
@@ -66,7 +66,7 @@ create table travel.person (
   jobtitle                    VARCHAR(50),
   frequentflyer               SMALLINT,
   lastupdated                 TIMESTAMP
-);
+) Engine = "InnoDB";
 
 alter table travel.person
   add constraint travel_personPK
@@ -87,7 +87,7 @@ create table travel.trip (
   destcity                    VARCHAR(32),
   triptypeid                  INTEGER NOT NULL,
   lastupdated                 TIMESTAMP
-);
+) Engine = "InnoDB";
 
 alter table travel.trip
   add constraint travel_tripPK
@@ -143,7 +143,7 @@ create table travel.flight (
   airlinename                 VARCHAR(35),
   bookingstatus               VARCHAR(20),
   lastupdated                 TIMESTAMP
-);
+) Engine = "InnoDB";
 
 alter table travel.flight
   add constraint travel_flightPK
@@ -221,7 +221,7 @@ create table travel.carrental (
   rate                        DECIMAL(10,2),
   bookingstatus               VARCHAR(20),
   lastupdated                 TIMESTAMP
-);
+) Engine = "InnoDB";
  
 alter table travel.carrental
   add constraint travel_carrentalPK
@@ -264,7 +264,7 @@ create table travel.hotel (
   guests                      INTEGER,
   bookingstatus               VARCHAR(20),
   lastupdated                 TIMESTAMP
-);
+) Engine = "InnoDB";
  
 alter table travel.hotel
   add constraint travel_hotelPK
@@ -303,4 +303,4 @@ create view travel.persontrip as select tripid, name from trip, person where tri
 
 CREATE TABLE travel.validation_table (
   keycol                      INTEGER
-);
+) Engine = "InnoDB";

@@ -109,9 +109,16 @@ public class StartTask extends BasicTask<OperationState> {
         this.support = support;
         this.recognizers = recognizers;
         this.jdkHome = jdkRoot;
-        this.jvmArgs = (jvmArgs != null) ? Arrays.asList(jvmArgs) : null;
+        this.jvmArgs = (jvmArgs != null) ? Arrays.asList(removeEscapes(jvmArgs)) : null;
     }
     
+    private static String [] removeEscapes(String [] args) {
+        for(int i = 0; i < args.length; i++) {
+            args[i] = args[i].replace("\\\"", "");
+        }
+        return args;
+    }
+
     /**
      * 
      */

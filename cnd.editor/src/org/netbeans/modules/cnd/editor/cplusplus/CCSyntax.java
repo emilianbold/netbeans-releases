@@ -1277,6 +1277,8 @@ public class CCSyntax extends Syntax {
 		return null;
 	    switch (buffer[offset++]) {
 	    case 'e':
+        	if (len <= 2)
+                    return null;
 		switch (buffer[offset++]) {
 		case 'f': // keyword "default"
 		    return (len == 7

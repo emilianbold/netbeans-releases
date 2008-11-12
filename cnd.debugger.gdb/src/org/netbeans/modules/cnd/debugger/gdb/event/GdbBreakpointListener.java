@@ -43,8 +43,6 @@ package org.netbeans.modules.cnd.debugger.gdb.event;
 
 import java.util.EventListener;
 
-import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
-
 
 /**
  * Notifies about breakpoint events.

@@ -57,6 +57,7 @@ import java.util.List;
  *
  * @author Jaroslav Bachorik
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder.class)
 public class SelectionTreeBuilderImpl implements SelectionTreeBuilder {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 

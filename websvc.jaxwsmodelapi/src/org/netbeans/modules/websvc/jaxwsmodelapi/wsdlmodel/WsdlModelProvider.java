@@ -47,7 +47,7 @@ import java.net.URL;
  */
 public interface WsdlModelProvider {
 
-    <T extends WsdlModel>  T getWsdlModel(URL wsdlurl, String packageName, URL catalog) ;
+    WsdlModel getWsdlModel(URL wsdlurl, String packageName, URL catalog) ;
 
     boolean canAccept(URL wsdlurl);
 

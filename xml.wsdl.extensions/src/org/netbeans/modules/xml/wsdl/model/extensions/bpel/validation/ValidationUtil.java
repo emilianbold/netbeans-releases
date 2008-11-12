@@ -206,7 +206,11 @@ public final class ValidationUtil {
             NamedComponentReference<? extends GlobalType> typeRef = getSchemaComponentTypeRef(schemaComponent);
         
             if (typeRef != null) {
-                typeName = typeRef.get().getName();
+                typeName = null;
+
+                if (typeRef.get() != null) {
+                    typeName = typeRef.get().getName();
+                }
             }
             else {
                 typeName = ((SchemaComponent) schemaComponent).getAttribute(attributeType());

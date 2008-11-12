@@ -414,6 +414,9 @@ public final class EditHistory implements DocumentListener, TokenHierarchyListen
         TokenHierarchyEventType type = evt.type();
         if (type == TokenHierarchyEventType.MODIFICATION) {
             changed(evt.tokenChange());
+        } else if (type == TokenHierarchyEventType.REBUILD) {
+            // Lexing has fundamentally changed, don't try to do anything incremental
+            valid = false;
         }
     }
 

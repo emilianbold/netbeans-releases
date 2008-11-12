@@ -875,6 +875,7 @@ public final class LoaderPoolNode extends AbstractNode {
     * can be obtained via LoaderPoolNode.getNbLoaderPool() call.
     * Delegates its work to the outer class LoaderPoolNode.
     */
+    @org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.DataLoaderPool.class)
     public static final class NbLoaderPool extends DataLoaderPool
     implements PropertyChangeListener, Runnable, LookupListener {
         private static final long serialVersionUID =-8488524097175567566L;

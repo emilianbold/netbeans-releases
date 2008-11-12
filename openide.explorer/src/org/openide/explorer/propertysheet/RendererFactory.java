@@ -782,8 +782,8 @@ final class RendererFactory {
                 }
 
                 if (htmlValueUsed) {
-                    // > 512 = huge strings - don't try to support this as html
-                    ((HtmlRenderer.Renderer) lbl).setHtml(text.length() < 512);
+                    // > 1024 = huge strings - don't try to support this as html
+                    ((HtmlRenderer.Renderer) lbl).setHtml(text.length() < 1024);
                 }
 
                 lbl.setFont(getFont());

@@ -82,6 +82,7 @@ import org.openide.util.Utilities;
 /**
  * @author Jan Jancura
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.core.options.keymap.spi.KeymapManager.class)
 public final class EditorBridge extends KeymapManager {
 
     private static final Logger LOG = Logger.getLogger(EditorBridge.class.getName());

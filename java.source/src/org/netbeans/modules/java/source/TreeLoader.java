@@ -400,8 +400,8 @@ public class TreeLoader extends LazyTreeLoader {
                                     break;
                             }
                         }
-                        assert methodName != null;
-                        assert paramTypes.size() == paramNames.size();
+                        assert methodName != null : "Null methodName. Signature: [" + signature + "], Names: [" + names + "]";
+                        assert paramTypes.size() == paramNames.size() : "Inconsistent param types/names. Signature: [" + signature + "], Names: [" + names + "]";
                         if (paramNames.size() > 0) {
                             for (Scope.Entry e = clazz.members().lookup(isCtor
                                     ? clazz.name.table.init

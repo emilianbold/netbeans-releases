@@ -6,7 +6,7 @@ End cursor position = 1012
 boolean add (Boolean e )
 void add (int index , Boolean element )
 boolean addAll (Collection <? extends Boolean> c )
-boolean addAll (int index , Collection <? exten 
+boolean addAll (int index , Collection <? exten
 void addFirst (Boolean e )
 void addLast (Boolean e )
 void clear ()
@@ -51,7 +51,7 @@ boolean removeLastOccurrence (Object o )
 boolean retainAll (Collection <?> c )
 Boolean set (int index , Boolean element )
 int size ()
-List <Boolean> subList (int fromIndex , int toI 
+List <Boolean> subList (int fromIndex , int toI
 Object[] toArray ()
 T[] toArray (T[] a )
 String toString ()
@@ -129,7 +129,9 @@ End cursor position = 1593
 static
 com
 java
+javanet
 javax
+jp
 org
 sun
 sunw
@@ -143,13 +145,13 @@ int DAY_OF_YEAR
 int DECEMBER
 int DST_OFFSET
 void destroy ()
-void doDelete (HttpServletRequest req , HttpSe 
-void doGet (HttpServletRequest req , HttpServl 
-void doHead (HttpServletRequest req , HttpServ 
-void doOptions (HttpServletRequest req , HttpS 
-void doPost (HttpServletRequest req , HttpServ 
-void doPut (HttpServletRequest req , HttpServl 
-void doTrace (HttpServletRequest req , HttpSer 
+void doDelete (HttpServletRequest req , HttpSe
+void doGet (HttpServletRequest req , HttpServl
+void doHead (HttpServletRequest req , HttpServ
+void doOptions (HttpServletRequest req , HttpS
+void doPost (HttpServletRequest req , HttpServ
+void doPut (HttpServletRequest req , HttpServl
+void doTrace (HttpServletRequest req , HttpSer
 double
 Deprecated
 Double
@@ -162,7 +164,7 @@ Enumeration getInitParameterNames ()
 Calendar getInstance ()
 Calendar getInstance (Locale aLocale )
 Calendar getInstance (TimeZone zone )
-Calendar getInstance (TimeZone zone , Locale a 
+Calendar getInstance (TimeZone zone , Locale a
 long getLastModified (HttpServletRequest req )
 ServletConfig getServletConfig ()
 ServletContext getServletContext ()
@@ -253,7 +255,9 @@ VirtualMachineError
 Void
 com
 java
+javanet
 javax
+jp
 org
 sun
 sunw

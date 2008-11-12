@@ -66,6 +66,7 @@ import org.netbeans.modules.editor.settings.storage.spi.StorageFilter;
  *
  * @author vita
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.settings.storage.spi.StorageFilter.class)
 public final class KeybindingsInjector extends StorageFilter<Collection<KeyStroke>, MultiKeyBinding> implements PropertyChangeListener, SettingsChangeListener {
 
     public KeybindingsInjector() {

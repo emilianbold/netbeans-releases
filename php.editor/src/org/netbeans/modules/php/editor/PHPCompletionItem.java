@@ -434,6 +434,36 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
+    /**
+     * It's used in the case that a top varibale is found in more files.
+     * Such variable should be rendered only one time in the cc without
+     * a file and type.
+     */
+    static class UnUniqueVaraibaleItems extends VariableItem {
+
+        public UnUniqueVaraibaleItems(IndexedConstant constant, CompletionRequest request) {
+            super(constant, request);
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.type(true);
+            formatter.appendText("?");
+            formatter.type(false);
+            formatter.appendText(" "); //NOI18N
+            formatter.name(getKind(), true);
+            formatter.appendText(getName());
+            formatter.name(getKind(), false);
+
+            return formatter.getText();
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return "";  //NOI18N
+        }
+    }
+
     static class ClassConstantItem extends VariableItem {
         ClassConstantItem(IndexedConstant constant, CompletionRequest request) {
             super(constant, request);

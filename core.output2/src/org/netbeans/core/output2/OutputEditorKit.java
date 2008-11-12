@@ -92,9 +92,6 @@ final class OutputEditorKit extends DefaultEditorKit implements javax.swing.text
                 wrapped ? (javax.swing.text.View) new WrappedTextView(element, comp) :
                 (javax.swing.text.View) new ExtPlainView (element);
         lastWrappedView = wrapped ? (WrappedTextView) result : null;
-        if (wrapped) {
-            lastWrappedView.updateInfo(null);
-        }
         return result;
     }
 

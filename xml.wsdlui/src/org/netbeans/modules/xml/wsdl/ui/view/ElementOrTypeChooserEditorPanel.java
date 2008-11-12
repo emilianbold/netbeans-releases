@@ -138,7 +138,10 @@ public class ElementOrTypeChooserEditorPanel extends javax.swing.JPanel {
     public void openSchemaComponentChooser() {
         int rowNo = mPartsTable.getSelectedRow();
         PartAndElementOrTypeTableModel tableModel = ((PartAndElementOrTypeTableModel) mPartsTable.getModel());
-        ElementOrType eot = (ElementOrType) tableModel.getValueAt(rowNo, 1);
+	ElementOrType eot = null;
+	if (rowNo != -1) {
+            eot = (ElementOrType) tableModel.getValueAt(rowNo, 1);
+	}
         if (eot != null) {
             SchemaComponent comp = eot.getElement();
             if (comp == null) {

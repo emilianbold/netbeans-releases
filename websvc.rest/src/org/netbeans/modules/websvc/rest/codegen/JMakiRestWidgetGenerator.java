@@ -286,7 +286,7 @@ public class JMakiRestWidgetGenerator extends ClientStubsGenerator {
         tr.addToken(MSG_TestPage, NbBundle.getMessage(JMakiRestWidgetGenerator.class, MSG_TestPage));
         tr.addToken(MSG_SelectResource, NbBundle.getMessage(JMakiRestWidgetGenerator.class, MSG_SelectResource));
         tr.addToken(BASE_URL_TOKEN, getBaseUrl());
-        tr.addToken(FILE_ENCODING_TOKEN, getBaseEncoding());
+        tr.addToken(FILE_ENCODING_TOKEN, getBaseEncoding().name());
         
         createFolder(rdjDir, DATA);//NoI18n
         FileObject widgetDir = createFolder(rdjDir, WIDGET);//NoI18n
@@ -319,7 +319,7 @@ public class JMakiRestWidgetGenerator extends ClientStubsGenerator {
         tr.addToken(MSG_Readme, NbBundle.getMessage(JMakiRestWidgetGenerator.class, MSG_Readme));
         tr.addToken(MSG_TestPage, NbBundle.getMessage(JMakiRestWidgetGenerator.class, MSG_TestPage));
         tr.addToken(MSG_JMaki_Readme_Content, NbBundle.getMessage(JMakiRestWidgetGenerator.class, MSG_JMaki_Readme_Content));
-        tr.addToken(FILE_ENCODING_TOKEN, getBaseEncoding());
+        tr.addToken(FILE_ENCODING_TOKEN, getBaseEncoding().name());
         
         FileObject fo = createDataObjectFromTemplate(JMAKI_README_TEMPLATE, restDir, JMAKI_README, HTML, canOverwrite());
         tr.replaceTokens(fo);

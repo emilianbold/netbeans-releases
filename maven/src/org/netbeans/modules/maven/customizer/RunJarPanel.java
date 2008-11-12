@@ -666,6 +666,28 @@ public class RunJarPanel extends javax.swing.JPanel {
         }
         return child;
     }
+
+    /**
+     * used by quickrun configuration.
+     * @param argline
+     * @return
+     */
+    public static String[] splitAll(String argline) {
+        String jvm = splitJVMParams(argline);
+        String mainClazz = splitMainClass(argline);
+        String args = splitParams(argline);
+        if (jvm != null && jvm.contains("-classpath %classpath")) {
+            jvm = jvm.replace("-classpath %classpath", "");
+        }
+        if (mainClazz != null && mainClazz.equals("${packageClassName}")) {
+                    mainClazz = "";
+        }
+        return new String[] {
+            (jvm != null ? jvm : ""),
+            (mainClazz != null ? mainClazz : ""),
+            (args != null ? args : "")
+        };
+    }
     
     static String splitJVMParams(String line) {
         String[] splitted = line.split(" "); //NOI18N

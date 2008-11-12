@@ -50,12 +50,20 @@ import org.xml.sax.SAXException;
  * Tests for REST samples. Simply said - user must be able to only create
  * and run the particular sample, no additional steps should be needed.
  *
+ * Duration of this test suite: aprox. 4min
+ *
  * @author lukas
  */
 public class RestSamplesTest extends RestTestBase {
 
     public RestSamplesTest(String name) {
         super(name);
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        undeployProject(getProjectName());
     }
 
     @Override
@@ -84,7 +92,6 @@ public class RestSamplesTest extends RestTestBase {
         String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/Metro/HelloWorldSampleProject");
         createProject(sampleName, getProjectType(), null);
         deployProject(getProjectName());
-        undeployProject(getProjectName());
     }
 
     /**
@@ -99,12 +106,24 @@ public class RestSamplesTest extends RestTestBase {
     }
 
     /**
+     * Test Customer Database on Spring Sample
+     *
+     * @throws java.io.IOException
+     */
+    public void testCustomerDBSpringSample() throws IOException {
+        String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/Metro/CustomerDBSpringSampleProject");
+        createProject(sampleName, getProjectType(), null);
+        deployProject(getProjectName());
+    }
+
+    /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
         return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(RestSamplesTest.class),
-                "testHelloWorldSample",
-                "testCustomerDBSample"
-                ).enableModules(".*").clusters(".*"));
+                "testHelloWorldSample", //NOI18N
+                "testCustomerDBSample", //NOI18N
+                "testCustomerDBSpringSample" //NOI18N
+                ).enableModules(".*").clusters(".*")); //NOI18N
     }
 }

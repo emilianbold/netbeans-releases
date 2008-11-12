@@ -38,14 +38,17 @@
  */
 package org.netbeans.modules.hibernate.service.api;
 
+import java.sql.SQLException;
 import org.netbeans.modules.hibernate.service.*;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.spi.hibernate.HibernateFileLocationProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * This inteface defines Hibernate services for NetBeans projects.
@@ -97,6 +100,15 @@ public interface HibernateEnvironment extends HibernateFileLocationProvider {
      */
     List<String> getAllDatabaseTables(HibernateConfiguration... configurations);
 
+    /**
+     * Connects to the DB using supplied HibernateConfigurations and gets the list of
+     * all table names. This method should be called from event thread.
+     *
+     * @param configuration Hibernate Configurations.
+     * @return array list of strings of table names.
+     */
+    List<String> getAllDatabaseTablesOnEventThread(FileObject configurationFO) throws DataObjectNotFoundException, DatabaseException, SQLException;
+    
     /**
      * Returns all tables found in the configurations present in this project.
      *

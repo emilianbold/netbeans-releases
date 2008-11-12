@@ -55,6 +55,7 @@ import org.w3c.dom.Element;
  */
 public class SOAPElementFactoryProvider {
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class BindingFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(SOAPQName.BINDING.getQName());
@@ -64,6 +65,7 @@ public class SOAPElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AddressFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(SOAPQName.ADDRESS.getQName());
@@ -73,6 +75,7 @@ public class SOAPElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class BodyFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(SOAPQName.BODY.getQName());
@@ -82,6 +85,7 @@ public class SOAPElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class HeaderFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(SOAPQName.HEADER.getQName());
@@ -91,6 +95,7 @@ public class SOAPElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class HeaderFaultFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(SOAPQName.HEADER_FAULT.getQName());
@@ -100,6 +105,7 @@ public class SOAPElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class OperationFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(SOAPQName.OPERATION.getQName());
@@ -109,6 +115,7 @@ public class SOAPElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class FaultFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(SOAPQName.FAULT.getQName());
