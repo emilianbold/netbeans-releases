@@ -39,6 +39,7 @@
 package org.netbeans.modules.options.keymap;
 
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -47,8 +48,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.AbstractButton;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
@@ -66,10 +68,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableColumn;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.InputLine;
-import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -198,8 +198,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
 
         popup.add(new ShortcutPopupPanel(actionsTable, popup));
         cbProfile.addActionListener(this);
-        bDelete.addActionListener(this);
-        bDuplicate.addActionListener(this);
+        manageButton.addActionListener(this);
 
         list.setListData(new String[] {"TAB", "ESCAPE"});//NOI18N
         list.addMouseListener(new MouseAdapter() {
@@ -224,16 +223,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
         });
     }
 
-    private void deleteCurrentProfile() {
-        String currentProfile = (String) cbProfile.getSelectedItem();
-        getModel().deleteProfile(currentProfile);
-        if (getModel ().isCustomProfile (currentProfile)) {
-            cbProfile.removeItem (currentProfile);
-            cbProfile.setSelectedIndex (0);
-        }
-    }
-
-    //todo: maerge with update
+    //todo: merge with update
     private void narrowByShortcut() {
         if (searchSCField.getText().length() != 0) {
             String searchText = searchSCField.getText();
@@ -296,17 +286,22 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
         getModel().update();
 
         //setup profiles
-        String currentProfile = getModel().getCurrentProfile();
-        List keymaps = getModel().getProfiles();
-        cbProfile.removeAllItems();
-        int i, k = keymaps.size();
-        for (i = 0; i < k; i++)
-            cbProfile.addItem(keymaps.get(i));
-
-        cbProfile.setSelectedItem (currentProfile);
+        refreshProfileCombo ();
     }
 
     //controller method end
+
+
+    private void refreshProfileCombo() {
+        String currentProfile = getModel().getCurrentProfile();
+        List keymaps = getModel().getProfiles();
+        cbProfile.removeAllItems();
+        int i;
+        int k = keymaps.size();
+        for (i = 0; i < k; i++)
+            cbProfile.addItem(keymaps.get(i));
+        cbProfile.setSelectedItem(currentProfile);
+    }
 
     private void stopCurrentCellEditing() {
         int row = actionsTable.getEditingRow();
@@ -365,8 +360,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
 
         lProfile = new javax.swing.JLabel();
         cbProfile = new javax.swing.JComboBox();
-        bDuplicate = new javax.swing.JButton();
-        bDelete = new javax.swing.JButton();
+        manageButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         actionsTable = new javax.swing.JTable();
         spShortcuts = new javax.swing.JScrollPane();
@@ -381,9 +375,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
         lProfile.setLabelFor(cbProfile);
         org.openide.awt.Mnemonics.setLocalizedText(lProfile, org.openide.util.NbBundle.getMessage(KeymapPanel.class, "CTL_Keymap_Name")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(bDuplicate, org.openide.util.NbBundle.getMessage(KeymapPanel.class, "CTL_Duplicate")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(bDelete, org.openide.util.NbBundle.getMessage(KeymapPanel.class, "CTL_Delete")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(manageButton, org.openide.util.NbBundle.getMessage(KeymapPanel.class, "CTL_Duplicate")); // NOI18N
 
         actionsTable.setModel(sorter);
         jScrollPane1.setViewportView(actionsTable);
@@ -416,22 +408,21 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
+                            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
                             .add(spShortcuts, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 175, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(layout.createSequentialGroup()
                                 .add(lProfile)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(cbProfile, 0, 200, Short.MAX_VALUE)
+                                .add(cbProfile, 0, 290, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(bDuplicate)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(bDelete))
+                                .add(manageButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                             .add(layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 12, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 47, Short.MAX_VALUE)
                                 .add(searchLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(searchField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -453,8 +444,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lProfile)
                     .add(cbProfile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(bDuplicate)
-                    .add(bDelete))
+                    .add(manageButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -490,13 +480,12 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable actionsTable;
-    private javax.swing.JButton bDelete;
-    private javax.swing.JButton bDuplicate;
     private javax.swing.JComboBox cbProfile;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel lProfile;
     private javax.swing.JList liShortcuts;
+    private javax.swing.JButton manageButton;
     private javax.swing.JButton moreButton;
     private javax.swing.JTextField searchField;
     private javax.swing.JLabel searchLabel;
@@ -554,7 +543,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
         }
     }
 
-    private static String loc (String key) {
+    static String loc (String key) {
         return NbBundle.getMessage (KeymapPanel.class, key);
     }
 
@@ -577,49 +566,35 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent e) {
-        Object source = e.getSource ();
+        Object source = e.getSource();
 
-        if (source == bDelete) {
-            deleteCurrentProfile ();
-        } else
         if (source == cbProfile) {
-            String profile = (String) cbProfile.getSelectedItem ();
+            String profile = (String) cbProfile.getSelectedItem();
             if (profile != null)
                 getModel().setCurrentProfile(profile);
             getModel().update();
+        } else if (source == manageButton) {
+            //remember previous profile state, in case user will cancel dialog
+            Map<String, Map<ShortcutAction, Set<String>>> modifiedProfiles = getModel().getModifiedProfiles();
+            Set<String> deletedProfiles = getModel().getDeletedProfiles();
 
-            if (getModel ().isCustomProfile (profile))
-                loc (bDelete, "Delete");                          // NOI18N
-            else
-                loc (bDelete, "Restore");                         // NOI18N
-        } else
-        if (source == bDuplicate) {
-            InputLine il = new InputLine (
-                loc ("CTL_Create_New_Profile_Message"),                // NOI18N
-                loc ("CTL_Create_New_Profile_Title")                   // NOI18N
-            );
-            il.setInputText ((String) cbProfile.
-                getSelectedItem ());
-            DialogDisplayer.getDefault ().notify (il);
-            if (il.getValue () == NotifyDescriptor.OK_OPTION) {
-                String newProfile = il.getInputText ();
-                Iterator it = getModel ().getProfiles ().iterator ();
-                while (it.hasNext ())
-                    if (newProfile.equals (it.next ())) {
-                        Message md = new Message (
-                            loc ("CTL_Duplicate_Profile_Name"),        // NOI18N
-                            Message.ERROR_MESSAGE
-                        );
-                        DialogDisplayer.getDefault ().notify (md);
-                        return;
-                    }
-                getModel ().cloneProfile (newProfile);
-                cbProfile.addItem (il.getInputText ());
-                cbProfile.setSelectedItem (il.getInputText ());
+            //show manage profiles dialog
+            final ProfilesPanel profilesPanel = new ProfilesPanel();
+            DialogDescriptor dd = new DialogDescriptor(profilesPanel, NbBundle.getMessage(KeymapPanel.class, "CTL_Manage_Keymap_Profiles"));
+            DialogDisplayer.getDefault().notify(dd);
+
+            if (dd.getValue().equals(DialogDescriptor.OK_OPTION)) {
+                final String selectedProfile = profilesPanel.getSelectedProfile();
+                getModel().setCurrentProfile(selectedProfile);
+                refreshProfileCombo();
+
+            } else {
+                //revert changes
+                getModel().setModifiedProfiles(modifiedProfiles);
+                getModel().setDeletedProfiles(deletedProfiles);
             }
-            return;
         }
+        return;
     }
-
 
 }
