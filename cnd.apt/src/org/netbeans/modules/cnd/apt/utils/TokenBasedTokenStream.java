@@ -63,7 +63,7 @@ public class TokenBasedTokenStream implements TokenStream {
     }
 
     public Token nextToken() throws TokenStreamException {
-        Token ret = null;
+        Token ret;
         if (first) {
             ret = token;
             first = false;

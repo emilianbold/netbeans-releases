@@ -195,4 +195,10 @@ public class J2SEProjectUtil {
         return true;
     }
 
+    public static boolean isCompileOnSaveEnabled(final J2SEProject project) {
+        String compileOnSaveProperty = project.evaluator().getProperty(J2SEProjectProperties.COMPILE_ON_SAVE);
+
+        return (compileOnSaveProperty != null && Boolean.valueOf(compileOnSaveProperty)) && J2SEProjectUtil.isCompileOnSaveSupported(project);
+    }
+
 }

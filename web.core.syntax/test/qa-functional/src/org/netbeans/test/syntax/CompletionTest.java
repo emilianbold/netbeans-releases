@@ -493,16 +493,16 @@ public class CompletionTest extends J2eeTestCase {
                 } else {
                     g.drawString(next.toString(), 0, 0);
                 }
-                dispText = g.getTextUni();
+                dispText = g.getTextUni().trim();
                 // find choice item
                 if (dispText.equals(step.getChoice())) {
                     assertInstanceOf(CompletionItem.class, next);
                     selectedItem = (CompletionItem) next;
                 }
                 if (printDirectly && !isJavaScript()) {
-                    ref(g.getTextUni());
+                    ref(dispText);
                 } else {
-                    finalItems.add(g.getTextUni());
+                    finalItems.add(dispText);
                 }
             }
             if (printDirectly && isJavaScript()){

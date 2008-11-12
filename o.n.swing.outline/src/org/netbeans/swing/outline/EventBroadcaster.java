@@ -772,7 +772,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
                 
                 countRemoved += visibleChildren;
             }
-            getTreePathSupport().removePath(path);
+            getTreePathSupport().removePath(childPath);
         }
 
         //Add in the first index, and add one to it since the 0th

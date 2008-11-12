@@ -45,7 +45,6 @@ import java.awt.Color;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
@@ -61,9 +60,9 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  */
 public class BoldVariablesTableModelFilterFirst implements TableModelFilter, Constants {
     
-    private Map variableToValueType = new WeakHashMap();
-    private Map variableToValueValue = new WeakHashMap();
-    private Map variableToValueToString = new WeakHashMap();
+    private Map<Object, String> variableToValueType = new WeakHashMap<Object, String>();
+    private Map<Object, String> variableToValueValue = new WeakHashMap<Object, String>();
+    private Map<Object, String> variableToValueToString = new WeakHashMap<Object, String>();
     
     public Object getValueAt(TableModel original, Object row, String columnID)
                             throws UnknownTypeException {
@@ -106,9 +105,9 @@ public class BoldVariablesTableModelFilterFirst implements TableModelFilter, Con
     public void removeModelListener(ModelListener l) {
     }
     
-    private String bold(Object variable, String value, Map map) {
+    private String bold(Object variable, String value, Map<Object, String> map) {
         if (map.containsKey(variable)) {
-            String oldValue = (String) map.get(variable);
+            String oldValue = map.get(variable);
             if (oldValue == value || oldValue != null && oldValue.equals(value)) {
                 return toHTML(value, false, false, null);
             }
@@ -124,7 +123,7 @@ public class BoldVariablesTableModelFilterFirst implements TableModelFilter, Con
         if (text == null) {
             return null;
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("<html>"); // NOI18N
         if (bold) {
             sb.append("<b>"); // NOI18N
@@ -135,7 +134,7 @@ public class BoldVariablesTableModelFilterFirst implements TableModelFilter, Con
         if (color != null) {
             sb.append("<font color="); // NOI18N
             sb.append(Integer.toHexString ((color.getRGB () & 0xffffff)));
-            sb.append(">"); // NOI18N
+            sb.append('>'); // NOI18N
         }
         text = text.replaceAll("&", "&amp;"); // NOI18N
         text = text.replaceAll("<", "&lt;"); // NOI18N

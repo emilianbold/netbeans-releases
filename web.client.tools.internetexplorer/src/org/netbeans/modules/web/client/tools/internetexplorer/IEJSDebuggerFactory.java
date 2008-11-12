@@ -48,6 +48,7 @@ import org.openide.awt.HtmlBrowser.Factory;
  *
  * @author jdeva <deva@netbeans.org>
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSDebuggerFactory.class, position=10)
 public class IEJSDebuggerFactory implements JSDebuggerFactory {
 
     public boolean supports(Factory factory) {

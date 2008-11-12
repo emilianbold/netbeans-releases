@@ -61,6 +61,7 @@ import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
 /**
  * @author David Kaspar
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.serialization.DocumentSerializationController.class)
 public class MidpCustomDocumentSerializationController extends DocumentSerializationController {
 
     private static TypeID TYPEID_OLD_FILE_BROWSER = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.FileBrowser"); // NOI18N

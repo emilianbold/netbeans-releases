@@ -63,6 +63,16 @@ import org.netbeans.jemmy.operators.JFrameOperator;
  * and ComponentInspectorOperator.
  */
 public class FormEditorOperatorTest extends JellyTestCase {
+    public final static String[] tests = new String[] {
+        "testOpen",
+        "testSourceButton",
+        "testEditor",
+        "testDesignButton",
+        "testDesign",
+        "testProperties",
+        "testPreviewForm",
+        "testClose"
+    };
     
     /** Use for internal test execution inside IDE
      * @param args command line arguments
@@ -88,14 +98,7 @@ public class FormEditorOperatorTest extends JellyTestCase {
         return(suite);
          */
         return createModuleTest(FormEditorOperatorTest.class, 
-        "testOpen",
-        "testSourceButton",
-        "testEditor",
-        "testDesignButton",
-        "testDesign",
-        "testProperties",
-        "testPreviewForm",
-        "testClose");
+        tests);
     }
     
     /** Constructor required by JUnit.

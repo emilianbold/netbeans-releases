@@ -64,6 +64,7 @@ import org.netbeans.modules.openide.explorer.TabbedContainerBridge;
  *
  * @author  Tim Boudreau
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.openide.explorer.TabbedContainerBridge.class)
 public class TabbedContainerBridgeImpl extends TabbedContainerBridge {
     
     /** Creates a new instance of TabbedContainerBridgeImpl */

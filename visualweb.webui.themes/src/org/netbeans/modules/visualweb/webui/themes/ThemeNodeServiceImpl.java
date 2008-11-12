@@ -36,6 +36,7 @@ import org.openide.nodes.Node;
  * Implementation of ThemeNodeService
  * @author winstonp
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.visualweb.project.jsf.services.ThemeNodeService.class)
 public class ThemeNodeServiceImpl implements ThemeNodeService{
 
     public Node getThemeNode(Project project) {

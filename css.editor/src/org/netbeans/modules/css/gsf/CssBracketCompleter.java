@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.css.gsf;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
@@ -45,22 +46,26 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
+import org.netbeans.modules.css.editor.model.CssRule;
+import org.netbeans.modules.css.gsf.CSSParserResult;
+import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.css.editor.LexerUtils;
+import org.netbeans.modules.css.editor.model.CssModel;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
-import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.openide.util.Exceptions;
 
 /**
  *
- * @author marek
+ * @author marek.fukala@sun.com
  */
 public class CssBracketCompleter implements KeystrokeHandler {
 
@@ -214,7 +219,41 @@ public class CssBracketCompleter implements KeystrokeHandler {
     }
 
     public List<OffsetRange> findLogicalRanges(CompilationInfo info, int caretOffset) {
-        return Collections.emptyList();
+        ArrayList<OffsetRange> ranges = new ArrayList<OffsetRange>(2);
+        //ranges.add(new OffsetRange(0, info.getDocument().getLength()));
+
+        CSSParserResult result = (CSSParserResult)info.getEmbeddedResult("text/x-css", caretOffset);
+        SimpleNode root = result.root();
+
+        if(root != null) {
+            //find leaf at the position
+            SimpleNode node = SimpleNodeUtil.findDescendant(root, astOffset(result.getTranslatedSource(), caretOffset));
+            if(node != null) {
+                //go through the tree and add all parents with, eliminate duplicate nodes
+                do {
+                    int from = node.startOffset();
+                    int to = node.endOffset();
+
+                    OffsetRange last = ranges.isEmpty() ? null : ranges.get(ranges.size() - 1);
+                    //skip duplicated ranges
+                    if(last == null || !(last.getStart() == from && last.getEnd() == to)) {
+                        ranges.add(new OffsetRange(from, to));
+                    }
+                } while ((node = (SimpleNode)node.jjtGetParent()) != null);
+            }
+        }
+
+        //the bottom most element represents the whole parse tree, replace it by the document
+        //range since they doesn't need to be the same
+        if(!ranges.isEmpty()) {
+            ranges.set(ranges.size() - 1, new OffsetRange(0, info.getDocument().getLength()));
+        }
+
+        return ranges;
+    }
+
+    private int astOffset(TranslatedSource source, int offset) {
+        return source == null ? offset : source.getAstOffset(offset);
     }
 
     public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {

@@ -402,6 +402,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
     /** Deserialize this top component, sets as default.
     * Provided provided here only for backward compatibility
     * with older serialization protocol */
+    @Override
     public void readExternal (ObjectInput in)
     throws IOException, ClassNotFoundException {
         super.readExternal(in);
@@ -447,21 +448,8 @@ public final class NbMainExplorer extends CloneableTopComponent {
 
     /** @return The mode for main explorer on given workspace.
     * Creates explorer mode if no such mode exists on given workspace */
-    @SuppressWarnings("deprecation")
-    private static Mode explorerMode (org.openide.windows.Workspace workspace) {
-        Mode result = workspace.findMode("explorer"); // NOI18N
-        if (result == null) {
-            // create explorer mode on current workspace
-            String displayName = NbBundle.getBundle(NbMainExplorer.class).
-                                 getString("CTL_ExplorerTitle");
-            result = workspace.createMode(
-                         "explorer", // NOI18N
-                         displayName,
-                         NbMainExplorer.class.getResource(
-                             "/org/netbeans/core/resources/frames/explorer.gif" // NOI18N
-                         )
-                     );
-        }
+    private static Mode explorerMode() {
+        Mode result = WindowManager.getDefault().findMode("explorer"); // NOI18N
         return result;
     }
 
@@ -519,11 +507,13 @@ public final class NbMainExplorer extends CloneableTopComponent {
         /** Overriden to explicitely set persistence type of ExplorerTab
          * to PERSISTENCE_ALWAYS
          */
+        @Override
         public int getPersistenceType() {
             return TopComponent.PERSISTENCE_ALWAYS;
         }
 
         /** Initialize visual content of component */
+        @Override
         protected void componentShowing () {
             super.componentShowing ();
 
@@ -540,6 +530,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
          * componentShowing if component is used outside window system.
          * Needed for proper initialization.
          */
+        @Override
         public void addNotify () {
             super.addNotify();
             if (WindowManager.getDefault().findMode(this) != null) {
@@ -549,7 +540,9 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
 
         /** Transfer focus to view. */
-        @SuppressWarnings("deprecation") public void requestFocus () {
+        @SuppressWarnings("deprecation")
+        @Override
+        public void requestFocus () {
             super.requestFocus();
             if (view != null) {
                 view.requestFocus();
@@ -557,7 +550,9 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
 
         /** Transfer focus to view. */
-        @SuppressWarnings("deprecation") public boolean requestFocusInWindow () {
+        @SuppressWarnings("deprecation")
+        @Override
+        public boolean requestFocusInWindow () {
             super.requestFocusInWindow();
             if (view != null) {
                 return view.requestFocusInWindow();
@@ -572,6 +567,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         */
         protected TreeView initGui () {
             TreeView view = new BeanTreeView();
+            view.setUseSubstringInQuickSearch(true);
             view.setDragSource (true);
             setLayout(new BorderLayout());
             add (view);
@@ -579,10 +575,11 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
 
         /** Ensures that component is valid before opening */
-        @SuppressWarnings("deprecation") public void open (org.openide.windows.Workspace workspace) {
+        @Override
+        public void open() {
             setValidRootContext();
 
-            super.open(workspace);
+            super.open();
         }
 
         /** Sets new root context to view. Name, icon, tooltip
@@ -713,6 +710,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
 
         /* Updated accessible name of the tree view */
+        @Override
         public void setName(String name) {
             super.setName(name);
             if (view != null) {
@@ -721,6 +719,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
 
         /* Updated accessible description of the tree view */
+        @Override
         public void setToolTipText(String text) {
             super.setToolTipText(text);
             if (view != null) {
@@ -834,20 +833,24 @@ public final class NbMainExplorer extends CloneableTopComponent {
 
         /** Overriden to explicitely set persistence type of MainTab
          * to PERSISTENCE_ALWAYS */
+        @Override
         public int getPersistenceType() {
             return TopComponent.PERSISTENCE_ALWAYS;
         }
 
+        @Override
         protected String preferredID () {
             return "runtime"; //NOI18N
         }
 
+        @Override
         public HelpCtx getHelpCtx () {
             return ExplorerUtils.getHelpCtx (getExplorerManager ().getSelectedNodes (),
                     new HelpCtx (EnvironmentNode.class));
 	}
 
         /** Deserialization of RepositoryTab */
+        @Override
         public Object readResolve() throws java.io.ObjectStreamException {
             if (DEFAULT == null) {
                 DEFAULT = this;
@@ -856,26 +859,29 @@ public final class NbMainExplorer extends CloneableTopComponent {
             return getDefaultMainTab();
         }
 
-        @SuppressWarnings("deprecation") public void open (org.openide.windows.Workspace workspace) {
-            org.openide.windows.Workspace realWorkspace = (workspace == null)
-                                      ? WindowManager.getDefault().getCurrentWorkspace()
-                                      : workspace;
-            Mode ourMode = realWorkspace.findMode(this);
+        @Override
+        public void open() {
+            Mode ourMode = WindowManager.getDefault().findMode(this);
             if (ourMode == null) {
-                explorerMode(realWorkspace).dockInto(this);
+                ourMode = explorerMode();
+                if (ourMode != null) {
+                    ourMode.dockInto(this);
+                }
             }
-            super.open(workspace);
+            super.open();
         }
 
         /** Called when the explored context changes.
         * Overriden - we don't want title to chnage in this style.
         */
+        @Override
         protected void updateTitle () {
             // empty to keep the title unchanged
         }
 
         /** Overrides superclass' version, remembers last activated
         * main tab */
+        @Override
         protected void componentActivated () {
             super.componentActivated();
             lastActivated = this;
@@ -883,6 +889,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
 
         /** Registers root context in main explorer in addition to superclass'
         * version */
+        @Override
         protected void validateRootContext () {
             super.validateRootContext();
             registerRootContext(getExplorerManager().getRootContext());
@@ -907,6 +914,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
 
 
+        @Override
         public void setRootContext(Node root) {
             super.setRootContext(root);
             adjustComponentPersistence();
@@ -914,6 +922,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
 
         /** Overriden to explicitely set persistence type of ModuleTab
          * to selected type */
+        @Override
         public int getPersistenceType() {
             return persistenceType;
         }
@@ -922,6 +931,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         * in roots set as new root context for this top component.
         * The reason for such construction is to keep the uniquennes of
         * root context node after deserialization. */
+        @Override
         protected void validateRootContext () {
             // find proper node
             Class nodeClass = getExplorerManager().getRootContext().getClass();
@@ -936,6 +946,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
 
         /** Deserialization of ModuleTab */
+        @Override
         public Object readResolve() throws java.io.ObjectStreamException {
             Node root = getExplorerManager().getRootContext();
 

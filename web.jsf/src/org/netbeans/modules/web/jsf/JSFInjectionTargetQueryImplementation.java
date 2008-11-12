@@ -58,6 +58,7 @@ import org.openide.util.Parameters;
  * @author Petr Pisl
  */
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation.class)
 public class JSFInjectionTargetQueryImplementation implements InjectionTargetQueryImplementation {
     
     public JSFInjectionTargetQueryImplementation() {

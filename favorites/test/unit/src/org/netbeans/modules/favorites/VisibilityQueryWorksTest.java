@@ -85,6 +85,7 @@ public class VisibilityQueryWorksTest extends NbTestCase {
     /** If execution fails we wrap the exception with 
      * new log message.
      */
+    @Override
     protected void runTest () throws Throwable {
         try {
             super.runTest ();
@@ -96,6 +97,7 @@ public class VisibilityQueryWorksTest extends NbTestCase {
     }
 
     
+    @Override
     protected void setUp () throws Exception {
         clearWorkDir();
 
@@ -193,7 +195,10 @@ public class VisibilityQueryWorksTest extends NbTestCase {
         VQI vqi = (VQI) Lookup.getDefault().lookup(VQI.class);
         vqi.showAll = true;
         vqi.fire();
-        
+
+        // initialize the children
+        Node some = f.getChildren().findChild(null);
+        assertNotNull("Some node needs to be found", some);
         arr = f.getChildren().getNodes(true);
         assertNodeForDataObject("hidden object is now there", hiddenDO, true, arr);
         assertEquals("One child at all", 1, arr.length);

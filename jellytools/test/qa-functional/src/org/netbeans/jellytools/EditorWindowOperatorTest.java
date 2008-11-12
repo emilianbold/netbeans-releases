@@ -60,7 +60,17 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jiri.Skrivanek@sun.com
  */
 public class EditorWindowOperatorTest extends JellyTestCase {
-    
+
+    public static final String[] tests = new String[] {
+                "testSelectPage",
+                "testGetEditor",
+                "testSelectDocument",
+                "testJumpLeft",
+                "testMoveTabsRight",
+                "testMoveTabsLeft",
+                "testVerify",
+                "testCloseDiscard"
+    };
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
      */
@@ -94,14 +104,7 @@ public class EditorWindowOperatorTest extends JellyTestCase {
          */
         return (NbTest) NbModuleSuite.create(
         NbModuleSuite.createConfiguration(EditorWindowOperatorTest.class).
-                addTest("testSelectPage").
-                addTest("testGetEditor").
-                addTest("testSelectDocument").
-                addTest("testJumpLeft").
-                addTest("testMoveTabsRight").
-                addTest("testMoveTabsLeft").
-                addTest("testVerify").
-                addTest("testCloseDiscard").
+                addTest(tests).
                 enableModules(".*").clusters(".*"));
     }
     

@@ -82,7 +82,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
-public class ProjectRootNodeFactory implements NodeFactory {
+/**
+ * Factory for the nodes in the Rails Project logical view.
+ */
+public final class ProjectRootNodeFactory implements NodeFactory {
     
     public NodeList createNodes(Project p) {
         RubyProject project = p.getLookup().lookup(RubyProject.class);
@@ -95,7 +98,7 @@ public class ProjectRootNodeFactory implements NodeFactory {
         private final FileChangeListener rootFOListener;
         private final RubyProject project;
         private final List<ChangeListener> changeListeners;
-        
+
         public RootChildren(RubyProject proj) {
             rootFOListener = new RootFileChangeListener();
             FileObject prjRoot = proj.getProjectDirectory();
@@ -115,8 +118,11 @@ public class ProjectRootNodeFactory implements NodeFactory {
             // Here we're adding sources, tests
             List<RootChildNode> result =  new ArrayList<RootChildNode>();
             for( int i = 0; i < groups.length; i++ ) {
-                result.add(new RootChildNode(groups[i]));
+                result.add(RootChildNode.group(groups[i]));
             }
+
+            // libraries node
+            result.add(RootChildNode.libraries());
             
             // files under project's root
             result.addAll(getRootFiles());
@@ -131,7 +137,7 @@ public class ProjectRootNodeFactory implements NodeFactory {
             // prefer Rakefile
             FileObject rakeFile = RakeSupport.findRakeFile(project);
             if (rakeFile != null && rootDir.equals(rakeFile.getParent())) {
-                rootFiles.add(new RootChildNode(rakeFile));
+                rootFiles.add(RootChildNode.fileObject(rakeFile));
             }
             
             // the rest
@@ -146,7 +152,7 @@ public class ProjectRootNodeFactory implements NodeFactory {
                 if (rootChild.isFolder() || RakeSupport.isMainRakeFile(rootChild)) {
                     continue;
                 }
-                rootFiles.add(new RootChildNode(rootChild));
+                rootFiles.add(RootChildNode.fileObject(rootChild));
             }
             return rootFiles;
         }
@@ -165,8 +171,13 @@ public class ProjectRootNodeFactory implements NodeFactory {
             }
         }
 
-        public Node node(RootChildNode key) {
-            if (key.group == null) {
+        public Node node(final RootChildNode key) {
+            if (key.libraryNode) {
+                return new LibrariesNode(project);
+            }
+            if (key.group != null) {
+                return new FolderViewFilterNode(key.group, project);
+            } else if (key.fileObject != null) {
                 try {
                     if (RakeSupport.isRakeFile(key.fileObject)) {
                         return new RakeSupport.RakeNode(key.fileObject);
@@ -176,9 +187,11 @@ public class ProjectRootNodeFactory implements NodeFactory {
                     }
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
+                    return null;
                 }
+            } else {
+                throw new AssertionError("Unknown/Invalid key: " + key);
             }
-            return new FolderViewFilterNode(key.group, project);
         }
 
         public void addNotify() {
@@ -227,18 +240,34 @@ public class ProjectRootNodeFactory implements NodeFactory {
         
         private final SourceGroup group;
         private final FileObject fileObject;
-        
-        RootChildNode(SourceGroup group) {
+        private final boolean libraryNode;
+
+        private RootChildNode(SourceGroup group, FileObject fileObject, boolean libraryNode) {
             this.group = group;
-            this.fileObject = group.getRootFolder();
-        }
-        
-        RootChildNode(FileObject fileObject) {
-            this.group = null;
             this.fileObject = fileObject;
+            this.libraryNode = libraryNode;
+        }
+
+        private RootChildNode(SourceGroup group, FileObject fileObject) {
+            this(group, fileObject, false);
         }
         
+        static RootChildNode group(final SourceGroup group) {
+            return new RootChildNode(group, group.getRootFolder());
+        }
+        
+        static RootChildNode fileObject(final FileObject fileObject) {
+            return new RootChildNode(null, fileObject);
+        }
+
+        static RootChildNode libraries() {
+            return new RootChildNode(null, null, true);
+        }
+
         public @Override int hashCode() {
+            if (libraryNode) {
+                return 0;
+            }
             return fileObject.hashCode();
         }
         
@@ -247,6 +276,9 @@ public class ProjectRootNodeFactory implements NodeFactory {
                 return false;
             } else {
                 RootChildNode otherKey = (RootChildNode) obj;
+                if (libraryNode || otherKey.libraryNode) {
+                    return libraryNode && otherKey.libraryNode;
+                }
                 String thisDisplayName = group == null ? null : group.getDisplayName();
                 String otherDisplayName = otherKey.group == null ? null : otherKey.group.getDisplayName();
                 // XXX what is the operator binding order supposed to be here??
@@ -256,7 +288,9 @@ public class ProjectRootNodeFactory implements NodeFactory {
         }
 
         public @Override String toString() {
-            return "ProjectRootNodeFactory[fileObject: " + fileObject + ", group: " + group + "]"; // NOI18N
+            return "ProjectRootNodeFactory[fileObject: " + fileObject + // NOI18N
+                    ", group: " + group + // NOI18N
+                    ", libraryNode: " + libraryNode + ']'; // NOI18N
         }
         
     }

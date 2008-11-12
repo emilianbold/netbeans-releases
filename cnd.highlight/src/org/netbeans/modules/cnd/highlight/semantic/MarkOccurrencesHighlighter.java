@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.highlight.InterrupterImpl;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
@@ -73,7 +74,6 @@ import org.openide.util.NbBundle;
 public final class MarkOccurrencesHighlighter extends HighlighterBase {
 
     private static AttributeSet defaultColors;
-    private final static String COLORS = "cc-highlighting-mark-occurrences"; // NOI18N
 
     public static OffsetsBag getHighlightsBag(Document doc) {
         if (doc == null) {
@@ -125,12 +125,12 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     private boolean valid = true;
     // PhaseRunner
     public void run(Phase phase) {
-        MyInterruptor interruptor = new MyInterruptor();
+        InterrupterImpl interrupter = new InterrupterImpl();
         try {
-            addCancelListener(interruptor);
-            runImpl(phase, interruptor);
+            addCancelListener(interrupter);
+            runImpl(phase, interrupter);
         } finally {
-            removeCancelListener(interruptor);
+            removeCancelListener(interrupter);
         }
     }
     

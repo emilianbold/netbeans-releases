@@ -159,8 +159,9 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
          * Overrides superclass method.
          * @return text editor support (instance of enclosing class)
          */
+        @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
-            return (SimpleES)getDataObject().getCookie(SimpleES.class);
+            return getDataObject().getCookie(SimpleES.class);
         }
     } // End of nested Environment class.
 

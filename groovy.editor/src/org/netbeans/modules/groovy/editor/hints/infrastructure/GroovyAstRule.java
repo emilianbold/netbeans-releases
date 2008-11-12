@@ -43,7 +43,7 @@ package org.netbeans.modules.groovy.editor.hints.infrastructure;
 
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.groovy.editor.NodeType;
+import org.netbeans.modules.groovy.editor.api.NodeType;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.Rule.AstRule;
 

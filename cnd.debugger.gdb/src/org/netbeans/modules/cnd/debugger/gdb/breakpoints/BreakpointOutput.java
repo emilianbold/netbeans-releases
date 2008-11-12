@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -85,7 +84,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
     
     public BreakpointOutput(ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
-        this.debugger = (GdbDebugger) contextProvider.lookupFirst(null, GdbDebugger.class);
+        this.debugger = contextProvider.lookupFirst(null, GdbDebugger.class);
         debugger.addPropertyChangeListener(GdbDebugger.PROP_STATE, this);
         hookBreakpoints();
         DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_BREAKPOINTS, this);
@@ -168,7 +167,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
     public void propertyChange(PropertyChangeEvent evt) {
         synchronized (lock) {
             if (debugger == null || !evt.getPropertyName().equals(GdbDebugger.PROP_STATE) ||
-                        !debugger.getState().equals(GdbDebugger.STATE_RUNNING)) {
+                        debugger.getState() != GdbDebugger.State.RUNNING) {
                 return;
             }
         }
@@ -210,9 +209,8 @@ public class BreakpointOutput extends LazyActionsManagerListener
     }
 
     private void lookupIOManager () {
-        List lamls = contextProvider.lookup(null, LazyActionsManagerListener.class);
-        for (Iterator i = lamls.iterator(); i.hasNext();) {
-            Object o = i.next();
+        List<? extends LazyActionsManagerListener> lamls = contextProvider.lookup(null, LazyActionsManagerListener.class);
+        for (LazyActionsManagerListener o : lamls) {
             if (o instanceof DebuggerOutput) {
                 ioManager = ((DebuggerOutput) o).getIOManager();
                 break;
@@ -253,10 +251,8 @@ public class BreakpointOutput extends LazyActionsManagerListener
     private BreakpointsNodeModel breakpointsNodeModel;
     private BreakpointsNodeModel getBreakpointsNodeModel() {
         if (breakpointsNodeModel == null) {
-            List l = DebuggerManager.getDebuggerManager().lookup("BreakpointsView", NodeModel.class); // NOI18N
-            Iterator it = l.iterator();
-            while (it.hasNext()) {
-                NodeModel nm = (NodeModel) it.next();
+            List<? extends NodeModel> l = DebuggerManager.getDebuggerManager().lookup("BreakpointsView", NodeModel.class); // NOI18N
+            for (NodeModel nm : l) {
                 if (nm instanceof BreakpointsNodeModel) {
                     breakpointsNodeModel = (BreakpointsNodeModel) nm;
                     break;

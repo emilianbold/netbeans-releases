@@ -30,6 +30,7 @@ import org.netbeans.modules.bpel.model.api.events.EntityUpdateEvent;
  *
  * This service set flag for element that means element was built via builder.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.InnerEventDispatcher.class)
 public class ResetBuilderElement extends InnerEventDispatcherAdapter {
 
 

@@ -64,8 +64,8 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         cs = new ChangeSupport(this);
         initComponents();
         
-        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
-            setOpaque( false );
+//        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+//            setOpaque( false );
         
     }
     

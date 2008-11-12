@@ -67,6 +67,7 @@ import org.xml.sax.SAXException;
  *
  * @author Nam Nguyen
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public class SchemaXsdBasedValidator extends XsdBasedValidator {
     
     private static Schema schema;

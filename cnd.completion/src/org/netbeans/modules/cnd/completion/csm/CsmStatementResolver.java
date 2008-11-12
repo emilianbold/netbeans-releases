@@ -197,6 +197,7 @@ public class CsmStatementResolver {
                 CsmFunction fun = (CsmFunction) decl;
                 
                 // check if offset in parameters
+                @SuppressWarnings("unchecked")
                 Collection<CsmParameter> params = fun.getParameters();
                 CsmParameter param = CsmOffsetUtilities.findObject(params, context, offset);
                 if (param != null) {

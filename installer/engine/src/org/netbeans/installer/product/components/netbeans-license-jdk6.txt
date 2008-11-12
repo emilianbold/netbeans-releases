@@ -1,4 +1,4 @@
-NETBEANS IDE 6.1 - JAVA SE DEVELOPMENT KIT (JDK), VERSION 6
+NETBEANS IDE 6.5 - JAVA SE DEVELOPMENT KIT (JDK), VERSION 6
 
 Please review the complete list of open-source licenses
 governing software  included in the Product. They can be
@@ -6,7 +6,7 @@ found in the THIRDPARTYLICENSE.txt file. Please review the
 list of libraries and licenses provided for use. This
 license file contains three distinct licenses.
 
-Unless specified below, the use of NetBeans IDE 6.1
+Unless specified below, the use of NetBeans IDE 6.5
 and components from the GlassFish runtime are governed by
 the terms of either the GNU General Public License Version 2 
 with Classpath Exception or the Common Development and
@@ -843,4 +843,5 @@ H. Termination for Infringement. Either party may terminate this Agreement immed
 
 I. Installation and Auto-Update.  The Software's installation and auto-update processes transmit a limited amount of data to Sun (or its service provider) about those specific processes to help Sun understand and optimize them.  Sun does not associate the data with personally identifiable information.  You can find more information about the data Sun collects at http://java.com/data/.
 For inquiries please contact: Sun Microsystems, Inc., 4150 Network Circle, Santa  Clara, California 95054, U.S.A.
+
 

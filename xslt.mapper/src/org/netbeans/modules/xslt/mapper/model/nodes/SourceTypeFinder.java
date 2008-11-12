@@ -100,9 +100,8 @@ public class SourceTypeFinder {
         AXIComponent type = currentNode.getType();
         
         String typeName = ((AXIType) type).getName();
-        String typeNamespace = AxiomUtils.isUnqualified(type) ?
-            "" : type.getTargetNamespace();
-        
+        String typeNamespace = AxiomUtils.getNamespace(type);
+        typeNamespace = typeNamespace == null ? "" : typeNamespace;
         
         if (namespace == null){
             namespace = "";

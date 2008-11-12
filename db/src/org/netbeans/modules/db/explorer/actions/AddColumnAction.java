@@ -75,13 +75,13 @@ public class AddColumnAction extends DatabaseAction {
         DatabaseNodeInfo info = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
         final TableNodeInfo nfo = (TableNodeInfo) info.getParent(nodename);
         try {
-            AddTableColumnDialog dlg = new AddTableColumnDialog((Specification) nfo.getSpecification(), nfo);
+            final AddTableColumnDialog dlg = new AddTableColumnDialog((Specification) nfo.getSpecification(), nfo);
             if (dlg.run()) {
-                nfo.addColumn(dlg.getColumnName());
                 RequestProcessor.getDefault().post(
                     new Runnable() {
                         public void run() {
                             try {
+                                nfo.addColumn(dlg.getColumnName());
                                 nfo.refreshChildren();
                             } catch ( DatabaseException de ) {
                                 Logger.getLogger("global").log(Level.INFO, null, de);

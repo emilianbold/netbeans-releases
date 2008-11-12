@@ -58,6 +58,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
  *
  * @author Milan Kubec
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.j2seproject.api.J2SERunConfigProvider.class)
 public class J2SERunConfigProviderImpl implements J2SERunConfigProvider {
     
     public J2SERunConfigProviderImpl() {}

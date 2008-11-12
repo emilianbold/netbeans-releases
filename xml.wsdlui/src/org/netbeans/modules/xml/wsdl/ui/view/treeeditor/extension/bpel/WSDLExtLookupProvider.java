@@ -54,6 +54,7 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.AbstractLookup.Content;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.ui.spi.WSDLLookupProvider.class)
 public class WSDLExtLookupProvider implements WSDLLookupProvider, Lookup.Provider {
 
     private Lookup lookup;

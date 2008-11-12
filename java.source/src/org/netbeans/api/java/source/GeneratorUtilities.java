@@ -51,7 +51,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PrimitiveTypeTree;
-import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
@@ -89,7 +88,6 @@ import javax.swing.text.Document;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceLevelQuery;
-import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
@@ -409,8 +407,8 @@ public final class GeneratorUtilities {
         CharSequence name = field.getSimpleName();
         assert name.length() > 0;
         TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), field);
-        StringBuilder sb = new StringBuilder();
-        sb.append(type.getKind() == TypeKind.BOOLEAN ? "is" : "get").append(Character.toUpperCase(name.charAt(0))).append(name.subSequence(1, name.length())); //NOI18N
+        StringBuilder sb = getCapitalizedName(name);
+        sb.insert(0, type.getKind() == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
         BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(name))), false);
         return make.Method(make.Modifiers(mods), sb, make.Type(type), Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
     }
@@ -431,8 +429,8 @@ public final class GeneratorUtilities {
         CharSequence name = field.getName();
         assert name.length() > 0;
         Tree type = field.getType();
-        StringBuilder sb = new StringBuilder();
-        sb.append(type.getKind() == Tree.Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree)type).getPrimitiveTypeKind() == TypeKind.BOOLEAN ? "is" : "get").append(Character.toUpperCase(name.charAt(0))).append(name.subSequence(1, name.length())); //NOI18N
+        StringBuilder sb = getCapitalizedName(name);
+        sb.insert(0, type.getKind() == Tree.Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree)type).getPrimitiveTypeKind() == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
         BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(name))), false);
         return make.Method(make.Modifiers(mods), sb, type, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
     }
@@ -455,8 +453,8 @@ public final class GeneratorUtilities {
         CharSequence name = field.getSimpleName();
         assert name.length() > 0;
         TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), field);
-        StringBuilder sb = new StringBuilder();
-        sb.append("set").append(Character.toUpperCase(name.charAt(0))).append(name.subSequence(1, name.length())); //NOI18N
+        StringBuilder sb = getCapitalizedName(name);
+        sb.insert(0, "set"); //NOI18N
         List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(type), null));
         BlockTree body = make.Block(Collections.singletonList(make.ExpressionStatement(make.Assignment(make.MemberSelect(isStatic? make.Identifier(field.getEnclosingElement().getSimpleName()) : make.Identifier("this"), name), make.Identifier(name)))), false); //NOI18N
         return make.Method(make.Modifiers(mods), sb, make.Type(copy.getTypes().getNoType(TypeKind.VOID)), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null);
@@ -479,8 +477,8 @@ public final class GeneratorUtilities {
             mods.add(Modifier.STATIC);
         CharSequence name = field.getName();
         assert name.length() > 0;
-        StringBuilder sb = new StringBuilder();
-        sb.append("set").append(Character.toUpperCase(name.charAt(0))).append(name.subSequence(1, name.length())); //NOI18N
+        StringBuilder sb = getCapitalizedName(name);
+        sb.insert(0, "set"); //NOI18N
         List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, field.getType(), null));
         BlockTree body = make.Block(Collections.singletonList(make.ExpressionStatement(make.Assignment(make.MemberSelect(isStatic? make.Identifier(clazz.getSimpleName()) : make.Identifier("this"), name), make.Identifier(name)))), false); //NOI18N
         return make.Method(make.Modifiers(mods), sb, make.Type(copy.getTypes().getNoType(TypeKind.VOID)), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null);
@@ -558,6 +556,15 @@ public final class GeneratorUtilities {
         }
 
         return make.Method(mt, prototype.getName(), prototype.getReturnType(), prototype.getTypeParameters(), prototype.getParameters(), prototype.getThrows(), body, null);
+    }
+
+    private static StringBuilder getCapitalizedName(CharSequence cs) {
+        StringBuilder sb = new StringBuilder(cs);
+        while(sb.length() > 1 && sb.charAt(0) == '_') //NOI18N
+            sb.deleteCharAt(0);
+        if (sb.length() > 0)
+            sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
+        return sb;
     }
 
     private static class ClassMemberComparator {

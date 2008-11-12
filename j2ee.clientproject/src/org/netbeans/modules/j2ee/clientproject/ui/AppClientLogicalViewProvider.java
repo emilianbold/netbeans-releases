@@ -74,15 +74,16 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
-import org.netbeans.modules.j2ee.clientproject.AppClientProjectUtil;
+import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerLibraries;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesClientSupport;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.ui.LibrariesNode;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.ExtraLibrariesNode;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.project.ui.LibrariesNode;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -92,6 +93,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.LogicalViewProvider2;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientView;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
@@ -104,7 +107,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -132,7 +134,7 @@ import org.openide.xml.XMLUtil;
  * Support for creating logical views.
  * @author Petr Hrebejk
  */
-public class AppClientLogicalViewProvider implements LogicalViewProvider {
+public class AppClientLogicalViewProvider implements LogicalViewProvider2 {
     
     private static final RequestProcessor BROKEN_LINKS_RP = new RequestProcessor("AppClientLogicalViewProvider.BROKEN_LINKS_RP"); // NOI18N
     
@@ -245,7 +247,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         }
         
         final String platformId = this.evaluator.getProperty(AppClientProjectProperties.JAVA_PLATFORM);  //NOI18N
-        final JavaPlatform activePlatform = AppClientProjectUtil.getActivePlatform(platformId);
+        final JavaPlatform activePlatform = Utils.getActivePlatform(platformId);
         if (activePlatform == null) {
             return true;
         }
@@ -500,7 +502,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             public void actionPerformed(ActionEvent e) {
                 String j2eeSpec = project.evaluator().getProperty(AppClientProjectProperties.J2EE_PLATFORM);
                 if (j2eeSpec == null) {
-                    j2eeSpec = ProjectProperties.JAVA_EE_5; // NOI18N
+                    j2eeSpec = J2EEProjectProperties.JAVA_EE_5; // NOI18N
                     Logger.getLogger(AppClientLogicalViewProvider.class.getName()).warning(
                             "project ["+project.getProjectDirectory()+"] is missing "+AppClientProjectProperties.J2EE_PLATFORM+". " + // NOI18N
                             "default value will be used instead: "+j2eeSpec); // NOI18N
@@ -677,8 +679,6 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                     ProjectProperties.RUN_CLASSPATH,
                     new String[]{ProjectProperties.BUILD_CLASSES_DIR},
                     AppClientProjectProperties.JAVA_PLATFORM,
-                    AppClientProjectProperties.J2EE_SERVER_INSTANCE,
-                    AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH,
                     new Action[]{
                         LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
                         LibrariesNode.createAddLibraryAction(resolver, project.getSourceRoots(), null),
@@ -687,7 +687,9 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE) // NOI18N
                     },
                     ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES,
-                    cs)
+                    cs,
+                    new ExtraLibrariesNode(project, evaluator, AppClientProjectProperties.J2EE_SERVER_INSTANCE, cs)
+                    )
                 };
             } else if (key == TEST_LIBRARIES) {
                 result = new Node[]{
@@ -704,8 +706,6 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                         ProjectProperties.BUILD_CLASSES_DIR,
                     },
                     null,
-                    null,
-                    null,
                     new Action[]{
                         LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
                         LibrariesNode.createAddLibraryAction(resolver, project.getTestSourceRoots(), null),
@@ -714,7 +714,8 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
                     },
                     null,
-                    cs)
+                    cs,
+                    null)
                 };
             }
             // else if (key instanceof SourceGroup) {

@@ -72,6 +72,7 @@ import org.openide.util.WeakListeners;
  * Implementation of Javadoc query for the library.
  * @since 1.5
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class)
 public class J2eePlatformJavadocForBinaryQuery implements JavadocForBinaryQueryImplementation {
     
     private static int MAX_DEPTH = 3;

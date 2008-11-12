@@ -55,6 +55,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jiri Sedlacek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class)
 public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
     
     private ProfilingSettings lastProfilingSettings;

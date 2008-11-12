@@ -54,6 +54,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
 public class CaretListeningFactory extends CaretAwareJavaSourceTaskFactory {
     
     private static CaretListeningFactory INSATNCE;

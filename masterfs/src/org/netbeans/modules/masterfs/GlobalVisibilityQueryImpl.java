@@ -62,6 +62,7 @@ import org.openide.util.NbPreferences;
  * 
  * This class has hidden dependency on IgnoredFilesPreferences module org.netbeans.core.ui.
  */ 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.VisibilityQueryImplementation.class)
 public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation2 {
     static GlobalVisibilityQueryImpl INSTANCE;
     private final ChangeSupport cs = new ChangeSupport(this);

@@ -50,6 +50,7 @@ import org.openide.util.Lookup;
 /**
  * @author Radek Matous
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=100)
 public class PhpRefactoringsFactory implements RefactoringPluginFactory {
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         if (refactoring instanceof WhereUsedQuery) {

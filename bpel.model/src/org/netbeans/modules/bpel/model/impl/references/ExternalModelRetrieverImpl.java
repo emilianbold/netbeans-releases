@@ -36,6 +36,7 @@ import org.netbeans.modules.xml.xam.Model.State;
 /**
  * @author ads
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.ExternalModelRetriever.class)
 public class ExternalModelRetrieverImpl implements ExternalModelRetriever {
 
 

@@ -67,11 +67,10 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -113,9 +112,9 @@ public class MethodGenerator {
                         String returnType = wsdlOperation.getReturnTypeName();
 
                         // create parameters
-                        List<WSParameter> parameters = wsdlOperation.getParameters();
+                        List<WsdlParameter> parameters = wsdlOperation.getParameters();
                         List<VariableTree> params = new ArrayList<VariableTree>();
-                        for (WSParameter parameter:parameters) {
+                        for (WsdlParameter parameter:parameters) {
                             // create parameter:
                             params.add(make.Variable(
                                     make.Modifiers(
@@ -331,8 +330,8 @@ public class MethodGenerator {
         for (WsdlService service:services) {
             List<WsdlPort> ports = service.getPorts();
             for (WsdlPort port:ports) {
-                List<WSOperation> operations = port.getOperations();
-                for (WSOperation operation:operations) {
+                List<WsdlOperation> operations = port.getOperations();
+                for (WsdlOperation operation:operations) {
                     if (operationName.equals(operation.getName())) return (WsdlOperation) operation;
                 }
             }

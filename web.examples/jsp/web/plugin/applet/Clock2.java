@@ -1,3 +1,5 @@
+package plugin.applet;
+
 /*
 * Copyright 2004 The Apache Software Foundation
 *

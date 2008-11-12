@@ -41,99 +41,19 @@
 
 package org.netbeans.modules.java.j2seproject;
 
-import java.io.File;
-import java.io.IOException;
-import org.apache.tools.ant.module.spi.AntEvent;
-import org.apache.tools.ant.module.spi.AntLogger;
-import org.apache.tools.ant.module.spi.AntSession;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.java.api.common.ProjectAntLogger;
 
 /**
  * Logger which should suppress or prettify typical Ant output from a
  * j2seproject's build-impl.xml.
  * @author Jesse Glick
  */
-public final class J2SEAntLogger extends AntLogger {
+@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=25)
+public final class J2SEAntLogger extends ProjectAntLogger {
     
     /** Default constructor for lookup. */
-    public J2SEAntLogger() {}
-    
-    public boolean interestedInSession(AntSession session) {
-        // Even if the initiating project is not a J2SEProject, suppress these messages.
-        // However disable our tricks when running at VERBOSE or higher.
-        return session.getVerbosity() <= AntEvent.LOG_INFO;
+    public J2SEAntLogger() {
+        super(J2SEProject.class, new String[0]);
     }
     
-    private static boolean isJ2SEProject(final File dir) {
-        return getJ2SEProject(dir) != null;
-    }
-    
-    private static J2SEProject getJ2SEProject(File dir) {
-        FileObject projdir = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
-        try {
-            Project proj = ProjectManager.getDefault().findProject(projdir);
-            if (proj != null) {
-                // Check if it is a J2SEProject.
-                return proj.getLookup().lookup(J2SEProject.class);
-            }
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }
-        return null;
-    }
-    
-    public boolean interestedInScript(File script, AntSession session) {
-        if (script.getName().equals("build-impl.xml")) { // NOI18N
-            File parent = script.getParentFile();
-            if (parent != null && parent.getName().equals("nbproject")) { // NOI18N
-                File parent2 = parent.getParentFile();
-                if (parent2 != null && parent2.canRead()) {
-                    return isJ2SEProject(parent2);
-                }
-            }
-        }
-        // Was not a J2SEProject's nbproject/build-impl.xml; ignore it.
-        return false;
-    }
-    
-    public String[] interestedInTargets(AntSession session) {
-        return AntLogger.ALL_TARGETS;
-    }
-    
-    public String[] interestedInTasks(AntSession session) {
-        // XXX will eventually need them all anyway; as is, could list just javac
-        return AntLogger.ALL_TASKS;
-    }
-    
-    public int[] interestedInLogLevels(AntSession session) {
-        return new int[] {
-            AntEvent.LOG_WARN,
-        };
-    }
-    
-    public void taskFinished(AntEvent event) {
-        if ("javac".equals(event.getTaskName())) { // NOI18N
-            Throwable t = event.getException();
-            AntSession session = event.getSession();
-            if (t != null && !session.isExceptionConsumed(t)) {
-                // Some error was thrown from build-impl.xml#compile. Ignore it; generally
-                // it will have been a compilation error which we do not wish to show.
-                session.consumeException(t);
-            }
-        }
-    }
-
-    public void messageLogged(AntEvent event) {
-        // #43968 - filter out following message
-        if (!event.isConsumed() && event.getLogLevel() == AntEvent.LOG_WARN &&
-            event.getMessage().startsWith("Trying to override old definition of " + // NOI18N
-                "task http://www.netbeans.org/ns/j2se-project/")) { // NOI18N
-            event.consume();
-        }
-    }
-
 }

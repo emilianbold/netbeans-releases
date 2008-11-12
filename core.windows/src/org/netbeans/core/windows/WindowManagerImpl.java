@@ -64,6 +64,7 @@ import org.openide.windows.*;
  *
  * @author Peter Zavadsky
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.windows.WindowManager.class)
 public final class WindowManagerImpl extends WindowManager implements Workspace {
 // XXX Implements Workspace for backward compatibility of old API only,
 // there are no workspaces any more.

@@ -176,7 +176,15 @@ public class ProjectRunnerImplTest {
         checkProperties(source, target, null);
     }
     
+    private void checkProperties(String command, Collection<?> source, Collection<String> target) {
+        checkProperties(command, source, target, null);
+    }
+
     private void checkProperties(Collection<?> source, Collection<String> target, String displayName) {
+        checkProperties("build", source, target, displayName);
+    }
+    
+    private void checkProperties(String command, Collection<?> source, Collection<String> target, String displayName) {
         Map<String, Object> sourceMap = new HashMap<String, Object>();
 
         for (Iterator<?> it = source.iterator(); it.hasNext();) {
@@ -197,7 +205,7 @@ public class ProjectRunnerImplTest {
         }
 
         String[] projectName = new String[1];
-        Properties out = ProjectRunnerImpl.computeProperties(sourceMap, projectName);
+        Properties out = ProjectRunnerImpl.computeProperties(command, sourceMap, projectName);
 
         assertEquals(golden, out);
 

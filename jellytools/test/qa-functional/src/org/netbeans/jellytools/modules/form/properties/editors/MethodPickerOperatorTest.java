@@ -55,6 +55,15 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class MethodPickerOperatorTest extends FormPropertiesEditorsTestCase {
     
+    public static final String[] tests = new String[] {
+        "testLblComponent",
+        "testCboComponent",
+        "testLblMethods",
+        "testLstMethods",
+        "testSetComponent",
+        "testSetMethods",
+        "testClose"
+    };
     /** Use for internal test execution inside IDE
      * @param args command line arguments
      */
@@ -78,13 +87,7 @@ public class MethodPickerOperatorTest extends FormPropertiesEditorsTestCase {
         return suite;
          */
         return (NbTestSuite) createModuleTest(MethodPickerOperatorTest.class, 
-        "testLblComponent",
-        "testCboComponent",
-        "testLblMethods",
-        "testLstMethods",
-        "testSetComponent",
-        "testSetMethods",
-        "testClose");
+        tests);
     }
     
     /** Opens method picker. */

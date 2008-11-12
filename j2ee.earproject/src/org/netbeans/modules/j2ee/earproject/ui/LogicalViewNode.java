@@ -46,7 +46,7 @@ import java.beans.BeanInfo;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.ui.actions.AddModuleAction;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;

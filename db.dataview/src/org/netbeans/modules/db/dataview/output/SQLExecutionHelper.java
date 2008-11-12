@@ -92,8 +92,14 @@ class SQLExecutionHelper {
         Statement stmt = null;
         try {
             Connection conn = DBConnectionFactory.getInstance().getConnection(dbConn);
+            String msg = "";
             if(conn == null) {
-                String msg = NbBundle.getMessage(SQLExecutionHelper.class,"MSG_connection_failure", dv.getDatabaseConnection());
+                Throwable ex = DBConnectionFactory.getInstance().getLastException();
+                if(ex != null) {
+                    msg = ex.getMessage();
+                } else {
+                    msg = NbBundle.getMessage(SQLExecutionHelper.class,"MSG_connection_failure", dv.getDatabaseConnection());
+                }
                 dv.setErrorStatusText(new DBException(msg));
                 return;
             }
@@ -354,7 +360,7 @@ class SQLExecutionHelper {
                 stmt = conn.createStatement();
 
                 DBTable dbTable = dataView.getDataViewDBTable().geTable(0);
-                String truncateSql = "TRUNCATE TABLE" + dbTable.getFullyQualifiedName(); // NOI18N
+                String truncateSql = "TRUNCATE TABLE " + dbTable.getFullyQualifiedName(); // NOI18N
 
                 try {
                     executeSQLStatement(stmt, truncateSql);
@@ -518,6 +524,7 @@ class SQLExecutionHelper {
             stmt = conn.createStatement();
         }
         int pageSize = dataView.getDataViewPageContext().getPageSize();
+        
         try {
             stmt.setFetchSize(pageSize);
         } catch (SQLException e) {
@@ -525,10 +532,14 @@ class SQLExecutionHelper {
             LOGGER.log(Level.INFO, e.getMessage(), e);
         }
 
-        if (dataView.isLimitSupported() && select && sql.toUpperCase().indexOf(LIMIT_CLAUSE) == -1) {
-            stmt.setMaxRows(pageSize);
-        } else {
-            stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
+        try {
+            if (dataView.isLimitSupported() && select && sql.toUpperCase().indexOf(LIMIT_CLAUSE) == -1) {
+                stmt.setMaxRows(pageSize);
+            } else {
+                stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
+            }
+        } catch (SQLException exc) {
+            mLogger.log(Level.WARNING, "Unable to set Max row size" + exc);
         }
         return stmt;
     }

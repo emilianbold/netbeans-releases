@@ -58,7 +58,7 @@ public class ProjectRootNodeFactoryTest extends RubyProjectTestBase {
         Project p = createTestProject("rubyprj");
         ProjectRootNodeFactory instance = new ProjectRootNodeFactory();
         NodeList result = instance.createNodes(p);
-        assertSame("should have nodes for {lib, test, spec, Rakefile, README, LICENSE}, but has: " + result.keys(), 6, result.keys().size());
+        assertSame("should have nodes for {lib, test, spec, Libraries, Rakefile, README, LICENSE}, but has: " + result.keys(), 7, result.keys().size());
     }
 
     public void testOrdering() throws Exception {
@@ -68,7 +68,7 @@ public class ProjectRootNodeFactoryTest extends RubyProjectTestBase {
         Stack<String> expected = new Stack<String>();
         expected.addAll((Arrays.asList(
                 "Source Files", "Test Files", "RSpec Files",
-                "Rakefile", "LICENSE", "README")));
+                "Libraries", "Rakefile", "LICENSE", "README")));
         Collections.reverse(expected);
         for (Object key : result.keys()) {
             assertEquals("expected order", expected.pop(), result.node(key).getDisplayName());

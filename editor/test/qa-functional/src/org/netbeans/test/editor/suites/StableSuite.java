@@ -62,7 +62,7 @@ public class StableSuite {
                          "testMainMenu")
                 .addTest(IncrementalSearchTest.class,
                          //"testSearchForward",  //failing on windows -> removing from stable suite
-                         "testSearchBackwards",
+                         //"testSearchBackwards",
                          "testMatchCase",
                          "testNextButton",
                          "testPrevButton",
@@ -70,7 +70,7 @@ public class StableSuite {
                          "testNotFound",
                          "testInvalidRegexp",
                          "testSearchForwardBackward",
-                         "testWholeWords",
+                         //"testWholeWords",
                          "testRegularExpression",
                          "testFindNext",
                          "testFindPrev")

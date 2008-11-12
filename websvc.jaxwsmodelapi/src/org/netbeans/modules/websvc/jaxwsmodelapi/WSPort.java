@@ -55,7 +55,7 @@ public interface WSPort {
     
     public Object getInternalJAXWSPort();
     
-    public List<WSOperation> getOperations();
+    public List<? extends WSOperation> getOperations();
     
     public String getName();
     

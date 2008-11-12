@@ -71,6 +71,7 @@ import org.openide.util.Lookup;
  * @author ads
  * @author Victor G. Vasilyev
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.editor.completion.CompletionResultProvider.class)
 public class VariableProvider implements CompletionResultProvider {
 
     private static final String GLOBALS = "$GLOBALS";   // NOI18N

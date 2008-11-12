@@ -48,6 +48,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGeneratorP
  *
  * @author Andrei Badea
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGeneratorProvider.class)
 public class CmpGeneratorProvider implements PersistenceGeneratorProvider {
 
     public String getGeneratorType() {

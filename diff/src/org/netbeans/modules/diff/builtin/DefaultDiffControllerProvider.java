@@ -52,6 +52,7 @@ import java.io.IOException;
  * 
  * @author Maros Sandor
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.diff.DiffControllerProvider.class)
 public class DefaultDiffControllerProvider extends DiffControllerProvider {
 
     public DiffControllerImpl createDiffController(StreamSource base, StreamSource modified) throws IOException {

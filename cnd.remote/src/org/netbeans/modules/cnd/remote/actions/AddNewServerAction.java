@@ -66,7 +66,7 @@ public class AddNewServerAction extends NodeAction implements PropertyChangeList
         AddServerDialog dlg = new AddServerDialog();
         if (dlg.createNewRecord()) {
             String entry = dlg.getLoginName() + '@' + dlg.getServerName();
-            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+            ServerList registry = Lookup.getDefault().lookup(ServerList.class);
             if (!registry.getRecords().contains(entry)) {
                 registry.addServer(entry, false, true);
             }

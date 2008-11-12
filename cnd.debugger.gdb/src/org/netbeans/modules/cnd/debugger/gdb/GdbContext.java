@@ -47,7 +47,6 @@ import java.util.Map;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
-import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 
 /**
  * Describes a context of debugging
@@ -66,9 +65,9 @@ public class GdbContext implements PropertyChangeListener {
     
     private GdbContext() {
         requests.put(PROP_REGISTERS, new Request() {
-            protected void request(CommandBuffer cb, GdbProxy gdb) {
-                gdb.data_list_register_values(cb, ""); // NOI18N
-                gdb.data_list_changed_registers(cb);
+            protected void request(GdbProxy gdb) {
+                gdb.data_list_register_values(""); // NOI18N
+                gdb.data_list_changed_registers();
             }
         });
         pcs.addPropertyChangeListener(this); // used to notify sync updates
@@ -92,7 +91,7 @@ public class GdbContext implements PropertyChangeListener {
         //request update of all properties that have listeners
         for (Map.Entry<String,Request> entry : requests.entrySet()) {
             if (hasListeners(entry.getKey())) {
-                entry.getValue().run(true);
+                entry.getValue().run(/*true*/);
             }
         }
     }
@@ -118,7 +117,7 @@ public class GdbContext implements PropertyChangeListener {
             }
             synchronized (lock) {
                 waitLocks.put(name, lock);
-                if (child || requests.get(name).run(true)) {
+                if (child || requests.get(name).run(/*true*/)) {
                     try {
                         lock.wait(SYNC_UPDATE_TIMEOUT);
                     } catch (InterruptedException ie) {
@@ -140,7 +139,7 @@ public class GdbContext implements PropertyChangeListener {
         pcs.addPropertyChangeListener(propertyName, listener);
         //request property update if needed
         if (!cache.containsKey(propertyName)) {
-            requests.get(propertyName).run(true);
+            requests.get(propertyName).run(/*true*/);
         }
     }
     
@@ -174,22 +173,22 @@ public class GdbContext implements PropertyChangeListener {
     
     /////// Request
     private static abstract class Request {
-        public boolean run(boolean async) {
+        public boolean run(/*boolean async*/) {
             GdbProxy gdb = getCurrentGdb();
             if (gdb != null) {
-                CommandBuffer cb = null;
-                if (!async) {
-                    cb = new CommandBuffer(gdb);
-                }
-                request(cb, gdb);
-                if (cb != null) {
-                    cb.waitForCompletion();
-                }
+//                CommandBuffer cb = null;
+//                if (!async) {
+//                    cb = new CommandBuffer(gdb);
+//                }
+                request(/*cb,*/ gdb);
+//                if (cb != null) {
+//                    cb.waitForCompletion();
+//                }
                 return true;
             }
             return false;
         }
         
-        protected abstract void request(CommandBuffer cb, GdbProxy gdb);
+        protected abstract void request(/*CommandBuffer cb, */GdbProxy gdb);
     }
 }

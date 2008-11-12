@@ -51,6 +51,7 @@ import org.openide.util.ImageUtilities;
  *
  * @author  Jiri Rechtacek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.awt.StatusLineElementProvider.class, position=600)
 public final class AvailableUpdatesNotification implements StatusLineElementProvider {
 
     public Component getStatusLineElement () {

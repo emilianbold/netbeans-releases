@@ -395,6 +395,7 @@
                 <friend>org.netbeans.modules.javafx.dataloader</friend>
                 <friend>org.netbeans.modules.languages.php</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
+                <friend>org.netbeans.modules.python.editor</friend>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.scala.debugger.projects</friend>
                 <friend>org.netbeans.modules.scala.editing</friend>

@@ -56,6 +56,7 @@ import org.openide.filesystems.FileRenameEvent;
  *
  * @author rico
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider.class)
 public class SecurityConfigurationProvider implements WSConfigurationProvider {
     
     private Hashtable<String, WSConfiguration> configProviders = new Hashtable<String, WSConfiguration>();

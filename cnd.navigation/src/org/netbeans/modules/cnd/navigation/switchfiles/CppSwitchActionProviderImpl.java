@@ -35,6 +35,7 @@ import org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider;
  *
  * @author Sergey Grinev
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider.class)
 public class CppSwitchActionProviderImpl extends CndEditorActionsProvider {
 
     public Action getCppSwitchAction() {

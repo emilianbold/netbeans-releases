@@ -86,11 +86,12 @@ public class FullImageGridPreview extends AbstractImagePreviewComponent {
 	
 	public void setImageURL(URL imageURL) throws MalformedURLException, IllegalArgumentException {
 		this.imageURL = imageURL;
-		if (imageURL == null)
-			return;
+		if (imageURL == null){
+                    return;
+                }
 		Image image = ImageUtils.loadImage(imageURL);
 		if (image == null) {
-			throw new IllegalArgumentException();
+                    throw new IllegalArgumentException();
 		}
 		BufferedImage bufImg = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics = (Graphics2D) bufImg.getGraphics();
@@ -110,6 +111,7 @@ public class FullImageGridPreview extends AbstractImagePreviewComponent {
 		return this.originalImage;
 	}
 	
+        @Override
 	public Dimension getPreferredSize() {
 		if (imageURL == null) {
 			return super.getPreferredSize();
@@ -121,12 +123,14 @@ public class FullImageGridPreview extends AbstractImagePreviewComponent {
 		return new Dimension(width, height);
 	}
 	
+    @Override
 	public void paintComponent(Graphics g) {
 		//tiled layer editor component - paintCells() etc.
 		Graphics2D g2d = (Graphics2D) g;
 		if (this.originalImage == null) {
 			return;
 		}
+                g2d.clearRect(0, 0, this.getWidth(), this.getWidth());
 		this.paintGridLines(g2d);
 		this.paintCells(g2d);
 	}
@@ -205,7 +209,7 @@ public class FullImageGridPreview extends AbstractImagePreviewComponent {
     }
 
     public int getTileHeight() {
-		return this.cellHeight;
+        return this.cellHeight;
     }
 	
 }

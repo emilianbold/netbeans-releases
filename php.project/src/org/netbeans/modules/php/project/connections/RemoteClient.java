@@ -63,6 +63,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.project.connections.ui.PasswordPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
@@ -543,7 +544,7 @@ public class RemoteClient implements Cancellable {
             }
             // in fact, useless but probably expected
             if (!localFile.exists()) {
-                if (!localFile.mkdirs()) {
+                if (!mkLocalDirs(localFile)) {
                     transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotCreateDir", localFile));
                     return;
                 }
@@ -559,7 +560,7 @@ public class RemoteClient implements Cancellable {
             File parent = localFile.getParentFile();
             assert parent != null : "File " + localFile + " has no parent file?!";
             if (!parent.exists()) {
-                if (!parent.mkdirs()) {
+                if (!mkLocalDirs(parent)) {
                     transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotCreateDir", parent));
                     return;
                 }
@@ -630,12 +631,15 @@ public class RemoteClient implements Cancellable {
                 String tmpLocalFileName = tmpLocalFile.getName();
                 String localFileName = localFile.getName();
                 String oldPathName = oldPath.getName();
-                moved[0] = tmpLocalFile.renameTo(localFile);
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(String.format("File %s directly renamed to %s: %s", tmpLocalFileName, localFileName, moved[0]));
-                }
-                if (moved[0]) {
-                    return;
+
+                if (!localFile.exists()) {
+                    moved[0] = renameLocalFileTo(tmpLocalFile, localFile);
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("File %s directly renamed to %s: %s", tmpLocalFileName, localFileName, moved[0]));
+                    }
+                    if (moved[0]) {
+                        return;
+                    }
                 }
                 // possible cleanup
                 deleteLocalFile(oldPath, ""); // NOI18N
@@ -644,6 +648,8 @@ public class RemoteClient implements Cancellable {
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine("Renaming in chain: (1) <file> -> <file>.old~ ; (2) <file>.new~ -> <file> ; (3) rm <file>.old~");
                 }
+                // intentional usage of java.io.File!!
+                //  (if the file is opened in the editor, it's not closed, just refreshed)
                 moved[0] = localFile.renameTo(oldPath);
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine(String.format("(1) File %s renamed to %s: %s", localFileName, oldPathName, moved[0]));
@@ -651,13 +657,13 @@ public class RemoteClient implements Cancellable {
                 if (!moved[0]) {
                     return;
                 }
-                moved[0] = tmpLocalFile.renameTo(localFile);
+                moved[0] = renameLocalFileTo(tmpLocalFile, localFile);
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine(String.format("(2) File %s renamed to %s: %s", tmpLocalFileName, localFileName, moved[0]));
                 }
-                if (!moved[0]) {
+                if (!moved[0] && oldPath.exists() && !localFile.exists()) {
                     // try to restore the original file
-                    boolean restored = oldPath.renameTo(localFile);
+                    boolean restored = renameLocalFileTo(oldPath, localFile);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("(-) File %s restored to original %s: %s", oldPathName, localFileName, restored));
                     }
@@ -668,16 +674,6 @@ public class RemoteClient implements Cancellable {
         });
         assert moved[0] || !moved[0];
         return moved[0];
-    }
-
-    private void deleteLocalFile(File file, String logMsgPrefix) {
-        if (!file.exists()) {
-            return;
-        }
-        boolean deleted = file.delete();
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: %s", file.getName(), deleted));
-        }
     }
 
     private File getLocalFile(TransferFile transferFile, File localFile) {
@@ -883,6 +879,75 @@ public class RemoteClient implements Cancellable {
         }
         return reply.trim();
     }
+
+    private static boolean mkLocalDirs(File folder) {
+        try {
+            FileUtil.createFolder(folder);
+        } catch (IOException exc) {
+            LOGGER.log(Level.INFO, null, exc);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Similar to {@link File#renameTo(java.io.File)} but uses {@link FileObject}s.
+     * @param source a source file, must exist.
+     * @param target a target file, cannot exist.
+     * @return <code>true</code> if the rename was successful, <code>false</code> otherwise.
+     */
+    private static boolean renameLocalFileTo(File source, File target) {
+        long start = 0L;
+        if (LOGGER.isLoggable(Level.FINE)) {
+            start = System.currentTimeMillis();
+        }
+        assert source.exists() : "Source file must exist " + source;
+        assert !target.exists() : "Target file cannot exist " + target;
+
+        FileObject sourceFO = FileUtil.toFileObject(source);
+        assert sourceFO != null : "Source fileobject must exist " + source;
+
+        String name = getName(target.getName());
+        String ext = FileUtil.getExtension(target.getName());
+
+        boolean moved = false;
+        try {
+            FileLock lock = sourceFO.lock();
+            try {
+                sourceFO.rename(lock, name, ext);
+                moved = true;
+            } catch (IOException exc) {
+                LOGGER.log(Level.INFO, null, exc);
+            } finally {
+                lock.releaseLock();
+            }
+        } catch (IOException exc) {
+            LOGGER.log(Level.WARNING, null, exc);
+        }
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(String.format("Move %s -> %s took: %sms", source, target, (System.currentTimeMillis() - start)));
+        }
+        return moved;
+    }
+
+    private void deleteLocalFile(File file, String logMsgPrefix) {
+        if (!file.exists()) {
+            return;
+        }
+        boolean deleted = file.delete();
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: %s", file.getName(), deleted));
+        }
+    }
+
+    private static String getName(String fileName) {
+        int index = fileName.lastIndexOf("."); // NOI18N
+        if (index == -1) {
+            return fileName;
+        }
+        return fileName.substring(0, index);
+    }
+
 
     private static class PrintCommandListener implements ProtocolCommandListener {
         private final InputOutput io;

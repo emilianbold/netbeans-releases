@@ -76,6 +76,7 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
 
     protected abstract CsmUID createUID();
     
+    @SuppressWarnings("unchecked")
     public CsmUID<T> getUID() {
         if (uid == null) {
             uid = createUID();

@@ -43,7 +43,6 @@ package org.apache.tools.ant.module.nodes;
 
 import java.util.Arrays;
 import java.util.List;
-import org.apache.tools.ant.module.nodes.AntProjectChildren;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;

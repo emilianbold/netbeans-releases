@@ -47,6 +47,7 @@
 
 package org.netbeans.modules.css.visual.ui;
 
+import org.netbeans.modules.css.editor.CssEditorSupport;
 import org.netbeans.modules.css.visual.model.CssProperties;
 import org.netbeans.modules.css.editor.model.CssRuleContent;
 import java.awt.BorderLayout;
@@ -200,11 +201,13 @@ public class MarginStyleEditor extends StyleEditor {
 
                 //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
+                    CssEditorSupport.getDefault().firstAggregatedEventWillFire();
                     //cssPropertyChangeSupport().firePropertyChange(CssProperties.MARGIN, null, evt.getNewValue().toString());
                     topMarginField.setMarginString(evt.getNewValue().toString());
                     bottomMarginField.setMarginString(evt.getNewValue().toString());
                     leftMarginField.setMarginString(evt.getNewValue().toString());
                     rightMarginField.setMarginString(evt.getNewValue().toString());
+                    CssEditorSupport.getDefault().lastAggregatedEventFired();
                 }
             });
 
@@ -218,11 +221,13 @@ public class MarginStyleEditor extends StyleEditor {
 
                 //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
+                    CssEditorSupport.getDefault().firstAggregatedEventWillFire();
                     //cssPropertyChangeSupport().firePropertyChange(CssProperties.PADDING, null, evt.getNewValue().toString());
                     topPaddingField.setPaddingString(evt.getNewValue().toString());
                     bottomPaddingField.setPaddingString(evt.getNewValue().toString());
                     leftPaddingField.setPaddingString(evt.getNewValue().toString());
                     rightPaddingField.setPaddingString(evt.getNewValue().toString());
+                    CssEditorSupport.getDefault().lastAggregatedEventFired();
                 }
             });
 

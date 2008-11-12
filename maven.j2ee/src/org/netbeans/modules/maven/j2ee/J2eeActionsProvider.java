@@ -55,6 +55,7 @@ import org.openide.util.Lookup;
  * j2ee specific defaults for project running and debugging..
  * @author mkleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=50)
 public class J2eeActionsProvider extends AbstractMavenActionsProvider {
 
     private ArrayList<String> supported;

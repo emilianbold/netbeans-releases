@@ -312,6 +312,7 @@ public class InstallSupportImpl {
                 boolean needsRestart = false;
                 JarEntry updaterJarEntry = null;
                 JarFile updaterJarFile = null;
+                File updaterTargetCluster = null;
                 File targetCluster = null;
                 for (ModuleUpdateElementImpl moduleImpl : affectedModuleImpls) {
                     synchronized(this) {
@@ -348,6 +349,7 @@ public class InstallSupportImpl {
                                     err.log (Level.FINE, ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH + " is being installed from " + moduleImpl.getCodeName ());
                                     updaterJarEntry = entry;
                                     updaterJarFile = jf;
+                                    updaterTargetCluster = targetCluster;
                                     needsRestart = true;
                                     break;
                                 }
@@ -366,7 +368,7 @@ public class InstallSupportImpl {
                     // store source of installed files
                     Utilities.writeAdditionalInformation (getElement2Clusters ());
                     if (updaterJarFile != null) {
-                        Utilities.writeUpdateOfUpdaterJar (updaterJarEntry, updaterJarFile, targetCluster);
+                        Utilities.writeUpdateOfUpdaterJar (updaterJarEntry, updaterJarFile, updaterTargetCluster);
                     }
 
                     if (! needsRestart) {

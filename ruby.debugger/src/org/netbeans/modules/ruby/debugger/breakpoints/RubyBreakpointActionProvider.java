@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.ruby.debugger.EditorUtil;
@@ -62,6 +63,8 @@ import org.rubyforge.debugcommons.RubyDebuggerException;
 public final class RubyBreakpointActionProvider extends ActionsProviderSupport
         implements PropertyChangeListener {
     
+    private static final Logger LOGGER = Logger.getLogger(RubyBreakpointActionProvider.class.getName());
+
     private final static Set<Object> ACTIONS =
             Collections.singleton(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
     
@@ -89,7 +92,7 @@ public final class RubyBreakpointActionProvider extends ActionsProviderSupport
                     RubyBreakpointManager.addLineBreakpoint(line);
                 }
             } catch (RubyDebuggerException e) {
-                Util.LOGGER.log(Level.WARNING, "Unable to add breakpoint.", e);
+                LOGGER.log(Level.WARNING, "Unable to add breakpoint: " + e.getLocalizedMessage(), e);
             }
         }
     }

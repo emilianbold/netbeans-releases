@@ -64,14 +64,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 public class NewProject extends BasicAction {
         
-    private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newProject.png" ) ); //NOI18N    
+    private static final Icon ICON = new ImageIcon( ImageUtilities.loadImage( "org/netbeans/modules/project/ui/resources/newProject.png" ) ); //NOI18N
     private static final String NAME = NbBundle.getMessage( NewProject.class, "LBL_NewProjectAction_Name" ); // NOI18N
     private static final String _SHORT_DESCRIPTION = NbBundle.getMessage( NewProject.class, "LBL_NewProjectAction_Tooltip" ); // NOI18N
     

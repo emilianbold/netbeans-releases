@@ -34,6 +34,7 @@ import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 import javax.crypto.Cipher;
 
 /**
@@ -43,7 +44,8 @@ import javax.crypto.Cipher;
 public class PasswdEncryption {
 
     private static final String delimiter = ":"; //NOI18N
-
+    public static final int MAX_ENCRYPTION_LENGHT = 100;
+    
     public static String encrypt(String text) throws IOException, GeneralSecurityException {
         return encrypt(text, getPublicKey());
     }
@@ -53,6 +55,7 @@ public class PasswdEncryption {
     }
 
     public static byte[] encrypt(byte[] text, PublicKey key) throws IOException, GeneralSecurityException {
+        assert (text.length <= MAX_ENCRYPTION_LENGHT);
         Cipher rsaCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding"); // NOI18N
         rsaCipher.init(Cipher.ENCRYPT_MODE, key);
         byte[] encoded = null;

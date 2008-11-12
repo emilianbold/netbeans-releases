@@ -1,4 +1,0 @@
-org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.semantic.BPELExtensionSemanticValidator
-org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.staticanalysis.BPELExtensionStaticAnalysisValidator
-org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.deprecation.BPELExtensionDeprecationValidator
-org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.xpath.BPELExtensionXpathValidator

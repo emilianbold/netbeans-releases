@@ -90,8 +90,11 @@ options {
         return r == 0 ? false : true;
     }
 
+    // Fixup: workaround is added due to bug in jdk6 Update 10 (see IZ#150693)
+    private static long one = 1;
+    private static long zero = 0;
     private long toLong(boolean b) {
-        return b ? 1 : 0;
+        return b ? one : zero;
     }
 
     private long toLong(String str) {

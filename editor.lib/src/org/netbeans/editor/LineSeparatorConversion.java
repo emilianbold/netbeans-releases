@@ -137,6 +137,8 @@ public class LineSeparatorConversion {
         
         private boolean lastCharCR;
 
+        private boolean readWholeBuffer;
+
         public ToLineFeed(Reader reader) {
             this(reader, DEFAULT_CONVERSION_BUFFER_SIZE);
         }
@@ -148,6 +150,7 @@ public class LineSeparatorConversion {
         }
         
         public Segment nextConverted() throws IOException {
+            readWholeBuffer = false;
             if (reader == null) { // no more chars to read
                 return null;
             }
@@ -161,6 +164,7 @@ public class LineSeparatorConversion {
                 return null;
             }
 
+            readWholeBuffer = (readSize == convertedText.array.length);
             if (lastCharCR && readSize > 0 && convertedText.array[readOffset] == '\n') {
                 /* the preceding '\r' was already converted to '\n'
                  * in the previous buffer so here just skip initial '\n'
@@ -174,7 +178,11 @@ public class LineSeparatorConversion {
             lastCharCR = convertSegmentToLineFeed(convertedText);
             return convertedText;
         }
-        
+
+        public boolean isReadWholeBuffer() {
+            return readWholeBuffer;
+        }
+
         /**
          * Convert all the '\r\n' or '\r' to '\n' (linefeed).
          * This method 

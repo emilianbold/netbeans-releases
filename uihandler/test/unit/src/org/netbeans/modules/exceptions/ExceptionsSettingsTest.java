@@ -89,4 +89,19 @@ public class ExceptionsSettingsTest extends NbTestCase {
         assertEquals(previous, settings.isGuest());
     }
 
+    public void testSaveUserData(){
+        ExceptionsSettings settings = new ExceptionsSettings();
+        assertNotNull(settings);
+        settings.setGuest(false);
+        settings.setPasswd("HALLO");
+        settings.setRememberPasswd(false);
+        ReportPanel panel = new ReportPanel();
+        assertEquals("correctly loaded", "HALLO", panel.getPasswd());
+        assertEquals("correctly loaded", false, panel.asAGuest());
+        panel.saveUserData();
+        panel = new ReportPanel();
+        assertEquals("should not save passwd","", panel.getPasswd());
+        assertEquals("correctly loaded", false, panel.asAGuest());
+    }
+
 }

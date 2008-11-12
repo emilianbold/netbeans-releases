@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
  * Delegates {@link FileBuiltQuery} to implementations in project lookup.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.FileBuiltQueryImplementation.class)
 public class ProjectFileBuiltQuery implements FileBuiltQueryImplementation {
 
     /** Default constructor for lookup. */

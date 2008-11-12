@@ -93,7 +93,6 @@
         <tocitem text="Communicating Between Modules" >
             <tocitem text="About Communicating Between Modules" target="about_communicate" />
             <tocitem text="About Service Providers" target="about_service_providers" />
-            <tocitem text="Using the Service Provider Browser" target="using_service_provider_browser" />
         </tocitem>
         <tocitem text="Building Modules">
             <tocitem text="About Building Modules" target="apisupport_building_plugins" />

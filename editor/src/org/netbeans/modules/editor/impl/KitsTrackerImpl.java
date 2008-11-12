@@ -69,6 +69,7 @@ import org.openide.loaders.DataObject;
  *
  * @author vita
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.lib.KitsTracker.class)
 public final class KitsTrackerImpl extends KitsTracker {
         
     private static final Logger LOG = Logger.getLogger(KitsTrackerImpl.class.getName());

@@ -72,7 +72,7 @@ public class DeleteAllBreakpointsActionTest extends JellyTestCase {
         // suite.addTest(new DeleteAllBreakpointsActionTest("testPerformShortcut"));
         return suite;
          */
-        return createModuleTest(DeleteAllBreakpointsActionTest.class, "testPerformPopup");
+        return createModuleTest(DeleteAllBreakpointsActionTest.class);
     }
     
     /** Use for internal test execution inside IDE

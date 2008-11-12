@@ -148,6 +148,7 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
     
     private static final RequestProcessor WORKER = new RequestProcessor(IncorrectErrorBadges.class.getName());
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
     public static final class FactoryImpl extends EditorAwareJavaSourceTaskFactory {
 
         public FactoryImpl() {

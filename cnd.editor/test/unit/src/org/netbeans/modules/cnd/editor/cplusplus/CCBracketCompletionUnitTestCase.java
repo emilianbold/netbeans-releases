@@ -818,8 +818,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
 
     private boolean isAddRightBrace() {
         try {
-            return BracketCompletion.isAddRightBrace(getDocument(),
-            getCaretOffset());
+            return BracketCompletion.isAddRightBrace(getDocument(), getCaretOffset());
         } catch (BadLocationException e) {
             e.printStackTrace(getLog());
             fail();

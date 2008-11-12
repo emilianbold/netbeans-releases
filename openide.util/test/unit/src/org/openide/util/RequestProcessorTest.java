@@ -42,9 +42,12 @@
 package org.openide.util;
 
 import java.lang.ref.*;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Level;
+import junit.framework.Test;
 import org.openide.ErrorManager;
 import org.netbeans.junit.*;
-import org.openide.util.Task;
 
 public class RequestProcessorTest extends NbTestCase {
     static {
@@ -57,12 +60,23 @@ public class RequestProcessorTest extends NbTestCase {
         super(testName);
     }
 
+    public static Test suite() {
+        Test t = null;
+//        t = new RequestProcessorTest("testPriorityInversionOnFinishedTasks");
+        if (t == null) {
+            t = new NbTestSuite(RequestProcessorTest.class);
+        }
+        return t;
+    }
+
+    @Override
     protected void setUp () throws Exception {
         super.setUp();
         
         log = ErrorManager.getDefault().getInstance("TEST-" + getName());
     }
 
+    @Override
     protected void runTest() throws Throwable {
         assertNotNull ("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrManager.class));
         ErrManager.messages.setLength(0);
@@ -101,10 +115,11 @@ public class RequestProcessorTest extends NbTestCase {
                 return System.identityHashCode (x) - System.identityHashCode (this);
             }
             
+            @Override
             public String toString () {
                 return "O: " + order;
             }
-        };
+        }
         
         // prepare the tasks 
         X[] arr = new X[10];
@@ -231,6 +246,7 @@ public class RequestProcessorTest extends NbTestCase {
                 
             }
             
+            @Override
             public String toString () {
                 return " R index " + index;
             }
@@ -362,6 +378,7 @@ public class RequestProcessorTest extends NbTestCase {
                 }
             }
             
+            @Override
             public String toString () {
                 return " R index " + index;
             }
@@ -394,6 +411,59 @@ public class RequestProcessorTest extends NbTestCase {
         // now we should ensure that the RP warned everyone about the 
         // priority inheritance and all its possible complications (t2 running
         // later than t3)
+    }
+
+    public void testPriorityInversionOnFinishedTasks () throws Exception {
+        RequestProcessor rp = new RequestProcessor (getName());
+
+        class R extends Handler implements Runnable {
+            RequestProcessor.Task waitFor;
+            boolean msgOk;
+
+            public R (int i) {
+            }
+
+            public void run () {
+                if (waitFor != null) {
+                    waitFor.waitFinished();
+                }
+            }
+
+            @Override
+            public void publish(LogRecord record) {
+                if (record.getMessage().contains("not running it synchronously")) {
+                    msgOk = true;
+                    waitFor.schedule(100);
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        }
+        R snd = new R(2);
+        snd.waitFor = rp.post(new R(1));
+
+        RequestProcessor.logger().addHandler(snd);
+        Level prev = RequestProcessor.logger().getLevel();
+        RequestProcessor.logger().setLevel(Level.FINEST);
+        try {
+            snd.waitFor.waitFinished();
+            assertTrue("Finished", snd.waitFor.isFinished());
+
+            RequestProcessor.Task task = rp.post(snd);
+            task.waitFinished();
+            assertTrue("Finished as well", task.isFinished());
+
+            assertTrue("Message arrived", snd.msgOk);
+        } finally {
+            RequestProcessor.logger().setLevel(prev);
+            RequestProcessor.logger().removeHandler(snd);
+        }
     }
     
     /** Test of finalize method, of class org.openide.util.RequestProcessor. */
@@ -534,6 +604,7 @@ class R extends Object implements Runnable {
         class WaitThread extends Thread {
             public boolean finished;
             
+            @Override
             public void run () {
                 task.waitFinished ();
                 synchronized (this) {
@@ -1076,9 +1147,9 @@ class R extends Object implements Runnable {
                         lock.notify();
                         try {
                             lock.wait();
-                        } catch (InterruptedException ex) {
-                            this.ex = ex;
-                            ex.printStackTrace();
+                        } catch (InterruptedException interrex) {
+                            this.ex = interrex;
+                            interrex.printStackTrace();
                             fail ("No InterruptedException");
                         }
                         log.log("wait for lock over");
@@ -1097,6 +1168,7 @@ class R extends Object implements Runnable {
                 }
             }
             
+            @Override
             public String toString () {
                 return name;
             }
@@ -1363,7 +1435,7 @@ class R extends Object implements Runnable {
         }
         
         public static ErrManager get () {
-            return (ErrManager)org.openide.util.Lookup.getDefault ().lookup (ErrManager.class);
+            return org.openide.util.Lookup.getDefault ().lookup (ErrManager.class);
         }
         
         public Throwable annotate (Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, java.util.Date date) {

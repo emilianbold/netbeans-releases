@@ -46,6 +46,7 @@ import org.netbeans.modules.bpel.model.api.support.Utils;
  * 
  * @author ads
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.InnerEventDispatcher.class)
 public class ReferenceIntegrityService extends InnerEventDispatcherAdapter {
 
 

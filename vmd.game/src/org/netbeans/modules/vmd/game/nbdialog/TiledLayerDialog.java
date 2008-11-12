@@ -42,6 +42,9 @@ package org.netbeans.modules.vmd.game.nbdialog;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -82,18 +85,16 @@ import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
- * @author  kherink
+ * @author  kherink, akorostelev
  */
 public class TiledLayerDialog extends javax.swing.JPanel implements ActionListener {
 
@@ -371,6 +372,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TiledLayerDialog.class, "TiledLayerDialog.accessible.description"));
 
         this.labelError.setIcon(ICON_ERROR);
+        this.labelError.setText(null);
 
         this.fieldLayerName.getDocument().addDocumentListener(new LayerFieldListener());
         this.fieldLayerName.addFocusListener(new LayerFieldListener());
@@ -378,6 +380,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         this.listImageFileName.addListSelectionListener(new ImageListListener());
         this.listImageFileName.setCellRenderer(new DefaultListCellRenderer() {
 
+            @Override
             public Component getListCellRendererComponent(JList src, Object value, int index, boolean isSelected, boolean hasfocus) {
                 Map.Entry<FileObject, String> entry = (Map.Entry<FileObject, String>) value;
                 return super.getListCellRendererComponent(src, entry.getValue(), index, isSelected, hasfocus);
@@ -401,6 +404,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 
         this.sliderWidth.setEnabled(false);
         this.sliderHeight.setEnabled(false);
+        this.checkBoxZoom.setEnabled(false);
 
         this.buttonImportImages.addActionListener(this);
 
@@ -417,6 +421,8 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
             }
         });
     }
+    
+    
 
     private void setPreviewPartial() {
         if (this.imagePreview != null) {
@@ -472,6 +478,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
     }
 
     private List<Map.Entry<FileObject, String>> getImageList() {
+        // get all PNG images (Note: only PNG)
         Map<FileObject, String> imgMap = MidpProjectSupport.getImagesForProject(this.gameDesign.getDesignDocument(), true);
         List<Map.Entry<FileObject, String>> list = new ArrayList<Map.Entry<FileObject, String>>();
         list.addAll(imgMap.entrySet());
@@ -518,25 +525,23 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
     private class LayerFieldListener implements DocumentListener, FocusListener {
 
         public void insertUpdate(DocumentEvent e) {
-            this.handleTextContentChange(e);
+            this.handleContentChange();
         }
 
         public void removeUpdate(DocumentEvent e) {
-            this.handleTextContentChange(e);
+            this.handleContentChange();
         }
 
         public void changedUpdate(DocumentEvent e) {
-            this.handleTextContentChange(e);
+            this.handleContentChange();
         }
 
-        private void handleTextContentChange(DocumentEvent e) {
+        private void handleContentChange() {
             String err = getFieldLayerNameError();
-            if (e.getDocument() == TiledLayerDialog.this.fieldLayerName.getDocument()) {
-                if (err == null) {
-                    err = getFieldImageFileNameError();
-                }
-                TiledLayerDialog.this.labelError.setText(err);
+            if (err == null) {
+                err = getFieldImageFileNameError();
             }
+            TiledLayerDialog.this.labelError.setText(err);
             if (err == null) {
                 TiledLayerDialog.this.setOKButtonEnabled(true);
             } else {
@@ -545,14 +550,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         }
 
         public void focusGained(FocusEvent e) {
-            if (e.getComponent() == TiledLayerDialog.this.fieldLayerName) {
-                TiledLayerDialog.this.labelError.setText(getFieldLayerNameError());
-            }
-            if (getFieldLayerNameError() == null && getFieldImageFileNameError() == null) {
-                TiledLayerDialog.this.setOKButtonEnabled(true);
-            } else {
-                TiledLayerDialog.this.setOKButtonEnabled(false);
-            }
+            this.handleContentChange();
         }
 
         public void focusLost(FocusEvent e) {
@@ -631,15 +629,25 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
             if (e.getValueIsAdjusting()) {
                 return;
             }
-            this.handleImageSelectionChange();
+            TiledLayerDialog.this.handleImageStateChange();
         }
 
-        private void handleImageSelectionChange() {
-            TiledLayerDialog.this.sliderWidth.setEnabled(true);
-            TiledLayerDialog.this.sliderHeight.setEnabled(true);
-            String errMsg = null;
+    }
 
-            errMsg = TiledLayerDialog.this.getFieldLayerNameError();
+    private void handleImageStateChange() {
+        String errMsg = null;
+        boolean imgSelected = ! listImageFileName.isSelectionEmpty();
+        
+        TiledLayerDialog.this.sliderWidth.setEnabled(imgSelected);
+        TiledLayerDialog.this.sliderHeight.setEnabled(imgSelected);
+        TiledLayerDialog.this.checkBoxZoom.setEnabled(imgSelected);
+
+        
+        errMsg = TiledLayerDialog.this.getFieldLayerNameError();
+        
+        if (!imgSelected){
+            clearImagePreview();
+        } else {
             try {
                 TiledLayerDialog.this.loadImagePreview();
             } catch (MalformedURLException e) {
@@ -649,21 +657,35 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                 errMsg = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelInvalidImgFomat.txt");
                 iae.printStackTrace();
             }
+        }
 
-            if (errMsg == null) {
-                errMsg = TiledLayerDialog.this.getFieldImageFileNameError();
-            }
+        if (errMsg == null) {
+            errMsg = TiledLayerDialog.this.getFieldImageFileNameError();
+        }
 
-            if (errMsg != null) {
-                TiledLayerDialog.this.labelError.setText(errMsg);
-                TiledLayerDialog.this.setOKButtonEnabled(false);
-            } else {
-                TiledLayerDialog.this.labelError.setText("");
-                TiledLayerDialog.this.setOKButtonEnabled(true);
-            }
+        if (errMsg != null) {
+            TiledLayerDialog.this.labelError.setText(errMsg);
+            TiledLayerDialog.this.setOKButtonEnabled(false);
+        } else {
+            TiledLayerDialog.this.labelError.setText("");
+            TiledLayerDialog.this.setOKButtonEnabled(true);
         }
     }
+        
+    private void clearImagePreview() {
+        this.sliderWidth.removeChangeListener(this.sliderListener);
+        this.sliderHeight.removeChangeListener(this.sliderListener);
+        
+        this.sliderWidth.setModel(new DefaultBoundedRangeModel());
+        this.sliderHeight.setModel(new DefaultBoundedRangeModel());
 
+        this.sliderWidth.setValue(0);
+        this.sliderHeight.setValue(0);
+        
+        this.sliderWidth.addChangeListener(sliderListener);
+        this.sliderHeight.addChangeListener(sliderListener);
+    }
+    
     private void loadImagePreview() throws MalformedURLException, IllegalArgumentException {
         if (DEBUG) {
             System.out.println("load image preview"); // NOI18N
@@ -680,8 +702,6 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        //assert(imageURL != null);
 
         if (imageURL == null) {
             return;
@@ -778,7 +798,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
             }
         }
         this.listImageFileName.setModel(this.getImageListModel());
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.imgImportedMsg.txt"), NotifyDescriptor.INFORMATION_MESSAGE));
+        handleImageStateChange();
     }
 
     private void handleOKButton() {

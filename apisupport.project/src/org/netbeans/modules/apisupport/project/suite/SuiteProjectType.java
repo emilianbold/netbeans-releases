@@ -50,6 +50,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  * Factory for NetBeans module suite projects.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public final class SuiteProjectType implements AntBasedProjectType {
 
     public static final String TYPE = "org.netbeans.modules.apisupport.project.suite"; // NOI18N

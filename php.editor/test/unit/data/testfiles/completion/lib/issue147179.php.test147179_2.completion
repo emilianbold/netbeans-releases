@@ -1,0 +1,4 @@
+Code completion result for source line:
+<?= Test147179::|foo() ?>
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     foo()                           [STATIC]   Test147179

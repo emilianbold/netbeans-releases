@@ -938,8 +938,16 @@ public class SecurityTokensModelHelper {
                 }
             }
 
-            KeySize s = pmh.createElement(rst, TrustQName.KEYSIZE.getQName(configVersion), KeySize.class, false);
-            s.setContent(keySize);
+            if (keySize != null) {
+                KeySize s = pmh.createElement(rst, TrustQName.KEYSIZE.getQName(configVersion), KeySize.class, false);
+                s.setContent(keySize);
+            } else {
+                List<KeySize> s = rst.getExtensibilityElements(KeySize.class);
+                if ((s != null) && (s.size() > 0)) {
+                    KeySize ks = s.get(0);
+                    ks.getParent().removeExtensibilityElement(ks);
+                }
+            }
             
         } finally {
             if (!isTransaction) {

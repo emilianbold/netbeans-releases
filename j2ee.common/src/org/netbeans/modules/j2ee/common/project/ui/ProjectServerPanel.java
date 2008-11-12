@@ -660,13 +660,14 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         Set<ServerInstanceWrapper> servers = new TreeSet<ServerInstanceWrapper>();
         ServerInstanceWrapper selectedItem = null;
         boolean sjasFound = false;
+        boolean gfv3Found = false;
         for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()) {
             String displayName = Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID);
             J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
             if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedModuleTypes().contains(j2eeModuleType)) {
                 ServerInstanceWrapper serverWrapper = new ServerInstanceWrapper(serverInstanceID, displayName);
                 // decide whether this server should be preselected
-                if (selectedItem == null || !sjasFound) {
+                if (selectedItem == null || !gfv3Found) {
                     if (selectedServerInstanceID != null) {
                         if (selectedServerInstanceID.equals(serverInstanceID)) {
                             selectedItem = serverWrapper;
@@ -674,12 +675,13 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                     } else {
                         // preselect the best server ;)
                         String shortName = Deployment.getDefault().getServerID(serverInstanceID);
-                        if ("J2EE".equals(shortName)) { // NOI18N
+                        if ("gfv3".equals(shortName)) { // NOI18N
+                            selectedItem = serverWrapper;
+                            gfv3Found = true;
+                        } else if ("J2EE".equals(shortName)) { // NOI18N
                             selectedItem = serverWrapper;
                             sjasFound = true;
-                        }
-                        else
-                        if ("JBoss4".equals(shortName)) { // NOI18N
+                        } else if ("JBoss4".equals(shortName) && !sjasFound) { // NOI18N
                             selectedItem = serverWrapper;
                         }
                     }

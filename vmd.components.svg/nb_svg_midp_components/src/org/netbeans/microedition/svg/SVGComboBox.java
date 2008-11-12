@@ -47,11 +47,12 @@ import java.util.Vector;
 import org.netbeans.microedition.svg.SVGList.DefaultListMoldel;
 import org.netbeans.microedition.svg.SVGList.ListModel;
 import org.netbeans.microedition.svg.input.InputHandler;
-import org.netbeans.microedition.svg.input.NumPadInputHandler;
+import org.netbeans.microedition.svg.input.PointerEvent;
 import org.w3c.dom.Element;
 import org.w3c.dom.svg.SVGAnimationElement;
 import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGRect;
 
 
 /**
@@ -137,6 +138,10 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=selection&lt;/text>
  *           &lt;rect id="country_combobox_list_selection" x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
+ *       &lt;/g>
+ *       &lt;g id="country_combobox_list_current_selection" >
+ *          &lt;!-- Metadata information. Please don't edit. -->
+ *          &lt;text display="none">type=current_selection&lt;/text> 
  *       &lt;/g>
  *       &lt;g  id="country_combobox_list_content" visibility="inherit">
  *           &lt;!-- Metadata information. Please don't edit. -->
@@ -236,6 +241,15 @@ public class SVGComboBox extends SVGComponent implements
         setSelected(value);
     }
     
+    public SVGRectangle getBounds(){
+       SVGRectangle rectangle = super.getBounds();
+        if ( isListShown ){
+            SVGRectangle rect = myList.getBounds();
+            return rectangle.union( rect );
+        }
+        return rectangle;
+    }
+    
     /* (non-Javadoc)
      * @see org.netbeans.microedition.svg.DataListener#contentsChanged(java.lang.Object)
      */
@@ -325,6 +339,8 @@ public class SVGComboBox extends SVGComponent implements
             				getElement().getId());
         }
         myList = new SVGList(getForm(), (SVGLocatableElement) listElement);
+        myList.setFocusable( false);
+        
     }
     
     private void initEditor( ) {
@@ -432,11 +448,7 @@ public class SVGComboBox extends SVGComponent implements
         private int myCurrentSelectionIndx;
     }
     
-    private class ComboBoxInputHandler extends NumPadInputHandler {
-
-        public ComboBoxInputHandler( ) {
-            super( form.getDisplay() );
-        }
+    private class ComboBoxInputHandler extends InputHandler {
 
         public boolean handleKeyPress( SVGComponent comp, int keyCode ) {
             boolean ret = false;
@@ -546,6 +558,99 @@ public class SVGComboBox extends SVGComponent implements
                 }
             }
             return ret;
+        }
+        
+        public void handlePointerPress( PointerEvent event ) {
+            requestFocus();
+            boolean isHandled = false;
+            SVGLocatableElement button = (SVGLocatableElement)myButton;
+            SVGRect rect = button.getScreenBBox();
+            if (rect != null) {
+                SVGRectangle rectangle = new SVGRectangle(rect);
+                if (rectangle.contains(event.getX(), event.getY())) {
+                    isHandled = true;
+                    getForm().invokeLaterSafely(new Runnable() {
+
+                        public void run() {
+                            myPressedAnimation.beginElementAt(0);
+                        }
+                    });
+                }
+            }
+            ComboBoxEditor editor = checkedGetEditor();
+            if ( !isHandled && editor.getEditorComponent() != null 
+                    && editor.getEditorComponent().getBounds() != null 
+                    && editor.getEditorComponent().getBounds().contains(
+                            event.getX(), event.getY()))
+            {
+                isHandled = true;
+                editor.getEditorComponent().getInputHandler().
+                    handlePointerPress( new PointerEvent (
+                            editor.getEditorComponent() , event.getX(),
+                            event.getY(), event.getClickCount()));
+            }
+            if ( !isHandled && myList.getBounds()!= null && myList.getBounds().contains(
+                    event.getX(), event.getY())){
+                myList.getInputHandler().handlePointerPress( 
+                        new PointerEvent( myList, event.getX(), event.getY(),
+                                event.getClickCount()));
+            }
+            super.handlePointerPress(event);
+        }
+        
+        public void handlePointerRelease( PointerEvent event ) {
+            boolean isHandled = false;
+            SVGLocatableElement button = (SVGLocatableElement)myButton;
+            SVGRect rect = button.getScreenBBox();
+            if (rect != null) {
+                SVGRectangle rectangle = new SVGRectangle(rect);
+                if (rectangle.contains(event.getX() , event.getY())) {
+                    isHandled = true;
+                    getForm().invokeLaterSafely(new Runnable() {
+
+                        public void run() {
+                            myReleasedAnimation.beginElementAt(0);
+                        }
+                    });
+                    if (isListShown) {
+                        hideList();
+                    }
+                    else {
+                        showList();
+                    }
+                }
+            }
+            ComboBoxEditor editor = checkedGetEditor();
+            if ( !isHandled && editor.getEditorComponent() != null 
+                    && editor.getEditorComponent().getBounds() != null 
+                    && editor.getEditorComponent().getBounds().contains(
+                            event.getX(), event.getY()))
+            {
+                isHandled = true;
+                editor.getEditorComponent().getInputHandler().
+                    handlePointerRelease(new PointerEvent (
+                            editor.getEditorComponent() , event.getX(),
+                            event.getY(), event.getClickCount()));
+            }
+            if ( !isHandled && myList.getBounds()!= null && myList.getBounds().
+                    contains(event.getX(), event.getY()))
+            {
+                myList.getInputHandler().handlePointerRelease( 
+                        new PointerEvent( myList , event.getX(), event.getY(),
+                                event.getClickCount()));
+                myIndex = myList.getSelectionModel().getSelectedIndex();
+                
+                if ( event.getClickCount() >1 ){
+                    hideList();
+                    synchronized (myUILock) {
+                        isUIAction = true;
+                        getModel().setSelectedIndex(myIndex);
+                    }
+                    setItem();
+                    fireActionPerformed();
+                }
+            }
+            super.handlePointerRelease( event );
         }
         
     }

@@ -53,6 +53,7 @@ import org.netbeans.modules.form.ViewConverter;
 /**
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.ViewConverter.class)
 public class ViewConverterImpl implements ViewConverter {
 
     public boolean canVisualize(Class componentClass) {

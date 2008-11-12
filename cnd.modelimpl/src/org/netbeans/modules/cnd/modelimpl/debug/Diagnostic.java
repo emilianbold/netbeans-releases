@@ -362,18 +362,18 @@ public class Diagnostic {
             this.includes.clear();
         }
         
-        private boolean hasStatistics() {
-            if (Diagnostic.getStatisticsLevel() == 1) {
-                // for the first level need to inform only about real problems
-                return hasLexerProblems() ||
-                        hasParserProblems() ||
-                        hasOtherProblems() ||
-                        hasIncludeProblems();
-                
-            }
-            // for other levels need detailed statistics
-            return true;
-        }
+//        private boolean hasStatistics() {
+//            if (Diagnostic.getStatisticsLevel() == 1) {
+//                // for the first level need to inform only about real problems
+//                return hasLexerProblems() ||
+//                        hasParserProblems() ||
+//                        hasOtherProblems() ||
+//                        hasIncludeProblems();
+//
+//            }
+//            // for other levels need detailed statistics
+//            return true;
+//        }
         
         private boolean hasLexerProblems() {
             return lexerProblems.size() > 0;

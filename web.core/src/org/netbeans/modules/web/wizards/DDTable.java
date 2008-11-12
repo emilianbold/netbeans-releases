@@ -72,6 +72,7 @@ class DDTable extends JTable implements KeyListener {
     private Editable editable;
     private String[] headers; 
     private final static int margin = 6; 
+    private Color darkerColor;
 
     // Handle resizing for larger fonts
     private boolean fontChanged = true;
@@ -86,10 +87,10 @@ class DDTable extends JTable implements KeyListener {
     
     DDTable(String[] headers, String titleKey, Editable editable) { 
 	super(new Object[0][headers.length], headers);
-
 	this.headers = headers; 
 	this.titleKey = titleKey; 
 	this.editable = editable; 
+        this.darkerColor = getBackground().darker();
 
 	setModel(new DDTableModel(headers, editable)); 
 	setColors(editable); 
@@ -139,14 +140,8 @@ class DDTable extends JTable implements KeyListener {
     }
 
     private void setColors(Editable editable) {
-	Color bg;
 	this.setBorder(BorderFactory.createLoweredBevelBorder());
-	if (editable == Editable.NEITHER) { 
-	    bg = this.getBackground().darker();
-	} else {
-	    bg = Color.white;
-	}
-	this.setBackground(bg);
+	this.setBackground(editable == Editable.NEITHER ? darkerColor : Color.white);
     }
 
 

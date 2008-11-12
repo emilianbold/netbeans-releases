@@ -47,9 +47,11 @@
 package org.netbeans.modules.hibernate.wizards;
 
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.project.Project;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -62,11 +64,8 @@ import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
-import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 
 /**
  *
@@ -102,12 +101,17 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
         } else {
             if (cmbResource.getSelectedIndex() != -1) {
                 try {
-                    HibernateConfiguration hibConf = ((HibernateCfgDataObject) DataObject.find(configFileObjects.get(cmbResource.getSelectedIndex()))).getHibernateConfiguration();
-                    databaseTables = env.getAllDatabaseTables(hibConf);
+                    ////  HibernateConfiguration hibConf = ((HibernateCfgDataObject) DataObject.find(configFileObjects.get(cmbResource.getSelectedIndex()))).getHibernateConfiguration();
+                    //  databaseTables = env.getAllDatabaseTables(hibConf);
+                    databaseTables = env.getAllDatabaseTablesOnEventThread(configFileObjects.get(cmbResource.getSelectedIndex()));
                     // adding an empty element to the list
                     databaseTables.add(0, "");
                     this.cmbDatabaseTable.setModel(new DefaultComboBoxModel(databaseTables.toArray()));
                 } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (DatabaseException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (SQLException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }

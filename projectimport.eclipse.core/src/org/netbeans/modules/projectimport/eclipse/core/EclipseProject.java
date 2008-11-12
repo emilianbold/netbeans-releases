@@ -424,10 +424,7 @@ public final class EclipseProject implements Comparable {
             if (javadoc == null) {
                 continue;
             }
-            String resolvedPath = resolveJavadocLocationAttribute(javadoc, workspace, importProblems, false);
-            if (resolvedPath != null) {
-                entry.updateJavadoc(resolvedPath);
-            }
+            entry.updateJavadoc(resolveJavadocLocationAttribute(javadoc, workspace, importProblems, false));
         }
     }
     
@@ -443,6 +440,10 @@ public final class EclipseProject implements Comparable {
             javadoc = javadoc.substring(4, javadoc.indexOf("!/")); //NOI18N
         }
         if (javadoc.startsWith("platform:/resource")) { // NOI18N
+            if (workspace == null) {
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_WorkspaceDependentProtocol", javadoc)); //NOI18N
+                return null;
+            }
             String s = resolvePath(javadoc.substring(18), workspace);
             if (s != null) {
                 if (returnURL) {
@@ -574,21 +575,24 @@ public final class EclipseProject implements Comparable {
         }
         
         // not VARIABLE, not PROJECT, not LINK -> either source root or library
-        if (!(new File(entry.getRawPath()).isAbsolute())) {
-            // internal src or lib
-            entry.setAbsolutePath(projectDir.getAbsolutePath() + File.separator
-                    + entry.getRawPath());
-        } else {
-            // external src or lib
-            String absolutePath = entry.getRawPath();
-            if (entry.getKind() == DotClassPathEntry.Kind.LIBRARY && workspace != null) {
-                String s = resolvePath(entry.getRawPath(), workspace);
-                if (s != null) {
-                    absolutePath = s;
-                }
+        boolean resolved = false;
+        String path = entry.getRawPath();
+        // first check whether path starts with a project name:
+        if (entry.getKind() == DotClassPathEntry.Kind.LIBRARY && workspace != null) {
+            String s = resolvePath(path, workspace);
+            if (s != null) {
+                path = s;
+                resolved = true;
             }
-            entry.setAbsolutePath(absolutePath);
         }
+        if (!resolved) {
+            // convert possibly relative path to absolute:
+            if (!Util.isAbsolutePath(path)) {
+                path = projectDir.getAbsolutePath()+File.separator+path;
+                resolved = true;
+            }
+        }
+        entry.setAbsolutePath(path);
     }
     
     private static String resolvePath(String path, Workspace workspace) {

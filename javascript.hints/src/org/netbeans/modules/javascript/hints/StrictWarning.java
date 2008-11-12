@@ -193,7 +193,7 @@ public class StrictWarning extends JsErrorRule {
             }
 
             // In HTML etc ignore these
-            if (node.getType() == Token.EMPTY && !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(info.getFileObject().getMIMEType())) {
+            if (/*node.getType() == Token.EMPTY && */!JsTokenId.JAVASCRIPT_MIME_TYPE.equals(info.getFileObject().getMIMEType())) {
                 context.remove = true;
                 return;
             }

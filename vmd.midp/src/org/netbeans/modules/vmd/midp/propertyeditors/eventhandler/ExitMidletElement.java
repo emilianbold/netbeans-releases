@@ -133,6 +133,7 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
         return Collections.emptyList();
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory.class)
     public static class ExitMidletElementFactory implements PropertyEditorElementFactory {
         public PropertyEditorEventHandlerElement createElement() {
             return new ExitMidletElement();

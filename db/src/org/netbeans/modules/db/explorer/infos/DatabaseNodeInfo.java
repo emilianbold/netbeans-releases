@@ -50,7 +50,9 @@ import java.text.MessageFormat;
 import java.util.*;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.openide.nodes.Node;
@@ -59,7 +61,6 @@ import org.openide.util.actions.SystemAction;
 
 import org.netbeans.lib.ddl.DatabaseSpecification;
 import org.netbeans.lib.ddl.DatabaseSpecificationFactory;
-import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.util.PListReader;
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -70,9 +71,12 @@ import org.netbeans.modules.db.explorer.DbMetaDataListenerSupport;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.util.UIUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
+import org.openide.util.RequestProcessor;
 
 public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         implements Node.Cookie, Comparable {
@@ -355,11 +359,30 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     }
 
     public void refreshChildren() throws DatabaseException {
+        // Refresh involves going to the database, which shouldn't go on the
+        // dispatch thread. 
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        refreshChildrenSync();
+                    } catch (Exception e) {
+                        LOGGER.log(Level.INFO, e.getMessage(), e);
+                        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(e));
+                    }
+                }
+            });
+        } else {
+            refreshChildrenSync();
+        }
+    }
+
+    private void refreshChildrenSync() throws DatabaseException {
         // create list (infos)
         Vector children = loadChildren(new Vector());
 
         put(DatabaseNodeInfo.CHILDREN, children);
-        
+
         notifyChange();
     }
     

@@ -191,7 +191,12 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     
     public synchronized CCompilerConfiguration getCCompilerConfiguration() {
         if (cCompilerConfiguration == null) {
-            cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), item.getFolder().getFolderConfiguration(configuration).getCCompilerConfiguration());
+            FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
+            if (folderConfiguration != null) {
+                cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), folderConfiguration.getCCompilerConfiguration());
+            } else {
+                cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), null);
+            }
         }
         return cCompilerConfiguration;
     }
@@ -203,7 +208,12 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     
     public synchronized CCCompilerConfiguration getCCCompilerConfiguration() {
         if (ccCompilerConfiguration == null) {
-            ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), item.getFolder().getFolderConfiguration(configuration).getCCCompilerConfiguration());
+            FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
+            if (folderConfiguration != null) {
+                ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), folderConfiguration.getCCCompilerConfiguration());
+            } else {
+                ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), null);
+            }
         }
         return ccCompilerConfiguration;
     }

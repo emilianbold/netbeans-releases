@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  */
 public class SVR4Packager implements PackagerDescriptor {
 
-    public static String PACKAGER_NAME = "SVR4"; // NOI18N
+    public static final String PACKAGER_NAME = "SVR4"; // NOI18N
 
     public String getName() {
         return PACKAGER_NAME;

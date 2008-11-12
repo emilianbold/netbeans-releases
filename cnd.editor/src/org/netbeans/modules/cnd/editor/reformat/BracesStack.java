@@ -300,10 +300,10 @@ class BracesStack {
             }
         } else if (lastStatementStart != entry.getIndex()) {
             lastStatementStart = entry.getIndex();
-            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+entry.getText()); // NOI18N
+            if (TRACE_STATEMENT) {System.out.println("start of Statement/Declaration:"+entry.getText());} // NOI18N
         }
         stack.push(entry);
-        if (TRACE_STACK) System.out.println("push: "+toString()); // NOI18N
+        if (TRACE_STACK) {System.out.println("push: "+toString());} // NOI18N
     }
 
     public void pop(ExtendedTokenSequence ts) {
@@ -312,7 +312,7 @@ class BracesStack {
         }
         statementContinuation = StatementContinuation.STOP;
         popImpl(ts);
-        if (TRACE_STACK) System.out.println("pop "+ts.token().id().name()+": "+toString()); // NOI18N
+        if (TRACE_STACK) {System.out.println("pop "+ts.token().id().name()+": "+toString());} // NOI18N
     }
 
     public void popImpl(ExtendedTokenSequence ts) {
@@ -658,7 +658,7 @@ class BracesStack {
     public void setLastStatementStart(ExtendedTokenSequence ts) {
         if (lastStatementStart == -1) {
             lastStatementStart = ts.index();
-            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+ts.token().text()); // NOI18N
+            if (TRACE_STATEMENT) {System.out.println("start of Statement/Declaration:"+ts.token().text());} // NOI18N
         }
     }
     

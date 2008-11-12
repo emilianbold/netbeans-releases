@@ -53,6 +53,7 @@ import org.openide.filesystems.FileObject;
 /**
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.ComponentConverter.class)
 public class ComponentConverterImpl implements ComponentConverter {
 
     public Class getDesignClass(String componentClassName, FileObject fileFromProject) {

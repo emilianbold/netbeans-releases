@@ -77,8 +77,7 @@ public @Deprecated class JarPackagingRunChecker implements PrerequisitesChecker 
             while (it.hasNext()) {
                 String goal = (String) it.next();
                 if (goal.indexOf("org.codehaus.mevenide:netbeans-run-plugin") > -1) { //NOI18N
-                    NbMavenProject prj = config.getProject().getLookup().lookup(NbMavenProject.class);
-                    List profiles = prj.getMavenProject().getModel().getProfiles();
+                    List profiles = config.getMavenProject().getModel().getProfiles();
                     Iterator it2 = profiles.iterator();
                     boolean warn = true;
                     while (it2.hasNext()) {

@@ -67,38 +67,38 @@
     </target>
     <target name="-init-taskdefs" if="from.commandline">
         <path id="ant.task.classpath">
-            <pathelement location="${netbeans.home}/../soa2/modules/org-netbeans-modules-compapp-projects-jbi.jar"/>
-            <pathelement location="${netbeans.home}/../soa2/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
-            <pathelement location="${netbeans.home}/../soa2/modules/org-netbeans-soa-libs-xmlbeans.jar"/>
-            <pathelement location="${netbeans.home}/../soa2/modules/ext/jbi/jbi-admin-common.jar"/>
-            <pathelement location="${netbeans.home}/../soa2/ant/nblib/org-netbeans-modules-compapp-projects-jbi.jar"/>
-            <pathelement location="${netbeans.home}/../platform9/lib/org-openide-util.jar"/>
-            <pathelement location="${netbeans.home}/../platform9/lib/org-openide-modules.jar"/>
-            <pathelement location="${netbeans.home}/../platform9/modules/org-openide-options.jar"/>
-            <pathelement location="${netbeans.home}/../platform9/modules/org-openide-text.jar"/>
-            <pathelement location="${netbeans.home}/../platform9/modules/org-openide-loaders.jar"/>
-            <pathelement location="${netbeans.home}/../platform9/modules/org-openide-nodes.jar"/>
-            <pathelement location="${netbeans.home}/../platform9/modules/org-openide-dialogs.jar"/>
-            <pathelement location="${netbeans.home}/../platform9/core/org-openide-filesystems.jar"/>
-            <pathelement location="${netbeans.home}/../ide10/modules/ext/xerces-2.8.0.jar"/>
-            <pathelement location="${netbeans.home}/../ide10/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"/>
-            <pathelement location="${netbeans.home}/../ide10/modules/org-netbeans-modules-xml-retriever.jar"/>
-            <pathelement location="${netbeans.home}/../ide10/modules/org-netbeans-modules-xml-schema-model.jar"/>
-            <pathelement location="${netbeans.home}/../ide10/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
-            <pathelement location="${netbeans.home}/../ide10/modules/org-netbeans-modules-xml-xam.jar"/>
-            <pathelement location="${netbeans.home}/../ide10/modules/org-netbeans-modules-xml-text.jar"/>
-            <pathelement location="${netbeans.home}/../ide10/modules/org-netbeans-modules-editor.jar"/>
-            <pathelement location="${netbeans.home}/../ide10/modules/org-netbeans-modules-editor-lib.jar"/>
-            <pathelement location="${netbeans.home}/../ide10/modules/org-netbeans-modules-editor-util.jar"/>
-            <pathelement location="${netbeans.home}/../ide10/modules/org-netbeans-modules-projectapi.jar"/>
-            <pathelement location="${netbeans.home}/../ide10/modules/org-netbeans-modules-classfile.jar"/>
-            <pathelement location="${netbeans.home}/../ide10/modules/org-apache-xml-resolver.jar"/>
-            <pathelement location="${netbeans.home}/../xml2/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
-            <pathelement location="${netbeans.home}/../java2/modules/ext/jaxws21/api/jaxb-api.jar"/>
-            <pathelement location="${netbeans.home}/../java2/modules/ext/jaxws21/jaxb-impl.jar"/>
-            <pathelement location="${netbeans.home}/../java2/modules/ext/jaxws21/activation.jar"/>
-            <pathelement location="${netbeans.home}/../enterprise5/modules/org-netbeans-modules-j2eeserver.jar"/>
-            <pathelement location="${netbeans.home}/../enterprise5/modules/ext/jsr88javax.jar"/>
+            <pathelement location="${soa.module.install.dir}/org-netbeans-modules-compapp-projects-jbi.jar"/>
+            <pathelement location="${soa.module.install.dir}/org-netbeans-modules-compapp-manager-jbi.jar"/>
+            <pathelement location="${soa.module.install.dir}/org-netbeans-soa-libs-xmlbeans.jar"/>
+            <pathelement location="${soa.module.install.dir}/ext/jbi/jbi-admin-common.jar"/>
+            <pathelement location="${soa.module.install.dir}/../ant/nblib/org-netbeans-modules-compapp-projects-jbi.jar"/>
+            <pathelement location="${netbeans.home}/lib/org-openide-util.jar"/>
+            <pathelement location="${netbeans.home}/lib/org-openide-modules.jar"/>
+            <pathelement location="${netbeans.home}/modules/org-openide-options.jar"/>
+            <pathelement location="${netbeans.home}/modules/org-openide-text.jar"/>
+            <pathelement location="${netbeans.home}/modules/org-openide-loaders.jar"/>
+            <pathelement location="${netbeans.home}/modules/org-openide-nodes.jar"/>
+            <pathelement location="${netbeans.home}/modules/org-openide-dialogs.jar"/>
+            <pathelement location="${netbeans.home}/core/org-openide-filesystems.jar"/>
+            <pathelement location="${ide.module.install.dir}/ext/xerces-2.8.0.jar"/>
+            <pathelement location="${ide.module.install.dir}/ext/xml-commons-dom-ranges-1.0.b2.jar"/>
+            <pathelement location="${ide.module.install.dir}/org-netbeans-modules-xml-retriever.jar"/>
+            <pathelement location="${ide.module.install.dir}/org-netbeans-modules-xml-schema-model.jar"/>
+            <pathelement location="${ide.module.install.dir}/org-netbeans-modules-xml-wsdl-model.jar"/>
+            <pathelement location="${ide.module.install.dir}/org-netbeans-modules-xml-xam.jar"/>
+            <pathelement location="${ide.module.install.dir}/org-netbeans-modules-xml-text.jar"/>
+            <pathelement location="${ide.module.install.dir}/org-netbeans-modules-editor.jar"/>
+            <pathelement location="${ide.module.install.dir}/org-netbeans-modules-editor-lib.jar"/>
+            <pathelement location="${ide.module.install.dir}/org-netbeans-modules-editor-util.jar"/>
+            <pathelement location="${ide.module.install.dir}/org-netbeans-modules-projectapi.jar"/>
+            <pathelement location="${ide.module.install.dir}/org-netbeans-modules-classfile.jar"/>
+            <pathelement location="${ide.module.install.dir}/org-apache-xml-resolver.jar"/>
+            <pathelement location="${xml.module.install.dir}/org-netbeans-modules-xml-wsdl-extensions.jar"/>
+            <pathelement location="${ide.module.install.dir}/ext/jaxb/api/jaxb-api.jar"/>
+            <pathelement location="${ide.module.install.dir}/ext/jaxb/jaxb-impl.jar"/>
+            <pathelement location="${ide.module.install.dir}/ext/jaxb/activation.jar"/>
+            <pathelement location="${enterprise.module.install.dir}/org-netbeans-modules-j2eeserver.jar"/>
+            <pathelement location="${enterprise.module.install.dir}/ext/jsr88javax.jar"/>
         </path>
         <taskdef name="jbi-build-service-assembly" classname="org.netbeans.modules.compapp.projects.jbi.anttasks.BuildServiceAssembly">
             <classpath refid="ant.task.classpath"/>
@@ -164,7 +164,7 @@
         <mkdir dir="${build.dir}/META-INF"/>
         <jar compress="true" jarfile="${build.dir}/BCDeployment.jar">
             <fileset dir="${src.dir}/../jbiServiceUnits">
-                <exclude name="META-INF/*/catalog.xml"/>
+                <exclude name="**/catalog.xml"/>
                 <exclude name="**/jbi.xml"/>
             </fileset>
         </jar>
@@ -172,7 +172,7 @@
         <delete file="${build.dir}/BCDeployment.jar"/>
         <dirname property="dist.jar.dir" file="${dist.jar}"/>
         <mkdir dir="${dist.jar.dir}"/>
-        <jar compress="${jar.compress}" jarfile="${dist.jar}">
+        <jar compress="${jar.compress}" jarfile="${dist.jar}" filesetmanifest="merge">
             <fileset dir="${build.dir}" excludes="jar/*"/>
         </jar>
     </target>
@@ -229,7 +229,7 @@
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target name="clean" depends="init,deps-clean,do-clean,post-clean" description="Clean build products."/>
-    <target name="jbi-clean-config" depends="init,clear-casa,jbi-clean-build" description="Clean application configuration."/>
+    <target name="jbi-clean-config" depends="init,clear-casa,jbi-clean-build" description="Clean service assembly."/>
     <target name="clear-casa">
         <delete file="${source.root}/conf/${jbi.service-assembly.id}.casa"/>
         <delete file="${src.dir}/${jbi.service-assembly.id}.wsdl"/>
@@ -241,32 +241,39 @@
     <target name="-pre-test-run" if="have.tests" depends="init">
         <mkdir dir="${test.results.dir}"/>
         <path id="unit.test.classpath">
-            <pathelement path="${netbeans.home}/../soa2/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
-            <pathelement path="${netbeans.home}/../soa2/modules/org-netbeans-modules-compapp-projects-jbi.jar"/>
-            <pathelement path="${netbeans.home}/../soa2/modules/ext/jbi/jbi-admin-common.jar"/>
-            <pathelement path="${netbeans.home}/../soa2/modules/ext/jbi/catd.jar"/>
-            <pathelement path="${netbeans.home}/../java2/modules/ext/junit-3.8.2.jar"/>
-            <pathelement path="${netbeans.home}/../java2/modules/ext/jaxws21/api/saaj-api.jar"/>
-            <pathelement path="${netbeans.home}/../java2/modules/ext/jaxws21/saaj-impl.jar"/>
-            <pathelement path="${netbeans.home}/../java2/modules/ext/jaxws21/FastInfoset.jar"/>
-            <pathelement path="${netbeans.home}/../ide10/modules/org-netbeans-modules-xml-xdm.jar"/>
-            <pathelement path="${netbeans.home}/../ide10/modules/org-netbeans-modules-xml-xam.jar"/>
-            <pathelement path="${netbeans.home}/../ide10/modules/org-netbeans-modules-editor-lib.jar"/>
-            <pathelement path="${netbeans.home}/../ide10/modules/org-netbeans-modules-xml-text.jar"/>
-            <pathelement path="${netbeans.home}/../ide10/modules/org-netbeans-modules-editor.jar"/>
-            <pathelement path="${netbeans.home}/../ide10/modules/org-netbeans-modules-editor-util.jar"/>
-            <pathelement path="${netbeans.home}/../ide10/modules/org-netbeans-modules-xml-core.jar"/>
-            <pathelement path="${netbeans.home}/../ide10/modules/org-netbeans-modules-editor-lib2.jar"/>
-            <pathelement path="${netbeans.home}/../ide10/modules/org-netbeans-modules-lexer.jar"/>
-            <pathelement path="${netbeans.home}/../ide10/modules/org-netbeans-modules-xml-lexer.jar"/>
-            <pathelement path="${netbeans.home}/../platform9/lib/org-openide-modules.jar"/>
-            <pathelement path="${netbeans.home}/../platform9/lib/org-openide-util.jar"/>
-            <pathelement path="${netbeans.home}/../platform9/modules/org-openide-options.jar"/>
-            <pathelement path="${netbeans.home}/../platform9/modules/org-openide-text.jar"/>
-            <pathelement path="${netbeans.home}/../platform9/modules/org-openide-loaders.jar"/>
-            <pathelement path="${netbeans.home}/../platform9/modules/org-openide-nodes.jar"/>
-            <pathelement path="${netbeans.home}/../platform9/modules/org-netbeans-modules-editor-mimelookup.jar"/>
-            <pathelement path="${netbeans.home}/../platform9/core/org-openide-filesystems.jar"/>
+            <pathelement path="${soa.module.install.dir}/org-netbeans-modules-compapp-manager-jbi.jar"/>
+            <pathelement path="${soa.module.install.dir}/org-netbeans-modules-compapp-projects-jbi.jar"/>
+            <pathelement path="${soa.module.install.dir}/ext/jbi/jbi-admin-common.jar"/>
+            <pathelement path="${soa.module.install.dir}/ext/jbi/catd.jar"/>
+            <pathelement path="${java.module.install.dir}/ext/junit-3.8.2.jar"/>
+            <pathelement path="${java.module.install.dir}/ext/jaxws21/api/saaj-api.jar"/>
+            <pathelement path="${java.module.install.dir}/ext/jaxws21/saaj-impl.jar"/>
+            <pathelement path="${java.module.install.dir}/ext/jaxws21/FastInfoset.jar"/>
+            <pathelement path="${ide.module.install.dir}/org-netbeans-modules-editor-lib.jar"/>
+            <pathelement path="${ide.module.install.dir}/org-netbeans-modules-editor.jar"/>
+            <pathelement path="${ide.module.install.dir}/org-netbeans-modules-editor-util.jar"/>
+            <pathelement path="${ide.module.install.dir}/org-netbeans-modules-editor-lib2.jar"/>
+            <pathelement path="${ide.module.install.dir}/org-netbeans-modules-editor-indent.jar"/>
+            <pathelement path="${ide.module.install.dir}/org-netbeans-modules-editor-plain.jar"/>
+            <pathelement path="${ide.module.install.dir}/org-netbeans-modules-editor-plain-lib.jar"/>
+            <pathelement path="${ide.module.install.dir}/org-netbeans-modules-editor-settings.jar"/>
+            <pathelement path="${ide.module.install.dir}/org-netbeans-modules-editor-settings-storage.jar"/>
+            <pathelement path="${ide.module.install.dir}/org-netbeans-modules-lexer.jar"/>
+            <pathelement path="${ide.module.install.dir}/org-netbeans-modules-xml-core.jar"/>
+            <pathelement path="${ide.module.install.dir}/org-netbeans-modules-xml-lexer.jar"/>
+            <pathelement path="${ide.module.install.dir}/org-netbeans-modules-xml-text.jar"/>
+            <pathelement path="${ide.module.install.dir}/org-netbeans-modules-xml-xdm.jar"/>
+            <pathelement path="${ide.module.install.dir}/org-netbeans-modules-xml-xam.jar"/>
+            <pathelement path="${ide.module.install.dir}/ext/jaxb/activation.jar"/>
+            <pathelement path="${netbeans.home}/lib/org-openide-modules.jar"/>
+            <pathelement path="${netbeans.home}/lib/org-openide-util.jar"/>
+            <pathelement path="${netbeans.home}/modules/org-openide-options.jar"/>
+            <pathelement path="${netbeans.home}/modules/org-openide-text.jar"/>
+            <pathelement path="${netbeans.home}/modules/org-openide-loaders.jar"/>
+            <pathelement path="${netbeans.home}/modules/org-openide-nodes.jar"/>
+            <pathelement path="${netbeans.home}/modules/org-netbeans-modules-editor-mimelookup.jar"/>
+            <pathelement path="${netbeans.home}/modules/org-netbeans-modules-editor-mimelookup-impl.jar"/>
+            <pathelement path="${netbeans.home}/core/org-openide-filesystems.jar"/>
         </path>
     </target>
     <target name="-do-test-run" if="netbeans.home+have.tests" depends="init,-pre-test-run">

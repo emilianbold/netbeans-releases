@@ -55,6 +55,7 @@ import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 public class AlgorithmSuiteFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AlgorithmSuiteFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -70,6 +71,7 @@ public class AlgorithmSuiteFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Basic128Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -85,6 +87,7 @@ public class AlgorithmSuiteFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Basic192Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -100,6 +103,7 @@ public class AlgorithmSuiteFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Basic256Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -115,6 +119,7 @@ public class AlgorithmSuiteFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class TripleDesFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -131,6 +136,7 @@ public class AlgorithmSuiteFactories {
     }
 
     /* rsa15 */ 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Basic128Rsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -146,6 +152,7 @@ public class AlgorithmSuiteFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Basic192Rsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -161,6 +168,7 @@ public class AlgorithmSuiteFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Basic256Rsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -176,6 +184,7 @@ public class AlgorithmSuiteFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class TripleDesRsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -192,6 +201,7 @@ public class AlgorithmSuiteFactories {
     }
 
     /* sha256 */ 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Basic128Sha256Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -207,6 +217,7 @@ public class AlgorithmSuiteFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Basic192Sha256Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -222,6 +233,7 @@ public class AlgorithmSuiteFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Basic256Sha256Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -237,6 +249,7 @@ public class AlgorithmSuiteFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class TripleDesSha256Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -253,6 +266,7 @@ public class AlgorithmSuiteFactories {
     }
 
     /* sha256rsa15 */ 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Basic128Sha256Rsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -268,6 +282,7 @@ public class AlgorithmSuiteFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Basic192Sha256Rsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -283,6 +298,7 @@ public class AlgorithmSuiteFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Basic256Sha256Rsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -298,6 +314,7 @@ public class AlgorithmSuiteFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class TripleDesSha256Rsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

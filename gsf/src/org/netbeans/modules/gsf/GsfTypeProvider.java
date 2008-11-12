@@ -78,6 +78,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.type.TypeProvider.class)
 public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
     private static final Logger LOGGER = Logger.getLogger(GsfTypeProvider.class.getName());
     private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath( new FileObject[0] );

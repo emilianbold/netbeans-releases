@@ -81,6 +81,7 @@ public final class KeymapPanelController extends OptionsPanelController {
         return new HelpCtx ("netbeans.optionsDialog.keymaps");
     }
     
+    @Override
     public Lookup getLookup () {
         return Lookups.singleton (getKeymapPanel ().getModel ());
     }
@@ -99,8 +100,8 @@ public final class KeymapPanelController extends OptionsPanelController {
     
 
     private KeymapPanel keymapPanel;
-    
-    private KeymapPanel getKeymapPanel () {
+
+    private synchronized KeymapPanel getKeymapPanel () {
         if (keymapPanel == null)
             keymapPanel = new KeymapPanel ();
         return keymapPanel;

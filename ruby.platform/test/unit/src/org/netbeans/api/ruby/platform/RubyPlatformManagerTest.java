@@ -72,7 +72,7 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
 
     public void testAddingTheSamePlatformTwice() throws Exception {
         assertEquals("bundle JRuby", 1, RubyPlatformManager.getPlatforms().size());
-        RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
+        RubyPlatform ruby = setUpPlatform();
         File defaultRubyHome = getTestRubyHome();
         assertEquals("right ruby home", defaultRubyHome, ruby.getHome());
         assertEquals("right ruby lib", new File(defaultRubyHome, "lib/ruby/1.8").getAbsolutePath(), ruby.getVersionLibDir());
@@ -91,7 +91,7 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
     }
     
     public void testGetPlatformByPath() throws Exception {
-        RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
+        RubyPlatform ruby = setUpPlatform();
         RubyPlatform alsoRuby = RubyPlatformManager.getPlatformByPath(ruby.getInterpreter());
         assertSame("found by path", ruby, alsoRuby);
         RubyPlatform jruby = RubyPlatformManager.getPlatformByPath(TestUtil.getXTestJRubyPath());

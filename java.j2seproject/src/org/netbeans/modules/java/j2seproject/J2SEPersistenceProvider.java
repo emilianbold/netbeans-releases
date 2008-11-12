@@ -67,7 +67,7 @@ import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesProvider;
 import org.netbeans.modules.j2ee.persistence.spi.support.EntityMappingsMetadataModelHelper;
 import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper;
-import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;

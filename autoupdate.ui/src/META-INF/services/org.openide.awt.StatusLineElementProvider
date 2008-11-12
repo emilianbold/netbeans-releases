@@ -1,6 +1,0 @@
-org.netbeans.modules.autoupdate.ui.actions.AvailableUpdatesNotification
-#position=600
-org.netbeans.modules.autoupdate.ui.wizards.RestartNeededNotification
-#position=601
-org.netbeans.modules.autoupdate.ui.wizards.NetworkProblemNotification
-#position=602

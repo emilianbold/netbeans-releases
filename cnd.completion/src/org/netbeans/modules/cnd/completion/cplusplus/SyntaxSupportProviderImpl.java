@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider;
  *
  * @author vv159170
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider.class)
 public class SyntaxSupportProviderImpl implements SyntaxSupportProvider {
 
     /** Create syntax support */

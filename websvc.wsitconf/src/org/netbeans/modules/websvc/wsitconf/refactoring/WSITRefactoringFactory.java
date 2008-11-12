@@ -55,6 +55,7 @@ import org.netbeans.modules.websvc.wsitconf.refactoring.WSITRenameRefactoringPlu
  *
  * @author Martin Grebac
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class WSITRefactoringFactory implements RefactoringPluginFactory {
     
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.websvc.wsitconf.refactoring");

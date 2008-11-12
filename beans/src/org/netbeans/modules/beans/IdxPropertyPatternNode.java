@@ -77,12 +77,14 @@ public final class IdxPropertyPatternNode extends PropertyPatternNode  {
     /** Gets the localized string name of property pattern type i.e.
      * "Indexed Property", "Property".
      */
+    @Override
     String getTypeForHint() {
         return getString( "HINT_IndexedProperty" );
     }
 
     /** Overrides the default implementation of clone node
     */
+    @Override
     public Node cloneNode() {
         return new IdxPropertyPatternNode((IdxPropertyPattern)pattern, writeable);
     }

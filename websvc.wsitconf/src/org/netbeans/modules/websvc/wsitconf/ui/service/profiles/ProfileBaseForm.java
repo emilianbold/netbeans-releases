@@ -99,10 +99,21 @@ public abstract class ProfileBaseForm extends JPanel {
     }
 
     protected void fillKeySize(JComboBox keySizeCombo) {
+        fillKeySize(keySizeCombo, false);
+    }
+
+    protected void fillKeySize(JComboBox keySizeCombo, boolean publicKey) {
         keySizeCombo.removeAllItems();
-        keySizeCombo.addItem(ComboConstants.ISSUED_KEYSIZE_128);
-        keySizeCombo.addItem(ComboConstants.ISSUED_KEYSIZE_192);
-        keySizeCombo.addItem(ComboConstants.ISSUED_KEYSIZE_256);    
+        if (publicKey) {
+            keySizeCombo.addItem(ComboConstants.NONE);
+            keySizeCombo.addItem(ComboConstants.ISSUED_KEYSIZE_1024);
+            keySizeCombo.addItem(ComboConstants.ISSUED_KEYSIZE_2048);
+            keySizeCombo.addItem(ComboConstants.ISSUED_KEYSIZE_3072);
+        } else {
+            keySizeCombo.addItem(ComboConstants.ISSUED_KEYSIZE_128);
+            keySizeCombo.addItem(ComboConstants.ISSUED_KEYSIZE_192);
+            keySizeCombo.addItem(ComboConstants.ISSUED_KEYSIZE_256);
+        }
     }
     
     protected void fillWssCombo(JComboBox wssCombo) {

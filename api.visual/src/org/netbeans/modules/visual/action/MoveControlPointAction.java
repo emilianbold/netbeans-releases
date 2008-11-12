@@ -70,6 +70,7 @@ public final class MoveControlPointAction extends WidgetAction.LockedAdapter {
         return movingWidget != null;
     }
 
+    @Override
     public State mousePressed (Widget widget, WidgetMouseEvent event) {
         if (isLocked ())
             return State.createLocked (widget, this);
@@ -92,41 +93,40 @@ public final class MoveControlPointAction extends WidgetAction.LockedAdapter {
 
     @Override
     public State mouseReleased(Widget widget, WidgetMouseEvent event) {
-        State state = move(widget, event.getPoint());
-        if (state == State.REJECTED) {
-            movingWidget = null;
-        }
+        State state = move(widget, event.getPoint()) ? State.CONSUMED : State.REJECTED;
+        movingWidget = null;
         return state;
     }
 
     @Override
     public State mouseDragged(Widget widget, WidgetMouseEvent event) {
-        State state = move(widget, event.getPoint());
-        if (state == State.REJECTED) {
+        if (move(widget, event.getPoint())) {
+            return State.createLocked(widget, this);
+        } else {
             movingWidget = null;
+            return State.REJECTED;
         }
-        return state;
     }
 
-    private State move (Widget widget, Point newLocation) {
+    private boolean move(Widget widget, Point newLocation) {
         if (movingWidget != widget)
-            return State.REJECTED;
+            return false;
 
         java.util.List<Point> controlPoints = movingWidget.getControlPoints ();
         if (controlPointIndex < 0  ||  controlPointIndex >= controlPoints.size ())
-            return State.REJECTED;
+            return false;
 
         Point location = new Point (controlPointLocation);
         location.translate (newLocation.x - lastLocation.x, newLocation.y - lastLocation.y);
 
         controlPoints = provider.locationSuggested (movingWidget, controlPointIndex, location);
         if (controlPoints == null)
-            return State.REJECTED;
+            return false;
 
         if (routingPolicy != null)
             movingWidget.setRoutingPolicy (routingPolicy);
         movingWidget.setControlPoints (controlPoints, false);
-        return State.createLocked (widget, this);
+        return true;
     }
 
 }

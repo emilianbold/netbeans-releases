@@ -130,7 +130,7 @@ public class BranchConstructor {
                 namespaceAVT = ((AttrValueTamplateHolder)nameHolder).
                         createTemplate("");
             } else {
-                String namespace = type.getTargetNamespace();
+                String namespace = AxiomUtils.getNamespace(type);
                 QName elementQName = new QName(namespace, name);
                 nameAVT = ((AttrValueTamplateHolder)nameHolder).
                         createTemplate(elementQName);

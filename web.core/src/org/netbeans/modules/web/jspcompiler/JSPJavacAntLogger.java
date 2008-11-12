@@ -62,6 +62,7 @@ import org.openide.windows.OutputListener;
  * @author Petr Jiricka, Jesse Glick
  * @see "#42525"
  */
+@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=35)
 public final class JSPJavacAntLogger extends AntLogger {
     
     private static final Logger ERR = Logger.getLogger(JSPJavacAntLogger.class.getName());

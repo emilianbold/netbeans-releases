@@ -83,7 +83,7 @@ public class ModelXMLReader {
     }       
     
     
-    private class ModelXMLContentHandler extends DefaultHandler {       
+    private static class ModelXMLContentHandler extends DefaultHandler {
         
         private List<XMLReaderContext> ctxStack;
         private XMLReaderContext ctxCur;

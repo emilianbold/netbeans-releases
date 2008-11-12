@@ -51,6 +51,7 @@ import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
  *
  * @author Peter Williams
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport.class)
 public class WsCompileEditorSupportImpl implements WsCompileEditorSupport {
 
     public WsCompileEditorSupportImpl() {

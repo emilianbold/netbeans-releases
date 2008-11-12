@@ -282,6 +282,7 @@ public class CompletionResolverImpl implements CompletionResolver {
      * @param out collection where results are added after check
      * @return true if found visible objects in collection
      */
+    @SuppressWarnings("unchecked")
     private boolean isEnoughAfterFilterVisibileObjects(String strPrefix, boolean match,
             Collection<? extends CsmObject> toCheck, Collection out) {
         boolean foundVisible = false;
@@ -411,7 +412,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
             }
             Collection<CsmClassifier> classesEnums = getClassesEnums(context, prj, strPrefix, match, offset, !needClasses(context, offset));
-            Collection<CsmClassifier> visibleClassesEnums = new ArrayList();
+            Collection<CsmClassifier> visibleClassesEnums = new ArrayList<CsmClassifier>();
             if (isEnoughAfterFilterVisibileObjects(strPrefix, match, classesEnums, visibleClassesEnums)) {
                 resImpl.classesEnumsTypedefs.addAll(visibleClassesEnums);
                 return true;
@@ -507,7 +508,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resImpl.libClasses = new ArrayList<CsmClassifier>();
             }
             Collection<CsmClassifier> libClassesEnums = getLibClassesEnums(prj, strPrefix, match);
-            Collection<CsmClassifier> visibleClassesEnums = new ArrayList();
+            Collection<CsmClassifier> visibleClassesEnums = new ArrayList<CsmClassifier>();
             if (isEnoughAfterFilterVisibileObjects(strPrefix, match, libClassesEnums, visibleClassesEnums)) {
                 // we found better classifier in libraries, clear project ones
                 resImpl.classesEnumsTypedefs.clear();
@@ -828,7 +829,17 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
 
     private Collection<CsmEnumerator> getLibEnumerators(CsmProject prj, String strPrefix, boolean match) {
-        return contResolver.getLibEnumerators(strPrefix, match, true);
+        Collection<CsmEnumerator> res = null;
+        if (fileReferncesContext != null && match) {
+            res = fileReferncesContext.getLibEnumerators(strPrefix);
+        }
+        if (res == null) {
+            res = contResolver.getLibEnumerators(strPrefix, match, true);
+            if (fileReferncesContext != null && match) {
+                fileReferncesContext.putLibEnumerators(strPrefix, res);
+            }
+        }
+        return res;
     }
 
     private Collection<CsmFunction> getLibFunctions(CsmProject prj, String strPrefix, boolean match) {
@@ -1277,6 +1288,12 @@ public class CompletionResolverImpl implements CompletionResolver {
             return size;
         }
 
+        @Override
+        public String toString() {
+            Collection<? extends CsmObject> coll = new ArrayList<CsmObject>();
+            addResulItemsToCol(coll);
+            return coll.toString(); 
+        }        
     }
 
     private static final Result EMPTY_RESULT = new EmptyResultImpl();
@@ -1387,6 +1404,11 @@ public class CompletionResolverImpl implements CompletionResolver {
 
         public Collection<CsmTemplateParameter> getTemplateparameters() {
             return Collections.<CsmTemplateParameter>emptyList();
+        }
+
+        @Override
+        public String toString() {
+            return "<Empty Result>"; // NOI18N
         }
     }
 

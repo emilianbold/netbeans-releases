@@ -60,6 +60,7 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
  * 
  * @author Maros Sandor
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.VisibilityQueryImplementation.class)
 public class SubversionVisibilityQuery implements VisibilityQueryImplementation2, VersioningListener {
 
     private List<ChangeListener>  listeners = new ArrayList<ChangeListener>();

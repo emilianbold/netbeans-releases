@@ -61,18 +61,18 @@ import java.util.Vector;
  */
 
 public class AttrValuePairs {
-    private Vector vector = new Vector();
+
+    private Vector<AttrValuePair> vector = new Vector<AttrValuePair>();
 
     public void add(String name, String value) {
-	AttrValuePair attr;
-	// we used to escape the values here, but moved to AttrValuePair
-	// constructor
-	attr = new AttrValuePair(name, value);
-	vector.add(attr);
+        AttrValuePair attr;
+        // we used to escape the values here, but moved to AttrValuePair
+        // constructor
+        attr = new AttrValuePair(name, value);
+        vector.add(attr);
     }
 
     public AttrValuePair[] toArray() {
-	return (AttrValuePair[])
-	    vector.toArray(new AttrValuePair[vector.size()]);
+        return vector.toArray(new AttrValuePair[vector.size()]);
     }
 }

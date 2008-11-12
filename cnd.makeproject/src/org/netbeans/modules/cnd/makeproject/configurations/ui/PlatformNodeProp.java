@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PlatformConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.nodes.Node;
 
 public class PlatformNodeProp extends Node.Property {
@@ -85,7 +84,7 @@ public class PlatformNodeProp extends Node.Property {
     }
     
     public Object getValue() {
-        return new Integer(platformConfiguration.getValue());
+        return Integer.valueOf(platformConfiguration.getValue());
     }
     
     public void setValue(Object v) {
@@ -135,22 +134,12 @@ public class PlatformNodeProp extends Node.Property {
         
         @Override
         public String getAsText() {
-            if (platformConfiguration instanceof PlatformConfiguration) {
-                if (platformConfiguration.getValue() == Platform.PLATFORM_NONE) {
-//                    System.err.println("");
-                }
-            }
             return platformConfiguration.getName();
         }
         
         @Override
-        public void setAsText(String text) throws java.lang.IllegalArgumentException {
-            if (platformConfiguration instanceof PlatformConfiguration) {
-                if (platformConfiguration.getValue() == Platform.PLATFORM_NONE) {
-//                    System.err.println("");
-                }
-            }
-            setValue(text);
+        public void setAsText(String text) throws IllegalArgumentException {
+            super.setValue(text);
         }
         
         @Override

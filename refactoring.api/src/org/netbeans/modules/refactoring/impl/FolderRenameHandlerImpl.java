@@ -57,6 +57,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Jan Becicka
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.FolderRenameHandler.class)
 public class FolderRenameHandlerImpl implements FolderRenameHandler {
 
     public void handleRename(DataFolder folder, String newName) {

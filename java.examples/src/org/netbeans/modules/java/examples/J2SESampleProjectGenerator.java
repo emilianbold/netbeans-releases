@@ -105,6 +105,7 @@ public class J2SESampleProjectGenerator {
                     //No need to load the properties the file is empty
                     Properties p = new Properties ();                    
                     p.put ("javadoc.preview","true");   //NOI18N
+                    p.put ("compile.on.save","true");   //NOI18N
                     OutputStream out = new FileOutputStream (privateProperties);
                     try {
                         p.store(out,null);                    

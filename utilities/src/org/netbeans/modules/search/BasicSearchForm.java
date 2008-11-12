@@ -53,8 +53,6 @@ import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -63,16 +61,13 @@ import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JRootPane;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -104,7 +99,6 @@ import static org.jdesktop.layout.LayoutStyle.UNRELATED;
  * @author  Marian Petras
  */
 final class BasicSearchForm extends JPanel implements ChangeListener,
-                                                      KeyListener,
                                                       ItemListener {
     
     private final BasicSearchCriteria searchCriteria;
@@ -368,18 +362,10 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      * search criteria.
      */
     private void initPreviousValues() {
-        String textPattern = searchCriteria.getTextPatternExpr();
-        cboxTextToFind.setSelectedItem(textPattern);
-        textToFindEditor.setText(textPattern);
-
-        String fileNamePattern = searchCriteria.getFileNamePatternExpr();
-        cboxFileNamePattern.setSelectedItem(fileNamePattern);
-        fileNamePatternEditor.setText(fileNamePattern);
-
+        cboxTextToFind.setSelectedItem(searchCriteria.getTextPatternExpr());
+        cboxFileNamePattern.setSelectedItem(searchCriteria.getFileNamePatternExpr());
         if (cboxReplacement != null) {
-            String replacementExpr = searchCriteria.getReplaceExpr();
-            cboxReplacement.setSelectedItem(replacementExpr);
-            replacementPatternEditor.setText(replacementExpr);
+            cboxReplacement.setSelectedItem(searchCriteria.getReplaceExpr());
         }
 
         chkWholeWords.setSelected(searchCriteria.isWholeWords());
@@ -454,12 +440,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                     new PatternChangeListener(cboxReplacement));
         }
         
-        textToFindEditor.addKeyListener(this);
-        fileNamePatternEditor.addKeyListener(this);
-        if (replacementPatternEditor != null) {
-            replacementPatternEditor.addKeyListener(this);
-        }
-
         chkRegexp.addItemListener(this);
         chkCaseSensitive.addItemListener(this);
         chkWholeWords.addItemListener(this);
@@ -514,19 +494,13 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         if (memory.isTextPatternSpecified()
                 && (cboxTextToFind.getItemCount() != 0)) {
             cboxTextToFind.setSelectedIndex(0);
-            textToFindEditor.setText(
-                    cboxTextToFind.getSelectedItem().toString());
         }
         if (memory.isFileNamePatternSpecified()
                 && cboxFileNamePattern.getItemCount() != 0) {
             cboxFileNamePattern.setSelectedIndex(0);
-            fileNamePatternEditor.setText(
-                    cboxFileNamePattern.getSelectedItem().toString());
         }
         if (cboxReplacement != null && cboxReplacement.getItemCount() != 0) {
             cboxReplacement.setSelectedIndex(0);
-            replacementPatternEditor.setText(
-                    cboxReplacement.getSelectedItem().toString());
         }
 
         chkWholeWords.setSelected(memory.isWholeWords());
@@ -649,48 +623,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
     }
 
-    /**
-     * If the pressed key was Enter, activates the default button (if enabled).
-     * It also consumes the event so that the default
-     * {@code JTextField}'s handling mechanism is bypassed.
-     */
-    public void keyPressed(KeyEvent e) {
-        if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (e.getModifiersEx() == 0)){
-            
-            if ("GTK look and feel".equals(UIManager.getLookAndFeel().getName())//NOI18N
-                && !Boolean.getBoolean(
-                        "org.netbeans.modules.search.disable_patch_140174")) {  //NOI18N
-                JComboBox comboBox;
-                Object source = e.getSource();
-                if (source == textToFindEditor) {
-                    comboBox = cboxTextToFind;
-                } else if (source == fileNamePatternEditor) {
-                    comboBox = cboxFileNamePattern;
-                } else if (source == replacementPatternEditor) {
-                    comboBox = cboxReplacement;
-                } else {
-                    comboBox = null;
-                }
-                if ((comboBox != null) && comboBox.isPopupVisible()) {
-                    return;
-                }
-            }
-
-            JRootPane rootPane = SwingUtilities.getRootPane(this);
-            if (rootPane != null) {
-                JButton button = rootPane.getDefaultButton();
-                if ((button != null) && button.isEnabled()) {
-                    e.consume();
-                    button.doClick();
-                }
-            }
-        }
-    }
-    
-    public void keyReleased(KeyEvent e) { }
-    
-    public void keyTyped(KeyEvent e) { }
-    
     /**
      */
     private AbstractButton[] createSearchScopeButtons() {

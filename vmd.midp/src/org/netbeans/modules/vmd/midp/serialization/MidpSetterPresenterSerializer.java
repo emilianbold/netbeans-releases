@@ -49,6 +49,9 @@ import java.util.Arrays;
 /**
  * @author David Kaspar
  */
+/* XXX would need a no-arg constructor
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.PresenterSerializer.class)
+*/
 public class MidpSetterPresenterSerializer implements PresenterSerializer {
 
     private String name;

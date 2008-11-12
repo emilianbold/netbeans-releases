@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author rico
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider.class)
 public class RMConfigurationProvider implements WSConfigurationProvider {
     
     /** Creates a new instance of RMConfigurationProvider */

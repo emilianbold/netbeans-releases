@@ -49,6 +49,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -77,7 +78,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
@@ -255,11 +256,12 @@ public final class RailsServerManager {
                 ensurePortAvailable();
                 String displayName = NbBundle.getMessage(RailsServerManager.class,
                         "LBL_ServerTab" , instance.getDisplayName(), projectName, Integer.toString(port)); // NOI18N
-                ExecutionDescriptor desc = new ExecutionDescriptor(platform, displayName, dir, "unknown"); // NOI18N
+                RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, dir, "unknown"); // NOI18N
                 desc.cmd(getJavaExecutable());
                 desc.useInterpreter(false);
                 desc.initialArgs(instance.getServerCommand(platform, classPath, dir, port, debug));
                 desc.postBuild(getFinishAction());
+                desc.jvmArguments(jvmArgs);
                 desc.addStandardRecognizers();
                 desc.addOutputRecognizer(new GrizzlyServerRecognizer(instance));
                 desc.frontWindow(false);
@@ -288,7 +290,7 @@ public final class RailsServerManager {
         ensurePortAvailable();
         String displayName = getServerTabName(server, projectName, port);
         String serverPath = server.getServerPath();
-        ExecutionDescriptor desc = new ExecutionDescriptor(platform, displayName, dir, serverPath);
+        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, dir, serverPath);
 // can place debug flags here to allow attaching NB debugger to jruby process
 // running server that is started in debug-commons.
 //        if(debug && "true".equals(System.getProperty("rdebug.enable.debug"))) {
@@ -506,42 +508,60 @@ public final class RailsServerManager {
     private static boolean useHttpValidation = Boolean.parseBoolean(
             System.getProperty("rails.server.http.validation"));
 
+    private static boolean checkIsPortInUseUsingServerSocket(int port) {
+        ServerSocket serverSocket = null;
+        try {
+            serverSocket = new ServerSocket(port);
+            return false;
+        } catch (IOException ex) {
+            LOGGER.log(Level.FINE, "Port " + port + " is in use.", ex);
+            return true;
+        } finally {
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                try {
+                    serverSocket.close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, "Exception while closing ServerSocked in port " + port, ex);
+                }
+            }
+        }
+    }
+    
     public static boolean isPortInUse(int port) {
         LOGGER.fine("Checking port: " + port + ". Ports in use: " + IN_USE_PORTS);
         if (IN_USE_PORTS.contains(port)) {
             return true;
         }
+        LOGGER.fine("Connecting to " + port + ", using http validation: " + useHttpValidation);
+        if (!useHttpValidation) {
+            return checkIsPortInUseUsingServerSocket(port);
+        }
         int timeout = 3000;
         Socket socket = new Socket();
         try {
             try {
-                LOGGER.fine("Connecting to " + port + ", using http validation: " + useHttpValidation);
                 socket.connect(new InetSocketAddress("localhost", port), timeout); // NOI18N
-                if(useHttpValidation) {
-                    socket.setSoTimeout(timeout);
-                    OutputStream out = socket.getOutputStream();
+                socket.setSoTimeout(timeout);
+                OutputStream out = socket.getOutputStream();
+                try {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     try {
-                        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                        try {
-                            // request -- mongrel requires \r\n instead of just \n
-                            out.write("GET / HTTP/1.0\r\n\r\n".getBytes("UTF8")); // NOI18N
-                            out.flush();
+                        // request -- mongrel requires \r\n instead of just \n
+                        out.write("GET / HTTP/1.0\r\n\r\n".getBytes("UTF8")); // NOI18N
+                        out.flush();
 
-                            // response
-                            String text = in.readLine();
-                            LOGGER.fine("Got response " + text);
-                            if (text != null && text.startsWith("HTTP")) { // NOI18N
-                                return true; // http response.
-                            }
-                            return false;
-                        } finally {
-                            in.close();
+                        // response
+                        String text = in.readLine();
+                        LOGGER.fine("Got response " + text);
+                        if (text != null && text.startsWith("HTTP")) { // NOI18N
+                            return true; // http response.
                         }
+                        return false;
                     } finally {
-                        out.close();
+                        in.close();
                     }
-                } else {
-                    return true;
+                } finally {
+                    out.close();
                 }
             } finally {
                 socket.close();

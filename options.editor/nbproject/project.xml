@@ -376,8 +376,10 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
+                <friend>org.netbeans.modules.java.editor</friend>
                 <friend>org.netbeans.modules.java.source</friend>
                 <friend>org.netbeans.modules.php.project</friend>
+                <friend>org.netbeans.modules.python.editor</friend>
                 <friend>org.netbeans.modules.ruby</friend>
                 <friend>org.netbeans.modules.ruby.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>

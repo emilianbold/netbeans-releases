@@ -42,9 +42,13 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -52,7 +56,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -61,7 +64,11 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -100,7 +107,7 @@ import org.openide.windows.WindowManager;
  * @author Petr Hrebejk
  */
 public class ProjectTab extends TopComponent 
-                        implements ExplorerManager.Provider {
+                        implements ExplorerManager.Provider, PropertyChangeListener {
                 
     public static final String ID_LOGICAL = "projectTabLogical_tc"; // NOI18N                            
     public static final String ID_PHYSICAL = "projectTab_tc"; // NOI18N                        
@@ -115,7 +122,9 @@ public class ProjectTab extends TopComponent
     
     private String id;
     private transient final ProjectTreeView btv;
-                         
+
+    private final JLabel noProjectsLabel = new JLabel(NbBundle.getMessage(ProjectTab.class, "NO_PROJECT_OPEN"));
+
     public ProjectTab( String id ) {
         this();
         this.id = id;
@@ -134,11 +143,20 @@ public class ProjectTab extends TopComponent
         map.put("delete", new DelegatingAction(ActionProvider.COMMAND_DELETE, ExplorerUtils.actionDelete(manager, true)));
         
         initComponents();
-        
+
+        OpenProjects.getDefault().addPropertyChangeListener(this);
+
+        noProjectsLabel.addMouseListener(new LabelPopupDisplayer(noProjectsLabel));
+        noProjectsLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        noProjectsLabel.setEnabled(false);
+        Color usualWindowBkg = UIManager.getColor("window"); // NOI18N
+        noProjectsLabel.setBackground(usualWindowBkg != null ? usualWindowBkg : Color.white);
+        noProjectsLabel.setOpaque(true);
+
         btv = new ProjectTreeView();    // Add the BeanTreeView
         
         btv.setDragSource (true);
-        
+        btv.setUseSubstringInQuickSearch(true);
         btv.setRootVisible(false);
         
         add( btv, BorderLayout.CENTER ); 
@@ -252,10 +270,12 @@ public class ProjectTab extends TopComponent
         return getDefault( ID_PHYSICAL );
     }
     
+    @Override
     protected String preferredID () {
         return id;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return ExplorerUtils.getHelpCtx( 
             manager.getSelectedNodes(),
@@ -263,6 +283,7 @@ public class ProjectTab extends TopComponent
     }
 
      
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
@@ -285,6 +306,7 @@ public class ProjectTab extends TopComponent
     // End of variables declaration//GEN-END:variables
         
     @SuppressWarnings("deprecation") 
+    @Override
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
         return btv.requestFocusInWindow();
@@ -292,6 +314,7 @@ public class ProjectTab extends TopComponent
 
     //#41258: In the SDI, requestFocus is called rather than requestFocusInWindow:
     @SuppressWarnings("deprecation") 
+    @Override
     public void requestFocus() {
         super.requestFocus();
         btv.requestFocus();
@@ -301,6 +324,7 @@ public class ProjectTab extends TopComponent
     
     private static final long serialVersionUID = 9374872358L;
     
+    @Override
     public void writeExternal (ObjectOutput out) throws IOException {
         super.writeExternal( out );
         
@@ -311,6 +335,7 @@ public class ProjectTab extends TopComponent
     }
 
     @SuppressWarnings("unchecked") 
+    @Override
     public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {        
         super.readExternal( in );
         id = (String)in.readObject();
@@ -338,10 +363,12 @@ public class ProjectTab extends TopComponent
     
     // MANAGING ACTIONS
     
+    @Override
     protected void componentActivated() {
         ExplorerUtils.activateActions(manager, true);
     }
     
+    @Override
     protected void componentDeactivated() {
         ExplorerUtils.activateActions(manager, false);
     }
@@ -483,7 +510,37 @@ public class ProjectTab extends TopComponent
         }
         
     }
-    
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+            if (OpenProjects.getDefault().getOpenProjects().length > 0) {
+                restoreTreeView();
+            } else {
+                showNoProjectsLabel();
+            }
+        }
+    }
+
+    private void showNoProjectsLabel() {
+        if (noProjectsLabel.isShowing()) {
+            return;
+        }
+        remove(btv);
+        add(noProjectsLabel, BorderLayout.CENTER);
+        revalidate();
+        repaint();
+    }
+
+    private void restoreTreeView() {
+        if (btv.isShowing()) {
+            return;
+        }
+        remove(noProjectsLabel);
+        add(btv, BorderLayout.CENTER );
+        revalidate();
+        repaint();
+    }
+
     // Private innerclasses ----------------------------------------------------
     
     /** Extending bean treeview. To be able to persist the selected paths
@@ -510,7 +567,7 @@ public class ProjectTab extends TopComponent
                     }
                 }
             });
-	}
+    }
                         
         public List<String[]> getExpandedPaths() { 
 
@@ -648,5 +705,26 @@ public class ProjectTab extends TopComponent
         }
         
     }
-    
+
+    // showing popup on right click in projects tab when label <No Project Open> is shown
+    private class LabelPopupDisplayer extends MouseAdapter {
+
+        private Component component;
+
+        public LabelPopupDisplayer(Component comp) {
+            component = comp;
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            super.mousePressed(e);
+            if (e.isPopupTrigger() && id.equals(ID_LOGICAL)) {
+                Action actions[] = rootNode.getActions(false);
+                JPopupMenu popup = Utilities.actionsToPopup(actions, component);
+                popup.show(component, e.getX(), e.getY());
+            }
+        }
+
+    }
+
 }

@@ -51,7 +51,7 @@ import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.util.NbBundle;
 
 public class BatchBuildAction {
-    protected static String actionName = NbBundle.getBundle(BatchBuildAction.class).getString("BatchBuildActionName");
+    protected static final String actionName = NbBundle.getBundle(BatchBuildAction.class).getString("BatchBuildActionName");
     
     public static Action MainBatchBuildAction() {
         return MainProjectSensitiveActions.mainProjectSensitiveAction(new BatchBuildActionPerformer(), actionName, null);

@@ -281,6 +281,10 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
                     return false;
                 }
             }
+            File[] usableDomains = Util.getRegisterableDefaultDomains(location);
+            if (usableDomains.length == 0) {
+                setInfoMsg("Msg_NoDefaultDomainsAvailable");  //NOI18N
+            }
         } else {
             setErrorMsg("Msg_UnsupportedType");  //NOI18N
             return false;

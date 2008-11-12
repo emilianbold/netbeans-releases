@@ -982,6 +982,7 @@ public class VisualReplicator {
 
     // -----
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.ViewConverter.class)
     public static class DefaultConverter implements ViewConverter {
         public Convert convert(Object component, boolean root, boolean designRestrictions) {
             Class compClass = component.getClass();

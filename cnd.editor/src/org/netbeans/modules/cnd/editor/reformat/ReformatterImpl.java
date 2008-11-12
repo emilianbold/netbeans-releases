@@ -125,7 +125,8 @@ public class ReformatterImpl {
                        (qtExtension.isSignals(current) || qtExtension.isSlots(current))) {
                         break;
                     }
-                    // nobreak
+                    braces.setLastStatementStart(ts);
+                    break;
                 default:
                     braces.setLastStatementStart(ts);
             }

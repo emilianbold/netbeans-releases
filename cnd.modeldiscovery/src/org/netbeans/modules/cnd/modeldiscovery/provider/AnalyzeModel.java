@@ -58,6 +58,9 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
+import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
@@ -75,6 +78,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.discovery.api.DiscoveryProvider.class)
 public class AnalyzeModel implements DiscoveryProvider {
     private Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
     public static final String MODEL_FOLDER_KEY = "folder"; // NOI18N
@@ -133,9 +137,9 @@ public class AnalyzeModel implements DiscoveryProvider {
         isStoped = true;
     }
     
-    public List<Configuration> analyze(ProjectProxy project) {
+    public List<Configuration> analyze(ProjectProxy project, Progress progress) {
         isStoped = false;
-        MyConfiguration conf = new MyConfiguration(project);
+        MyConfiguration conf = new MyConfiguration(project, progress);
         List<Configuration> confs = new ArrayList<Configuration>();
         confs.add(conf);
         return confs;
@@ -209,9 +213,12 @@ public class AnalyzeModel implements DiscoveryProvider {
     public boolean isApplicable(ProjectProxy project) {
         if (project.getProject() != null){
             Project makeProject = project.getProject();
-            CsmProject langProject = CsmModelAccessor.getModel().getProject(makeProject);
-            if (langProject != null/* && langProject.isStable(null)*/){
-                return true;
+            ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (pdp.gotDescriptor()) {
+                CsmProject langProject = CsmModelAccessor.getModel().getProject(makeProject);
+                if (langProject != null/* && langProject.isStable(null)*/){
+                    return true;
+                }
             }
         }
         return false;
@@ -226,9 +233,11 @@ public class AnalyzeModel implements DiscoveryProvider {
         private List<String> myIncludedFiles;
         private MakeConfigurationDescriptor makeConfigurationDescriptor;
         private CsmProject langProject;
+        private Progress progress;
         
-        private MyConfiguration(ProjectProxy project){
+        private MyConfiguration(ProjectProxy project, Progress progress){
             Project makeProject = project.getProject();
+            this.progress = progress;
             langProject = CsmModelAccessor.getModel().getProject(makeProject);
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
@@ -255,20 +264,20 @@ public class AnalyzeModel implements DiscoveryProvider {
         private List<SourceFileProperties> getSourceFileProperties(String root){
             List<SourceFileProperties> res = new ArrayList<SourceFileProperties>();
             Map<String,List<String>> searchBase = search(root);
+            PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(null);
             Item[] items = makeConfigurationDescriptor.getProjectItems();
             for (int i = 0; i < items.length; i++){
                 if (isStoped) {
                     break;
                 }
                 Item item = items[i];
-                if (isExcluded(item)) {
-                    continue;
-                }
-                Language lang = item.getLanguage();
-                if (lang == Language.C || lang == Language.CPP){
-                    CsmFile langFile = langProject.findFile(item);
-                    SourceFileProperties source = new ModelSource(item, langFile, searchBase);
-                    res.add(source);
+                if (!isExcluded(item)) {
+                    Language lang = item.getLanguage();
+                    if (lang == Language.C || lang == Language.CPP){
+                        CsmFile langFile = langProject.findFile(item);
+                        SourceFileProperties source = new ModelSource(item, langFile, searchBase, pkgConfig);
+                        res.add(source);
+                    }
                 }
             }
             return res;
@@ -285,6 +294,9 @@ public class AnalyzeModel implements DiscoveryProvider {
             if (myIncludedFiles == null) {
                 HashSet<String> unique = new HashSet<String>();
                 Item[] items = makeConfigurationDescriptor.getProjectItems();
+                if (progress != null){
+                    progress.start(items.length);
+                }
                 for (int i = 0; i < items.length; i++){
                     if (isStoped) {
                         break;
@@ -304,6 +316,9 @@ public class AnalyzeModel implements DiscoveryProvider {
                     if (source instanceof ModelSource){
                         unUnique.addAll( ((ModelSource)source).getIncludedFiles() );
                     }
+                    if (progress != null){
+                        progress.increment();
+                    }
                 }
                 for(String path : unUnique){
                     File file = new File(path);
@@ -312,6 +327,9 @@ public class AnalyzeModel implements DiscoveryProvider {
                     }
                 }
                 myIncludedFiles = new ArrayList<String>(unique);
+                if (progress != null){
+                    progress.done();
+                }
             }
             return myIncludedFiles;
         }

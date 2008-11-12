@@ -54,6 +54,7 @@ import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
  *
  * @author Adam Sotona
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor.class, position=1)
 public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor {
     
     public static final String CONFIG_ACTIVE = "config.active"; //NOI18N
@@ -232,7 +233,8 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
             set.add(new PropertyDescriptor(DEPLOYMENT_JARURL, true, DefaultPropertyParsers.STRING_PARSER, "${dist.jar}")); //NOI18N
             ref = new WeakReference(set);
         }
-        return set;
+        //Defensive copy - getting CMEs when creating new configurations
+        return new HashSet(set);
     }
     
 }

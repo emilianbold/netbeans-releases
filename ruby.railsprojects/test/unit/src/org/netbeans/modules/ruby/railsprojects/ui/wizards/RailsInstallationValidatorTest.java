@@ -56,7 +56,7 @@ public class RailsInstallationValidatorTest extends RubyTestBase {
     }
 
     public void testGetRailsInstallationInfo() throws Exception {
-        RubyPlatform rubyWithGems = RubyPlatformManager.addPlatform(setUpRuby(true, ""));
+        RubyPlatform rubyWithGems = setUpPlatformWithRubyGems();
         RailsInstallationInfo railsInfo = RailsInstallationValidator.getRailsInstallation(rubyWithGems);
         
         assertFalse("RailsInstallationInfo '" + railsInfo.getMessage() + "' is invalid", railsInfo.isValid());
@@ -82,8 +82,7 @@ public class RailsInstallationValidatorTest extends RubyTestBase {
     }
 
     public void testGetRailsInstallationInfoForNoGemsPlatform() throws Exception {
-        RubyPlatform rubyNoGems = RubyPlatformManager.addPlatform(setUpRuby(false, ""));
-        RailsInstallationInfo railsInfo = RailsInstallationValidator.getRailsInstallation(rubyNoGems);
+        RailsInstallationInfo railsInfo = RailsInstallationValidator.getRailsInstallation(setUpPlatform());
         
         assertFalse("RailsInstallationInfo '" + railsInfo.getMessage() + "' is invalid", railsInfo.isValid());
         assertNull(railsInfo.getVersion());

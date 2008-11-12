@@ -60,6 +60,7 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Lahoda
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider.class)
 public class JavaSourceProviderImpl implements JavaSourceProvider {
     
     /** Creates a new instance of JavaSourceProviderImpl */

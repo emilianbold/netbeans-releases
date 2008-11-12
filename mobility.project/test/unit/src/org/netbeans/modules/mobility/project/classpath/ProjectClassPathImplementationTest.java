@@ -55,7 +55,6 @@ import java.io.File;
 import java.net.URL;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.classpath.SimplePathResourceImplementation;
-import org.netbeans.modules.masterfs.MasterFileSystem;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.netbeans.modules.mobility.project.TestUtil;
 import org.openide.filesystems.FileObject;
@@ -75,7 +74,6 @@ public class ProjectClassPathImplementationTest extends NbTestCase {
     {
         TestUtil.setLookup( new Object[] {            
         }, ProjectClassPathImplementationTest.class.getClassLoader());
-        assertNotNull(MasterFileSystem.settingsFactory(null));
     }
     
     public ProjectClassPathImplementationTest(String testName) {

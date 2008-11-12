@@ -235,6 +235,7 @@ public class YamlParser implements Parser {
                 result = parse(source, file);
             } catch (Exception ioe) {
                 listener.exception(ioe);
+                result = new YamlParserResult(null, this, file, false, null, null);
             } 
 
             ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
