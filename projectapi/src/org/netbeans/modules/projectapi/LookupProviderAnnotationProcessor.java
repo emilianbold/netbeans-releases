@@ -58,7 +58,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes("org.netbeans.spi.project.LookupProvider.Register")
+@SupportedAnnotationTypes("org.netbeans.spi.project.LookupProvider.Registation")
 public class LookupProviderAnnotationProcessor extends LayerGeneratingProcessor {
 
     @Override
