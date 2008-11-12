@@ -76,7 +76,7 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     private GdbDebugger      debugger;
     
     public VariablesActionsProvider(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
     public Action[] getActions(Object node) throws UnknownTypeException {

@@ -51,78 +51,81 @@ import java.util.Vector;
  * Runtime.exec().
  */
 
-public class Env {
-    private Vector environ;
+public class Env implements Cloneable {
+    private Vector<String[]> environ;
 
     public Env() {
-	environ = new Vector();
+        environ = new Vector<String[]>();
     }
 
     public void removeAll() {
-	environ = new Vector();
+        environ = new Vector<String[]>();
     }
 
     /**
      * Remove the entry with the given name
      */
     public void removeByName(String name) {
-	if (name == null)
-	    return;
-
-	String[] entry = getenvAsPair(name);
-	environ.removeElement(entry);
+        if (name == null) {
+            return;
+        }
+        String[] entry = getenvAsPair(name);
+        environ.removeElement(entry);
     }
 
     /**
      * Returns the whole entry in the form of <code>name=value</code>.
      */
     public String getenvEntry(String name) {
-	String value = getenv(name);
-	if (value != null)
-	    return name + "=" + value; // NOI18N
-	else
-	    return null;
+        String value = getenv(name);
+        if (value != null) {
+            return name + "=" + value; // NOI18N
+        } else {
+            return null;
+        }
     } 
 
     /**
      * Returns the entry in the form of String[2]
      */
     public String[] getenvAsPair(String name) {
-	for (Enumeration e = environ.elements() ; e.hasMoreElements() ;) {
-	    String[] nameValue  = (String[])e.nextElement();
-	    if (nameValue[0].equals(name)) {
-		return nameValue;
-	    }
-	}
-	return null;
+        for (Enumeration e = environ.elements(); e.hasMoreElements();) {
+            String[] nameValue = (String[]) e.nextElement();
+            if (nameValue[0].equals(name)) {
+                return nameValue;
+            }
+        }
+        return null;
     } 
 
     /**
      * Returns just the value, like getenv(3).
      */
     public String getenv(String name) {
-	for (Enumeration e = environ.elements() ; e.hasMoreElements() ;) {
-	    String[] nameValue  = (String[])e.nextElement();
-	    if (nameValue[0].equals(name)) {
-		return nameValue[1];
-	    }
-	}
-	return null;
+        for (Enumeration e = environ.elements(); e.hasMoreElements();) {
+            String[] nameValue = (String[]) e.nextElement();
+            if (nameValue[0].equals(name)) {
+                return nameValue[1];
+            }
+        }
+        return null;
     }
 
+    @Override
     public String toString() {
-	String[] envStrings = getenv();
-	boolean addSep = false;
-	StringBuilder envString = new StringBuilder();
-	for (int i = 0; i < envStrings.length; i++) {
-	    if (addSep)
-	    envString.append(";"); // NOI18N
-	    envString.append(envStrings[i]);
-	    addSep = true;
-	}
-	return envString.toString();
+        String[] envStrings = getenv();
+        boolean addSep = false;
+        StringBuilder envString = new StringBuilder();
+        for (int i = 0; i < envStrings.length; i++) {
+            if (addSep) {
+                envString.append(";"); // NOI18N
+            }
+            envString.append(envStrings[i]);
+            addSep = true;
+        }
+        return envString.toString();
     }
-    
+
     public String encode() {
         return toString();
     }
@@ -134,39 +137,45 @@ public class Env {
         }
     }
             
-
+    @Override
     public boolean equals(Object o) {
-	boolean eq = false;
-	if (o instanceof Env) {
-	    Env env = (Env)o;
-	    eq = toString().equals(env.toString());
-	}
-	return eq;
+        boolean eq = false;
+        if (o instanceof Env) {
+            Env env = (Env)o;
+            eq = toString().equals(env.toString());
+        }
+        return eq;
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
     }
 
     /**
      * Takes <code>name=value</code> format.
      */
     public void putenv(String entry) {
-	int equalx = entry.indexOf('='); // NOI18N
-	if (equalx == -1) {
-	    System.err.println("Env.putenv(): odd entry '" + entry + "'"); // NOI18N
-	    return;
-	}
-	String name = entry.substring(0, equalx);
-	String value = entry.substring(equalx+1);
-	putenv(name, value);
+        int equalx = entry.indexOf('='); // NOI18N
+        if (equalx == -1) {
+            System.err.println("Env.putenv(): odd entry '" + entry + "'"); // NOI18N
+            return;
+        }
+        String name = entry.substring(0, equalx);
+        String value = entry.substring(equalx + 1);
+        putenv(name, value);
     } 
 
     /**
      * Sets or creates a new environment variable
      */
     public void putenv(String name, String value) {
-	String[] entry = getenvAsPair(name);
-	if (entry != null)
-	    entry[1] = value;
-	else
-	    environ.add(new String[] {name, value});
+        String[] entry = getenvAsPair(name);
+        if (entry != null) {
+            entry[1] = value;
+        } else {
+            environ.add(new String[]{name, value});
+        }
     } 
 
     /**
@@ -174,49 +183,48 @@ public class Env {
      * Suitable for passing to Runtime.exec.
      */
     public String[] getenv() {
-	String array[] = new String[environ.size()];
+        String array[] = new String[environ.size()];
 
-	int index = 0;
-	for (Enumeration e = environ.elements() ; e.hasMoreElements() ;) {
-	    String[] nameValue  = (String[])e.nextElement();
-	    array[index++] = nameValue[0] + "=" + nameValue[1]; // NOI18N
-	}
-	return array;
+        int index = 0;
+        for (Enumeration e = environ.elements(); e.hasMoreElements();) {
+            String[] nameValue = (String[]) e.nextElement();
+            array[index++] = nameValue[0] + "=" + nameValue[1]; // NOI18N
+        }
+        return array;
     } 
 
     /**
      * Converts the internal representation to an array of variable/value pairs
      */
     public String[][] getenvAsPairs() {
-	String array[][] = new String[environ.size()][2];
+        String array[][] = new String[environ.size()][2];
 
-	int index = 0;
-	for (Enumeration e = environ.elements() ; e.hasMoreElements() ;) {
-	    String[] nameValue  = (String[])e.nextElement();
-	    array[index++] = nameValue;
-	}
-	return array;
+        int index = 0;
+        for (Enumeration e = environ.elements(); e.hasMoreElements();) {
+            String[] nameValue = (String[]) e.nextElement();
+            array[index++] = nameValue;
+        }
+        return array;
     } 
 
     public void assign(Env env) {
-	removeAll();
-	String[][] pairs = env.getenvAsPairs();
-	for (int i = 0; i < pairs.length; i++)
-	    putenv(pairs[i][0], pairs[i][1]);
+        removeAll();
+        String[][] pairs = env.getenvAsPairs();
+        for (int i = 0; i < pairs.length; i++) {
+            putenv(pairs[i][0], pairs[i][1]);
+        }
     }
 
     /**
      * Clone the environment creating an identical copy.
      */
-    public Env cloneEnv() {
-	return (Env)clone();
-    }
-
-    public Object clone() {
-	Env clone = new Env();
-	String[][] pairs = getenvAsPairs();
-	for (int i = 0; i < pairs.length; i++)
-	    clone.putenv(pairs[i][0], pairs[i][1]);
-	return clone;
+    @Override
+    public Env clone() {
+        Env clone = new Env();
+        String[][] pairs = getenvAsPairs();
+        for (int i = 0; i < pairs.length; i++) {
+            clone.putenv(pairs[i][0], pairs[i][1]);
+        }
+        return clone;
     }
 }

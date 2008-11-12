@@ -52,27 +52,31 @@ import org.openide.util.actions.SystemAction;
 public class MakeCleanAction extends MakeBaseAction {
 
     public String getName () {
-	return getString("BTN_Clean");	// NOI18N
+        return getString("BTN_Clean"); // NOI18N
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
-        for (int i = 0; i < activatedNodes.length; i++)
+        for (int i = 0; i < activatedNodes.length; i++) {
             performAction(activatedNodes[i], "clean"); // NOI18N
+        }
     }
 
     /**
      *  Execute a single MakefileDataObject.
      *
-     *  @param nodes A single MakefileDataNode(should have a {@link MakeExecSupport}
+     *  @param node A single MakefileDataNode(should have a {@link MakeExecSupport}
      */
     public static void execute(Node node) {
-	((MakeCleanAction)SystemAction.get(MakeCleanAction.class)).performAction(new Node[] {node});
+        (SystemAction.get(MakeCleanAction.class)).performAction(new Node[] {node});
     }
 
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/cnd/resources/MakeCleanAction.gif"; // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx(MakeCleanAction.class); // FIXUP ???
     }

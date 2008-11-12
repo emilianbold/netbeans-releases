@@ -45,14 +45,12 @@ package org.netbeans.modules.i18n;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.TextComponent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.IOException;
 import java.util.Arrays;
-import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -76,6 +74,7 @@ import static org.jdesktop.layout.GroupLayout.BASELINE;
 import static org.jdesktop.layout.GroupLayout.TRAILING;
 import static org.jdesktop.layout.LayoutStyle.RELATED;
 import static org.jdesktop.layout.LayoutStyle.UNRELATED;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 
 
@@ -89,7 +88,7 @@ import org.openide.util.Exceptions;
  * @see I18nPanel
  */
 public class PropertyPanel extends JPanel {
-    
+
     /** property representing the I18String. Change is fired when the i18string changes.
      * Old and new objects are not sent with the notification.
      */
@@ -97,10 +96,10 @@ public class PropertyPanel extends JPanel {
 
     /** Name for resource property. */
     public static final String PROP_RESOURCE = "property_resource";     //NOI18N
-    
+
     /** Helper name for dummy action command. */
     private static final String DUMMY_ACTION = "dont_proceed";          //NOI18N
-    
+
     /** Customized <code>I18nString</code>. */
     protected I18nString i18nString;
 
@@ -108,13 +107,13 @@ public class PropertyPanel extends JPanel {
     private FileObject file;
 
     /** Internal flag to block handling of changes to the key jtextfield,
-     * which didn't originate from the user but from the code. If this is >0, 
+     * which didn't originate from the user but from the code. If this is >0,
      * values are just being pushed to the UI, if <=0, values are being received
      * from the ui.
      **/
-    private int internalTextChange = 0;    
-    
-    
+    private int internalTextChange = 0;
+    private String innerResourceTextContent;
+
     /** Creates new <code>PropertyPanel</code>. */
     public PropertyPanel() {
         initComponents();
@@ -128,23 +127,23 @@ public class PropertyPanel extends JPanel {
         commentText.setEnabled(ena);
         commentLabel.setEnabled(ena);
         commentScroll.setEnabled(ena);
-        
+
         keyBundleCombo.setEnabled(ena);
         keyLabel.setEnabled(ena);
-        
+
         replaceFormatButton.setEnabled(ena);
         replaceFormatLabel.setEnabled(ena);
         replaceFormatTextField.setEnabled(ena);
-        
-        valueLabel.setEnabled(ena); 
+
+        valueLabel.setEnabled(ena);
         valueText.setEnabled(ena);
         valueScroll.setEnabled(ena);
     }
-    
+
     /** Seter for <code>i18nString</code> property. */
     public void setI18nString(I18nString i18nString) {
         this.i18nString = i18nString;
-        
+
         updateAllValues();
         firePropertyChange(PROP_STRING, null,null);
     }
@@ -161,17 +160,18 @@ public class PropertyPanel extends JPanel {
     /** Initializes UI values. */
     void updateAllValues() {
         resourceText.setText(getResourceName(i18nString.getSupport().getResourceHolder().getResource()));
-        updateBundleKeys();        
+        innerResourceTextContent = resourceText.getText();
+        updateBundleKeys();
         updateKey();
         updateValue();
         updateComment();
-    } 
-    
-    /** Updates selected item of <code>keyBundleCombo</code> UI. 
+    }
+
+    /** Updates selected item of <code>keyBundleCombo</code> UI.
      */
-    private void updateKey() {       
+    private void updateKey() {
         String key = i18nString.getKey();
-        
+
         if ((key == null) || !key.equals(keyBundleCombo.getSelectedItem())) {
             // Trick to avoid firing key selected property change.
             String oldActionCommand = keyBundleCombo.getActionCommand();
@@ -180,39 +180,39 @@ public class PropertyPanel extends JPanel {
             internalTextChange++;
             keyBundleCombo.setSelectedItem((key != null) ? key : "");   //NOI18N
             internalTextChange--;
-            
+
             keyBundleCombo.setActionCommand(oldActionCommand);
         }
-        
+
         updateReplaceText();
     }
 
-    /** Updates <code>valueText</code> UI. 
+    /** Updates <code>valueText</code> UI.
      */
-    private void updateValue() {            
+    private void updateValue() {
         String value = i18nString.getValue();
-        
+
         if (!valueText.getText().equals(value)) {
             valueText.setText((value != null) ? value : "");            //NOI18N
         }
-       
-       updateReplaceText();            
+
+       updateReplaceText();
     }
-    
+
     /** Updates <code>commentText</code> UI. */
     private void updateComment() {
         String comment = i18nString.getComment();
-        
+
         if (!commentText.getText().equals(comment)) {
             commentText.setText((comment != null) ? comment : "");      //NOI18N
         }
     }
-    
+
     /** Updates <code>replaceFormatTextField</code>. */
     protected void updateReplaceText() {
         replaceFormatTextField.setText(i18nString.getReplaceString());
     }
-    
+
     /** Updates <code>keyBundleCombo</code> UI. */
     void updateBundleKeys() {
         // Trick to avoid firing key selected property change.
@@ -224,12 +224,12 @@ public class PropertyPanel extends JPanel {
         Arrays.sort(keys);
         keyBundleCombo.setModel(new DefaultComboBoxModel(keys));
         internalTextChange--;
-        
+
         keyBundleCombo.setActionCommand(oldActionCommand);
-        
+
         updateKey();
     }
-    
+
      /** Helper method. Changes resource. */
     private void changeResource(DataObject resource) {
         if (resource == null) {
@@ -237,11 +237,11 @@ public class PropertyPanel extends JPanel {
         }
 
         DataObject oldValue = i18nString.getSupport().getResourceHolder().getResource();
-        
+
         if ((oldValue != null) && oldValue.equals(resource)) {
             return;
         }
-        
+
         i18nString.getSupport().getResourceHolder().setResource(resource);
         String newResourceValue = i18nString.getSupport().getResourceHolder()
                                   .getValueForKey(i18nString.getKey());
@@ -259,7 +259,7 @@ public class PropertyPanel extends JPanel {
         if (isResourceClass(resource.getClass())) {
             changeResource(resource);
         }
-    }        
+    }
 
     private boolean isResourceClass(Class clazz) {
         return Arrays.asList(
@@ -291,18 +291,18 @@ public class PropertyPanel extends JPanel {
         resourceText.getAccessibleContext().setAccessibleDescription(
                 I18nUtil.getBundle().getString("ACS_ResourceText"));    //NOI18N
     }
-    
+
     private void myInitComponents() {
         argumentsButton.setVisible(false);
         // hook the Key combobox edit-field for changes
         ((JTextField) keyBundleCombo.getEditor().getEditorComponent()).
-                getDocument().addDocumentListener(new DocumentListener() {              
+                getDocument().addDocumentListener(new DocumentListener() {
                     public void changedUpdate(DocumentEvent e) { keyBundleTextChanged();}
                     public void insertUpdate(DocumentEvent e) {keyBundleTextChanged();}
                     public void removeUpdate(DocumentEvent e) {keyBundleTextChanged();}
                 }
                );
-        valueText.getDocument().addDocumentListener(new DocumentListener() {              
+        valueText.getDocument().addDocumentListener(new DocumentListener() {
                     public void changedUpdate(DocumentEvent e) { valueTextChanged();}
                     public void insertUpdate(DocumentEvent e) {valueTextChanged();}
                     public void removeUpdate(DocumentEvent e) {valueTextChanged();}
@@ -310,25 +310,25 @@ public class PropertyPanel extends JPanel {
                );
 
     }
-    
+
     private void keyBundleTextChanged() {
         if (internalTextChange == 0) {
             String key = ((JTextField) keyBundleCombo.getEditor().getEditorComponent()).getText();
 
-            if (!key.equals(i18nString.getKey())) {        
+            if (!key.equals(i18nString.getKey())) {
                 i18nString.setKey(key);
                 firePropertyChange(PROP_STRING, null, null);
-            } 
+            }
         }
     }
 
     private void valueTextChanged() {
         i18nString.setValue(valueText.getText());
 //        updateValue();
-        firePropertyChange(PROP_STRING, null, null);                
+        firePropertyChange(PROP_STRING, null, null);
     }
 
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -348,16 +348,20 @@ public class PropertyPanel extends JPanel {
         replaceFormatTextField = new JTextField();
         replaceFormatLabel = new JLabel();
         replaceFormatButton = new JButton();
-        jLabel1 = new JLabel();
+        bundleNameLabel = new JLabel();
         resourceText = new JTextField();
         argumentsButton = new JButton();
         browseButton = new JButton();
+        warningLabel = new JLabel();
+
+        warningLabel.setForeground(java.awt.Color.RED);
 
         commentLabel.setLabelFor(commentText);
         Mnemonics.setLocalizedText(commentLabel, I18nUtil.getBundle().getString("LBL_Comment")); // NOI18N
 
         commentText.setRows(2);
         commentText.addFocusListener(new FocusAdapter() {
+            @Override
             public void focusLost(FocusEvent evt) {
                 commentTextFocusLost(evt);
             }
@@ -372,6 +376,7 @@ public class PropertyPanel extends JPanel {
 
         valueText.setRows(2);
         valueText.addFocusListener(new FocusAdapter() {
+            @Override
             public void focusLost(FocusEvent evt) {
                 valueTextFocusLost(evt);
             }
@@ -389,6 +394,7 @@ public class PropertyPanel extends JPanel {
         replaceFormatTextField.setEditable(false);
         replaceFormatTextField.selectAll();
         replaceFormatTextField.addFocusListener(new FocusAdapter() {
+            @Override
             public void focusGained(FocusEvent evt) {
                 replaceFormatTextFieldFocusGained(evt);
             }
@@ -404,8 +410,8 @@ public class PropertyPanel extends JPanel {
             }
         });
 
-        jLabel1.setLabelFor(resourceText);
-        Mnemonics.setLocalizedText(jLabel1, I18nUtil.getBundle().getString("LBL_BundleName")); // NOI18N
+        bundleNameLabel.setLabelFor(resourceText);
+        Mnemonics.setLocalizedText(bundleNameLabel, I18nUtil.getBundle().getString("LBL_BundleName")); // NOI18N
 
         resourceText.setColumns(20);
 
@@ -418,6 +424,13 @@ public class PropertyPanel extends JPanel {
             }
         });
 
+        resourceText.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                resourceTextKeyReleased(evt);
+            }
+        });
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -426,7 +439,7 @@ public class PropertyPanel extends JPanel {
                 .add(layout.createParallelGroup()
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup()
-                            .add(jLabel1)
+                            .add(bundleNameLabel)
                             .add(valueLabel)
                             .add(commentLabel)
                             .add(keyLabel)
@@ -437,6 +450,7 @@ public class PropertyPanel extends JPanel {
                                 .add(resourceText)
                                 .addPreferredGap(RELATED)
                                 .add(browseButton))
+                            .add(warningLabel)
                             .add(keyBundleCombo)
                             .add(valueScroll)
                             .add(commentScroll)
@@ -451,10 +465,13 @@ public class PropertyPanel extends JPanel {
             layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(BASELINE)
-                    .add(jLabel1)
+                    .add(bundleNameLabel)
                     .add(resourceText)
                     .add(browseButton))
-                .addPreferredGap(UNRELATED)
+                .addPreferredGap(RELATED)
+                .add(layout.createParallelGroup()
+                    .add(warningLabel))
+                .addPreferredGap(RELATED)
                 .add(layout.createParallelGroup(BASELINE)
                     .add(keyLabel)
                     .add(keyBundleCombo))
@@ -478,6 +495,31 @@ public class PropertyPanel extends JPanel {
         );
     }// </editor-fold>
 
+    private void resourceTextKeyReleased(java.awt.event.KeyEvent evt) {
+        if (!innerResourceTextContent.equals(resourceText.getText())
+                && resourceText.getText().trim().length() != 0) {
+            String bundlePath = resourceText.getText()
+                                    .replaceAll("[.]", "/")  //NOI18N
+                                    .concat(".properties");  //NOI18N
+            FileObject resourceFO = Util.getResource(file, bundlePath);
+
+            if ((resourceFO != null) && resourceFO.isValid() && !resourceFO.isVirtual()) {
+                try {
+                    setResource(DataObject.find(resourceFO));
+                    warningLabel.setText("");  //NOI18N
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else {
+               warningLabel.setText(
+                       I18nUtil.getBundle().getString("LBL_InvalidBundle")  //NOI18N
+                       + bundlePath);  //NOI18N
+            }
+        } else {
+            warningLabel.setText("");  //NOI18N
+        }
+    }
+
     private void browseButtonActionPerformed(ActionEvent evt) {
         ResourceHolder rh = i18nString.getSupport().getResourceHolder();
         DataObject template;
@@ -487,10 +529,15 @@ public class PropertyPanel extends JPanel {
             ErrorManager.getDefault().notify(ex);
             return;
         }
-        DataObject resource = SelectorUtils.selectOrCreateBundle(file, template);
-//      DataObject resource = SelectorUtils.selectBundle(this.project, file);
+        DataObject resource = SelectorUtils.selectOrCreateBundle(
+                                file,
+                                template,
+                                i18nString.getSupport().getResourceHolder().getResource());
+
+        //DataObject resource = SelectorUtils.selectBundle(this.project, file);
         if (resource != null) {
 	    changeResource(resource);
+            warningLabel.setText("");  //NOI18N
         }
 
     }
@@ -499,7 +546,7 @@ public class PropertyPanel extends JPanel {
         // Accessibility
         replaceFormatTextField.selectAll();
     }
-    
+
     private boolean isReplaceFormatValid(String replaceFormat) {
         I18nString i18nReplaceCheck = (I18nString) i18nString.clone();
         i18nReplaceCheck.setReplaceFormat(replaceFormat);
@@ -525,16 +572,16 @@ public class PropertyPanel extends JPanel {
                     final Object source = ev.getSource();
                     if (source == DialogDescriptor.OK_OPTION) {
                         String newText = (String) customPanel.getPropertyValue();
-                        
+
                         if (!newText.equals(replaceFormatTextField.getText())) {
                             i18nString.setReplaceFormat(newText);
                             updateReplaceText();
                             firePropertyChange(PROP_STRING, null, null);
-                            
+
                             // Reset option as well.
                             I18nUtil.getOptions().setReplaceJavaCode(newText);
                         }
-                        
+
                         dialogs[0].setVisible(false);
                         dialogs[0].dispose();
                     } else if (source == DialogDescriptor.CANCEL_OPTION) {
@@ -593,13 +640,13 @@ public class PropertyPanel extends JPanel {
         String key = (String)keyBundleCombo.getSelectedItem();
         i18nString.setKey(key);
         updateKey();
-        
+
         String value = i18nString.getSupport().getResourceHolder().getValueForKey(key);
         if (value != null) {
             i18nString.setValue(value);
             updateValue();
         }
-        
+
         String comment = i18nString.getSupport().getResourceHolder().getCommentForKey(key);
         if (comment != null) {
             i18nString.setComment(comment);
@@ -611,19 +658,19 @@ public class PropertyPanel extends JPanel {
     private void commentTextFocusLost(FocusEvent evt) {
         i18nString.setComment(commentText.getText());
         updateComment();
-        firePropertyChange(PROP_STRING, null, null);        
+        firePropertyChange(PROP_STRING, null, null);
     }
 
     private void valueTextFocusLost(FocusEvent evt) {
         valueTextChanged();
     }
-    
+
     protected JButton argumentsButton;
     private JButton browseButton;
     private JLabel commentLabel;
     private JScrollPane commentScroll;
     private JTextArea commentText;
-    private JLabel jLabel1;
+    private JLabel bundleNameLabel;
     private JComboBox keyBundleCombo;
     private JLabel keyLabel;
     private JButton replaceFormatButton;
@@ -633,5 +680,5 @@ public class PropertyPanel extends JPanel {
     private JLabel valueLabel;
     private JScrollPane valueScroll;
     private JTextArea valueText;
-        
+    private JLabel warningLabel;
 }

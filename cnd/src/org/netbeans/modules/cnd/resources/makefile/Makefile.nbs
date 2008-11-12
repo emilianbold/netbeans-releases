@@ -23,7 +23,7 @@
 # Contributor(s):
 #
 # The Original Software is NetBeans. The Initial Developer of the Original
-# Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+# Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 # Microsystems, Inc. All Rights Reserved.
 #
 # If you wish your version of this file to be governed by only the CDDL
@@ -37,27 +37,52 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-OPTIONS_shell=Shell Editor
+TOKEN:whitespace: ( ( " " | "\\\n" )+ )
 
-##############################
-# Fonts and Colors
+TOKEN:newline: ( "\n" )
 
-NAME_coloring_shell-errors=Error in Shell
-NAME_coloring_shell-global-special-characters=Shell Special Character
-NAME_coloring_shell-identifier=Shell Identifier
-NAME_coloring_shell-line-comment=Line Comment
-NAME_coloring_shell-shell-command=Shell
-NAME_coloring_shell-macro-operators=Macro Operator
-NAME_coloring_shell-macros=Shell Macro
-NAME_coloring_shell-string-literal=String Literal
-NAME_coloring_shell-whitespace=Whitespace
+TOKEN:tab: ( "\t" )
 
-EXAMPLE_coloring_shell-errors=error
-EXAMPLE_coloring_shell-global-special-characters=
-EXAMPLE_coloring_shell-identifier=identifier
-EXAMPLE_coloring_shell-line-comment=# line comment
-EXAMPLE_coloring_shell-shell-command=#! /bin/bash
-EXAMPLE_coloring_shell-macro-operators= =
-EXAMPLE_coloring_shell-macros=$CC
-EXAMPLE_coloring_shell-string-literal="string literal"
-EXAMPLE_coloring_shell-whitespace=
+TOKEN:line_comment: ( "#" [^"\n"]* "\n" )
+
+SKIP: whitespace, line_comment
+
+TOKEN:macro: {
+    pattern: ( "$" );
+    call: org.netbeans.modules.cnd.editor.makefile.MakefileParserHelper.parseMacro;
+}
+
+TOKEN:macro_operator: ( ":sh" | "=" | ":=" | "+=" )
+
+TOKEN:rule_operator: ( "+" | "-" | "@" | "?" | "!" )
+
+TOKEN:separator: ( "(" | ")" | "[" | "]" | "{" | "}" | ";" | ":" | "::" | "," | "<" | ">" | "&" )
+
+TOKEN:keyword: (
+    "include"
+# | "override" | "define" | "endef" | "ifeq" |
+#    "ifneq" | "ifdef" | "ifndef" | "else" | "endif"
+)
+
+TOKEN:special_target: (
+    "%" | ".DEFAULT" | ".DONE" | ".FAILED" | ".GET_POSIX" |
+    ".IGNORE" | ".INIT" | ".KEEP_STATE" | ".KEEP_STATE_FILE" | ".MAKE_VERSION" |
+    ".NO_PARALLEL" | ".PARALLEL" | ".PHONY" | ".POSIX" | ".PRECIOUS" |
+    ".SCCS_GET" | ".SCCS_GET_POSIX" | ".SILENT" | ".SUFFIXES" | ".WAIT"
+)
+
+TOKEN:string_literal: ( "\"" ( [^ "\"" "\\"] | "\\" . )* "\"" )
+
+TOKEN:string_literal: ( "\'" ( [^ "\'" "\\"] | "\\" . )* "\'" )
+
+TOKEN:string_literal: ( "`" ( [^ "`" "\\"] | "\\" . )* "`" )
+
+TOKEN:identifier: ( ( [^ "\t" "\n" "\r" " " "\\" "$" "\"" "\'" "`" ":" "(" ")" "[" "]" "{" "}" ";" "&" "="] | "\\" [^ "\n"] )* )
+
+COMMENT_LINE {
+    prefix: "#";
+}
+
+COMPLETE "\":\""
+COMPLETE "':'"
+COMPLETE "`:`"

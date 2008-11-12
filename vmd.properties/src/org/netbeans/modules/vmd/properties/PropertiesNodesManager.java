@@ -149,7 +149,6 @@ public final class PropertiesNodesManager implements DesignDocumentAwareness,
 
                         public void run() {
                             pd.getPropertyEditor().cleanUp(c);
-                            //System.out.println(c.toString());
                         }
                     });
                 }

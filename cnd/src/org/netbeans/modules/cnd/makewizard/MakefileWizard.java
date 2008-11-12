@@ -293,21 +293,20 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
     /** The current panel.
      */
     public WizardDescriptor.Panel current() {
-	return currentPanel;
+        return currentPanel;
     }
     
 
     /** Current name of the panel */
     public String name() {
-	Object[] args = {
-	    new Integer(index + 1),
-	    new Integer(panels.length)
-	};
-	MessageFormat mf = new MessageFormat 
-		(NbBundle.getBundle(WizardDescriptor.class).getString
-		 ("CTL_ArrayIteratorName"));				// NOI18N
-	
-	return mf.format(args);
+        Object[] args = {
+            Integer.valueOf(index + 1),
+            Integer.valueOf(panels.length)
+        };
+        MessageFormat mf = new MessageFormat(
+                NbBundle.getBundle(WizardDescriptor.class).getString("CTL_ArrayIteratorName"));				// NOI18N
+
+        return mf.format(args);
     }
 
     /** Updates button state */
@@ -420,15 +419,15 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
      *  @exception NoSuchElementException if the panel does not exist
      */
     public synchronized void nextPanel() {
-	if (panels[++index] instanceof StepHeader) {
-	    index++;
-	}
-	currentPanel = (WizardDescriptor.Panel) panels[index];
-	updatePanels(makefileData.getMakefileType());
+        if (panels[++index] instanceof StepHeader) {
+            index++;
+        }
+        currentPanel = (WizardDescriptor.Panel) panels[index];
+        updatePanels(makefileData.getMakefileType());
 
-	((JPanel)currentPanel.getComponent()).putClientProperty(
-			WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,		// NOI18N
-			new Integer(virtIndex));
+        ((JPanel) currentPanel.getComponent()).putClientProperty(
+                WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,
+                Integer.valueOf(virtIndex));
     }
     
     
@@ -437,20 +436,18 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
      *  @exception NoSuchElementException if the panel does not exist
      */
     public synchronized void previousPanel() {
+        if (index == 0) {
+            throw new NoSuchElementException();
+        }
+        if (panels[--index] instanceof StepHeader) {
+            index--;
+        }
+        currentPanel = (WizardDescriptor.Panel) panels[index];
+        updatePanels(makefileData.getMakefileType());
 
-	if (index == 0) {
-	    throw new NoSuchElementException();
-	}
-
-	if (panels[--index] instanceof StepHeader) {
-	    index--;
-	}
-	currentPanel = (WizardDescriptor.Panel) panels[index];
-	updatePanels(makefileData.getMakefileType());
-
-	((JPanel)currentPanel.getComponent()).putClientProperty(
-			WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,		// NOI18N
-			new Integer(virtIndex));
+        ((JPanel) currentPanel.getComponent()).putClientProperty(
+                WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,
+                Integer.valueOf(virtIndex));
     }
 
 
@@ -728,8 +725,8 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	
 	updatePanels(getMakefileData().getMakefileType()); //FIXUP
 	((JPanel)(currentPanel.getComponent())).
-			putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,		// NOI18N
-			new Integer(0));
+			putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 0);
+
 	wd.addPropertyChangeListener(listener);
 	/*
 	dialog = DialogDisplayer.getDefault().createDialog(wd);
@@ -789,10 +786,11 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
      * The cancel button always closes the dialog.
      */
     public void setFinishClosingEnabled(boolean b) {
-	if (b)
-	    wd.setClosingOptions(new Object[]{finishButton, cancelButton});
-	else
-	    wd.setClosingOptions(new Object[]{cancelButton});
+        if (b) {
+            wd.setClosingOptions(new Object[]{finishButton, cancelButton});
+        } else {
+            wd.setClosingOptions(new Object[]{cancelButton});
+        }
     }
     
     /**
@@ -800,12 +798,12 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
      *  Finish button.
      */
     public void setFinishEnabled(boolean tf) {
-	//wd.setFinishEnabled(tf); // FIXUP
-	finishButton.setEnabled(tf); // FIXUP ???
+        //wd.setFinishEnabled(tf); // FIXUP
+        finishButton.setEnabled(tf); // FIXUP ???
     }
 
     final public static MakefileWizard getMakefileWizard() {
-	return makefileWizard;
+        return makefileWizard;
     }
 
 
@@ -814,8 +812,8 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
     //
 
     public static void showWizard() {
-	makefileWizard = new MakefileWizard();
-	makefileWizard.executeWizard();
+        makefileWizard = new MakefileWizard();
+        makefileWizard.executeWizard();
     }
 
 

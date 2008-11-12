@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,38 +31,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor.shell;
+package org.netbeans.modules.cnd.editor.makefile;
 
-import org.netbeans.editor.Acceptor;
-import org.netbeans.editor.AcceptorFactory;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
 
 /**
- * Settings factory for shell files.
+ * IndentTask factory for Makefiles.
+ *
+ * @author Alexey Vladykin
  */
-public class ShellSettingsFactory {
+public class MakefileIndentTaskFactory implements IndentTask.Factory {
 
-    private static final Acceptor INDENT_HOT_CHARS_ACCEPTOR = new Acceptor() {
-        public boolean accept(char ch) {
-            switch (ch) {
-                case '}':
-                    return true;
-            }
-            return false;
-        }
-    };
-
-    public static Acceptor getIndentHotCharsAcceptor() {
-        return INDENT_HOT_CHARS_ACCEPTOR;
-    }
-
-    public static Acceptor getIdentifierAcceptor() {
-        return AcceptorFactory.LETTER_DIGIT;
-    }
-
-    public static Acceptor getAbbrevResetAcceptor() {
-        return AcceptorFactory.NON_JAVA_IDENTIFIER;
+    public IndentTask createTask(Context context) {
+        return new MakefileIndentTask(context);
     }
 
 }

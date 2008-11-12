@@ -45,7 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.List;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 
@@ -151,9 +151,8 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
     
     static BreakpointsReader findBreakpointsReader() {
         BreakpointsReader breakpointsReader = null;
-        Iterator i = DebuggerManager.getDebuggerManager().lookup(null, Reader.class).iterator();
-        while (i.hasNext ()) {
-            Reader r = (Reader) i.next ();
+        List<? extends Reader> readers = DebuggerManager.getDebuggerManager().lookup(null, Reader.class);
+        for (Reader r : readers) {
             String[] ns = r.getSupportedClassNames ();
             if (ns.length == 1 && GdbBreakpoint.class.getName().equals(ns[0])) {
                 breakpointsReader = (BreakpointsReader) r;
@@ -178,14 +177,13 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
     private static Breakpoint[] getBreakpoints() {
         Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
         int i, k = bs.length;
-        ArrayList bb = new ArrayList();
+        List<Breakpoint> bb = new ArrayList<Breakpoint>();
         for (i = 0; i < k; i++) {
             // Don't store hidden breakpoints
             if (bs[i] instanceof GdbBreakpoint && !((GdbBreakpoint) bs [i]).isHidden()) {
-                bb.add (bs [i]);
+                bb.add(bs[i]);
             }
         }
-        bs = new Breakpoint[bb.size ()];
-        return (Breakpoint[]) bb.toArray(bs);
+        return bb.toArray(new Breakpoint[bb.size()]);
     }
 }

@@ -415,6 +415,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 
         this.sliderWidth.setEnabled(false);
         this.sliderHeight.setEnabled(false);
+        this.checkBoxZoom.setEnabled(false);
 
         this.buttonImportImages.addActionListener(this);
 
@@ -663,19 +664,27 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
     }
 
     private void handleImageStateChange() {
-        SpriteDialog.this.sliderWidth.setEnabled(true);
-        SpriteDialog.this.sliderHeight.setEnabled(true);
         String errMsg = null;
 
+        boolean imgSelected = !listImageFileName.isSelectionEmpty();
+
+        this.sliderWidth.setEnabled(imgSelected);
+        this.sliderHeight.setEnabled(imgSelected);
+        this.checkBoxZoom.setEnabled(imgSelected);
+
         errMsg = SpriteDialog.this.getFieldLayerNameError();
-        try {
-            SpriteDialog.this.loadImagePreview();
-        } catch (MalformedURLException e) {
-            errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgLoc.txt");
-            e.printStackTrace();
-        } catch (IllegalArgumentException iae) {
-            errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt");
-            iae.printStackTrace();
+        if (!imgSelected) {
+            clearImagePreview();
+        } else {
+            try {
+                SpriteDialog.this.loadImagePreview();
+            } catch (MalformedURLException e) {
+                errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgLoc.txt");
+                e.printStackTrace();
+            } catch (IllegalArgumentException iae) {
+                errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt");
+                iae.printStackTrace();
+            }
         }
 
         if (errMsg == null) {
@@ -689,6 +698,20 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
             SpriteDialog.this.labelError.setText("");
             SpriteDialog.this.setOKButtonEnabled(true);
         }
+    }
+
+    private void clearImagePreview() {
+        this.sliderWidth.removeChangeListener(this.sliderListener);
+        this.sliderHeight.removeChangeListener(this.sliderListener);
+
+        this.sliderWidth.setModel(new DefaultBoundedRangeModel());
+        this.sliderHeight.setModel(new DefaultBoundedRangeModel());
+
+        this.sliderWidth.setValue(0);
+        this.sliderHeight.setValue(0);
+
+        this.sliderWidth.addChangeListener(sliderListener);
+        this.sliderHeight.addChangeListener(sliderListener);
     }
 
     private void loadImagePreview() throws MalformedURLException, IllegalArgumentException {

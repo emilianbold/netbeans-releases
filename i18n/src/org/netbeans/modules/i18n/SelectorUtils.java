@@ -175,13 +175,18 @@ public class SelectorUtils {
             prj = FileOwnerQuery.getOwner(file);
 
         ClassPath cp = ClassPath.getClassPath(file, ClassPath.EXECUTE);
-        if (cp != null) nodes.addAll(getRootNodes(prj, getRoots(cp), BUNDLES_FILTER, includeFiles));
+        if (cp != null) nodes.addAll(getRootNodes(prj, getRoots(ClassPath.getClassPath(file, ClassPath.SOURCE), cp), BUNDLES_FILTER, includeFiles));
         
         return createRootFor(nodes, prj);
     }
 
-    private static List<FileObject> getRoots(ClassPath cp) {
+    private static List<FileObject> getRoots(ClassPath sources, ClassPath cp) {
         ArrayList<FileObject> l = new ArrayList<FileObject>(cp.entries().size());
+        for (ClassPath.Entry e : sources.entries()) {
+            if (e.getRoot() != null) {
+                l.add(e.getRoot());
+            }
+        }
         for (ClassPath.Entry e : cp.entries()) {
 
             // try to map it to sources
@@ -190,12 +195,16 @@ public class SelectorUtils {
             FileObject [] fos = r.getRoots();
             if (fos.length > 0) {
                 for (FileObject fo : fos) {
-                    l.add(fo);
+                    if (!l.contains(fo)) {
+                        l.add(fo);
+                    }
                 }
             } else {
                 if (e.getRoot()!=null) 
-                    l.add(e.getRoot()); // add the class-path location
+                    if (!l.contains(e.getRoot())) {
+                        l.add(e.getRoot()); // add the class-path location
                                         // directly
+                    }
             }
         }
 
@@ -341,9 +350,16 @@ public class SelectorUtils {
        }
   }
 
-    public static DataObject selectOrCreateBundle(FileObject refFile, DataObject template) {
+    public static DataObject selectOrCreateBundle(FileObject refFile,
+                                                    DataObject template,
+                                                    DataObject actBundle) {
         Node rootNode = bundlesNode(null, refFile, true);
-        FileSelector fs = new FileSelector(refFile, template);
+
+        FileObject actFile =  (actBundle != null) ?
+                               actBundle.getPrimaryFile() :
+                               null;
+
+        FileSelector fs = new FileSelector(refFile, template, actFile);
         fs.getDialog(I18nUtil.getBundle().getString ("CTL_SelectPropDO_Dialog_Title"), null) // NOI18N
             .setVisible(true);
         return fs.isConfirmed() ? fs.getSelectedDataObject() : null;

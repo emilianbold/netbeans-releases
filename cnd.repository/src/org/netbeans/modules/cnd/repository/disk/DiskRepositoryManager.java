@@ -82,25 +82,25 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     private final ReadWriteLock             queueLock;
     
     private Map<Integer, Object> unitLocks = new HashMap<Integer, Object>();
-    private String mainUnitLock = new String("DelegateRepository main lock"); // NOI18N
+    private final String mainUnitLock = new String("DelegateRepository main lock"); // NOI18N
 
     public DiskRepositoryManager() {
         removedObject   = new RemovedPersistent();
-        queueLock          = new ReentrantReadWriteLock(true);
+        queueLock       = new ReentrantReadWriteLock(true);
         threadManager   = new RepositoryThreadManager(this, queueLock);
-	queue           = threadManager.startup();
-        units    = new ConcurrentHashMap<Integer, Unit>();
+        queue           = threadManager.startup();
+        units           = new ConcurrentHashMap<Integer, Unit>();
     }
 
     private Object getUnitLock(int unitId) {
-	synchronized( mainUnitLock  ) {
-	    Object lock = unitLocks.get(unitId);
-	    if( lock == null ) {
-		lock = new String("unitId="+unitId); // NOI18N
-		unitLocks.put(unitId, lock);
-	    }
-	    return lock;
-	}
+        synchronized (mainUnitLock) {
+            Object lock = unitLocks.get(unitId);
+            if (lock == null) {
+                lock = new String("unitId=" + unitId); // NOI18N
+                unitLocks.put(unitId, lock);
+            }
+            return lock;
+        }
     }
     
     /** Never returns null - throws exceptions */
@@ -222,32 +222,32 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     }
     
     public boolean maintenance(long timeout) {
-            if( units.size() == 0 ) {
-                return false;
+        if (units.size() == 0) {
+            return false;
+        }
+
+        Collection<Unit> values = units.values();
+        Unit[] unitList = values.toArray(new Unit[values.size()]);
+        Arrays.sort(unitList, new MaintenanceComparator());
+        boolean needMoreTime = false;
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < unitList.length; i++) {
+            if (timeout <= 0) {
+                needMoreTime = true;
+                break;
             }
 
-            Collection<Unit> values = units.values();
-            Unit[] unitList = (Unit[]) values.toArray(new Unit[values.size()]);
-            Arrays.sort(unitList, new MaintenanceComparator());
-            boolean needMoreTime = false;
-            long start = System.currentTimeMillis();
-            for (int i = 0; i < unitList.length; i++) {
-                if( timeout <= 0 ) {
+            try {
+                if (unitList[i].maintenance(timeout)) {
                     needMoreTime = true;
-                    break;
                 }
-                
-                try {
-                    if( unitList[i].maintenance(timeout) ) {
-                        needMoreTime = true;
-                    }
-                } catch (IOException ex) {
-                    RepositoryListenersManager.getInstance().fireAnException(
-                            unitList[i].getName(), new RepositoryExceptionImpl(ex));
-                }
-                timeout -= (System.currentTimeMillis() - start);
+            } catch (IOException ex) {
+                RepositoryListenersManager.getInstance().fireAnException(
+                        unitList[i].getName(), new RepositoryExceptionImpl(ex));
             }
-            return needMoreTime;
+            timeout -= (System.currentTimeMillis() - start);
+        }
+        return needMoreTime;
     }
 
     public void openUnit(int unitId, String unitName) {
