@@ -54,6 +54,7 @@ import org.openide.nodes.Node;
  *
  * @author mkleint
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=400)
 public class ModulesNodeFactory implements NodeFactory {
     
     private static final String KEY_MODULES = "modules"; //NOI18N

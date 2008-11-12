@@ -66,6 +66,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Milan Kuchtiak
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-web-project",position=450)
 public class RestServicesNodeFactory implements NodeFactory {
 
     /** Creates a new instance of WebServicesNodeFactory */
