@@ -41,6 +41,7 @@ package org.netbeans.modules.mobility.project.ui;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.io.CharConversionException;
+import org.netbeans.modules.mobility.project.ui.J2MEProjectRootNode;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -80,13 +81,10 @@ class DecoratedNode extends AbstractNode {
     }
 
     protected boolean isAlive() {
-        Node parent = this;
-        while (parent != null) {
-            parent = parent.getParentNode();
-            if (parent != null && parent instanceof J2MEProjectRootNode) {
-                if (parent.getParentNode() != null) {
-                    return true;
-                }
+        for (Node parent = this; parent != null; parent = parent.getParentNode()) {
+            boolean isProjectRoot = parent instanceof J2MEProjectRootNode;
+            if (isProjectRoot) {
+                return true;
             }
         }
         return false;
