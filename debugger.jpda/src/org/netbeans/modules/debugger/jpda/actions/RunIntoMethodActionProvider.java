@@ -312,6 +312,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             debugger.getOperator().register(brReq, tracingExecutor);
             brReq.addThreadFilter(t.getThreadReference());
             brReq.setSuspendPolicy(debugger.getSuspend());
+            brReq.addCountFilter(1);
             brReq.enable();
             if (setBoundaryStep) {
                 boundaryStepPtr[0] = setBoundaryStepRequest(debugger, t, brReq);
