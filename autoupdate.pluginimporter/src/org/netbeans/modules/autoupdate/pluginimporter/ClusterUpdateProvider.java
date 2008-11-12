@@ -111,7 +111,10 @@ public class ClusterUpdateProvider implements UpdateProvider {
             Map<String, String> attr = new HashMap<String, String> (7);
             readConfigFile (cf, attr);
             File jarFile = new File (cluster, attr.get ("jar")); // NOI18N
-            assert jarFile.exists () : jarFile + " exists.";
+            if (! jarFile.exists ()) {
+                LOG.info ("Jar file " + jarFile + " doesn't exists. Skip checking " + cnb);
+                continue;
+            }
             Manifest mf = new JarFile (jarFile).getManifest ();
             UpdateItem item = UpdateItem.createModule (
                 cnb,
