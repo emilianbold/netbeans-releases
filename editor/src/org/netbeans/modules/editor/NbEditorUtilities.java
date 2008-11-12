@@ -43,6 +43,8 @@ package org.netbeans.modules.editor;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.JEditorPane;
@@ -312,7 +314,7 @@ public class NbEditorUtilities {
         try {
             return NbBundle.getBundle(NbEditorUtilities.class).getString(key);
         } catch (MissingResourceException e) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO,null, e);
             return key;
         }
     }
