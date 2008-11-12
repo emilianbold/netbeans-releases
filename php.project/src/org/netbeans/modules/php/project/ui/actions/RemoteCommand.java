@@ -45,7 +45,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.connections.RemoteClient;
-import org.netbeans.modules.php.project.connections.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TransferFile;
@@ -64,10 +64,10 @@ import org.openide.windows.OutputWriter;
  *
  * @author Radek Matous
  */
-public abstract class FtpCommand extends Command {
+public abstract class RemoteCommand extends Command {
     private static final char SEP_CHAR = '='; // NOI18N
     private static final int MAX_TYPE_SIZE = getFileTypeLabelMaxSize() + 2;
-    private static final RequestProcessor RP = new RequestProcessor("FTP", 1); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Remote connection", 1); // NOI18N
     private static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<Runnable>();
     private static final RequestProcessor.Task TASK = RP.create(new Runnable() {
         public void run() {
@@ -79,7 +79,7 @@ public abstract class FtpCommand extends Command {
         }
     }, true);
 
-    public FtpCommand(PhpProject project) {
+    public RemoteCommand(PhpProject project) {
         super(project);
 
     }
@@ -107,8 +107,8 @@ public abstract class FtpCommand extends Command {
         return false;
     }
 
-    protected InputOutput getFtpLog(String displayName) {
-        InputOutput io = IOProvider.getDefault().getIO(NbBundle.getMessage(Command.class, "LBL_FtpLog", displayName), false);
+    protected InputOutput getRemoteLog(String displayName) {
+        InputOutput io = IOProvider.getDefault().getIO(NbBundle.getMessage(Command.class, "LBL_RemoteLog", displayName), false);
         io.select();
         try {
             io.getOut().reset();
@@ -130,14 +130,14 @@ public abstract class FtpCommand extends Command {
     }
 
     protected void processRemoteException(RemoteException remoteException) {
-        String title = NbBundle.getMessage(Command.class, "LBL_FtpError");
+        String title = NbBundle.getMessage(Command.class, "LBL_RemoteError");
         StringBuilder message = new StringBuilder(remoteException.getMessage());
         String remoteServerAnswer = remoteException.getRemoteServerAnswer();
         Throwable cause = remoteException.getCause();
         if (remoteServerAnswer != null && remoteServerAnswer.length() > 0) {
-            message.append(NbBundle.getMessage(Command.class, "MSG_FtpErrorReason", remoteServerAnswer));
+            message.append(NbBundle.getMessage(Command.class, "MSG_RemoteErrorReason", remoteServerAnswer));
         } else if (cause != null) {
-            message.append(NbBundle.getMessage(Command.class, "MSG_FtpErrorReason", cause.getMessage()));
+            message.append(NbBundle.getMessage(Command.class, "MSG_RemoteErrorReason", cause.getMessage()));
         }
         NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
                 message.toString(),
@@ -154,7 +154,7 @@ public abstract class FtpCommand extends Command {
         OutputWriter err = io.getErr();
 
         out.println();
-        out.println(NbBundle.getMessage(FtpCommand.class, "LBL_FtpSummary"));
+        out.println(NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteSummary"));
         StringBuilder sep = new StringBuilder(20);
         for (int i = 0; i < sep.capacity(); i++) {
             sep.append(SEP_CHAR);
@@ -165,7 +165,7 @@ public abstract class FtpCommand extends Command {
         long size = 0;
         int files = 0;
         if (transferInfo.hasAnyTransfered()) {
-            out.println(NbBundle.getMessage(FtpCommand.class, "LBL_FtpSucceeded"));
+            out.println(NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteSucceeded"));
             for (TransferFile file : transferInfo.getTransfered()) {
                 printSuccess(out, maxRelativePath, file);
                 if (file.isFile()) {
@@ -176,14 +176,14 @@ public abstract class FtpCommand extends Command {
         }
 
         if (transferInfo.hasAnyFailed()) {
-            err.println(NbBundle.getMessage(FtpCommand.class, "LBL_FtpFailed"));
+            err.println(NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteFailed"));
             for (Map.Entry<TransferFile, String> entry : transferInfo.getFailed().entrySet()) {
                 printError(err, maxRelativePath, entry.getKey(), entry.getValue());
             }
         }
 
         if (transferInfo.hasAnyIgnored()) {
-            err.println(NbBundle.getMessage(FtpCommand.class, "LBL_FtpIgnored"));
+            err.println(NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteIgnored"));
             for (Map.Entry<TransferFile, String> entry : transferInfo.getIgnored().entrySet()) {
                 printError(err, maxRelativePath, entry.getKey(), entry.getValue());
             }
@@ -191,16 +191,16 @@ public abstract class FtpCommand extends Command {
 
         // summary
         long runtime = transferInfo.getRuntime();
-        String timeUnit = NbBundle.getMessage(FtpCommand.class, "LBL_TimeUnitMilisecond");
+        String timeUnit = NbBundle.getMessage(RemoteCommand.class, "LBL_TimeUnitMilisecond");
         if (runtime > 1000) {
             runtime /= 1000;
-            timeUnit = NbBundle.getMessage(FtpCommand.class, "LBL_TimeUnitSecond");
+            timeUnit = NbBundle.getMessage(RemoteCommand.class, "LBL_TimeUnitSecond");
         }
         double s = size / 1024.0;
-        String sizeUnit = NbBundle.getMessage(FtpCommand.class, "LBL_SizeUnitKilobyte");
+        String sizeUnit = NbBundle.getMessage(RemoteCommand.class, "LBL_SizeUnitKilobyte");
         if (s > 1024) {
             s /= 1024.0;
-            sizeUnit = NbBundle.getMessage(FtpCommand.class, "LBL_SizeUnitMegabyte");
+            sizeUnit = NbBundle.getMessage(RemoteCommand.class, "LBL_SizeUnitMegabyte");
         }
         Object[] params = new Object[] {
             runtime,
@@ -209,7 +209,7 @@ public abstract class FtpCommand extends Command {
             s,
             sizeUnit,
         };
-        out.println(NbBundle.getMessage(FtpCommand.class, "MSG_FtpRuntimeAndSize", params));
+        out.println(NbBundle.getMessage(RemoteCommand.class, "MSG_RemoteRuntimeAndSize", params));
     }
 
     private void printSuccess(OutputWriter writer, int maxRelativePath, TransferFile file) {
@@ -231,17 +231,17 @@ public abstract class FtpCommand extends Command {
         } else {
             type = "LBL_TypeUnknown"; // NOI18N
         }
-        return NbBundle.getMessage(FtpCommand.class, type);
+        return NbBundle.getMessage(RemoteCommand.class, type);
     }
 
     private static int getFileTypeLabelMaxSize() {
-        String str = NbBundle.getMessage(FtpCommand.class, "LBL_TypeDirectory");
+        String str = NbBundle.getMessage(RemoteCommand.class, "LBL_TypeDirectory");
         int max = str.length();
-        str = NbBundle.getMessage(FtpCommand.class, "LBL_TypeFile");
+        str = NbBundle.getMessage(RemoteCommand.class, "LBL_TypeFile");
         if (max < str.length()) {
             max = str.length();
         }
-        str = NbBundle.getMessage(FtpCommand.class, "LBL_TypeUnknown");
+        str = NbBundle.getMessage(RemoteCommand.class, "LBL_TypeUnknown");
         if (max < str.length()) {
             max = str.length();
         }

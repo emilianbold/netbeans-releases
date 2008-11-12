@@ -36,41 +36,67 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.connections;
 
-import org.netbeans.modules.php.project.connections.TransferFile;
-import java.io.File;
-import org.netbeans.junit.NbTestCase;
+package org.netbeans.modules.php.project.connections.common;
+
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public class TransferFileTest extends NbTestCase {
+public final class RemoteValidator {
+    public static final int MINIMUM_PORT = 0;
+    public static final int MAXIMUM_PORT = 65535;
 
-    public TransferFileTest(String name) {
-        super(name);
+    private RemoteValidator() {
     }
 
-    public void testTransferInfo() throws Exception {
-        TransferFile file = TransferFile.fromFile(new File("/a/b/c"), "/a");
-        assertEquals("c", file.getName());
-        assertEquals("b/c", file.getRelativePath());
-        assertEquals("b", file.getParentRelativePath());
+    public static String validateRememberPassword(char[] password) {
+        assert password != null;
+        if (password.length > 0) {
+            return NbBundle.getMessage(RemoteValidator.class, "MSG_PasswordRememberDangerous");
+        }
+        return null;
+    }
 
-        TransferFile file2 = TransferFile.fromFile(new File("/a/b/c"), "/a/b");
-        assertFalse(file.equals(file2));
+    public static String validateHost(String host) {
+        assert host != null;
+        if (host.trim().length() == 0) {
+            return NbBundle.getMessage(RemoteValidator.class, "MSG_NoHostName");
+        }
+        return null;
+    }
 
-        TransferFile file3 = TransferFile.fromFile(new File("/0/1/2/b/c"), "/0/1/2");
-        assertTrue(file.equals(file3));
+    public static String validateUser(String username) {
+        if (username.trim().length() == 0) {
+            return NbBundle.getMessage(RemoteValidator.class, "MSG_NoUserName");
+        }
+        return null;
+    }
 
-        file = TransferFile.fromFile(new File("/a/b"), "/a");
-        assertEquals("b", file.getName());
-        assertEquals("b", file.getRelativePath());
-        assertEquals(TransferFile.CWD, file.getParentRelativePath());
+    public static String validatePort(String port) {
+        String err = null;
+        try {
+            int p = Integer.parseInt(port);
+            if (p < MINIMUM_PORT || p > MAXIMUM_PORT) { // see InetSocketAddress
+                err = NbBundle.getMessage(RemoteValidator.class, "MSG_PortInvalid", String.valueOf(MINIMUM_PORT), String.valueOf(MAXIMUM_PORT));
+            }
+        } catch (NumberFormatException nfe) {
+            err = NbBundle.getMessage(RemoteValidator.class, "MSG_PortNotNumeric");
+        }
+        return err;
+    }
 
-        file = TransferFile.fromFile(new File("/a"), "/a");
-        assertEquals("a", file.getName());
-        assertSame(TransferFile.CWD, file.getRelativePath());
-        assertEquals(null, file.getParentRelativePath());
+    public static String validateTimeout(String timeout) {
+        String err = null;
+        try {
+            int t = Integer.parseInt(timeout);
+            if (t < 0) {
+                err = NbBundle.getMessage(RemoteValidator.class, "MSG_TimeoutNotPositive");
+            }
+        } catch (NumberFormatException nfe) {
+            err = NbBundle.getMessage(RemoteValidator.class, "MSG_TimeoutNotNumeric");
+        }
+        return err;
     }
 }

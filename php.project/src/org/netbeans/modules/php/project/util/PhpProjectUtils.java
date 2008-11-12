@@ -36,41 +36,19 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.connections;
 
-import org.netbeans.modules.php.project.connections.TransferFile;
-import java.io.File;
-import org.netbeans.junit.NbTestCase;
+package org.netbeans.modules.php.project.util;
 
 /**
+ * Utility methods.
  * @author Tomas Mysik
  */
-public class TransferFileTest extends NbTestCase {
+public final class PhpProjectUtils {
 
-    public TransferFileTest(String name) {
-        super(name);
+    private PhpProjectUtils() {
     }
 
-    public void testTransferInfo() throws Exception {
-        TransferFile file = TransferFile.fromFile(new File("/a/b/c"), "/a");
-        assertEquals("c", file.getName());
-        assertEquals("b/c", file.getRelativePath());
-        assertEquals("b", file.getParentRelativePath());
-
-        TransferFile file2 = TransferFile.fromFile(new File("/a/b/c"), "/a/b");
-        assertFalse(file.equals(file2));
-
-        TransferFile file3 = TransferFile.fromFile(new File("/0/1/2/b/c"), "/0/1/2");
-        assertTrue(file.equals(file3));
-
-        file = TransferFile.fromFile(new File("/a/b"), "/a");
-        assertEquals("b", file.getName());
-        assertEquals("b", file.getRelativePath());
-        assertEquals(TransferFile.CWD, file.getParentRelativePath());
-
-        file = TransferFile.fromFile(new File("/a"), "/a");
-        assertEquals("a", file.getName());
-        assertSame(TransferFile.CWD, file.getRelativePath());
-        assertEquals(null, file.getParentRelativePath());
+    public static boolean hasText(String input) {
+        return input != null && input.trim().length() > 0;
     }
 }
