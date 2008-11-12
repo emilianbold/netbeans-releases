@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
  * implementation of using directives and using declarations resolver
  * @author Vladimir Voskresensky
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmUsingResolver.class)
 public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressListener {
     
     public UsingResolverImpl() {

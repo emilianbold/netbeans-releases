@@ -54,6 +54,7 @@ import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.JoinToken;
+import org.netbeans.lib.lexer.token.PartToken;
 import org.netbeans.spi.lexer.EmbeddingPresence;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 
@@ -99,6 +100,10 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
             AbstractToken<T> token = tokenOrEmbedding.token();  
             if (token.getClass() == JoinToken.class) {
                 // Currently do not allow to create embedding over token that is physically joined
+                return null;
+            }
+            if (token.getClass() == PartToken.class) {
+                // Currently do not allow to create embedding in a part of join token
                 return null;
             }
             EmbeddingPresence ep;

@@ -1,6 +1,0 @@
-org.netbeans.modules.xml.wsdl.model.extensions.bpel.impl.BPELElementFactoryProvider$CorrelationPropertyFactory
-org.netbeans.modules.xml.wsdl.model.extensions.bpel.impl.BPELElementFactoryProvider$PartnerLinkTypeFactory
-org.netbeans.modules.xml.wsdl.model.extensions.bpel.impl.BPELElementFactoryProvider$RoleFactory
-org.netbeans.modules.xml.wsdl.model.extensions.bpel.impl.BPELElementFactoryProvider$PropertyAliasFactory
-org.netbeans.modules.xml.wsdl.model.extensions.bpel.impl.BPELElementFactoryProvider$QueryFactory
-org.netbeans.modules.xml.wsdl.model.extensions.bpel.impl.BPELElementFactoryProvider$DocumentationFactory

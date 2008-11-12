@@ -68,6 +68,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author suchys
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformDetector.class, position=1000)
 public class SunPlatformDetector extends CDCPlatformDetector {
     
     /** Creates a new instance of CDCPlatform */

@@ -47,6 +47,7 @@ import org.netbeans.modules.refactoring.ruby.spi.ui.RubyActionsImplementationPro
  *
  * @author Jan Becicka
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.ruby.spi.ui.RubyActionsImplementationProvider.class, position=100)
 public class RubyRefactoringActionsProvider extends RubyActionsImplementationProvider{
     // THIS LOOKS BOGUS - DELETE ME!
     public RubyRefactoringActionsProvider() {

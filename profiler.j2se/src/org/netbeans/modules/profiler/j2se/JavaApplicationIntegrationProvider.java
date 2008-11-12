@@ -56,6 +56,7 @@ import org.netbeans.modules.profiler.attach.wizard.steps.NullWizardStep;
  * @author Tomas Hurka
  * @author Jaroslav Bachorik
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
 public class JavaApplicationIntegrationProvider extends AbstractIntegrationProvider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 

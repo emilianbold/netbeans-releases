@@ -48,7 +48,9 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.lang.TestJoinTextTokenId;
@@ -81,6 +83,23 @@ public class JoinSectionsMod1Test extends NbTestCase {
     protected Level logLevel() {
         return Level.INFO;
 //        return super.logLevel();;
+    }
+
+    public void testRemoveContent() throws Exception {
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        String text = "a<x>";
+        ModificationTextDocument doc = new ModificationTextDocument();
+        doc.insertString(0, text, null);
+        doc.putProperty(Language.class, TestJoinTopTokenId.language());
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+        doc.remove(0, doc.getLength());
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
     }
 
     public void testCreateEmbedding() throws Exception {
@@ -221,8 +240,6 @@ public class JoinSectionsMod1Test extends NbTestCase {
     }
 
     public void testJoinSections() throws Exception {
-        if (true)
-            return;
         // Turn on detailed checking
 //        Logger.getLogger(TokenHierarchyOperation.class.getName()).setLevel(Level.FINEST);
 
@@ -232,6 +249,7 @@ public class JoinSectionsMod1Test extends NbTestCase {
         ModificationTextDocument doc = new ModificationTextDocument();
         doc.insertString(0, text, null);
         doc.putProperty(Language.class,TestJoinTopTokenId.language());
+        LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
         
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         TokenSequence<?> ts = hi.tokenSequence();
@@ -266,7 +284,7 @@ public class JoinSectionsMod1Test extends NbTestCase {
         
         
         // Do modifications
-        // Remove second closing brace '}'
+        // Remove second closing brace ')'
 
 //        Logger.getLogger(org.netbeans.lib.lexer.inc.TokenListUpdater.class.getName()).setLevel(Level.FINE); // Extra logging
         doc.remove(8, 1);
@@ -275,13 +293,40 @@ public class JoinSectionsMod1Test extends NbTestCase {
         LexerTestUtilities.incCheck(doc, true);
         //             000000000011111111112222222222
         //             012345678901234567890123456789
-        // before:    "a{b<cd>e}f<gh>i{j<kl>m}n";
-        // after:     "a{b<cd>ef<gh>i{j<kl>m}n";
+        // before:    "a(b<cd>e)f<gh>i(j<kl>m)n";
+        // after:     "a(b<cd>ef<gh>i(j<kl>m)n";
         //             i0     i1    i2     i3
+
+        // Check the fired event
+        TokenHierarchyEvent evt = LexerTestUtilities.getLastTokenHierarchyEvent(doc);
+        assertNotNull(evt);
+        TokenChange<?> tc = evt.tokenChange();
+        assertNotNull(tc);
+        // Check top-level TC
+        assertEquals(2, tc.index());
+        assertEquals(7, tc.offset());
+        assertEquals(1, tc.addedTokenCount());
+        assertEquals(1, tc.removedTokenCount());
+        assertEquals(TestJoinTopTokenId.language(), tc.language());
+        assertTrue(tc.isBoundsChange());
+        assertEquals(1, tc.embeddedChangeCount());
+
+        // Check top-level TC
+        TokenChange<?> tcInner = tc.embeddedChange(0);
+        TokenSequence<?> tsAdded = tcInner.currentTokenSequence();
+        assertTrue(tsAdded.moveNext());
+        LexerTestUtilities.assertTokenEquals(tsAdded,TestJoinTextTokenId.PARENS, "(befi(jm)", 1);
+        assertEquals(1, tcInner.index());
+        assertEquals(1, tcInner.offset());
+        assertEquals(1, tcInner.addedTokenCount());
+        assertEquals(3, tcInner.removedTokenCount());
+        assertEquals(TestJoinTextTokenId.language, tcInner.language());
+        assertEquals(0, tcInner.embeddedChangeCount());
+
         tsList = hi.tokenSequenceList(innerLP, 0, Integer.MAX_VALUE);
         assertEquals(4, tsList.size()); // 2 sections
 
-        // 1.section "a{b"
+        // 1.section "a(b"
         ts = tsList.get(0);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.TEXT, "a", -1);
@@ -299,7 +344,7 @@ public class JoinSectionsMod1Test extends NbTestCase {
         assertEquals(PartType.MIDDLE, token.partType());
         assertFalse(ts.moveNext());
         
-        // 3.section "i{j"
+        // 3.section "i(j"
         ts = tsList.get(2);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.PARENS, "i(j", -1);
@@ -307,7 +352,7 @@ public class JoinSectionsMod1Test extends NbTestCase {
         assertEquals(PartType.MIDDLE, token.partType());
         assertFalse(ts.moveNext());
         
-        // 4.section "m}n"
+        // 4.section "m)n"
         ts = tsList.get(3);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.PARENS, "m)", -1);
@@ -323,8 +368,8 @@ public class JoinSectionsMod1Test extends NbTestCase {
         LexerTestUtilities.assertConsistency(hi);
         //             000000000011111111112222222222
         //             012345678901234567890123456789
-        // before:    "a{b<cd>ef<gh>i{j<kl>m}n";
-        // after:     "a{b<cd>e}f<gh>i{j<kl>m}n";
+        // before:    "a(b<cd>ef<gh>i(j<kl>m)n";
+        // after:     "a(b<cd>e)f<gh>i(j<kl>m)n";
         tsList = hi.tokenSequenceList(innerLP, 0, Integer.MAX_VALUE);
         checkInitialTokens(tsList);
         
@@ -339,7 +384,7 @@ public class JoinSectionsMod1Test extends NbTestCase {
     private void checkInitialTokens(List<TokenSequence<?>> tsList) {
         //             000000000011111111112222222222
         //             012345678901234567890123456789
-        // text:      "a{b<cd>e}f<gh>i{j<kl>m}n";
+        // text:      "a(b<cd>e)f<gh>i(j<kl>m)n";
         assertEquals(4, tsList.size()); // 4 sections
 
         // 1.section

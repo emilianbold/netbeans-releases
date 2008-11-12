@@ -61,7 +61,7 @@ public class BadgeProvider {
     private static BadgeProvider myInstance = new BadgeProvider();
     
     private Storage storage = new Storage();
-    private Object listLock = new Object();
+    private final Object listLock = new Object();
     
     private BadgeProvider() {
     }

@@ -70,6 +70,8 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.gsfret.InstantRenameAction;
+import org.netbeans.modules.gsf.spi.CommentHandler;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.gsfret.editor.fold.GsfFoldManager;
 import org.netbeans.modules.gsfret.editor.hyperlink.GoToSupport;
 import org.netbeans.modules.gsfret.editor.semantic.GoToMarkOccurrencesAction;
@@ -143,6 +145,14 @@ public class GsfEditorKitFactory {
         //return ((Boolean)Settings.getValue(GsfEditorKit.class, JavaSettingsNames.PAIR_CHARACTERS_COMPLETION)).booleanValue();
         return true;
     }
+
+    /**
+     * Interface that DeleteChar actions should implement to provide their
+     * next deletion character.
+     */
+    public interface NextCharProvider {
+        public boolean getNextChar();
+    }
     
     public class GsfEditorKit extends NbEditorKit {
 
@@ -211,6 +221,15 @@ public class GsfEditorKitFactory {
                 actions.add(new CommentAction(lineCommentPrefix));
                 actions.add(new UncommentAction(lineCommentPrefix));
                 actions.add(new ToggleCommentAction(lineCommentPrefix));
+            } else {
+                CommentHandler ch = gsfLanguage != null && gsfLanguage instanceof DefaultLanguageConfig
+                        ? ((DefaultLanguageConfig)gsfLanguage).getCommentHandler() : null;
+                if(ch != null) {
+                    actions.add(new CommentAction(lineCommentPrefix));
+                    actions.add(new UncommentAction(lineCommentPrefix));
+                    actions.add(new ToggleBlockCommentAction(ch));
+                }
+
             }
 
             actions.add(new InstantRenameAction());
@@ -364,7 +383,7 @@ public class GsfEditorKitFactory {
             }
         }
 
-        public class GsfDeleteCharAction extends ExtDeleteCharAction {
+        public class GsfDeleteCharAction extends ExtDeleteCharAction implements NextCharProvider {
             private JTextComponent currentTarget;
             
             public GsfDeleteCharAction(String nm, boolean nextChar) {
@@ -373,9 +392,14 @@ public class GsfEditorKitFactory {
 
             @Override
             public void actionPerformed(ActionEvent evt, JTextComponent target) {
-                currentTarget = target;
-                super.actionPerformed(evt, target);
-                currentTarget = null;
+                target.putClientProperty(NextCharProvider.class, this);
+                try {
+                    currentTarget = target;
+                    super.actionPerformed(evt, target);
+                } finally {
+                    currentTarget = null;
+                    target.putClientProperty(NextCharProvider.class, null);
+                }
             }
 
             @Override
@@ -390,6 +414,10 @@ public class GsfEditorKitFactory {
                     }
                 }
                 super.charBackspaced(doc, dotPos, caret, ch);
+            }
+
+            public boolean getNextChar() {
+                return nextChar;
             }
         }
 

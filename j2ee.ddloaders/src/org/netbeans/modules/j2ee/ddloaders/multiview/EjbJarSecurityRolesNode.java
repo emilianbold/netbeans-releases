@@ -66,8 +66,8 @@ public class EjbJarSecurityRolesNode extends EjbSectionNode {
         this.ejbJar = ejbJar;
     }
     
+    @Override
     protected SectionNodeInnerPanel createNodeInnerPanel() {
-        EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) getSectionNodeView().getDataObject();
         SectionNodeView sectionNodeView = getSectionNodeView();
         EjbJarSecurityRolesTableModel model = new EjbJarSecurityRolesTableModel(sectionNodeView.getModelSynchronizer(), ejbJar);
         InnerTablePanel innerTablePanel = new InnerTablePanel(sectionNodeView, model);

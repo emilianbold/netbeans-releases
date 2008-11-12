@@ -45,6 +45,7 @@ import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.java.editor.jelly.GenerateEqualsAndHashCodeOperator;
+import org.netbeans.test.java.editor.jelly.GenerateEqualsOperator;
 
 /**
  *
@@ -63,12 +64,12 @@ public class CreateEqualsHashcodeTest extends GenerateCodeTestCase {
         try {
             editor.requestFocus();
             editor.setCaretPosition(14, 5);
-            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_EQUALS_HASHCODE, editor);
-            GenerateEqualsAndHashCodeOperator geahco = new GenerateEqualsAndHashCodeOperator();
-            JTreeOperator jto = geahco.equalsTreeOperator();
-            jto.selectRow(1);
+            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_EQUALS, editor);
+            GenerateEqualsOperator geo = new GenerateEqualsOperator();
+            JTreeOperator jto = geo.equalsTreeOperator();
+            jto.selectRow(0);
             jto.selectRow(2);
-            geahco.generate();
+            geo.generate();
             String expected = "" +
                     "    @Override\n" +
                     "    public boolean equals(Object obj) {\n" +
@@ -79,20 +80,15 @@ public class CreateEqualsHashcodeTest extends GenerateCodeTestCase {
                     "            return false;\n" +
                     "        }\n" +
                     "        final testEqualsHashcode other = (testEqualsHashcode) obj;\n" +
-                    "        if (this.a != other.a && (this.a == null || !this.a.equals(other.a))) {\n" +
-                    "            return false;\n" +
+                    "        if ((this.a == null) ? (other.a != null) : !this.a.equals(other.a)) {\n"+
+                    "            return false;\n"+
                     "        }\n" +
                     "        if (this.c != other.c && (this.c == null || !this.c.equals(other.c))) {\n" +
                     "            return false;\n" +
                     "        }\n" +
                     "        return true;\n" +
                     "    }\n" +
-                    "\n" +
-                    "    @Override\n" +
-                    "    public int hashCode() {\n" +
-                    "        int hash = 5;\n" +
-                    "        return hash;\n" +
-                    "    }";
+                    "\n";
             waitAndCompare(expected);
         } finally {
             editor.close(false);

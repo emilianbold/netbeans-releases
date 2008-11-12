@@ -129,7 +129,7 @@ public class WizardDescriptor extends DialogDescriptor {
     /** "Previous" button option.
     * @see #setOptions */
     public static final Object PREVIOUS_OPTION = new String("PREVIOUS_OPTION"); // NOI18N
-    
+
     private static final ActionListener CLOSE_PREVENTER = new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
             }
@@ -142,12 +142,12 @@ public class WizardDescriptor extends DialogDescriptor {
 
     /** Set to <CODE>true</CODE> for enabling other properties. It is relevant only on
      * initialization (client property in first panel). Recommended to be set to <code>true</code> in most cases,
-     * then wizard can display wizard steps on the left side, create a subtitle on active panel, 
-     * display of error messages and others. When false or not present in JComponent.getClientProperty(), 
+     * then wizard can display wizard steps on the left side, create a subtitle on active panel,
+     * display of error messages and others. When false or not present in JComponent.getClientProperty(),
      * then supplied panel is used directly without content, help or panel name auto layout.
-     * 
+     *
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
      * <CODE>Boolean</CODE> type property.
      * @since 7.8
      */
@@ -155,9 +155,9 @@ public class WizardDescriptor extends DialogDescriptor {
 
     /** Set to <CODE>true</CODE> for showing help pane (HTML browser) in the left pane. It is relevant only on
      * initialization (client property in first panel). Help content will be taken from property <CODE>PROP_HELP_URL</CODE>.
-     * 
+     *
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
      * <CODE>Boolean</CODE> type property.
      * @since 7.8
      */
@@ -165,7 +165,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
     /** Set to <CODE>true</CODE> for showing content pane (steps) in the left pane. It is relevant only on
      * initialization (client property in first panel). Content will be constructed from property <CODE>PROP_CONTENT_DATA</code>.
-     * 
+     *
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
      * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
      * <CODE>Boolean</CODE> type property.
@@ -175,63 +175,63 @@ public class WizardDescriptor extends DialogDescriptor {
 
     /** Set to <CODE>true</CODE> for displaying numbers in the content. It is relevant only on
      * initialization (client property in first panel).
-     * 
+     *
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
      * <CODE>Boolean</CODE> type property.
      * @since 7.8
      */
     public static final String PROP_CONTENT_NUMBERED = "WizardPanel_contentNumbered"; // NOI18N
 
     /** Represents index of content item which will be highlighted.
-     * 
+     *
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
      * <CODE>Integer</CODE> type property.
      * @since 7.8
      */
     public static final String PROP_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
 
     /** Represents array of content items.
-     * 
+     *
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
      * <CODE>String[]</CODE> type property.
      * @since 7.8
      */
     public static final String PROP_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
 
     /** Set background color of content pane.
-     * 
+     *
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
      * <CODE>Color</CODE> type property.
      * @since 7.8
      */
     public static final String PROP_CONTENT_BACK_COLOR = "WizardPanel_contentBackColor"; // NOI18N
 
     /** Set foreground color of content pane.
-     * 
+     *
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>((JComponent)Panel.getComponent()).getClientProperty()</CODE> in this order.
      * <CODE>Color</CODE> type property.
      * @since 7.8
      */
     public static final String PROP_CONTENT_FOREGROUND_COLOR = "WizardPanel_contentForegroundColor"; // NOI18N
-    
+
     /** Set the image which will be displayed in the left pane (behind the content).
-     * 
+     *
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order.
      * <CODE>java.awt.Image</CODE> type property.
      * @since 7.8
      */
     public static final String PROP_IMAGE = "WizardPanel_image"; // NOI18N
 
     /** Set the side where the image should be drawn.
-     * 
+     *
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order.
      * <CODE>String</CODE> type property.
      * @since 7.8
      */
@@ -239,18 +239,18 @@ public class WizardDescriptor extends DialogDescriptor {
 
     /** Dimension of left pane, should be same as dimension of <CODE>PROP_IMAGE</CODE>.
      * It is relevant only on initialization (client property in first panel).
-     * 
+     *
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order.
      * <CODE>Dimension</CODE> type property.
      * @since 7.8
      */
     public static final String PROP_LEFT_DIMENSION = "WizardPanel_leftDimension"; // NOI18N
 
     /** Represents URL of help displayed in left pane.
-     * 
+     *
      * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE> or
-     * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order. 
+     * <CODE>((JComponent) Panel.getComponent()).getClientProperty()</CODE> in this order.
      * <CODE>URL</CODE> type property.
      * @since 7.8
      */
@@ -259,33 +259,33 @@ public class WizardDescriptor extends DialogDescriptor {
     /** Error message that is displayed at the bottom of the wizard.
      * Message informs user why the panel is invalid and possibly why the Next/Finish buttons were disabled.
      * The property must be set to null value to clear the message.
-     * 
-     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE>. 
-     * <CODE>String</CODE> type property. 
+     *
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE>.
+     * <CODE>String</CODE> type property.
      * @since 7.8
      */
     public static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
-    
+
     /** Warning message that is displayed at the bottom of the wizard.
      * Message informs user about possible non fatal problems with current enterd values in the wizard panel.
      * Next/Finish buttons are usually enabled. The property must be set to null value to clear the message.
-     * 
-     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE>. 
+     *
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE>.
      * <CODE>String</CODE> type property.
      * @since 7.8
      */
     public static final String PROP_WARNING_MESSAGE = "WizardPanel_warningMessage"; // NOI18N
-    
+
     /** Informational message that is displayed at the bottom of the wizard.
      * Message informs user usually about need to fill some field or similar requirements or other non fatal problems.
      * Next/Finish button are usually enabled. The property must be set to null value to clear the message.
-     * 
-     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE>. 
+     *
+     * The value is taken from <CODE>WizardDescriptor.getProperty()</CODE>.
      * <CODE>String</CODE> type property.
      * @since 7.8
      */
     public static final String PROP_INFO_MESSAGE = "WizardPanel_infoMessage"; // NOI18N
-    
+
     private static Logger err = Logger.getLogger(WizardDescriptor.class.getName ());
 
     /** real buttons to be placed instead of the options */
@@ -362,13 +362,13 @@ public class WizardDescriptor extends DialogDescriptor {
     private Map<String,Object> properties;
     ResourceBundle bundle = NbBundle.getBundle(WizardDescriptor.class);
 
-    /** Request processor that is used for asynchronous jobs (background validation, 
+    /** Request processor that is used for asynchronous jobs (background validation,
      * asynchronous instantiation i.e.) and supports Thread.interrupted().
      * It's package-private to accessible for unit tests.
      */
-    static final RequestProcessor ASYNCHRONOUS_JOBS_RP = 
+    static final RequestProcessor ASYNCHRONOUS_JOBS_RP =
         new RequestProcessor("wizard-descriptor-asynchronous-jobs", 1, true); // NOI18N
-    
+
     private RequestProcessor.Task backgroundValidationTask;
 
     private boolean validationRuns;
@@ -403,7 +403,7 @@ public class WizardDescriptor extends DialogDescriptor {
     public <Data> WizardDescriptor(Panel<Data>[] wizardPanels, Data settings) {
         this(new SettingsAndIterator<Data>(new ArrayIterator<Data>(wizardPanels), settings));
     }
-    
+
     /** Create a new wizard from a fixed list of panels with settings
     * defaulted to <CODE>this</CODE>.
     *
@@ -423,21 +423,21 @@ public class WizardDescriptor extends DialogDescriptor {
     public <Data>WizardDescriptor(Iterator<Data> panels, Data settings) {
         this(new SettingsAndIterator<Data>(panels, settings));
     }
-    
+
     /** Constructor for subclasses. The expected use is to call this
      * constructor and then call {@link #setPanelsAndSettings} to provide
-     * the right iterator, panels and data the wizard should use. This 
-     * allows to eliminate unchecked warnings as described in 
+     * the right iterator, panels and data the wizard should use. This
+     * allows to eliminate unchecked warnings as described in
      * <a href="http://www.netbeans.org/issues/show_bug.cgi?id=102261">issue 102261</a>.
      * @since 7.4
      */
     protected WizardDescriptor() {
         this(SettingsAndIterator.empty());
     }
-    
+
     private <Data> WizardDescriptor(SettingsAndIterator<Data> data) {
         super("", "", true, DEFAULT_OPTION, null, CLOSE_PREVENTER); // NOI18N
-        
+
         this.data = data;
 
         baseListener = new Listener();
@@ -488,7 +488,7 @@ public class WizardDescriptor extends DialogDescriptor {
         super.initialize();
 
         updateState();
-        
+
         // #81938: special handling WizardDescriptor to avoid close wizard during instantiate
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
@@ -728,7 +728,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 });
             }
         }
-        
+
         if (PROP_WARNING_MESSAGE.equals(name) || PROP_INFO_MESSAGE.equals(name)) {
             if (wizardPanel != null) {
                 SwingUtilities.invokeLater (new Runnable () {
@@ -742,7 +742,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 });
             }
         }
-        
+
     }
 
     /** Getter for stored property.
@@ -752,7 +752,7 @@ public class WizardDescriptor extends DialogDescriptor {
     public synchronized Object getProperty(String name) {
         return (properties == null) ? null : properties.get(name);
     }
-    
+
     /** Read only map with stored properties.
      * @return read only map of properties stored using {@link #putProperty} method
      * @since 7.2
@@ -781,7 +781,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * @since 4.41
      */
     public Set /*<Object>*/ getInstantiatedObjects() {
-        // 
+        //
         if (!(FINISH_OPTION.equals(getValue()))) {
             throw new IllegalStateException();
         }
@@ -798,7 +798,15 @@ public class WizardDescriptor extends DialogDescriptor {
     * </PRE></code>
     */
     protected synchronized void updateState() {
-        updateStateOpen(data);
+        if (SwingUtilities.isEventDispatchThread ()) {
+            updateStateOpen (data);
+        } else {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                   updateStateOpen (data);
+                }
+            });
+        }
     }
     private <A> void updateStateOpen(SettingsAndIterator<A> data) {
         Panel<A> p = data.getIterator(this).current();
@@ -826,33 +834,36 @@ public class WizardDescriptor extends DialogDescriptor {
             p.readSettings(data.getSettings(this));
         }
 
-        boolean next = data.getIterator(this).hasNext();
-        boolean prev = data.getIterator(this).hasPrevious();
-        boolean valid = p.isValid();
 
         // AWT sensitive code
-        if (SwingUtilities.isEventDispatchThread ()) {
-            updateStateInAWT ();
+        boolean next = data.getIterator(this).hasNext ();
+        boolean prev = data.getIterator(this).hasPrevious ();
+        boolean valid = p.isValid () && !validationRuns;
+
+        nextButton.setEnabled (next && valid);
+        previousButton.setEnabled (prev);
+        cancelButton.setEnabled (true);
+
+        if (data.current instanceof FinishablePanel) {
+            // check if isFinishPanel
+            if (((FinishablePanel)data.current).isFinishPanel ()) {
+                finishButton.setEnabled (valid);
+            } else {
+                // XXX What if the last panel is not FinishPanel ??? enable ?
+                finishButton.setEnabled (valid && !next);
+            }
         } else {
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                   updateStateInAWT ();
-                } 
-            });
+            // original way
+            finishButton.setEnabled (
+                valid &&
+                (!next || (data.current instanceof FinishPanel))
+            );
         }
-        // end of AWT sensitive code
-        
-        //    nextButton.setVisible (next);
-        //    finishButton.setVisible (!next || (current instanceof FinishPanel));
-        // XXX Why setValue on Next ?
-        //        if (next) {
-        //            setValue (nextButton);
-        //        } else {
-        ////            setValue (finishButton); 
-        //        }
         setHelpCtx(p.getHelp());
 
+        assert SwingUtilities.isEventDispatchThread () : "getComponent() must be called in EQ only.";
         java.awt.Component c = p.getComponent();
+        // end of AWT sensitive code
 
         if ((c == null) || c instanceof java.awt.Window) {
             throw new IllegalStateException("Wizard panel " + p + " gave a strange component " + c); // NOI18N
@@ -937,40 +948,13 @@ public class WizardDescriptor extends DialogDescriptor {
             wizardPanel.requestFocus();
         }
     }
-    
+
     // for xtesting usage only
     boolean isForwardEnabled () {
         return data.getIterator(this).current ().isValid () && !validationRuns;
     }
 
-    private void updateStateInAWT () {
-        Panel<?> p = data.getIterator(this).current ();        
-        boolean next = data.getIterator(this).hasNext ();
-        boolean prev = data.getIterator(this).hasPrevious ();
-        boolean valid = p.isValid () && !validationRuns;
 
-        nextButton.setEnabled (next && valid);
-        previousButton.setEnabled (prev);
-        cancelButton.setEnabled (true);
-        
-        if (data.current instanceof FinishablePanel) {
-            // check if isFinishPanel
-            if (((FinishablePanel)data.current).isFinishPanel ()) {
-                finishButton.setEnabled (valid);
-            } else {
-                // XXX What if the last panel is not FinishPanel ??? enable ?
-                finishButton.setEnabled (valid && !next);
-            }
-        } else {
-            // original way
-            finishButton.setEnabled (
-                valid &&
-                (!next || (data.current instanceof FinishPanel))
-            );
-        }
-    }
-
-    
     /** Shows blocking wait cursor during updateState run */
     private void updateStateWithFeedback() {
         try {
@@ -1025,6 +1009,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * wizard window exceeds screen bounds after resize.
      */
     private void resizeWizard(Window parentWindow, Dimension prevSize) {
+        assert SwingUtilities.isEventDispatchThread () : "getComponent() must be called in EQ only.";
         Dimension curSize = data.getIterator(this).current().getComponent().getPreferredSize();
 
         // only enlarge if needed, don't shrink
@@ -1056,13 +1041,13 @@ public class WizardDescriptor extends DialogDescriptor {
             // if none root pane --> don't set wait cursor
             return;
         }
-        
+
         // bugfix #92539: JR: I don't see the reason this code, I have tried comment out
 //        Window parentWindow = SwingUtilities.getWindowAncestor((Component) getMessage());
 //        if (parentWindow != null) {
 //            parentWindow.setEnabled (false);
 //        }
-//        
+//
         if (wizardPanel != null) {
             // save escapeActionListener for normal state
             KeyStroke ks = KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0);
@@ -1080,12 +1065,12 @@ public class WizardDescriptor extends DialogDescriptor {
             // none waitingComponent --> don't change cursor to normal
             return;
         }
-        
+
         Window parentWindow = SwingUtilities.getWindowAncestor((Component) getMessage());
         if (parentWindow != null) {
             parentWindow.setEnabled (true);
         }
-        
+
         if (wizardPanel != null) {
             // set back escapeActionListener as same as NbPresenter does
             if (escapeActionListener != null) {
@@ -1093,7 +1078,7 @@ public class WizardDescriptor extends DialogDescriptor {
                     KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
             }
         }
-        
+
         waitingComponent.setCursor(null);
         waitingComponent = null;
         changeStateInProgress = false;
@@ -1265,7 +1250,7 @@ public class WizardDescriptor extends DialogDescriptor {
     public void setValue(Object value) {
         setValueOpen(value, data);
     }
-    
+
     private <A> void setValueOpen(Object value, SettingsAndIterator<A> data) {
         Object convertedValue = backConvertOption(value);
         // set new value w/o fire PROP_VALUE change
@@ -1300,7 +1285,7 @@ public class WizardDescriptor extends DialogDescriptor {
     private void resetWizard() {
         resetWizardOpen(data);
     }
-    
+
     private <A> void resetWizardOpen(SettingsAndIterator<A> data) {
         if (data.current != null) {
             data.current.storeSettings(data.getSettings(this));
@@ -1344,7 +1329,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
         Runnable validationPeformer = new Runnable() {
             public void run() {
-                
+
                 err.log (Level.FINE, "validationPeformer entry."); // NOI18N
                 ValidatingPanel v = (ValidatingPanel) panel;
 
@@ -1369,13 +1354,13 @@ public class WizardDescriptor extends DialogDescriptor {
                             public void run () {
                                 err.log (Level.FINE, "Runs onValidPerformer from invokeLater."); // NOI18N
                                 onValidPerformer.run();
-                            } 
+                            }
                         });
                     }
                 } catch (WizardValidationException wve) {
                     validationRuns = false;
                     updateState ();
-                    
+
                     // cannot continue, notify user
                     if (wizardPanel != null) {
                         wizardPanel.setMessage(WizardPanel.MSG_TYPE_ERROR, wve.getLocalizedMessage());
@@ -1431,35 +1416,35 @@ public class WizardDescriptor extends DialogDescriptor {
     private void callInstantiate() throws IOException {
         callInstantiateOpen(data);
     }
-    
+
     private <A> void callInstantiateOpen(SettingsAndIterator<A> data) throws IOException {
         Iterator<A> panels = data.getIterator(this);
-        
+
         assert panels != null;
-        
+
         err.log (Level.FINE, "Is AsynchronousInstantiatingIterator? " + (panels instanceof AsynchronousInstantiatingIterator));
         err.log (Level.FINE, "Is ProgressInstantiatingIterator? " + (panels instanceof ProgressInstantiatingIterator));
         if (panels instanceof ProgressInstantiatingIterator) {
             handle = ProgressHandleFactory.createHandle (PROGRESS_BAR_DISPLAY_NAME);
-            
+
             JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
             if (wizardPanel != null) {
                 wizardPanel.setProgressComponent (progressComp, ProgressHandleFactory.createDetailLabelComponent (handle));
             }
-            
+
             err.log (Level.FINE, "Show progressPanel controlled by iterator later.");
         } else if (panels instanceof AsynchronousInstantiatingIterator) {
             handle = ProgressHandleFactory.createHandle (PROGRESS_BAR_DISPLAY_NAME);
-            
+
             JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
             if (wizardPanel != null) {
                 wizardPanel.setProgressComponent (progressComp, ProgressHandleFactory.createMainLabelComponent (handle));
             }
-            
+
             handle.start ();
             err.log (Level.FINE, "Show progressPanel later.");
         }
-         
+
         // bugfix #44444, force store settings before do instantiate new objects
         panels.current().storeSettings(data.getSettings(this));
 
@@ -1468,7 +1453,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
             try {
                 assert ! (panels instanceof AsynchronousInstantiatingIterator) || ! SwingUtilities.isEventDispatchThread () : "Cannot invoked within EDT if AsynchronousInstantiatingIterator!";
-                
+
                 if (panels instanceof ProgressInstantiatingIterator) {
                     assert handle != null : "ProgressHandle must be not null.";
                     err.log (Level.FINE, "Calls instantiate(ProgressHandle) on iterator: " + panels.getClass ().getName ());
@@ -1481,7 +1466,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
                 // set cursor back to normal
                 showNormalCursor();
-                
+
             }
         }
     }
@@ -1758,7 +1743,7 @@ public class WizardDescriptor extends DialogDescriptor {
          */
         public void uninitialize(WizardDescriptor wizard);
     }
-    
+
     /**
      * Iterator for a wizard that needs to somehow instantiate new objects outside ATW queue.
      * (This interface can replace
@@ -1797,13 +1782,13 @@ public class WizardDescriptor extends DialogDescriptor {
          * be visualized by a progress bar.
          * Note: The <code>ProgressHandle</code> is not started, need to start it and report progress by
          * messages in the <code>progress()</code> method.
-         * 
+         *
          * @param handle progress bar handle
          * @throws IOException when instantiate fails
          * @return a set of objects created (the exact type is at the discretion of the caller)
          */
         public Set/*<?>*/ instantiate (ProgressHandle handle) throws IOException;
-        
+
     }
 
     /** Special iterator that works on an array of <code>Panel</code>s.
@@ -1939,6 +1924,7 @@ public class WizardDescriptor extends DialogDescriptor {
             Object src = ev.getSource();
             err.log (Level.FINE, "actionPerformed entry. Source: " + src); // NOI18N
             if (src == nextButton) {
+                assert SwingUtilities.isEventDispatchThread () : "getComponent() must be called in EQ only.";
                 final Dimension previousSize = panels.current().getComponent().getSize();
                 Runnable onValidPerformer = new Runnable() {
 
@@ -1982,18 +1968,18 @@ public class WizardDescriptor extends DialogDescriptor {
                 Runnable onValidPerformer = new Runnable() {
                     public void run() {
                         err.log (Level.FINE, "onValidPerformer on finish button entry."); // NOI18N
-                        
+
                         // disable all buttons to indicate that instantiate runs
                         previousButton.setEnabled (false);
                         nextButton.setEnabled (false);
                         finishButton.setEnabled (false);
                         cancelButton.setEnabled (false);
-                        
+
                         Runnable performFinish = new Runnable () {
                             public void run () {
                                 err.log (Level.FINE, "performFinish entry."); // NOI18N
                                 Object oldValue = getValue();
-                                    
+
                                 // do instantiate
                                 try {
                                     callInstantiate();
@@ -2025,7 +2011,7 @@ public class WizardDescriptor extends DialogDescriptor {
                                     return;
                                 }
                                 firePropertyChange(PROP_VALUE, oldValue, OK_OPTION);
-                                
+
                                 SwingUtilities.invokeLater (new Runnable () {
                                     public void run () {
                                         // all is OK
@@ -2039,7 +2025,7 @@ public class WizardDescriptor extends DialogDescriptor {
                                 err.log (Level.FINE, "performFinish exit."); // NOI18N
                             }
                         };
-                        
+
                         if (panels instanceof AsynchronousInstantiatingIterator) {
                             err.log (Level.FINE, "Do ASYNCHRONOUS_JOBS_RP.post(performFinish)."); // NOI18N
                             ASYNCHRONOUS_JOBS_RP.post (performFinish);
@@ -2047,9 +2033,9 @@ public class WizardDescriptor extends DialogDescriptor {
                             err.log (Level.FINE, "Run performFinish."); // NOI18N
                             performFinish.run ();
                         }
-                        
+
                         err.log (Level.FINE, "onValidPerformer on finish button exit."); // NOI18N
-                        
+
                     }
                 };
                 lazyValidate(panels.current(), onValidPerformer);
@@ -2232,7 +2218,7 @@ public class WizardDescriptor extends DialogDescriptor {
         public void run() {
             Image localImage;
 
-            // grab value 
+            // grab value
             synchronized (IMAGE_LOCK) {
                 localImage = tempImage;
                 tempImage = null;
@@ -2244,7 +2230,7 @@ public class WizardDescriptor extends DialogDescriptor {
             boolean shouldRepaint = false;
 
             synchronized (IMAGE_LOCK) {
-                // don't commit results if another loading was started after us 
+                // don't commit results if another loading was started after us
                 if (!loadPending) {
                     image = localImageIcon.getImage();
 
@@ -2388,21 +2374,21 @@ public class WizardDescriptor extends DialogDescriptor {
 
         /** Label of steps pane */
         private JLabel label;
-        
+
         private JPanel progressBarPanel;
 
         /** Selected index of content */
         private int selectedIndex;
         private JLabel m_lblMessage;
-        
+
         private Color nbErrorForeground;
         private Color nbWarningForeground;
         private Color nbInfoForeground;
-        
+
         private static final int MSG_TYPE_ERROR = 1;
         private static final int MSG_TYPE_WARNING = 2;
         private static final int MSG_TYPE_INFO = 3;
-        
+
         /** Creates new <CODE>WizardPanel<CODE>.
          * @param contentDisplayed whether content will be displayed in the left pane
          * @param helpDisplayed whether help will be displayed in the left pane
@@ -2463,26 +2449,26 @@ public class WizardDescriptor extends DialogDescriptor {
                 //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
                 nbErrorForeground = new Color(255, 0, 0); // RGB suggested by jdinga in #65358
             }
-            
+
             nbWarningForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
             if (nbWarningForeground == null) {
                 nbWarningForeground = new Color(51, 51, 51); // Label.foreground
             }
-            
+
             nbInfoForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
             if (nbInfoForeground == null) {
                 nbInfoForeground = UIManager.getColor("Label.foreground"); //NOI18N
             }
-            
+
             JPanel errorPanel = new JPanel(new BorderLayout());
             errorPanel.setBorder(BorderFactory.createEmptyBorder(0, 12, 12, 11));
             m_lblMessage = new FixedHeightLabel ();
             m_lblMessage.setForeground (nbErrorForeground);
             errorPanel.add(m_lblMessage, BorderLayout.CENTER);
-            
+
             progressBarPanel = new JPanel (new BorderLayout ());
             progressBarPanel.setVisible (false);
-            
+
             if (contentDisplayed) {
                 // place for visualize progress bar in content panel (if contentDisplayed)
                 progressBarPanel.setOpaque (false);
@@ -2509,7 +2495,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
             // #65506: the wizard panel should fit into window w/o scrollbar
             add(fullRightPanel, BorderLayout.CENTER);
-            
+
             if ((getBorder() == null) || "GTK".equals(UIManager.getLookAndFeel().getID())) {
                 // Look & Feel has not set the border already
                 JSeparator sep = new JSeparator();
@@ -2517,7 +2503,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 add(sep, BorderLayout.SOUTH);
             }
         }
-        
+
         public void setMessage(int msgType, String msg) {
             if (msg != null && msg.trim().length() > 0) {
                 switch (msgType) {
@@ -2527,12 +2513,12 @@ public class WizardDescriptor extends DialogDescriptor {
                             nbErrorForeground);
                         break;
                     case MSG_TYPE_WARNING:
-                        prepareMessage(m_lblMessage, 
+                        prepareMessage(m_lblMessage,
                             new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/warning.gif")),
                             nbWarningForeground);
                         break;
                     case MSG_TYPE_INFO:
-                        prepareMessage(m_lblMessage, 
+                        prepareMessage(m_lblMessage,
                             new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/info.png")),
                             nbInfoForeground);
                         break;
@@ -2544,12 +2530,12 @@ public class WizardDescriptor extends DialogDescriptor {
             }
             m_lblMessage.setText(msg);
         }
-        
+
         private void prepareMessage(JLabel label, ImageIcon icon, Color fgColor) {
             label.setIcon(icon);
             label.setForeground(fgColor);
         }
-        
+
         private void setProgressComponent (JComponent progressComp, final JLabel progressLabel) {
             if (progressLabel != null) {
                 progressLabel.setText (PROGRESS_BAR_DISPLAY_NAME);
@@ -2651,7 +2637,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
                             // Fix of #10787.
                             // This is workaround for swing bug - BasicListUI doesn't ask for preferred
-                            // size of rendered list cell as a result of property selectedIndex change. 
+                            // size of rendered list cell as a result of property selectedIndex change.
                             // It does only on certain JList property changes (e.g. fixedCellWidth).
                             // Maybe subclassing BasicListUI could be better fix.
                             list.setFixedCellWidth(0);
@@ -2871,15 +2857,15 @@ public class WizardDescriptor extends DialogDescriptor {
             }
         }
     }
-    
+
     private static final class FixedHeightLabel extends JLabel {
-        
+
         private static final int ESTIMATED_HEIGHT = 16;
 
         public FixedHeightLabel () {
             super ();
         }
-        
+
         @Override
         public Dimension getPreferredSize() {
             Dimension preferredSize = super.getPreferredSize();
@@ -2888,7 +2874,7 @@ public class WizardDescriptor extends DialogDescriptor {
             return preferredSize;
         }
     }
-    
+
     private static final class SettingsAndIterator<Data> {
         private final Iterator<Data> panels;
         private final Data settings;
@@ -2896,7 +2882,7 @@ public class WizardDescriptor extends DialogDescriptor {
         /** current panel */
         private Panel<Data> current;
 
-        
+
         public SettingsAndIterator(Iterator<Data> iterator, Data settings) {
             this(iterator, settings, false);
         }
@@ -2915,18 +2901,18 @@ public class WizardDescriptor extends DialogDescriptor {
         public Iterator<Data> getIterator(WizardDescriptor caller) {
             return panels;
         }
-        
+
         @SuppressWarnings("unchecked")
         public Data getSettings(WizardDescriptor caller) {
             return useThis ? (Data)caller : settings;
         }
-        
+
         public SettingsAndIterator<Data> clone(Iterator<Data> it) {
             SettingsAndIterator<Data> s = new SettingsAndIterator<Data>(it, settings, useThis);
             return s;
         }
     }
-    
+
     private static final class EmptyPanel implements Panel<Void>, Iterator<Void> {
         public Component getComponent() {
             return new JPanel();

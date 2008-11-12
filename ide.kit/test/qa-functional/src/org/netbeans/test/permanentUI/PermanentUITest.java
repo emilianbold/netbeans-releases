@@ -55,21 +55,21 @@ public class PermanentUITest {
                   "testFileMenu", //stable
                   "testEditMenu", //stable
                   "testViewMenu", //stable
-                  "testNavigateMenu",//stable
+                  //"testNavigateMenu",//#139450
                   "testSourceMenu",//stable
                   "testRefactorMenu",//stable
                   "testRunMenu",//stable                  
                   "testDebugMenu",//stable
                   "testHelpMenu",//stable
-                  "testToolsMenu",//stable
+                  //"testToolsMenu",//#146446
                   "testVersioningMenu",//stable
                   "testWindowMenu",//stable
                   "testMnemonicsCollision",//stable
 
                   "testFile_ProjectGroupSubMenu",  //stable                
                   "testNavigate_InspectSubMenu", //stable
-                  "testView_CodeFoldsSubMenu",//stable
-                  "testView_ToolbarsSubMenu",
+                  //"testView_CodeFoldsSubMenu",//???
+                  //"testView_ToolbarsSubMenu",//#149237
                   //"testProfile_AdvancedCommandsSubMenu",
                   //"testProfile_ProfileOtherSubMenu",
                   "testRun_SetMainProjectSubMenu",

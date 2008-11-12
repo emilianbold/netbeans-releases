@@ -141,6 +141,7 @@
 
 <mapID target="js.code.completion" url="javascript/code_completion.html" />
 <mapID target="js.basics" url="javascript/js_basics.html" />
+<mapID target="text.javascript" url="javascript/js_basics.html" />
 <mapID target="js.refactoring" url="javascript/refactoring.html" />
 <mapID target="js.quickfixes" url="javascript/quickfixes.html" />
 <mapID target="js.browser.compatibility" url="javascript/browser_compat.html" />

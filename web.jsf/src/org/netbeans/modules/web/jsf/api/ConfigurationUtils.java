@@ -169,6 +169,9 @@ public class ConfigurationUtils {
         String[] sFiles = JSFConfigUtilities.getConfigFiles(webModule);
         if (sFiles.length > 0){
             FileObject documentBase = webModule.getDocumentBase();
+            if (documentBase == null) {
+                return new FileObject [0];
+            }
             ArrayList files = new ArrayList();
             FileObject file;
             for (int i = 0; i < sFiles.length; i++){

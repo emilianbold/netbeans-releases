@@ -533,7 +533,11 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             Dimension d = jc.getPreferredSize();
             BufferedImage nue = new BufferedImage (d.width, d.height + 2, 
                     BufferedImage.TYPE_INT_ARGB_PRE);
-            SwingUtilities.paintComponent(nue.getGraphics(), jc, this, 0, 0, d.width, d.height + 2);
+            Graphics2D g = nue.createGraphics();
+            g.setColor (bg);
+            g.fillRect (0, 0, d.width, d.height + 2);
+            SwingUtilities.paintComponent(g, jc, this, 0, 0, d.width, d.height + 2);
+            g.dispose();
             setImage (nue);
         }
         
@@ -559,8 +563,6 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
         }
         
         public void paint (Graphics g) {
-            g.setColor (bg);
-            g.fillRect (0, 0, d.width, d.height);
             Graphics2D g2d = (Graphics2D) g;
             g2d.drawRenderedImage (img, at);
             g.setColor (Color.GRAY);

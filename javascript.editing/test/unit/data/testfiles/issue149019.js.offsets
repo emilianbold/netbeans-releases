@@ -1,0 +1,9 @@
+
+<SCRIPT>        <FUNCTION>function <FUNCNAME>test1</FUNCNAME>()<BLOCK>{
+            <BLOCK>if (<IFNE><EQ><NAME>userInitiated</NAME> == <STRING>"true"</STRING></EQ></IFNE>)
+            <BLOCK>{
+                <NAME>document</NAME>.<GETPROP><STRING>form</STRING></GETPROP>. <EXPR_VOID><SETPROP><GETPROP><STRING>__UNKNOWN__</STRING></GETPROP> .<STRING>value</STRING> = <STRING>""</STRING></SETPROP></EXPR_VOID>;
+                <NAME>document</NAME>.<GETPROP><STRING>form</STRING></GETPROP>. <EXPR_VOID><SETPROP><GETPROP>__UNKNOWN__ <STRING>_PLAIN</STRING></GETPROP>.<STRING>value</STRING> = <STRING>""</STRING></SETPROP></EXPR_VOID>;
+            }</BLOCK></BLOCK><TARGET/>
+        </BLOCK><RETURN/>}</FUNCTION></SCRIPT>
+

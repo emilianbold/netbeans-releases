@@ -173,8 +173,25 @@ function initialize() {
 		        }
                         filename     = get_file_name(platform_id, option_id);
 		    } else if(filename!="") {
-	    	        USE_BOUNCER = 0;
-                        url      = get_file_url(filename);
+	    	        ADDITIONAL_BUNDLES = new Array();
+			ADDITIONAL_BUNDLES[0] = "javadoc";
+			ADDITIONAL_BUNDLES[1] = "src";
+			ADDITIONAL_BUNDLES[2] = "platform-src";
+
+			if (USE_BOUNCER == 1) {
+                	    for(var i=0;i<ADDITIONAL_BUNDLES.length;i++) {
+			        var testFileName = get_file_name("zip", ADDITIONAL_BUNDLES[i]);
+			            if(testFileName==filename) {
+				        url      = get_file_bouncer_url("zip", ADDITIONAL_BUNDLES[i]);
+					break;
+				    }
+                            }
+			}
+
+			if (url == "") {
+			    USE_BOUNCER = 0;
+			    url      = get_file_url(filename);
+			}
 		    }
 
             	    window.onload = delayedredirect;

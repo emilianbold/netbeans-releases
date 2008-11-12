@@ -60,8 +60,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  */
 public final class DeepReparsingUtils {
     
-    private static final boolean optimisticReparse = Boolean.getBoolean("parser.empty.ast.statistics");
-
     private DeepReparsingUtils() {
     }
     

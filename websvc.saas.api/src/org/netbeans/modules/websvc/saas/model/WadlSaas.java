@@ -119,7 +119,7 @@ public class WadlSaas extends Saas {
                 }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
-                return Collections.EMPTY_LIST;
+                return Collections.<WadlSaasResource>emptyList();
             }
         }
         return new ArrayList<WadlSaasResource>(resources);

@@ -63,6 +63,14 @@ public class Utilities {
         assert instance != null : "Need to have " + ActionsFactory.class.getName() + " instance in the default lookup";
         return instance;
     }
+
+    /** Gets BuildSupportImpl from the global Lookup.
+     */
+    public static BuildExecutionSupportImplementation getBuildExecutionSupportImplementation() {
+        BuildExecutionSupportImplementation instance = Lookup.getDefault().lookup(BuildExecutionSupportImplementation.class);
+        assert instance != null : "Need to have " + BuildExecutionSupportImplementation.class.getName() + " instance in the default lookup";
+        return instance;
+    }
     
     /** Gets the projectChooser factory from the global Lookup
      */

@@ -58,7 +58,7 @@ FUNCTION DEFINITION __set_malloc_handler  [13:1/238-16:2/308] FunctionDDImpl SCO
     DECLARATION: __set_malloc_handler  [13:1/238-16:2/308]
     PARAMETERS:
         __f [13:37/274-13:50/287]  TYPE: void TEXT=void(*)()  [13:37/274-13:44/281]  INIT: null  SCOPE: __set_malloc_handler 
-    RETURNS void TEXT=void(*)()  [13:1/238-13:15/252]
+    RETURNS void TEXT=void(*)()  [13:8/245-13:15/252]
     STATEMENT COMPOUND  [14:1/292-16:2/308] SCOPE: __set_malloc_handler 
         STATEMENT RETURN  [15:4/297-15:13/306] SCOPE: Stmt  [14:1/292-16:2/308] text: 'return 0;'
 FUNCTION genxGetAlloc [18:1/310-18:51/360] FunctionImpl SCOPE: $Global$ 

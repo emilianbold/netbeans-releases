@@ -59,6 +59,7 @@ import org.openide.util.NbBundle;
 /**
  * @author David Konecny
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.ant.freeform.spi.ProjectNature.class, position=10)
 public class WebProjectNature implements ProjectNature {
 
     public static final String NS_WEB_1 = "http://www.netbeans.org/ns/freeform-project-web/1"; // NOI18N

@@ -46,6 +46,7 @@ import org.netbeans.modules.maven.spi.lifecycle.MavenBuildPlanSupport;
  *
  * @author Anuradha
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.lifecycle.MavenBuildPlanSupport.class)
 public class MavenBuildPlanSupportImpl implements MavenBuildPlanSupport {
 
     public MavenBuildPlanSupportImpl() {

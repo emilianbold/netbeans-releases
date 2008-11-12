@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ws.qaf;
 
@@ -45,7 +45,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.jellytools.Bundle;
@@ -57,7 +56,9 @@ import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.CleanProjectAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV2ServerNode;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
@@ -280,6 +281,19 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         setProjectName(getProjectName());
         setProjectType(getProjectType());
         setJavaEEversion(getJavaEEversion());
+    }
+
+    public void assertServerRunning() {
+        if (!REGISTERED_SERVER.equals(ServerType.GLASSFISH)) {
+            LOGGER.info("not yet supported for server: " + REGISTERED_SERVER.toString());
+            return;
+        }
+        GlassFishV2ServerNode gf = GlassFishV2ServerNode.invoke();
+        gf.refresh();
+        if (gf.isCollapsed()) {
+            gf.expand();
+        }
+        assertTrue("Server is not running", 0 < gf.getChildren().length);
     }
 
     /**
@@ -513,6 +527,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * @param projectName name of the project to be deployed
      */
     protected void deployProject(String projectName) throws IOException {
+        new CleanProjectAction().perform();
         //Deploy
         String deployProjectLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_RedeployAction_Name");
         performProjectAction(projectName, deployProjectLabel);
@@ -535,6 +550,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * @param projectName name of the project to be undeployed
      */
     protected void undeployProject(String projectName) throws IOException {
+        assertServerRunning();
         J2eeServerNode serverNode = J2eeServerNode.invoke(REGISTERED_SERVER.toString());
         serverNode.expand();
         //Applications

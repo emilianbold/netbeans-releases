@@ -123,7 +123,7 @@ public final class JoinToken<T extends TokenId> extends PropertyToken<T> {
     public StringBuilder dumpInfo(StringBuilder sb, TokenHierarchy<?> tokenHierarchy,
             boolean dumpTokenText, boolean dumpRealOffset, int indent
     ) {
-        super.dumpInfo(sb, tokenHierarchy, dumpTokenText, dumpRealOffset, indent);
+        sb = super.dumpInfo(sb, tokenHierarchy, dumpTokenText, dumpRealOffset, indent);
         sb.append(", ").append(joinedParts.size()).append(" parts");
         int digitCount = String.valueOf(joinedParts.size() - 1).length();
         for (int i = 0; i < joinedParts.size(); i++) {

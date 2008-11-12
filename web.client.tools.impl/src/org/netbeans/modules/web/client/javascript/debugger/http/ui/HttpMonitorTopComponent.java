@@ -80,6 +80,8 @@ final class HttpMonitorTopComponent extends TopComponent {
         DebuggerManager manager = DebuggerManager.getDebuggerManager();
         manager.addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, debuggerManagerListener);
         manager.addDebuggerListener(DebuggerManager.PROP_SESSIONS, debuggerManagerListener);
+
+        resBodyEditorPane.setContentType("text/plain");
     }
     private Icon StartIcon;
     private Icon StopIcon;
@@ -194,7 +196,7 @@ final class HttpMonitorTopComponent extends TopComponent {
                     if (nodes == null || nodes.length < 1) {
                         reqParamTextArea.setText("");
                         resBodyEditorPane.setText("");
-                        resBodyEditorPane.setContentType("text/html");
+                        //resBodyEditorPane.setContentType("text/html");
                         return;
                     }
 
@@ -209,35 +211,37 @@ final class HttpMonitorTopComponent extends TopComponent {
                         } else {
                             reqParamTextArea.setText("URL PARAMS: " + request.getUrlParams());
                         }
-                        
-                        Map<String, String> header = activity.getResponseHeader();
-                        if (header != null) {
-                            String mime = activity.getMimeType();
-                            String contentType = "text/html";
-                            if( mime != null ) {
-                                if( HttpActivitiesModel.JS_CONTENT_TYPES.contains(mime) ){
-                                    contentType = "text/javascript";
-                                } else if (HttpActivitiesModel.CSS_CONTENT_TYPES.contains(mime)){
-                                    contentType = "text/x-css";
-                                } else if ( mime.contains("json") ) {
-                                    contentType = "text/x-json";
-                                }else if ( mime.contains("xml")){
-                                    contentType = "text/xml";
-                                }
-                            }
-                            if(contentType.equals("text/html")){
-                                EditorKit kit = MimeLookup.getLookup(contentType).lookup(EditorKit.class);
-                                resBodyEditorPane.setEditorKitForContentType(contentType,kit);
-                            }
-                            resBodyEditorPane.setContentType(contentType);
-                            resBodyEditorPane.setText(activity.getResponseText());
-                        } else {
-                            resBodyEditorPane.setText("");
-                            resBodyEditorPane.setContentType("text/html");
-                        }
+
+                        resBodyEditorPane.setText(activity.getResponseText());
+
+                        // XXX disable syntax highlighting due to performance - IZ 148996
+//                        Map<String, String> header = activity.getResponseHeader();
+//                        if (header != null) {
+//                            String mime = activity.getMimeType();
+//                            String contentType = "text/html";
+//                            if( mime != null ) {
+//                                if( HttpActivitiesModel.JS_CONTENT_TYPES.contains(mime) ){
+//                                    contentType = "text/javascript";
+//                                } else if (HttpActivitiesModel.CSS_CONTENT_TYPES.contains(mime)){
+//                                    contentType = "text/x-css";
+//                                } else if ( mime.contains("json") ) {
+//                                    contentType = "text/x-json";
+//                                }else if ( mime.contains("xml")){
+//                                    contentType = "text/xml";
+//                                }
+//                            }
+//                            if(contentType.equals("text/html")){
+//                                EditorKit kit = MimeLookup.getLookup(contentType).lookup(EditorKit.class);
+//                                resBodyEditorPane.setEditorKitForContentType(contentType,kit);
+//                            }
+//                            resBodyEditorPane.setContentType(contentType);
+//                            resBodyEditorPane.setText(activity.getResponseText());
+//                        } else {
+//                            resBodyEditorPane.setText("");
+//                            resBodyEditorPane.setContentType("text/html");
+//                        }
                     }
             }
-
         }
     }
     private static final String PREF_HttpMonitorSplitPane_DIVIDERLOC = "HttpMonitorSplitPane_DIVIDERLOC";

@@ -197,7 +197,9 @@ class HtmlLabelUI extends LabelUI {
                 }
             }
         }
-        return hintsMap;
+        Map ret = hintsMap;
+        assert ret != null; // does this method need to be synchronized?
+        return ret;
     }
 
     public void update(Graphics g, JComponent c) {

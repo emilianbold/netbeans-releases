@@ -60,6 +60,7 @@ import org.netbeans.modules.php.model.SourceElement;
  * @author ads
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.model.refs.ReferenceResolver.class)
 public class InterfaceStaticMemberReferenceResover 
     extends StaticMemberReferenceResolver 
 {

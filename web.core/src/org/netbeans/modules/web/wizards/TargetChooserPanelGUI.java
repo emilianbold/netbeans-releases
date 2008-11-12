@@ -142,8 +142,8 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = 0;
-            gridBagConstraints.gridheight = 2;
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+            gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             optionsPanel.add(optionLabel, gridBagConstraints);
 
             jspSyntaxButton.setSelected(true);

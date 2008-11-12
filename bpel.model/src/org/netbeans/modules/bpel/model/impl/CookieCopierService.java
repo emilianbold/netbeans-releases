@@ -35,6 +35,7 @@ import org.netbeans.modules.bpel.model.impl.services.InnerEventDispatcherAdapter
  * @author ads This is service for cookie copying from old element to cut
  *         element.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.InnerEventDispatcher.class)
 public class CookieCopierService extends InnerEventDispatcherAdapter {
 
 

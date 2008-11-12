@@ -10,8 +10,8 @@ METHOD     divide(BigDecimal, RoundingMod             BigDecimal
 METHOD     divide(BigDecimal, int)                    BigDecimal
 METHOD     divide(BigDecimal, int, Roundi             BigDecimal
 METHOD     divide(BigDecimal, int, int)               BigDecimal
-METHOD     divideAndRemainder(BigDecimal)             BigDecimal
-METHOD     divideAndRemainder(BigDecimal,             BigDecimal
+METHOD     divideAndRemainder(BigDecimal)             BigDecimal[]
+METHOD     divideAndRemainder(BigDecimal,             BigDecimal[]
 METHOD     divideToIntegralValue(BigDecim             BigDecimal
 METHOD     divideToIntegralValue(BigDecim             BigDecimal
 METHOD     doubleValue()                              double

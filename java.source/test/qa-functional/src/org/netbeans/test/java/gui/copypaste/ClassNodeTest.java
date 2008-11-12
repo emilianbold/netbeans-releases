@@ -48,7 +48,6 @@ import java.io.PrintWriter;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.actions.CutAction;
@@ -60,7 +59,6 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.java.JavaTestCase;
 import org.netbeans.test.java.Utilities;
 import org.netbeans.test.java.gui.GuiUtilities;
@@ -133,6 +131,7 @@ public class ClassNodeTest extends JavaTestCase {
     /**
      * Sets up logging facilities.
      */
+    @Override
     public void setUp() throws Exception {
         super.setUp();
         System.out.println("########  "+getName()+"  #######");
@@ -143,7 +142,8 @@ public class ClassNodeTest extends JavaTestCase {
         try {
             File wd = getWorkDir();
             workDir = wd.toString();
-        } catch (IOException e) { }        
+        } catch (IOException e) { }
+        openDefaultProject();
     }
     
     /**

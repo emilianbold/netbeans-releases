@@ -58,6 +58,7 @@ import org.openide.loaders.DataObject;
  *
  * @author Nam Nguyen
  */
+@org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.DocumentModelAccessProvider.class), @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.ModelAccessProvider.class)})
 public class XDMAccessProvider implements DocumentModelAccessProvider {
     
     /** Creates a new instance of XDMAccessProvider */

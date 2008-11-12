@@ -48,6 +48,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  * Factory for simple J2ME projects.
  * @author Jesse Glick, Adam Sotona
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class, position=100)
 public final class J2MEProjectType implements AntBasedProjectType {
     
     public static final String TYPE = "org.netbeans.modules.kjava.j2meproject";  //NOI18N

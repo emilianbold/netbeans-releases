@@ -55,7 +55,6 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -136,6 +135,11 @@ public class MethodBreakpointsTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
             NbDialogOperator dialog = Utilities.newBreakpoint(92);
             setBreakpointType(dialog, "Method");
             new JTextFieldOperator(dialog, 1).setText("examples.advanced.MemoryView");
@@ -158,7 +162,7 @@ public class MethodBreakpointsTest extends JellyTestCase {
             //open source
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java");            
+            EditorOperator eo = new EditorOperator("MemoryView.java");
             NbDialogOperator dialog = Utilities.newBreakpoint(53);            
             setBreakpointType(dialog, "Method");
             assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 1).getText());

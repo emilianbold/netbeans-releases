@@ -44,8 +44,8 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -62,11 +62,11 @@ import org.openide.util.RequestProcessor;
 public class ThreadsTreeModel implements TreeModel {
     
     private GdbDebugger     debugger;
-    private Collection      listeners = new HashSet();
+    private final Set<ModelListener> listeners = new HashSet<ModelListener>();
     private Listener        listener;
    
     public ThreadsTreeModel(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
     /** 
@@ -75,8 +75,7 @@ public class ThreadsTreeModel implements TreeModel {
      */
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent.equals(ROOT)) {
-            String[] threads = debugger.getThreadsList();
-	    return threads;
+	    return debugger.getThreadsList();
         } else {
 	    throw new UnknownTypeException(parent);
 	}
@@ -137,7 +136,7 @@ public class ThreadsTreeModel implements TreeModel {
     public void removeModelListener(ModelListener l) {
         synchronized (listeners) {
             listeners.remove (l);
-            if (listeners.size() == 0) {
+            if (listeners.isEmpty()) {
                 listener.destroy();
                 listener = null;
             }
@@ -161,18 +160,18 @@ public class ThreadsTreeModel implements TreeModel {
      */
     private static class Listener implements PropertyChangeListener {
         
-        private GdbDebugger debugger;
-        private WeakReference model;
+        private final GdbDebugger debugger;
+        private final WeakReference<ThreadsTreeModel> model;
         private RequestProcessor.Task task;
         
         public Listener(ThreadsTreeModel tm, GdbDebugger debugger) {
             this.debugger = debugger;
-            model = new WeakReference(tm);
+            this.model = new WeakReference<ThreadsTreeModel>(tm);
             debugger.addPropertyChangeListener(this);
         }
         
         private ThreadsTreeModel getModel() {
-            ThreadsTreeModel tm = (ThreadsTreeModel) model.get();
+            ThreadsTreeModel tm = model.get();
             if (tm == null) {
                 destroy();
             }
@@ -191,7 +190,7 @@ public class ThreadsTreeModel implements TreeModel {
         public synchronized void propertyChange(PropertyChangeEvent e) {
             String propertyName = e.getPropertyName();
             if ((propertyName.equals(GdbDebugger.PROP_STATE) && 
-                    debugger.getState().equals(GdbDebugger.STATE_STOPPED)) ||
+                    debugger.getState() == GdbDebugger.State.STOPPED) ||
                     propertyName.equals(GdbDebugger.PROP_CURRENT_THREAD)) {
                 synchronized (this) {
                     if (task == null) {
@@ -204,7 +203,7 @@ public class ThreadsTreeModel implements TreeModel {
         
         private class Refresher extends Object implements Runnable {
             public void run() {
-                if (debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+                if (debugger.getState() == GdbDebugger.State.STOPPED) {
                     ThreadsTreeModel tm = getModel();
                     if (tm != null) {
                         tm.fireTreeChanged();

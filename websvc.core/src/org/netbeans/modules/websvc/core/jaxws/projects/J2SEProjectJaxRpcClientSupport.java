@@ -457,12 +457,16 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
         } catch (IOException ex) {
             
         }
-        assert ep!=null;
         
-        //String metaInfStr = helper.getStandardPropertyEvaluator().getProperty("meta.inf.dir");
-        String srcDir = ep.getProperty("src.dir"); //NOI18N
-        //String wsdlFolderStr = metaInfStr + "/" + WSDL_FOLDER; // NOI18N
-        String wsdlFolderStr = (srcDir==null?"":srcDir) + "/META-INF/" + WSDL_FOLDER; // NOI18N
+        String srcDir = "src"; //NOI18N
+        if (ep != null) {
+            String srcDirProp = ep.getProperty("src.dir"); //NOI18N
+            if (srcDirProp != null) {
+                srcDir = srcDirProp;
+            }
+        }
+        
+        String wsdlFolderStr = srcDir + "/META-INF/" + WSDL_FOLDER; // NOI18N
         FileObject wsdlFolder = project.getProjectDirectory().getFileObject(wsdlFolderStr);
         if (wsdlFolder == null && create) {
             wsdlFolder = FileUtil.createFolder(project.getProjectDirectory(), wsdlFolderStr);

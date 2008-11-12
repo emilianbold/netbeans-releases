@@ -45,7 +45,6 @@ import com.sun.tools.ws.processor.model.Operation;
 import java.util.*;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.java.WsdlJavaMethod;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
 import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
 import org.openide.util.NbBundle;
 
@@ -102,8 +101,8 @@ public class WsdlOperation implements WSOperation {
         return operation.getJavaMethod().getReturnType().getName();
     }
     
-    public List<WSParameter> getParameters() {
-        List<WSParameter> wsdlParameters = new ArrayList<WSParameter> ();
+    public List<WsdlParameter> getParameters() {
+        List<WsdlParameter> wsdlParameters = new ArrayList<WsdlParameter> ();
         if (operation==null) return wsdlParameters;
         List<com.sun.tools.ws.processor.model.java.JavaParameter> parameterList = operation.getJavaMethod().getParametersList();
         for (com.sun.tools.ws.processor.model.java.JavaParameter param: parameterList)

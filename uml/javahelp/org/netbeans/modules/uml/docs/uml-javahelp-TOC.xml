@@ -59,7 +59,7 @@
 				<tocitem text="Zooming in Diagrams" target="uml_editors_windows_zooming_in_diagrams" />
 				<tocitem text="Stacking Diagram Elements" target="uml_editors_windows_stacking_diagram_elements" />
 				<tocitem text="Navigating Within Diagrams" target="uml_editors_windows_navigating_within_diagrams">
-					<tocitem text="Using the Overview Window" target="uml_editors_windows_using_overview_window" />
+					<tocitem text="Using the Navigator Window" target="uml_editors_windows_using_navigator_window" />
 					<tocitem text="Navigating Between Instances and Classifiers" target="uml_editors_windows_navigating_between_instances_classifiers" />
 					<tocitem text="Navigating by Links in Diagrams" target="uml_editors_windows_navigating_by_links_in_diagrams" />
 					<tocitem text="Discovering and Navigating Links" target="uml_editors_windows_discovering_navigating_links" />

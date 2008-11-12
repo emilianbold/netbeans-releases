@@ -50,6 +50,9 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class ProjectsTabOperatorTest extends JellyTestCase {
 
+    public static final String[] tests = new String[]
+    {"testInvoke", "testTree", "testGetProjectRootNode", "testVerify"};
+    
     public ProjectsTabOperatorTest(java.lang.String testName) {
         super(testName);
     }
@@ -69,7 +72,7 @@ public class ProjectsTabOperatorTest extends JellyTestCase {
         return suite;
          */
         return (NbTest) createModuleTest(ProjectsTabOperatorTest.class, 
-                "testInvoke", "testTree", "testGetProjectRootNode", "testVerify");
+                tests);
     }
     
     /** Print out test name. */

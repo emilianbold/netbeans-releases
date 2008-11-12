@@ -1,0 +1,13 @@
+
+attrs=|DOCUMENTED|;82
+class=SimpleRenewer
+class-ig=simplerenewer
+field=sec
+filename=ruby:lib/ruby/1.8/rinda/rinda.rb
+fqn=Rinda::SimpleRenewer
+in=Rinda
+includes=DRbUndumped
+require=rinda/rinda
+requires=drb/drb,thread
+method=new(sec);|DOCUMENTED|PRIVATE|STATIC|
+

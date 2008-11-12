@@ -11,6 +11,12 @@
  */
 
 /**
+ * @id $
+ * @global $
+ * @type jQuery
+ */
+
+/**
  * This function accepts a string containing a CSS selector which is then used to match a set of elements.
  * The core functionality of jQuery centers around this function. Everything in jQuery is based upon this, or uses this in some way. The most basic use of this function is to pass in an expression (usually consisting of CSS), which then finds all matching elements. By default, if no context is specified, $() looks for DOM elements within the context of the current HTML document. If you do specify a context, such as a DOM element or jQuery object, the expression will be matched against the contents of that context. See<a href='Selectors'>Selectors</a> for the allowed CSS syntax for expressions.
  * @code

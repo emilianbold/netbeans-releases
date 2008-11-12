@@ -41,6 +41,8 @@
 
 package org.openide.loaders;
 
+import org.openide.filesystems.FileObject;
+
 
 /** Allows certain data objects to be excluded from being displayed.
 * @see RepositoryNodeFactory
@@ -61,4 +63,18 @@ public interface DataFilter extends java.io.Serializable {
     /** @deprecated Only public by accident. */
     @Deprecated
     /* public static final */ long serialVersionUID = 0L;
+
+    /** Additional interface that can be implemented by the {@link DataFilter}
+     * implementors to do low level filtering based on the file objects.
+     * @since 7.4
+     */
+    public interface FileBased extends DataFilter {
+        /** Should this fileobject be considered for displaying?
+         *
+         * @param fo the file object
+         * @return <CODE>true</CODE> if the object should be displayed,
+         *    <CODE>false</CODE> otherwise
+         */
+        public boolean acceptFileObject(FileObject fo);
+    }
 }

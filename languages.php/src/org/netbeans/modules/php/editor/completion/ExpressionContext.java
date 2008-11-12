@@ -75,6 +75,7 @@ import org.openide.filesystems.FileObject;
  * @author ads
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.editor.completion.CompletionResultProvider.class)
 public class ExpressionContext implements CompletionResultProvider
 {
 

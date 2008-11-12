@@ -47,13 +47,11 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.RequestProcessor;
+import org.netbeans.junit.RandomlyFails;
 
 
 /**
@@ -72,6 +70,7 @@ public class TopLoggingStartLogTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
 
@@ -122,13 +121,11 @@ public class TopLoggingStartLogTest extends NbTestCase {
     }
 
 
-    protected void tearDown() throws Exception {
-    }
-
     protected ByteArrayOutputStream getStream() {
         return w;
     }
 
+    @RandomlyFails // NB-Core-Build #1659
     public void testProgress() throws Exception {
         StartLog.logProgress("First visible message");
 

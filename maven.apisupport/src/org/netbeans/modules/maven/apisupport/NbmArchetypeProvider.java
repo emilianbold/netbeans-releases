@@ -49,6 +49,7 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.api.archetype.ArchetypeProvider.class)
 public class NbmArchetypeProvider implements ArchetypeProvider {
 
     public List<Archetype> getArchetypes() {

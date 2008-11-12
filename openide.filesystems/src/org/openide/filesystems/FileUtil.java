@@ -72,7 +72,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileSystemView;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
@@ -498,8 +497,9 @@ public final class FileUtil extends Object {
 
                 if (f == null) {
                     try {
+                        LOG.finest("createFolder - before create folder if not exists.");
                         f = folder.createFolder(name);
-                    } catch (SyncFailedException ex) {
+                    } catch (IOException ex) {  // SyncFailedException or IOException when folder already exists
                         // there might be unconsistency between the cache
                         // and the disk, that is why
                         folder.refresh();
@@ -533,15 +533,9 @@ public final class FileUtil extends Object {
     * @return the data file for given name
     * @exception IOException if the creation fails
     */
-    public static FileObject createData(FileObject folder, String name)
-    throws IOException {
-        if (folder == null) {
-            throw new IllegalArgumentException("Null folder"); // NOI18N
-        }
-
-        if (name == null) {
-            throw new IllegalArgumentException("Null name"); // NOI18N
-        }
+    public static FileObject createData(FileObject folder, String name) throws IOException {
+        Parameters.notNull("folder", folder);  //NOI18N
+        Parameters.notNull("name", name);  //NOI18N
 
         String foldername;
         String dataname;
@@ -663,7 +657,7 @@ public final class FileUtil extends Object {
         FileObject retVal = null;
 
         try {
-            URL url = fileToURL(file);
+            URL url = file.toURI().toURL();
 
             if (
                 (url.getAuthority() != null) &&
@@ -692,23 +686,6 @@ public final class FileUtil extends Object {
         return retVal;
     }
         
-    static URL fileToURL(File file) throws MalformedURLException {
-        URL retVal = null;
-
-        if (!Utilities.isWindows() || canBeCanonicalizedOnWindows(file) || file.getPath().startsWith("\\\\")) {  //NOI18N
-            // all non-Windows files, canonicalizable files on windows, UNC files
-            retVal = file.toURI().toURL();
-        } else {
-            if (Utilities.isWindows() && file.getParentFile() == null) {
-                retVal = new URL("file:/" + file.getAbsolutePath().toUpperCase()); //NOI18N
-            } else {
-                retVal = new URL("file:/" + file.getAbsolutePath()); //NOI18N
-            }
-        }
-
-        return retVal;
-    }
-
     /** Finds appropriate FileObjects to java.io.File if possible.
      * If not possible then empty array is returned. More FileObjects may
      * correspond to one java.io.File that`s why array is returned.
@@ -1226,13 +1203,8 @@ public final class FileUtil extends Object {
      * @since 3.16
      */
     public static boolean isParentOf(FileObject folder, FileObject fo) {
-        if (folder == null) {
-            throw new IllegalArgumentException("Tried to pass null folder arg"); // NOI18N
-        }
-
-        if (fo == null) {
-            throw new IllegalArgumentException("Tried to pass null fo arg"); // NOI18N
-        }
+        Parameters.notNull("folder", folder);  //NOI18N
+        Parameters.notNull("fileObject", fo);  //NOI18N
 
         if (folder.isData()) {
             return false;
@@ -1461,85 +1433,31 @@ public final class FileUtil extends Object {
     private static File normalizeFileOnWindows(final File file) {
         File retVal = null;
 
-        if (canBeCanonicalizedOnWindows(file)) {
-            try {
-                retVal = file.getCanonicalFile();
-            } catch (IOException e) {
-                LOG.warning("getCanonicalFile() on file " + file + " failed: " + e);
+        try {
+            retVal = file.getCanonicalFile();
+        } catch (IOException e) {
+            // report only other than UNC path \\ or \\computerName because these cannot be canonicalized
+            if (!file.getPath().equals("\\\\") && !("\\\\".equals(file.getParent()))) {  //NOI18N
+                LOG.warning("getCanonicalFile() on file " + file + " failed: " + e);  //NOI18N
                 LOG.log(Level.FINE, file.toString(), e);
             }
-            // #135547 - on Windows Vista map "Documents and Settings\<username>\My Documents" to "Users\<username>\Documents"
-            if((Utilities.getOperatingSystem() & Utilities.OS_WINVISTA) != 0) {
-                if(retVal == null) {
-                    retVal = file;
-                }
-                String absolutePath = retVal.getAbsolutePath();
-                if(absolutePath.contains(":\\Documents and Settings")) {  //NOI18N
-                    absolutePath = absolutePath.replaceFirst("Documents and Settings", "Users");  //NOI18N
-                    absolutePath = absolutePath.replaceFirst("My Documents", "Documents");  //NOI18N
-                    absolutePath = absolutePath.replaceFirst("My Pictures", "Pictures");  //NOI18N
-                    absolutePath = absolutePath.replaceFirst("My Music", "Music");  //NOI18N
-                    retVal = new File(absolutePath);
-                }
+        }
+        // #135547 - on Windows Vista map "Documents and Settings\<username>\My Documents" to "Users\<username>\Documents"
+        if((Utilities.getOperatingSystem() & Utilities.OS_WINVISTA) != 0) {
+            if(retVal == null) {
+                retVal = file.getAbsoluteFile();
+            }
+            String absolutePath = retVal.getAbsolutePath();
+            if(absolutePath.contains(":\\Documents and Settings")) {  //NOI18N
+                absolutePath = absolutePath.replaceFirst("Documents and Settings", "Users");  //NOI18N
+                absolutePath = absolutePath.replaceFirst("My Documents", "Documents");  //NOI18N
+                absolutePath = absolutePath.replaceFirst("My Pictures", "Pictures");  //NOI18N
+                absolutePath = absolutePath.replaceFirst("My Music", "Music");  //NOI18N
+                retVal = new File(absolutePath);
             }
         }
 
         return (retVal != null) ? retVal : file.getAbsoluteFile();
-    }
-
-    private static FileSystemView fileSystemView;
-    private static float javaSpecVersion;
-    private static boolean canBeCanonicalizedOnWindows(final File file) {
-        /*#4089199, #95031 - Flopy and empty CD-drives can't be canonicalized*/
-        // UNC path \\computerName can't be canonicalized - parent is "\\\\" and exists() returns false
-        // #137407 - "." can be canonicalized - parent == null and file.isAbsolute() returns false
-        String parent = file.getParent();
-        if (((parent == null && file.isAbsolute()) || (parent != null && parent.equals("\\\\"))) && Utilities.isWindows()) {//NOI18N
-            FileSystemView fsv = getFileSystemView();
-            return (fsv != null) ? !fsv.isFloppyDrive(file) && file.exists() : false;
-        }
-        return true;
-    }
-    
-    private static boolean is4089199() {
-        return /*98388*/Utilities.isWindows() && getJavaSpecVersion() < 1.6;
-    }
-    
-    private static float getJavaSpecVersion() {
-        synchronized(FileUtil.class) {
-            if (javaSpecVersion == 0) {
-                javaSpecVersion = Float.valueOf(System.getProperty("java.specification.version"));//NOI18N
-            }
-        }
-        return javaSpecVersion;
-    }
-
-    private static FileSystemView getFileSystemView() {
-        boolean init = false;
-        final FileSystemView[] fsv = {fileSystemView};
-        
-        synchronized(FileUtil.class) {
-            init = is4089199() && fsv[0] == null;
-        }
-        
-        if (init) {
-            if (SwingUtilities.isEventDispatchThread()) {
-                fsv[0] = javax.swing.filechooser.FileSystemView.getFileSystemView();                
-                synchronized(FileUtil.class) {
-                    fileSystemView = fsv[0];
-                }                
-            } else {
-                SwingUtilities.invokeLater(new java.lang.Runnable() {
-                    public void run() {
-                        fsv[0] = javax.swing.filechooser.FileSystemView.getFileSystemView();
-                        synchronized(FileUtil.class) {
-                            fileSystemView = fsv[0];
-                        }                        
-                    }
-                });
-            }                        
-        }
-        return fileSystemView;
     }
 
     /**
@@ -1647,9 +1565,7 @@ public final class FileUtil extends Object {
      * @since 4.48
      */
     public static boolean isArchiveFile(FileObject fo) {
-        if (fo == null) {
-            throw new IllegalArgumentException("Cannot pass null to FileUtil.isArchiveFile"); // NOI18N
-        }
+        Parameters.notNull("fileObject", fo);  //NOI18N
 
         if (!fo.isValid()) {
             return false;
@@ -1717,9 +1633,7 @@ public final class FileUtil extends Object {
      * @since 4.48
      */
     public static boolean isArchiveFile(URL url) {
-        if (url == null) {
-            throw new NullPointerException("Cannot pass null URL to FileUtil.isArchiveFile"); // NOI18N
-        }
+        Parameters.notNull("url", url);  //NOI18N
 
         if ("jar".equals(url.getProtocol())) { //NOI18N
 

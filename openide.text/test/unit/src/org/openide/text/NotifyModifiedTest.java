@@ -44,6 +44,7 @@ package org.openide.text;
 
 import java.beans.PropertyChangeSupport;
 import java.io.StringWriter;
+import java.util.Date;
 import javax.swing.text.*;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
@@ -94,6 +95,7 @@ implements CloneableEditorSupport.Env {
 //        return new NotifyModifiedTest("testUndoDoesMarkFileAsDirtyIssue56963");
 //    }
     
+    @Override
     protected void setUp () {
         ic = new InstanceContent ();
         support = new CES (this, new AbstractLookup (ic));
@@ -105,12 +107,13 @@ implements CloneableEditorSupport.Env {
         err = ErrManager.getDefault().getInstance(getName());
     }
     
+    @Override
     protected void runTest () throws Throwable {
         try {
             super.runTest ();
-        } catch (AssertionFailedError err) {
-            AssertionFailedError n = new AssertionFailedError (err.getMessage () + "\n" + ErrManager.messages);
-            n.initCause (err);
+        } catch (AssertionFailedError ae) {
+            AssertionFailedError n = new AssertionFailedError (ae.getMessage () + "\n" + ErrManager.messages);
+            n.initCause (ae);
             throw n;
         }
     }
@@ -687,9 +690,11 @@ implements CloneableEditorSupport.Env {
     }
     public java.io.OutputStream outputStream() throws java.io.IOException {
         class ContentStream extends java.io.ByteArrayOutputStream {
+            @Override
             public void close () throws java.io.IOException {
                 super.close ();
                 content = new String (toByteArray ());
+                date = new Date();
             }
         }
         
@@ -745,6 +750,7 @@ implements CloneableEditorSupport.Env {
             return "ToolTip";
         }
         
+        @Override
         protected void notifyUnmodified () {
             notifyUnmodified++;
             Exceptions.printStackTrace(new java.lang.Exception("notifyUnmodified: " +
@@ -753,6 +759,7 @@ implements CloneableEditorSupport.Env {
             super.notifyUnmodified();
         }
 
+        @Override
         protected boolean notifyModified () {
             notifyModified++;
             
@@ -768,6 +775,7 @@ implements CloneableEditorSupport.Env {
             return retValue;
         }
         
+        @Override
         protected javax.swing.text.EditorKit createEditorKit() {
             javax.swing.text.EditorKit k = NotifyModifiedTest.this.createEditorKit ();
             if (k != null) {

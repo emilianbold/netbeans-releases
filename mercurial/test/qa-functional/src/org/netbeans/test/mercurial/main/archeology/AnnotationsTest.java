@@ -17,6 +17,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.mercurial.utils.MessageHandler;
 import org.netbeans.test.mercurial.utils.TestKit;
@@ -74,6 +75,7 @@ public class AnnotationsTest extends JellyTestCase {
             log.addHandler(mh);
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
+            new EventTool().waitNoEvent(3000);
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             node.performPopupAction("Mercurial|Show Annotations");
             TestKit.waitText(mh);

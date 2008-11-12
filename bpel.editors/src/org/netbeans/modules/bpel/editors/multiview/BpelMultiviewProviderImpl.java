@@ -28,6 +28,7 @@ import org.netbeans.modules.bpel.core.multiview.spi.BpelMultiviewProvider;
  * @author ads
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.core.multiview.spi.BpelMultiviewProvider.class)
 public class BpelMultiviewProviderImpl implements BpelMultiviewProvider {
 
     /* (non-Javadoc)

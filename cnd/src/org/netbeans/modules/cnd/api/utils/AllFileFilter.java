@@ -50,37 +50,42 @@ public class AllFileFilter extends SourceFileFilter {
     private static String[] suffixes = null;
 
     public static AllFileFilter getInstance() {
-        if (instance == null)
+        if (instance == null) {
             instance = new AllFileFilter();
+        }
         return instance;
     }
 
     public String getDescription() {
         return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_All_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
-    
-    
+
+
     public String[] getSuffixes() {
-        if (suffixes == null)
+        if (suffixes == null) {
             suffixes = getAllSuffixes();
+        }
         return suffixes;
     }
-    
+
+    @Override
     public String getSuffixesAsString() {
         String suf = AllSourceFileFilter.getInstance().getSuffixesAsString();
         suf += ResourceFileFilter.getInstance().getSuffixesAsString();
         return suf;
     }
-    
+
     public static String[] getAllSuffixes() {
-        Vector suffixes = new Vector();
-        addSuffices(suffixes, AllSourceFileFilter.getInstance().getSuffixes());
-        addSuffices(suffixes, ResourceFileFilter.getInstance().getSuffixes());
-        return (String[])suffixes.toArray(new String[suffixes.size()]);
+        Vector<String> allSuffixes = new Vector<String>();
+        addSuffices(allSuffixes, AllSourceFileFilter.getInstance().getSuffixes());
+        addSuffices(allSuffixes, ResourceFileFilter.getInstance().getSuffixes());
+        return allSuffixes.toArray(new String[allSuffixes.size()]);
     }
-    
-    private static void addSuffices(Vector suffixes, String[] suffixes2) {
-        for (int i = 0; i < suffixes2.length; i++)
+
+    private static void addSuffices(Vector<String> suffixes, String[] suffixes2) {
+        for (int i = 0; i < suffixes2.length; i++) {
             suffixes.add(suffixes2[i]);
+        }
     }
+
 }

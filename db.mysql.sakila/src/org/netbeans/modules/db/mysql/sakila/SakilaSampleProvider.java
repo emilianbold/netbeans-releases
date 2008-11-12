@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,9 +82,31 @@ public class SakilaSampleProvider implements SampleProvider {
             throw new DatabaseException(NbBundle.getMessage(this.getClass(),
                     "ERR_SampleNotSupported", sampleName));
         }
+        if (! checkInnodbSupport(dbconn.getJDBCConnection())) {
+            throw new DatabaseException(NbBundle.getMessage(this.getClass(),
+                    "ERR_NoSampleWithoutInnoDB"));
+        }
+
         createTables(dbconn);
         processDataFile(dbconn);
         processMrHillyer(dbconn);;
+    }
+
+        private boolean checkInnodbSupport(Connection conn) throws DatabaseException {
+        try {
+            ResultSet rs = conn.createStatement().executeQuery("SHOW STORAGE ENGINES");
+
+            while (rs.next()) {
+                if ("INNODB".equals(rs.getString(1).toUpperCase()) &&
+                    ("YES".equals(rs.getString(2).toUpperCase()) || "DEFAULT".equals(rs.getString(2).toUpperCase()))) {
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (SQLException sqle) {
+            throw new DatabaseException(sqle);
+        }
     }
 
     public boolean supportsSample(String name) {

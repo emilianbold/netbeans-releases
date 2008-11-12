@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -58,6 +58,8 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.StyleConstants;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
@@ -66,6 +68,7 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
+import org.netbeans.modules.gsf.GsfEditorKitFactory.NextCharProvider;
 import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
@@ -83,6 +86,7 @@ import org.openide.text.NbDocument;
 public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     private SyncDocumentRegion region;
+    private int span;
     private Document doc;
     private JTextComponent target;
     
@@ -100,85 +104,146 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     /** Creates a new instance of InstantRenamePerformer */
     private InstantRenamePerformer(JTextComponent target, Set<OffsetRange> highlights, int caretOffset) throws BadLocationException {
-	this.target = target;
-	doc = target.getDocument();
-	
-	MutablePositionRegion mainRegion = null;
-	List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
-	
-	for (OffsetRange h : highlights) {
-	    Position start = NbDocument.createPosition(doc, h.getStart(), Bias.Backward);
-	    Position end = NbDocument.createPosition(doc, h.getEnd(), Bias.Forward);
-	    MutablePositionRegion current = new MutablePositionRegion(start, end);
-	    
-	    if (isIn(current, caretOffset)) {
+        this.target = target;
+        doc = target.getDocument();
+
+        MutablePositionRegion mainRegion = null;
+        List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
+
+        for (OffsetRange h : highlights) {
+            Position start = NbDocument.createPosition(doc, h.getStart(), Bias.Backward);
+            Position end = NbDocument.createPosition(doc, h.getEnd(), Bias.Forward);
+            MutablePositionRegion current = new MutablePositionRegion(start, end);
+
+            if (isIn(current, caretOffset)) {
             mainRegion = current;
-	    } else {
+            } else {
             regions.add(current);
-	    }
-	}
-	
-	if (mainRegion == null) {
-        Logger.getLogger(InstantRenamePerformer.class.getName()).warning("No highlight contains the caret (" + caretOffset + "; highlights=" + highlights + ")"); //NOI18N
-        // Attempt to use another region - pick the one closest to the caret
-        if (regions.size() > 0) {
-            mainRegion = regions.get(0);
-            int mainDistance = Integer.MAX_VALUE;
-            for (MutablePositionRegion r : regions) {
-                int distance = caretOffset < r.getStartOffset() ? (r.getStartOffset()-caretOffset) : (caretOffset-r.getEndOffset());
-                if (distance < mainDistance) {
-                    mainRegion = r;
-                    mainDistance = distance;
-                }
             }
-        } else {
-            return;
         }
-	}
-	
-	regions.add(0, mainRegion);
-	
-	region = new SyncDocumentRegion(doc, regions);
-	
+
+        if (mainRegion == null) {
+            Logger.getLogger(InstantRenamePerformer.class.getName()).warning("No highlight contains the caret (" + caretOffset + "; highlights=" + highlights + ")"); //NOI18N
+            // Attempt to use another region - pick the one closest to the caret
+            if (regions.size() > 0) {
+                mainRegion = regions.get(0);
+                int mainDistance = Integer.MAX_VALUE;
+                for (MutablePositionRegion r : regions) {
+                    int distance = caretOffset < r.getStartOffset() ? (r.getStartOffset()-caretOffset) : (caretOffset-r.getEndOffset());
+                    if (distance < mainDistance) {
+                        mainRegion = r;
+                        mainDistance = distance;
+                    }
+                }
+            } else {
+                return;
+            }
+        }
+
+        regions.add(0, mainRegion);
+
+        region = new SyncDocumentRegion(doc, regions);
+
         if (doc instanceof BaseDocument) {
             ((BaseDocument) doc).addPostModificationDocumentListener(this);
         }
         
-	target.addKeyListener(this);
-	
-	target.putClientProperty(InstantRenamePerformer.class, this);
-	
-	requestRepaint();
+        target.addKeyListener(this);
+
+        target.putClientProperty(InstantRenamePerformer.class, this);
+
+        requestRepaint();
         
         target.select(mainRegion.getStartOffset(), mainRegion.getEndOffset());
+        
+        span = region.getFirstRegionLength();
     }
 
     public static void performInstantRename(JTextComponent target, Set<OffsetRange> highlights, int caretOffset) throws BadLocationException {
-	new InstantRenamePerformer(target, highlights, caretOffset);
+    new InstantRenamePerformer(target, highlights, caretOffset);
     }
 
     private boolean isIn(MutablePositionRegion region, int caretOffset) {
-	return region.getStartOffset() <= caretOffset && caretOffset <= region.getEndOffset();
+    return region.getStartOffset() <= caretOffset && caretOffset <= region.getEndOffset();
     }
     
     private boolean inSync;
     
     public synchronized void insertUpdate(DocumentEvent e) {
-	if (inSync) {
+        if (inSync) {
             return;
         }
-	
-	inSync = true;
-	region.sync(0);
-	inSync = false;
-	requestRepaint();
+
+        //check for modifications outside the first region:
+        if (e.getOffset() < region.getFirstRegionStartOffset() || (e.getOffset() + e.getLength()) > region.getFirstRegionEndOffset()) {
+            release();
+            return;
+        }
+        
+        inSync = true;
+        region.sync(0);
+        span = region.getFirstRegionLength();
+        inSync = false;
+
+        requestRepaint();
     }
 
     public synchronized void removeUpdate(DocumentEvent e) {
-	if (inSync) {
+        if (inSync) {
             return;
         }
-	
+
+        if (e.getLength() == 1) {
+            if ((e.getOffset() < region.getFirstRegionStartOffset() || e.getOffset() > region.getFirstRegionEndOffset())) {
+                release();
+                return;
+            }
+
+            if (e.getOffset() == region.getFirstRegionStartOffset() && region.getFirstRegionLength() > 0 && region.getFirstRegionLength() == span) {
+                if (Logger.getLogger(InstantRenamePerformer.class.getName()).isLoggable(Level.FINE)) {
+                    Logger.getLogger(InstantRenamePerformer.class.getName()).fine("e.getOffset()=" + e.getOffset());
+                    Logger.getLogger(InstantRenamePerformer.class.getName()).fine("region.getFirstRegionStartOffset()=" + region.getFirstRegionStartOffset());
+                    Logger.getLogger(InstantRenamePerformer.class.getName()).fine("region.getFirstRegionEndOffset()=" + region.getFirstRegionEndOffset());
+                    Logger.getLogger(InstantRenamePerformer.class.getName()).fine("span= " + span);
+                }
+                NextCharProvider jdca = (NextCharProvider) target.getClientProperty(NextCharProvider.class);
+                if (jdca != null && !jdca.getNextChar()) {
+                    undo();
+                } else {
+                    release();
+                }
+                
+                return;
+            }
+            
+            if (e.getOffset() == region.getFirstRegionEndOffset() && region.getFirstRegionLength() > 0 && region.getFirstRegionLength() == span) {
+                if (Logger.getLogger(InstantRenamePerformer.class.getName()).isLoggable(Level.FINE)) {
+                    Logger.getLogger(InstantRenamePerformer.class.getName()).fine("e.getOffset()=" + e.getOffset());
+                    Logger.getLogger(InstantRenamePerformer.class.getName()).fine("region.getFirstRegionStartOffset()=" + region.getFirstRegionStartOffset());
+                    Logger.getLogger(InstantRenamePerformer.class.getName()).fine("region.getFirstRegionEndOffset()=" + region.getFirstRegionEndOffset());
+                    Logger.getLogger(InstantRenamePerformer.class.getName()).fine("span= " + span);
+                }
+            //XXX: moves the caret anyway:
+//                NextCharProvider jdca = (NextCharProvider) target.getClientProperty(NextCharProvider.class);
+//
+//                if (jdca != null && jdca.getNextChar()) {
+//                    undo();
+//                } else {
+                    release();
+//                }
+
+                return;
+            }
+        } else {
+            //selection/multiple characters removed:
+            int removeSpan = e.getLength() + region.getFirstRegionLength();
+            
+            if (span < removeSpan) {
+                release();
+                return;
+            }
+        }
+        
         //#89997: do not sync the regions for the "remove" part of replace selection,
         //as the consequent insert may use incorrect offset, and the regions will be synced
         //after the insert anyway.
@@ -186,10 +251,12 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             return ;
         }
         
-	inSync = true;
-	region.sync(0);
-	inSync = false;
-	requestRepaint();
+        inSync = true;
+        region.sync(0);
+        span = region.getFirstRegionLength();
+        inSync = false;
+        
+        requestRepaint();
     }
 
     public void changedUpdate(DocumentEvent e) {
@@ -202,30 +269,47 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     }
 
     public void keyPressed(KeyEvent e) {
-	if (   (e.getKeyCode() == KeyEvent.VK_ESCAPE && e.getModifiers() == 0) 
-            || (e.getKeyCode() == KeyEvent.VK_ENTER  && e.getModifiers() == 0)) {
-	    release();
-	    e.consume();
-	}
+        if (   (e.getKeyCode() == KeyEvent.VK_ESCAPE && e.getModifiers() == 0)
+                || (e.getKeyCode() == KeyEvent.VK_ENTER  && e.getModifiers() == 0)) {
+            release();
+            e.consume();
+        }
     }
 
     public void keyReleased(KeyEvent e) {
     }
 
     private void release() {
-	target.putClientProperty(InstantRenamePerformer.class, null);
+        target.putClientProperty(InstantRenamePerformer.class, null);
         if (doc instanceof BaseDocument) {
             ((BaseDocument) doc).removePostModificationDocumentListener(this);
         }
-	target.removeKeyListener(this);
-	target = null;
+        target.removeKeyListener(this);
+        target = null;
 
-	region = null;
-	requestRepaint();
+        region = null;
+        attribs = null;
         
-	doc = null;
+        requestRepaint();
+
+        doc = null;
     }
 
+    private void undo() {
+        if (doc instanceof BaseDocument && ((BaseDocument) doc).isAtomicLock()) {
+            ((BaseDocument) doc).atomicUndo();
+        } else {
+            UndoableEdit undoMgr = (UndoableEdit) doc.getProperty(BaseDocument.UNDO_MANAGER_PROP);
+            if (target != null && undoMgr != null) {
+                try {
+                    undoMgr.undo();
+                } catch (CannotUndoException e) {
+                    Logger.getLogger(InstantRenamePerformer.class.getName()).log(Level.WARNING, null, e);
+                }
+            }
+        }
+    }
+    
     private void requestRepaint() {
         if (region == null) {
             OffsetsBag bag = getHighlightsBag(doc);

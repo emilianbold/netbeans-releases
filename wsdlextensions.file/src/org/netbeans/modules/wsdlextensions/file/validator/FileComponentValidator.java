@@ -61,6 +61,7 @@ import org.netbeans.modules.wsdlextensions.file.model.FileOperation;
  *
  * @author sweng
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public class FileComponentValidator
         implements Validator, FileComponent.Visitor {
         	

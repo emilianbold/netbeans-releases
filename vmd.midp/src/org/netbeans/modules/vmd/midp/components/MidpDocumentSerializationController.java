@@ -63,6 +63,7 @@ import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD
 /**
  * @author David Kaspar
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.serialization.DocumentSerializationController.class)
 public class MidpDocumentSerializationController extends DocumentSerializationController {
 
     public static final String VERSION_1 = "1"; // NOI18N

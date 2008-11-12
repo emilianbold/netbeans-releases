@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.java.api.common.project.ui.wizards.FolderList;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

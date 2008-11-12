@@ -52,6 +52,7 @@ import org.netbeans.modules.websvc.jaxrpc.nodes.PrototypeWebServicesView;
  *
  * @author Peter Williams
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.webservices.WebServicesViewProvider.class)
 public class PrototypeWebServicesViewProvider implements WebServicesViewProvider {
 
     private PrototypeWebServicesView webServicesViewGenerator = new PrototypeWebServicesView();

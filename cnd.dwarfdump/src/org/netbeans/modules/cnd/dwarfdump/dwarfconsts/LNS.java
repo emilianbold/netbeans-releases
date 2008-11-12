@@ -65,8 +65,8 @@ public enum LNS {
     static HashMap<Integer, LNS> hashmap = new HashMap<Integer, LNS>();
     
     static {
-        for (LNS elem : LNS.values()) {
-            hashmap.put(new Integer(elem.value), elem);
+        for (LNS elem : values()) {
+            hashmap.put(elem.value, elem);
         }
     }
     
@@ -75,7 +75,7 @@ public enum LNS {
     }
     
     public static LNS get(int val) {
-        return hashmap.get(new Integer(val));
+        return hashmap.get(val);
     }
     
     public int value() {

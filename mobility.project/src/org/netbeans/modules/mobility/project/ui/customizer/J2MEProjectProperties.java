@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -65,7 +66,6 @@ import org.netbeans.spi.mobility.deployment.DeploymentPlugin;
 import org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor;
 import org.netbeans.spi.mobility.project.PropertyParser;
 import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
-import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -75,6 +75,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.MutexException;
 import org.openide.util.Mutex;
@@ -102,17 +103,27 @@ public class J2MEProjectProperties implements ProjectProperties {
     private final Set<PropertyDescriptor> PROPERTY_DESCRIPTORS = new HashSet<PropertyDescriptor>();
     
     private void initPropertyDescriptors() {
-        for (ProjectPropertiesDescriptor p : Lookup.getDefault().lookup(new Lookup.Template<ProjectPropertiesDescriptor>(ProjectPropertiesDescriptor.class)).allInstances() ) {
-            PROPERTY_DESCRIPTORS.addAll(p.getPropertyDescriptors());
+        Collection <? extends ProjectPropertiesDescriptor> c = Lookup.getDefault().lookupAll(ProjectPropertiesDescriptor.class);
+        for (ProjectPropertiesDescriptor p : c) {
+            try {
+                PROPERTY_DESCRIPTORS.addAll(p.getPropertyDescriptors());
+            } catch (ConcurrentModificationException cme) {
+                ConcurrentModificationException nue = 
+                        new ConcurrentModificationException("Property descriptor " + //NOI18N
+                        "class " + p.getClass().getName() + " should return a " + //NOI18N
+                        "defensive copy of its property descriptors - they have" + //NOI18N
+                        "been modified"); //NOI18N
+                Exceptions.printStackTrace (nue);
+            }
         }
         for (DeploymentPlugin p : Lookup.getDefault().lookup(new Lookup.Template<DeploymentPlugin>(DeploymentPlugin.class)).allInstances() ) {
             final Iterator it2 = p.getProjectPropertyDefaultValues().entrySet().iterator();
             while (it2.hasNext()) {
                 final Map.Entry en = (Map.Entry)it2.next();
                 final Object v = en.getValue();
-                final PropertyParser  par = v instanceof Boolean ? DefaultPropertyParsers.BOOLEAN_PARSER : 
-                                            v instanceof Integer ? DefaultPropertyParsers.INTEGER_PARSER : 
-                                            v instanceof String ? DefaultPropertyParsers.STRING_PARSER : 
+                final PropertyParser  par = v instanceof Boolean ? DefaultPropertyParsers.BOOLEAN_PARSER :
+                                            v instanceof Integer ? DefaultPropertyParsers.INTEGER_PARSER :
+                                            v instanceof String ? DefaultPropertyParsers.STRING_PARSER :
                                             v instanceof File ? DefaultPropertyParsers.FILE_REFERENCE_PARSER : null;
                 if (par != null) PROPERTY_DESCRIPTORS.add(new PropertyDescriptor((String)en.getKey(), true, par, v.toString()));
             }

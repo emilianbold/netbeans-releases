@@ -43,9 +43,9 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.security.auth.RefreshFailedException;
 import javax.security.auth.Refreshable;
 import javax.swing.Action;
@@ -78,13 +78,13 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
     
     private ContextProvider  lookupProvider;
     
-    private final Collection modelListeners = new HashSet();
+    private final Collection<ModelListener> modelListeners = new CopyOnWriteArrayList<ModelListener>();
     
     private RequestProcessor evaluationRP = new RequestProcessor();
     
     private RequestProcessor.Task evaluationTask;
     
-    private LinkedList evaluationQueue = new LinkedList();
+    private final LinkedList evaluationQueue = new LinkedList();
     
     
     public VariablesTreeModelFilter (ContextProvider lookupProvider) {
@@ -123,7 +123,9 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
     private void postEvaluationMonitor(Object o, Runnable whenEvaluated) {
         synchronized (evaluationQueue) {
             if (evaluationQueue.contains(o) &&
-                evaluationQueue.contains(whenEvaluated)) return ;
+                evaluationQueue.contains(whenEvaluated)) {
+                return;
+            }
             if (evaluationTask == null) {
                 evaluationTask = evaluationRP.create(this);
             }
@@ -185,10 +187,11 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
                                                            ModelEvent.NodeChanged.CHILDREN_MASK));
             }
         });
-        if (vf == null) 
+        if (vf == null) {
             ch = original.getChildren (parent, from, to);
-        else
+        } else {
             ch = vf.getChildren (original, (Variable) parent, from, to);
+        }
         return ch;
     }
     
@@ -239,33 +242,25 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         Object node
     ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (node, true, null);
-        if (vf == null) 
+        if (vf == null) {
             return original.isLeaf (node);
+        }
         return vf.isLeaf (original, (Variable) node);
     }
 
     public void addModelListener (ModelListener l) {
-        synchronized (modelListeners) {
-            modelListeners.add(l);
-        }
+        modelListeners.add(l);
     }
 
     public void removeModelListener (ModelListener l) {
-        synchronized (modelListeners) {
-            modelListeners.remove(l);
-        }
+        modelListeners.remove(l);
     }
     
     private void fireModelChange(ModelEvent me) {
-        Object[] listeners;
-        synchronized (modelListeners) {
-            listeners = modelListeners.toArray();
-        }
-        for (int i = 0; i < listeners.length; i++) {
-            ((ModelListener) listeners[i]).modelChanged(me);
+        for (ModelListener listener : modelListeners) {
+            listener.modelChanged(me);
         }
     }
-    
     
     // NodeModelFilter
     
@@ -275,7 +270,9 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         VariablesFilter vf = getFilter (node, true, new Runnable() {
             public void run() {
                 VariablesFilter vf = getFilter (node, false, null);
-                if (vf == null) return ;
+                if (vf == null) {
+                    return;
+                }
                 String filteredDisplayName;
                 try {
                     filteredDisplayName = vf.getDisplayName (original, (Variable) node);
@@ -304,7 +301,9 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         VariablesFilter vf = getFilter (node, true, new Runnable() {
             public void run() {
                 VariablesFilter vf = getFilter (node, false, null);
-                if (vf == null) return ;
+                if (vf == null) {
+                    return;
+                }
                 String filteredIconBase;
                 try {
                     filteredIconBase = vf.getIconBase (original, (Variable) node);
@@ -333,7 +332,9 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         VariablesFilter vf = getFilter (node, true, new Runnable() {
             public void run() {
                 VariablesFilter vf = getFilter (node, false, null);
-                if (vf == null) return ;
+                if (vf == null) {
+                    return;
+                }
                 String filteredShortDescription;
                 try {
                     filteredShortDescription = vf.getShortDescription (original, (Variable) node);
@@ -362,8 +363,9 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         Object node
     ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (node, true, null);
-        if (vf == null) 
+        if (vf == null) {
             return original.getActions (node);
+        }
         return vf.getActions (original, (Variable) node);
     }
     
@@ -372,10 +374,11 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         Object node
     ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (node, true, null);
-        if (vf == null) 
+        if (vf == null) {
             original.performDefaultAction (node);
-        else
+        } else {
             vf.performDefaultAction (original, (Variable) node);
+        }
     }
     
     
@@ -402,8 +405,9 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         String columnID
     ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (row, true, null);
-        if (vf == null) 
+        if (vf == null) {
             return original.isReadOnly (row, columnID);
+        }
         return vf.isReadOnly (original, (Variable) row, columnID);
     }
     
@@ -414,10 +418,11 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         Object value
     ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (row, false, null);
-        if (vf == null)
+        if (vf == null) {
             original.setValueAt (row, columnID, value);
-        else
+        } else {
             vf.setValueAt (original, (Variable) row, columnID, value);
+        }
     }
     
     
@@ -444,18 +449,24 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
                 VariablesFilter f = (VariablesFilter) l.get (i);
                 String[] types = f.getSupportedAncestors ();
                 int j, jj = types.length;
-                for (j = 0; j < jj; j++)
+                for (j = 0; j < jj; j++) {
                     ancestorToFilter.put (types [j], f);
+                }
                 types = f.getSupportedTypes ();
                 jj = types.length;
-                for (j = 0; j < jj; j++)
+                for (j = 0; j < jj; j++) {
                     typeToFilter.put (types [j], f);
+                }
             }
         }
         
-        if (typeToFilter.size() == 0) return null; // Optimization for corner case
+        if (typeToFilter.isEmpty()) {
+            return null;
+        } // Optimization for corner case
         
-        if (!(o instanceof Variable)) return null;
+        if (!(o instanceof Variable)) {
+            return null;
+        }
         
         Variable v = (Variable) o;
         
@@ -470,7 +481,9 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         
         String type = v.getType ();
         VariablesFilter vf = (VariablesFilter) typeToFilter.get (type);
-        if (vf != null) return vf;
+        if (vf != null) {
+            return vf;
+        }
         
         /*NM TEMPORARY COMMENTED OUT
         if (!(o instanceof ObjectVariable)) return null;

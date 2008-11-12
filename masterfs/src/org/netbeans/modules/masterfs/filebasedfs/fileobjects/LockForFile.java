@@ -105,7 +105,11 @@ public class LockForFile extends FileLock {
         }
         if (namesakes.putInstance(file, result) == null) {
             FileAlreadyLockedException alreadyLockedException = new FileAlreadyLockedException(file.getAbsolutePath());
-            alreadyLockedException.initCause(namesakes.getInstance(file).lockedBy);
+            LockForFile previousLock = namesakes.getInstance(file);
+            // #151576 - check for null although it should not happen
+            if (previousLock != null) {
+                alreadyLockedException.initCause(previousLock.lockedBy);
+            }
             throw alreadyLockedException;
         }
         result.valid = true;

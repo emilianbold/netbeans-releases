@@ -70,6 +70,7 @@ import org.openide.util.Mutex.Action;
  *
  * @author  Milos Kleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.FileOwnerQueryImplementation.class, position=97)
 public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     
     private Set<NbMavenProjectImpl> set;
@@ -226,6 +227,11 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             NbMavenProjectImpl project = it.next();
             String path = project.getArtifactRelativeRepositoryPath();
             LOG.finest("matching againts known project " + path);
+            if (filepath.endsWith(path)) {
+                return project;
+            }
+            path = project.getTestArtifactRelativeRepositoryPath();
+            LOG.finest("matching againts known project's test " + path);
             if (filepath.endsWith(path)) {
                 return project;
             }

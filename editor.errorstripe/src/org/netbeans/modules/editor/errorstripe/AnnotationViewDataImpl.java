@@ -592,6 +592,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         return get(ann.getSeverity());
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
     public static final class UpToDateStatusProviderFactoriesProvider implements Class2LayerFolder {
 
         public UpToDateStatusProviderFactoriesProvider() {
@@ -611,6 +612,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         }
     } // End of UpToDateStatusProviderFactoriesProvider class
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
     public static final class MarkProviderCreatorsProvider implements Class2LayerFolder {
 
         public MarkProviderCreatorsProvider() {
@@ -633,6 +635,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     // XXX: This is here to help to deal with legacy code
     // that registered stuff in text/base. The artificial text/base
     // mime type is deprecated and should not be used anymore.
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
     public static final class LegacyCrapProvider implements Class2LayerFolder, InstanceProvider {
 
         private final List<FileObject> instanceFiles;

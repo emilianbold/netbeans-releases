@@ -52,6 +52,7 @@ import org.openide.filesystems.FileObject;
  * @author Ajit.Bhate@Sun.COM
  * @author Tomasz.Slota@Sun.COM
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
 public class WebServicesHintsFactory extends EditorAwareJavaSourceTaskFactory {
     
     public WebServicesHintsFactory(){

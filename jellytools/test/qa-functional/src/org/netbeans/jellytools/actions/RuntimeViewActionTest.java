@@ -54,6 +54,9 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jiri.Skrivanek@sun.com
  */
 public class RuntimeViewActionTest extends JellyTestCase {
+    public static final String[] tests = new String[] {
+        "testPerformMenu", "testPerformAPI"
+    };
 
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
@@ -73,7 +76,7 @@ public class RuntimeViewActionTest extends JellyTestCase {
         return suite;
          */
         return createModuleTest(RuntimeViewActionTest.class, 
-                "testPerformMenu", "testPerformAPI");
+                tests);
     }
     
     /** Use for internal test execution inside IDE

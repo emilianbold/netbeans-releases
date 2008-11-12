@@ -54,6 +54,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.ConnectionListener;
@@ -83,21 +84,25 @@ import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenDatasourceSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.LogicalViewProvider2;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
@@ -112,7 +117,7 @@ import org.w3c.dom.Element;
  * Support for creating logical views.
  * @author Petr Hrebejk
  */
-public class WebLogicalViewProvider implements LogicalViewProvider {
+public class WebLogicalViewProvider implements LogicalViewProvider2 {
 
     private static final RequestProcessor BROKEN_LINKS_RP = new RequestProcessor("WebLogicalViewProvider.BROKEN_LINKS_RP"); // NOI18N
     private static final RequestProcessor BROKEN_DATASOURCE_RP = new RequestProcessor("WebLogicalViewProvider.BROKEN_DATASOURCE_RP"); //NOI18N
@@ -232,7 +237,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
     private static final String[] BREAKABLE_PROPERTIES = new String[] {
         ProjectProperties.JAVAC_CLASSPATH,
         WebProjectProperties.DEBUG_CLASSPATH,
-        ProjectProperties.RUN_TEST_CLASSPATH, 
+        ProjectProperties.RUN_TEST_CLASSPATH,
         WebProjectProperties.DEBUG_TEST_CLASSPATH, 
         ProjectProperties.JAVAC_TEST_CLASSPATH,
         WebProjectProperties.WAR_CONTENT_ADDITIONAL,
@@ -256,6 +261,26 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
         return result;
     }        
     
+    private boolean isDeployOnSaveSupportedAndDisabled() {
+        boolean deployOnSaveEnabled = Boolean.valueOf(project.evaluator().getProperty(
+                WebProjectProperties.J2EE_DEPLOY_ON_SAVE));
+        if (deployOnSaveEnabled) {
+            return false;
+        }
+
+        boolean deployOnSaveSupported = false;
+        try {
+            String instanceId = project.evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+            if (instanceId != null) {
+                deployOnSaveSupported = Deployment.getDefault().getServerInstance(instanceId)
+                        .isDeployOnSaveSupported();
+            }
+        } catch (InstanceRemovedException ex) {
+            // false
+        }
+        return deployOnSaveSupported;
+    }
+    
     /** Filter node containin additional features for the J2SE physical
      */
     private final class WebLogicalViewRootNode extends AbstractNode {
@@ -264,6 +289,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
         private final BrokenServerAction brokenServerAction;
         private final BrokenDatasourceAction brokenDatasourceAction;
         private boolean broken;
+        private boolean deployOnSaveDisabled;
 
         public WebLogicalViewRootNode() {
 //            super( new WebViews.LogicalViewChildren( project, helper, evaluator, resolver ), createLookup( project ) );
@@ -280,6 +306,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
             moduleProvider.addInstanceListener((InstanceListener)WeakListeners.create(
                         InstanceListener.class, brokenServerAction, moduleProvider));
+            deployOnSaveDisabled = isDeployOnSaveSupportedAndDisabled();
         }
 
         @Override                                                                                                            
@@ -288,17 +315,29 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             return NbBundle.getMessage(WebLogicalViewProvider.class, "HINT_project_root_node", prjDirDispName); // NO18N             
         }   
 
+        @Override
         public Image getIcon( int type ) {
-            Image original = super.getIcon( type );                
-            return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? 
-                ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) : original;
+            Image original = super.getIcon( type );
+            if (broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled()) {
+                return ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0);
+            } else if (deployOnSaveDisabled) {
+                return DeployOnSaveUtils.badgeDisabledDeployOnSave(original);
+            } else {
+                return original;
+            }
         }
 
+        @Override
         public Image getOpenedIcon( int type ) {
-            Image original = super.getOpenedIcon(type);                
-            return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? 
-                ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) : original;
-        }            
+            Image original = super.getOpenedIcon(type);
+            if (broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled()) {
+                return ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0);
+            } else if (deployOnSaveDisabled) {
+                return DeployOnSaveUtils.badgeDisabledDeployOnSave(original);
+            } else {
+                return original;
+            }
+        }
 
         public String getHtmlDisplayName() {
             String dispName = super.getDisplayName();
@@ -328,6 +367,13 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
         
         // Private methods -------------------------------------------------
 
+        private void setDeployOnSaveDisabled (boolean value) {
+            this.deployOnSaveDisabled = value;
+            fireIconChange();
+            fireOpenedIconChange();
+            fireDisplayNameChange(null, null);
+        }
+        
         private Action[] getAdditionalActions() {
 
             ResourceBundle bundle = NbBundle.getBundle(WebLogicalViewProvider.class);
@@ -347,10 +393,9 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null )); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction( WebProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null )); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null )); // NOI18N
-
             actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
-            
             actions.addAll(Utilities.actionsForPath("Projects/Rest_Actions_holder")); //NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.openSubprojectsAction());
@@ -431,6 +476,11 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                     fireOpenedIconChange();
                     fireDisplayNameChange(null, null);
                 }
+                old = WebLogicalViewRootNode.this.deployOnSaveDisabled;
+                boolean dosDisabled = isDeployOnSaveSupportedAndDisabled();
+                if (old != dosDisabled) {
+                    setDeployOnSaveDisabled(dosDisabled);
+                }                
             }
             
             public void refsMayChanged() {
@@ -464,7 +514,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                 String j2eeSpec = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).
                         getProperty(WebProjectProperties.J2EE_PLATFORM);
                 if (j2eeSpec == null) {
-                    j2eeSpec = ProjectProperties.JAVA_EE_5; // NOI18N
+                    j2eeSpec = J2EEProjectProperties.JAVA_EE_5; // NOI18N
                     Logger.getLogger(WebLogicalViewProvider.class.getName()).warning(
                             "project ["+project.getProjectDirectory()+"] is missing "+WebProjectProperties.J2EE_PLATFORM+". " + // NOI18N
                             "default value will be used instead: "+j2eeSpec); // NOI18N
@@ -515,9 +565,13 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                 String servInstID = evaluator.getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
                 brokenServer = BrokenServerSupport.isBroken(servInstID);
                 if (old != brokenServer) {
-                    fireIconChange();
-                    fireOpenedIconChange();
-                    fireDisplayNameChange(null, null);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            fireIconChange();
+                            fireOpenedIconChange();
+                            fireDisplayNameChange(null, null);
+                        }
+                    });
                 }
             }
         } 

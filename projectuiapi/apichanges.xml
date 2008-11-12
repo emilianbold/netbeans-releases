@@ -105,6 +105,23 @@ is the proper place.
 
     <changes>
         
+        <change id="stop-repeat-build">
+           <api name="general"/>
+           <summary>Pluggable Repeat/Stop build actions</summary>
+           <version major="1" minor="32"/>
+           <date day="23" month="10" year="2008"/>
+           <author login="mkleint"/>
+           <compatibility modification="yes" semantic="compatible"/>
+           <description>
+               <p>
+                    Added spi for plugging into the Repeat Build/Run and Stop Build/Run
+                    actions that were previously accessible by ant based projects only.
+               </p>
+           </description>
+           <class package="org.netbeans.spi.project.ui.support" name="BuildExecutionSupport"/>
+           <issue number="110465"/>
+        </change>
+
         <change id="ProjectsRootNode-badging">
            <api name="general"/>
            <summary>Project root nodes automatically badged</summary>

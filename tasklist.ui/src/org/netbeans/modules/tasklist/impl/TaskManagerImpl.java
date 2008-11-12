@@ -92,7 +92,7 @@ public class TaskManagerImpl extends TaskManager {
     private final Set<PushTaskScanner> workingScanners = new HashSet<PushTaskScanner>(10);
     private boolean fileScannerWorking = false;
     private boolean workingStatus = false;
-    
+
     public static TaskManagerImpl getInstance() {
         if( null == theInstance )
             theInstance = new TaskManagerImpl();
@@ -476,6 +476,9 @@ public class TaskManagerImpl extends TaskManager {
             if( newStatus != workingStatus ) {
                 boolean oldStatus = workingStatus;
                 workingStatus = newStatus;
+                Logger.getLogger("org.netbeans.log.startup").log(Level.FINE,  // NOI18N
+                        newStatus ? "start" : "end", TaskManagerImpl.class.getName()); // NOI18N
+
                 propertySupport.firePropertyChange( PROP_WORKING_STATUS, oldStatus, newStatus );
                 //for unit testing
                 if( !workingStatus ) {

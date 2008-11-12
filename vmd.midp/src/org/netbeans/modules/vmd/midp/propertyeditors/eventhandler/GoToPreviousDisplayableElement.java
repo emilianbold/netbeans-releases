@@ -130,6 +130,7 @@ public class GoToPreviousDisplayableElement implements PropertyEditorEventHandle
         return Collections.singleton(PreviousScreenEventHandlerCD.TYPEID);
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory.class)
     public static class GoToPreviousDisplayableElementFactory implements PropertyEditorElementFactory {
         public PropertyEditorEventHandlerElement createElement() {
             return new GoToPreviousDisplayableElement();

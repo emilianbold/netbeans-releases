@@ -58,6 +58,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Adamek, Milan Kuchtiak
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation.class)
 public class WSInjectiontargetQueryImplementation implements InjectionTargetQueryImplementation {
     
     /** Creates a new instance of WSInjectiontargetQueryImplementation */

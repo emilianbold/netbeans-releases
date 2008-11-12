@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -56,37 +56,29 @@ public class RailsLogicalViewProviderTest extends RailsProjectTestBase {
     }
 
     public void testFindPath() throws Exception {
-        // XXX
-//        registerLayer();
-//        RailsProject project = createTestPlainProject();
-//        LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
-//        assertNotNull("have a LogicalViewProvider", lvp);
-//        Node root = new FilterNode(lvp.createLogicalView());
-//        assertNotNull("found config", find(lvp, root, project, "config"));
-//        assertNotNull("found README", find(lvp, root, project, "README"));
+        registerLayer();
+        RailsProject project = createTestPlainProject();
+        LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
+        assertNotNull("have a LogicalViewProvider", lvp);
+        Node root = new FilterNode(lvp.createLogicalView());
+        assertNotNull("found config", find(lvp, root, project, "config"));
+        assertNotNull("found README", find(lvp, root, project, "README"));
+        assertNotNull("found list.rhtml", find(lvp, root, project, "app/views/users/list.rhtml"));
     }
     
     public void testDoubleCreation() throws Exception { // #116678
-        // XXX
-//        registerLayer();
-//        RailsProject project = createTestPlainProject();
-//        LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
-//        assertNotNull("have a LogicalViewProvider", lvp);
-//        lvp.createLogicalView().getChildren().getNodes(true);
-//        lvp.createLogicalView().getChildren().getNodes(true);
+        registerLayer();
+        RailsProject project = createTestPlainProject();
+        LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
+        assertNotNull("have a LogicalViewProvider", lvp);
+        lvp.createLogicalView().getChildren().getNodes(true);
+        lvp.createLogicalView().getChildren().getNodes(true);
     }
 
     private Node find(LogicalViewProvider lvp, Node root, Project project, String path) throws Exception {
         FileObject f = project.getProjectDirectory().getFileObject(path);
         assertNotNull("found " + path, f);
-        Node n = lvp.findPath(root, f);
-//        DataObject d = DataObject.find(f);
-//        assertEquals("same result for DataObject as for FileObject", n, lvp.findPath(root, f));
-//        if (n != null) {
-//            assertEquals("right DataObject", d,
-//                    n.getLookup().lookup(DataObject.class));
-//        }
-        return n;
+        return lvp.findPath(root, f);
     }
 
 }

@@ -46,15 +46,15 @@ import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.actions.CopyCommand;
-import org.netbeans.modules.php.project.ui.actions.DebugCommand;
-import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
+import org.netbeans.modules.php.project.ui.actions.DebugProjectCommand;
+import org.netbeans.modules.php.project.ui.actions.DebugFileCommand;
 import org.netbeans.modules.php.project.ui.actions.DeleteCommand;
-import org.netbeans.modules.php.project.ui.actions.Displayable;
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.MoveCommand;
 import org.netbeans.modules.php.project.ui.actions.RenameCommand;
-import org.netbeans.modules.php.project.ui.actions.RunCommand;
-import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
+import org.netbeans.modules.php.project.ui.actions.RunProjectCommand;
+import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -71,10 +71,10 @@ public class PhpActionProvider implements ActionProvider {
     PhpActionProvider(PhpProject project) {
         commands = new LinkedHashMap<String, Command>();
         Command[] commandArray = new Command[] {
-            new RunCommand(project),
-            new DebugCommand(project),
-            new RunSingleCommand(project),
-            new DebugSingleCommand(project),
+            new RunProjectCommand(project),
+            new DebugProjectCommand(project),
+            new RunFileCommand(project),
+            new DebugFileCommand(project),
             new DeleteCommand(project),
             new CopyCommand(project),
             new MoveCommand(project),

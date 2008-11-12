@@ -11,17 +11,17 @@ Math abs ( x ) : Number
 XMLHttpRequest abort () : void
 abstract
 End cursor position = 92
-[has|, Element hasAttributeNS ( namespace , String loc , hasAttributeNS(namespace, localName), 188]
-DOMImplementation hasFeature ( String feature , 
+[has|, Node hasChildNodes () : void, hasChildNodes(), 147]
+DOMImplementation hasFeature ( String feature ,
 Element hasAttribute ( attName ) : Boolean
-Element hasAttributeNS ( namespace , String loc 
+Element hasAttributeNS ( namespace , String loc
 Element hasAttributes () : void
 Element hasChildNodes () : void
 Node hasAttributes () : void
 Node hasChildNodes () : void
 Object hasOwnProperty ( prop ) : Boolean
-End cursor position = 213
-[Math.|, Math sqrt ( x ) : Number, Math.sqrt(x), 244]
+End cursor position = 163
+[Math.|, Math sqrt ( x ) : Number, Math.sqrt(x), 203]
 Math E : Number
 Math LN10 : Number
 Math LN2 : Number
@@ -60,4 +60,4 @@ Object toString () : String
 Object unwatch ( prop ) : void
 Object valueOf () : void
 Object watch ( prop , handler ) : void
-End cursor position = 256
+End cursor position = 215

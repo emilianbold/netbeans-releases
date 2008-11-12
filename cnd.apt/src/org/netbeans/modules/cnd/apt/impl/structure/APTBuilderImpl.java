@@ -59,10 +59,8 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  */
 public final class APTBuilderImpl {
     
-    private boolean fullAPT; // NOT YET SUPPORTED
     /** Creates a new instance of APTBuilder */
-    public APTBuilderImpl(boolean full) {
-        this.fullAPT = full;
+    public APTBuilderImpl() {
     }
 
     public APTFile buildAPT(String path, TokenStream ts) {
@@ -173,7 +171,6 @@ public final class APTBuilderImpl {
                     if (activeNode.getType() == APT.Type.ENDIF) {
                         assert (!nodeStack.empty()) : "endif found without corresponding if: " + nextToken;
                         root = nodeStack.pop();
-                        activeNode = null;
                     } else if (root.getType() == APT.Type.CONDITION_CONTAINER) {
                         nodeStack.push(root);
                         root = activeNode;
@@ -191,7 +188,7 @@ public final class APTBuilderImpl {
         assert(stream != null);
         APTBaseNode lastChild = null;
         while (!APTUtils.isEOF(nextToken)) {
-            APTBaseNode newNode = null;
+            APTBaseNode newNode;
             if (breakOnEndBlockToken && APTUtils.isEndCondition(nextToken)) {
                 return nextToken;
             } else {
@@ -220,8 +217,7 @@ public final class APTBuilderImpl {
         assert(stream != null);
         APTBaseNode lastChild = null;
         while (!APTUtils.isEOF(nextToken)) {
-            APTBaseNode newNode = null;
-            newNode = createConditionChildNode(nextToken);
+            APTBaseNode newNode = createConditionChildNode(nextToken);
             // add new node to children on the root
             if (lastChild == null) {
                 root.setFirstChild(newNode);
@@ -255,7 +251,7 @@ public final class APTBuilderImpl {
     private APTBaseNode createNode(Token token) {
         assert (!APTUtils.isEOF(token));
         int ttype = token.getType();
-        APTBaseNode newNode = null;
+        APTBaseNode newNode;
         switch (ttype) {
             case APTTokenTypes.IF:
             case APTTokenTypes.IFDEF:

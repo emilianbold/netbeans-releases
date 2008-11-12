@@ -64,6 +64,7 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.rt.spi.providers.WebServerProvider.class)
 public class LocalServerProvider extends AbstractProvider<LocalHostImpl> {
     
     private static final String DESCRIPTION     = "TXT_LocalServerDescription"; // NOI18N

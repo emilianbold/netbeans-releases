@@ -51,6 +51,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -92,6 +93,7 @@ public class ActiveConfigActionTest extends NbTestCase {
     /**
      * Test of createContextAwareInstance method, of class ActiveConfigAction.
      */
+    @RandomlyFails
     public void testCreateContextAwareInstance() {
         P p = PF.toCreate;
         

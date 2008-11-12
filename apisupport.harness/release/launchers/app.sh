@@ -81,7 +81,6 @@ case "`uname`" in
             -J-Dcom.apple.mrj.application.apple.menu.about.name='"$APPNAME"' \
             -J-Xdock:name='"$APPNAME"' \
             '"-J-Xdock:icon=$progdir/../../$APPNAME.icns"' \
-            --branding '"$APPNAME"' \
             --clusters '"$clusters"' \
             --userdir '"${userdir}"' \
             ${default_options} \
@@ -96,7 +95,6 @@ case "`uname`" in
        fi
        eval exec $sh '"$nbexec"' \
             --jdkhome '"$jdkhome"' \
-            --branding '"$APPNAME"' \
             --clusters '"$clusters"' \
             --userdir '"${userdir}"' \
             ${default_options} \

@@ -41,11 +41,14 @@
 
 package org.netbeans.modules.web.jsf.wizards;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.project.Project;
@@ -53,6 +56,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 //import org.netbeans.modules.web.struts.StrutsConfigUtilities;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -61,7 +65,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
-public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, ListDataListener {
+public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, ListDataListener, DocumentListener {
     
     private final DefaultComboBoxModel scopeModel = new DefaultComboBoxModel();
     
@@ -89,6 +93,9 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         for (int i = 0; i < scopes.length; i++){
             scopeModel.addElement(scopes[i]);
         }
+
+        jTextFieldName.setText("NewJSFManagedBean");
+        jTextFieldName.getDocument().addDocumentListener(this);
         
 //        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FormBeanNewPanelVisual.class, "ACS_BeanFormProperties"));  // NOI18N
     }
@@ -100,80 +107,88 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         jLabelConfigFile = new javax.swing.JLabel();
         jComboBoxConfigFile = new javax.swing.JComboBox();
+        jLabelName = new javax.swing.JLabel();
+        jTextFieldName = new javax.swing.JTextField();
         jLabelScope = new javax.swing.JLabel();
         jComboBoxScope = new javax.swing.JComboBox();
         jLabelDesc = new javax.swing.JLabel();
         jScrollPaneDesc = new javax.swing.JScrollPane();
         jTextAreaDesc = new javax.swing.JTextArea();
 
-        setLayout(new java.awt.GridBagLayout());
-
         jLabelConfigFile.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "MNE_ConfigFile").charAt(0));
         jLabelConfigFile.setLabelFor(jComboBoxConfigFile);
         jLabelConfigFile.setText(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "LBL_ConfigFile")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
-        add(jLabelConfigFile, gridBagConstraints);
 
         jComboBoxConfigFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBoxConfigFileActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(jComboBoxConfigFile, gridBagConstraints);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle"); // NOI18N
-        jComboBoxConfigFile.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ConfigurationFile")); // NOI18N
+
+        jLabelName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_Name").charAt(0));
+        jLabelName.setLabelFor(jTextFieldName);
+        jLabelName.setText(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "LBL_Name")); // NOI18N
 
         jLabelScope.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "MNE_Scope").charAt(0));
         jLabelScope.setLabelFor(jComboBoxScope);
         jLabelScope.setText(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "LBL_Scope")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
-        add(jLabelScope, gridBagConstraints);
 
         jComboBoxScope.setModel(scopeModel);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(jComboBoxScope, gridBagConstraints);
-        jComboBoxScope.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ManagedBeanScope")); // NOI18N
 
         jLabelDesc.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "MNE_BeanDescription").charAt(0));
         jLabelDesc.setLabelFor(jTextAreaDesc);
         jLabelDesc.setText(org.openide.util.NbBundle.getMessage(ManagedBeanPanelVisual.class, "LBL_BeanDescription")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        add(jLabelDesc, gridBagConstraints);
 
         jTextAreaDesc.setColumns(20);
         jTextAreaDesc.setRows(5);
         jScrollPaneDesc.setViewportView(jTextAreaDesc);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle"); // NOI18N
         jTextAreaDesc.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_BeanDescription")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jScrollPaneDesc, gridBagConstraints);
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabelConfigFile)
+                    .add(jLabelName)
+                    .add(jLabelScope)
+                    .add(jLabelDesc))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jComboBoxConfigFile, 0, 303, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jTextFieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jComboBoxScope, 0, 303, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPaneDesc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(3, 3, 3)
+                        .add(jLabelConfigFile))
+                    .add(jComboBoxConfigFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jTextFieldName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabelName))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jComboBoxScope, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabelScope))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabelDesc)
+                    .add(jScrollPaneDesc)))
+        );
+
+        jComboBoxConfigFile.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ConfigurationFile")); // NOI18N
+        jComboBoxScope.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ManagedBeanScope")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jComboBoxConfigFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxConfigFileActionPerformed
@@ -185,29 +200,52 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     private javax.swing.JComboBox jComboBoxScope;
     private javax.swing.JLabel jLabelConfigFile;
     private javax.swing.JLabel jLabelDesc;
+    private javax.swing.JLabel jLabelName;
     private javax.swing.JLabel jLabelScope;
     private javax.swing.JScrollPane jScrollPaneDesc;
     private javax.swing.JTextArea jTextAreaDesc;
+    private javax.swing.JTextField jTextFieldName;
     // End of variables declaration//GEN-END:variables
     
     boolean valid(WizardDescriptor wizardDescriptor) {
         String configFile = (String) jComboBoxConfigFile.getSelectedItem();
-        boolean result = (configFile != null && !configFile.trim().equals("")); 
-        if (!result){
+        if ((configFile == null) || configFile.trim().equals("")) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_NoConfFileSelected"));
-        } else {
-            Project project = Templates.getProject( wizardDescriptor );
-            WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-            FileObject dir = wm.getDocumentBase();
-            FileObject fo = dir.getFileObject(configFile); //NOI18N
-            result = (ConfigurationUtils.getConfigModel(fo, true).getRootComponent() != null);
-            if (!result){
+            return false;
+        }
+
+        Project project = Templates.getProject(wizardDescriptor);
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        FileObject dir = wm.getDocumentBase();
+        FileObject fo = dir.getFileObject(configFile);
+        FacesConfig facesConfig = ConfigurationUtils.getConfigModel(fo, true).getRootComponent();
+        if (facesConfig == null) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_InvalidConfigFile"));
+            return false;
+        }
+        
+        String name = jTextFieldName.getText();
+        if (name.trim().equals("")) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_InvalidBeanName"));
+            return false;
+        }
+
+        /* XXX not ready yet, more interactions need to be considered before finalized.
+        Collection<ManagedBean> beans = facesConfig.getManagedBeans();
+        for (ManagedBean managedBean : beans) {
+            if (name.equals(managedBean.getManagedBeanName())) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_InvalidConfigFile"));
+                        NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_ExistBeanName"));
+                return false;
             }
         }
-        return result;
+        */
+
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        return true;
     }
     
     void read(WizardDescriptor settings) {
@@ -215,6 +253,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     
     void store(WizardDescriptor settings) {
         settings.putProperty(WizardProperties.CONFIG_FILE, jComboBoxConfigFile.getSelectedItem());
+        settings.putProperty(WizardProperties.NAME, jTextFieldName.getText());
         settings.putProperty(WizardProperties.SCOPE, jComboBoxScope.getSelectedItem());
         settings.putProperty(WizardProperties.DESCRIPTION, jTextAreaDesc.getText());
     }
@@ -256,4 +295,23 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         }
     }
 
+    public void setManagedBeanName(String name) {
+        jTextFieldName.setText(name);
+    }
+
+    public String getManagedBeanName() {
+        return jTextFieldName.getText();
+    }
+
+    public void insertUpdate(DocumentEvent e) {
+        fireChange();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        fireChange();
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        fireChange();
+    }
 }

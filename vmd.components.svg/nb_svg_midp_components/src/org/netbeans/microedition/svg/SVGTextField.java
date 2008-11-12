@@ -51,7 +51,7 @@ import org.w3c.dom.svg.SVGRect;
  * @author Pavel Benes
  * @author ads
  */
-public class SVGTextField extends SVGComponent {
+public class SVGTextField extends AbstractTextRenderingComponent {
 
     protected static final String TRAIT_FONT_FAMILY = "font-family";      // NOI18N
     protected static final String TEXT              = "text";             // NOI18N
@@ -73,7 +73,8 @@ public class SVGTextField extends SVGComponent {
         SVGRect textBox    = myTextElement.getBBox();
         
         if (textBox != null) {
-            elemWidth = (int) (outlineBox.getWidth() + 0.5f - (textBox.getX() - outlineBox.getX()) * 2);
+            elemWidth = (int) (outlineBox.getWidth() + 0.5f - 
+                    (textBox.getX() - outlineBox.getX()) * 2);
         } else {
             elemWidth = 0;
         }
@@ -197,6 +198,9 @@ public class SVGTextField extends SVGComponent {
         }
     }
     
+    protected SVGLocatableElement getHiddenTextElement() {
+        return myHiddenTextElement;
+    }
 
     private void initNestedElements() {
         
@@ -260,6 +264,12 @@ public class SVGTextField extends SVGComponent {
             }
         }
         );
+        
+        initRenderer( myTextElement );
+        if ( isEmpiricInitialized() ){
+            setTraitSafely( myHiddenTextElement , TRAIT_TEXT, TEXT);
+            initRenderer(myHiddenTextElement);
+        }
     }
     
 
@@ -275,41 +285,13 @@ public class SVGTextField extends SVGComponent {
         }
     }
 
-    /*
-     * TODO : this is very non-efficient way to compute text width.
-     * Need somehow to improve it. 
-     */
-    private float getTextWidth(String text) {
-        if ( text.endsWith(" ")) {
-            return doGetTextWidth( text + "i") - doGetTextWidth("i");
-        } else {
-            return doGetTextWidth(text);
-        }
-    }
-    
-    private float doGetTextWidth(String text) {
-        float width = 0;
-        if (text.length() > 0) {
-            setTraitSafely( myHiddenTextElement , TRAIT_TEXT, text);
-            SVGRect bBox = myHiddenTextElement.getBBox();
-            if ( bBox != null) {
-                width = bBox.getWidth();
-            } else {
-                //System.out.println("Error: Null BBox #1");
-            }
-        }
-        return width;
-    }
-    
     private void setTextImpl() {
         String text = myTextValue;
         if (myStartOffset > 0) {
             text = text.substring(myStartOffset);
         }
 
-        while ( getTextWidth(text) > elemWidth) {
-            text = text.substring(0, text.length() - 1);
-        }
+        text = truncateToShownText(text,elemWidth);
         
         setTextTrait(text);
         myEndOffset = myStartOffset + text.length();

@@ -44,7 +44,6 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -75,7 +74,7 @@ public class InnerTablePanel extends SectionNodeInnerPanel {
                 stopCellEditing(table);
                 selectCell(model.addRow(), 0);
                 model.modelUpdatedFromUI();
-                Utils.scrollToVisible(tablePanel);
+                org.netbeans.modules.xml.multiview.Utils.scrollToVisible(tablePanel);
             }
         });
         getEditButton().addActionListener(new ActionListener() {
@@ -163,6 +162,7 @@ public class InnerTablePanel extends SectionNodeInnerPanel {
             /**
              * Invoked when the mouse has been clicked on a component.
              */
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
                     editCell(table.getSelectedRow(), table.getSelectedColumn());
@@ -177,11 +177,8 @@ public class InnerTablePanel extends SectionNodeInnerPanel {
         setLayout(new BorderLayout());
         add(tablePanel, BorderLayout.WEST);
         setColumnWidths();
-        if (model instanceof InnerTableModel) {
-            InnerTableModel innerTableModel = (InnerTableModel) model;
-            setButtonListeners(innerTableModel);
-            setColumnEditors(innerTableModel);
-        }
+        setButtonListeners(model);
+        setColumnEditors(model);
         scheduleRefreshView();
         final TableColumnModel columnModel = table.getColumnModel();
         for (int i = 0, n = columnModel.getColumnCount(); i < n; i++) {
@@ -262,6 +259,7 @@ public class InnerTablePanel extends SectionNodeInnerPanel {
     public void setValue(JComponent source, Object value) {
     }
 
+    @Override
     public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         ((InnerTableModel) getTable().getModel()).tableChanged();
         scheduleRefreshView();

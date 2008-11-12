@@ -242,7 +242,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
             
             // TODO search for local variables
             Call call = Call.getCallType(doc, th, lexOffset);
-            if (call.getLhs() == null && node instanceof StringNode) {
+            if (call.getLhs() == null && AstUtilities.isNameNode(node)) {
                 // Local reference -- is it a local var?
 
                 VariableVisitor v = parseResult.getVariableVisitor();

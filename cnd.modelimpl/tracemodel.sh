@@ -90,6 +90,7 @@ function classpath() {
 
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-projectuiapi.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-projectapi.jar
+    CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-projectui.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-project-ant.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-project-libraries.jar
     CP=${CP}${path_sep}${ide}/modules/org-openidex-util.jar
@@ -106,6 +107,7 @@ function classpath() {
     CP=${CP}${path_sep}${platform}/modules/org-netbeans-modules-queries.jar
     CP=${CP}${path_sep}${platform}/modules/org-netbeans-modules-masterfs.jar
     CP=${CP}${path_sep}${platform}/modules/org-openide-text.jar
+    CP=${CP}${path_sep}${platform}/modules/org-openide-windows.jar
 
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-api-model.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-modelimpl.jar
@@ -138,7 +140,6 @@ function classpath() {
         XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-loaders.jar
         XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-dialogs.jar
         XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-awt.jar
-        XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-options.jar
         XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-windows.jar
         XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-text.jar
         XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-netbeans-modules-settings.jar

@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
-import org.netbeans.modules.websvc.core.AddOperationCookie;
+import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;

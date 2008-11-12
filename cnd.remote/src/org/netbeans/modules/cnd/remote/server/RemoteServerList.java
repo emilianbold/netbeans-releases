@@ -97,11 +97,11 @@ public class RemoteServerList implements ServerList {
         unlisted = new ArrayList<RemoteServerRecord>();
         
         // Creates the "localhost" record and any remote records cached in remote.preferences
-        addServer(CompilerSetManager.LOCALHOST, false, RemoteServerRecord.STATE_ONLINE);
+        addServer(CompilerSetManager.LOCALHOST, false, RemoteServerRecord.State.ONLINE);
         if (slist != null) {
             for (String hkey : slist.split(",")) { // NOI18N
                 if (!CompilerSetManager.LOCALHOST.equals(hkey)) {
-                    addServer(hkey, false, RemoteServerRecord.STATE_OFFLINE);
+                    addServer(hkey, false, RemoteServerRecord.State.OFFLINE);
                 }
             }
         }
@@ -159,7 +159,7 @@ public class RemoteServerList implements ServerList {
         return sa;
     }
     
-    private void addServer(final String name, boolean asDefault, Object state) {
+    private void addServer(final String name, boolean asDefault, RemoteServerRecord.State state) {
         RemoteServerRecord addServer = (RemoteServerRecord) addServer(name, asDefault, false);
         addServer.setState(state);
     }

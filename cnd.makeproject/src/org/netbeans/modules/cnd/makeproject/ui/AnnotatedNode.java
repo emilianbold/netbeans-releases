@@ -38,15 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.awt.Image;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.Vector;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -61,29 +57,29 @@ import org.openide.util.RequestProcessor;
 
 // XXX should have an API for this
 class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener {
-    
+
     private Set files;
-    private Set fileSystemListeners;
     private RequestProcessor.Task task;
     private volatile boolean iconChange;
     private volatile boolean nameChange;
     private boolean forceAnnotation;
-    
-    private FileStatusListener fsl = null;;
+    private FileStatusListener fsl = null;
+    ;
     private FileSystem fs = null;
-    
+
     protected AnnotatedNode(Children children) {
         super(children, null);
     }
-    
+
     protected AnnotatedNode(Children children, Lookup lookup) {
         super(children, lookup);
     }
-    
+
     protected final void setFiles(final Set files) {
-        if (fs != null && fsl != null)
+        if (fs != null && fsl != null) {
             fs.removeFileStatusListener(fsl);
-        
+        }
+
         this.files = files;
         if (files == null) {
             return;
@@ -106,22 +102,22 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
             err.notify(ErrorManager.INFORMATIONAL, e);
         }
     }
-    
+
     protected final Set/*<FileObject>*/ getFiles() {
         return files;
     }
-    
+
     protected void setForceAnnotation(boolean forceAnnotation) {
         this.forceAnnotation = forceAnnotation;
     }
-    
+
     protected final Image annotateIcon(final Image img, final int type) {
         Image annotatedImg = img;
         if (files != null && !files.isEmpty()) {
             Iterator it = files.iterator();
             try {
                 FileObject fo = (FileObject) it.next();
-                if (fo.isValid()){
+                if (fo.isValid()) {
                     annotatedImg = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 }
             } catch (FileStateInvalidException e) {
@@ -130,14 +126,14 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         }
         return annotatedImg;
     }
-    
+
     protected final String annotateName(final String name) {
         String annotatedName = name;
         if (files != null && !files.isEmpty()) {
             Iterator it = files.iterator();
             try {
                 FileObject fo = (FileObject) it.next();
-                if (fo.isValid()){
+                if (fo.isValid()) {
                     annotatedName = fo.getFileSystem().getStatus().annotateName(name, files);
                 }
             } catch (FileStateInvalidException e) {
@@ -146,15 +142,16 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         }
         return annotatedName;
     }
-    
+
     public final void annotationChanged(FileStatusEvent event) {
-        if (files == null)
+        if (files == null) {
             return;
+        }
         if (task == null) {
             task = RequestProcessor.getDefault().create(this);
         }
         boolean changed = false;
-        if (forceAnnotation || ((iconChange == false && event.isIconChange())  || (nameChange == false && event.isNameChange()))) {
+        if (forceAnnotation || ((iconChange == false && event.isIconChange()) || (nameChange == false && event.isNameChange()))) {
             Iterator it = files.iterator();
             while (it.hasNext()) {
                 FileObject fo = (FileObject) it.next();
@@ -165,12 +162,12 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
                 }
             }
         }
-        
+
         if (changed) {
             task.schedule(50); // batch by 50 ms
         }
     }
-    
+
     public final void run() {
         if (forceAnnotation || iconChange) {
             fireIconChange();
@@ -182,5 +179,4 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
             nameChange = false;
         }
     }
-    
 }

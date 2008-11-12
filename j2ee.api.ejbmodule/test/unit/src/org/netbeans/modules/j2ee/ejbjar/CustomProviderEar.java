@@ -57,6 +57,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
  *
  * @author  Pavel Buzek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.spi.ejbjar.EarProvider.class)
 public class CustomProviderEar implements EarProvider {
 
     private HashMap cache = new HashMap ();

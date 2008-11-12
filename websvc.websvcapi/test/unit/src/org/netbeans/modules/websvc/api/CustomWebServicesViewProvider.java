@@ -54,6 +54,7 @@ import org.openide.nodes.Node;
  *
  * @author Lukas Jungmann
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.webservices.WebServicesViewProvider.class)
 public class CustomWebServicesViewProvider implements WebServicesViewProvider {
     
     private Map<FileObject, WebServicesView> cache = new HashMap<FileObject, WebServicesView>();

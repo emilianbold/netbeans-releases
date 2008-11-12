@@ -45,11 +45,13 @@ import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -542,9 +544,22 @@ final class NbInstaller extends ModuleInstaller {
         modules = new ArrayList<Module>(modules);
         Collections.reverse(modules);
         Map<ModuleLayeredFileSystem,List<URL>> urls = new HashMap<ModuleLayeredFileSystem,List<URL>>(5);
-        urls.put(ModuleLayeredFileSystem.getUserModuleLayer(), new ArrayList<URL>(1000));
-        urls.put(ModuleLayeredFileSystem.getInstallationModuleLayer(), new ArrayList<URL>(1000));
+        ModuleLayeredFileSystem userModuleLayer = ModuleLayeredFileSystem.getUserModuleLayer();
+        ModuleLayeredFileSystem installationModuleLayer = ModuleLayeredFileSystem.getInstallationModuleLayer();
+        urls.put(userModuleLayer, new ArrayList<URL>(1000));
+        urls.put(installationModuleLayer, new ArrayList<URL>(1000));
         for (Module m: modules) {
+            // #19458: only put reloadables into the "session layer"
+            // (where they will not have their layers cached). All others
+            // should go into "installation layer" (so that they can mask
+            // layers according to cross-dependencies).
+            ModuleLayeredFileSystem host = m.isReloadable() ? userModuleLayer : installationModuleLayer;
+            List<URL> theseurls = urls.get(host);
+            if (theseurls == null) {
+                theseurls = new ArrayList<URL>(1000);
+                urls.put(host, theseurls);
+            }
+            ClassLoader cl = m.getClassLoader();
             String s = layers.get(m);
             if (s != null) {
                 Util.err.fine("loadLayer: " + s + " load=" + load);
@@ -557,22 +572,6 @@ final class NbInstaller extends ModuleInstaller {
                 } else {
                     base = s.substring(0, idx);
                     ext = s.substring(idx);
-                }
-                ClassLoader cl = m.getClassLoader();
-                ModuleLayeredFileSystem host;
-                // #19458: only put reloadables into the "session layer"
-                // (where they will not have their layers cached). All others
-                // should go into "installation layer" (so that they can mask
-                // layers according to cross-dependencies).
-                if (m.isReloadable()) {
-                    host = ModuleLayeredFileSystem.getUserModuleLayer();
-                } else {
-                    host = ModuleLayeredFileSystem.getInstallationModuleLayer();
-                }
-                List<URL> theseurls = urls.get(host);
-                if (theseurls == null) {
-                    theseurls = new ArrayList<URL>(1000);
-                    urls.put(host, theseurls);
                 }
                 boolean foundSomething = false;
                 for (String suffix : NbCollections.iterable(NbBundle.getLocalizingSuffixes())) {
@@ -589,6 +588,18 @@ final class NbInstaller extends ModuleInstaller {
                     continue;
                 }
             }
+            try { // #149136
+                // Cannot use getResources because we do not wish to delegate to parents.
+                // In fact both URLClassLoader and ProxyClassLoader override this method to be public.
+                Method findResources = ClassLoader.class.getDeclaredMethod("findResources", String.class); // NOI18N
+                findResources.setAccessible(true);
+                Enumeration e = (Enumeration) findResources.invoke(cl, "META-INF/generated-layer.xml"); // NOI18N
+                while (e.hasMoreElements()) {
+                    theseurls.add((URL) e.nextElement());
+                }
+            } catch (Exception x) {
+                Exceptions.printStackTrace(x);
+            }
         }
         // Now actually do it.
         for (Map.Entry<ModuleLayeredFileSystem,List<URL>> entry: urls.entrySet()) {
@@ -601,8 +612,8 @@ final class NbInstaller extends ModuleInstaller {
                 } else {
                     // #106737: we might have the wrong host, since it switches when reloadable flag is toggled.
                     // To be safe, remove from both.
-                    ModuleLayeredFileSystem.getUserModuleLayer().removeURLs(theseurls);
-                    ModuleLayeredFileSystem.getInstallationModuleLayer().removeURLs(theseurls);
+                    userModuleLayer.removeURLs(theseurls);
+                    installationModuleLayer.removeURLs(theseurls);
                 }
             } catch (Exception e) {
                 Util.err.log(Level.WARNING, null, e);

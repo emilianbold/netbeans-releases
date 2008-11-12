@@ -53,6 +53,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Becicka
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation.class, position=100)
 public class TreeElementFactoryImpl implements TreeElementFactoryImplementation {
 
     public Map<Object, TreeElement> map = new WeakHashMap<Object,TreeElement>();

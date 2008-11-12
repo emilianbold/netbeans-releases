@@ -71,7 +71,7 @@ public final class TestRecognizer extends OutputRecognizer {
     public synchronized void refreshSession() {
         // workaround for making re-run work correctly, need to rethink
         // when migrating to the new Execution API
-        this.session = new TestSession(session.getName(), session.getFileLocator(), session.getSessionType());
+        this.session = new TestSession(session.getName(), session.getProject(), session.getSessionType());
     }
     
     @Override

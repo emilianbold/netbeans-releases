@@ -434,6 +434,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
     }
 
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.masterfs.providers.AnnotationProvider.class)
     public static class AnnotationProviderImpl extends InterceptionListenerTest.AnnotationProviderImpl  {
         private ProvidedExtensionsImpl impl = new ProvidedExtensionsImpl();
         public InterceptionListener getInterceptionListener() {

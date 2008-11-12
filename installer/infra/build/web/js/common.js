@@ -255,7 +255,11 @@ function get_file_name(platform, option) {
 function get_file_name_short(platform, option) {
     var file_name = "";
     if(platform=="zip") {
-        file_name += ZIP_FILES_PREFIX;
+        if(option == "javadoc" || option == "platform-src" || option == "src") {
+            file_name += ZIP_FILES_PREFIX.replace("-ml","");
+        } else {
+            file_name += ZIP_FILES_PREFIX;
+        }
     } else {
         file_name += BUNDLE_FILES_PREFIX;
     }
@@ -304,7 +308,13 @@ function writeUrl(url,msg) {
     document.write('<a href="' + url + '">' + msg + '</a>');
 }
 function set_page_title(title) {
-    document.write('<title>' + title + '</title>');
+    document.title = title;
+    var titleElement = document.getElementsByTagName("title");
+    if(titleElement.length == 1) {
+        titleElement[0].innerHTML = title;       
+    } else {
+        document.write('<title>' + title + '</title>');
+    }
 }
 
 function set_page_description(desc) {

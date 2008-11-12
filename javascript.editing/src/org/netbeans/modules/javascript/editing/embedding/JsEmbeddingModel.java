@@ -53,6 +53,7 @@ import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
  *
  * @author Tor Norbye
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsf.api.EmbeddingModel.class)
 public class JsEmbeddingModel implements IncrementalEmbeddingModel {
     // Depend on RhtmlTokenId?
     static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N

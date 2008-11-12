@@ -89,10 +89,7 @@ public class JspCompletionProvider implements CompletionProvider {
         
         private JTextComponent component;
         
-        private int creationCaretOffset;
-        
         Query(int caretOffset) {
-            this.creationCaretOffset = caretOffset;
         }
         
         @Override

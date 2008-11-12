@@ -96,8 +96,13 @@ public class StartDebuggerTest extends JellyTestCase {
             Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
-            new EventTool().waitNoEvent(1000);
+            new EventTool().waitNoEvent(500);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
             new DebugProjectAction().perform(projectNode);
             Utilities.getDebugToolbar().waitComponentVisible(true);
             assertTrue("The debugger toolbar did not show after start of debugging", Utilities.getDebugToolbar().isVisible());
@@ -132,6 +137,7 @@ public class StartDebuggerTest extends JellyTestCase {
             new OpenAction().performAPI(beanNode); // NOI18N
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            new EventTool().waitNoEvent(500);
             Utilities.setCaret(eo, 75);
             new Action(null, null, Utilities.stepIntoShortcut).performShortcut();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:39");

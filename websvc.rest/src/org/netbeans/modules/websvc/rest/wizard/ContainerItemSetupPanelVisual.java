@@ -669,6 +669,11 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
                     ((JTextComponent)packageComboBox.getEditor().getEditorComponent()).setText(targetPackage);
                }
             }
+        } else {
+            String targetPackage = (String) settings.getProperty(WizardProperties.TARGET_PACKAGE);
+            if (targetPackage != null) {
+                ((JTextComponent) packageComboBox.getEditor().getEditorComponent()).setText(targetPackage);
+            }
         }
         
            String value = (String) settings.getProperty(WizardProperties.ITEM_RESOURCE_NAME);
@@ -715,6 +720,9 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
         settings.putProperty(WizardProperties.CONTAINER_RESOURCE_CLASS, containerTextField.getText());
         settings.putProperty(WizardProperties.CONTAINER_RESOURCE_URI, containerUriTextField.getText());
         settings.putProperty(WizardProperties.ITEM_MIME_TYPES, new MimeType[] { (MimeType) medaTypeComboBox.getSelectedItem() });
+        settings.putProperty(WizardProperties.SOURCE_GROUP, getLocationValue());
+
+
         String type = representationClassTextField.getText();
         if (type != null && type.length() > 0) {
             settings.putProperty(WizardProperties.ITEM_REPRESENTATION_TYPES, new String[] { representationClassTextField.getText()} );
@@ -725,7 +733,13 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
         }
         
         try {            
-            Templates.setTargetFolder(settings, SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage(), true));
+            FileObject packageFO = SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage(), false);
+
+            if (packageFO != null) {
+                Templates.setTargetFolder(settings, packageFO);
+            } else {
+                settings.putProperty(WizardProperties.TARGET_PACKAGE, getPackage());
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

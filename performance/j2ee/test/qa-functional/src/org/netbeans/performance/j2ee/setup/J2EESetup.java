@@ -45,11 +45,10 @@ import org.netbeans.modules.performance.utilities.CommonUtilities;
 
 import org.netbeans.jellytools.JellyTestCase;
 
-import org.netbeans.modules.project.ui.test.ProjectSupport;
-
 import java.io.IOException;
 import java.io.File;
 
+import org.openide.util.Exceptions;
 
 public class J2EESetup extends JellyTestCase {
     
@@ -81,58 +80,78 @@ public class J2EESetup extends JellyTestCase {
         CommonUtilities.closeMemoryToolbar();
     }
 
-        public void testAddAppServer() {
-        
+    public void testAddAppServer() {
         CommonUtilities.addApplicationServer();
     }
-               
 
+    public void testInstallPlugin() {
+        CommonUtilities.installPlugin("JAX-RPC Web Services");
+    }
+               
     public void testOpenTestApplication() {
 
         String projectsDir = workdir + File.separator+ "TestApplication";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
+        try {
+            this.openProjects(projectsDir);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
     }
 
     public void testOpenTestApplication_ejb() {
 
         String projectsDir = workdir + File.separator+"TestApplication/TestApplication-ejb";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
+        try {
+            this.openProjects(projectsDir);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
     }
 
     public void testOpenTestApplication_war() {
       
         String projectsDir = workdir +File.separator+ "TestApplication/TestApplication-war";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
-    }
+        try {
+            this.openProjects(projectsDir);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
 
+    }
+    
     public void testOpenDeployTest() {
 
         String projectsDir = workdir + File.separator+"DeployTest";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);        
-        CommonUtilities.waitProjectTasksFinished();
+        try {
+            this.openProjects(projectsDir);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
     }
 
     public void testOpenDeployTest_ejb() {
 
         String projectsDir = workdir + File.separator+"DeployTest/DeployTest-ejb";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);        
-        CommonUtilities.waitProjectTasksFinished();
+        try {
+            this.openProjects(projectsDir);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
     }
 
     public void testOpenDeployTest_war() {
 
         String projectsDir = workdir + File.separator+"DeployTest/DeployTest-war";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);        
-        CommonUtilities.waitProjectTasksFinished();
+        try {
+            this.openProjects(projectsDir);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
     }
 
     public void testCloseTaskWindow() {

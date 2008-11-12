@@ -50,6 +50,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 /**
  * @author ads
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public final class PhpProjectType implements AntBasedProjectType {
 
     public static final String TYPE = PhpProjectType.class.getPackage().getName();

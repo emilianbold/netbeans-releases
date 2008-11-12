@@ -63,6 +63,7 @@ import org.openide.filesystems.FileUtil;
  * General hook for registration of the Java nature for freeform projects.
  * @author David Konecny
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.ant.freeform.spi.ProjectNature.class)
 public class JavaProjectNature implements ProjectNature {
 
     public static final String NS_JAVA_1 = "http://www.netbeans.org/ns/freeform-project-java/1"; // NOI18N

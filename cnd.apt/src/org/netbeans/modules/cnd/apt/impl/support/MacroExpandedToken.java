@@ -170,6 +170,11 @@ public class MacroExpandedToken implements APTToken, Serializable {
         throw new UnsupportedOperationException("setEndLine must not be used"); // NOI18N
     }
 
+    public Token getTo() {
+        return to;
+    }
+
+    @Override
     public String toString() {
         String retValue;
 

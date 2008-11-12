@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
  * file for which the classpath is provided by the {@link DefaultClassPathProvider}
  * @author Tomas Zezula
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceLevelQueryImplementation.class, position=10000)
 public class DefaultSourceLevelQueryImpl implements SourceLevelQueryImplementation {
 
     private static final String JAVA_EXT = "java";  //NOI18N

@@ -39,6 +39,7 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -143,6 +144,8 @@ public class HtmlGSFParser implements Parser, PositionManager {
                 job.listener.finished(doneEvent);
             } catch (IOException ex) {
                 job.listener.exception(ex);
+                ParserResult result = new HtmlParserResult(this, file, Collections.<SyntaxElement>emptyList());
+                job.listener.finished(new ParseEvent(ParseEvent.Kind.PARSE, file, result));
                 Exceptions.printStackTrace(ex);
             }
 

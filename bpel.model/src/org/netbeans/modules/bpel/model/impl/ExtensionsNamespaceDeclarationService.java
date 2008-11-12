@@ -56,6 +56,7 @@ import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
  * to be done before element actually inserted into model
  * This allows prefered prefixes to be used for some namespaces
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.InnerEventDispatcher.class)
 public class ExtensionsNamespaceDeclarationService extends InnerEventDispatcherAdapter{
       /* (non-Javadoc)
      * @see org.netbeans.modules.soa.model.bpel20.xam.spi.InnerEventDispatcher#isApplicable(org.netbeans.modules.soa.model.bpel20.api.events.ChangeEvent)

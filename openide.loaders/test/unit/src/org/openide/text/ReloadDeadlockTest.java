@@ -49,14 +49,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 
-import junit.textui.TestRunner;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.LocalFileSystem;
-import org.openide.text.CloneableEditorSupport;
 
 
 /**

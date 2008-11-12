@@ -52,6 +52,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  * @author Sergey Grinev
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position=20)
 public class SemanticHighlighterFactory extends EditorAwareCsmFileTaskFactory {
 
     @Override

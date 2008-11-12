@@ -45,19 +45,15 @@ package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
-import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
-import org.netbeans.modules.j2ee.dd.api.web.LoginConfig;
 import org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.modules.xml.multiview.ui.ConfirmDialog;
-import org.netbeans.modules.xml.multiview.ui.EditDialog;
 import org.netbeans.modules.xml.multiview.ui.SectionContainer;
 import org.netbeans.modules.xml.multiview.ui.SectionContainerNode;
 import org.netbeans.modules.xml.multiview.ui.SectionPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.multiview.ui.SimpleDialogPanel;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -117,6 +113,7 @@ public class SecurityMultiViewElement extends ToolBarMultiViewElement
         return view;
     }
     
+    @Override
     public void componentShowing() {
         super.componentShowing();
         dObj.setLastOpenView(index);
@@ -126,11 +123,13 @@ public class SecurityMultiViewElement extends ToolBarMultiViewElement
         }
     }
     
+    @Override
     public void componentOpened() {
         super.componentOpened();
         dObj.getWebApp().addPropertyChangeListener(this);
     }
     
+    @Override
     public void componentClosed() {
         super.componentClosed();
         dObj.getWebApp().removePropertyChangeListener(this);
@@ -174,7 +173,6 @@ public class SecurityMultiViewElement extends ToolBarMultiViewElement
     }
     
     private class SecurityView extends SectionView {
-        private WebApp webApp;
         private SecurityRolesNode rolesNode;
         private SectionContainerNode constraintsNode;
         private SectionContainer constraintsContainer;
@@ -182,13 +180,10 @@ public class SecurityMultiViewElement extends ToolBarMultiViewElement
         
         public SecurityView(WebApp webApp) {
             super(factory);
-            this.webApp = webApp;
             
-            LoginConfig loginConfig = webApp.getSingleLoginConfig();
             configNode = new LoginConfigNode();
             addSection(new SectionPanel(this, configNode, "login_config")); //NOI18N
             
-            SecurityRole[] roles = webApp.getSecurityRole();
             rolesNode = new SecurityRolesNode();
             addSection(new SectionPanel(this, rolesNode, "security_roles")); //NOI18N
             
@@ -216,9 +211,7 @@ public class SecurityMultiViewElement extends ToolBarMultiViewElement
             }
             
             addSection(constraintsContainer);
-            //root.setDisplayName("<Servlets>");
             constraintsNode.setDisplayName(NbBundle.getMessage(ServletsMultiViewElement.class,"TTL_SecurityConstraints"));
-            //servletsNode.setName(HELP_ID_PREFIX+"servletsNode"); //NOI18N
             
             ch = new Children.Array();
             ch.add(new Node[] {configNode, rolesNode, constraintsNode});
@@ -245,6 +238,7 @@ public class SecurityMultiViewElement extends ToolBarMultiViewElement
             setDisplayName(NbBundle.getMessage(SecurityMultiViewElement.class,"TTL_SecurityRoles"));
         }
         
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"securityrolesNode"); //NOI18N
         }
@@ -257,6 +251,7 @@ public class SecurityMultiViewElement extends ToolBarMultiViewElement
             setDisplayName(constraint.getDefaultDisplayName());
         }
         
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"securityconstraintsNode"); //NOI18N
         }
@@ -268,6 +263,7 @@ public class SecurityMultiViewElement extends ToolBarMultiViewElement
             setDisplayName(NbBundle.getMessage(SecurityMultiViewElement.class,"TTL_LoginConfig"));
         }
         
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"loginconfigNode"); //NOI18N
         }

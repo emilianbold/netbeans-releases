@@ -50,6 +50,7 @@ import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
  *
  * @author  tom
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceLevelQueryImplementation.class, position=151)
 public class CDCPlatformSourceLevelQueryImpl implements SourceLevelQueryImplementation {
     
     /** Creates a new instance of CDCPlatformSourceLevelQueryImpl */

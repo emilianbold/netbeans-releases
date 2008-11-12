@@ -976,6 +976,7 @@ public class WebAppProxy implements WebApp {
         }
     }
 
+    @Override
     public Object clone() {
         WebAppProxy proxy = null;
         if (webApp==null)

@@ -78,9 +78,9 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
     public FormattingPanel() {
         initComponents();
         
-        if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
-            setOpaque(false);
-        }
+//        if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+//            setOpaque(false);
+//        }
 
         // Languages combobox renderer
         languageCombo.setRenderer(new DefaultListCellRenderer() {

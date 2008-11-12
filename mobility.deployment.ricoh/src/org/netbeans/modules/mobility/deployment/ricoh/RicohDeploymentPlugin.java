@@ -53,6 +53,7 @@ import org.openide.util.NbBundle;
  *
  * @author Lukas Waldmann
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.deployment.DeploymentPlugin.class, position=100)
 public class RicohDeploymentPlugin implements DeploymentPlugin
 {
     final static String RicohDeployment = "RicohDeployment";

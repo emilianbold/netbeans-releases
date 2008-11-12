@@ -57,6 +57,7 @@ import java.util.ArrayList;
 /**
  * @author David Kaspar
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.PresentersProcessor.class)
 public final class MidpCustomPresentersProcessor extends PresentersProcessor {
 
     public MidpCustomPresentersProcessor () {

@@ -51,6 +51,7 @@ import org.openide.util.Lookup;
  *
  * @author Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=java.util.logging.Handler.class), @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.uihandler.EarlyHandler.class)})
 public final class EarlyHandler extends Handler {
     public EarlyHandler() {
         setLevel(Level.FINEST);

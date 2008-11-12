@@ -46,6 +46,30 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="LayerGeneratingProcessor">
+            <api name="filesystems"/>
+            <summary>Support for annotation processors generating XML layer fragments</summary>
+            <version major="7" minor="15"/>
+            <date day="1" month="11" year="2008"/>
+            <author login="jglick"/>
+            <compatibility addition="yes">
+                <p>
+                    Any code which scans modules for XML layers should now interpret not only
+                    the <code>OpenIDE-Module-Layer</code> manifest attribute (if present),
+                    but also use the resource <code>META-INF/generated-layer.xml</code> if present.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    It is now possible to write JSR 269-compliant annotation processors
+                    which create XML layer (i.e. system filesystem) entries.
+                </p>
+            </description>
+            <class package="org.openide.filesystems.annotations" name="LayerGeneratingProcessor"/>
+            <class package="org.openide.filesystems.annotations" name="LayerBuilder"/>
+            <class package="org.openide.filesystems.annotations" name="LayerGenerationException"/>
+            <issue number="149136"/>
+        </change>
         <change id="FileUtil.getMIMEType.withinMIMETypes">
             <api name="filesystems"/>
             <summary>FileUtil.getMIMEType() can be restricted by listed MIME types</summary>

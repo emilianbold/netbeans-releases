@@ -117,6 +117,7 @@ import com.sun.rave.designtime.DisplayItem;
  * 
  * @author Edwin Goei
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.visualweb.complib.api.ComplibService.class)
 public class ComplibServiceProvider implements ComplibService {
 
     /**

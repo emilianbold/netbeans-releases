@@ -88,6 +88,7 @@ import org.openide.util.NbBundle;
  *
  * @author ayubkhan
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider.class)
 public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
 
     public static final String QNAME = "javax.xml.namespace.QName";
@@ -261,7 +262,7 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
                         " = " + resolveInitValue(argumentTypeName) + "\n"); //NOI18N
             }
 
-            List<WSParameter> parameters = info.getOperation().getParameters();
+            List<? extends WSParameter> parameters = info.getOperation().getParameters();
             updateVariableNamesForWS(parameters);
             for (int i = 0; i < parameters.size(); i++) {
                 String argument = findNewName(getVariableDecl(parameters.get(i)), parameters.get(i).getName());
@@ -318,7 +319,7 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
                         " = " + resolveInitValue(argumentTypeName) + "\n"); //NOI18N
             }
 
-            List<WSParameter> parameters = info.getOperation().getParameters();
+            List<? extends WSParameter> parameters = info.getOperation().getParameters();
             updateVariableNamesForWS(parameters);
             for (int i = 0; i < parameters.size(); i++) {
                 String argument = findNewName(getVariableDecl(parameters.get(i)), parameters.get(i).getName());

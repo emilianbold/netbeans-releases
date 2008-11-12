@@ -201,7 +201,11 @@ made subject to such option by the copyright holder.
         <copy file="${harness.dir}/launchers/app.exe" tofile="${build.launcher.dir}/bin/${app.name}.exe"/>
         <copy file="${harness.dir}/launchers/app_w.exe" tofile="${build.launcher.dir}/bin/${app.name}_w.exe"/>
         <copy file="${harness.dir}/launchers/app.sh" tofile="${build.launcher.dir}/bin/${app.name}"/>
-        <copy file="${harness.dir}/etc/app.conf" tofile="${build.launcher.dir}/etc/${app.name}.conf"/>
+        <copy file="${harness.dir}/etc/app.conf" tofile="${build.launcher.dir}/etc/${app.name}.conf">
+            <filterchain>
+                <replacestring from="$${branding.token}" to="${branding.token}"/>
+            </filterchain>
+        </copy>
         <echo message="${app.name}" file="${build.launcher.dir}/etc/${app.name}.clusters"/>
         <echo message="&#10;" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
         <echo message="${zip.platform.clusters.bare}" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>

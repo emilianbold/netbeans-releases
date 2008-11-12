@@ -48,6 +48,7 @@ import org.netbeans.CLIHandler;
  *
  * @author Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.CLIHandler.class)
 public class UserDirHandler extends CLIHandler {
     /** Creates a new instance of FakeHandler */
     public UserDirHandler() {

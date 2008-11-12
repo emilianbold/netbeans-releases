@@ -44,10 +44,7 @@ made subject to such option by the copyright holder.
     <import file="../nbbuild/templates/projectized.xml"/>
     <property name="nb.modules.dir" value="modules"/>
     
-    
-    <target name="compile" depends="-compile-default-platform,-compile-explicit-platform,-bincomp">	
-        
-    </target>
+    <target name="compile" depends="build-init,-compile-default-platform,-compile-explicit-platform,-bincomp"/>
 
     <target name="-bincomp">
         <taskdef name="enhanceclass" classname="org.netbeans.nbbuild.NbEnhanceClass" classpath="${nb_all}/nbbuild/nbantext.jar"/>
@@ -70,10 +67,15 @@ made subject to such option by the copyright holder.
         <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
             <classpath refid="cp"/>
         </depend>
-        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false" includejavaruntime="true" bootclasspath="../libs.javacapi/external/javac-api-nb-7.0-b07.jar:../libs.javacimpl/external/javac-impl-nb-7.0-b07.jar">
+        <property name="processor.path.for.tests" value=""/>
+        <nb-javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" encoding="UTF-8"
+                deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false" includejavaruntime="true" bootclasspath="../libs.javacapi/external/javac-api-nb-7.0-b07.jar:../libs.javacimpl/external/javac-impl-nb-7.0-b07.jar">
             <classpath refid="cp"/>
             <compilerarg line="${javac.compilerargs}"/>
-        </javac>
+            <processorpath refid="processor.cp"/>
+        </nb-javac>
+
+
         <!-- Sanity check: -->
         <pathconvert pathsep=":" property="class.files.in.src">
             <path>
@@ -113,10 +115,12 @@ made subject to such option by the copyright holder.
         <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
             <classpath refid="cp"/>
         </depend>
-        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false" bootclasspath="../libs.javacapi/external/javac-api-nb-7.0-b07.jar:../libs.javacimpl/external/javac-impl-nb-7.0-b07.jar:${nbjdk.bootclasspath}">
+        <property name="processor.path.for.tests" value=""/>
+        <nb-javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" encoding="UTF-8" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false" bootclasspath="../libs.javacapi/external/javac-api-nb-7.0-b07.jar:../libs.javacimpl/external/javac-impl-nb-7.0-b07.jar:${nbjdk.bootclasspath}">
             <classpath refid="cp"/>
             <compilerarg line="${javac.compilerargs}"/>
-        </javac>
+            <processorpath refid="processor.cp"/>
+        </nb-javac>
         <!-- Sanity check: -->
         <pathconvert pathsep=":" property="class.files.in.src">
             <path>

@@ -60,6 +60,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
+import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
@@ -204,7 +205,8 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
         }
     }
     
-    private static final class VisibilityQueryDataFilter implements ChangeListener, PropertyChangeListener, ChangeableDataFilter {
+    private static final class VisibilityQueryDataFilter implements ChangeListener, PropertyChangeListener, 
+            ChangeableDataFilter, DataFilter.FileBased {
         
         private static final long serialVersionUID = 1L; // in case a DataFolder.ClonedFilterHandle saves me
         
@@ -251,6 +253,10 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
         
         public void removeChangeListener(ChangeListener listener) {
             ell.remove(ChangeListener.class, listener);
+        }
+
+        public boolean acceptFileObject(FileObject fo) {
+            return VisibilityQuery.getDefault().isVisible(fo);
         }
         
     }

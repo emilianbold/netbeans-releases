@@ -125,9 +125,6 @@ public class Unbuffer {
         }
     }
 
-    /*
-     * Not implemented yet
-     */
     private static String getRemotePath(String host, boolean is64bits) {
         String path = HostInfoProvider.getDefault().getLibDir(host);
         if (path == null) {

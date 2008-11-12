@@ -56,6 +56,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author rico
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider.class)
 public class SoapClientPhpCodeGenerator extends SaasClientCodeGenerator {
 
     @Override

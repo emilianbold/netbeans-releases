@@ -396,6 +396,15 @@ in methods
     For example an extra whitespace accumulated during typing can be removed by exploiting this property.
 </api>
 
+<api type="export" group="property" name="expectedTime" category="friend" >
+    <a href="@TOP@/org/openide/text/CloneableEditorSupport.html">CloneableEditorSupport</a>
+    understands not only its <code>Env.TIME</code> property, but also special
+    "expectedTime". When this one arrives, it means refresh its internal
+    last saved time, but without any refresh. This functionality is used from
+    <code>DataEditorSupport</code> when the DataObject is moved to new location
+    and we need to adjust the time to the new file object.
+</api>
+
 </answer>
 
 

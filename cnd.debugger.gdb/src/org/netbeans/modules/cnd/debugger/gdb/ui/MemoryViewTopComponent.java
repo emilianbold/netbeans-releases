@@ -52,7 +52,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.util.Utilities;
 
 /**
  * Top component which displays something.
@@ -170,7 +169,6 @@ final class MemoryViewTopComponent extends TopComponent {
         if (gdb == null) {
             return;
         }
-        CommandBuffer cb = new CommandBuffer(gdb);
         String addr = tfAddress.getText();
         if (addr == null || addr.length() == 0) {
             return;
@@ -188,13 +186,12 @@ final class MemoryViewTopComponent extends TopComponent {
         if (len < 1) {
             return;
         }
-        gdb.data_read_memory(cb, addr, (len-1)/GdbProxy.MEMORY_READ_WIDTH+1);
-        String msg = cb.waitForCompletion();
-        if (cb.getState() == CommandBuffer.STATE_ERROR) {
+        CommandBuffer cb = gdb.data_read_memory(addr, (len-1)/GdbProxy.MEMORY_READ_WIDTH+1);
+        if (cb.isError()) {
             taResult.setText(cb.getError());
         } else {
             // parse output
-            Map<String,String> res = GdbUtils.createMapFromString(msg);
+            Map<String,String> res = GdbUtils.createMapFromString(cb.getResponse());
             String mem = res.get("memory"); // NOI18N
             List<String> lines = GdbUtils.createListOfValues(mem);
             StringBuilder text = new StringBuilder();

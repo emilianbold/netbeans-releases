@@ -24,6 +24,7 @@ import com.sun.etl.engine.spi.DBConnectionProvider;
  *
  * @author radval
  */
+@org.openide.util.lookup.ServiceProvider(service=com.sun.etl.engine.spi.DBConnectionProvider.class)
 public class DesignTimeDBConnectionProvider implements DBConnectionProvider {
     
     /** Creates a new instance of DesignTimeDBConnectionProvider */

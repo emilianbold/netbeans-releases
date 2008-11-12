@@ -253,6 +253,7 @@ public class HQLEditorController {
 
         // Process Mappings
         List<FileObject> matchedMappingFOList = new ArrayList<FileObject>();
+        List<FileObject> mappingFOList = new ArrayList<FileObject>();
         Map<FileObject, List<String>> mappingPOJOMap = env.getAllPOJONamesFromConfiguration(configFileObject);
 
         for (FileObject mappingFO : mappingPOJOMap.keySet()) {
@@ -270,7 +271,9 @@ public class HQLEditorController {
                         logger.info("Got clazz " + clazz);
                         if (clazz != null) {
                             matchedMappingFOList.add(mappingFO);
-                            for (FileObject relatedMappingFO : getRelatedMappings(mappingFO, mappingPOJOMap)) {
+                            mappingFOList.add(mappingFO);
+                            getRelatedMappings(mappingFO, matchedMappingFOList, mappingPOJOMap);
+                            for (FileObject relatedMappingFO : matchedMappingFOList) {
                                 List<String> relatedPojoNames = mappingPOJOMap.get(relatedMappingFO);
                                 if (relatedPojoNames != null) {
                                     logger.info("Processing relationships from " + relatedMappingFO + " mapping file.");
@@ -279,7 +282,7 @@ public class HQLEditorController {
                                         Class relatedClazz = processMatchingClass(relatedClassName, customClassLoader, project);
                                         logger.info("Got related POJO clazz " + relatedClazz);
                                         if (relatedClazz != null) {
-                                            matchedMappingFOList.add(relatedMappingFO);
+                                            mappingFOList.add(relatedMappingFO);
                                         }
                                     }
                                 }
@@ -548,18 +551,29 @@ public class HQLEditorController {
         }
     }
 
-    private List<FileObject> getRelatedMappings(FileObject mappingFO, Map<FileObject, List<String>> mappingPOJOMap) {
-        List<FileObject> relatedMappings = new ArrayList<FileObject>();
+    private List<FileObject> getRelatedMappings(FileObject mappingFO, List<FileObject> relatedMappings, Map<FileObject, List<String>> mappingPOJOMap) {
         try {
             org.dom4j.io.SAXReader xmlReader = new org.dom4j.io.SAXReader();
             org.dom4j.Document document = xmlReader.read(FileUtil.toFile(mappingFO));
             Iterator classElementIterator = document.getRootElement().elementIterator("class");
             while (classElementIterator.hasNext()) {
                 org.dom4j.Element classElement = (org.dom4j.Element) classElementIterator.next();
-                relatedMappings.addAll(
-                        processMappingRelationships(classElement.elementIterator("many-to-one"), mappingPOJOMap));
-                relatedMappings.addAll(
-                        processMappingRelationships(classElement.elementIterator("one-to-one"), mappingPOJOMap));
+                logger.info("Processing many-to-one");
+                        processMappingRelationships(classElement.elementIterator("many-to-one"), relatedMappings, mappingPOJOMap);
+                logger.info("Processing one-to-one");
+                        processMappingRelationships(classElement.elementIterator("one-to-one"), relatedMappings, mappingPOJOMap);
+                logger.info("Processing set");
+                        processMappingRelationships(classElement.elementIterator("set"), relatedMappings, mappingPOJOMap);
+                logger.info("Processing idbag");
+                        processMappingRelationships(classElement.elementIterator("idbag"), relatedMappings, mappingPOJOMap);
+                logger.info("Processing map");
+                        processMappingRelationships(classElement.elementIterator("map"), relatedMappings, mappingPOJOMap);
+                logger.info("Processing bag");
+                        processMappingRelationships(classElement.elementIterator("bag"), relatedMappings, mappingPOJOMap);
+                logger.info("Processing list");
+                        processMappingRelationships(classElement.elementIterator("list"), relatedMappings, mappingPOJOMap);
+                logger.info("Processing array");
+                        processMappingRelationships(classElement.elementIterator("array"), relatedMappings, mappingPOJOMap);
 
             }
         } catch (Exception e) {
@@ -569,13 +583,30 @@ public class HQLEditorController {
         return relatedMappings;
     }
 
-    private List<FileObject> processMappingRelationships(Iterator relationshipIterator, Map<FileObject, List<String>> mappingPOJOMap) {
-        List<FileObject> relatedMappings = new ArrayList<FileObject>();
+    private List<FileObject> processMappingRelationships(Iterator relationshipIterator, List<FileObject> relatedMappings, Map<FileObject, List<String>> mappingPOJOMap) {
         while (relationshipIterator.hasNext()) {
             org.dom4j.Element relationshipElement = (org.dom4j.Element) relationshipIterator.next();
-            FileObject relatedMappingFO = findRelatedMappingFO(relationshipElement.attributeValue("class"), mappingPOJOMap);
-            if (relatedMappingFO != null) {
+            String pojoName = relationshipElement.attributeValue("class");
+            if(pojoName == null) {
+                // Check for Collection based relationship types.
+                org.dom4j.Element connectionTypeElement = relationshipElement.element("one-to-many");
+                if(connectionTypeElement == null) {
+                    connectionTypeElement = relationshipElement.element("composite-element");
+                }
+                if(connectionTypeElement == null) {
+                    connectionTypeElement = relationshipElement.element("one-to-many");
+                }
+                if(connectionTypeElement == null) {
+                    connectionTypeElement = relationshipElement.element("many-to-many");
+                }
+                if(connectionTypeElement != null) {
+                    pojoName = connectionTypeElement.attributeValue("class");
+                } 
+            }
+            FileObject relatedMappingFO = findRelatedMappingFO(pojoName, mappingPOJOMap);
+            if (relatedMappingFO != null && (! relatedMappings.contains(relatedMappingFO))) {
                 relatedMappings.add(relatedMappingFO);
+                getRelatedMappings(relatedMappingFO, relatedMappings, mappingPOJOMap);
             }
         }
         logger.info("Related mapping files : " + relatedMappings);
@@ -586,6 +617,7 @@ public class HQLEditorController {
         for (FileObject mappingFile : mappingPOJOMap.keySet()) {
             List<String> pojoNameList = mappingPOJOMap.get(mappingFile);
             if (pojoNameList.contains(pojoName)) {
+                logger.info("Related POJO : " + pojoName);
                 return mappingFile;
             }
         }

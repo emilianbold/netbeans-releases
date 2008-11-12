@@ -219,7 +219,7 @@ is divided into following sections:
                     -->
                     <xsl:attribute name="property">build.deploy.on.save</xsl:attribute>
                     <xsl:attribute name="else">false</xsl:attribute>
-                    <isfalse value="${{disable.deploy.on.save}}"/>
+                    <istrue value="${{j2ee.deploy.on.save}}"/>
                 </condition>         
             </target>
             

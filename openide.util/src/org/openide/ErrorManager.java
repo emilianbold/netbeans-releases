@@ -648,7 +648,9 @@ public abstract class ErrorManager extends Object {
                 }
                 
                 AnnException ann = AnnException.findOrCreate(t, true);
-                ann.addRecord(rec);
+                if (ann != null) {  //#148778 - Although ann should not be null, it was reported it can happen.
+                    ann.addRecord(rec);
+                }
                 
                 return t;
             }

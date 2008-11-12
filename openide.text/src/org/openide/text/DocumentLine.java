@@ -42,7 +42,6 @@ package org.openide.text;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.text.EnhancedChangeEvent;
 
 import java.io.*;
 
@@ -64,7 +63,7 @@ public abstract class DocumentLine extends Line {
     /** weak map that assignes to editor supports whether they have current or error line
     * selected. (EditorSupport, DocumentLine[2]), where Line[0] is current and Line[1] is error */
     private static Map<CloneableEditorSupport,DocumentLine[]> assigned = new WeakHashMap<CloneableEditorSupport,DocumentLine[]>(5);
-    static final long serialVersionUID = 3213776466939427487L;
+    private static final long serialVersionUID = 3213776466939427487L;
 
     /** reference to one position on the line */
     protected PositionRef pos;
@@ -137,7 +136,7 @@ public abstract class DocumentLine extends Line {
     public abstract void show(int kind, int column);
 
     /* Sets the breakpoint. */
-    @SuppressWarnings("deprecation")
+    @Deprecated
     public void setBreakpoint(boolean b) {
         if (breakpoint != b) {
             breakpoint = b;
@@ -146,13 +145,13 @@ public abstract class DocumentLine extends Line {
     }
 
     /* Tests if the breakpoint is set. */
-    @SuppressWarnings("deprecation")
+    @Deprecated
     public boolean isBreakpoint() {
         return breakpoint;
     }
 
     /* Marks the error. */
-    @SuppressWarnings("deprecation")
+    @Deprecated
     public void markError() {
         DocumentLine previous = registerLine(1, this);
 
@@ -167,7 +166,7 @@ public abstract class DocumentLine extends Line {
     }
 
     /* Unmarks error at this line. */
-    @SuppressWarnings("deprecation")
+    @Deprecated
     public void unmarkError() {
         error = false;
         registerLine(1, null);
@@ -176,7 +175,7 @@ public abstract class DocumentLine extends Line {
     }
 
     /* Marks this line as current. */
-    @SuppressWarnings("deprecation")
+    @Deprecated
     public void markCurrentLine() {
         DocumentLine previous = registerLine(0, this);
 
@@ -190,7 +189,7 @@ public abstract class DocumentLine extends Line {
     }
 
     /* Unmarks this line as current. */
-    @SuppressWarnings("deprecation")
+    @Deprecated
     public void unmarkCurrentLine() {
         current = false;
         registerLine(0, null);
@@ -240,10 +239,12 @@ public abstract class DocumentLine extends Line {
         }
     }
 
+    @Override
     public int hashCode() {
         return pos.getCloneableEditorSupport().hashCode();
     }
 
+    @Override
     public boolean equals(Object o) {
         if (o instanceof DocumentLine) {
             DocumentLine dl = (DocumentLine) o;
@@ -321,6 +322,7 @@ public abstract class DocumentLine extends Line {
 
     /** Add annotation to this Annotatable class
      * @param anno annotation which will be attached to this class */
+    @Override
     protected void addAnnotation(Annotation anno) {
         super.addAnnotation(anno);
 
@@ -349,6 +351,7 @@ public abstract class DocumentLine extends Line {
 
     /** Remove annotation to this Annotatable class
      * @param anno annotation which will be detached from this class  */
+    @Override
     protected void removeAnnotation(Annotation anno) {
         super.removeAnnotation(anno);
 
@@ -409,6 +412,7 @@ public abstract class DocumentLine extends Line {
         }
     }
 
+    @Override
     public String getText() {
         final StyledDocument doc = pos.getCloneableEditorSupport().getDocument();
 
@@ -533,8 +537,8 @@ public abstract class DocumentLine extends Line {
     void notifyMove() {
         updatePositionRef();
 
-        for (int i = 0; i < lineParts.size(); i++) {
-            ((DocumentLine.Part) lineParts.get(i)).firePropertyChange(Line.Part.PROP_LINE, null, null);
+        for (Part p : lineParts) {
+            p.firePropertyChange(Line.Part.PROP_LINE, null, null);
         }
     }
 
@@ -696,6 +700,7 @@ public abstract class DocumentLine extends Line {
 
         /** Add annotation to this Annotatable class
          * @param anno annotation which will be attached to this class */
+        @Override
         protected void addAnnotation(Annotation anno) {
             super.addAnnotation(anno);
 
@@ -720,6 +725,7 @@ public abstract class DocumentLine extends Line {
 
         /** Remove annotation to this Annotatable class
          * @param anno annotation which will be detached from this class  */
+        @Override
         protected void removeAnnotation(Annotation anno) {
             super.removeAnnotation(anno);
 
@@ -1001,6 +1007,7 @@ public abstract class DocumentLine extends Line {
             return safelyRegisterLine(createLine(offset(newLine)));
         }
 
+        @Override
         public int getOriginalLineNumber(Line line) {
             Line find = findLine(line);
 

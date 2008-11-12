@@ -81,6 +81,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.junit.TestabilityResult.SkippedClass;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
@@ -1782,6 +1783,9 @@ public final class DefaultPlugin extends JUnitPlugin {
                 if (progress.isCanceled()) {
                     results.setAbborted();
                     break;
+                }
+                if (!VisibilityQuery.getDefault().isVisible(childFileObj)) {
+                    continue;
                 }
                 results.combine(createTests(childFileObj,
                                             testCreator,

@@ -56,6 +56,7 @@ import org.netbeans.modules.xml.xam.Referenceable;
  *
  * @author Sonali Kochar
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class SchemaRefactoringsFactory implements RefactoringPluginFactory {
    
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {

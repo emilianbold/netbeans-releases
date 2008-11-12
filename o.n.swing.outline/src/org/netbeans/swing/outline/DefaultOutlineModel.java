@@ -127,7 +127,7 @@ public class DefaultOutlineModel implements OutlineModel {
     /** Create an OutlineModel using the supplied tree model and row model,
      * specifying if it is a large-model tree */
     public static OutlineModel createOutlineModel(TreeModel treeModel, RowModel rowModel, boolean isLargeModel) {
-        return createOutlineModel (treeModel, rowModel, false, null);
+        return createOutlineModel (treeModel, rowModel, isLargeModel, null);
     }
     /** Create an OutlineModel using the supplied tree model and row model,
      * specifying if it is a large-model tree */

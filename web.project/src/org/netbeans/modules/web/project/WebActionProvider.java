@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -76,7 +75,6 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.project.ui.SetExecutionUriAction;
-import org.netbeans.modules.web.project.parser.JspNameUtil;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
@@ -213,7 +211,7 @@ class WebActionProvider implements ActionProvider {
         }
 
         String realCommand = command;
-        if (COMMAND_BUILD.equals(realCommand) && isCosEnabled()
+        if (COMMAND_BUILD.equals(realCommand) && isDosEnabled()
                 && DeployOnSaveUtils.containsIdeArtifacts(evaluator, updateHelper, "build.classes.dir")) {
             boolean cleanAndBuild = DeployOnSaveUtils.showBuildActionWarning(project,
                     new DeployOnSaveUtils.CustomizerPresenter() {
@@ -409,11 +407,6 @@ class WebActionProvider implements ActionProvider {
         // DEBUG-SINGLE
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             setDirectoryDeploymentProperty(p);
-            
-            boolean keepDebugging = setJavaScriptDebuggerProperties(p);
-            if (!keepDebugging) {
-                return null;
-            }
                         
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
@@ -433,6 +426,11 @@ class WebActionProvider implements ActionProvider {
                     return null;
                 }
 
+                boolean keepDebugging = setJavaScriptDebuggerProperties(p);
+                if (!keepDebugging) {
+                    return null;
+                }
+                
                 files = findJsps(context);
                 if ((files != null) && (files.length > 0)) {
                     // debug jsp
@@ -805,7 +803,7 @@ class WebActionProvider implements ActionProvider {
             return;
         }
 
-        String name = JspNameUtil.getServletName(wm.getDocumentBase(), jsp);
+        String name = Utils.getServletName(wm.getDocumentBase(), jsp);
         if (name == null) {
             return;
         }
@@ -947,7 +945,7 @@ class WebActionProvider implements ActionProvider {
         }
 
         // build or compile source file (JSP compilation allowed)
-        if (isCosEnabled() && DeployOnSaveUtils.containsIdeArtifacts(evaluator, updateHelper, "build.classes.dir")
+        if (isDosEnabled() && DeployOnSaveUtils.containsIdeArtifacts(evaluator, updateHelper, "build.classes.dir")
                 && (COMMAND_COMPILE_SINGLE.equals(command)
                     && (findJavaSourcesAndPackages(context, project.getSourceRoots().getRoots()) != null || findJavaSourcesAndPackages(context, project.getTestSourceRoots().getRoots()) != null))) {
 
@@ -1431,7 +1429,7 @@ class WebActionProvider implements ActionProvider {
         return foundWebServiceAnnotation[0];
     }
 
-    private boolean isCosEnabled() {
-        return !Boolean.parseBoolean(project.evaluator().getProperty(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE));
+    private boolean isDosEnabled() {
+        return Boolean.parseBoolean(project.evaluator().getProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE));
     }
 }

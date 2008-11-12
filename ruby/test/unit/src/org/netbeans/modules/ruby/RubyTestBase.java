@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.ruby;
 
+import org.netbeans.modules.gsf.TestSourceModelFactory;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;

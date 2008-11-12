@@ -1,1 +1,2 @@
+# XXX impl is in antsrc; registration in src probably wrong -jglick
 org.netbeans.modules.xslt.project.anttasks.XsltProjectLookup

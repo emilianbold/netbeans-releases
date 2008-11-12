@@ -136,7 +136,7 @@ public class LinkReader {
     }
     
     private boolean isShellItemPresent;
-    private boolean isFileLocationItemPresent;
+    //private boolean isFileLocationItemPresent;
     private boolean isDescriptionPresent;
     private boolean isRelativePathPresent;
     
@@ -146,10 +146,10 @@ public class LinkReader {
             isShellItemPresent = true;
             //System.out.println("The shell item id list is present.");
         }
-        if ((flag&2) != 0){
-            isFileLocationItemPresent = true;
-            //System.out.println("Points to a file or directory.");
-        }
+//        if ((flag&2) != 0){
+//            isFileLocationItemPresent = true;
+//            //System.out.println("Points to a file or directory.");
+//        }
         if ((flag&4) != 0){
             isDescriptionPresent = true;
             //System.out.println("Has a description string.");

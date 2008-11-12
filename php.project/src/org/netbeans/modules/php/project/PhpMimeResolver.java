@@ -51,6 +51,7 @@ import org.openide.util.Utilities;
 /**
  * @author Radek Matous
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.MIMEResolver.class, position=999)
 public class PhpMimeResolver extends MIMEResolver {
 
     private static final int BYTES_FOR_PRECHECK = 255;

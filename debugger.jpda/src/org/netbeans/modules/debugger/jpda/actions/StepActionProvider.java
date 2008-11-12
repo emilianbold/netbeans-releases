@@ -184,7 +184,7 @@ implements Executor {
                         // Or suspend count > 1 !
                         //itsex.printStackTrace();
                         //System.err.println("Thread: "+tr.name()+", suspended = "+tr.isSuspended()+", suspend count = "+tr.suspendCount()+", status = "+tr.status());
-                        logger.warning(itsex.getLocalizedMessage()+"\nThread: "+tr.name()+", suspended = "+tr.isSuspended()+", suspend count = "+tr.suspendCount()+", status = "+tr.status());
+                        logger.warning(itsex.getLocalizedMessage()+"\nThread: "+tr.name()+", suspended = "+tr.isSuspended()+", status = "+tr.status());
                         getDebuggerImpl ().getOperator ().unregister(stepRequest);
                         return ;
                     }

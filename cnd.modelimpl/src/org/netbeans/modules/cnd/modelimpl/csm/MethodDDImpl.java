@@ -60,11 +60,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
 
     private final CsmCompoundStatement body;
     
-    public MethodDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility) throws AstRendererException {
-        this(ast, cls, visibility, true);
-    }
-    
-    protected MethodDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+    public MethodDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
         super(ast, cls, visibility, false);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
         boolean assertionCondition = body != null;

@@ -53,6 +53,7 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  *
  * @author Marek Fukala
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsf.api.EmbeddingModel.class)
 public class CssEmbeddingModel implements IncrementalEmbeddingModel {
 
     static final String HTML_MIME_TYPE = "text/html"; // NOI18N

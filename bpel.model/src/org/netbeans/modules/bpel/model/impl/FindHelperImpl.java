@@ -40,6 +40,7 @@ import org.w3c.dom.Node;
  * 
  * @author ads
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.spi.FindHelper.class)
 public final class FindHelperImpl implements FindHelper {
 
     public FindHelperImpl() {}

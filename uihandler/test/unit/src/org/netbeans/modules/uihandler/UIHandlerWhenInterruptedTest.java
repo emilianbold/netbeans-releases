@@ -73,9 +73,8 @@ public class UIHandlerWhenInterruptedTest extends NbTestCase {
     }
 
     public void testPublishWhenInterupted() {
-        LogRecord rec = new LogRecord(Level.FINER, "1"); // NOI18N
-        UILOG.log(rec);        
-
+        // log no 0 is screen size log
+        
         for (int i = 1; i < 800; i++) {
             LogRecord rec2 = new LogRecord(Level.FINER, "" + i); // NOI18N
             Thread.currentThread().interrupt();

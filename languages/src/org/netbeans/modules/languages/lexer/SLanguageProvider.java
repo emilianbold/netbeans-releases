@@ -65,6 +65,7 @@ import org.netbeans.spi.lexer.LanguageProvider;
  *
  * @author Jan Jancura
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.lexer.LanguageProvider.class)
 public class SLanguageProvider extends LanguageProvider {
     
     public Language<STokenId> findLanguage (String mimeType) {

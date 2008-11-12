@@ -49,6 +49,7 @@ import org.netbeans.CLIHandler;
  *
  * @author Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.CLIHandler.class)
 public class CLIOptions2 extends CLIHandler implements Runnable {
     /** number of invocations */
     private int cnt;

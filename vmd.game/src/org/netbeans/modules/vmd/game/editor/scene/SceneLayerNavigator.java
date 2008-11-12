@@ -64,6 +64,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
+import org.netbeans.modules.vmd.game.editor.common.NonEmptyStringTableCellEditor;
 import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.LayerDataFlavor;
 import org.netbeans.modules.vmd.game.model.Scene;
@@ -124,16 +125,19 @@ public class SceneLayerNavigator extends JTable {
 		this.setDefaultRenderer(Boolean.class, new BooleanTableCellRenderer(PAD_X, PAD_Y));
 		
 		this.setDefaultRenderer(Layer.class, new LayerTableCellRenderer());
+                
+                this.setDefaultEditor(String.class, new NonEmptyStringTableCellEditor());
 
 		this.setDefaultRenderer(Integer.class, new DefaultTableCellRenderer() {
+                        @Override
 			public Component getTableCellRendererComponent(JTable table, Object value,
 					boolean isSelected, boolean hasFocus, int row, int column) {
 				this.setHorizontalAlignment(SwingConstants.CENTER);
 				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			}
-		});
-		
-		TableColumn posXColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_POS_X);
+                });
+
+                TableColumn posXColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_POS_X);
 		posXColumn.setPreferredWidth(width + 10);
 		posXColumn.setMaxWidth(width + 10);
 		posXColumn.setMinWidth(width + 10);
@@ -149,12 +153,12 @@ public class SceneLayerNavigator extends JTable {
 		
 	}
 	
+        @Override
 	public Dimension getPreferredScrollableViewportSize() {
 		return super.getPreferredSize();
 	}
 	
-	
-	private class SceneTableSelectionListener implements ListSelectionListener {
+        private class SceneTableSelectionListener implements ListSelectionListener {
 		
 		public void valueChanged(ListSelectionEvent e) {
 			if (e.getValueIsAdjusting()){
@@ -184,6 +188,7 @@ public class SceneLayerNavigator extends JTable {
 			dge.startDrag(null, payload, this);
 		}
 		
+        @Override
 		public void dragDropEnd(DragSourceDropEvent dsde) {
 			super.dragDropEnd(dsde);
 			if (dsde.getDropSuccess()) {
@@ -223,6 +228,7 @@ public class SceneLayerNavigator extends JTable {
 				dtde.dropComplete(false);
 			}
 		}
+        @Override
 		public void dragExit(DropTargetEvent dte) {
 			if (DEBUG) System.out.println("dragExit"); // NOI18N
 		}

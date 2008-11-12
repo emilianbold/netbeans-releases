@@ -81,7 +81,7 @@ public class NodeMemberEvent extends NodeEvent {
         this.add = add;
         this.delta = delta;
         this.prevSnapshot = from != null ? Arrays.asList(from) : null;
-        this.currSnapshot = n.getChildren().entrySupport().createSnapshot();
+        this.currSnapshot = n.getChildren().snapshot();
     }
 
     /** Provides static and immmutable info about the number, and instances of

@@ -71,6 +71,7 @@ import org.openide.windows.ExternalDropHandler;
  *
  * @author S. Aubrecht
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.windows.ExternalDropHandler.class)
 public class DefaultExternalDropHandler extends ExternalDropHandler {
     
     public boolean canDrop(DropTargetDragEvent e) {

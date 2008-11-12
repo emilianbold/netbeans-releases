@@ -63,6 +63,7 @@ import java.util.*;
  * @author David Kaspar
  */
 // TODO - polish serialized data - save dpi value for proper deserialization
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.DataSerializer.class)
 public class FlowDataSerializer implements DataSerializer {
 
     private static final String FLOW_DOCUMENT_NODE = "FlowScene"; // NOI18N

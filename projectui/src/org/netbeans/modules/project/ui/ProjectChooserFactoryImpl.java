@@ -52,6 +52,7 @@ import org.openide.WizardDescriptor;
  * Factory to be implemented bu the ui implementation
  * @author Petr Hrebejk
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.project.uiapi.ProjectChooserFactory.class)
 public class ProjectChooserFactoryImpl implements ProjectChooserFactory {
 
     public ProjectChooserFactoryImpl() {}

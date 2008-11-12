@@ -18,8 +18,8 @@ Searchable Keys:
   field : update
   field : updateNotes
   fqn : BookmarkController
-  method : addTags(b);02
-  method : getSuggestions(url,bookmark);02
-  method : printParams(params,unusedParam);02
+  method : addTags(Bookmark);02
+  method : getSuggestions(java.lang.Object,java.lang.Object);02
+  method : printParams(java.lang.Object,java.lang.Object);02
 
 Not Searchable Keys:

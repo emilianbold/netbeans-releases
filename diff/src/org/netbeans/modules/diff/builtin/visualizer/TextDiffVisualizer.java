@@ -58,6 +58,7 @@ import org.netbeans.modules.diff.builtin.DiffPresenter;
  *
  * @author  Martin Entlicher
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.diff.DiffVisualizer.class)
 public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
     
     private boolean contextMode = true;

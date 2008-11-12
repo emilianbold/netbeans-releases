@@ -251,6 +251,7 @@ public class JspI18nSupport extends JavaI18nSupport {
     
     
     /** Factory for <code>JspI18nSupport</code>. */
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.i18n.I18nSupport.Factory.class)
     public static class Factory extends I18nSupport.Factory {
         
         /** Implements superclass abstract method. */

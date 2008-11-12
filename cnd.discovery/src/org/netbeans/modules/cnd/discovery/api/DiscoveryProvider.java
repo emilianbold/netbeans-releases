@@ -95,7 +95,7 @@ public interface DiscoveryProvider {
     /**
      * Analyze project and returns list of configuration
      */
-    List<Configuration> analyze(ProjectProxy project);
+    public List<Configuration> analyze(ProjectProxy project,Progress progress);
     
     /**
      * Stop analyzing.

@@ -28,6 +28,9 @@ echo Calling unpack200 in $unpack_dir
 cd "$unpack_dir"
 for x in `find . -name \*.jar.pack` ; do
     jar=`echo $x | sed 's/jar.pack/jar/'`
+    if [ -f "$jar" ] ; then
+        continue
+    fi
     /System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home/bin/unpack200 $x $jar
     chmod `stat -f %Lp $x` $jar && touch -r $x $jar
     rm $x

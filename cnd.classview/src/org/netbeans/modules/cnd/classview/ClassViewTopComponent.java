@@ -59,8 +59,8 @@ import org.netbeans.modules.cnd.api.model.CsmModelStateListener;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -147,13 +147,13 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
 
     @Override
     protected void componentOpened() {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesTC: componentOpened()"); // NOI18N
+        if( Diagnostic.DEBUG ) {Diagnostic.trace("ClassesTC: componentOpened()");} // NOI18N
         if (view == null) {
             view = new ClassView();
             setLayout(new BorderLayout());
             setToolTipText(I18n.getMessage("ClassViewTitle")); // NOI18N
             setName(I18n.getMessage("ClassViewTooltip")); // NOI18N
-            setIcon(Utilities.loadImage(ICON_PATH));
+            setIcon(ImageUtilities.loadImage(ICON_PATH));
         }
         view.startup();
         addRemoveModelListeners(true);
@@ -179,7 +179,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
     
     @Override
     protected void componentClosed() {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesTC: componentClosed()"); // NOI18N
+        if( Diagnostic.DEBUG ) {Diagnostic.trace("ClassesTC: componentClosed()");} // NOI18N
         if (!isAutoMode) {
             Preferences ps = NbPreferences.forModule(ClassViewTopComponent.class);
             ps.putBoolean(ClassViewTopComponent.OPENED_PREFERENCE, true); // NOI18N
@@ -196,7 +196,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
 
     @Override
     protected void componentActivated() {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesTC: componentActivated()"); // NOI18N
+        if( Diagnostic.DEBUG ) {Diagnostic.trace("ClassesTC: componentActivated()");} // NOI18N
         super.componentActivated();
         view.requestFocus();
     }
@@ -223,7 +223,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
                 break;
             case CLOSING:
                 modelOn = false;
-                if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesTC: model switched off"); // NOI18N
+                if( Diagnostic.DEBUG ) {Diagnostic.trace("ClassesTC: model switched off");} // NOI18N
                 break;
         }
     }

@@ -48,6 +48,7 @@ import org.openide.nodes.Node;
  *
  * @author Martin Grebac
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider.class)
 public class WSITEditorProvider implements WSEditorProvider {
     
     /**

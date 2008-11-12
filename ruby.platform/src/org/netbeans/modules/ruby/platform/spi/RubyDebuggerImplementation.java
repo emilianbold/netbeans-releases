@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.ruby.platform.spi;
 
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 
 /**
  * Ability for Ruby project to debug Ruby scripts/applications.
@@ -53,7 +53,7 @@ public interface RubyDebuggerImplementation {
      *
      * @param descriptor description of the process to be debugged
      */
-    void describeProcess(final ExecutionDescriptor descriptor);
+    void describeProcess(final RubyExecutionDescriptor descriptor);
 
     /**
      * Returns whether the implementation is able to debug described process.
@@ -71,6 +71,8 @@ public interface RubyDebuggerImplementation {
      *         E.g. interpreter cannot be obtained from preferences.
      */
     Process debug();
+
+    void attach(String host, int port, int timeout);
 
     /**
      * Action which shall be performed when a debugger is <em>forced</em> to

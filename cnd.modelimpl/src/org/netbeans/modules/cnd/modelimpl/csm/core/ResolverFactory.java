@@ -56,7 +56,7 @@ public class ResolverFactory {
     }
     
     public static Resolver createResolver(CsmOffsetable context) {
-        return createResolver(context, null);
+        return createResolver(context, (Resolver)null);
     }
     public static Resolver createResolver(CsmOffsetable context, Resolver parent) {
         return new Resolver3(context, parent);
@@ -69,4 +69,8 @@ public class ResolverFactory {
     public static Resolver createResolver(CsmFile file, int offset, Resolver parent) {
         return new Resolver3(file, offset, parent);
     }
+    
+    public static Resolver createResolver(CsmOffsetable context, CsmFile contextFile) {
+        return new Resolver3(context.getContainingFile(), context.getStartOffset(), null, contextFile);
+    }    
 }

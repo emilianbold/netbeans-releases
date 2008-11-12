@@ -59,6 +59,7 @@ import org.openide.util.lookup.Lookups;
  * @author Jan Jancura
  * @author Tor Norbye
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.MimeLookupInitializer.class)
 public class MimeLookupInitializerImpl implements MimeLookupInitializer {
 
     private static final int EDITOR_KIT_ID = 1;

@@ -45,6 +45,7 @@ package org.netbeans.modules.openide.actions;
 /** Implements the delegation to ActionManager that is called from
  * openide/util.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.openide.util.ActionsBridge.class)
 public class ActionsBridgeImpl extends org.netbeans.modules.openide.util.ActionsBridge {
     /** Invokes an action.
      */

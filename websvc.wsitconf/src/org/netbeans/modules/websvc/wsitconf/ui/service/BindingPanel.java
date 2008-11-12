@@ -365,8 +365,8 @@ public class BindingPanel extends SectionInnerPanel {
 
         if (source.equals(fiChBox)) {
             boolean fi = TransportModelHelper.isFIEnabled(binding);
-            if (fiChBox.isSelected() != fi) {
-                TransportModelHelper.enableFI(binding, fiChBox.isSelected());
+            if (!fiChBox.isSelected() != fi) { // fast infoset has a reverted meaning
+                TransportModelHelper.enableFI(binding, !fiChBox.isSelected());
             }
         }
 
@@ -991,7 +991,7 @@ public class BindingPanel extends SectionInnerPanel {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(profileCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(profConfigButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 98, Short.MAX_VALUE))))
+                                .add(profConfigButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                     .add(layout.createSequentialGroup()
                         .add(17, 17, 17)
                         .add(devDefaultsChBox))

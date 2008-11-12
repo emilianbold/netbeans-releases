@@ -39,12 +39,17 @@
 
 package org.netbeans.modules.cnd.api.model.syntaxerr;
 
+import java.util.Iterator;
 import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
@@ -132,7 +137,7 @@ public abstract class CsmErrorProvider implements NamedEntity {
 
         @Override
         public void doGetErrors(Request request, Response response) {
-            if (! isPartial(request.getFile())) {
+            if (! isPartial(request.getFile(), new HashSet<CsmFile>())) {
                 getErrorsImpl(request, response);
             }
         }
@@ -198,7 +203,11 @@ public abstract class CsmErrorProvider implements NamedEntity {
      * Determines whether this file contains part of some declaration,
      * i.e. whether it was included in the middle of some other declaration
      */
-    private static boolean isPartial(CsmFile isIncluded) {
+    private static boolean isPartial(CsmFile isIncluded, Set<CsmFile> antiLoop) {
+        if (antiLoop.contains(isIncluded)) {
+            return false;
+        }
+        antiLoop.add(isIncluded);
         //Collection<CsmFile> files = CsmIncludeHierarchyResolver.getDefault().getFiles(isIncluded);
         Collection<CsmReference> directives = CsmIncludeHierarchyResolver.getDefault().getIncludes(isIncluded);
         for (CsmReference directive : directives) {
@@ -206,8 +215,14 @@ public abstract class CsmErrorProvider implements NamedEntity {
                 int offset = directive.getStartOffset();
                 CsmFile containingFile = directive.getContainingFile();
                 if (containingFile != null) {
-                    for (CsmOffsetableDeclaration decl : containingFile.getDeclarations()) {
-                        if (decl.getStartOffset() <= offset && offset < decl.getEndOffset()) {
+                    if (CsmSelect.getDefault().hasDeclarations(containingFile)) {
+                        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(offset);
+                        Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDefault().getDeclarations(containingFile, filter);
+                        if (declarations.hasNext()) {
+                            return true;
+                        }
+                    } else {
+                        if (isPartial(containingFile, antiLoop)) {
                             return true;
                         }
                     }

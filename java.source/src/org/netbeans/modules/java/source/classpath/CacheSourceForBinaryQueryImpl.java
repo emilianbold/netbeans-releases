@@ -56,6 +56,7 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Zezula
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class, position=125)
 public class CacheSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation {
 
     private String FILE_PROTOCOL = "file";  //NOI18N

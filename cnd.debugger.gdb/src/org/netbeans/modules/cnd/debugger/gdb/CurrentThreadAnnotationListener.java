@@ -109,7 +109,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         if (currentEngine == null) {
             return null;
         }
-        return (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
+        return currentEngine.lookupFirst(null, GdbDebugger.class);
     }
 
     /**
@@ -121,7 +121,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         }
         
         // 1) no current thread => remove annotations
-        if (!currentDebugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+        if (currentDebugger.getState() != GdbDebugger.State.STOPPED) {
             removeAnnotations();
             return;
         }
@@ -135,7 +135,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
 
 
     // do not need synchronization, called in a 1-way RP
-    private final Collection  stackAnnotations = new LinkedList();
+    private final Collection<Object> stackAnnotations = new LinkedList<Object>();
     
     // this set is used to avoid duplicated annotations (of the same line)
     private final Set<String> annotatedAddresses = new HashSet<String>();
@@ -146,7 +146,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     // there is at most one
     private RequestProcessor.Task taskRemove;
     private RequestProcessor.Task taskAnnotate;
-    private List stackToAnnotate;
+    private List<CallStackFrame> stackToAnnotate;
 
     private void removeAnnotations() {
         synchronized (rp) {
@@ -169,7 +169,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         annotatedAddresses.clear();
     }
 
-    private void annotateCallStack(List stack) {
+    private void annotateCallStack(List<CallStackFrame> stack) {
         synchronized (rp) {
             if (taskRemove != null) {
                 taskRemove.cancel();
@@ -184,7 +184,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                             if (stackToAnnotate == null) {
                                 return ; // Nothing to do
                             }
-                            stack = new ArrayList(stackToAnnotate);
+                            stack = new ArrayList<CallStackFrame>(stackToAnnotate);
                             stackToAnnotate = null;
                         }
                         

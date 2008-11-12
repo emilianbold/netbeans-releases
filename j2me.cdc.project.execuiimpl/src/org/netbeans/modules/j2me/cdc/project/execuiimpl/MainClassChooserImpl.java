@@ -96,6 +96,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author  Jiri Rechtacek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2me.cdc.project.execui.MainClassChooser.class, position=10)
 public class MainClassChooserImpl extends MainClassChooser {
 
     protected ChangeListener changeListener;

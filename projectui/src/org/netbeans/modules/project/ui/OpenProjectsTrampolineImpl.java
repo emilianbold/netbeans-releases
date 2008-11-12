@@ -53,6 +53,7 @@ import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
  * List of projects open in the GUI.
  * @author Petr Hrebejk
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.project.uiapi.OpenProjectsTrampoline.class)
 public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline, PropertyChangeListener  {
 
     /** Property change listeners registered through API */

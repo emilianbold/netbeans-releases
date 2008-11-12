@@ -56,6 +56,7 @@ import org.openide.util.NbBundle;
  */
 final class NbDocsStreamHandler extends URLStreamHandler {
 
+    @org.openide.util.lookup.ServiceProvider(service=java.net.URLStreamHandlerFactory.class)
     public static final class Factory implements URLStreamHandlerFactory {
         public URLStreamHandler createURLStreamHandler(String protocol) {
             if (protocol.equals("nbdocs")) { // NOI18N

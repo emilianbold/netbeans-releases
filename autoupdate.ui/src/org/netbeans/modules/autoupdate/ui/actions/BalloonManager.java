@@ -172,7 +172,9 @@ public class BalloonManager {
             if( currentBalloon.timeoutMillis > 0 ) {
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {
-                        currentBalloon.startDismissTimer (timeout);
+                        if (currentBalloon != null) {
+                            currentBalloon.startDismissTimer (timeout);
+                        }
                     }
                 });
             } else {
@@ -187,7 +189,9 @@ public class BalloonManager {
                 currentBalloon.timeoutMillis = ToolTipManager.sharedInstance ().getDismissDelay (); // on MouseEnter cut timeout on 100ms
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {
-                        currentBalloon.stopDismissTimer ();
+                        if (currentBalloon != null) {
+                            currentBalloon.stopDismissTimer ();
+                        }
                     }
                 });
             }

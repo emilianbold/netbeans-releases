@@ -45,7 +45,6 @@ package org.netbeans.modules.editor.completion;
 import java.awt.Color;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -55,6 +54,7 @@ import java.io.StringReader;
 
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
@@ -181,11 +181,32 @@ public class HTMLDocView extends JEditorPane {
         javax.swing.text.html.StyleSheet css =
                 new javax.swing.text.html.StyleSheet();
         java.awt.Font f = new EditorUI().getDefaultColoring().getFont();
-        css.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
-                .append("; font-family: ").append(getFont().getFamily()).append("; }").toString()); // NOI18N
+        css.addRule(new StringBuilder("body { font-size: ").append(f.getSize()) // NOI18N
+                .append("; font-family: ").append(getFont().getFamily()).append("; color: " + getForegroundColor() + ";}").toString()); // NOI18N
                 // do not use monospaced font, just adjust fontsize
         css.addStyleSheet(htmlKit.getStyleSheet());
         htmlKit.setStyleSheet(css);
 
     }
+
+    private static String getForegroundColor() {
+        Color c = UIManager.getColor ("textText"); //NOI18N
+        int[] rgb = new int[] {
+            c.getRed(),
+            c.getGreen(),
+            c.getBlue(),
+        };
+        StringBuilder sb = new StringBuilder("#"); //NOI18N
+        for (int component : rgb) {
+            String item = Integer.toHexString(component);
+            if (item.length() < 2) {
+                item = '0' + item; //NOI18N
+            } else if (item.length() < 1) {
+                item = "00"; //NOI18N
+            }
+            sb.append (item);
+        }
+        return sb.toString();
+    }
+
 }

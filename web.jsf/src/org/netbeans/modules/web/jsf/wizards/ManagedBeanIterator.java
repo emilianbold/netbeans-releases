@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -77,7 +78,8 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 public class ManagedBeanIterator implements TemplateWizard.Iterator {
     
     private int index;
-    
+    private ManagedBeanPanel managedBeanPanel;
+
     private transient WizardDescriptor.Panel[] panels;
     
     private transient boolean debug = false;
@@ -101,13 +103,19 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             log ("\tsourceGroups.length: " + sourceGroups.length);
         }
         
-        WizardDescriptor.Panel secondPanel = new ManagedBeanPanel(project, wizard);
+        managedBeanPanel = new ManagedBeanPanel(project, wizard);
         
         WizardDescriptor.Panel javaPanel;
         if (sourceGroups.length == 0)
-            javaPanel = Templates.createSimpleTargetChooser(project, sourceGroups, secondPanel);
+            javaPanel = Templates.createSimpleTargetChooser(project, sourceGroups, managedBeanPanel);
         else
-            javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel);
+            javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, managedBeanPanel);
+
+        javaPanel.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                managedBeanPanel.updateManagedBeanName((WizardDescriptor.Panel) e.getSource());
+            }
+        });
 
         panels = new WizardDescriptor.Panel[] { javaPanel };
         
@@ -172,7 +180,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         else
             className=targetName;
         
-        bean.setManagedBeanName(getUniqueName(targetName, facesConfig));
+        bean.setManagedBeanName(getUniqueName((String) wizard.getProperty(WizardProperties.NAME), facesConfig));
         bean.setManagedBeanClass(className);
         bean.setManagedBeanScope((ManagedBean.Scope) wizard.getProperty(WizardProperties.SCOPE));
         

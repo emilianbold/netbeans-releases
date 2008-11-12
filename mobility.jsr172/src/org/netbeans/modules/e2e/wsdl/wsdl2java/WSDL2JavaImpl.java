@@ -1097,9 +1097,9 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                             String typeName = e.getType().getJavaTypeName();
                                             if( typeName == null ) typeName = e.getType().getName() == null ? e.getName().getLocalPart() : e.getType().getName().getLocalPart();
                                             if( !isArray ) {
-                                                off.write( "return " + typeName.replace( '.', '_' ) + "_fromObject((Object[])((Object[]) resultObj)[0]);\n" );
+                                                off.write( "return " + typeName.replace( '.', '_' ) + "_fromObject((Object[])resultObj);\n" );
                                             } else {
-                                                off.write( "return " + typeName.replace( '.', '_' ) + "_ArrayfromObject((Object[])((Object[]) resultObj)[0]);\n" );
+                                                off.write( "return " + typeName.replace( '.', '_' ) + "_ArrayfromObject((Object[]) resultObj);\n" );
                                             }
                                             fromObjects.add( e );
                                         }

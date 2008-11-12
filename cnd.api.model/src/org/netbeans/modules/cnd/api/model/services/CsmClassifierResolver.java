@@ -51,16 +51,16 @@ import org.openide.util.Lookup;
 public abstract class CsmClassifierResolver {
     private static CsmClassifierResolver DEFAULT = new Default();
 
-    public abstract CsmClassifier getOriginalClassifier(CsmClassifier orig);
+    public abstract CsmClassifier getOriginalClassifier(CsmClassifier orig, CsmFile contextFile);
 
     /**
      * trying to find classifier with full qualified name used in file
      * @param qualifiedName full qualified name of classifier
      * @param csmFile file where classifier is used by name
-     * @param checkLibs true if need to check libraries
+     * @param classesOnly true if need to check classes and not typedefs/enums
      * @return best (prefer visible) classifier
      */
-    public CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName, CsmFile csmFile, boolean checkLibs) {
+    public CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName, CsmFile csmFile, boolean classesOnly) {
         if (csmFile != null) {
             CsmProject project = csmFile.getProject();
             if (project != null) {
@@ -108,21 +108,21 @@ public abstract class CsmClassifierResolver {
         }
 
         @Override
-        public CsmClassifier getOriginalClassifier(CsmClassifier orig) {
+        public CsmClassifier getOriginalClassifier(CsmClassifier orig, CsmFile contextFile) {
             CsmClassifierResolver service = getService();
             if (service != null) {
-                return service.getOriginalClassifier(orig);
+                return service.getOriginalClassifier(orig, contextFile);
             }
             return orig;
         }
 
         @Override
-        public CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName, CsmFile csmFile, boolean checkLibs) {
+        public CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName, CsmFile csmFile, boolean classesOnly) {
             CsmClassifierResolver service = getService();
             if (service != null) {
-                return service.findClassifierUsedInFile(qualifiedName, csmFile, checkLibs);
+                return service.findClassifierUsedInFile(qualifiedName, csmFile, classesOnly);
             }
-            return super.findClassifierUsedInFile(qualifiedName, csmFile, checkLibs);
+            return super.findClassifierUsedInFile(qualifiedName, csmFile, classesOnly);
         }
     }
 }

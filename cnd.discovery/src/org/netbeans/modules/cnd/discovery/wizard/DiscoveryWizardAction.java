@@ -122,7 +122,7 @@ public final class DiscoveryWizardAction extends NodeAction {
     
     /*package-local*/ static String findBuildResult(Project project) {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        if (pdp==null){
+        if (pdp == null || !pdp.gotDescriptor()){
             return null;
         }
         MakeConfigurationDescriptor make = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
@@ -156,7 +156,7 @@ public final class DiscoveryWizardAction extends NodeAction {
     /*package-local*/ static String findSourceRoot(Project project) {
         String base = getProjectDirectoryPath(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        if (pdp!=null){
+        if (pdp != null && pdp.gotDescriptor()){
             MakeConfigurationDescriptor make = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
             Folder folder = make.getLogicalFolders();
             Vector sources = folder.getFolders();
@@ -223,7 +223,7 @@ public final class DiscoveryWizardAction extends NodeAction {
                 return null;
             }
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            if( pdp == null ) {
+            if( pdp == null || !pdp.gotDescriptor()) {
                 return null;
             }
             MakeConfigurationDescriptor make = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
@@ -286,7 +286,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         if (c instanceof JComponent) { // assume Swing components
             JComponent jc = (JComponent) c;
             // Sets step number of a component
-            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i); // NOI18N
             // Sets steps names for a panel
             if (i == 0) {
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, advanced); // NOI18N

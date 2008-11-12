@@ -56,6 +56,7 @@ import java.io.IOException;
  *
  * @author Chris Webster
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public final class JbiProjectType implements AntBasedProjectType {
     /**
      * DOCUMENT ME!

@@ -8,6 +8,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.modules.iep.model.lib.ImageUtil;
 import org.netbeans.modules.iep.model.spi.LibraryProvider;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.iep.model.spi.LibraryProvider.class)
 public class DefaultLibraryProvider implements LibraryProvider {
 
     public InputStream getLibraryXml() {

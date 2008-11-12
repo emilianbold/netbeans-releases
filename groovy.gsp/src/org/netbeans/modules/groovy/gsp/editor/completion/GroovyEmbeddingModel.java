@@ -43,8 +43,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.text.Document;
-import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
-import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 
@@ -53,6 +53,7 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  * @author Tor Norbye
  * @author Martin Adamek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsf.api.EmbeddingModel.class)
 public class GroovyEmbeddingModel implements EmbeddingModel {
     final Set<String> sourceMimeTypes = Collections.singleton(GspTokenId.MIME_TYPE);
 

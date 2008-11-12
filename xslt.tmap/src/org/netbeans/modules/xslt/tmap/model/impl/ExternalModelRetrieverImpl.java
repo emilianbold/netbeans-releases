@@ -49,6 +49,7 @@ import org.openide.filesystems.FileUtil;
  * @author Vitaly Bychkov
  * @version 1.0
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xslt.tmap.model.spi.ExternalModelRetriever.class)
 public class ExternalModelRetrieverImpl implements ExternalModelRetriever {
 
     public ExternalModelRetrieverImpl() {

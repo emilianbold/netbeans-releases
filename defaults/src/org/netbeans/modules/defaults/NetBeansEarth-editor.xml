@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="guarded" bgColor="ffdfdfdf"/>
     <fontcolor name="highlight-caret-row" bgColor="fff1f1da"/>
     <fontcolor name="nbeditor-bracesMatching-match" bgColor="ff4BFF0F"/>
-    <fontcolor name="nbeditor-bracesMatching-mismatch" bgColor="red"/>
+    <fontcolor name="nbeditor-bracesMatching-mismatch" bgColor="ffD83636"/>
     <fontcolor name="highlight-search" foreColor="black" bgColor="ffFFB442"/>
     <fontcolor name="inc-search" foreColor="black" bgColor="ffFFB442"/> <!-- ffff9900 -->
     <fontcolor name="line-number" foreColor="black" bgColor="ffe9e8e2"/>

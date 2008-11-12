@@ -108,6 +108,11 @@ public class LibrariesChooser extends javax.swing.JPanel {
         jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LibrariesChooser.class, "ACCESSIBLE_NAME_jLabel1")); // NOI18N
         jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibrariesChooser.class, "ACCESSIBLE_DESCRIPTION_jLabel1")); // NOI18N
 
+        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                onDoubleClick(evt);
+            }
+        });
         jScrollPane1.setViewportView(jList1);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -147,6 +152,19 @@ public class LibrariesChooser extends javax.swing.JPanel {
     private void editLibraries(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editLibraries
         LibrariesCustomizer.showCustomizer((Library)this.jList1.getSelectedValue());
     }//GEN-LAST:event_editLibraries
+
+    private void onDoubleClick(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_onDoubleClick
+        if (!evt.isPopupTrigger() && evt.getClickCount() > 1 && jList1.getSelectedValue() != null) {
+            Container w = getTopLevelAncestor();
+            if (w instanceof RootPaneContainer) {
+                RootPaneContainer rpc = (RootPaneContainer) w;
+                JButton okButton = rpc.getRootPane().getDefaultButton();
+                if (okButton != null && okButton.isEnabled()) {
+                    okButton.doClick();
+                }
+            }
+        }
+    }//GEN-LAST:event_onDoubleClick
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -62,8 +62,6 @@ public class NbInstaller extends ModuleInstall {
     
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.registration.NbInstaller"); // NOI18N
     
-    public static String PRODUCT_ID = "nb";
-    
     private static boolean moduleEnabled = true;
     
     @Override

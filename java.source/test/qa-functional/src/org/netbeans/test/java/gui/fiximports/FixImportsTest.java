@@ -121,6 +121,7 @@ public class FixImportsTest extends JavaTestCase {
             File wd = getWorkDir();
             workDir = wd.toString();
         } catch (IOException e) { }
+        openDefaultProject();
     }
     
     /**

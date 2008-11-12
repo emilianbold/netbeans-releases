@@ -53,6 +53,7 @@ import org.netbeans.modules.websvc.saas.model.SaasMethod;
  *
  * @author Ayub Khan
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider.class)
 public class CustomClientRestResourceCodeGenerator extends CustomClientServletCodeGenerator {
     
     public CustomClientRestResourceCodeGenerator() {

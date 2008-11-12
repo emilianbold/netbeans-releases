@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modelimpl.parser;
  */
 public class Printf {
 
+    // TODO: it may be easier to use System.out.printf
     public static void printf(String pattern, Object[] args) {
         StringBuffer sb = new StringBuffer();
         int from = 0;

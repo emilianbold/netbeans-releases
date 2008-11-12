@@ -41,11 +41,14 @@ package org.netbeans.modules.db.sql.editor.completion;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.db.api.sql.execute.SQLScript;
 import org.netbeans.modules.db.api.sql.execute.SQLScriptStatement;
 import org.netbeans.modules.db.sql.editor.StringUtils;
+import org.netbeans.modules.db.sql.editor.api.completion.SubstitutionHandler;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
 /**
@@ -57,32 +60,39 @@ public class SQLCompletionEnv {
     private final String statement;
     private int statementOffset;
     private final int caretOffset;
+    private final SubstitutionHandler substitutionHandler;
 
     private TokenSequence<SQLTokenId> seq;
     private boolean selectStatement;
     private Context context;
-    private int contextOffset;
 
-    public static SQLCompletionEnv create(Document doc, int caretOffset) {
+    public static SQLCompletionEnv forDocument(Document doc, int caretOffset) {
         String documentText = getDocumentText(doc);
         if (documentText != null) {
-            return create(documentText, caretOffset);
+            return forScript(documentText, caretOffset);
         }
         return null;
     }
 
-    static SQLCompletionEnv create(String script, int caretOffset) {
+    public static SQLCompletionEnv forStatement(String statement, int caretOffset, SubstitutionHandler substitutionHandler) {
+        return new SQLCompletionEnv(statement, 0, caretOffset, substitutionHandler);
+    }
+
+    // Not private because of unit tests.
+    static SQLCompletionEnv forScript(String script, int caretOffset) {
         SQLScriptStatement statement = SQLScript.create(script).getStatementAtOffset(caretOffset);
         if (statement != null) {
-            return new SQLCompletionEnv(statement.getText(), statement.getStartOffset(), caretOffset - statement.getStartOffset());
+            return new SQLCompletionEnv(statement.getText(), statement.getStartOffset(), caretOffset - statement.getStartOffset(),
+                    new ScriptSubstitutionHandler(statement.getStartOffset()));
         }
         return null;
     }
 
-    private SQLCompletionEnv(String statement, int statementOffset, int caretOffset) {
+    private SQLCompletionEnv(String statement, int statementOffset, int caretOffset, SubstitutionHandler substitutionHandler) {
         this.statement = statement;
         this.statementOffset = statementOffset;
         this.caretOffset = caretOffset;
+        this.substitutionHandler = substitutionHandler;
         if (statement != null) {
             TokenHierarchy<String> hi = TokenHierarchy.create(statement, SQLTokenId.language());
             seq = hi.tokenSequence(SQLTokenId.language());
@@ -105,6 +115,10 @@ public class SQLCompletionEnv {
      */
     public int getStatementOffset() {
         return statementOffset;
+    }
+
+    public SubstitutionHandler getSubstitutionHandler() {
+        return substitutionHandler;
     }
 
     /**
@@ -223,6 +237,31 @@ public class SQLCompletionEnv {
                         return;
                 }
             }
+        }
+    }
+
+    private static final class ScriptSubstitutionHandler implements SubstitutionHandler {
+
+        private final int statementOffset;
+
+        public ScriptSubstitutionHandler(int statementOffset) {
+            this.statementOffset = statementOffset;
+        }
+
+        public void substituteText(JTextComponent component, final int offset, final String text) {
+            final int caretOffset = component.getSelectionEnd();
+            final BaseDocument baseDoc = (BaseDocument) component.getDocument();
+            baseDoc.runAtomicAsUser(new Runnable() {
+                public void run() {
+                    int documentOffset = statementOffset + offset;
+                    try {
+                        baseDoc.remove(documentOffset, caretOffset - documentOffset);
+                        baseDoc.insertString(documentOffset, text, null);
+                    } catch (BadLocationException ex) {
+                        // No can do, document may have changed.
+                    }
+                }
+            });
         }
     }
 

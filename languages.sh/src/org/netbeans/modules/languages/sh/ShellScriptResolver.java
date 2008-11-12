@@ -36,6 +36,7 @@ import org.openide.filesystems.MIMEResolver;
 /**
  * Detects shell scripts.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.MIMEResolver.class)
 public class ShellScriptResolver extends MIMEResolver {
 
     /** Default constructor for lookup. */

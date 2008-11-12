@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject;
 
 import java.io.BufferedReader;
@@ -56,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
@@ -75,75 +75,80 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
  * Creates a MakeProject from scratch according to some initial configuration.
  */
 public class MakeProjectGenerator {
-    private MakeProjectGenerator() {}
+
+    private MakeProjectGenerator() {
+    }
 
     public static String getDefaultProjectFolder() {
-	return ProjectChooser.getProjectsFolder().getPath();
+        return ProjectChooser.getProjectsFolder().getPath();
     }
 
     public static String getValidProjectName(String projectFolder) {
-	return getValidProjectName(projectFolder, "Project"); // NOI18N
+        return getValidProjectName(projectFolder, "Project"); // NOI18N
     }
 
     public static String getValidProjectName(String projectFolder, String name) {
         int baseCount = 0;
-	String projectName = null;
+        String projectName = null;
         while (true) {
-            if (baseCount == 0)
+            if (baseCount == 0) {
                 projectName = name;
-            else
+            } else {
                 projectName = name + baseCount;
-	    File projectNameFile = new File(projectFolder + File.separator + projectName);
-	    if (!projectNameFile.exists())
-		break;
-	    baseCount++;                
+            }
+            File projectNameFile = new File(projectFolder + File.separator + projectName);
+            if (!projectNameFile.exists()) {
+                break;
+            }
+            baseCount++;
         }
-	return projectName;
+        return projectName;
     }
 
     public static MakeProject createBlankProject(boolean open) throws IOException {
-	String projectFolder = getDefaultProjectFolder();
-	String projectName = getValidProjectName(projectFolder);
-	String baseDir = projectFolder + File.separator + projectName;
-	MakeConfiguration conf = new MakeConfiguration(baseDir, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/Bundle").getString("DefaultProjectName"), MakeConfiguration.TYPE_MAKEFILE); // FIXUP
-	return MakeProjectGenerator.createBlankProject(projectName, projectFolder, new MakeConfiguration[] {conf}, open);
+        String projectFolder = getDefaultProjectFolder();
+        String projectName = getValidProjectName(projectFolder);
+        String baseDir = projectFolder + File.separator + projectName;
+        MakeConfiguration conf = new MakeConfiguration(baseDir, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/Bundle").getString("DefaultProjectName"), MakeConfiguration.TYPE_MAKEFILE); // FIXUP
+        return MakeProjectGenerator.createBlankProject(projectName, projectFolder, new MakeConfiguration[]{conf}, open);
     }
 
     public static MakeProject createBlankProject(String projectName, String projectFolder, boolean open) throws IOException {
-	return createBlankProject(projectName, projectFolder, new MakeConfiguration[0], open);
+        return createBlankProject(projectName, projectFolder, new MakeConfiguration[0], open);
     }
-    
+
     public static MakeProject createBlankProject(String projectName, String makefileName, String projectFolder, boolean open) throws IOException {
-	return createBlankProject(projectName, makefileName, projectFolder, new MakeConfiguration[0], open);
+        return createBlankProject(projectName, makefileName, projectFolder, new MakeConfiguration[0], open);
     }
 
     public static MakeProject createBlankProject(String projectName, String projectFolder, MakeConfiguration[] confs, boolean open) throws IOException {
-        return createBlankProject(projectName, MakeConfigurationDescriptor. DEFAULT_PROJECT_MAKFILE_NAME, projectFolder, confs, open);
+        return createBlankProject(projectName, MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME, projectFolder, confs, open);
     }
-    
-    public static MakeProject createBlankProject(String projectName, String makefileName, String projectFolder, MakeConfiguration[] confs, boolean open) throws IOException {
-	File projectNameFile = new File(projectFolder + File.separator + projectName);
-	if (confs == null)
-	    confs = new MakeConfiguration[0];
-	for (int i = 0; i < confs.length; i++) {
-	    confs[i].setBaseDir(projectNameFile.getPath());
-	    RunProfile profile = (RunProfile) confs[i].getAuxObject(RunProfile.PROFILE_ID);
-	    profile.setBuildFirst(false);
-	}
 
-        FileObject dirFO = createProjectDir (projectNameFile);
-        AntProjectHelper h = createProject(dirFO, projectName, makefileName, confs, null, null, true);
-        MakeProject p = (MakeProject)ProjectManager.getDefault().findProject(dirFO);
+    public static MakeProject createBlankProject(String projectName, String makefileName, String projectFolder, MakeConfiguration[] confs, boolean open) throws IOException {
+        File projectNameFile = new File(projectFolder + File.separator + projectName);
+        if (confs == null) {
+            confs = new MakeConfiguration[0];
+        }
+        for (int i = 0; i < confs.length; i++) {
+            confs[i].setBaseDir(projectNameFile.getPath());
+            RunProfile profile = (RunProfile) confs[i].getAuxObject(RunProfile.PROFILE_ID);
+            profile.setBuildFirst(false);
+        }
+
+        FileObject dirFO = createProjectDir(projectNameFile);
+        createProject(dirFO, projectName, makefileName, confs, null, null, true);
+        MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
 
-	if (open) {
-	    OpenProjects.getDefault().open(new Project[] {p}, false);
+        if (open) {
+            OpenProjects.getDefault().open(new Project[]{p}, false);
             OpenProjects.getDefault().setMainProject(p);
         }
-        
+
         return p;
     }
-    
+
     /**
      * Create a new empty Make project.
      * @param dir the top-level directory (need not yet exist but if it does it must be empty)
@@ -152,9 +157,9 @@ public class MakeProjectGenerator {
      * @throws IOException in case something went wrong
      */
     public static AntProjectHelper createProject(File dir, String name, String makefileName, Configuration[] confs, Iterator sourceFolders, Iterator importantItems) throws IOException {
-        FileObject dirFO = createProjectDir (dir);
+        FileObject dirFO = createProjectDir(dir);
         AntProjectHelper h = createProject(dirFO, name, makefileName, confs, sourceFolders, importantItems, false); //NOI18N
-        MakeProject p = (MakeProject)ProjectManager.getDefault().findProject(dirFO);
+        MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         //FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
         return h;
@@ -162,47 +167,46 @@ public class MakeProjectGenerator {
 
     /*
     public static AntProjectHelper createProject(final File dir, final String name, final File sourceFolder, final File testFolder) throws IOException {
-	System.out.println("createProject2 ");
-        assert sourceFolder != null : "Source folder must be given";   //NOI18N
-        final FileObject dirFO = createProjectDir (dir);
-        // this constructor creates only java application type
-        final AntProjectHelper h = createProject(dirFO, name, null, null, null, null, false, 0, null, null);
-        final MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
-        final ReferenceHelper refHelper = p.getReferenceHelper();
-        try {
-        ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction () {
-            public Object run() throws Exception {
-                String srcReference = refHelper.createForeignFileReference(sourceFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
-                EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                props.put("src.dir",srcReference);          //NOI18N
-                String testLoc;
-                if (testFolder == null) {
-                    testLoc = NbBundle.getMessage (MakeProjectGenerator.class,"TXT_DefaultTestFolderName");
-                    File f = new File (dir,testLoc);    //NOI18N
-                    f.mkdirs();
-                }
-                else {
-                    if (!testFolder.exists()) {
-                        testFolder.mkdirs();
-                    }
-                    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-                    testLoc = refHelper.createForeignFileReference(testFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
-                    props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
-                }                
-                props.put("test.src.dir",testLoc);    //NOI18N
-                h.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                ProjectManager.getDefault().saveProject (p);
-                return null;
-            }
-        });
-        } catch (MutexException me ) {
-            ErrorManager.getDefault().notify (me);
-        }
-        return h;
-	return null;
+    System.out.println("createProject2 ");
+    assert sourceFolder != null : "Source folder must be given";   //NOI18N
+    final FileObject dirFO = createProjectDir (dir);
+    // this constructor creates only java application type
+    final AntProjectHelper h = createProject(dirFO, name, null, null, null, null, false, 0, null, null);
+    final MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
+    final ReferenceHelper refHelper = p.getReferenceHelper();
+    try {
+    ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction () {
+    public Object run() throws Exception {
+    String srcReference = refHelper.createForeignFileReference(sourceFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
+    EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+    props.put("src.dir",srcReference);          //NOI18N
+    String testLoc;
+    if (testFolder == null) {
+    testLoc = NbBundle.getMessage (MakeProjectGenerator.class,"TXT_DefaultTestFolderName");
+    File f = new File (dir,testLoc);    //NOI18N
+    f.mkdirs();
     }
-    */
-
+    else {
+    if (!testFolder.exists()) {
+    testFolder.mkdirs();
+    }
+    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
+    testLoc = refHelper.createForeignFileReference(testFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
+    props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
+    }
+    props.put("test.src.dir",testLoc);    //NOI18N
+    h.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+    ProjectManager.getDefault().saveProject (p);
+    return null;
+    }
+    });
+    } catch (MutexException me ) {
+    ErrorManager.getDefault().notify (me);
+    }
+    return h;
+    return null;
+    }
+     */
     private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, final Iterator sourceFolders, final Iterator importantItems, boolean saveNow) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, MakeProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
@@ -227,13 +231,15 @@ public class MakeProjectGenerator {
 
         // Create new project descriptor with default configurations and save it to disk.
         final MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(FileUtil.toFile(dirFO).getPath());
-            projectDescriptor.setProjectMakefileName(makefileName);
+        projectDescriptor.setProjectMakefileName(makefileName);
         projectDescriptor.init(confs);
+        projectDescriptor.setState(State.READY);
 
         Project project = projectDescriptor.getProject();
         if (project instanceof MakeProject && !saveNow) { // How can it not be an instance of MakeProject???
             MakeProject makeProject = (MakeProject) project;
-            makeProject.addOpenedTask(new Runnable(){
+            makeProject.addOpenedTask(new Runnable() {
+
                 public void run() {
                     projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, importantItems); // FIXUP: need a better check whether logical folder should be ccreated or not.
                     projectDescriptor.save();
@@ -244,8 +250,8 @@ public class MakeProjectGenerator {
             projectDescriptor.save();
         }
         // create Makefile
-        copyURLFile("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile",  // NOI18N
-	    projectDescriptor.getBaseDir() + File.separator + projectDescriptor.getProjectMakefileName());
+        copyURLFile("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile", // NOI18N
+                projectDescriptor.getBaseDir() + File.separator + projectDescriptor.getProjectMakefileName());
         return h;
     }
 
@@ -254,8 +260,7 @@ public class MakeProjectGenerator {
         try {
             URL url = new URL(fromURL);
             is = url.openStream();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             // FIXUP
         }
         if (is != null) {
@@ -285,58 +290,55 @@ public class MakeProjectGenerator {
         bw.flush();
     }
 
-    private static FileObject createProjectDir (File dir) throws IOException {
+    private static FileObject createProjectDir(File dir) throws IOException {
         FileObject dirFO;
-        if(!dir.exists()) {
+        if (!dir.exists()) {
             //Refresh before mkdir not to depend on window focus
             // refreshFileSystem (dir); // See 136445
             if (!dir.mkdirs()) {
-                throw new IOException ("Can not create project folder."); // NOI18N
+                throw new IOException("Can not create project folder."); // NOI18N
             }
-            // refreshFileSystem (dir); // See 136445
-        }        
+        // refreshFileSystem (dir); // See 136445
+        }
         dirFO = FileUtil.toFileObject(dir);
         assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
         assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
         return dirFO;
     }
 
-    private static void createMainClass( String mainClassName, FileObject srcFolder ) throws IOException {
-        
-        int lastDotIdx = mainClassName.lastIndexOf( '.' );
+    private static void createMainClass(String mainClassName, FileObject srcFolder) throws IOException {
+
+        int lastDotIdx = mainClassName.lastIndexOf('.');
         String mName, pName;
-        if ( lastDotIdx == -1 ) {
+        if (lastDotIdx == -1) {
             mName = mainClassName.trim();
             pName = null;
+        } else {
+            mName = mainClassName.substring(lastDotIdx + 1).trim();
+            pName = mainClassName.substring(0, lastDotIdx).trim();
         }
-        else {
-            mName = mainClassName.substring( lastDotIdx + 1 ).trim();
-            pName = mainClassName.substring( 0, lastDotIdx ).trim();
-        }
-        
-        if ( mName.length() == 0 ) {
+
+        if (mName.length() == 0) {
             return;
         }
-        
-        FileObject mainTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Classes/Main.java" ); // NOI18N
 
-        if ( mainTemplate == null ) {
+        FileObject mainTemplate = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Classes/Main.java"); // NOI18N
+
+        if (mainTemplate == null) {
             return; // Don't know the template
         }
-                
-        DataObject mt = DataObject.find( mainTemplate );
-        
+
+        DataObject mt = DataObject.find(mainTemplate);
+
         FileObject pkgFolder = srcFolder;
-        if ( pName != null ) {
-            String fName = pName.replace( '.', '/' ); // NOI18N
-            pkgFolder = FileUtil.createFolder( srcFolder, fName );        
+        if (pName != null) {
+            String fName = pName.replace('.', '/'); // NOI18N
+            pkgFolder = FileUtil.createFolder(srcFolder, fName);
         }
-        DataFolder pDf = DataFolder.findFolder( pkgFolder );        
-        mt.createFromTemplate( pDf, mName );
-        
+        DataFolder pDf = DataFolder.findFolder(pkgFolder);
+        mt.createFromTemplate(pDf, mName);
+
     }
-
-
 //    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
 //        File rootF = dir;
 //        while (rootF.getParentFile() != null /*UNC*/&& rootF.getParentFile().exists()) {

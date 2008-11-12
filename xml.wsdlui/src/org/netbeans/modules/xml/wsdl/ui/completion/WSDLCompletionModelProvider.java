@@ -64,6 +64,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.WSDLElementNode;
  *
  * @author Shivanand (shivanand.kini@sun.com)
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.class)
 public class WSDLCompletionModelProvider extends CompletionModelProvider {
     
     String XMLNS_COLON_CONSTANT = XMLConstants.XMLNS_ATTRIBUTE + ":";
