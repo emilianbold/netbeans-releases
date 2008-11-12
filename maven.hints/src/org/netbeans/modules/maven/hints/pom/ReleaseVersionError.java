@@ -39,17 +39,28 @@
 package org.netbeans.modules.maven.hints.pom;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import javax.swing.text.Position;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
 import org.netbeans.modules.maven.model.pom.Build;
+import org.netbeans.modules.maven.model.pom.BuildBase;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.maven.model.pom.PluginManagement;
+import org.netbeans.modules.maven.model.pom.Profile;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.ChangeInfo.Change;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
+import org.openide.filesystems.FileObject;
 import org.openide.text.Line;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -62,21 +73,71 @@ public class ReleaseVersionError implements POMErrorFixProvider {
         List<ErrorDescription> toRet = new ArrayList<ErrorDescription>();
         Build bld = model.getProject().getBuild();
         if (bld != null) {
-            List<Plugin> plugins = bld.getPlugins();
-            if (plugins != null) {
-                for (Plugin plg : plugins) {
-                    String ver = plg.getVersion();
-                    if (ver != null &&
-                            ("RELEASE".equals(ver) || "LATEST".equals(ver))) {
-                        int position = plg.findChildElementPosition(model.getPOMQNames().VERSION.getQName());
-                        Line line = NbEditorUtilities.getLine(model.getBaseDocument(), position, true);
-                        toRet.add(ErrorDescriptionFactory.createErrorDescription(
-                                Severity.WARNING, "Shall not have RELEASE/LATEST version.",
-                                model.getBaseDocument(), line.getLineNumber() + 1));
+            checkPluginList(bld.getPlugins(), model, toRet);
+            PluginManagement pm = bld.getPluginManagement();
+            if (pm != null) {
+                checkPluginList(pm.getPlugins(), model, toRet);
+            }
+        }
+        List<Profile> profiles = model.getProject().getProfiles();
+        if (profiles != null) {
+            for (Profile prof : profiles) {
+                BuildBase base = prof.getBuildBase();
+                if (base != null) {
+                    checkPluginList(base.getPlugins(), model, toRet);
+                    PluginManagement pm = base.getPluginManagement();
+                    if (pm != null) {
+                        checkPluginList(pm.getPlugins(), model, toRet);
                     }
                 }
             }
         }
         return toRet;
     }
+
+//    private static class ReleaseFix implements Fix {
+//        private Plugin plugin;
+//
+//        ReleaseFix(Plugin plg) {
+
+//            plugin = plg;
+//        }
+//
+//        public String getText() {
+//            return "Change to specific version";
+//        }
+//
+//        public ChangeInfo implement() throws Exception {
+//            ChangeInfo info = new ChangeInfo();
+//            POMModel mdl = plugin.getModel();
+//            if (!mdl.getState().equals(Model.State.VALID)) {
+//                return info;
+//            }
+//            mdl.startTransaction();
+//            try {
+//                plugin.setVersion("XXX");
+//            } finally {
+//                mdl.endTransaction();
+//            }
+//            return info;
+//        }
+//
+//    }
+
+    private void checkPluginList(List<Plugin> plugins, POMModel model, List<ErrorDescription> toRet) {
+        if (plugins != null) {
+            for (Plugin plg : plugins) {
+                String ver = plg.getVersion();
+                if (ver != null && ("RELEASE".equals(ver) || "LATEST".equals(ver))) { //NOI18N
+                    int position = plg.findChildElementPosition(model.getPOMQNames().VERSION.getQName());
+                    Line line = NbEditorUtilities.getLine(model.getBaseDocument(), position, false);
+                    toRet.add(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, 
+                            NbBundle.getMessage(ReleaseVersionError.class, "DESC_RELEASE_VERSION"),
+                            Collections.<Fix>emptyList(), //Collections.<Fix>singletonList(new ReleaseFix(plg)),
+                            model.getBaseDocument(), line.getLineNumber() + 1));
+                }
+            }
+        }
+    }
+
 }
