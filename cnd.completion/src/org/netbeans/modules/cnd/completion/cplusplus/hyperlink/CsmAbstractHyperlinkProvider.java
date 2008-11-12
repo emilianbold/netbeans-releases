@@ -48,9 +48,9 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  */
 public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderExt {
 
-    private Token<CppTokenId> jumpToken = null;
+    private TokenItem<CppTokenId> jumpToken = null;
     private Cancellable hyperLinkTask;
 
     protected CsmAbstractHyperlinkProvider() {
@@ -82,7 +82,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
     protected abstract void performAction(final Document originalDoc, final JTextComponent target, final int offset);
 
     public void performClickAction(Document originalDoc, final int offset, HyperlinkType type) {
-        if (!(originalDoc instanceof Document)) {
+        if (originalDoc == null) {
             return;
         }
 
@@ -106,17 +106,17 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
     }
 
     public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {
-        Token<CppTokenId> token = getToken(doc, offset);
+        TokenItem<CppTokenId> token = getToken(doc, offset);
         return isValidToken(token);
     }
 
-    protected abstract boolean isValidToken(Token<CppTokenId> token);
+    protected abstract boolean isValidToken(TokenItem<CppTokenId> token);
 
     public int[] getHyperlinkSpan(Document doc, int offset, HyperlinkType type) {
-        Token<CppTokenId> token = getToken(doc, offset);
+        TokenItem<CppTokenId> token = getToken(doc, offset);
         if (isValidToken(token)) {
             jumpToken = token;
-            return new int[]{token.offset(null), token.offset(null) + token.length()};
+            return new int[]{token.offset(), token.offset() + token.length()};
         } else {
             return null;
         }
@@ -164,16 +164,16 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         return true;
     }
 
-    protected Token<CppTokenId> getJumpToken() {
+    protected TokenItem<CppTokenId> getJumpToken() {
         return this.jumpToken;
     }
 
-    static Token<CppTokenId> getToken(final Document doc, final int offset) {
+    static TokenItem<CppTokenId> getToken(final Document doc, final int offset) {
         if (doc instanceof AbstractDocument) {
             ((AbstractDocument) doc).readLock();
         }
         try {
-            return CndTokenUtilities.getTokenCheckPrev(doc, offset,true);
+            return CndTokenUtilities.getTokenCheckPrev(doc, offset);
         } finally {
             if (doc instanceof AbstractDocument) {
                 ((AbstractDocument) doc).readUnlock();
@@ -186,9 +186,9 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
             return null;
         }
 
-        Token<CppTokenId> token = jumpToken;
-        if (token == null || token.offset(null) > offset ||
-                (token.offset(null) + token.length()) < offset) {
+        TokenItem<CppTokenId> token = jumpToken;
+        if (token == null || token.offset() > offset ||
+                (token.offset() + token.length()) < offset) {
             token = getToken(doc, offset);
         }
         if (!isValidToken(token)) {
@@ -197,5 +197,5 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         return getTooltipText(doc, token, offset);
     }
 
-    protected abstract String getTooltipText(Document doc, Token<CppTokenId> token, int offset);
+    protected abstract String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset);
 }

@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.cnd.completion.impl.xref;
 
-import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
  */
 public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
-    private final Token<CppTokenId> token;
+    private final TokenItem<CppTokenId> token;
     private CsmObject target = null;
     private CsmObject owner = null;
     private boolean findDone = false;
@@ -63,7 +63,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     private CsmReferenceKind kind;
     private FileReferencesContext fileReferencesContext;
 
-    public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token<CppTokenId> token, CsmReferenceKind kind) {
+    public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, TokenItem<CppTokenId> token, CsmReferenceKind kind) {
         super(doc, file, offset);
         this.token = token;
         this.offset = offset;
@@ -100,6 +100,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public String toString() {
         return "'" + org.netbeans.editor.EditorDebug.debugString(getText().toString()) // NOI18N
                 + "', tokenID=" + this.token.id().toString().toLowerCase() // NOI18N
@@ -118,7 +119,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
         return this.offset;
     }
 
-    /*package*/ final Token<CppTokenId> getToken() {
+    /*package*/ final TokenItem<CppTokenId> getToken() {
         return this.token;
     }
 

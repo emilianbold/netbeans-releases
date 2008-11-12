@@ -85,6 +85,7 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
+@Deprecated
 public class PropertyEditorResource extends PropertyEditorUserCode implements PropertyEditorElement {
 
     private Map<String, DesignComponent> createdComponents;
@@ -95,28 +96,7 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
     private JRadioButton radioButton;
     private PropertyEditorResourceElement perElement;
     private DatabindingElement databindingElement;
-
-    @Override
-    public void cleanUp(DesignComponent component) {
-        super.cleanUp(component);
-        if (createdComponents != null) {
-            createdComponents.clear();
-            createdComponents = null;
-        }
-        if (rePanel != null) {
-            rePanel.clean(component);
-            rePanel = null;
-        }
-        radioButton = null;
-        if (perElement instanceof CleanUp) {
-            ((CleanUp) perElement).clean(component);
-        }
-        perElement = null;
-        if (databindingElement != null) {
-            databindingElement.clean(component);
-        }
-        databindingElement = null;
-    }
+    private boolean databinding;
 
     private PropertyEditorResource(PropertyEditorResourceElement perElement,
             String newComponentAsText,
@@ -124,6 +104,8 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
             String userCodeLabel,
             boolean databinding) {
         super(userCodeLabel);
+
+        this.databinding = databinding;
 
         if (newComponentAsText == null || noneComponentAsText == null) {
             throw Debug.illegalArgument("Argument can not be null"); //NOI18N
@@ -140,26 +122,6 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         perElement.setPropertyEditorMessageAwareness(this);
 
         createdComponents = new HashMap<String, DesignComponent>();
-
-        // TODO lazy init
-        radioButton = new JRadioButton();
-        rePanel = new ResourceEditorPanel(perElement, noneComponentAsText, radioButton);
-        Mnemonics.setLocalizedText(radioButton,
-                NbBundle.getMessage(PropertyEditorResource.class, "LBL_RB_RESOURCE")); // NOI18N
-        radioButton.getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(PropertyEditorResource.class, "ACSN_RB_RESOURCE"));
-        radioButton.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(PropertyEditorResource.class, "ACSD_RB_RESOURCE"));
-        perElement.addPropertyEditorResourceElementListener(rePanel);
-        if (databinding) {
-            Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(2);
-            databindingElement = new DatabindingElement(this);
-            elements.add(this);
-            elements.add(databindingElement);
-            initElements(elements);
-        } else {
-            initElements(Collections.<PropertyEditorElement>singleton(this));
-        }
     }
 
     public static final PropertyEditorResource createInstance(PropertyEditorResourceElement perElement, String newComponentAsText, String noneComponentAsText, String userCodeLabel) {
@@ -183,7 +145,57 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
     }
 
     @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (createdComponents != null) {
+            createdComponents.clear();
+            createdComponents = null;
+        }
+        if (rePanel != null) {
+            rePanel.clean(component);
+            rePanel = null;
+        }
+        radioButton = null;
+        if (perElement instanceof CleanUp) {
+            ((CleanUp) perElement).clean(component);
+        }
+        perElement = null;
+        if (databindingElement != null) {
+            databindingElement.clean(component);
+        }
+        databindingElement = null;
+    }
+
+    @Override
+    public void setAsText(String text) {
+        saveValue(text);
+    }
+
+    @Override
     public final Component getCustomEditor() {
+        if (radioButton == null) {
+            radioButton = new JRadioButton();
+            rePanel = new ResourceEditorPanel(perElement, noneComponentAsText, radioButton);
+            Mnemonics.setLocalizedText(radioButton,
+                    NbBundle.getMessage(PropertyEditorResource.class, "LBL_RB_RESOURCE")); // NOI18N
+            radioButton.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(PropertyEditorResource.class, "ACSN_RB_RESOURCE"));
+            radioButton.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(PropertyEditorResource.class, "ACSD_RB_RESOURCE"));
+            perElement.addPropertyEditorResourceElementListener(rePanel);
+            if (databinding) {
+                Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(2);
+                databindingElement = new DatabindingElement(this);
+                elements.add(this);
+                elements.add(databindingElement);
+                initElements(elements);
+            } else {
+                initElements(Collections.<PropertyEditorElement>singleton(this));
+            }
+        }
+        if (getValue() instanceof PropertyValue) {
+            updateState((PropertyValue) getValue());
+        }
         perElement.getCustomEdiotrNotification();
         return super.getCustomEditor();
     }
@@ -214,7 +226,6 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
             return noneComponentAsText;
         }
         // issue 104721 fix
-        // dirty hack to check whether component was detached from document or not
         if (component.getParentComponent() == null && component.getDocument().getRootComponent() != component) {
             return noneComponentAsText;
         }

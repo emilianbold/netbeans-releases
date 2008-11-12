@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -53,7 +52,6 @@ import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.TargetEditor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
@@ -67,53 +65,57 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
     private static String mnemonics = "1234567890"; // NOI18N
 
     public String getName () {
-	return getString("BTN_Target");	// NOI18N
+        return getString("BTN_Target");	// NOI18N
     }
     
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx(MakeTargetAction.class); // FIXUP ???
     }
 
+    @Override
     public JMenuItem getPopupPresenter() {
-	Node[] activeNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+        Node[] activeNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
         return new TargetPopupMenu(this, enable(activeNodes), activeNodes);
     }
 
     private class TargetPopupMenu extends JMenu {
-	private boolean initialized = false;
-	private SystemAction action = null;
-	private Node[] activeNodes;
+        private boolean initialized = false;
+        private SystemAction action = null;
+        private Node[] activeNodes;
 
         public TargetPopupMenu(SystemAction action, boolean en, Node[] activeNodes) {
             super();
-	    this.action = action;
-	    this.activeNodes = activeNodes;
-	    setEnabled(en);
-	    setText(action.getName());
+            this.action = action;
+            this.activeNodes = activeNodes;
+            setEnabled(en);
+            setText(action.getName());
         }
-        
+
+        @Override
         public JPopupMenu getPopupMenu() {
             JPopupMenu popup = super.getPopupMenu();
-	    if (!initialized) {
-		if (activeNodes == null || activeNodes.length != 1) {
-		    return null; 
-		}
+            if (!initialized) {
+                if (activeNodes == null || activeNodes.length != 1) {
+                    return null;
+                }
 
-		Node activedNode = activeNodes[0];
-		MakeExecSupport mes = (MakeExecSupport) activedNode.getCookie(MakeExecSupport.class);
-		String[] targets = mes.getMakeTargetsArray();
+                Node activedNode = activeNodes[0];
+                MakeExecSupport mes = activedNode.getCookie(MakeExecSupport.class);
+                String[] targets = mes.getMakeTargetsArray();
 
-		//popup.add(new PopupItemDefaultTarget(activedNode, getString("DEFAULT_TARGET"))); // NOI18N
-		//if (targets.length > 0)
-		    //popup.add(new JSeparator());
-		for (int i = 0; i < targets.length; i++) {
-		    popup.add(new PopupItemTarget(activedNode, targets[i], -1));
-		}
-		if (targets.length > 0)
-		    popup.add(new JSeparator());
-		popup.add(new PopupItemAddTarget(activedNode)); // NOI18N
-		initialized = true;
-	    }
+                //popup.add(new PopupItemDefaultTarget(activedNode, getString("DEFAULT_TARGET"))); // NOI18N
+                //if (targets.length > 0)
+                //popup.add(new JSeparator());
+                for (int i = 0; i < targets.length; i++) {
+                    popup.add(new PopupItemTarget(activedNode, targets[i], -1));
+                }
+                if (targets.length > 0) {
+                    popup.add(new JSeparator());
+                }
+                popup.add(new PopupItemAddTarget(activedNode));
+                initialized = true;
+            }
             return popup;
         }
         
@@ -124,55 +126,58 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
      * Compose new name with a mnemonic: <mnemonic> <targetname>
      */
     private String nameWithMnemonic(String name, int mne) {
-	if (mne >= 0 && mne < mnemonics.length()) {
-	    return "" + mnemonics.charAt(mne)  + "  " + name; // NOI18N
-	    //return name + "  (" + mnemonics.charAt(mne) + ")"; // NOI18N
-	}
-	else {
-	    return name; // no mnemonic
-	}
+        if (mne >= 0 && mne < mnemonics.length()) {
+            return "" + mnemonics.charAt(mne) + "  " + name; // NOI18N
+        //return name + "  (" + mnemonics.charAt(mne) + ")"; // NOI18N
+        } else {
+            return name; // no mnemonic
+        }
     }
 
     protected class PopupItemTarget extends JMenuItem implements ActionListener {
-	Node node = null;
-	String target = null;
 
+        Node node = null;
+        String target = null;
 
-	public PopupItemTarget(Node activeNode, String name, int mne) {
-	    //super(nameWithMnemonic(name, mne), new ImageIcon(Utilities.loadImage("org/netbeans/modules/cnd/resources/blank.gif", true)));
-	    super(nameWithMnemonic(name, mne));
-	    node = activeNode;
-	    target = name;
-	    addActionListener(this);
-	    if (mne >= 0 && mne < mnemonics.length()) {
-		setMnemonic(mnemonics.charAt(mne));
-	    }
-	}
-        
-       /** Invoked when an action occurs. */
-       public void actionPerformed(ActionEvent e) {
-	    performAction(node, target);
-	}
+        public PopupItemTarget(Node activeNode, String name, int mne) {
+            //super(nameWithMnemonic(name, mne), new ImageIcon(Utilities.loadImage("org/netbeans/modules/cnd/resources/blank.gif", true)));
+            super(nameWithMnemonic(name, mne));
+            node = activeNode;
+            target = name;
+            addActionListener(this);
+            if (mne >= 0 && mne < mnemonics.length()) {
+                setMnemonic(mnemonics.charAt(mne));
+            }
+        }
+
+        /** Invoked when an action occurs.
+         * @param e
+         */
+        public void actionPerformed(ActionEvent e) {
+            performAction(node, target);
+        }
     }
 
     protected class PopupItemAddTarget extends JMenuItem implements ActionListener {
-	Node node = null;
-	public PopupItemAddTarget(Node activeNode) {
-	    //super(getString("ADD_NEW_TARGET"), new ImageIcon(Utilities.loadImage("org/netbeans/modules/cnd/resources/AddMakeTargetAction.gif", true))); // NOI18N
-	    super(getString("ADD_NEW_TARGET")); // NOI18N
-	    node = activeNode;
-	    addActionListener(this);
-	    setMnemonic(getString("ADD_NEW_TARGET_MNEMONIC").charAt(0));
-	}
-        
-       /** Invoked when an action occurs. */
-       public void actionPerformed(ActionEvent e) {
-	    MakeExecSupport mes = (MakeExecSupport) node.getCookie(MakeExecSupport.class);
-	    TargetEditor targetEditor = new TargetEditor(mes.getMakeTargetsArray(), null, null);
-	    int ret = targetEditor.showOpenDialog((JFrame)WindowManager.getDefault().getMainWindow());
-	    if (ret == TargetEditor.OK_OPTION) {
-		mes.setMakeTargets(targetEditor.getTargets());
-	    }
-	}
+
+        Node node = null;
+
+        public PopupItemAddTarget(Node activeNode) {
+            //super(getString("ADD_NEW_TARGET"), new ImageIcon(Utilities.loadImage("org/netbeans/modules/cnd/resources/AddMakeTargetAction.gif", true))); // NOI18N
+            super(getString("ADD_NEW_TARGET")); // NOI18N
+            node = activeNode;
+            addActionListener(this);
+            setMnemonic(getString("ADD_NEW_TARGET_MNEMONIC").charAt(0));
+        }
+
+        /** Invoked when an action occurs. */
+        public void actionPerformed(ActionEvent e) {
+            MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
+            TargetEditor targetEditor = new TargetEditor(mes.getMakeTargetsArray(), null, null);
+            int ret = targetEditor.showOpenDialog((JFrame) WindowManager.getDefault().getMainWindow());
+            if (ret == TargetEditor.OK_OPTION) {
+                mes.setMakeTargets(targetEditor.getTargets());
+            }
+        }
     }
 }

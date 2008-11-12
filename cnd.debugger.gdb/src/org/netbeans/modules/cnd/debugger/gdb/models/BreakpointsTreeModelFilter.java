@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
  */
 public class BreakpointsTreeModelFilter implements TreeModelFilter {
     
-    static Map MAX_LINES = new WeakHashMap();
+    final static Map<LineBreakpoint, Integer> MAX_LINES = new WeakHashMap<LineBreakpoint, Integer>();
     
     private static boolean verbose = 
         System.getProperty("netbeans.debugger.show_hidden_breakpoints") != null;
@@ -102,9 +102,9 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
         } 
         
         Object[] ch = original.getChildren(parent, from, to);
-        List l = new ArrayList();
+        List<Object> l = new ArrayList<Object>();
         int i, k = ch.length, n = to - from;
-        Map maxLines = new HashMap();
+        Map<String, Integer> maxLines = new HashMap<String, Integer>();
         
         for (i = 0; i < k; i++) {
             if ((!verbose) && (ch [i] instanceof GdbBreakpoint) && ((GdbBreakpoint) ch [i]).isHidden()) {
@@ -118,7 +118,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
                 LineBreakpoint lb = (LineBreakpoint) ch[i];
                 String fn = EditorContextBridge.getFileName(lb);
                 int line = lb.getLineNumber();
-                Integer mI = (Integer) maxLines.get(fn);
+                Integer mI = maxLines.get(fn);
                 if (mI != null) {
                     line = Math.max(line, mI.intValue());
                 }

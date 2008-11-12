@@ -52,40 +52,45 @@ import org.openide.util.actions.SystemAction;
 public class MakeAction extends MakeBaseAction {
 
     public String getName () {
-	return getString("BTN_Execute");	// NOI18N
+        return getString("BTN_Execute"); // NOI18N
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
-        for (int i = 0; i < activatedNodes.length; i++)
+        for (int i = 0; i < activatedNodes.length; i++) {
             performAction(activatedNodes[i], ""); // NOI18N
+        }
     }
 
     /**
      *  Execute a single MakefileDataObject.
      *
-     *  @param nodes A single MakefileDataNode(should have a {@link MakeExecSupport}
+     *  @param node A single MakefileDataNode(should have a {@link MakeExecSupport}
      */
     public static void execute(Node node) {
-        ((MakeAction)SystemAction.get(MakeAction.class)).performAction(node, ""); // NOI18N
+        (SystemAction.get(MakeAction.class)).performAction(node, ""); // NOI18N
     }
 
     /**
      *  Execute a single MakefileDataObject.
      *
-     *  @param nodes A single MakefileDataNode(should have a {@link MakeExecSupport}
+     *  @param node A single MakefileDataNode(should have a {@link MakeExecSupport}
      */
     public static void execute(Node node, String target) {
-        ((MakeAction)SystemAction.get(MakeAction.class)).performAction(node, target);
+        (SystemAction.get(MakeAction.class)).performAction(node, target);
     }
 
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/cnd/resources/MakeAction.gif"; // NOI18N
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx(MakeAction.class); // FIXUP ???
     }

@@ -284,13 +284,13 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             LogManager.log("... use Java that is bundled and installed: "  + jdkLocation);
             return jdkLocation;
         }
-
+        /*
         jdkLocation = getJavaFromInstalledProductProperties();
         if (jdkLocation != null) {
             LogManager.log("... use Java from properties of installed products: "  + jdkLocation);
             return jdkLocation;
         }
-
+        */
         jdkLocation = getJavaPreferredVersionLocation();
         if (jdkLocation != null) {
             LogManager.log("... use Java based on the preferred version: "  + jdkLocation);

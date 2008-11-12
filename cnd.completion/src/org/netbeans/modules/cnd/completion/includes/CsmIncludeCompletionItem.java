@@ -38,9 +38,9 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.lexer.PartType;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -289,7 +289,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                         if (toAdd != null) {
                             text += toAdd;
                         }
-                        Token<CppTokenId> token = CndTokenUtilities.getToken(doc, offset, true, true);
+                        TokenItem<CppTokenId> token = CndTokenUtilities.getToken(doc, offset, true);
                         String pref = QUOTE;
                         String post = QUOTE;
                         if (token != null) {
@@ -312,7 +312,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                                     break;
                             }
                             if (changeLength) {
-                                len = (token.offset(null) + token.length()) - offset - (token.partType() == PartType.COMPLETE ? 0 : 1);
+                                len = (token.offset() + token.length()) - offset - (token.partType() == PartType.COMPLETE ? 0 : 1);
                             }
                         }
                         // Update the text

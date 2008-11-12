@@ -144,7 +144,7 @@ final class ProcessList implements Runnable {
     }
     
     private List<String> getProcessCommand() {
-        List alist = new ArrayList<String>();
+        List<String> alist = new ArrayList<String>();
         
         if (Utilities.isWindows()) {
             File file = new File(CppUtils.getCygwinBase() + "/bin", "ps.exe"); // NOI18N

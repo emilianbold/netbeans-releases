@@ -569,7 +569,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             if (currentEngine == null) {
                 return null;
             }
-            debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
+            debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
         }
         return debugger;
     }

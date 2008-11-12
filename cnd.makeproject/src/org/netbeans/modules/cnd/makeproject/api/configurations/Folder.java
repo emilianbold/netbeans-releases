@@ -537,10 +537,9 @@ public class Folder {
         Iterator iter = new ArrayList(getElements()).iterator();
         while (iter.hasNext()) {
             Item item = (Item)iter.next();
-            if (item instanceof Item) {
-                FileObject fo  = item.getFileObject();
-                if (fo != null)
-                    files.add(fo);
+            FileObject fo  = item.getFileObject();
+            if (fo != null) {
+                files.add(fo);
             }
         }
         return new LinkedHashSet(files);
@@ -558,8 +557,9 @@ public class Folder {
                 Object item = iter.next();
                 if (item instanceof Item) {
                     FileObject fo  = ((Item)item).getFileObject();
-                    if (fo != null)
+                    if (fo != null) {
                         files.add(fo);
+                    }
                 }
                 if (item instanceof Folder) {
                     files.addAll(((Folder)item).getAllItemsAsFileObjectSet(projectFilesOnly));
@@ -578,10 +578,9 @@ public class Folder {
         Iterator iter = new ArrayList(getElements()).iterator();
         while (iter.hasNext()) {
             Item item = (Item)iter.next();
-            if (item instanceof Item) {
-                DataObject da  = item.getDataObject();
-                if (da != null && (MIMETypeFilter == null || da.getPrimaryFile().getMIMEType().contains(MIMETypeFilter)))
-                    files.add(da);
+            DataObject da  = item.getDataObject();
+            if (da != null && (MIMETypeFilter == null || da.getPrimaryFile().getMIMEType().contains(MIMETypeFilter))) {
+                files.add(da);
             }
         }
         return new LinkedHashSet(files);
@@ -590,7 +589,7 @@ public class Folder {
     /*
      * Returns a set of all files in this logical folder and subfolders as FileObjetc's
      */
-    public Set/*<DataObject>*/ getAllItemsAsDataObjectSet(boolean projectFilesOnly, String MIMETypeFilter) {
+    public Set<DataObject> getAllItemsAsDataObjectSet(boolean projectFilesOnly, String MIMETypeFilter) {
         Vector files = new Vector();
         
         if (!projectFilesOnly || isProjectFiles()) {

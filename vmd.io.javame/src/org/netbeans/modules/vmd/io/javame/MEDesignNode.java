@@ -64,8 +64,9 @@ public final class MEDesignNode extends FilterNode {
     public MEDesignNode (MEDesignDataObject dataObject) {
         super (JavaDataSupport.createJavaNode (dataObject.getPrimaryFile ()));
         String projectType = IOSupport.resolveProjectType (IOSupport.getDataObjectContext (dataObject));
-        if (projectType == null)
+        if (projectType == null || ProjectTypeInfo.getProjectTypeInfoFor (projectType) == null)
             return;
+
         String iconResource = ProjectTypeInfo.getProjectTypeInfoFor (projectType).getIconResource ();
         ((AbstractNode) getOriginal ()).setIconBaseWithExtension (iconResource);
     }

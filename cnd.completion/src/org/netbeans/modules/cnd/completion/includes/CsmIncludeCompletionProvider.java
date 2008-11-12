@@ -35,9 +35,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmSyntaxSupport;
@@ -255,27 +255,27 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
             if (doc != null) {
                 doc.readLock();
                 try {
-                    Token<CppTokenId> tok = CndTokenUtilities.getTokenCheckPrev(doc, caretOffset, true);
+                    TokenItem<CppTokenId> tok = CndTokenUtilities.getTokenCheckPrev(doc, caretOffset);
                     if (tok != null) {
                         switch (tok.id()) {
                             case PREPROCESSOR_SYS_INCLUDE:
                                 usrInclude = Boolean.FALSE;
-                                queryAnchorOffset = tok.offset(null);
+                                queryAnchorOffset = tok.offset();
                                 filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
                                 break;
                             case PREPROCESSOR_USER_INCLUDE:
                                 usrInclude = Boolean.TRUE;
-                                queryAnchorOffset = tok.offset(null);
+                                queryAnchorOffset = tok.offset();
                                 filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
                                 break;
                             case PREPROCESSOR_IDENTIFIER:
                                 usrInclude = Boolean.TRUE;
-                                queryAnchorOffset = tok.offset(null);
+                                queryAnchorOffset = tok.offset();
                                 filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
                                 break;
                         }
                         if (queryAnchorOffset < 0 && CppTokenId.WHITESPACE_CATEGORY.equals(tok.id().primaryCategory())) { // not inside "" or <>
-                            tok = CndTokenUtilities.shiftToNonWhiteBwd(doc, caretOffset);
+                            tok = CndTokenUtilities.getFirstNonWhiteBwd(doc, caretOffset);
                             if (tok != null) {
                                 switch (tok.id()) {
                                     case PREPROCESSOR_INCLUDE:

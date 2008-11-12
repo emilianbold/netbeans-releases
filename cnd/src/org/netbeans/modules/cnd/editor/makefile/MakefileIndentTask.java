@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,30 +31,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.editor.cplusplus;
 
-import junit.framework.*;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+package org.netbeans.modules.cnd.editor.makefile;
+
+import javax.swing.text.BadLocationException;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
 
 /**
- * Test suite for tokenizing documents
+ * Indentation support for Makefiles.
  *
- * @author Vladimir Voskresensky
+ * @author Alexey Vladykin
  */
-public class CCSyntaxUnitTest extends BaseTestSuite {
-    
-    public CCSyntaxUnitTest() {
-        super("C/C++ Syntax");
-        
-        //this.addTestSuite(SpaceAndLineSeparatorUnitTestCase.class);
-        this.addTestSuite(CCTokenizePreprocessorUnitTestCase.class);
-        this.addTestSuite(CCDocumentTokenizeUnitTestCase.class);
+class MakefileIndentTask implements IndentTask {
+
+    private static final int INDENT = 8;
+
+    private final Context context;
+
+    public MakefileIndentTask(Context context) {
+        this.context = context;
     }
 
-    public static Test suite() {
-        TestSuite suite = new CCSyntaxUnitTest();
-        return suite;
+    public ExtraLock indentLock() {
+        return null; // no extra locking
     }
-    
+
+    public void reindent() throws BadLocationException {
+        if (context.isIndent()) {
+            int caretOffset = context.caretOffset();
+            if (isRuleOrActionLine((BaseDocument) context.document(), caretOffset)) {
+                context.modifyIndent(context.lineStartOffset(caretOffset), INDENT);
+            }
+        }
+    }
+
+    private static boolean isRuleOrActionLine(BaseDocument doc, int offset) throws BadLocationException {
+        int start = Utilities.getRowStart(doc, offset - 1);
+        String line = doc.getText(start, offset - start);
+        int colon = line.indexOf(':'); // NOI18N
+        int pound = line.indexOf('#'); // NOI18N
+        return (line.charAt(0) == '\t') // NOI18N
+                || (colon > 0 && pound == -1)
+                || (colon > 0 && colon < pound);
+    }
+
 }
