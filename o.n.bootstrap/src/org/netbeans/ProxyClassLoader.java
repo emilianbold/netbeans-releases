@@ -227,23 +227,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
                 if (shouldDelegateResource(path, null)) cls = systemCL.loadClass(name);
             }*/
         } else {
-            // multicovered package, search in order
-            for (ProxyClassLoader pcl : parents) { // all our accessible parents
-                if (del.contains(pcl) && shouldDelegateResource(path, pcl)) { // that cover given package
-                    Class _cls = pcl.selfLoadClass(pkg, name);
-                    if (_cls != null) {
-                        if (cls == null) {
-                            cls = _cls;
-                        } else if (cls != _cls) {
-                            String message = "Will not load class " + name + " arbitrarily from one of " +
-                                    cls.getClassLoader() + " and " + pcl + " starting from " + this +
-                                    "; see http://wiki.netbeans.org/DevFaqModuleCCE";
-                            LOGGER.warning(message);
-                            throw new ClassNotFoundException(message);
-                        }
-                    }
-                }
-            }
+            cls = doLoadClassFromParents(del, path, pkg, name, cls);
             if (cls == null && del.contains(this)) cls = selfLoadClass(pkg, name); 
             if (cls != null) sclPackages.put(pkg, false); 
         }
@@ -251,7 +235,10 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
             try {
                 cls = systemCL.loadClass(name);
             } catch (ClassNotFoundException e) {
-                throw new ClassNotFoundException(diagnosticCNFEMessage(e.getMessage(), del), e);
+                cls = doLoadClassFromParents(del, path, pkg, name, cls);
+                if (cls == null) {
+                    throw new ClassNotFoundException(diagnosticCNFEMessage(e.getMessage(), del), e);
+                }
             }
         }
         if (cls == null) {
@@ -264,6 +251,27 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         return base + " starting from " + this +
                 " with possible defining loaders " + del +
                 " and declared parents " + parentSet;
+    }
+
+    private Class doLoadClassFromParents(Set<ProxyClassLoader> del, final String path, String pkg, String name, Class cls) throws ClassNotFoundException {
+        // multicovered package, search in order
+        for (ProxyClassLoader pcl : parents) {
+            // all our accessible parents
+            if (del == null || (del.contains(pcl) && shouldDelegateResource(path, pcl))) {
+                // that cover given package
+                Class _cls = pcl.selfLoadClass(pkg, name);
+                if (_cls != null) {
+                    if (cls == null) {
+                        cls = _cls;
+                    } else if (cls != _cls) {
+                        String message = "Will not load class " + name + " arbitrarily from one of " + cls.getClassLoader() + " and " + pcl + " starting from " + this + "; see http://wiki.netbeans.org/DevFaqModuleCCE";
+                        LOGGER.warning(message);
+                        throw new ClassNotFoundException(message);
+                    }
+                }
+            }
+        }
+        return cls;
     }
 
     /** May return null */ 

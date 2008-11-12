@@ -59,6 +59,8 @@ import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleFactory;
 import org.netbeans.ModuleManager;
+import org.netbeans.ProxyClassLoader;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbCollections;
 import org.openide.util.lookup.ServiceProvider;
@@ -125,6 +127,7 @@ public class NetigsoModuleFactory extends ModuleFactory {
         return felix;
     }
 
+
     private static final class BundleModule extends Module {
         final Bundle bundle;
         private BundleLoader loader;
@@ -163,7 +166,11 @@ public class NetigsoModuleFactory extends ModuleFactory {
             return Integer.parseInt(version.split("\\.")[0]);
         }
 
-
+        @Override
+        public SpecificationVersion getSpecificationVersion() {
+            String version = (String)bundle.getHeaders().get("Bundle-Version"); // NOI18N
+            return new SpecificationVersion(version);
+        }
 
         @Override
         protected void parseManifest() throws InvalidException {
@@ -238,24 +245,28 @@ public class NetigsoModuleFactory extends ModuleFactory {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
+        public String toString() {
+            return "Netigso: " + getCodeName(); // NOI18N
+        }
     } // end of BundleModule
-
-    private static final class BundleLoader extends ClassLoader {
+    private static final class BundleLoader extends ProxyClassLoader {
         private final Bundle bundle;
 
         public BundleLoader(Bundle bundle) {
+            super(new ClassLoader[0], true);
             this.bundle = bundle;
         }
 
         @Override
-        public URL getResource(String name) {
+        public URL findResource(String name) {
             return bundle.getResource(name);
         }
 
         @Override
-        public InputStream getResourceAsStream(String name) {
+        public Enumeration<URL> findResources(String name) {
             try {
-                return bundle.getResource(name).openStream();
+                return bundle.getResources(name);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
                 return null;
@@ -263,20 +274,13 @@ public class NetigsoModuleFactory extends ModuleFactory {
         }
 
         @Override
-        public Enumeration<URL> getResources(String name) throws IOException {
-            return NbCollections.checkedEnumerationByFilter(bundle.getResources(name), URL.class, false);
+        protected Class<?> doLoadClass(String pkg, String name) {
+            try {
+                return bundle.loadClass(name);
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
         }
-
-        @Override
-        public Class<?> loadClass(String name) throws ClassNotFoundException {
-            return bundle.loadClass(name);
-        }
-
-        @Override
-        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-            return bundle.loadClass(name);
-        }
-
-
     }
 }
