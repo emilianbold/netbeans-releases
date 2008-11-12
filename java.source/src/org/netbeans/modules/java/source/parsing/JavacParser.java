@@ -256,7 +256,6 @@ public class JavacParser extends Parser {
             final ClassPath cp = cpInfo.getClassPath(PathKind.SOURCE);
             assert cp != null;
             this.root = cp.findOwnerRoot(file);
-            assert root != null : "Cannot find file: "+FileUtil.getFileDisplayName(file)+" on source path: " + cp;  //NOI18N
             if (singleSource) {
                 cpInfo.addChangeListener(WeakListeners.change(cpInfoListener, cpInfo));
                 initialized = true;

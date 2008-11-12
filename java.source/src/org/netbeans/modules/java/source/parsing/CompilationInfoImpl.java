@@ -115,7 +115,7 @@ public final class CompilationInfoImpl {
         this.file = file;
         this.root = root;
         this.snapshot = snapshot;
-        assert file == null || (root != null && snapshot != null);
+        assert file == null || snapshot != null;
         this.jfo = file != null ? JavacParser.jfoProvider.createJavaFileObject(file, root, JavaFileFilterQuery.getFilter(file), snapshot.getText()) : null;
         this.javacTask = javacTask;
         this.isClassFile = false;
