@@ -354,8 +354,17 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
     }
     
     Action[] getImageContextActions(){
-        return new Action[]{ zoomToFitAction , scaleToggleButton.getAction()};
+        return new Action[]{ 
+            zoomToFitAction , 
+            scaleToggleButton.getAction(), 
+            getToggleHighlightAction()};
     }
+    
+    private Action getToggleHighlightAction(){
+        Action acts[] = getSceneManager().getToolbarActions("svg_toggle_highlight");
+        assert acts.length > 0 && acts[0] != null;
+        return acts[0];
+   }
 
     private SceneManager getSceneManager() {
         return m_svgDataObject.getSceneManager();
@@ -411,13 +420,17 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
 
         changeListener = new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
+                PerseusController pctl = getPerseusController();
+                if (pctl == null) {
+                    return;
+                }
                 if (e.getSource() == slider) {
                     float currentTime = ((float) slider.getValue()) * SLIDER_DEFAULT_STEP;
-                    getPerseusController().setAnimatorTime(currentTime);
+                    pctl.setAnimatorTime(currentTime);
                     updateAnimationTime(currentTime, getSceneManager().getAnimationDuration());
                 } else if (e.getSource() == currentTimeSpinner) {
                     float currentTime = ((Float) currentTimeSpinner.getValue()).floatValue();
-                    getPerseusController().setAnimatorTime(currentTime);
+                    pctl.setAnimatorTime(currentTime);
                     updateAnimationTime(currentTime, getSceneManager().getAnimationDuration());
                 }
             }
@@ -438,12 +451,14 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
     private void updateAnimationTime(float time, float maxTime) {
         currentTimeSpinner.removeChangeListener(changeListener);
         slider.removeChangeListener(changeListener);
+        
         if (maxTime != -1) {
             slider.setMaximum(Math.round(maxTime / SLIDER_DEFAULT_STEP));
         }
         slider.setValue(Math.round(time / SLIDER_DEFAULT_STEP));
         time = Math.round(time * 10) / 10.0f;
         currentTimeSpinner.setValue(new Float(time));
+        
         slider.addChangeListener(changeListener);
         currentTimeSpinner.addChangeListener(changeListener);
     }
@@ -910,7 +925,13 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
             startAnimationAction.setIsSelected(isActive);
             pauseAnimationAction.setEnabled(isActive);
             pauseAnimationAction.setIsSelected(state == PerseusController.ANIMATION_PAUSED);
+        } else {
+            disableAnimationActions();
         }
+    }
+    
+    private void disableAnimationActions() {
+        enableComponentsInToolbar(animationToolbar, false);
     }
 
     private static JSeparator createToolBarSeparator() {
@@ -948,6 +969,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         for ( Action action : getImageContextActions() ){
             action.setEnabled( true );
         }
+        updateAnimationActions();
     }
 
     void showImage(SVGImage img) {
@@ -995,7 +1017,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
             allowEditAction}, this, lookup);
 
         updateZoomCombo();
-        updateAnimationActions();
+        enableImageContext();
         smgr.processEvent(SceneManager.createEvent(this, SceneManager.EVENT_IMAGE_DISPLAYED));
 
         SVGLocatableElement elem = getPerseusController().getViewBoxMarker();
@@ -1018,6 +1040,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         for ( Action action : getImageContextActions() ){
             action.setEnabled( false );
         }
+        disableAnimationActions();
     }
     
     private void doDrag(DropTargetDragEvent dtde) {

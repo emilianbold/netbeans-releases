@@ -131,6 +131,7 @@ public class CsmOffsetResolver {
                 }
             }
             // check if offset in parameters
+            @SuppressWarnings("unchecked")
             Collection<CsmParameter> params = fun.getParameters();
             CsmParameter param = CsmOffsetUtilities.findObject(params, context, offset);
             if (param != null) {

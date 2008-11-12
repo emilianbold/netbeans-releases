@@ -44,6 +44,7 @@ package org.netbeans.modules.web.core.syntax;
 
 import java.util.List;
 import java.util.Map;
+import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.html.HtmlIndenter;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
@@ -51,6 +52,7 @@ import org.netbeans.modules.editor.gsfret.InstantRenameAction;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.SelectCodeElementAction;
+import org.netbeans.modules.gsf.ToggleBlockCommentAction;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.html.editor.HTMLAutoCompletion;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
@@ -69,6 +71,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.web.core.syntax.gsf.JspCommentHandler;
 import org.netbeans.spi.jsp.lexer.JspParseData;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
@@ -173,6 +176,9 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
             new InstantRenameAction(),
+            new ToggleBlockCommentAction(new JspCommentHandler()),
+            new ExtKit.CommentAction(""), //NOI18N
+            new ExtKit.UncommentAction("") //NOI18N
         };
 
         return TextAction.augmentList(super.createActions(), javaActions);

@@ -97,6 +97,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         WEB_SOURCE,
         PACKAGED, // #131785
         WEB_COMPILATION,
+        WEB_RUNTIME,
     }
     
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, 
@@ -205,7 +206,17 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private synchronized ClassPath getRunTimeClasspath(FileType type) {
         if (type == FileType.WEB_SOURCE) {
-            return javaClassPathProvider.findClassPath(sourceRoots.getRoots()[0], ClassPath.EXECUTE);
+            if (sourceRoots.getRoots().length > 0) {
+               return javaClassPathProvider.findClassPath(sourceRoots.getRoots()[0], ClassPath.EXECUTE);
+            } else {
+                ClassPath cp = cache.get(ClassPathCache.WEB_RUNTIME);
+                if (cp == null) {
+                    cp = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                        projectDirectory, evaluator, new String[] {"debug.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH }));
+                    cache.put(ClassPathCache.WEB_RUNTIME, cp);
+                }
+                return cp;
+            }
         }
         return null;
     }
@@ -216,7 +227,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             if (cp == null) {
                 cp = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                         ClassPathFactory.createClassPath(new JspSourcePathImplementation(helper, evaluator)),
-                        ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (this.sourceRoots, helper, evaluator)),
+                        ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (this.sourceRoots, helper, evaluator, true)),
                     });
                 cache.put(ClassPathCache.WEB_SOURCE, cp);
 

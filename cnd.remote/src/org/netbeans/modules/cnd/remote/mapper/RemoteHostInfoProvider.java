@@ -107,7 +107,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
                 //N.B.: this is only place where RemoteCommandSupport should take PATH= !!
                 RemoteCommandSupport support = new RemoteCommandSupport(hkey, "PATH=/bin:/usr/bin export"); // NOI18N
                 support.setPreserveCommand(true); // to avoid endless loop
-                isCshShell = new Boolean(support.run() != 0);
+                isCshShell = Boolean.valueOf(support.run() != 0);
             }
             return isCshShell.booleanValue();
         }

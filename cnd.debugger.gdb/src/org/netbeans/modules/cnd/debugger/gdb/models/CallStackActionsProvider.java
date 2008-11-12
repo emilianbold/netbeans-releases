@@ -93,7 +93,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     private final GdbDebugger debugger;
 
     public CallStackActionsProvider(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
     public Action[] getActions(Object node) throws UnknownTypeException {
@@ -104,12 +104,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
 	    throw new UnknownTypeException(node);
 	}
         
-        boolean popToHere = debugger.canPopFrames();
-        if (popToHere) {
-            return new Action[] { MAKE_CURRENT_ACTION, POP_TO_HERE_ACTION };
-	} else {
-	    return new Action[] { MAKE_CURRENT_ACTION };
-	}
+        return new Action[] { MAKE_CURRENT_ACTION, POP_TO_HERE_ACTION };
     }
     
     public void performDefaultAction(Object node) throws UnknownTypeException {
@@ -130,7 +125,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     }
 
     private void popToHere(final CallStackFrame frame) {
-        if (!debugger.isValidStackFrame(frame)) {
+        if (!frame.isValid()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                        "ERR_InvalidCallStackFrame"))); // NOI18N
         } else {
@@ -142,7 +137,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     
     private void makeCurrent(final CallStackFrame frame) {
         if (debugger.getCurrentCallStackFrame() != frame) {
-            if (debugger.isValidStackFrame(frame)) {
+            if (frame.isValid()) {
                 frame.makeCurrent();
             } else {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,

@@ -56,17 +56,17 @@ import org.netbeans.modules.cnd.settings.MakeSettings;
 public class ErrorExpressionEditor extends PropertyEditorSupport {
 
     /** shared list of error expressions in the system */
-    private static Collection sharedList;
+    private static Collection<ErrorExpression> sharedList;
 
     static {
-	sharedList = new HashSet();
-	sharedList.add(MakeSettings.SUN_COMPILERS);
-	sharedList.add(MakeSettings.GNU_COMPILERS);
+        sharedList = new HashSet<ErrorExpression>();
+        sharedList.add(MakeSettings.SUN_COMPILERS);
+        sharedList.add(MakeSettings.GNU_COMPILERS);
     }
 
 
     /** list to use for error expressions */
-    private Collection list;
+    private Collection<ErrorExpression> list;
 
 
     /** value to edit */
@@ -77,7 +77,7 @@ public class ErrorExpressionEditor extends PropertyEditorSupport {
      *  Constructs property editor with shared array of registered expressions.
      */
     public ErrorExpressionEditor() {
-	this(sharedList);
+        this(sharedList);
     }
 
 
@@ -88,95 +88,95 @@ public class ErrorExpressionEditor extends PropertyEditorSupport {
      *
      * @param list modifiable collection of <CODE>ErrorExpression</CODE>s
      */
-    public ErrorExpressionEditor(Collection list) {
-	this.list = list;
+    public ErrorExpressionEditor(Collection<ErrorExpression> list) {
+        this.list = list;
     }
 
-
+    @Override
     public Object getValue() {
-	return value;
+        return value;
     }
 
 
-    public void setValue(Object value) {
-	synchronized (this) {
-	    this.value = (ErrorExpression) value;
-	    list.add(value);
-	}
-	firePropertyChange();
+    public void setValue(ErrorExpression value) {
+        synchronized (this) {
+            this.value = value;
+            list.add(value);
+        }
+        firePropertyChange();
     }
 
+    @Override
     public String getAsText() {
-	return "";//value.getName(); // FIXUP - TRUNK - THP // NOI18N
+        return "";//value.getName(); // FIXUP - TRUNK - THP // NOI18N
     }
 
-
+    @Override
     public void setAsText(String string) {
-	ErrorExpression[] exprs = getExpressions();
+        //ErrorExpression[] exprs = getExpressions();
 
-	for (int i = 0; i < exprs.length; i++) {
-	    /* // FIXUP - TRUNK - THP
-	    if (string.equals(exprs[i].getName())) {
-		setValue(exprs[i]);
-		break;
-	    }
-	    */ // FIXUP - TRUNK - THP
-	}
+        //for (int i = 0; i < exprs.length; i++) {
+            /* // FIXUP - TRUNK - THP
+            if (string.equals(exprs[i].getName())) {
+            setValue(exprs[i]);
+            break;
+            }
+             */ // FIXUP - TRUNK - THP
+        //}
     }
 
-
+    @Override
     public String getJavaInitializationString() {
-	return "new ErrorExpression (" + // NOI18N
-	       //value.getName() + ", " + // NOI18N // FIXUP - TRUNK - THP
-	       //value.getErrorExpression() + ", " + // NOI18N // FIXUP - TRUNK - THP
-	       //value.getFilePos() + ", " + // NOI18N // FIXUP - TRUNK - THP
-	       //value.getLinePos() + ", " + // NOI18N // FIXUP - TRUNK - THP
-	       //value.getColumnPos() + ", " + // NOI18N // FIXUP - TRUNK - THP
-	       //value.getDescriptionPos() + // FIXUP - TRUNK - THP
-	       ")"; // NOI18N
+        return "new ErrorExpression (" + // NOI18N
+                //value.getName() + ", " + // NOI18N // FIXUP - TRUNK - THP
+                //value.getErrorExpression() + ", " + // NOI18N // FIXUP - TRUNK - THP
+                //value.getFilePos() + ", " + // NOI18N // FIXUP - TRUNK - THP
+                //value.getLinePos() + ", " + // NOI18N // FIXUP - TRUNK - THP
+                //value.getColumnPos() + ", " + // NOI18N // FIXUP - TRUNK - THP
+                //value.getDescriptionPos() + // FIXUP - TRUNK - THP
+                ")"; // NOI18N
     }
 
-
+    @Override
     public String[] getTags() {
-	ErrorExpression[] exprs = getExpressions();
-	String[] tags = new String [exprs.length];
+        ErrorExpression[] exprs = getExpressions();
+        String[] tags = new String[exprs.length];
 
-	/* // FIXUP - TRUNK - THP
-	for (int i = 0; i < exprs.length; i++) {
-	    tags[i] = exprs[i].getName();
-	}
-	*/ // FIXUP - TRUNK - THP
+        /* // FIXUP - TRUNK - THP
+        for (int i = 0; i < exprs.length; i++) {
+        tags[i] = exprs[i].getName();
+        }
+         */ // FIXUP - TRUNK - THP
 
-	return tags;
+        return tags;
     }
 
-
+    @Override
     public boolean isPaintable() {
-	return false;
+        return false;
     }
 
-
+    @Override
     public void paintValue(Graphics g, Rectangle rectangle) {
     }
 
-
+    @Override
     public boolean supportsCustomEditor() {
-	return true;
+	       return true;
     }
 
-
+    @Override
     public Component getCustomEditor() {
-	return new ErrorExpressionPanel(this);
+	       return new ErrorExpressionPanel(this);
     }
 
 
     synchronized ErrorExpression[] getExpressions() {
-	return (ErrorExpression[]) list.toArray(new ErrorExpression[list.size()]);
+	       return list.toArray(new ErrorExpression[list.size()]);
     }
 
 
     Collection getExpressionsVector() {
-	return list;
+	       return list;
     }
 }
-

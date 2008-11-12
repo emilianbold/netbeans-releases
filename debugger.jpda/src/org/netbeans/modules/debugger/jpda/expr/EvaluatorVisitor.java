@@ -1949,6 +1949,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         return null;
                     }
                     if (f != null) {
+                        evaluationContext.getVariables().put(arg0, new VariableInfo(f));
                         return clazz.getValue(f);
                     } else {
                         Assert2.error(arg0, "unknownField", fieldName);
@@ -1962,6 +1963,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     }
                     Field f = intrfc.fieldByName(fieldName);
                     if (f != null) {
+                        evaluationContext.getVariables().put(arg0, new VariableInfo(f));
                         return intrfc.getValue(f);
                     } else {
                         Assert2.error(arg0, "unknownField", fieldName);
@@ -1978,6 +1980,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     }
                     Field f = type.fieldByName(fieldName);
                     if (f != null) {
+                        evaluationContext.getVariables().put(arg0, new VariableInfo(f, (ObjectReference) expression));
                         return ((ObjectReference) expression).getValue(f);
                     } else {
                         Assert2.error(arg0, "unknownField", fieldName);
@@ -2400,7 +2403,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (varInfo.fieldObject != null) {
                     varInfo.fieldObject.setValue(varInfo.field, value);
                 } else {
-                    ((ClassType) varInfo.field.declaringType()).setValue(varInfo.field, value);
+                    ReferenceType type = varInfo.field.declaringType();
+                    if (type instanceof ClassType) {
+                        ((ClassType) type).setValue(varInfo.field, value);
+                    } else {
+                        Assert2.error(var, "unknownVariable", var.toString());
+                    }
                 }
             } else {
                 evaluationContext.getFrame().setValue(varInfo.var, value);

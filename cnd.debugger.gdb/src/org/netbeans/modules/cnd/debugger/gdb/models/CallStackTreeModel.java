@@ -63,13 +63,13 @@ import org.openide.util.RequestProcessor;
  * @author Gordon Prieur (copied from Jan Jancura's and Martin Entlicher's JPDA implementation)
  */
 public class CallStackTreeModel implements TreeModel {
-    private GdbDebugger     debugger;
+    private final GdbDebugger     debugger;
     private final Collection listeners = new HashSet();
     private Listener            listener;
     
    
     public CallStackTreeModel(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
     /** 
@@ -78,7 +78,7 @@ public class CallStackTreeModel implements TreeModel {
      */
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent.equals(ROOT)) {
-	    return debugger.getCallStackFrames(from, to);
+	    return getCallStackFrames(from, to);
         } else {
 	    throw new UnknownTypeException(parent);
 	}
@@ -156,6 +156,27 @@ public class CallStackTreeModel implements TreeModel {
             ((ModelListener) ls[i]).modelChanged(ev);
         }
     }
+
+    /**
+     * Returns call stack for this debugger.
+     *
+     * @param from Starting frame
+     * @param to Ending frame (one beyond what we want)
+     * @return call stack
+     */
+    private CallStackFrame[] getCallStackFrames(int from, int to) {
+        int cnt = to - from;
+
+        if ((from + cnt) <= debugger.getStackDepth()) {
+            CallStackFrame[] frames = new CallStackFrame[cnt];
+            for (int i = 0; i < cnt; i++) {
+                frames[i] = debugger.getCallStack().get(from + i);
+            }
+            return frames;
+        } else {
+            return new CallStackFrame[0];
+        }
+    }
     
     
     /**
@@ -163,17 +184,17 @@ public class CallStackTreeModel implements TreeModel {
      */
     private static class Listener implements PropertyChangeListener {
         
-        private GdbDebugger debugger;
-        private WeakReference model;
+        private final GdbDebugger debugger;
+        private final WeakReference<CallStackTreeModel> model;
         
         public Listener(CallStackTreeModel tm, GdbDebugger debugger) {
             this.debugger = debugger;
-            model = new WeakReference(tm);
+            model = new WeakReference<CallStackTreeModel>(tm);
             debugger.addPropertyChangeListener(this);
         }
         
         private CallStackTreeModel getModel() {
-            CallStackTreeModel tm = (CallStackTreeModel) model.get();
+            CallStackTreeModel tm = model.get();
             if (tm == null) {
                 destroy();
             }

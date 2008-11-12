@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
+import java.awt.Component;
 import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
@@ -85,16 +86,6 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         this.parentTypeID = parentTypeID;
         this.rbLabel = rbLabel;
 
-        initElements(Collections.<PropertyEditorElement>singleton(this));
-        super.getUserCodeRadioButton().addFocusListener(new FocusListener() {
-
-            public void focusGained(FocusEvent e) {
-                customEditor.checkBox.setSelected(false);
-            }
-            
-            public void focusLost(FocusEvent e) {
-            }
-        });
     }
 
     public static PropertyEditorBooleanUC createInstance() {
@@ -296,6 +287,25 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         ic.setSelected(selected);
     }
 
+    @Override
+    public Component getCustomEditor() {
+
+        initElements(Collections.<PropertyEditorElement>singleton(this));
+        super.getUserCodeRadioButton().addFocusListener(new FocusListener() {
+
+            public void focusGained(FocusEvent e) {
+                customEditor.checkBox.setSelected(false);
+            }
+
+            public void focusLost(FocusEvent e) {
+            }
+        });
+        
+        return super.getCustomEditor();
+    }
+
+
+
     private class CustomEditor extends JPanel implements ActionListener {
 
         private JCheckBox checkBox;
@@ -305,8 +315,10 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         }
 
         void cleanUp() {
-            checkBox.removeActionListener(this);
-            checkBox = null;
+            if (checkBox != null) {
+                checkBox.removeActionListener(this);
+                checkBox = null;
+            }
             this.removeAll();
         }
 

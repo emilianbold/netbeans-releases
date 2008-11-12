@@ -87,7 +87,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
     private final Set<FileObject> annotatedFiles = new WeakSet<FileObject>();
 
     public void annotate(Line.Set set, Lookup lookup) {
-        FileObject fo = (FileObject) lookup.lookup(FileObject.class);
+        FileObject fo = lookup.lookup(FileObject.class);
         if (fo == null) {
             return;
         }

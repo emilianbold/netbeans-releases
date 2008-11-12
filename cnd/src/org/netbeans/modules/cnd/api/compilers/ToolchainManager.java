@@ -103,7 +103,7 @@ public final class ToolchainManager {
                     CompilerVendor v = new CompilerVendor(file.getNameExt());
                     Integer position = (Integer) file.getAttribute("position"); // NOI18N
                     if (position == null || vendors.containsKey(position)) {
-                        position = new Integer(indefinedID++);
+                        position = indefinedID++;
                     }
                     if (read(file, files, v, new HashSet<FileObject>())){
                         vendors.put(position, v);
