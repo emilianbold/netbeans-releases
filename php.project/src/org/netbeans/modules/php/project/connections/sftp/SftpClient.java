@@ -427,7 +427,7 @@ public class SftpClient implements RemoteClient {
             JOptionPane.showMessageDialog(null, message);
         }
 
-        // taken from examples from JSCh library
+        // <editor-fold defaultstate="collapsed" desc="Code taken from examples from JSCh library">
         final GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 1, 1,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
         private Container panel;
@@ -478,5 +478,6 @@ public class SftpClient implements RemoteClient {
                 return null;  // cancel
             }
         }
+        // </editor-fold>
     }
 }
