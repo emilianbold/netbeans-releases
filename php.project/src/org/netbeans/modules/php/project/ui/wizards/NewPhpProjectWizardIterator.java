@@ -56,7 +56,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
-import org.netbeans.modules.php.project.connections.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;

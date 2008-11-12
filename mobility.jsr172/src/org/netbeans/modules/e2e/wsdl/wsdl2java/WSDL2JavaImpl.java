@@ -68,14 +68,13 @@ public class WSDL2JavaImpl implements WSDL2Java {
     public WSDL2JavaImpl( WSDL2Java.Configuration configuration ) {
         this.configuration = configuration;
         
-        wsdlParser = new WSDLParser();        
+        wsdlParser = new WSDLParser( configuration.getOriginalWSDLUrl() );        
     }
 
     public boolean generate() {
         uniqueTypeName = new HashMap<QName, Integer>();
         
         try {
-            
             definition = wsdlParser.parse( configuration.getWSDLFileName());
                     
             // Check for validity of the WSDL
