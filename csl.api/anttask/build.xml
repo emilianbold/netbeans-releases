@@ -45,15 +45,16 @@ made subject to such option by the copyright holder.
   <import file="../../nbbuild/default-properties.xml"/>
 
   <target name="jars" depends="compile">
-	<jar jarfile="cslanttask.jar"
-	  basedir="src"
-	  excludes="**/*.java"
+    <mkdir dir="build"/>
+	<jar jarfile="build/cslanttask.jar"
+	  basedir="build/classes"
 	  compress="false">
 	</jar>
   </target>
 
   <target name="compile">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" target="1.5" source="1.5" >
+    <mkdir dir="build/classes"/>
+    <javac srcdir="src" destdir="build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" target="1.5" source="1.5" >
 	  <classpath>
                 <!-- cmdline Ant -->
                 <pathelement location="${ant.core.lib}"/>
@@ -69,16 +70,7 @@ made subject to such option by the copyright holder.
   </target>
 
   <target name="clean">
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-    </delete>
+    <delete dir="build" quiet="true" />
   </target>
 
-  <target name="real-clean" depends="clean"
-          description="Clean everything possible.">
-	<!-- This jar file is used in taskdef's and will cause a problem during a clean if it's not there. -->
-	<delete file="cslanttask.jar"/>
-  </target>
 </project>

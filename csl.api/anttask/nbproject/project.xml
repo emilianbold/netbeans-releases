@@ -27,16 +27,21 @@
                     <target>jars</target>
                 </action>
                 <action name="clean">
-                    <target>real-clean</target>
+                    <target>clean</target>
                 </action>
                 <action name="rebuild">
-                    <target>real-clean</target>
+                    <target>clean</target>
                     <target>jars</target>
                 </action>
             </ide-actions>
             <export>
+                <type>folder</type>
+                <location>build/classes</location>
+                <build-target>jars</build-target>
+            </export>
+            <export>
                 <type>jar</type>
-                <location>cslanttask.jar</location>
+                <location>build/cslanttask.jar</location>
                 <build-target>jars</build-target>
             </export>
             <view>
@@ -61,7 +66,8 @@
             <compilation-unit>
                 <package-root>src</package-root>
                 <classpath mode="compile">${ant.home}/lib/ant.jar:../../nbbuild/antsrc</classpath>
-                <built-to>cslanttask.jar</built-to>
+                <built-to>build/classes</built-to>
+                <built-to>build/cslanttask.jar</built-to>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
