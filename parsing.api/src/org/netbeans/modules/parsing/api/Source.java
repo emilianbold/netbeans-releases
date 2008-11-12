@@ -290,7 +290,7 @@ public final class Source {
         
     private final String mimeType;
     private final FileObject fileObject;
-    private Document document;
+    private final Document document;
 
     private final Set<SourceFlags> flags = EnumSet.noneOf(SourceFlags.class);
     
@@ -366,14 +366,7 @@ public final class Source {
                 }
             }
         }
-
-        synchronized (this) {
-            if (document == null) {
-                document = doc;
-            }
-
-            return document;
-        }
+        return doc;
     }
 
     private void assignListeners () {

@@ -181,14 +181,14 @@ public final class EventSupport {
             assert ec != null;
             this.ec = ec;
             this.ec.addPropertyChangeListener(WeakListeners.propertyChange(this, this.ec));
-            Document doc = ec.getDocument();            
+            Document doc = source.getDocument();
             if (doc != null) {
                 TokenHierarchy th = TokenHierarchy.get(doc);
                 th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
                 document = doc;
-            }            
+            }
         }
-                                   
+
         public void propertyChange(final PropertyChangeEvent evt) {
             if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())) {
                 Object old = evt.getOldValue();                
@@ -197,7 +197,7 @@ public final class EventSupport {
                     th.removeTokenHierarchyListener(lexListener);
                     lexListener = null;
                 }                
-                Document doc = ec.getDocument();                
+                Document doc = source.getDocument();
                 if (doc != null) {
                     TokenHierarchy th = TokenHierarchy.get(doc);
                     th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
@@ -209,7 +209,8 @@ public final class EventSupport {
                     this.document = doc;
                 }
             }
-        }        
+        }
+        
         public void tokenHierarchyChanged(final TokenHierarchyEvent evt) {
             resetState(true);
         }
