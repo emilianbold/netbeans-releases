@@ -43,13 +43,14 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -61,6 +62,8 @@ import org.openide.windows.WindowManager;
 public class Installer extends ModuleInstall {
 
     public static final String KEY_IMPORT_FROM = "import-from";
+    public static final String CODE_NAME = "ClusterUpdateProvider";
+    public static final String REMOVED = "_removed"; // NOI18N
 
     private static Logger LOG = Logger.getLogger (Installer.class.getName ());
     // XXX: copy from o.n.upgrader
@@ -75,8 +78,11 @@ public class Installer extends ModuleInstall {
             return;
         }
         
-        // schedule refresh providers
-        // install update checker when UI is ready (main window shown)
+        // remove ClusterUpdateProvider from available update providers
+        Preferences au_pref = NbPreferences.root ().node ("/org/netbeans/modules/autoupdate"); // NOI18N
+        au_pref.node (Installer.CODE_NAME + Installer.REMOVED).putBoolean (Installer.REMOVED, true);
+
+        // install plugin importer when UI is ready (main window shown)
         WindowManager.getDefault ().invokeWhenUIReady (new Runnable () {
 
             public void run () {
@@ -91,50 +97,64 @@ public class Installer extends ModuleInstall {
             File importFrom = null;
             String from = System.getProperty ("plugin.manager.import.from", ""); // NOI18N
             Preferences pref = NbPreferences.forModule (Installer.class);
+            Preferences au_pref = NbPreferences.root ().node ("/org/netbeans/modules/autoupdate"); // NOI18N
             if (from.length () > 0) {
                 importFrom = new File (from);
             } else if (pref.get (KEY_IMPORT_FROM, null) != null) {
                 // was remind later
-                importFrom = new File (pref.get (KEY_IMPORT_FROM, ""));
+                importFrom = new File (pref.get (KEY_IMPORT_FROM, "")); // NOI18N
             } else {
                 importFrom = checkPrevious (VERSION_TO_CHECK);
+
                 // check if the userdir was imported already
-                String imported = NbPreferences.root ().node ("/org/netbeans/modules/autoupdate").get (IMPORTED, null);
-                if (imported == null) {
+                boolean imported = au_pref.getBoolean (IMPORTED, false);
+                if (! imported) {
                     // don't import
                     importFrom = null;
                 }
             }
 
-            // XXX: Hack Autoupdate API
-            // find own provider
+            // don't import again from previous userdir
+            au_pref.putBoolean (IMPORTED, false);
+
+            if (importFrom == null || ! importFrom.exists ()) {
+                // nothing to do => return
+                return ;
+            }
+            try {
+                // XXX: Hack Autoupdate API
+                // find own provider
+                Preferences p = au_pref.node (CODE_NAME + REMOVED);
+                p.removeNode ();
+            } catch (BackingStoreException ex) {
+                LOG.log (Level.INFO, ex.getLocalizedMessage (), ex);
+                return ;
+            }
             for (UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (false)) {
-                if (ClusterUpdateProvider.CODE_NAME.contains (p.getName ())) {
+                if (CODE_NAME.contains (p.getName ())) {
                     clusterUpdateProvider = p;
                 }
             }
-            if (clusterUpdateProvider == null) {
-                assert false : "clusterUpdateProvider must found";
-            } else {
+            assert clusterUpdateProvider != null : "clusterUpdateProvider must found";
+            if (clusterUpdateProvider != null) {
                 try {
-                    if (importFrom != null && importFrom.exists ()) {
-                        ClusterUpdateProvider.attachCluster (importFrom);
-                        Collection<UpdateUnit> units = clusterUpdateProvider.getUpdateUnits ();
-                        UpdateUnitProviderFactory.getDefault ().remove (clusterUpdateProvider);
-                        PluginImporter importer = new PluginImporter (units);
-                        LOG.fine ("Already installed plugins: " + importer.getInstalledPlugins ());
-                        LOG.fine ("Plugins available on UC: " + importer.getPluginsAvailableToInstall ());
-                        LOG.fine ("Plugins available for import: " + importer.getPluginsToImport ());
-                        if (! importer.getBrokenPlugins ().isEmpty ()) {
-                            LOG.info ("Plugins for import with broken dependencies: " + importer.getBrokenPlugins ());
-                        }
-                        if ( ! importer.getPluginsToImport ().isEmpty () ||  ! importer.getPluginsAvailableToInstall ().isEmpty ()) {
-                            ImportManager notifier = new ImportManager (importFrom, getUserDir (), importer);
-                            notifier.notifyAvailable ();
-                        }
+                    assert importFrom != null && importFrom.exists () : importFrom + " exists.";
+                    ClusterUpdateProvider.attachCluster (importFrom);
+                    Collection<UpdateUnit> units = clusterUpdateProvider.getUpdateUnits ();
+                    UpdateUnitProviderFactory.getDefault ().remove (clusterUpdateProvider);
+                    PluginImporter importer = new PluginImporter (units);
+                    LOG.fine ("Already installed plugins: " + importer.getInstalledPlugins ());
+                    LOG.fine ("Plugins available on UC: " + importer.getPluginsAvailableToInstall ());
+                    LOG.fine ("Plugins available for import: " + importer.getPluginsToImport ());
+                    if (! importer.getBrokenPlugins ().isEmpty ()) {
+                        LOG.info ("Plugins for import with broken dependencies: " + importer.getBrokenPlugins ());
+                    }
+                    if ( ! importer.getPluginsToImport ().isEmpty () ||  ! importer.getPluginsAvailableToInstall ().isEmpty ()) {
+                        ImportManager notifier = new ImportManager (importFrom, getUserDir (), importer);
+                        notifier.notifyAvailable ();
                     }
                 } catch (Exception x) {
-                    Exceptions.printStackTrace (x);
+                    LOG.log (Level.INFO, x.getLocalizedMessage () + " while importing plugins from " + importFrom, x);
                 } finally {
                     UpdateUnitProviderFactory.getDefault ().remove (clusterUpdateProvider);
                 }

@@ -53,16 +53,12 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateLicense;
 import org.netbeans.spi.autoupdate.UpdateProvider;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -78,22 +74,12 @@ import org.xml.sax.SAXException;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.autoupdate.UpdateProvider.class)
 public class ClusterUpdateProvider implements UpdateProvider {
+    
     private static File cluster = null;
-
-    public static final String CODE_NAME = "ClusterUpdateProvider";
-    private static final String REMOVED_MASK ="_removed";
     private static Logger LOG = Logger.getLogger (ClusterUpdateProvider.class.getName ());
     private static final String ELEMENT_MODULE = "module"; // NOI18N
 
-    public ClusterUpdateProvider () {
-        // XXX: Hack Autoupdate API
-        try {
-            Preferences p = getPreferences ().node (CODE_NAME + REMOVED_MASK);
-            p.removeNode ();
-        } catch (BackingStoreException ex) {
-            Exceptions.printStackTrace (ex);
-        }
-    }
+    public ClusterUpdateProvider () {}
 
     public static void attachCluster (File newCluster) {
         if (newCluster == null) {
@@ -103,7 +89,7 @@ public class ClusterUpdateProvider implements UpdateProvider {
     }
 
     public String getName () {
-        return CODE_NAME;
+        return Installer.CODE_NAME;
     }
 
     public String getDisplayName () {
@@ -202,10 +188,6 @@ public class ClusterUpdateProvider implements UpdateProvider {
             attr.put (name, value);
         }
 
-    }
-
-    private static Preferences getPreferences() {
-        return NbPreferences.root ().node ("/org/netbeans/modules/autoupdate"); // NOI18N
     }
 
 }
