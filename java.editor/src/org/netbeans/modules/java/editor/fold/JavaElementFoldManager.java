@@ -121,11 +121,11 @@ public class JavaElementFoldManager extends JavaFoldManager {
 
     public synchronized void initFolds(FoldHierarchyTransaction transaction) {
         Document doc = operation.getHierarchy().getComponent().getDocument();
-        DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+        Object od = doc.getProperty(Document.StreamDescriptionProperty);
         
-        if (od != null) {
+        if (od instanceof DataObject) {
             currentFolds = new HashMap<FoldInfo, Fold>();
-            task = JavaElementFoldTask.getTask(od.getPrimaryFile());
+            task = JavaElementFoldTask.getTask(((DataObject)od).getPrimaryFile());
             task.setJavaElementFoldManager(JavaElementFoldManager.this);
         }
     }

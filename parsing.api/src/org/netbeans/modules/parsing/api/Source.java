@@ -53,8 +53,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-
 import javax.swing.text.EditorKit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
@@ -166,8 +169,12 @@ public final class Source {
                 if (fileObject != null) {
                     source = Source._get(mimeType, fileObject);
                 } else {
-                    // file-less document
-                    source = new Source(mimeType, document, null);
+                    if ("text/x-dialog-binding".equals(mimeType)) { //NOI18N
+                        InputAttributes attributes = (InputAttributes) document.getProperty(InputAttributes.class);
+                        LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
+                        fileObject = (FileObject) attributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
+                    }
+                    source = new Source(mimeType, document, fileObject);
                 }
                 document.putProperty(Source.class, new WeakReference<Source>(source));
             }
