@@ -55,13 +55,13 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresent
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.display.ImageItemDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.injector.ImageItemInjectorPresenter;
 import org.openide.util.NbBundle;
 
 import java.util.*;
 import org.netbeans.modules.vmd.midp.codegen.MidpDatabindingCodeSupport;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 
 /**
  *
