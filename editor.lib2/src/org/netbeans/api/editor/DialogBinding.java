@@ -49,8 +49,6 @@ public final class DialogBinding {
      * @param offset position at which content of the component will be virtually placed
      * @param length how many characters replace from the original file
      * @param component component to bind
-     * @return {@link JavaSource} or null
-     * @since 1.1
      */
     public static void bindComponentToFile(final FileObject fileObject, int offset, int length, final JTextComponent component) {
         Parameters.notNull("fileObject", fileObject); //NOI18N
