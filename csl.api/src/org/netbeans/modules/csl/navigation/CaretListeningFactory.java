@@ -41,20 +41,24 @@
 
 package org.netbeans.modules.csl.navigation;
 
-import org.netbeans.modules.csl.api.CancellableTask;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.modules.csl.api.Phase;
-import org.netbeans.napi.gsfret.source.Source.Priority;
-import org.netbeans.napi.gsfret.source.support.CaretAwareSourceTaskFactory;
-import org.openide.filesystems.FileObject;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 
-public class CaretListeningFactory extends CaretAwareSourceTaskFactory {
+public class CaretListeningFactory extends TaskFactory {
     
     public CaretListeningFactory() {
-        super(Phase.RESOLVED, Priority.MIN);
+        super(); // XXX: Phase.RESOLVED, Priority.MIN
     }
 
-    public CancellableTask<CompilationInfo> createTask(FileObject fileObject) {
-        return new CaretListeningTask(fileObject);
+    @Override
+    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        if (snapshot.getSource().getMimeType().equals(snapshot.getMimeType())) {
+            return Collections.singleton(new CaretListeningTask());
+        } else {
+            return Collections.<SchedulerTask>emptyList();
+        }
     }
 }

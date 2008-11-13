@@ -44,6 +44,7 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
  *
@@ -51,8 +52,8 @@ import org.netbeans.modules.parsing.spi.Parser;
  */
 public abstract class ParserResult extends Parser.Result {
 
-    protected ParserResult(Snapshot snapshot) {
-        super(snapshot);
+    protected ParserResult(Snapshot snapshot, SchedulerEvent event) {
+        super(snapshot, event);
     }
 
     public abstract Phase toPhase (Phase phase);

@@ -54,12 +54,12 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.navigation.actions.OpenAction;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -185,13 +185,13 @@ public class ElementNode extends AbstractNode {
         }        
     }
 
-    public ElementNode getMimeRootNodeForOffset(CompilationInfo info, int offset) {
+    public ElementNode getMimeRootNodeForOffset(ParserResult info, int offset) {
         if (getDescription().getPosition() > offset) {
             return null;
         }
         
         // Look up the current mime type
-        Document document = info.getDocument();
+        Document document = info.getSnapshot().getSource().getDocument();
         if (document == null) {
             return null;
         }

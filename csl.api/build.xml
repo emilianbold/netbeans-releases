@@ -9,7 +9,7 @@
     <target name="javadoc" depends="init-javadoc, projectized.javadoc"/>
     <target name="init-javadoc">
         <mkdir dir="${netbeans.javadoc.dir}/org-netbeans-modules-csl-api"/>
-	<copy todir="${netbeans.javadoc.dir}/org-netbeans-modules-csl-api">
+        <copy todir="${netbeans.javadoc.dir}/org-netbeans-modules-csl-api">
             <fileset dir="doc">
                 <include name="*.png"/>
                 <include name="*.html"/>

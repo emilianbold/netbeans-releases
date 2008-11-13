@@ -41,9 +41,10 @@
 
 package org.netbeans.modules.csl.navigation;
 
-import org.netbeans.modules.csl.api.CancellableTask;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
 
 /**
  * This file is originally from Retouche, the Java Support
@@ -54,16 +55,14 @@ import org.openide.filesystems.FileObject;
  * This task is called every time the caret position changes in a GSF editor.
  * It delegates to the navigator to show the current selection.
  */
-public class CaretListeningTask implements CancellableTask<CompilationInfo> {
+public class CaretListeningTask extends ParserResultTask<ParserResult> {
     
-    private FileObject fileObject;
     private boolean canceled;
     
-    CaretListeningTask(FileObject fileObject) {
-        this.fileObject = fileObject;
+    CaretListeningTask() {
     }
     
-    public void run(CompilationInfo compilationInfo) {
+    public @Override void run(ParserResult result) {
         resume();
         
         boolean navigatorShouldUpdate = ClassMemberPanel.getInstance() != null; // XXX set by navigator visible
@@ -72,9 +71,9 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             return;
         }
         
-        int offset = CaretListeningFactory.getLastPosition(fileObject);
+        int offset = ((CursorMovedSchedulerEvent) result.getEvent()).getCaretOffset();
         if (offset != -1) {
-            ClassMemberPanel.getInstance().selectElement(compilationInfo, offset);
+            ClassMemberPanel.getInstance().selectElement(result, offset);
         }
     }
 
@@ -92,5 +91,13 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
     
     protected final synchronized void resume() {
         canceled = false;
+    }
+
+    public @Override int getPriority() {
+        return Integer.MAX_VALUE;
+    }
+
+    public @Override Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
     }
 }

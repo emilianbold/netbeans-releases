@@ -54,12 +54,9 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.api.StructureScanner.Configuration;
-import org.netbeans.modules.csl.navigation.ClassMemberFilters;
-import org.netbeans.modules.csl.navigation.ElementNode;
 import org.netbeans.modules.csl.navigation.actions.FilterSubmenuAction;
 import org.netbeans.modules.csl.navigation.actions.SortActionSupport.SortByNameAction;
 import org.netbeans.modules.csl.navigation.actions.SortActionSupport.SortBySourceAction;
@@ -68,6 +65,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.modules.csl.navigation.base.TapPanel;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
@@ -180,7 +178,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         });
     }
 
-    public void selectElementNode(final CompilationInfo info, final int offset) {
+    public void selectElementNode(final ParserResult info, final int offset) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 ElementNode root = getRootNode();

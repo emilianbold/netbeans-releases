@@ -44,7 +44,7 @@ package org.netbeans.modules.csl.navigation;
 import javax.swing.JComponent;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
-import org.netbeans.modules.csl.api.CompilationInfo;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -103,7 +103,7 @@ public class ClassMemberPanel implements NavigatorPanel {
         return getClassMemberPanelUI();
     }
 
-    public void selectElement(CompilationInfo info, int offset) {
+    public void selectElement(ParserResult info, int offset) {
         getClassMemberPanelUI().selectElementNode(info, offset);
     }
     
