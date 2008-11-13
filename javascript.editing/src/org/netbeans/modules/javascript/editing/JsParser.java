@@ -93,7 +93,7 @@ public class JsParser extends Parser {
     // ------------------------------------------------------------------------
 
     public @Override void parse(Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
-        Context context = new Context(snapshot);
+        Context context = new Context(snapshot, event);
         lastResult = parseBuffer(context, Sanitize.NONE);
     }
 
@@ -345,7 +345,7 @@ public class JsParser extends Parser {
 
         return offset;
     }
-    
+
     public JsParseResult parse(Snapshot snapshot, EditHistory history, ParserResult prevResult) {
         if (history == null) {
             return null;
@@ -427,7 +427,7 @@ public class JsParser extends Parser {
             return null;
         }
 
-        Context context = new Context(snapshot);
+        Context context = new Context(snapshot, null);
 
         // This should not happen unless there is an error in the EditHistory...
         int docLength = context.source.length();
@@ -540,7 +540,7 @@ public class JsParser extends Parser {
             //AstRootElement rootElement = new AstRootElement(context.file.getFileObject(), root, result);
 
             AstNodeAdapter ast = new AstNodeAdapter(null, previousRoot);
-            JsParseResult r = createParseResult(context.snapshot, previousRoot);
+            JsParseResult r = createParseResult(context.snapshot, context.event, previousRoot);
 
             JsParseResult.IncrementalParse incrementalInfo =
                     new JsParseResult.IncrementalParse(oldFunction, newFunction,
@@ -581,7 +581,7 @@ public class JsParser extends Parser {
             }
 
             r.setErrors(allErrors);
-            
+
             // Prevent accidental traversal of the old function
             while (oldFunction.hasChildren()) {
                 Node child = oldFunction.getFirstChild();
@@ -647,7 +647,7 @@ public class JsParser extends Parser {
 
         switch (sanitizing) {
         case NEVER:
-            return createParseResult(context.snapshot, null);
+            return createParseResult(context.snapshot, context.event, null);
 
         case NONE:
 
@@ -697,7 +697,7 @@ public class JsParser extends Parser {
         case MISSING_END:
         default:
             // We're out of tricks - just return the failed parse result
-            return createParseResult(context.snapshot, null);
+            return createParseResult(context.snapshot, context.event, null);
         }
     }
 
@@ -814,7 +814,7 @@ public class JsParser extends Parser {
             //AstRootElement rootElement = new AstRootElement(context.file.getFileObject(), root, result);
 
             AstNodeAdapter ast = new AstNodeAdapter(null, root);
-            JsParseResult r = createParseResult(context.snapshot, root);
+            JsParseResult r = createParseResult(context.snapshot, context.event, root);
             r.setSanitized(context.sanitized, context.sanitizedRange, context.sanitizedContents);
             r.setSource(source);
             return r;
@@ -889,8 +889,8 @@ public class JsParser extends Parser {
         return "json".equals(context.snapshot.getSource().getFileObject().getExt()); // NOI18N
     }
     
-    private JsParseResult createParseResult(Snapshot file, Node rootNode) {
-        return new JsParseResult(this, file, rootNode);
+    private JsParseResult createParseResult(Snapshot file, SchedulerEvent event, Node rootNode) {
+        return new JsParseResult(this, file, event, rootNode);
     }
     
     /**
@@ -1017,6 +1017,7 @@ public class JsParser extends Parser {
     /** Parsing context */
     public static class Context {
         private final Snapshot snapshot;
+        private final SchedulerEvent event;
         private /*final*/ String source;
         private /*final*/ int caretOffset;
         
@@ -1028,8 +1029,9 @@ public class JsParser extends Parser {
         private String sanitizedContents;
         private Sanitize sanitized = Sanitize.NONE;
         
-        public Context(Snapshot snapshot) {
+        public Context(Snapshot snapshot, SchedulerEvent event) {
             this.snapshot = snapshot;
+            this.event = event;
             this.source = asString(snapshot.getText());
             this.caretOffset = getCaretOffset(snapshot);
         }

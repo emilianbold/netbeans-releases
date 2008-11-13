@@ -52,7 +52,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -78,8 +78,8 @@ public class JsOccurrenceFinder extends OccurrencesFinder<JsParseResult> {
         return 200;
     }
 
-    public final @Override Class<? extends TaskScheduler> getSchedulerClass() {
-        return TaskScheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
+    public final @Override Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
     }
 
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {

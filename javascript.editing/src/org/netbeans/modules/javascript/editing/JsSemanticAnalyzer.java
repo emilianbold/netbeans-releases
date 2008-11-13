@@ -51,9 +51,8 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.javascript.editing.embedding.JsModel;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 
 /**
  * Semantically analyze a given JavaScript buffer
@@ -83,7 +82,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer {
         cancelled = true;
     }
 
-    public @Override void run(Result result, Snapshot snapshot) {
+    public @Override void run(Result result) {
         resume();
 
         if (isCancelled()) {
@@ -113,8 +112,8 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer {
         return 0;
     }
 
-    public @Override Class<? extends TaskScheduler> getSchedulerClass() {
-        return TaskScheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+    public @Override Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
     }
 
     // -----------------------------------------------------------------------

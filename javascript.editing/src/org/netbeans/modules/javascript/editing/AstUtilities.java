@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
@@ -53,15 +53,15 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.ParserFile;
-import org.netbeans.modules.csl.api.SourceModel;
-import org.netbeans.modules.csl.api.SourceModelFactory;
 import org.netbeans.modules.csl.api.annotations.NonNull;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -178,31 +178,16 @@ public final class AstUtilities {
             return null;
         }
 
-        SourceModel model = SourceModelFactory.getInstance().getModel (fo);
-        if (model == null) {
-            return null;
-        }
-        final ParserResult[] infoHolder = new ParserResult[1];
+        Source source = Source.create(fo);
+        final Parser.Result [] infoHolder = new Parser.Result [1];
         try {
-            model.runUserActionTask(new ParserResultTask<ParserResult>() {
-                public @Override int getPriority() {
-                    return 0;
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    infoHolder[0] = resultIterator.getParserResult();
                 }
-
-                public @Override void run(ParserResult result) {
-                    infoHolder[0] = result;
-                }
-
-                public @Override void cancel() {
-                }
-
-
-                public @Override Class<? extends TaskScheduler> getSchedulerClass() {
-                    return null;
-                }
-
-            }, true);
-        } catch (IOException ex) {
+            });
+        } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
             return null;
         }

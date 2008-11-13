@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 
 /**
@@ -77,14 +78,15 @@ public class JsParseResult extends ParserResult {
     private boolean commentsAdded;
     private IncrementalParse incrementalParse;
 
-    public JsParseResult(JsParser parser, Snapshot snapshot, Node rootNode) {
-        super(snapshot);
+    public JsParseResult(JsParser parser, Snapshot snapshot, SchedulerEvent event, Node rootNode) {
+        super(snapshot, event);
         this.parser = parser;
         this.rootNode = rootNode;
     }
 
-    public @Override void toPhase(Phase phase) {
+    public @Override Phase toPhase(Phase phase) {
         // javascript parser does not support phases
+        return phase;
     }
 
     public @Override List<? extends Error> getDiagnostics() {
