@@ -194,7 +194,8 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
         public String getColumnName(int column) {
             return columnNames[column];
         }
-        
+
+        @SuppressWarnings("unchecked")
         private void refresh() {
             values.clear();
             Collection<RegisterValue> res = 

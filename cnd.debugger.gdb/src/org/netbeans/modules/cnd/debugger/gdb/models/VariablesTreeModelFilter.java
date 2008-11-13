@@ -83,7 +83,7 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
     private RequestProcessor evaluationRP = new RequestProcessor();
     
     private RequestProcessor.Task evaluationTask;
-    
+
     private final LinkedList evaluationQueue = new LinkedList();
     
     
@@ -119,7 +119,8 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
             }
         }
     }
-    
+
+    @SuppressWarnings("unchecked")
     private void postEvaluationMonitor(Object o, Runnable whenEvaluated) {
         synchronized (evaluationQueue) {
             if (evaluationQueue.contains(o) &&
@@ -439,6 +440,7 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
      *                      will be executed when the object becomes evaluated.
      * @return The filter or <code>null</code>.
      */
+    @SuppressWarnings("unchecked")
     private VariablesFilter getFilter (Object o, boolean checkEvaluated, Runnable whenEvaluated) {
         if (typeToFilter == null) {
             typeToFilter = new HashMap ();

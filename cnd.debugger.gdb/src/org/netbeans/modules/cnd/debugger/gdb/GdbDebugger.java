@@ -1844,6 +1844,7 @@ public class GdbDebugger implements PropertyChangeListener {
      *
      * @param reason a reason why program is stopped
      */
+    @SuppressWarnings("unchecked")
     private boolean breakpointValidation(int token, Object o) {
         BreakpointImpl impl = pendingBreakpointMap.get(token);
 
