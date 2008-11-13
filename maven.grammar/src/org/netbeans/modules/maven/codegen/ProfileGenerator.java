@@ -40,20 +40,30 @@
  */
 package org.netbeans.modules.maven.codegen;
 
-import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.maven.model.pom.Activation;
+import org.netbeans.modules.maven.model.pom.ActivationFile;
+import org.netbeans.modules.maven.model.pom.ActivationOS;
+import org.netbeans.modules.maven.model.pom.ActivationProperty;
+import org.netbeans.modules.maven.model.pom.BuildBase;
+import org.netbeans.modules.maven.model.pom.Dependency;
+import org.netbeans.modules.maven.model.pom.DependencyManagement;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.maven.model.pom.PluginManagement;
 import org.netbeans.modules.maven.model.pom.Profile;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -84,24 +94,80 @@ public class ProfileGenerator implements CodeGenerator {
     }
 
     public String getDisplayName() {
-        return "Profile...";
+        return NbBundle.getMessage(ProfileGenerator.class, "NAME_Profile");
     }
 
     public void invoke() {
         if (!model.getState().equals(State.VALID)) {
             //TODO report somehow, status line?
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ProfileGenerator.class, "MSG_Cannot_Parse"));
             return;
         }
         NewProfilePanel panel = new NewProfilePanel(model);
-        DialogDescriptor dd = new DialogDescriptor(panel, "Add new profile");
+        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ProfileGenerator.class, "TIT_Add_profile"));
         Object ret = DialogDisplayer.getDefault().notify(dd);
         if (ret == DialogDescriptor.OK_OPTION) {
             String id = panel.getProfileId();
             Profile prof = model.getProject().findProfileById(id);
+            boolean pomPackaging = "pom".equals(model.getProject().getPackaging()); //NOI18N
             if (prof == null) {
                 prof = model.getFactory().createProfile();
                 model.startTransaction();
                 prof.setId(id);
+                if (panel.generateDependencies()) {
+                    Dependency dep = model.getFactory().createDependency();
+                    dep.setGroupId("foo"); //NOI18N
+                    dep.setArtifactId("bar"); //NOI18N
+                    dep.setVersion("1.0"); //NOI18N
+                    if (pomPackaging) {
+                        DependencyManagement dm = model.getFactory().createDependencyManagement();
+                        prof.setDependencyManagement(dm);
+                        dm.addDependency(dep);
+                    } else {
+                        prof.addDependency(dep);
+                    }
+                }
+                if (panel.generatePlugins()) {
+                    BuildBase base = model.getFactory().createBuildBase();
+                    prof.setBuildBase(base);
+                        Plugin plug = model.getFactory().createPlugin();
+                        plug.setGroupId("foo"); //NOI18N
+                        plug.setArtifactId("bar"); //NOI18N
+                        plug.setVersion("1.0"); //NOI18N
+                    if (pomPackaging) {
+                        PluginManagement pm = model.getFactory().createPluginManagement();
+                        base.setPluginManagement(pm);
+                        pm.addPlugin(plug);
+                    } else {
+                        base.addPlugin(plug);
+                    }
+                }
+                if (panel.isActivation()) {
+                    Activation act = model.getFactory().createActivation();
+                    prof.setActivation(act);
+                    if (panel.isActiovationByProperty()) {
+                        ActivationProperty prop = model.getFactory().createActivationProperty();
+                        act.setActivationProperty(prop);
+                        prop.setName("foo");//NOI18N
+                        prop.setValue("bar");//NOI18N
+                    }
+                    if (panel.isActiovationByFile()) {
+                        ActivationFile file = model.getFactory().createActivationFile();
+                        act.setActivationFile(file);
+                        file.setExists("${basedir}/foo.bar"); //NOI18N
+                    }
+                    if (panel.isActiovationByOS()) {
+                        ActivationOS os = model.getFactory().createActivationOS();
+                        if (Utilities.isWindows()) {
+                            os.setFamily("Windows");//NOI18N
+                        } else if (Utilities.isMac()) {
+                            os.setFamily("MacOS");//NOI18N
+                        } else if (Utilities.isUnix()) {
+                            os.setFamily("Linux");//NOI18N
+                        }
+                        act.setActivationOS(os);
+                    }
+                }
                 model.getProject().addProfile(prof);
                 model.endTransaction();
                 try {

@@ -40,6 +40,7 @@
 package org.netbeans.modules.maven.codegen;
 
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.openide.awt.Mnemonics;
 
 /**
  *
@@ -51,6 +52,12 @@ public class NewProfilePanel extends javax.swing.JPanel {
     public NewProfilePanel(POMModel model) {
         initComponents();
         this.model = model;
+        boolean pomPackaging = "pom".equals(model.getProject().getPackaging()); //NOI18N
+        if (!pomPackaging) {
+            Mnemonics.setLocalizedText(cbPlugins, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.cbPlugins.text2")); // NOI18N
+            Mnemonics.setLocalizedText(cbDependencies, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.cbDependencies.text2")); // NOI18N
+        }
+        lblHint.setText(""); //NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -64,10 +71,27 @@ public class NewProfilePanel extends javax.swing.JPanel {
 
         lblId = new javax.swing.JLabel();
         txtId = new javax.swing.JTextField();
+        cbActProperty = new javax.swing.JCheckBox();
+        cbActOS = new javax.swing.JCheckBox();
+        cbActFile = new javax.swing.JCheckBox();
+        cbPlugins = new javax.swing.JCheckBox();
+        cbDependencies = new javax.swing.JCheckBox();
+        lblHint = new javax.swing.JLabel();
 
-        lblId.setText(org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.lblId.text")); // NOI18N
+        lblId.setLabelFor(txtId);
+        org.openide.awt.Mnemonics.setLocalizedText(lblId, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.lblId.text")); // NOI18N
 
-        txtId.setText(org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.txtId.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbActProperty, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.cbActProperty.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbActOS, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.cbActOS.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbActFile, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.cbActFile.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbPlugins, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.cbPlugins.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbDependencies, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.cbDependencies.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.lblHint.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -75,9 +99,17 @@ public class NewProfilePanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(lblId)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(txtId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
+                    .add(cbDependencies)
+                    .add(cbPlugins)
+                    .add(cbActFile)
+                    .add(cbActOS)
+                    .add(cbActProperty)
+                    .add(layout.createSequentialGroup()
+                        .add(lblId)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(txtId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -87,12 +119,29 @@ public class NewProfilePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblId)
                     .add(txtId, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(269, Short.MAX_VALUE))
+                .add(18, 18, 18)
+                .add(cbActProperty)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbActOS)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbActFile)
+                .add(18, 18, 18)
+                .add(cbPlugins)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbDependencies)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 49, Short.MAX_VALUE)
+                .add(lblHint))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox cbActFile;
+    private javax.swing.JCheckBox cbActOS;
+    private javax.swing.JCheckBox cbActProperty;
+    private javax.swing.JCheckBox cbDependencies;
+    private javax.swing.JCheckBox cbPlugins;
+    private javax.swing.JLabel lblHint;
     private javax.swing.JLabel lblId;
     private javax.swing.JTextField txtId;
     // End of variables declaration//GEN-END:variables
@@ -100,4 +149,30 @@ public class NewProfilePanel extends javax.swing.JPanel {
     String getProfileId() {
         return txtId.getText();
     }
+
+
+    boolean isActivation() {
+        return isActiovationByFile() || isActiovationByOS() || isActiovationByProperty();
+    }
+
+    boolean isActiovationByProperty() {
+        return cbActProperty.isSelected();
+    }
+
+    boolean isActiovationByOS() {
+        return cbActOS.isSelected();
+    }
+
+    boolean isActiovationByFile() {
+        return cbActFile.isSelected();
+    }
+
+    boolean generateDependencies() {
+        return cbDependencies.isSelected();
+    }
+
+    boolean generatePlugins() {
+        return cbPlugins.isSelected();
+    }
+
 }
