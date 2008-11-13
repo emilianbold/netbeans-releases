@@ -38,42 +38,41 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import javax.swing.text.EditorKit;
-import org.netbeans.modules.cnd.test.base.BaseDocumentUnitTestCase;
+import junit.framework.TestCase;
 
 /**
- * base test case for C++ language based document
+ *
  * @author Vladimir Voskresensky
  */
-public class CCBaseDocumentUnitTestCase 
-        extends BaseDocumentUnitTestCase 
-{
-    private boolean isPlusPlus;
+public class SpaceAndLineSeparatorTestCase extends TestCase {
     
-    public CCBaseDocumentUnitTestCase(String testMethodName) {
-        super(testMethodName);
-        this.isPlusPlus = true;
+    public SpaceAndLineSeparatorTestCase(String testName) {
+        super(testName);
     }
     
-    /**
-     * Create editor kit instance to be returned
-     * by {@link #getEditorKit()}.
-     * <br>
-     * The returned editor kit should return
-     * <code>BaseDocument</code> instances
-     * from its {@link javax.swing.text.EditorKit.createDefaultDocument()}.
-     */    
-    protected EditorKit createEditorKit() {
-        if (isCPlusPlus()) {
-            return new CCKit();
-        } else {
-            return new CKit();
-        }
+    public void testIsSpace() {
+        boolean res = Character.isSpaceChar(' ');
+        assertTrue("Character.isSpaceChar for ' ' must be true", res);
+        res = Character.isSpaceChar('\n');
+        assertFalse("Character.isSpaceChar for '\\n' must be false ", res);
+        res = Character.isSpaceChar('\t');
+        assertFalse("Character.isSpaceChar for '\\t' must be false", res);
+        res = Character.isSpaceChar('\r');
+        assertFalse("Character.isSpaceChar for '\\r' must be false", res);
     }
-
-    protected boolean isCPlusPlus() {
-        return this.isPlusPlus;
+    
+    public void testIsWhitespace() {
+        boolean res = Character.isWhitespace(' ');
+        assertTrue("Character.isWhitespace for ' ' must be true", res);
+        res = Character.isWhitespace('\n');
+        assertTrue("Character.isWhitespace for '\\n' must be true ", res);
+        res = Character.isWhitespace('\t');
+        assertTrue("Character.isWhitespace for '\\t' must be true", res);
+        res = Character.isWhitespace('\r');
+        assertTrue("Character.isWhitespace for '\\r' must be true", res);
     }
+    
 }

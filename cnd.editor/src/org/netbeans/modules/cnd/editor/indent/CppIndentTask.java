@@ -67,20 +67,45 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
             codeStyle = CodeStyle.getDefault(doc);
         }
         int caretOffset = context.caretOffset();
-        ts = CndLexerUtilities.getCppTokenSequence(doc, caretOffset);
+        int lineOffset = context.lineStartOffset(caretOffset);
+        ts = CndLexerUtilities.getCppTokenSequence(doc, lineOffset);
         if (ts == null || !ts.moveNext()) {
             return;
         }
         int indent = indentLine(new TokenItem(ts, true), caretOffset);
-        if (indent > 0) {
-            context.modifyIndent(context.lineStartOffset(caretOffset), indent);
+        if (indent >= 0) {
+            context.modifyIndent(lineOffset, indent);
         }
     }
 
     public ExtraLock indentLock() {
         return null;
     }
-    
+
+    public boolean isHotChar(int caretOffset, char c){
+        return false;
+    }
+
+    private TokenItem moveToFirstLineImportantToken(TokenItem token){
+        TokenItem t = token;
+        while(true) {
+            if (t == null) {
+                return token;
+            }
+            switch (t.getTokenID()){
+                case NEW_LINE:
+                case PREPROCESSOR_DIRECTIVE:
+                    return token;
+                case WHITESPACE:
+                    break;
+                default:
+                    return t;
+            }
+            token = t;
+            t = token.getNext();
+        }
+    }
+
     private int indentLine(TokenItem token, int caretOffset) {
         if (isPreprocessorLine(token)){
             // leave untouched for now, (bug#22570)
@@ -127,7 +152,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
             }
             return -1;
         }
-        return findIndent(token);
+        return findIndent(moveToFirstLineImportantToken(token));
     }
 
      /** Is given token a preprocessor **/
@@ -499,14 +524,14 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         if (codeStyle == null) {
             codeStyle = CodeStyle.getDefault(doc);
         }
-        ts = CndLexerUtilities.getCppTokenSequence(doc, caretOffset);
+        int lineOffset = IndentUtils.lineStartOffset(doc, caretOffset);
+        ts = CndLexerUtilities.getCppTokenSequence(doc, lineOffset);
         if (ts == null || !ts.moveNext()) {
             return;
         }
         int indent = indentLine(new TokenItem(ts, true), caretOffset);
-        if (indent > 0) {
-            int lineStartOffset = IndentUtils.lineStartOffset(doc, caretOffset);
-            modifyIndent(lineStartOffset, indent);
+        if (indent >= 0) {
+            modifyIndent(lineOffset, indent);
         }
     }
 

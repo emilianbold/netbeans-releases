@@ -28,22 +28,37 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.editor.options.EditorOptions;
 
 /**
+ * Class was taken from java
+ * Links point to java IZ.
+ * C/C++ specific tests begin from testReformatSimpleClass
  *
  * @author Alexander Simon
  */
-public class CCFormatterUnitTest extends NbTestSuite {
+public class IndentSingleTestCase extends EditorBase {
 
-    public CCFormatterUnitTest() {
-        super("C/C++ Formatter");
-        addTestSuite(CCBracketCompletionUnitTestCase.class);
-        addTestSuite(CCIndentUnitTestCase.class);
-        addTestSuite(CCNewFormatterUnitTestCase.class);
+    public IndentSingleTestCase(String testMethodName) {
+        super(testMethodName);
     }
-
-    public static NbTestSuite suite() {
-        return new CCFormatterUnitTest();
+    public void testEnterAfterIfBraceHalf() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace,
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        setLoadDocumentText(
+                "if (true)\n" +
+                "  {|\n" +
+                "  }\n"
+                );
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect new-line indent",
+                "if (true)\n" +
+                "  {\n" +
+                "    |\n" +
+                "  }\n"
+                );
     }
 }
