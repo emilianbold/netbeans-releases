@@ -39,18 +39,22 @@
 
 package org.netbeans.modules.php.editor;
 
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletion;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionContext;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionResultSet;
 import org.netbeans.modules.db.sql.editor.api.completion.SubstitutionHandler;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -58,7 +62,7 @@ import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
-import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 
 /**
@@ -152,9 +156,30 @@ public class PHPSQLCompletion implements CompletionProvider {
         return result;
     }
 
-    private static final class Query extends AsyncCompletionQuery {
+    // XXX temporary until a way to store/get the dbconn to/from the project is found.
+    private final static Map<Project, DatabaseConnection> project2DBConn = new WeakHashMap<Project, DatabaseConnection>();
 
-        private static final String DERBY_CONNECTION = "jdbc:derby://localhost/sample [app on APP]"; // NOI18N
+    public static DatabaseConnection getDatabaseConnection(Project project) {
+        synchronized (project2DBConn) {
+            return project2DBConn.get(project);
+        }
+    }
+
+    public static void setDatabaseConnection(Project project, DatabaseConnection dbconn) {
+        synchronized (project2DBConn) {
+            project2DBConn.put(project, dbconn);
+        }
+    }
+
+    private static Project getProject(Document doc) {
+        FileObject fo = NbEditorUtilities.getFileObject(doc);
+        if (fo == null) {
+            return null;
+        }
+        return FileOwnerQuery.getOwner(fo);
+    }
+
+    private static final class Query extends AsyncCompletionQuery {
 
         @Override
         protected void query(CompletionResultSet resultSet, Document document, int caretOffset) {
@@ -180,17 +205,21 @@ public class PHPSQLCompletion implements CompletionProvider {
                 return;
             }
             context = context.setOffset(statementCaretOffset);
-            DatabaseConnection dbconn = ConnectionManager.getDefault().getConnection(DERBY_CONNECTION);
-            if (dbconn == null) {
-                StatusDisplayer.getDefault().setStatusText("Connection not found: " + DERBY_CONNECTION); // NOI18N
+            Project project = getProject(document);
+            if (project == null) {
                 return;
             }
-            context = context.setDatabaseConnection(dbconn);
-            SQLCompletion completion = SQLCompletion.create(context);
-            SQLCompletionResultSet sqlResultSet = SQLCompletionResultSet.create();
-            completion.query(sqlResultSet, substHandler);
-            resultSet.addAllItems(sqlResultSet.getItems());
-            resultSet.setAnchorOffset(substHandler.getStatementOffset() + sqlResultSet.getAnchorOffset());
+            DatabaseConnection dbconn = getDatabaseConnection(project);
+            if (dbconn == null) {
+                resultSet.addItem(new SelectConnectionItem(project));
+            } else {
+                context = context.setDatabaseConnection(dbconn);
+                SQLCompletion completion = SQLCompletion.create(context);
+                SQLCompletionResultSet sqlResultSet = SQLCompletionResultSet.create();
+                completion.query(sqlResultSet, substHandler);
+                resultSet.addAllItems(sqlResultSet.getItems());
+                resultSet.setAnchorOffset(substHandler.getStatementOffset() + sqlResultSet.getAnchorOffset());
+            }
         }
 
         private EmbeddedSQLStatement computeSQLStatement(final Document document, final int caretOffset) {
