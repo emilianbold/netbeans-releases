@@ -2084,10 +2084,6 @@ public class GdbDebugger implements PropertyChangeListener {
         return ticache;
     }
 
-    /**
-     * @deprecated use requestValueEx instead
-     */
-    @Deprecated
     public String requestValue(String name) {
         try {
             return requestValueEx(name);
