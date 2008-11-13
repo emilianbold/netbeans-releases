@@ -56,19 +56,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
-import org.netbeans.modules.java.source.parsing.ClasspathInfoMultiLanguageTask;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -426,7 +420,7 @@ public final class JavaSource {
     }
 
     //where
-    private static class MultiTask extends ClasspathInfoMultiLanguageTask {
+    private static class MultiTask extends ClasspathInfoTask {
 
         private final JavaSource js;
         private final Task<CompilationController> task;
@@ -634,7 +628,7 @@ public final class JavaSource {
             long start = System.currentTimeMillis();
             try {
                 final JavacParser[] theParser = new JavacParser[1];
-                final UserTask _task = new ClasspathInfoMultiLanguageTask(this.classpathInfo) {
+                final UserTask _task = new ClasspathInfoTask(this.classpathInfo) {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         final Snapshot snapshot = resultIterator.getSnapshot();
