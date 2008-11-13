@@ -180,7 +180,6 @@ public class MethodInfo extends ConstructorInfo
     }
     
     /* (non-Javadoc)
-     * @see com.embarcadero.integration.events.ElementInfo#getOwningProject()
      */
     public IProject getOwningProject() {
         return  operation != null? 

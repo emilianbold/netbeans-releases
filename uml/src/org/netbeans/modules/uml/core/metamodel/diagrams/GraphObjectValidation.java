@@ -55,7 +55,6 @@ public class GraphObjectValidation implements IGraphObjectValidation
     }
 
     /* (non-Javadoc)
-     * @see com.embarcadero.describe.diagrams.IGraphObjectValidation#addValidationKind(int)
      */
     public void addValidationKind(int nKind)
     {
@@ -75,7 +74,6 @@ public class GraphObjectValidation implements IGraphObjectValidation
     }
 
     /* (non-Javadoc)
-     * @see com.embarcadero.describe.diagrams.IGraphObjectValidation#areAnyValidationResultsInvalid()
      */
     public boolean areAnyValidationResultsInvalid()
     {
@@ -107,7 +105,6 @@ public class GraphObjectValidation implements IGraphObjectValidation
     }
 
     /* (non-Javadoc)
-     * @see com.embarcadero.describe.diagrams.IGraphObjectValidation#getValidationKind(int)
      */
     public boolean getValidationKind(int nKind)
     {
@@ -119,7 +116,6 @@ public class GraphObjectValidation implements IGraphObjectValidation
     }
 
     /* (non-Javadoc)
-     * @see com.embarcadero.describe.diagrams.IGraphObjectValidation#getValidationResult(int)
      */
     public int getValidationResult(int nKind)
     {
@@ -131,7 +127,6 @@ public class GraphObjectValidation implements IGraphObjectValidation
     }
 
     /* (non-Javadoc)
-     * @see com.embarcadero.describe.diagrams.IGraphObjectValidation#putValidationResult(int, int)
      */
     public void setValidationResult(int nKind, int nResult)
     {
@@ -142,7 +137,6 @@ public class GraphObjectValidation implements IGraphObjectValidation
     }
 
     /* (non-Javadoc)
-     * @see com.embarcadero.describe.diagrams.IGraphObjectValidation#removeValidationKind(int)
      */
     public void removeValidationKind(int nKind)
     {

@@ -56,7 +56,6 @@ public class ClassifierTransformEventsAdapter
 {
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierTransformEventsSink#onPreTransform(com.embarcadero.describe.coreinfrastructure.IClassifier, java.lang.String, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreTransform(
       IClassifier classifier,
@@ -67,7 +66,6 @@ public class ClassifierTransformEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierTransformEventsSink#onTransformed(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onTransformed(IClassifier classifier, IResultCell cell)
    {
