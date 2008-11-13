@@ -98,7 +98,7 @@ public final class DialogBindingEmbeddingProvider extends EmbeddingProvider {
 
     @Override
     public Class<? extends Scheduler> getSchedulerClass() {
-        throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        return null;
     }
 
     @Override
