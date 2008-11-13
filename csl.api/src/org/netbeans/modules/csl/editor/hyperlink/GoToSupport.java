@@ -63,11 +63,10 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.Phase;
-import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
-import org.netbeans.modules.csl.editor.completion.GsfCompletionProvider;
+import org.netbeans.modules.csl.core.UiUtils;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -75,7 +74,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -104,13 +102,14 @@ public class GoToSupport {
     }
     
     private static String perform(final Document doc, final int offset, final boolean tooltip) {
-        if (SourceUtils.isScanInProgress()) {
-            if (!tooltip) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GsfCompletionProvider.class, "scanning-in-progress")); //NOI18N
-                Toolkit.getDefaultToolkit().beep();
-            }
-            return null;
-        }
+// XXX: parsingapi
+//        if (SourceUtils.isScanInProgress()) {
+//            if (!tooltip) {
+//                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GsfCompletionProvider.class, "scanning-in-progress")); //NOI18N
+//                Toolkit.getDefaultToolkit().beep();
+//            }
+//            return null;
+//        }
         
         if (tooltip && PopupUtil.isPopupShowing()) {
             return null;

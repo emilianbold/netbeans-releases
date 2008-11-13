@@ -76,7 +76,6 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
@@ -94,7 +93,6 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 
@@ -305,8 +303,11 @@ public class GsfCompletionProvider implements CompletionProvider {
                     //        js = Source.forFileObject(fo);
                     //}
                     if (source != null) {
-                        if (SourceUtils.isScanInProgress())
-                            resultSet.setWaitText(NbBundle.getMessage(GsfCompletionProvider.class, "scanning-in-progress")); //NOI18N
+// XXX: parsingapi
+//                        if (SourceUtils.isScanInProgress()) {
+//                            resultSet.setWaitText(NbBundle.getMessage(GsfCompletionProvider.class, "scanning-in-progress")); //NOI18N
+//                        }
+                        
                         ParserManager.parse (
                             Collections.<Source> singleton (source),
                             new UserTask () {

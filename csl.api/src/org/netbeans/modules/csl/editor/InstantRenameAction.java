@@ -51,16 +51,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Phase;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -106,12 +102,13 @@ public class InstantRenameAction extends BaseAction {
 
                 return;
             }
-            
-            if (SourceUtils.isScanInProgress()) {
-                Utilities.setStatusBoldText(target, "Scanning In Progress");
 
-                return;
-            }
+// XXX: parsingapi
+//            if (SourceUtils.isScanInProgress()) {
+//                Utilities.setStatusBoldText(target, "Scanning In Progress");
+//
+//                return;
+//            }
 
             Source js = Source.create (DataLoadersBridge.getDefault().getFileObject(target));
             if (js == null) {

@@ -41,12 +41,10 @@
 
 package org.netbeans.modules.csl.editor.codetemplates;
 
-import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -54,16 +52,12 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.modules.csl.editor.completion.GsfCompletionProvider;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  * Code template filter for GSF: Delegates to the plugin to determine which
@@ -84,12 +78,13 @@ public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilte
         Source js = Source.create (component.getDocument());
         if (js != null) {
             try {
-                if (SourceUtils.isScanInProgress()) {
-                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GsfCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
-                    Toolkit.getDefaultToolkit().beep();
-                } else {
+// XXX: parsingapi
+//                if (SourceUtils.isScanInProgress()) {
+//                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GsfCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
+//                    Toolkit.getDefaultToolkit().beep();
+//                } else {
                     ParserManager.parse (Collections.<Source> singleton (js), this);
-                }
+//                }
             } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);
             }

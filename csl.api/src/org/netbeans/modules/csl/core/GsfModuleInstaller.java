@@ -49,17 +49,13 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
-import org.netbeans.modules.csl.source.ActivatedDocumentListener;
-import org.netbeans.modules.csl.source.SourceAccessor;
 import org.netbeans.modules.csl.source.usages.ClassIndexManager;
-import org.netbeans.modules.csl.source.usages.RepositoryUpdater;
 import org.netbeans.modules.csl.source.util.LowMemoryNotifierMBean;
 import org.netbeans.modules.csl.source.util.LowMemoryNotifierMBeanImpl;
 import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.WindowManager;
 
 
 public class GsfModuleInstaller extends ModuleInstall {
@@ -73,23 +69,6 @@ public class GsfModuleInstaller extends ModuleInstall {
 
     @Override
     public void restored() {
-        // Attempt to deal with load order problem deadlocking on the mac
-        // This was a quickfix for a similar bug to 126558; see
-        //  http://hg.netbeans.org/main/rev/63c10f6d307b
-        // for a better way to fix it
-        SourceAccessor.dummy = 1;
-        
-        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
-                public void run() {
-                    RP.post(new Runnable() {
-                        public void run() {
-                            RepositoryUpdater.getDefault();
-                            ActivatedDocumentListener.register();
-                        }
-                    });
-                }
-            });
-
         if (ENABLE_MBEANS) {
             registerMBeans();
         }
@@ -97,7 +76,6 @@ public class GsfModuleInstaller extends ModuleInstall {
     
     public @Override boolean closing () {
         final boolean ret = super.closing();
-        RepositoryUpdater.getDefault().close();
         try {
             for (final Language language : LanguageRegistry.getInstance()) {
                 if (language.getIndexer() != null) {

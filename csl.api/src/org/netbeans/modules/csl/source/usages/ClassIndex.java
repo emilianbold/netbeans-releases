@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.napi.gsfret.source;
+package org.netbeans.modules.csl.source.usages;
 
 import java.io.IOException;
 import java.net.URL;
@@ -54,10 +54,6 @@ import org.netbeans.modules.csl.api.Indexer;
 import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
-import org.netbeans.modules.csl.source.GlobalSourcePath;
-import org.netbeans.modules.csl.source.usages.ClassIndexFactory;
-import org.netbeans.modules.csl.source.usages.ClassIndexImpl;
-import org.netbeans.modules.csl.source.usages.ClassIndexManager;
 import org.openide.util.Exceptions;
 
 /**
@@ -209,44 +205,45 @@ public final class ClassIndex extends Index {
     // Public for the lucene browser
     public static
     /*private*/ void createQueriesForRoots (final Language language, final ClassPath cp, final boolean sources, final Set<? super ClassIndexImpl> queries) {
-        final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
-        List<ClassPath.Entry> entries = cp.entries();
-        Indexer indexer = language.getIndexer();
-        if (indexer == null) {
-            return;
-        }
-        
-	for (ClassPath.Entry entry : entries) {
-	    try {
-                if (!indexer.acceptQueryPath(entry.getURL().toExternalForm())) {
-                    continue;
-                }
-                URL[] srcRoots;
-                if (!sources) {
-                    URL srcRoot = org.netbeans.modules.csl.source.usages.Index.getSourceRootForClassFolder (language, entry.getURL());
-                    if (srcRoot != null) {
-                        srcRoots = new URL[] {srcRoot};
-                    }
-                    else {                        
-                        srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, true);                        
-                        if (srcRoots == null) {
-                            srcRoots = new URL[] {entry.getURL()};
-                        }
-                    }
-                    //End to be removed
-                }
-                else {
-                    srcRoots = new URL[] {entry.getURL()};
-                }                
-                for (URL srcRoot : srcRoots) {
-                    ClassIndexImpl ci = ClassIndexManager.get(language).getUsagesQuery(srcRoot);
-                    if (ci != null) {
-                        queries.add (ci);
-                    }
-                }
-	    } catch (IOException ioe) {
-		Exceptions.printStackTrace(ioe);
-	    }
-	}
+// XXX: parsingapi
+//        final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
+//        List<ClassPath.Entry> entries = cp.entries();
+//        Indexer indexer = language.getIndexer();
+//        if (indexer == null) {
+//            return;
+//        }
+//
+//	for (ClassPath.Entry entry : entries) {
+//	    try {
+//                if (!indexer.acceptQueryPath(entry.getURL().toExternalForm())) {
+//                    continue;
+//                }
+//                URL[] srcRoots;
+//                if (!sources) {
+//                    URL srcRoot = org.netbeans.modules.csl.source.usages.Index.getSourceRootForClassFolder (language, entry.getURL());
+//                    if (srcRoot != null) {
+//                        srcRoots = new URL[] {srcRoot};
+//                    }
+//                    else {
+//                        srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, true);
+//                        if (srcRoots == null) {
+//                            srcRoots = new URL[] {entry.getURL()};
+//                        }
+//                    }
+//                    //End to be removed
+//                }
+//                else {
+//                    srcRoots = new URL[] {entry.getURL()};
+//                }
+//                for (URL srcRoot : srcRoots) {
+//                    ClassIndexImpl ci = ClassIndexManager.get(language).getUsagesQuery(srcRoot);
+//                    if (ci != null) {
+//                        queries.add (ci);
+//                    }
+//                }
+//	    } catch (IOException ioe) {
+//		Exceptions.printStackTrace(ioe);
+//	    }
+//	}
     }
 }

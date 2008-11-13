@@ -47,8 +47,8 @@ import javax.swing.*;
 import java.awt.event.*;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.core.UiUtils;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.napi.gsfret.source.UiUtils;
 
 /**
  * This file is originally from Retouche, the Java Support 

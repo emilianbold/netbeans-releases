@@ -85,7 +85,6 @@ import org.netbeans.modules.csl.api.IndexDocument;
 import org.netbeans.modules.csl.api.Index.SearchResult;
 import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.csl.core.Language;
-import org.netbeans.napi.gsfret.source.ClassIndex;
 import org.netbeans.modules.csl.source.util.LowMemoryEvent;
 import org.netbeans.modules.csl.source.util.LowMemoryListener;
 import org.netbeans.modules.csl.source.util.LowMemoryNotifier;

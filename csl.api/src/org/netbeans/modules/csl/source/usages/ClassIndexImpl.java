@@ -49,7 +49,6 @@ import java.util.Set;
 import org.netbeans.modules.csl.api.Index.SearchResult;
 import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.napi.gsfret.source.ClassIndex;
 import org.openide.filesystems.FileObject;
 
 /** 

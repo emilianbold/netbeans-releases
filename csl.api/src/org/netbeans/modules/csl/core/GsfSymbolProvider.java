@@ -60,11 +60,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.IndexSearcher.Descriptor;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.modules.csl.navigation.Icons;
 import org.netbeans.modules.csl.source.usages.ClassIndexManager;
-import org.netbeans.modules.csl.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
@@ -98,15 +95,15 @@ public class GsfSymbolProvider implements SymbolProvider, IndexSearcher.Helper {
 
         public final boolean isBinary;
         public final FileObject fileObject;
-        public final ClasspathInfo classpathInfo;
+//        public final ClassPath classpathInfo;
         public String projectName;
         public Icon projectIcon;
 //        private ClassPath.Entry defEntry;
 
-        public CacheItem ( FileObject fileObject, ClasspathInfo classpathInfo, boolean isBinary ) {
+        public CacheItem ( FileObject fileObject, /* ClassPath classpathInfo,*/ boolean isBinary ) {
             this.isBinary = isBinary;
             this.fileObject = fileObject;
-            this.classpathInfo = classpathInfo;
+//            this.classpathInfo = classpathInfo;
         }
 
 //        Removed because of bad performance To reenable see diff between 1.15 and 1.16
@@ -223,15 +220,16 @@ public class GsfSymbolProvider implements SymbolProvider, IndexSearcher.Helper {
                 }
                 // Sources
                 time = System.currentTimeMillis();
-                ClassPath scp = RepositoryUpdater.getDefault().getScannedSources();
-                FileObject roots[] = scp.getRoots();
+// XXX: parsingapi
+//                ClassPath scp = RepositoryUpdater.getDefault().getScannedSources();
+//                FileObject roots[] = scp.getRoots();
+                FileObject roots[] = new FileObject[0];
                 gss += System.currentTimeMillis() - time;
                 FileObject root[] = new FileObject[1];
                 Set<CacheItem> sources = new HashSet<CacheItem>( roots.length );
                 for (int i = 0; i < roots.length; i++ ) {
                     root[0] = roots[i];
                     time = System.currentTimeMillis();
-                    ClasspathInfo ci = ClasspathInfo.create(EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(root));
                     //create(roots[i]);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("GoToTypeAction.getTypeNames created ClasspathInfo for source: " + FileUtil.getFileDisplayName(roots[i])+"\n");
@@ -241,7 +239,7 @@ public class GsfSymbolProvider implements SymbolProvider, IndexSearcher.Helper {
                         return;
                     }
                     else {
-                        sources.add( new CacheItem( roots[i], ci, false ) );
+                        sources.add( new CacheItem( roots[i], false ) );
                     }
                     cp += System.currentTimeMillis() - time;
                 }
@@ -250,8 +248,9 @@ public class GsfSymbolProvider implements SymbolProvider, IndexSearcher.Helper {
 
                 // Binaries
                 time = System.currentTimeMillis();
-                scp = RepositoryUpdater.getDefault().getScannedBinaries();
-                roots = scp.getRoots();
+// XXX: parsingapi
+//                scp = RepositoryUpdater.getDefault().getScannedBinaries();
+//                roots = scp.getRoots();
                 gsb += System.currentTimeMillis() - time;
                 root = new FileObject[1];
                 for (int i = 0; i < roots.length; i++ ) {
@@ -264,11 +263,10 @@ public class GsfSymbolProvider implements SymbolProvider, IndexSearcher.Helper {
                         sfb += System.currentTimeMillis() - time;
                         time = System.currentTimeMillis();
                         root[0] = roots[i];
-                        ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(root), EMPTY_CLASSPATH, EMPTY_CLASSPATH );//create(roots[i]);
                         if (LOGGER.isLoggable(Level.FINE)) {
                             LOGGER.fine("GoToTypeAction.getTypeNames created ClasspathInfo for binary: " + FileUtil.getFileDisplayName(roots[i])+"\n");
                         }
-                        sources.add( new CacheItem( roots[i], ci, true ) );
+                        sources.add( new CacheItem( roots[i], true ) );
 
                         cp += System.currentTimeMillis() - time;
                     }
@@ -318,12 +316,12 @@ public class GsfSymbolProvider implements SymbolProvider, IndexSearcher.Helper {
                     default:
                         textForQuery = text;
                 }
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("GoToTypeAction.getTypeNames queries usages of: " + ci.classpathInfo+"\n");
-                }
+//                if (LOGGER.isLoggable(Level.FINE)) {
+//                    LOGGER.fine("GoToTypeAction.getTypeNames queries usages of: " + ci.classpathInfo+"\n");
+//                }
 
                 //Set<? extends Element/*Handle<Element>*/> names = getTypes(index, textForQuery, indexNameKind,  EnumSet.of(ci.isBinary ? Index.SearchScope.DEPENDENCIES : Index.SearchScope.SOURCE ));
-                Set<? extends SymbolDescriptor> names = getSymbols(ci.classpathInfo, textForQuery, indexNameKind,  EnumSet.of(ci.isBinary ? Index.SearchScope.DEPENDENCIES : Index.SearchScope.SOURCE ));
+                Set<? extends SymbolDescriptor> names = getSymbols(ci.getRoot(), textForQuery, indexNameKind,  EnumSet.of(ci.isBinary ? Index.SearchScope.DEPENDENCIES : Index.SearchScope.SOURCE ));
                 //Set<ElementHandle<TypeElement>> names = ci.classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, indexNameKind, EnumSet.of( ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE ));
 //                if ( isCanceled ) {
                 if ( isCancelled ) {
@@ -362,23 +360,24 @@ public class GsfSymbolProvider implements SymbolProvider, IndexSearcher.Helper {
             }
         }
 
-        private Set<? extends SymbolDescriptor> getSymbols(ClasspathInfo classpathInfo, String textForQuery, NameKind kind, EnumSet<Index.SearchScope> scope) {
+        private Set<? extends SymbolDescriptor> getSymbols(FileObject root, String textForQuery, NameKind kind, EnumSet<Index.SearchScope> scope) {
             Set<GsfSymbolDescriptor> items = new HashSet<GsfSymbolDescriptor>();
             for (Language language : LanguageRegistry.getInstance()) {
                 IndexSearcher searcher = language.getIndexSearcher();
                 if (searcher != null) {
-                    Index index = classpathInfo.getClassIndex(language.getMimeType());
-                    try {
-                        Set<? extends Descriptor> set = searcher.getSymbols(index, textForQuery, kind, scope, this);
-                        if (set != null) {
-                            for (Descriptor desc : set) {
-                                GsfSymbolDescriptor d = new GsfSymbolDescriptor(desc);
-                                items.add(d);
-                            }
-                        }
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+// XXX: parsingapi
+//                    Index index = classpathInfo.getClassIndex(language.getMimeType());
+//                    try {
+//                        Set<? extends Descriptor> set = searcher.getSymbols(index, textForQuery, kind, scope, this);
+//                        if (set != null) {
+//                            for (Descriptor desc : set) {
+//                                GsfSymbolDescriptor d = new GsfSymbolDescriptor(desc);
+//                                items.add(d);
+//                            }
+//                        }
+//                    } catch (Exception ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    }
                 }
             }
             

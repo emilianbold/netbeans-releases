@@ -66,7 +66,7 @@ public class CachingIndexer {
      */
     private static final int CACHE_INDEX_SIZE = 300;
 
-    private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CachingIndexer.class.getName());
 
     private URL root;
     private int fileCountGuess;

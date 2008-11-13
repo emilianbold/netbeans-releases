@@ -38,25 +38,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.napi.gsfret.source;
+package org.netbeans.modules.csl.core;
 
 import org.netbeans.modules.csl.api.Phase;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.navigation.Icons;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -83,6 +86,9 @@ import org.openide.text.NbDocument;
  * @author Tor Norbye
  */
 public final class UiUtils {
+
+    private static final Logger LOG = Logger.getLogger(UiUtils.class.getName());
+    
     private UiUtils() {
     }
 
@@ -185,50 +191,52 @@ public final class UiUtils {
         final DeclarationLocation[] result = new DeclarationLocation[] { DeclarationLocation.NONE };
 
         Source js = Source.create(fo);
-        ParserManager.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void cancel() {
-                }
-
-                public void run(CompilationController info) {
-                    try {
-                        info.toPhase(Phase.RESOLVED);
-                    } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
+        try {
+            ParserManager.parse(Collections.singleton(js), new UserTask() {
+                public void run(ResultIterator resultIterator) throws ParseException {
+                    Parser.Result r = resultIterator.getParserResult();
+                    if (!(r instanceof ParserResult)) {
+                        return;
                     }
 
-                    FileObject fileObject = info.getFileObject();
+                    ParserResult info = (ParserResult) r;
+                    info.toPhase(Phase.RESOLVED);
+
+                    FileObject fileObject;
                     if (handle != null) {
                         fileObject = handle.getFileObject();
-                    }
-                    if (fileObject == null) {
+                    } else {
                         fileObject = fo;
                     }
 
-                    if (fileObject == info.getFileObject()) {
-                        Language language =
-                            LanguageRegistry.getInstance()
-                                            .getLanguageByMimeType(handle.getMimeType());
-                        Parser parser = language.getParser();
-                        //ParserResult pr = handle.getResult();
-                        //ElementHandle file = pr.getRoot();
-                        //if (file != null) {
-                            try {
-                                OffsetRange range = parser.getPositionManager().getOffsetRange(info, handle);
- 
-                                if (range != OffsetRange.NONE && range != null) {
-                                    result[0] = new DeclarationLocation(fileObject, range.getStart());
-                                }
-                            } catch (IllegalArgumentException iae) {
-                                result[0] = new DeclarationLocation(fileObject, 0);
-                            }
-                        //}
+                    if (fileObject == fo) {
+// XXX: parsingapi
+//                        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(handle.getMimeType());
+//                        Parser parser = language.getParser();
+//                        //ParserResult pr = handle.getResult();
+//                        //ElementHandle file = pr.getRoot();
+//                        //if (file != null) {
+//                            try {
+//                                OffsetRange range = parser.getPositionManager().getOffsetRange(info, handle);
+//
+//                                if (range != OffsetRange.NONE && range != null) {
+//                                    result[0] = new DeclarationLocation(fileObject, range.getStart());
+//                                }
+//                            } catch (IllegalArgumentException iae) {
+//                                result[0] = new DeclarationLocation(fileObject, 0);
+//                            }
+//                        //}
+                        result[0] = new DeclarationLocation(fileObject, -1);
                     } else {
                         // The element is not in the parse tree for this parse job; it is
                         // probably something like an indexed element
                         result[0] = new DeclarationLocation(fileObject, -1);
                     }
                 }
-            }, true);
+            });
+        } catch (ParseException e) {
+            LOG.log(Level.WARNING, null, e);
+        }
 
         return result[0];
     }

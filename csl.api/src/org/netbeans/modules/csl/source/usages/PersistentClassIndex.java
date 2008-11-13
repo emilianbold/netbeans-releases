@@ -52,19 +52,19 @@ import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.csl.api.Index.SearchResult;
-import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.IndexDocument;
 import org.netbeans.modules.csl.api.Indexer;
 import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.source.usages.ClassIndexImpl;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.napi.gsfret.source.ClassIndex;
 import org.netbeans.modules.csl.api.Phase;
-import org.netbeans.modules.csl.source.SourceAccessor;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -148,25 +148,14 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
     // Private methods ---------------------------------------------------------                          
 
-    private Void runIndexers(final CompilationInfo info) throws IOException {
+    private void runIndexers(final ParserResult info) throws IOException {
         Indexer indexer = language.getIndexer();
-        if (indexer == null) {
-            return null;
-        }
-        final SourceAnalyser sa = getSourceAnalyser();
-        long st = System.currentTimeMillis();
-        String mimeType = language.getMimeType();
-        
-        for (ParserResult result: info.getEmbeddedResults(mimeType)) {
-            assert result != null;
-
-            if (result.isValid()) {
-                sa.analyseUnitAndStore(indexer, result);
+        if (indexer != null) {
+            SourceAnalyser sa = getSourceAnalyser();
+            if (sa != null) {
+                sa.analyseUnitAndStore(indexer, info);
             }
         }
-        
-        long et = System.currentTimeMillis();
-        return null;
     }
     
     private void updateDirty () {
@@ -178,47 +167,65 @@ public class PersistentClassIndex extends ClassIndexImpl {
             final Source js = jsRef.get();
             if (js != null) {
                 final long startTime = System.currentTimeMillis();
-                if (SourceAccessor.getINSTANCE().isDispatchThread()) {
-                    //Already under javac's lock
+// XXX: parsingapi
+//                if (SourceAccessor.getINSTANCE().isDispatchThread()) {
+//                    //Already under javac's lock
+//                    try {
+//                        ClassIndexManager.writeLock(
+//                            new ClassIndexManager.ExceptionAction<Void>() {
+//                                public Void run () throws IOException {
+//                                    CompilationInfo compilationInfo = SourceAccessor.getINSTANCE().getCurrentCompilationInfo (js, Phase.RESOLVED);
+//                                    if (compilationInfo != null) {
+//                                        //Not cancelled
+//                                        return runIndexers(compilationInfo);
+//                                    }
+//                                    return null;
+//                                }
+//                        });
+//                    } catch (IOException ioe) {
+//                        Exceptions.printStackTrace(ioe);
+//                    }
+//                }
+//                else {
                     try {
-                        ClassIndexManager.writeLock(
-                            new ClassIndexManager.ExceptionAction<Void>() {
-                                public Void run () throws IOException {
-                                    CompilationInfo compilationInfo = SourceAccessor.getINSTANCE().getCurrentCompilationInfo (js, Phase.RESOLVED);
-                                    if (compilationInfo != null) {
-                                        //Not cancelled
-                                        return runIndexers(compilationInfo);
-                                    }
-                                    return null;
-                                }
-                        });                                        
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
-                    }
-                }
-                else {
-                    try {
-                        js.runUserActionTask(new CancellableTask<CompilationController>() {
-                            public void run (final CompilationController controller) {
+                        ParserManager.parse(Collections.singleton(js), new UserTask() {
+                            public void run (final ResultIterator controller) {
                                 try {                            
-                                    ClassIndexManager.writeLock(
-                                        new ClassIndexManager.ExceptionAction<Void>() {
-                                            public Void run () throws IOException {
-                                                controller.toPhase(Phase.RESOLVED);
-                                                return runIndexers(controller);
+                                    ClassIndexManager.writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+                                        public Void run () throws IOException {
+                                            indexAll(controller);
+                                            return null;
+                                        }
+
+                                        private void indexAll(ResultIterator ri) throws IOException {
+                                            Parser.Result r;
+                                            try {
+                                                r = ri.getParserResult();
+                                            } catch (ParseException e) {
+                                                IOException ioe = new IOException();
+                                                ioe.initCause(e);
+                                                throw ioe;
                                             }
+                                            
+                                            if (r instanceof ParserResult) {
+                                                ((ParserResult) r).toPhase(Phase.RESOLVED);
+                                                runIndexers((ParserResult) r);
+                                            }
+
+                                            for(Embedding e : ri.getEmbeddings()) {
+                                                indexAll(ri.getResultIterator(e));
+                                            }
+                                        }
                                     });
-                                } catch (IOException ioe) {
+                                } catch (Exception ioe) {
                                     Exceptions.printStackTrace(ioe);
                                 }
                             }
-
-                            public void cancel () {}
-                        }, true);
-                    } catch (IOException ioe) {
+                        });
+                    } catch (ParseException ioe) {
                         Exceptions.printStackTrace(ioe);
                     }
-                }
+//                }
                 synchronized (this) {
                     this.dirty = null;
                 }

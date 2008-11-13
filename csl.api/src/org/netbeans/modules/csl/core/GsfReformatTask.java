@@ -35,13 +35,11 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
-import org.netbeans.modules.csl.source.SourceAccessor;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.Parser;
 
 
 public class GsfReformatTask implements ReformatTask {
@@ -122,12 +120,14 @@ public class GsfReformatTask implements ReformatTask {
     private class Lock implements ExtraLock {
 
         public void lock() {
-            SourceAccessor.getINSTANCE().lockParser();
+// XXX: parsingapi
+//            SourceAccessor.getINSTANCE().lockParser();
         }
 
         public void unlock() {
             controller = null;
-            SourceAccessor.getINSTANCE().unlockParser();
+// XXX: parsingapi
+//            SourceAccessor.getINSTANCE().unlockParser();
         }        
     }
 
