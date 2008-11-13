@@ -41,6 +41,7 @@
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -85,6 +86,7 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
     private TypeID typeID;
     private String noneItem;
     private String defaultItem;
+    private String mnemonic;
 
     public static PropertyEditorListSelectCommand createInstance() {
         String mnemonic = NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SEL_COMMAND_STR"); // NOI18N
@@ -96,13 +98,10 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
 
     private PropertyEditorListSelectCommand(TypeID typeID, String mnemonic, String noneItem, String defaultItem, String userCodeLabel) {
         super(userCodeLabel);
-        initComponents();
         this.typeID = typeID;
-        Mnemonics.setLocalizedText(radioButton, mnemonic);
         this.noneItem = noneItem;
         this.defaultItem = defaultItem;
-
-        initElements(Collections.<PropertyEditorElement>singleton(this));
+        this.mnemonic = mnemonic;
     }
 
     public void clean(DesignComponent component) {
@@ -303,6 +302,16 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
             });
         }
         return itemCommandEvenSource[0];
+    }
+
+    @Override
+    public Component getCustomEditor() {
+        if (customEditor == null) {
+            initComponents();
+            Mnemonics.setLocalizedText(radioButton, mnemonic);
+            initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+        return super.getCustomEditor();
     }
 
     private class CustomEditor extends JPanel implements ActionListener {

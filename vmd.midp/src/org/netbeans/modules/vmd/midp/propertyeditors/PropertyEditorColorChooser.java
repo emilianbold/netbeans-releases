@@ -90,8 +90,6 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
     public PropertyEditorColorChooser(boolean supportsCustomEditor) {
         super(NbBundle.getMessage(PropertyEditorColorChooser.class, "LBL_COLOR_CHOOSER_UCLABEL")); // NOI18N
         this.supportsCustomEditor = supportsCustomEditor;
-        
-        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
      @Override
@@ -313,6 +311,17 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
             return true;
         }
     }
+
+    @Override
+    public Component getCustomEditor() {
+        if (customEditorElement == null) {
+            initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+
+        return super.getCustomEditor();
+    }
+
+
 
     private class ColorPropertyModel implements PropertyModel {
 

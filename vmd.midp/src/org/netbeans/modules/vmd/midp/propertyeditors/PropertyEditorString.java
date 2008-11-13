@@ -234,7 +234,6 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     public final Component getCustomEditor() {
         if (customEditor == null) {
             initComponents();
-
             if (databinding) {
                 LinkedHashMap<PropertyEditorElement, Integer> elements = new LinkedHashMap<PropertyEditorElement, Integer>(2);
                 databindingElement = new DatabindingElement(this);
@@ -361,7 +360,6 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * This method updates state of custom property editor.
      */
     public void updateState(PropertyValue value) {
-
         final DesignComponent c = component.get();
         if (databindingElement != null) {
             databindingElement.updateDesignComponent(c);

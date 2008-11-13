@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -71,10 +72,6 @@ public class PropertyEditorInputMode extends PropertyEditorUserCode {
 
     private PropertyEditorInputMode() {
         super(NbBundle.getMessage(PropertyEditorInputMode.class, "LBL_INPUT_MODE_UCLABEL")); // NOI18N
-        elements = new ArrayList<PropertyEditorElement>(2);
-        elements.add(new PredefinedEditor());
-        elements.add(new CustomEditor());
-        initElements(elements);
     }
 
     public static final PropertyEditorInputMode createInstance() {
@@ -132,6 +129,19 @@ public class PropertyEditorInputMode extends PropertyEditorUserCode {
         }
         return false;
     }
+
+    @Override
+    public Component getCustomEditor() {
+        if (elements == null) {
+            elements = new ArrayList<PropertyEditorElement>(2);
+            elements.add(new PredefinedEditor());
+            elements.add(new CustomEditor());
+            initElements(elements);
+        }
+        return super.getCustomEditor();
+    }
+
+
 
     private final class PredefinedEditor implements PropertyEditorElement, ActionListener, CleanUp {
 
