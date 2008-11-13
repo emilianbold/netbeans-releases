@@ -62,6 +62,12 @@ import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
  *
  * @author Anton Chechel
  */
+
+ /**
+ * Use PropertyEdiotrWrapperRE.createFontElement
+ * @deprecated
+ */
+@Deprecated
 public class FontEditorElement extends PropertyEditorResourceElement implements CleanUp {
 
     private FontStub currentStub;

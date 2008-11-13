@@ -37,72 +37,79 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.vmd.midp.propertyeditors.resource.elements;
+package org.netbeans.modules.cnd.editor.indent;
 
-import java.lang.ref.WeakReference;
-import java.util.List;
-import javax.swing.JComponent;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
-import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorRE;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 
 /**
  *
- * @author karol harezlak
+ * @author Alexander Simon
  */
-public class ImageEE extends PropertyEditorRE implements  CleanUp {
+public final class TokenItem {
 
-    private ImageEditorElement element;
-    private WeakReference<DesignComponent> component;
+    private final int index;
+    private final CppTokenId tokenId;
+    protected final TokenSequence<CppTokenId> tokenSeq;
+    private final boolean skipPP;
 
-    @Override
-    public JComponent getJComponent() {
-        return element;
+    public TokenItem(TokenSequence<CppTokenId> ts, boolean skipPP) {
+        index = ts.index();
+        tokenId = ts.token().id();
+        this.tokenSeq = ts;
+        this.skipPP = skipPP;
     }
 
-    @Override
-    public void setDesignComponentWrapper(DesignComponentWrapper component) {
-        if (component == null || component.getComponent() == null) {
-            return;
+    public TokenSequence<CppTokenId> getTokenSequence() {
+        return tokenSeq;
+    }
+    
+    private void go() {
+        tokenSeq.moveIndex(index);
+        tokenSeq.moveNext();
+    }
+
+    public CppTokenId getTokenID() {
+        return tokenId;
+    }
+
+    public int index() {
+        return index;
+    }
+
+    public TokenItem getNext() {
+        go();
+        while (tokenSeq.moveNext()) {
+            if (!skipPP || tokenSeq.token().id() != CppTokenId.PREPROCESSOR_DIRECTIVE) {
+                return new TokenItem(tokenSeq, skipPP);
+            }
         }
-        PropertyEditorResourceElement.DesignComponentWrapper component_ = new PropertyEditorResourceElement.DesignComponentWrapper(component.getComponent());
-        element.setDesignComponentWrapper(component_);
+        return null;
     }
 
-    @Override
-    public void setDesignComponent(DesignComponent component) {
-        this.component = new WeakReference<DesignComponent>(component);
-    }
-
-
-    @Override
-    public TypeID getTypeID() {
-        return ImageCD.TYPEID;
-    }
-
-    @Override
-    public List<String> getPropertyValueNames() {
-        return element.getPropertyValueNames();
-    }
-
-    @Override
-    public void customEditorNotification() {
-        if (component == null) {
-            return;
+    public TokenItem getPrevious() {
+        go();
+        while (tokenSeq.movePrevious()) {
+            if (!skipPP || tokenSeq.token().id() != CppTokenId.PREPROCESSOR_DIRECTIVE) {
+                return new TokenItem(tokenSeq, skipPP);
+            }
         }
-        final DesignComponent component_ = component.get();
-        if (element == null) {
-            element = new ImageEditorElement();
-            element.setDesignComponent(component_);
-        }
+        return null;
     }
 
-    public void clean(DesignComponent component) {
-        if (element != null) {
-            element.clean(component);
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof TokenItem) {
+            return ((TokenItem) obj).index == index;
         }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 43 * hash + this.index;
+        hash = 43 * hash + (this.tokenId != null ? this.tokenId.hashCode() : 0);
+        return hash;
     }
 }

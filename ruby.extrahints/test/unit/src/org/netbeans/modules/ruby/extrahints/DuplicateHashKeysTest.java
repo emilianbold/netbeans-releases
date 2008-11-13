@@ -39,29 +39,59 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.cplusplus;
+package org.netbeans.modules.ruby.extrahints;
 
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.modules.cnd.utils.MIMENames;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.ruby.hints.HintTestBase;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 
-/** C indentation engine that delegates to java formatter */
-public class CIndentEngine extends BaseIndentEngine {
-    
-    private static final CIndentEngine instance = new CIndentEngine();
-    
-    public static final CIndentEngine getIndentEngine(){
-        return instance;
+/**
+ *
+ * @author Tor Norbye
+ */
+public class DuplicateHashKeysTest extends HintTestBase {
+
+    public DuplicateHashKeysTest(String testName) {
+        super(testName);
     }
 
-    public CIndentEngine() {
-        setAcceptedMimeTypes(new String[] { MIMENames.C_MIME_TYPE });
-    }
-    
-    @Override
-    protected ExtFormatter createFormatter() {
-        return (CCFormatter) Formatter.getFormatter(CKit.class);
+    private RubyAstRule createRule() {
+        return new DuplicateHashKeys();
     }
 
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+
+    public void testHint1() throws Exception {
+        checkHints(this, createRule(), "testfiles/duplicatekeys.rb", null);
+    }
+
+    public void testHint2() throws Exception {
+        checkHints(this, createRule(), "testfiles/duplicatekeys2.rb", null);
+    }
+
+    public void testNoHints1() throws Exception {
+        checkHints(this, createRule(), "testfiles/superfib.rb", null);
+    }
+
+    public void testNoHints2() throws Exception {
+        checkHints(this, createRule(), "testfiles/element.rb", null);
+    }
+
+    public void testNoPositives() throws Exception {
+        try {
+            parseErrorsOk = true;
+            Set<String> exceptions = new HashSet<String>();
+
+            // Known exceptions
+            exceptions.add("asset_tag_helper_test.rb");
+
+            assertNoJRubyMatches(createRule(), exceptions);
+
+        } finally {
+            parseErrorsOk = false;
+        }
+    }
 }
-

@@ -52,7 +52,7 @@ import javax.swing.text.TextAction;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -65,7 +65,6 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseKit.InsertBreakAction;
-import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.SyntaxUpdateTokens;
@@ -82,6 +81,8 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.Reformat;
 
 /** C++ editor kit with appropriate document */
 public class CCKit extends NbEditorKit {
@@ -162,7 +163,7 @@ public class CCKit extends NbEditorKit {
     /** Create syntax support */
     @Override
     public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
-        SyntaxSupportProvider ss = (SyntaxSupportProvider) Lookup.getDefault().lookup(SyntaxSupportProvider.class);
+        SyntaxSupportProvider ss = Lookup.getDefault().lookup(SyntaxSupportProvider.class);
         SyntaxSupport sup = null;
         if (ss != null) {
             sup = ss.createSyntaxSupport(doc);
@@ -171,12 +172,6 @@ public class CCKit extends NbEditorKit {
             sup = new CCSyntaxSupport(doc);
         }
         return sup;
-    }
-
-    /** Create the formatter appropriate for this kit */
-    @Override
-    public Formatter createFormatter() {
-        return new CCFormatter(this.getClass());
     }
 
     protected Action getCommentAction() {
@@ -284,16 +279,12 @@ public class CCKit extends NbEditorKit {
                             }
 
                             int pos = startPos;
-                            Formatter formatter = doc.getFormatter();
-                            formatter.reformatLock();
+                            Reformat reformat = Reformat.get(doc);
+                            reformat.lock();
                             try {
-                                while (pos < endPosition.getOffset()) {
-                                    int stopPos = endPosition.getOffset();
-                                    int reformattedLen = formatter.reformat(doc, pos, stopPos);
-                                    pos = pos + reformattedLen;
-                                }
+                                reformat.reformat(pos, endPosition.getOffset());
                             } finally {
-                                formatter.reformatUnlock();
+                                reformat.unlock();
                             }
 
                             // Restore the line
@@ -322,10 +313,8 @@ public class CCKit extends NbEditorKit {
                 // but ATM there is no way to transfer this info from here to FormatSupport 
                 // correctly over FormatWriter because it's final class for some reasons.
                 // But java editor has the same bug, so one day we may have such possibility 
-                doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, Boolean.TRUE);
                 doc.putProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY, Boolean.TRUE);
                 super.checkIndentHotChars(target, typedText);
-                doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, null);
                 doc.putProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY, null);
             }
 
@@ -377,21 +366,23 @@ public class CCKit extends NbEditorKit {
                             lastSepOffset = 0;
                         }
                         if (lastSepOffset != -1 && lastSepOffset < dotPos) {
-                            org.netbeans.editor.TokenItem keyword = sup.getTokenChain(lastSepOffset, lBracePos);
-                            while (keyword != null && keyword.getOffset() < lBracePos) {
-                                if (keyword.getTokenID() == CCTokenContext.CLASS ||
-                                        keyword.getTokenID() == CCTokenContext.UNION ||
-                                        keyword.getTokenID() == CCTokenContext.STRUCT ||
-                                        keyword.getTokenID() == CCTokenContext.ENUM) {
-                                    insString = "};"; // NOI18N
-                                    break;
+                            TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, lBracePos);
+                            cppTokenSequence.move(lBracePos);
+                            while (cppTokenSequence.movePrevious() && cppTokenSequence.offset() >= lastSepOffset) {
+                                switch (cppTokenSequence.token().id()) {
+                                    case CLASS:
+                                    case UNION:
+                                    case STRUCT:
+                                    case ENUM:
+                                        insString = "};"; // NOI18N
+                                        break;
                                 }
-                                keyword = keyword.getNext();
                             }
                         }
-                        doc.insertString(end, insString, null); // NOI18N
+                        doc.insertString(end, "\n" + insString, null); // NOI18N
                         // Lock does not need because method is invoked from BaseKit that already lock indent.
-                        doc.getFormatter().indentNewLine(doc, end);
+                        Indent indent = Indent.get(doc);
+                        indent.reindent(end + 1);
                         caret.setDot(dotPos);
                         return Boolean.TRUE;
                     }

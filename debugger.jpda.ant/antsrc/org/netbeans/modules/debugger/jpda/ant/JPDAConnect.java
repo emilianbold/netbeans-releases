@@ -69,7 +69,7 @@ public class JPDAConnect extends Task {
     private String address;
     
     /** Explicit sourcepath of the debugged process. */
-    private Path sourcepath = null;
+    private JPDAStart.Sourcepath sourcepath = null;
     
     /** Explicit classpath of the debugged process. */
     private Path classpath = null;
@@ -114,7 +114,7 @@ public class JPDAConnect extends Task {
         bootclasspath = path;
     }
     
-    public void addSourcepath (Path path) {
+    public void addSourcepath (JPDAStart.Sourcepath path) {
         if (sourcepath != null)
             throw new BuildException ("Only one sourcepath subelement is supported");
         sourcepath = path;

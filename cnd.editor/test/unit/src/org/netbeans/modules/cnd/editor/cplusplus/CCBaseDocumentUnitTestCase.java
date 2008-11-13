@@ -51,22 +51,10 @@ public class CCBaseDocumentUnitTestCase
         extends BaseDocumentUnitTestCase 
 {
     private boolean isPlusPlus;
-    private EditorKit editorKit;
     
     public CCBaseDocumentUnitTestCase(String testMethodName) {
         super(testMethodName);
         this.isPlusPlus = true;
-    }
-    
-    protected void setLanguage(String lang) {
-        if (lang.equals(CCSyntax.IS_CPLUSPLUS)) {
-            this.isPlusPlus = true;
-        } else if (lang.equals(CSyntax.IS_C)) {
-            this.isPlusPlus = false;
-        } else {
-            fail("Unsupported language " + lang);
-            this.isPlusPlus = false;
-        }        
     }
     
     /**
