@@ -10,7 +10,7 @@
     <artifactId>gsf</artifactId>
     <packaging>nbm</packaging>
     <version>3.2-SNAPSHOT</version>
-    <name>Netbeans Maven2 GSF support</name>
+    <name>NetBeans Maven2 GSF support</name>
     <description>A generic support for additional languages on top of Apache Maven projects.</description>
     <dependencies>
         <dependency>
