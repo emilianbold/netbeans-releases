@@ -217,7 +217,7 @@ public class DiscoveryUtils {
     /**
      * parse compilee line
      */
-    public static String gatherComlilerLine(String line, boolean isScriptOutput,
+    public static String gatherCompilerLine(String line, boolean isScriptOutput,
             List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries){
         boolean TRACE = false;
         List<String> list = DiscoveryUtils.scanCommandLine(line);

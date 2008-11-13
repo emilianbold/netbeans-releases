@@ -63,30 +63,4 @@ public class CCSettingsDefaults {
         return AcceptorFactory.JAVA_IDENTIFIER;
     }
 
-    public static Acceptor getDefaultIndentHotCharsAcceptor() {
-        return defaultIndentHotCharsAcceptor;
-    }
-
-    public static String getDefaultWordMatchStaticWords() {
-        return defaultWordMatchStaticWords;
-    }
-    
-    // DO WE NEED IT ?
-    public static final String defaultWordMatchStaticWords = 
-            "Exception IntrospectionException FileNotFoundException IOException" //NOI18N
-          + " ArrayIndexOutOfBoundsException ClassCastException ClassNotFoundException" //NOI18N
-          + " CloneNotSupportedException NullPointerException NumberFormatException" //NOI18N
-          + " SQLException IllegalAccessException IllegalArgumentException"; //NOI18N
-
-    public static final Acceptor defaultIndentHotCharsAcceptor = new Acceptor() {
-            public boolean accept(char ch) {
-                switch (ch) {
-                case '{':
-                case '}':
-                    return true;
-                }
-
-                return false;
-            }
-        };
 }

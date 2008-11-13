@@ -55,14 +55,17 @@ public class GdbSessionProvider extends SessionProvider {
     private final ProjectActionEvent projectActionEvent;
 
     public GdbSessionProvider(ContextProvider contextProvider) {
-        projectActionEvent = (ProjectActionEvent) contextProvider.lookupFirst(null, ProjectActionEvent.class);
+        projectActionEvent = contextProvider.lookupFirst(null, ProjectActionEvent.class);
     };
 
     public String getSessionName () {
         String sn = null;
-        if (projectActionEvent != null)
+        if (projectActionEvent != null) {
             sn = projectActionEvent.getExecutable();
-        if (sn == null) return sessionName;
+        }
+        if (sn == null) {
+            return sessionName;
+        }
         if (sn.length() > 8) {
             // Name is too long - get base name
             if (sn.lastIndexOf('/') >= 0) {

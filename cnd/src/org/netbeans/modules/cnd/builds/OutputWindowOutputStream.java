@@ -77,7 +77,9 @@ import org.openide.windows.OutputWriter;
 
 /** OutputStream for wrapping writes to the IDE.
  * Handles hyperlinks and so on.
+ * @deprecated this class will be removed from open package, because not used anywhere in cnd cluster
  */
+@Deprecated
 public class OutputWindowOutputStream extends OutputStream {
     
     private OutputWriter writer;
@@ -100,12 +102,14 @@ public class OutputWindowOutputStream extends OutputStream {
         //} catch (IOException ex) {};
     }
     
+    @Override
     public void close() throws IOException {
         flush();
         writer.close();
         //dbout.close();
     }
     
+    @Override
     public void flush() throws IOException {
         flushLines();
         if (buffer.length() > 0) {
@@ -116,10 +120,12 @@ public class OutputWindowOutputStream extends OutputStream {
         writer.flush();
     }
     
+    @Override
     public void write(byte[] b) throws IOException {
         write(b, 0, b.length);
     }
     
+    @Override
     public void write(byte[] b, int offset, int length) throws IOException {
         buffer.append(new String(b, offset, length));
         // Will usually contain at least one newline:
@@ -411,6 +417,7 @@ public class OutputWindowOutputStream extends OutputStream {
         
         
         // Debugging:
+        @Override
         public String toString() {
             return "Hyperlink[" + file + ":" + line1 + ":" + col1 + ":" + line2 + ":" + col2 + "]"; // NOI18N
         }

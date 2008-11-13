@@ -393,10 +393,15 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
 
             if (type != null) {
                 BeanInfo bi = getBeanInfo(type);
-                mbean = new FacesBean(this, bi, name, e);
-                // snag the form bean as it goes by for later use as the default parent
-                if (defaultParent == null && tagName.equals(HtmlTag.FORM.name)) {
-                    defaultParent = mbean;
+                if (bi == null) {
+                    // XXX #139640 Avoiding possible NPE.
+                    debugLog("There was no BeanInfo found for type=" + type); // NOI18N
+                } else {
+                    mbean = new FacesBean(this, bi, name, e);
+                    // snag the form bean as it goes by for later use as the default parent
+                    if (defaultParent == null && tagName.equals(HtmlTag.FORM.name)) {
+                        defaultParent = mbean;
+                    }
                 }
             } else {
                 type = HtmlBean.getBeanClassname(e);

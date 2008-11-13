@@ -73,6 +73,8 @@ public class CodeClipDragAndDropHandler extends DragAndDropHandler{
 
     /** Creates a new instance of CodeClipDragAndDropHandler */
     public CodeClipDragAndDropHandler() {
+        // #147511 To be able DnD text from source into palette.
+        super(true);
     }
 
     /**
@@ -105,50 +107,50 @@ public class CodeClipDragAndDropHandler extends DragAndDropHandler{
         return false;
     }
 
-    /**
-     * Perform the drop operation and add the dragged item into the given category.
-     *
-     * @param targetCategory Lookup of the category that accepts the drop.
-     * @param item Transferable holding the item being dragged.
-     * @param dndAction Drag'n'drop action type.
-     * @param dropIndex Zero-based position where the dragged item should be dropped.
-     *
-     * @return True if the drop has been successful, false otherwise.
-     */
-    public boolean doDrop( Lookup targetCategory, Transferable item, int dndAction, int dropIndex ) {
-        String body;
-
-        if( item.isDataFlavorSupported( PaletteController.ITEM_DATA_FLAVOR ) ) {
-            return super.doDrop( targetCategory, item, dndAction, dropIndex );
-        }
-
-        try {
-            body = (String)item.getTransferData(java.awt.datatransfer.DataFlavor.stringFlavor);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            return false;
-        } catch (UnsupportedFlavorException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            return false;
-        }
-
-        DataFolder categoryDatafolder = (DataFolder)targetCategory.lookup(DataFolder.class);
-        FileObject folderObject  = ((DataObject)categoryDatafolder).getPrimaryFile();
-        String localizingBundle = "org.netbeans.modules.visualweb.palette.codeclips.Bundle";
-
-        try{
-//            String displayNameString = "CLIP";
-            String displayNameString = NbBundle.getMessage(CodeClipDragAndDropHandler.class, "CLIP");
-            //This causes a problem if it tries to find "Clip" during the drop.
-            CodeClipUtilities.createCodeClipFile(folderObject, body, displayNameString, localizingBundle, null);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } catch (MissingResourceException mre ) {
-            ErrorManager.getDefault().notify(mre);
-        }                    
-        
-        return true;
-    }
+//    /**
+//     * Perform the drop operation and add the dragged item into the given category.
+//     *
+//     * @param targetCategory Lookup of the category that accepts the drop.
+//     * @param item Transferable holding the item being dragged.
+//     * @param dndAction Drag'n'drop action type.
+//     * @param dropIndex Zero-based position where the dragged item should be dropped.
+//     *
+//     * @return True if the drop has been successful, false otherwise.
+//     */
+//    public boolean doDrop( Lookup targetCategory, Transferable item, int dndAction, int dropIndex ) {
+//        String body;
+//
+//        if( item.isDataFlavorSupported( PaletteController.ITEM_DATA_FLAVOR ) ) {
+//            return super.doDrop( targetCategory, item, dndAction, dropIndex );
+//        }
+//
+//        try {
+//            body = (String)item.getTransferData(java.awt.datatransfer.DataFlavor.stringFlavor);
+//        } catch (IOException ex) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//            return false;
+//        } catch (UnsupportedFlavorException ex) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//            return false;
+//        }
+//
+//        DataFolder categoryDatafolder = (DataFolder)targetCategory.lookup(DataFolder.class);
+//        FileObject folderObject  = ((DataObject)categoryDatafolder).getPrimaryFile();
+//        String localizingBundle = "org.netbeans.modules.visualweb.palette.codeclips.Bundle";
+//
+//        try{
+////            String displayNameString = "CLIP";
+//            String displayNameString = NbBundle.getMessage(CodeClipDragAndDropHandler.class, "CLIP");
+//            //This causes a problem if it tries to find "Clip" during the drop.
+//            CodeClipUtilities.createCodeClipFile(folderObject, body, displayNameString, localizingBundle, null);
+//        } catch (IOException ex) {
+//            ErrorManager.getDefault().notify(ex);
+//        } catch (MissingResourceException mre ) {
+//            ErrorManager.getDefault().notify(mre);
+//        }
+//
+//        return true;
+//    }
     
     
     

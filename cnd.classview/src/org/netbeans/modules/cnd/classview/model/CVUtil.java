@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
-import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.classview.NameCache;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;

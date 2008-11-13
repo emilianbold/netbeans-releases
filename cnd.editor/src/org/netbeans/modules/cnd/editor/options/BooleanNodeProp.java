@@ -85,7 +85,7 @@ public class BooleanNodeProp extends PropertySupport.ReadWrite<Boolean> {
 
     @Override
     public Boolean getValue() {
-        return new Boolean(state);
+        return Boolean.valueOf(state);
     }
 
     public void setValue(Boolean v) {

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.loaders;
 
 import org.netbeans.modules.cnd.execution.BinaryExecSupport;
@@ -47,48 +46,43 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 
-
 /** A node to represent an Elf core object */
 public class CoreElfNode extends CndDataNode {
 
     public CoreElfNode(CoreElfObject obj) {
-	this(obj, Children.LEAF);
+        this(obj, Children.LEAF);
     }
 
     public CoreElfNode(CoreElfObject obj, Children ch) {
-	super(obj, ch);
-	setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/CoreElfIcon.gif"); // NOI18N
+        super(obj, ch);
+        setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/CoreElfIcon.gif"); // NOI18N
     }
 
+    @Override
     protected Sheet createSheet() {
-	Sheet sheet = super.createSheet();
+        Sheet sheet = super.createSheet();
 
-	Sheet.Set set = sheet.get(BinaryExecSupport.PROP_EXECUTION);
-	if (set == null) {
-	    set = new Sheet.Set();
-	    set.setName(BinaryExecSupport.PROP_EXECUTION);
-	    set.setDisplayName(NbBundle.getBundle(CoreElfNode.class).
-		    getString("displayNameForExeElfNodeExecSheet"));  // NOI18N
-	    set.setShortDescription(NbBundle.getBundle(CoreElfNode.class).
-		    getString("hintForExeElfNodeExecSheet"));   // NOI18N
-	    BinaryExecSupport es = ((BinaryExecSupport)
-				getCookie(BinaryExecSupport.class));
-	    if (es != null) {
-		es.addProperties(set);
-	    }
+        Sheet.Set set = sheet.get(BinaryExecSupport.PROP_EXECUTION);
+        if (set == null) {
+            set = new Sheet.Set();
+            set.setName(BinaryExecSupport.PROP_EXECUTION);
+            set.setDisplayName(NbBundle.getBundle(CoreElfNode.class).
+                    getString("displayNameForExeElfNodeExecSheet"));  // NOI18N
+            set.setShortDescription(NbBundle.getBundle(CoreElfNode.class).
+                    getString("hintForExeElfNodeExecSheet"));   // NOI18N
+            BinaryExecSupport es = (getCookie(BinaryExecSupport.class));
+            if (es != null) {
+                es.addProperties(set);
+            }
 
-	    // Trick from org/apache/tools/ant/module/nodes/AntProjectNode.java
-	    // Get rid of Arguments property and the Execution property;
-	    // corefiles can only be debugged.
-	    set.remove(ExecutionSupport.PROP_FILE_PARAMS);
-	    set.remove(ExecutionSupport.PROP_EXECUTION);
-	    
-	    sheet.put(set);
-	}
-	return sheet;
-    }
+            // Trick from org/apache/tools/ant/module/nodes/AntProjectNode.java
+            // Get rid of Arguments property and the Execution property;
+            // corefiles can only be debugged.
+            set.remove(ExecutionSupport.PROP_FILE_PARAMS);
+            set.remove(ExecutionSupport.PROP_EXECUTION);
 
-    private CoreElfObject getCoreElfObject() {
-	return (CoreElfObject) getDataObject();
+            sheet.put(set);
+        }
+        return sheet;
     }
 }

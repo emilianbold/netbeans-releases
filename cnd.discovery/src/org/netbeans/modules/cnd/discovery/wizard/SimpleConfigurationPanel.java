@@ -228,8 +228,9 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
             Vector newList = panel.getListData();
             String includes = ""; // NOI18N
             for (int i = 0; i < newList.size(); i++) {
-                if (i > 0)
+                if (i > 0) {
                     includes += ";"; // NOI18N
+                }
                 includes += newList.elementAt(i);
             }
             librariesTextField.setText(includes);

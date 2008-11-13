@@ -120,7 +120,7 @@ public class RemoteFile extends File {
     public File[] listFiles() {
         //TODO: till API review
         CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
-        if (provider.run(hkey, "ls -A1 \"" + getPath() + "\"", null) == 0) {
+        if (provider.run(hkey, "ls -A1 \"" + getPath() + "\"", null) == 0) { //NOI18N
             String files = provider.getOutput();
             if (files != null) {
                 BufferedReader bufferedReader = new BufferedReader(new StringReader(files));
@@ -128,7 +128,7 @@ public class RemoteFile extends File {
                 ArrayList<File> lines = new ArrayList<File>();
                 try {
                     while ((line = bufferedReader.readLine()) != null) {
-                        lines.add(new RemoteFile(hkey, getPath() + "/" + line)); //TODO: windows?
+                        lines.add(new RemoteFile(hkey, getPath() + "/" + line)); //TODO: windows? //NOI18N
                     }
                     bufferedReader.close();
                 } catch (IOException ex) {
@@ -146,21 +146,21 @@ public class RemoteFile extends File {
     public boolean isDirectory() {
         //TODO: till API review
         CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
-        return provider.run(hkey, "test -d \"" + getPath() + "\"", null) == 0;
+        return provider.run(hkey, "test -d \"" + getPath() + "\"", null) == 0; //NOI18N
     }
 
     @Override
     public boolean isFile() {
         //TODO: till API review
         CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
-        return provider.run(hkey, "test -f \"" + getPath() + "\"", null) == 0;
+        return provider.run(hkey, "test -f \"" + getPath() + "\"", null) == 0; //NOI18N
     }
 
     @Override
     public boolean canRead() {
         //TODO: till API review
         CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
-        return provider.run(hkey, "test -r \"" + getPath() + "\"", null) == 0;
+        return provider.run(hkey, "test -r \"" + getPath() + "\"", null) == 0; //NOI18N
     }
     
 }

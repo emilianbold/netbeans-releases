@@ -88,18 +88,20 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     private AntProjectHelper projectHelper;
     private FileChangeListener fcl = null;      
     private PropertyEvaluator evaluator;
+    private boolean canHaveWebServices;
     
     /**
      * Construct the implementation.
      * @param sourceRoots used to get the roots information and events
      * @param projectHelper used to obtain the project root
      */
-    SourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper, PropertyEvaluator evaluator) {
+    SourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper, PropertyEvaluator evaluator, boolean canHaveWebServices) {
         assert sourceRoots != null && projectHelper != null && evaluator != null;
         this.sourceRoots = sourceRoots;
         this.sourceRoots.addPropertyChangeListener (this);
         this.projectHelper=projectHelper;
         this.evaluator = evaluator;
+        this.canHaveWebServices = canHaveWebServices;
         evaluator.addPropertyChangeListener(this);
     }
 
@@ -226,15 +228,16 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                         }
                         result.add(ClassPathSupport.createResource(url));
 
-                        // TODO: have to ask mkuchtiak about this one. it was presented in web.project but not in j2seproject:
-//                        // generated/wsimport/service
-//                        f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/service"); //NOI18N
-//                        url = f.toURI().toURL();
-//                        if (!f.exists()) {  //NOI18N
-//                            assert !url.toExternalForm().endsWith("/");  //NOI18N
-//                            url = new URL (url.toExternalForm()+'/');   //NOI18N
-//                        }
-//                        result.add(ClassPathSupport.createResource(url));
+                        // generated/wsimport/service
+                        if (canHaveWebServices) {
+                            f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/service"); //NOI18N
+                            url = f.toURI().toURL();
+                            if (!f.exists()) {  //NOI18N
+                                assert !url.toExternalForm().endsWith("/");  //NOI18N
+                                url = new URL (url.toExternalForm()+'/');   //NOI18N
+                            }
+                            result.add(ClassPathSupport.createResource(url));
+                        }
 
                         // generated/addons/<subDirs>
                         result.addAll(getGeneratedSrcRoots(buildDir,

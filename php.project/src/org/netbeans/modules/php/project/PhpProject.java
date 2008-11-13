@@ -166,10 +166,8 @@ public class PhpProject implements Project, AntProjectListener {
             return sourceObjects[0];
         }
         // #144371 - source folder probably deleted => so:
-        // #145477 (project sharability):
         //  1. try to restore it - if it fails, then
-        //  2. set it to the project directory in *PRIVATE* properties (and save it)
-        //      => warn user about impossibility of creating src dir and *remove it in project closed hook*!!!
+        //  2. just return the project directory & warn user about impossibility of creating src dir
         String projectName = getName();
         File srcDir = FileUtil.normalizeFile(new File(helper.resolvePath(eval.getProperty(PhpProjectProperties.SRC_DIR))));
         if (srcDir.mkdirs()) {

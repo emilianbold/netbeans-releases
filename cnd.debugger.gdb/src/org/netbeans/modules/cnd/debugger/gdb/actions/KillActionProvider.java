@@ -48,6 +48,7 @@
 package org.netbeans.modules.cnd.debugger.gdb.actions;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -69,7 +70,7 @@ public class KillActionProvider extends ActionsProvider {
     private GdbDebugger debuggerImpl;
     
     public KillActionProvider(ContextProvider lookupProvider) {
-        debuggerImpl = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debuggerImpl = lookupProvider.lookupFirst(null, GdbDebugger.class);
         //super (debuggerImpl);
     }
     
@@ -79,9 +80,7 @@ public class KillActionProvider extends ActionsProvider {
      * @return set of actions supported by this ActionsProvider
      */
     public Set getActions() {
-        return new HashSet(Arrays.asList(new Object[] {
-            ActionsManager.ACTION_KILL
-        }));
+        return Collections.singleton(ActionsManager.ACTION_KILL);
     }
     
     /**

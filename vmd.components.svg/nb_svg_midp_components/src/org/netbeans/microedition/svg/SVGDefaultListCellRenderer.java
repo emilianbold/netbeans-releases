@@ -84,7 +84,9 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * @author ads
  *
  */
-public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
+public class SVGDefaultListCellRenderer extends TextRenderer 
+    implements SVGListCellRenderer 
+{
     
     private static final String HEIGHT      = "height";             // NOI18N
     private static final String WIDTH       = "width";              // NOI18N
@@ -96,8 +98,12 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
     private static final float ASCENT_SELECTION   = 2;
     private static final float DESCENT_SELECTION   = 2;
     
-    SVGDefaultListCellRenderer( float height){
+    SVGDefaultListCellRenderer( float height , SVGForm form , 
+            SVGLocatableElement hiddenText )
+    {
+        super(form, hiddenText);
         myHeight = height;
+        initEmpiricalLetterWidth( hiddenText );
     }
 
     /* (non-Javadoc)
@@ -117,6 +123,15 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
         myX = hiddenText.getFloatTrait(SVGComponent.TRAIT_X);
         myY = hiddenText.getFloatTrait(SVGComponent.TRAIT_Y);
         
+        if ( list.getBoundsElement().getScreenBBox() != null 
+                && hiddenText.getScreenBBox()!= null && myTextWidth == -1 )
+        {
+            myTextWidth = list.getBoundsElement().getScreenBBox().getWidth() + 0.5f - 
+                (hiddenText.getScreenBBox().getX() - 
+                        list.getBoundsElement().getScreenBBox().getX()) * 2;
+        }
+        
+        
         if ( isSelected ) {
             showSelection( list , index , cellHasFocus );
         }
@@ -135,7 +150,13 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
             textElement.setTrait( SVGComponent.TRAIT_TEXT,"");
         }
         else {
-            textElement.setTrait(SVGComponent.TRAIT_TEXT,  value.toString());
+            if ( myTextWidth == -1 ){
+                textElement.setTrait(SVGComponent.TRAIT_TEXT,  value.toString());
+            }
+            else {
+                String text = truncateToShownText( value.toString(), myTextWidth );
+                textElement.setTrait(SVGComponent.TRAIT_TEXT,  text);
+            }
         }
         
         /*list.getForm().invokeLaterSafely(new Runnable() {
@@ -150,7 +171,6 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
     private void showSelection( final SVGList list, final int index , 
             boolean focused) 
     {
-        // TODO : modify a whole code for enabling multiple selection.
         /*list.getForm().invokeLaterSafely(new Runnable() {
 
             public void run() {*/
@@ -200,5 +220,6 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
     private float myX;
     private float myY;
     private float myHeight;
+    private float myTextWidth = -1;
     
 }

@@ -499,7 +499,9 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
     
     private void addNotify(boolean force) {
         synchronized (childrenUpdater.getLock(getProject())) {
-            if (isInited || isDisposed) return;
+            if (isInited || isDisposed) {
+                return;
+            }
             if (isNamespace() && !force){ //isGlobalNamespace()) {
                 myKeys = new HashMap<PersistentKey,SortedName>();
                 myKeys.put(PersistentKey.createKey(getProject()), new SortedName(0,"",0)); // NOI18N

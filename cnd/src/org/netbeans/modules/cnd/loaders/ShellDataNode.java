@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.loaders;
 
 import javax.swing.Action;
@@ -55,39 +54,39 @@ public class ShellDataNode extends CndDataNode {
     /** We need this in several places */
     private ShellExecSupport mes;
 
-
     /** Construct the DataNode */
     public ShellDataNode(ShellDataObject obj) {
-	this(obj, Children.LEAF);
+        this(obj, Children.LEAF);
     }
 
     /** Construct the DataNode */
     public ShellDataNode(ShellDataObject obj, Children ch) {
-	super(obj, ch, "org/netbeans/modules/cnd/loaders/ShellDataIcon.gif"); // NOI18N
+        super(obj, ch, "org/netbeans/modules/cnd/loaders/ShellDataIcon.gif"); // NOI18N
 
-	getCookieSet().add(getSupport());
+        getCookieSet().add(getSupport());
     }
 
     /** Get the support for methods which need it */
     private final ShellExecSupport getSupport() {
-	if (mes == null) {
-	    mes = (ShellExecSupport) getCookie(ShellExecSupport.class);
-	}
+        if (mes == null) {
+            mes = getCookie(ShellExecSupport.class);
+        }
 
-	return mes;
+        return mes;
     }
-
 
     /** Create the properties sheet for the node */
+    @Override
     protected Sheet createSheet() {
-	// Just add properties to default property tab (they used to be in a special 'Building Tab')
-	Sheet defaultSheet = super.createSheet();
+        // Just add properties to default property tab (they used to be in a special 'Building Tab')
+        Sheet defaultSheet = super.createSheet();
         Sheet.Set defaultSet = defaultSheet.get(Sheet.PROPERTIES);
-	getSupport().addProperties(defaultSet);
-	return defaultSheet;
+        getSupport().addProperties(defaultSet);
+        return defaultSheet;
     }
 
+    @Override
     public Action getPreferredAction() {
-	return SystemAction.get(OpenAction.class);
+        return SystemAction.get(OpenAction.class);
     }
 }

@@ -188,7 +188,7 @@ public class ConfigurationMakefileWriter {
         }
     }
     
-    private void writePrelude(MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    protected void writePrelude(MakeConfiguration conf, BufferedWriter bw) throws IOException {
         CCCCompilerConfiguration cCompilerConfiguration = conf.getCCompilerConfiguration();
         CCCCompilerConfiguration ccCompilerConfiguration = conf.getCCCompilerConfiguration();
         FortranCompilerConfiguration fortranCompilerConfiguration = conf.getFortranCompilerConfiguration();
@@ -301,7 +301,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
     }
     
-    private void writeLinkTarget(MakeConfiguration conf, BufferedWriter bw, String output) throws IOException {
+    protected void writeLinkTarget(MakeConfiguration conf, BufferedWriter bw, String output) throws IOException {
         LinkerConfiguration linkerConfiguration = conf.getLinkerConfiguration();
         String command = ""; // NOI18N
 	if (linkerConfiguration.getTool().getModified())

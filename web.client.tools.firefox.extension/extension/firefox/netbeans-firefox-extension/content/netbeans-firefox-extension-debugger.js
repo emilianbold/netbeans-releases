@@ -1869,6 +1869,7 @@
             debugState.shutdownHook = delayShutdownIfDebugging;
             clearAllBreakpoints();
             abortFirebugDebugger();
+            Firebug.Debugger.panelDeactivate(currentFirebugContext, true);
         } else {
             delayShutdownIfDebugging();
         }

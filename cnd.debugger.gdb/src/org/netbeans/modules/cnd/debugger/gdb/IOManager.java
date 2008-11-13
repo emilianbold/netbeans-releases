@@ -79,7 +79,7 @@ public class IOManager {
     private boolean                         closed = false;
     
     /** output writer Thread */
-    private Hashtable                       lines = new Hashtable();
+    private Hashtable<String, Line>           lines = new Hashtable<String, Line>();
     private final Listener                  listener = new Listener();
     
     
@@ -94,7 +94,7 @@ public class IOManager {
     
     // public interface ........................................................
 
-    private final LinkedList buffer = new LinkedList();
+    private final LinkedList<Text> buffer = new LinkedList<Text>();
     private RequestProcessor.Task task;
     
     /**
@@ -113,7 +113,7 @@ public class IOManager {
                     synchronized (buffer) {
                         int i, k = buffer.size();
                         for (i = 0; i < k; i++) {
-                            Text t = (Text) buffer.removeFirst();
+                            Text t = buffer.removeFirst();
                             try {
                                 //if ((t.where & DEBUGGER_OUT) != 0) {
                                     if (t.line != null) {
@@ -158,14 +158,14 @@ public class IOManager {
         }
         public void outputLineAction(OutputEvent ev) {
             String t = ev.getLine();
-            Line l = (Line) lines.get(t);
+            Line l = lines.get(t);
             if (l == null) {
                 return;
             }
             l.show();
         }
         public void outputLineCleared(OutputEvent ev) {
-            lines = new Hashtable();
+            lines = new Hashtable<String, Line>();
         }
     }
     

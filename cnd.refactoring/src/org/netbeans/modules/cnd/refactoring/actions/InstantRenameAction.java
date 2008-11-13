@@ -55,36 +55,35 @@ import org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider;
  * @author Vladimir Voskresensky
  */
 public class InstantRenameAction extends BaseAction {
-    
+
     /** Creates a new instance of InstantRenameAction */
     public InstantRenameAction() {
         super("in-place-refactoring", MAGIC_POSITION_RESET | UNDO_MERGE_RESET); // NOI18N
     }
-    
+
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {
         InstantRenamePerformer.invokeInstantRename(target);
     }
-    
+
     @Override
     protected Class getShortDescriptionBundleClass() {
         return InstantRenameAction.class;
     }
-    
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider.class)
+
+    @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider.class)
     public static class EditorActionProvider extends CndEditorActionsProvider {
 
         public EditorActionProvider() {
-            
         }
-        
+
         @Override
         public Action[] getActions(String mime) {
             if (MIMENames.C_MIME_TYPE.equals(mime) ||
                     MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
-                return new Action[] { new InstantRenameAction() };
+                return new Action[]{new InstantRenameAction()};
             } else {
                 return new Action[0];
             }
         }
-    }    
+    }
 }

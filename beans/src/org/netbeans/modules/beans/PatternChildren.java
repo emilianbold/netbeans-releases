@@ -55,7 +55,7 @@ public final class PatternChildren extends Children.Keys<Pattern> {
 
 //    static final RequestProcessor ANALYZER = new RequestProcessor("Bean patterns analyser", 1); // NOI18N
 
-    private boolean wri = true;
+    private boolean wri = false;
 
 //    private Listener elementListener = new Listener(this);
     

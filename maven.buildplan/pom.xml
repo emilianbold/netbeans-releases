@@ -9,7 +9,7 @@
     <artifactId>lifecycle-build-plan</artifactId>
     <packaging>nbm</packaging>
     <version>3.2-SNAPSHOT</version>
-    <name>Netbeans Lifecycle Build Plan Examiner</name>
+    <name>NetBeans Lifecycle Build Plan Examiner</name>
     <description>Visualizing lifecycle build plan.</description>
     <dependencies>
         <dependency>

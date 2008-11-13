@@ -199,7 +199,6 @@ final class ParsingTask extends Thread implements HyperlinkListener {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             m_svgView.showImage(svgImage);
-                            m_svgView.enableImageContext();
                         }
                     });
                 } else {

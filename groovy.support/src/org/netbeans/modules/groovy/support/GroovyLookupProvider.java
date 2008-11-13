@@ -53,7 +53,7 @@ import org.openide.util.lookup.Lookups;
  * @author Martin Adamek
  */
 public class GroovyLookupProvider implements LookupProvider {
-
+    @LookupProvider.Registration(projectType="org-netbeans-modules-java-j2seproject")
     public static GroovyLookupProvider createJavaSE() {
         return new GroovyLookupProvider();
     }

@@ -238,7 +238,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
             return false;
     }
 
-    List getProfiles () {
+    List<String> getProfiles () {
         Set<String> result = new HashSet<String> (model.getProfiles ());
         result.addAll (modifiedProfiles.keySet ());
         List<String> r = new ArrayList<String> (result);
@@ -250,7 +250,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         return model.isCustomProfile (profile);
     }
     
-    void deleteProfile (String profile) {
+    void deleteOrRestoreProfile (String profile) {
         if (model.isCustomProfile (profile)) {
             deletedProfiles.add (profile);
             modifiedProfiles.remove (profile);
@@ -491,7 +491,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
     }
 
     public void removeShortcut (ShortcutAction action, String shortcut) {
-        Set<String> s = new HashSet<String> (Arrays.asList (getShortcuts (action)));
+        Set<String> s = new LinkedHashSet<String> (Arrays.asList (getShortcuts (action)));
         s.remove (shortcut);
         setShortcuts(action, s);
     }
@@ -535,10 +535,23 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         setCurrentProfile (model.getCurrentProfile ());
         model = new KeymapModel ();
     }
+
+    Map<String, Map<ShortcutAction, Set<String>>> getModifiedProfiles() {
+        return modifiedProfiles;
+    }
+
+    Set<String> getDeletedProfiles() {
+        return deletedProfiles;
+    }
+
+    void setModifiedProfiles(Map<String, Map<ShortcutAction, Set<String>>> mp) {
+        this.modifiedProfiles = mp;
+    }
+
+    void setDeletedProfiles(Set<String> dp) {
+        this.deletedProfiles = dp;
+    }
     
-    /**
-     *
-     */
     public String showShortcutsDialog() {
         final ShortcutsDialog d = new ShortcutsDialog ();
         d.init(this);
@@ -612,7 +625,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         Map<ShortcutAction, Set<String>> result = new HashMap<ShortcutAction, Set<String>> ();
         for (Map.Entry<ShortcutAction, Set<String>> entry: emacs.entrySet()) {
             ShortcutAction action = entry.getKey();
-            Set<String> shortcuts = new HashSet<String> ();
+            Set<String> shortcuts = new LinkedHashSet<String> ();
             for (String emacsShortcut: entry.getValue()) {
                 KeyStroke[] keyStroke = Utilities.stringToKeys (emacsShortcut);
                 shortcuts.add (Utils.getKeyStrokesAsText (keyStroke, " "));

@@ -124,6 +124,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     }
 
     public void addDeclaration(CsmOffsetableDeclaration decl) {
+        @SuppressWarnings("unchecked")
         CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
         assert uid != null;
         insertIntoSortedDeclArray(uid);
@@ -263,6 +264,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         }
     }  
 
+    @SuppressWarnings("unchecked")
     public NamespaceDefinitionImpl(DataInput input) throws IOException {
         super(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();

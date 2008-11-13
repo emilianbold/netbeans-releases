@@ -97,7 +97,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 
         @Override
         public void render(AST ast) {
-            boolean rcurlyFound = false;
             CsmTypedef[] typedefs;
             AST child;
             for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
@@ -306,7 +305,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     case CPPTokenTypes.CSM_VISIBILITY_REDEF:
                         break;
                     case CPPTokenTypes.RCURLY:
-                        rcurlyFound = true;
                         break;
                     case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
                         //new VariableImpl(
@@ -420,6 +418,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         private CsmUID<CsmClass> classDefinition;
         private final CsmUID<CsmIdentifiable> containerUID;
 
+        @SuppressWarnings("unchecked")
         public ClassMemberForwardDeclaration(CsmClass containingClass, AST ast, CsmVisibility curentVisibility, boolean register) {
             super(ast, containingClass.getContainingFile());
             visibility = curentVisibility;
@@ -519,6 +518,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             UIDObjectFactory.getDefaultFactory().writeUID(classDefinition, output);
         }
 
+        @SuppressWarnings("unchecked")
         public ClassMemberForwardDeclaration(DataInput input) throws IOException {
             super(input);
             visibility = PersistentUtils.readVisibility(input);
@@ -604,6 +604,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }
 
     private void addMember(CsmMember member) {
+        @SuppressWarnings("unchecked")
         CsmUID<CsmMember> uid = RepositoryUtils.put(member);
         assert uid != null;
         synchronized (members) {
@@ -612,6 +613,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }
 
     private void addFriend(CsmFriend friend) {
+        @SuppressWarnings("unchecked")
         CsmUID<CsmFriend> uid = RepositoryUtils.put(friend);
         assert uid != null;
         synchronized (friends) {
@@ -628,6 +630,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         return leftBracketPos;
     }
 
+    @SuppressWarnings("unchecked")
     public Collection<CsmScopeElement> getScopeElements() {
         return (Collection) getMembers();
     }

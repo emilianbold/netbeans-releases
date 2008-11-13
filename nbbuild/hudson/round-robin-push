@@ -44,17 +44,24 @@ export RESULT
 rm $RESULT
 
 testmodule() {
-    if ant -f $1/build.xml test-unit -Dtest-unit-sys-prop.ignore.random.failures=true; then
+    if ant $ANT_PARAM -f $1/build.xml test-unit -Dtest-unit-sys-prop.ignore.random.failures=true; then
         echo Test OK: $1
     else
         echo $1 >>$RESULT
     fi
 }
 
-ant clean || exit 2
-ant build || exit 2
-ant commit-validation || echo commit-validation >$RESULT
+ant clean $ANT_PARAM || exit 2
+ant build $ANT_PARAM || exit 2
+ant commit-validation $ANT_PARAM || echo commit-validation >$RESULT
 
 testmodule openide.util
+
+FAILED=`cat $RESULT | wc -l`
+if [ "$FAILED" -gt 0 ]; then
+    echo "No push. Failed tests in following modules:"
+    cat $RESULT
+    exit 5
+fi
 
 hg push "$push_url"
