@@ -63,4 +63,22 @@ public class ActivationFileImpl extends POMComponentImpl implements ActivationFi
         visitor.visit(this);
     }
 
+    public String getExists() {
+        return getChildElementText(getModel().getPOMQNames().EXISTS.getQName());
+    }
+
+    public void setExists(String exists) {
+        setChildElementText(getModel().getPOMQNames().EXISTS.getName(), exists,
+                getModel().getPOMQNames().EXISTS.getQName());
+    }
+
+    public String getMissing() {
+        return getChildElementText(getModel().getPOMQNames().MISSING.getQName());
+    }
+
+    public void setMissing(String missing) {
+        setChildElementText(getModel().getPOMQNames().MISSING.getName(), missing,
+                getModel().getPOMQNames().MISSING.getQName());
+    }
+
 }

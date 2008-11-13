@@ -54,5 +54,16 @@ public interface ActivationOS extends POMComponent {
 //    </xs:all>
 //  </xs:complexType-->
 
+    String getName();
+    void setName(String name);
+
+    String getFamily();
+    void setFamily(String family);
+
+    String getArch();
+    void setArch(String arch);
+
+    String getVersion();
+    void setVersion(String version);
 
 }

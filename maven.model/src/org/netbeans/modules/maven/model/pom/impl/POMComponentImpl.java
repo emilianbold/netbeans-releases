@@ -186,7 +186,7 @@ public abstract class POMComponentImpl extends AbstractDocumentComponent<POMComp
         if (text != null) {
             POMExtensibilityElement el = getModel().getFactory().createPOMExtensibilityElement(qname);
             el.setElementText(text);
-            addAfter(qname.getLocalPart(), el, Collections.EMPTY_LIST);
+            addBefore(qname.getLocalPart(), el, Collections.EMPTY_LIST);
         }
     }
 

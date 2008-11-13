@@ -156,6 +156,13 @@ public final class POMQNames {
 
     public final POMQName MODULES; //NOI18N
     public final POMQName MODULE; //NOI18N
+
+    public final POMQName EXISTS;
+    public final POMQName MISSING;
+
+    public final POMQName ARCH;
+    public final POMQName FAMILY;
+
     private boolean ns;
 
     public POMQNames(boolean ns) {
@@ -267,6 +274,11 @@ public final class POMQNames {
         MODULES = new POMQName(POMQName.createQName("modules",ns), ns); //NOI18N
         MODULE = new POMQName(POMQName.createQName("module",ns), ns); //NOI18N
 
+        EXISTS = new POMQName(POMQName.createQName("exists",ns), ns); //NOI18N
+        MISSING = new POMQName(POMQName.createQName("missing",ns), ns); //NOI18N
+
+        FAMILY = new POMQName(POMQName.createQName("family",ns), ns); //NOI18N
+        ARCH = new POMQName(POMQName.createQName("arch",ns), ns); //NOI18N
         //when adding items here, need to add them to the set below as well.
 
     }
@@ -367,7 +379,11 @@ public final class POMQNames {
             GOALS.getQName(),
             GOAL.getQName(),
             MODULES.getQName(),
-            MODULE.getQName()
+            MODULE.getQName(),
+            EXISTS.getQName(),
+            MISSING.getQName(),
+            ARCH.getQName(),
+            FAMILY.getQName()
         };
         List<QName> list = Arrays.asList(names);
         return new HashSet<QName>(list);

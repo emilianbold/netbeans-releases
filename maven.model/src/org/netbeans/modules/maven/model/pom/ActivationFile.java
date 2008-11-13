@@ -52,4 +52,10 @@ public interface ActivationFile extends POMComponent {
 //    </xs:all>
 //  </xs:complexType-->
 
+    String getExists();
+    void setExists(String exists);
+
+    String getMissing();
+    void setMissing(String missing);
+    
 }

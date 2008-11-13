@@ -53,6 +53,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     private static final Class<POMComponent>[] ORDER = new Class[] {
         Parent.class,
+        POMExtensibilityElement.class,
         Prerequisites.class,
         IssueManagement.class,
         CiManagement.class,

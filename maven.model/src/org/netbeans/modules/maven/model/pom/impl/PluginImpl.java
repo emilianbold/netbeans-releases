@@ -49,6 +49,7 @@ import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
 public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
 
     private static final Class<? extends POMComponent>[] ORDER = new Class[] {
+        POMExtensibilityElement.class,
         PluginExecutionImpl.List.class,
         DependencyImpl.List.class,
         StringList.class, //goals

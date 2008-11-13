@@ -48,6 +48,7 @@ import org.netbeans.modules.maven.model.pom.*;
 public class ProfileImpl extends IdPOMComponentImpl implements Profile {
 
     private static final Class<? extends POMComponent>[] ORDER = new Class[] {
+        POMExtensibilityElement.class,
         Activation.class,
         BuildBase.class,
         StringList.class, //modules

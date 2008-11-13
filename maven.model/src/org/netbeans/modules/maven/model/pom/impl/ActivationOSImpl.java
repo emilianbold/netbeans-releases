@@ -63,4 +63,40 @@ public class ActivationOSImpl extends POMComponentImpl implements ActivationOS {
         visitor.visit(this);
     }
 
+    public String getName() {
+        return getChildElementText(getModel().getPOMQNames().NAME.getQName());
+    }
+
+    public void setName(String name) {
+        setChildElementText(getModel().getPOMQNames().NAME.getName(), name,
+                getModel().getPOMQNames().NAME.getQName());
+    }
+
+    public String getFamily() {
+        return getChildElementText(getModel().getPOMQNames().FAMILY.getQName());
+    }
+
+    public void setFamily(String family) {
+        setChildElementText(getModel().getPOMQNames().FAMILY.getName(), family,
+                getModel().getPOMQNames().FAMILY.getQName());
+    }
+
+    public String getArch() {
+        return getChildElementText(getModel().getPOMQNames().ARCH.getQName());
+    }
+
+    public void setArch(String arch) {
+        setChildElementText(getModel().getPOMQNames().ARCH.getName(), arch,
+                getModel().getPOMQNames().ARCH.getQName());
+    }
+
+    public String getVersion() {
+        return getChildElementText(getModel().getPOMQNames().VERSION.getQName());
+    }
+
+    public void setVersion(String version) {
+        setChildElementText(getModel().getPOMQNames().VERSION.getName(), version,
+                getModel().getPOMQNames().VERSION.getQName());
+    }
+
 }
