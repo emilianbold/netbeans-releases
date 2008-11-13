@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.loaders;
 
 import org.openide.nodes.Children;
@@ -51,38 +50,38 @@ import org.netbeans.modules.cnd.execution.BinaryExecSupport;
 public class ExeNode extends CndDataNode {
 
     public ExeNode(ExeObject obj) {
-	this(obj, Children.LEAF);
+        this(obj, Children.LEAF);
     }
 
     public ExeNode(ExeObject obj, Children ch) {
-	super(obj, ch);
-	setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/ExeIcon.gif"); // NOI18N
+        super(obj, ch);
+        setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/ExeIcon.gif"); // NOI18N
     }
 
     private ExeElfObject getExeElfObject() {
-	return (ExeElfObject) getDataObject();
+        return (ExeElfObject) getDataObject();
     }
 
     // Example of adding Executor / Debugger / Arguments to node:
+    @Override
     protected Sheet createSheet() {
-	Sheet sheet = super.createSheet();
+        Sheet sheet = super.createSheet();
 
-	Sheet.Set set = sheet.get(BinaryExecSupport.PROP_EXECUTION);
-	if (set == null) {
-	    set = new Sheet.Set();
-	    set.setName(BinaryExecSupport.PROP_EXECUTION);
-	    set.setDisplayName(NbBundle.getBundle(ExeNode.class).
-		    getString("displayNameForExeElfNodeExecSheet"));  // NOI18N
-	    set.setShortDescription(NbBundle.getBundle(ExeNode.class).
-		    getString("hintForExeElfNodeExecSheet"));   // NOI18N
-	    BinaryExecSupport es = ((BinaryExecSupport)
-				getCookie(BinaryExecSupport.class));
-	    if (es != null) {
-		es.addProperties(set);
-	    }
-	    sheet.put(set);
-	}
-        
-	return sheet;
+        Sheet.Set set = sheet.get(BinaryExecSupport.PROP_EXECUTION);
+        if (set == null) {
+            set = new Sheet.Set();
+            set.setName(BinaryExecSupport.PROP_EXECUTION);
+            set.setDisplayName(NbBundle.getBundle(ExeNode.class).
+                    getString("displayNameForExeElfNodeExecSheet"));  // NOI18N
+            set.setShortDescription(NbBundle.getBundle(ExeNode.class).
+                    getString("hintForExeElfNodeExecSheet"));   // NOI18N
+            BinaryExecSupport es = (getCookie(BinaryExecSupport.class));
+            if (es != null) {
+                es.addProperties(set);
+            }
+            sheet.put(set);
+        }
+
+        return sheet;
     }
 }

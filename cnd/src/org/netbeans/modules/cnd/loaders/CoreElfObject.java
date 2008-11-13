@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
@@ -62,44 +61,48 @@ public class CoreElfObject extends ExeObject {
     static final long serialVersionUID = 4165108744340374591L;
 
     public CoreElfObject(FileObject pf, ExeLoader loader)
-	throws DataObjectExistsException {
-	super(pf, loader);
+            throws DataObjectExistsException {
+        super(pf, loader);
     }
-  
+
+    @Override
     protected void init() {
-	CookieSet cookies = getCookieSet();
-    
-	// Actually, we don't want Execute, we only want Start!
-	// See below; we override getCookie to disable execution.
-	cookies.add(new BinaryExecSupport(getPrimaryEntry()));
+        CookieSet cookies = getCookieSet();
+
+        // Actually, we don't want Execute, we only want Start!
+        // See below; we override getCookie to disable execution.
+        cookies.add(new BinaryExecSupport(getPrimaryEntry()));
     }
-  
+
+    @Override
     protected Node createNodeDelegate() {
-	return new CoreElfNode(this);
+        return new CoreElfNode(this);
     }
 
     /** Implement parent's getCookie, except disable execution.
-	<p>
-      ExecSupport includes both execution and debugging. We don't want
-      that.  From http://www.netbeans.org/www-nbdev/msg07823.html: A
-      workaround would be to override getCookie on your DataObject to
-      check for DebuggerCookie.class, return null if so, else return
-      super.getCookie.
-    */
+    <p>
+    ExecSupport includes both execution and debugging. We don't want
+    that.  From http://www.netbeans.org/www-nbdev/msg07823.html: A
+    workaround would be to override getCookie on your DataObject to
+    check for DebuggerCookie.class, return null if so, else return
+    super.getCookie.
+     */
+    @Override
     public Node.Cookie getCookie(Class c) {
-	if (c.isAssignableFrom(ExecCookie.class)) {
-	    return null;
-	} else {
-	    return super.getCookie(c);
-	}
+        if (c.isAssignableFrom(ExecCookie.class)) {
+            return null;
+        } else {
+            return super.getCookie(c);
+        }
     }
 
     /*
      * Return name with extension so renaming etc works
      */
+    @Override
     public String getName() {
-	String ename = getPrimaryFile().getNameExt();
-	return ename;
+        String ename = getPrimaryFile().getNameExt();
+        return ename;
     }
 
     /**
@@ -107,22 +110,23 @@ public class CoreElfObject extends ExeObject {
      *  We only override this to prevent you from changing the template
      *  name to something invalid (like an empty name)
      */
+    @Override
     protected FileObject handleRename(String name) throws IOException {
         FileLock lock = getPrimaryFile().lock();
         int pos = name.lastIndexOf('.');
 
         try {
-            if (pos <= 0){
+            if (pos <= 0) {
                 // file without separator
                 getPrimaryFile().rename(lock, name, null);
             } else {
-		getPrimaryFile().rename(lock, name.substring(0, pos), 
+                getPrimaryFile().rename(lock, name.substring(0, pos),
                         name.substring(pos + 1, name.length()));
             }
         } finally {
-            lock.releaseLock ();
+            lock.releaseLock();
         }
-        return getPrimaryFile ();
+        return getPrimaryFile();
     }
 }
 

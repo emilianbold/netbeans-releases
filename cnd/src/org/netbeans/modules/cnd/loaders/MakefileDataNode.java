@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.loaders;
 
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
@@ -51,39 +50,37 @@ public class MakefileDataNode extends CndDataNode {
     /** We need this in several places */
     private MakeExecSupport mes;
 
-
     /** Construct the DataNode */
     public MakefileDataNode(MakefileDataObject obj) {
-	this(obj, Children.LEAF);
+        this(obj, Children.LEAF);
     }
 
     /** Construct the DataNode */
     public MakefileDataNode(MakefileDataObject obj, Children ch) {
-	super(obj, ch, MakefileDataIcon);
+        super(obj, ch, MakefileDataIcon);
 
-	getCookieSet().add(getSupport());
+        getCookieSet().add(getSupport());
     }
 
     /** Get the support for methods which need it */
     private final MakeExecSupport getSupport() {
-	if (mes == null) {
-	    mes = (MakeExecSupport) getCookie(MakeExecSupport.class);
-	}
+        if (mes == null) {
+            mes = getCookie(MakeExecSupport.class);
+        }
 
-	return mes;
+        return mes;
     }
-
 
     /** Create the properties sheet for the node */
+    @Override
     protected Sheet createSheet() {
-	// Just add properties to default property tab (they used to be in a special 'Building Tab')
-	Sheet defaultSheet = super.createSheet();
+        // Just add properties to default property tab (they used to be in a special 'Building Tab')
+        Sheet defaultSheet = super.createSheet();
         Sheet.Set defaultSet = defaultSheet.get(Sheet.PROPERTIES);
-	getSupport().addProperties(defaultSet);
-	return defaultSheet;
+        getSupport().addProperties(defaultSet);
+        return defaultSheet;
     }
-
     private static final String MakefileDataIcon =
-		"org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"; // NOI18N
+            "org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"; // NOI18N
 }
 
