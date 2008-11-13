@@ -261,8 +261,8 @@ public class BracketCompletion {
         Token<CppTokenId> token = (Token<CppTokenId>) cppTokenSequence.token();
         if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
             cppTokenSequence = cppTokenSequence.embedded();
-            cppTokenSequence.move(offset);
         }
+        cppTokenSequence.move(offset);
         return (TokenSequence<CppTokenId>) cppTokenSequence;
     }
 
@@ -373,6 +373,7 @@ public class BracketCompletion {
      * till the end of caret row. If there is no such element, position after the last non-white
      * character on the caret row is returned.
      */
+    @SuppressWarnings("unchecked")
     static int getRowOrBlockEnd(BaseDocument doc, int caretOffset) throws BadLocationException {
         int rowEnd = Utilities.getRowLastNonWhite(doc, caretOffset);
         if (rowEnd == -1 || caretOffset >= rowEnd) {
@@ -382,36 +383,38 @@ public class BracketCompletion {
         int parenBalance = 0;
         int braceBalance = 0;
         int bracketBalance = 0;
-        ExtSyntaxSupport ssup = (ExtSyntaxSupport) doc.getSyntaxSupport();
-        org.netbeans.editor.TokenItem token = ssup.getTokenChain(caretOffset, rowEnd);
-        while (token != null && token.getOffset() < rowEnd) {
-            switch (token.getTokenID().getNumericID()) {
-                case CCTokenContext.LPAREN_ID:
+
+        TokenSequence<CppTokenId> cppTokenSequence = getInnerTS(doc, caretOffset);
+        if (cppTokenSequence == null) {
+            return caretOffset;
+        }
+        while (cppTokenSequence.moveNext() && cppTokenSequence.offset() < rowEnd) {
+            switch (cppTokenSequence.token().id()) {
+                case LPAREN:
                     parenBalance++;
                     break;
-                case CCTokenContext.RPAREN_ID:
+                case RPAREN:
                     if (parenBalance-- == 0) {
-                        return token.getOffset();
+                        return cppTokenSequence.offset();
                     }
                     break;
-                case CCTokenContext.LBRACE_ID:
+                case LBRACE:
                     braceBalance++;
                     break;
-                case CCTokenContext.RBRACE_ID:
+                case RBRACE:
                     if (braceBalance-- == 0) {
-                        return token.getOffset();
+                        return cppTokenSequence.offset();
                     }
                     break;
-                case CCTokenContext.LBRACKET_ID:
+                case LBRACKET:
                     bracketBalance++;
                     break;
-                case CCTokenContext.RBRACKET_ID:
+                case RBRACKET:
                     if (bracketBalance-- == 0) {
-                        return token.getOffset();
+                        return cppTokenSequence.offset();
                     }
                     break;
             }
-            token = token.getNext();
         }
         return rowEnd;
     }
@@ -427,21 +430,12 @@ public class BracketCompletion {
         return tokenBalance(doc, CppTokenId.LBRACE, CppTokenId.RBRACE);
     }
 
-//    /**
-//     * The same as braceBalance but generalized to any pair of matching
-//     * tokens.
-//     * @param open the token that increses the count
-//     * @param close the token that decreses the count
-//     */
-//    private static int tokenBalance(BaseDocument doc, TokenID open, TokenID close)
-//            throws BadLocationException {
-//
-//        ExtSyntaxSupport sup = (ExtSyntaxSupport) doc.getSyntaxSupport();
-//        BalanceTokenProcessorOld balanceTP = new BalanceTokenProcessorOld(open, close);
-//        sup.tokenizeText(balanceTP, 0, doc.getLength(), true);
-//        return balanceTP.getBalance();
-//    }
-
+    /**
+     * The same as braceBalance but generalized to any pair of matching
+     * tokens.
+     * @param open the token that increses the count
+     * @param close the token that decreses the count
+     */
     private static int tokenBalance(BaseDocument doc, CppTokenId open, CppTokenId close)
             throws BadLocationException {
         BalanceTokenProcessor tp = new BalanceTokenProcessor(open, close);
@@ -461,9 +455,9 @@ public class BracketCompletion {
      */
     private static void skipClosingBracket(BaseDocument doc, Caret caret, char theBracket)
             throws BadLocationException {
-        TokenID bracketId = (theBracket == ')')
-                ? CCTokenContext.RPAREN
-                : CCTokenContext.RBRACKET;
+        CppTokenId bracketId = (theBracket == ')')
+                ? CppTokenId.RPAREN
+                : CppTokenId.RBRACKET;
         int caretOffset = caret.getDot();
         if (isSkipClosingBracket(doc, caretOffset, bracketId)) {
             doc.remove(caretOffset - 1, 1);
@@ -480,7 +474,7 @@ public class BracketCompletion {
      * @param doc document into which typing was done.
      * @param caretOffset
      */
-    static boolean isSkipClosingBracket(BaseDocument doc, int caretOffset, TokenID bracketId)
+    static boolean isSkipClosingBracket(BaseDocument doc, int caretOffset, CppTokenId bracketId)
             throws BadLocationException {
         // First check whether the caret is not after the last char in the document
         // because no bracket would follow then so it could not be skipped.
@@ -490,35 +484,35 @@ public class BracketCompletion {
 
         boolean skipClosingBracket = false; // by default do not remove
         // Examine token at the caret offset
-        org.netbeans.editor.TokenItem token = ((ExtSyntaxSupport) doc.getSyntaxSupport()).getTokenChain(
-                caretOffset, caretOffset + 1);
+        TokenSequence<CppTokenId> ts = getInnerTS(doc, caretOffset);
+        if (ts == null) {
+            return false;
+        }
         // Check whether character follows the bracket is the same bracket
-        if (token != null && token.getTokenID() == bracketId) {
-            int bracketIntId = bracketId.getNumericID();
-            int leftBracketIntId = (bracketIntId == CCTokenContext.RPAREN_ID)
-                    ? CCTokenContext.LPAREN_ID
-                    : CCTokenContext.LBRACKET_ID;
+        if (ts.moveNext() && ts.token().id() == bracketId) {
+//            Token<CppTokenId> token = ts.token();
+            CppTokenId leftBracketId = (ts.token().id() == CppTokenId.RPAREN) ? CppTokenId.LPAREN : CppTokenId.LBRACKET;
 
             // Skip all the brackets of the same type that follow the last one
-            org.netbeans.editor.TokenItem nextToken = token.getNext();
-            while (nextToken != null && nextToken.getTokenID() == bracketId) {
-                token = nextToken;
-                nextToken = nextToken.getNext();
+            int lastRBracketIndex = ts.index();
+            while (ts.moveNext() && ts.token().id() == bracketId) {
+                lastRBracketIndex = ts.index();
             }
             // token var points to the last bracket in a group of two or more right brackets
             // Attempt to find the left matching bracket for it
             // Search would stop on an extra opening left brace if found
             int braceBalance = 0; // balance of '{' and '}'
             int bracketBalance = -1; // balance of the brackets or parenthesis
-            org.netbeans.editor.TokenItem lastRBracket = token;
-            token = token.getPrevious();
+//            org.netbeans.editor.TokenItem lastRBracket = token;
+
+//            token = token.getPrevious();
             boolean finished = false;
-            while (!finished && token != null) {
-                int tokenIntId = token.getTokenID().getNumericID();
-                switch (tokenIntId) {
-                    case CCTokenContext.LPAREN_ID:
-                    case CCTokenContext.LBRACKET_ID:
-                        if (tokenIntId == bracketIntId) {
+            while (!finished && ts.movePrevious()) {
+                CppTokenId id = ts.token().id();
+                switch (id) {
+                    case LPAREN:
+                    case LBRACKET:
+                        if (id == bracketId) {
                             bracketBalance++;
                             if (bracketBalance == 0) {
                                 if (braceBalance != 0) {
@@ -537,26 +531,25 @@ public class BracketCompletion {
                         }
                         break;
 
-                    case CCTokenContext.RPAREN_ID:
-                    case CCTokenContext.RBRACKET_ID:
-                        if (tokenIntId == bracketIntId) {
+                    case RPAREN:
+                    case RBRACKET:
+                        if (id == bracketId) {
                             bracketBalance--;
                         }
                         break;
-                    case CCTokenContext.LBRACE_ID:
+                    case LBRACE:
                         braceBalance++;
                         if (braceBalance > 0) { // stop on extra left brace
                             finished = true;
                         }
                         break;
 
-                    case CCTokenContext.RBRACE_ID:
+                    case RBRACE:
                         braceBalance--;
                         break;
 
                 }
-
-                token = token.getPrevious(); // done regardless of finished flag state
+                // done regardless of finished flag state
             }
 
             if (bracketBalance != 0) { // not found matching bracket
@@ -571,21 +564,24 @@ public class BracketCompletion {
                 // The search would stop on an extra right brace if found
                 braceBalance = 0;
                 bracketBalance = 1; // simulate one extra left bracket
-                token = lastRBracket.getNext();
+                ts.moveIndex(lastRBracketIndex);
+                ts.moveNext();
+//                token = lastRBracket.getNext();
+                ts.moveNext(); // ???
                 finished = false;
-                while (!finished && token != null) {
-                    int tokenIntId = token.getTokenID().getNumericID();
-                    switch (tokenIntId) {
-                        case CCTokenContext.LPAREN_ID:
-                        case CCTokenContext.LBRACKET_ID:
-                            if (tokenIntId == leftBracketIntId) {
+                while (!finished && ts.movePrevious()) {
+                    CppTokenId id = ts.token().id();
+                    switch (id) {
+                        case LPAREN:
+                        case LBRACKET:
+                            if (id == leftBracketId) {
                                 bracketBalance++;
                             }
                             break;
 
-                        case CCTokenContext.RPAREN_ID:
-                        case CCTokenContext.RBRACKET_ID:
-                            if (tokenIntId == bracketIntId) {
+                        case RPAREN:
+                        case RBRACKET:
+                            if (id == bracketId) {
                                 bracketBalance--;
                                 if (bracketBalance == 0) {
                                     if (braceBalance != 0) {
@@ -603,11 +599,11 @@ public class BracketCompletion {
                             }
                             break;
 
-                        case CCTokenContext.LBRACE_ID:
+                        case LBRACE:
                             braceBalance++;
                             break;
 
-                        case CCTokenContext.RBRACE_ID:
+                        case RBRACE:
                             braceBalance--;
                             if (braceBalance < 0) { // stop on extra right brace
                                 finished = true;
@@ -615,8 +611,7 @@ public class BracketCompletion {
                             break;
 
                     }
-
-                    token = token.getPrevious(); // done regardless of finished flag state
+                    // done regardless of finished flag state
                 }
 
                 // If bracketBalance == 0 the bracket would be matched
@@ -919,80 +914,6 @@ public class BracketCompletion {
         }
 
         private int getBalance() {
-            return balance;
-        }
-    }
-
-    private static class BalanceTokenProcessorOld implements TokenProcessor {
-
-        private TokenID leftTokenID;
-        private TokenID rightTokenID;
-        private Stack<Integer> stack = new Stack<Integer>();
-        private int balance;
-        private boolean isDefine;
-        private char[] buffer;
-        private int bufferStartPos;
-
-        BalanceTokenProcessorOld(TokenID leftTokenID, TokenID rightTokenID) {
-            this.leftTokenID = leftTokenID;
-            this.rightTokenID = rightTokenID;
-        }
-
-        public boolean token(TokenID tokenID, TokenContextPath tcp,
-                int tokBuffOffset, int tokLength) {
-
-            if (tokenID.getCategory() == CCTokenContext.CPP) {
-                switch (tokenID.getNumericID()) {
-                    case CCTokenContext.CPPIF_ID:
-                    case CCTokenContext.CPPIFDEF_ID:
-                    case CCTokenContext.CPPIFNDEF_ID:
-                        stack.push(balance);
-                        break;
-                    case CCTokenContext.CPPELIF_ID:
-                    case CCTokenContext.CPPELSE_ID:
-                        if (!stack.empty()) {
-                            balance = stack.peek();
-                        }
-                        break;
-                    case CCTokenContext.CPPENDIF_ID:
-                        if (!stack.empty()) {
-                            stack.pop();
-                        }
-                        break;
-                    case CCTokenContext.CPPDEFINE_ID:
-                        isDefine = true;
-                        break;
-                }
-            } else {
-                if (tokenID == leftTokenID) {
-                    if (!isDefine) {
-                        balance++;
-                    }
-                } else if (tokenID == rightTokenID) {
-                    if (!isDefine) {
-                        balance--;
-                    }
-                } else if (tokenID.getNumericID() == CCTokenContext.WHITESPACE_ID) {
-                    for (int i = tokBuffOffset; i < tokBuffOffset + tokLength; i++) {
-                        if (buffer[i] == '\n') {
-                            isDefine = false;
-                        }
-                    }
-                }
-            }
-            return true;
-        }
-
-        public int eot(int offset) {
-            return 0;
-        }
-
-        public void nextBuffer(char[] buffer, int offset, int len, int startPos, int preScan, boolean lastBuffer) {
-            this.buffer = buffer;
-            bufferStartPos = startPos - offset;
-        }
-
-        public int getBalance() {
             return balance;
         }
     }

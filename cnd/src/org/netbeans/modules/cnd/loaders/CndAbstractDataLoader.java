@@ -115,7 +115,7 @@ public abstract class CndAbstractDataLoader extends UniFileLoader implements Cnd
 
         protected java.text.Format createFormat(FileObject target, String name, String ext) {
 
-            Map map = (CppSettings.findObject(CppSettings.class, true)).getReplaceableStringsProps();
+            Map<Object, Object> map = (CppSettings.findObject(CppSettings.class, true)).getReplaceableStringsProps();
 
             String packageName = target.getPath().replace('/', '_');
             // add an underscore to the package name if it is not an empty string

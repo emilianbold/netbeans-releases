@@ -139,6 +139,7 @@ public class ImportManager extends java.awt.Panel {
         if (StatusLineImportIcon.icon == null) {
             return ;
         }
+        remindLater ();
         String msg = NbBundle.getMessage (ImportManager.class,
                 "ImportNotifier_PluginAvailableForImport", // NOI18N
                 toImport.size () + toInstall.size ());

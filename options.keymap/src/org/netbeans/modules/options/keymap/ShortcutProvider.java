@@ -75,6 +75,7 @@ public class ShortcutProvider {
         KeyEvent.VK_T,
         KeyEvent.VK_U,
         KeyEvent.VK_V,
+        KeyEvent.VK_W,
         KeyEvent.VK_X,
         KeyEvent.VK_Y,
         KeyEvent.VK_Z,

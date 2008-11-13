@@ -60,6 +60,7 @@ import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.netbeans.modules.php.project.connections.common.PasswordPanel;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
  * @author Tomas Mysik
@@ -307,16 +308,17 @@ public class FtpClient implements RemoteClient {
             String message = event.getMessage();
             if (message.startsWith("PASS ")) { // NOI18N
                 // hide password
-                message = "PASS ******\n"; // NOI18N
+                message = "PASS ******"; // NOI18N
             }
+            OutputWriter writer = null;
             if (event.isReply()
                     && (FTPReply.isNegativeTransient(event.getReplyCode()) || FTPReply.isNegativePermanent(event.getReplyCode()))) {
-                io.getErr().print(message);
-                io.getErr().flush();
+                writer = io.getErr();
             } else {
-                io.getOut().print(message);
-                io.getOut().flush();
+                writer = io.getOut();
             }
+            writer.println(message.trim());
+            writer.flush();
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Command listener: " + message.trim());
             }

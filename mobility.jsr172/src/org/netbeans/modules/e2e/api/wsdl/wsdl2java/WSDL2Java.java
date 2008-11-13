@@ -9,6 +9,7 @@
 
 package org.netbeans.modules.e2e.api.wsdl.wsdl2java;
 
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -40,6 +41,7 @@ public interface WSDL2Java {
         private boolean overwriteExisting;
         private String packageName;
         private short generateType;
+        private URL wsdlUrl;
         
         private boolean generateDataBinding;
                         
@@ -102,6 +104,14 @@ public interface WSDL2Java {
         
         public boolean getGenerateDataBinding() {
             return generateDataBinding;
+        }
+        
+        public URL getOriginalWSDLUrl(){
+            return wsdlUrl;
+        }
+        
+        public void setOriginalWSDLUrl( URL url ){
+            wsdlUrl = url;
         }
     }
     
