@@ -41,26 +41,38 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
+import junit.framework.TestCase;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.editor.Acceptor;
-import org.netbeans.editor.AcceptorFactory;
-import org.netbeans.editor.TokenContext;
-
-/** Default settings values for C and C++ */
-public class CCSettingsDefaults {
-
-    public static Acceptor getDefaultAbbrevResetAcceptor() {
-        return AcceptorFactory.NON_JAVA_IDENTIFIER;
+/**
+ *
+ * @author Vladimir Voskresensky
+ */
+public class SpaceAndLineSeparatorTestCase extends TestCase {
+    
+    public SpaceAndLineSeparatorTestCase(String testName) {
+        super(testName);
     }
-
-    public static List<? extends TokenContext> getTokenContext() {
-        return Collections.singletonList(CCTokenContext.context);
+    
+    public void testIsSpace() {
+        boolean res = Character.isSpaceChar(' ');
+        assertTrue("Character.isSpaceChar for ' ' must be true", res);
+        res = Character.isSpaceChar('\n');
+        assertFalse("Character.isSpaceChar for '\\n' must be false ", res);
+        res = Character.isSpaceChar('\t');
+        assertFalse("Character.isSpaceChar for '\\t' must be false", res);
+        res = Character.isSpaceChar('\r');
+        assertFalse("Character.isSpaceChar for '\\r' must be false", res);
     }
-
-    public static Acceptor getDefaultIdentifierAcceptor() {
-        return AcceptorFactory.JAVA_IDENTIFIER;
+    
+    public void testIsWhitespace() {
+        boolean res = Character.isWhitespace(' ');
+        assertTrue("Character.isWhitespace for ' ' must be true", res);
+        res = Character.isWhitespace('\n');
+        assertTrue("Character.isWhitespace for '\\n' must be true ", res);
+        res = Character.isWhitespace('\t');
+        assertTrue("Character.isWhitespace for '\\t' must be true", res);
+        res = Character.isWhitespace('\r');
+        assertTrue("Character.isWhitespace for '\\r' must be true", res);
     }
-
+    
 }

@@ -38,25 +38,27 @@ import org.netbeans.modules.cnd.editor.options.EditorOptions;
  *
  * @author Alexander Simon
  */
-public class CCIndentUnitTestCaseSingleTestCase extends CCFormatterBaseUnitTestCase {
+public class IndentSingleTestCase extends EditorBase {
 
-    public CCIndentUnitTestCaseSingleTestCase(String testMethodName) {
+    public IndentSingleTestCase(String testMethodName) {
         super(testMethodName);
     }
-    /**
-     * test parameter aligning
-     */
-    public void testIdentMethodParameters2() {
-        setCppEditorKit(false);
+    public void testEnterAfterIfBraceHalf() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
-                putBoolean(EditorOptions.alignMultilineMethodParams, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace,
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
-            "int longmain(int a,|\n");
+                "if (true)\n" +
+                "  {|\n" +
+                "  }\n"
+                );
         indentNewLine();
-        assertDocumentText("Incorrect identing of main",
-            "int longmain(int a,\n" +
-            "             \n");
+        assertDocumentTextAndCaret("Incorrect new-line indent",
+                "if (true)\n" +
+                "  {\n" +
+                "    |\n" +
+                "  }\n"
+                );
     }
-
 }

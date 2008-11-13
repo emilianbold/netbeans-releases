@@ -28,22 +28,28 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import org.netbeans.junit.NbTestSuite;
-
 /**
- *
+ * Class was taken from java
+ * Links point to java IZ.
+ * C/C++ specific tests begin from testSystemInclude
  * @author Alexander Simon
  */
-public class CCFormatterUnitTest extends NbTestSuite {
+public class BracketCompletionSingleTestCase extends EditorBase  {
 
-    public CCFormatterUnitTest() {
-        super("C/C++ Formatter");
-        addTestSuite(CCBracketCompletionUnitTestCase.class);
-        addTestSuite(CCIndentUnitTestCase.class);
-        addTestSuite(CCNewFormatterUnitTestCase.class);
+    public BracketCompletionSingleTestCase(String testMethodName) {
+        super(testMethodName);
     }
-
-    public static NbTestSuite suite() {
-        return new CCFormatterUnitTest();
+    
+    public void testIdentFunctionName()  throws Exception {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+            "tree\n" +
+            "        |"
+            );
+        typeChar('d',true);
+        assertDocumentTextAndCaret("Incorrect identing of main",
+            "tree\n" +
+            "d|"
+            );
     }
 }

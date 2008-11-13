@@ -39,40 +39,59 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.cplusplus;
+package org.netbeans.modules.ruby.extrahints;
 
-import junit.framework.TestCase;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.ruby.hints.HintTestBase;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Tor Norbye
  */
-public class SpaceAndLineSeparatorUnitTestCase extends TestCase {
-    
-    public SpaceAndLineSeparatorUnitTestCase(String testName) {
+public class DuplicateHashKeysTest extends HintTestBase {
+
+    public DuplicateHashKeysTest(String testName) {
         super(testName);
     }
-    
-    public void testIsSpace() {
-        boolean res = Character.isSpaceChar(' ');
-        assertTrue("Character.isSpaceChar for ' ' must be true", res);
-        res = Character.isSpaceChar('\n');
-        assertFalse("Character.isSpaceChar for '\\n' must be false ", res);
-        res = Character.isSpaceChar('\t');
-        assertFalse("Character.isSpaceChar for '\\t' must be false", res);
-        res = Character.isSpaceChar('\r');
-        assertFalse("Character.isSpaceChar for '\\r' must be false", res);
+
+    private RubyAstRule createRule() {
+        return new DuplicateHashKeys();
     }
-    
-    public void testIsWhitespace() {
-        boolean res = Character.isWhitespace(' ');
-        assertTrue("Character.isWhitespace for ' ' must be true", res);
-        res = Character.isWhitespace('\n');
-        assertTrue("Character.isWhitespace for '\\n' must be true ", res);
-        res = Character.isWhitespace('\t');
-        assertTrue("Character.isWhitespace for '\\t' must be true", res);
-        res = Character.isWhitespace('\r');
-        assertTrue("Character.isWhitespace for '\\r' must be true", res);
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
     }
-    
+
+    public void testHint1() throws Exception {
+        checkHints(this, createRule(), "testfiles/duplicatekeys.rb", null);
+    }
+
+    public void testHint2() throws Exception {
+        checkHints(this, createRule(), "testfiles/duplicatekeys2.rb", null);
+    }
+
+    public void testNoHints1() throws Exception {
+        checkHints(this, createRule(), "testfiles/superfib.rb", null);
+    }
+
+    public void testNoHints2() throws Exception {
+        checkHints(this, createRule(), "testfiles/element.rb", null);
+    }
+
+    public void testNoPositives() throws Exception {
+        try {
+            parseErrorsOk = true;
+            Set<String> exceptions = new HashSet<String>();
+
+            // Known exceptions
+            exceptions.add("asset_tag_helper_test.rb");
+
+            assertNoJRubyMatches(createRule(), exceptions);
+
+        } finally {
+            parseErrorsOk = false;
+        }
+    }
 }
