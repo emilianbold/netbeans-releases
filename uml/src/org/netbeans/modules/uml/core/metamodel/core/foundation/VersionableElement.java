@@ -1189,7 +1189,7 @@ protected List getAllAffectedElements(Document doc, String xmiid) {
 	{
 		IVersionableElement retEle = null;
 		TypedFactoryRetriever ret = new TypedFactoryRetriever();
-		IVersionableElement clone = (IVersionableElement)ret.clone(getNode());
+ 		IVersionableElement clone = (IVersionableElement)ret.clone(getNode());
 		
 		if (clone != null)
 		{
