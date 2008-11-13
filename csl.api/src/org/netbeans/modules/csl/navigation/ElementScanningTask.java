@@ -38,8 +38,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.csl.navigation;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,16 +48,24 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.StructureItem;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -72,99 +80,61 @@ import org.openide.util.ImageUtilities;
  *
  * @author phrebejk
  */
-public class ElementScanningTask implements CancellableTask<CompilationInfo>{
+public final class ElementScanningTask extends ParserResultTask<ParserResult> {
+
+    private static final Logger LOG = Logger.getLogger(ElementScanningTask.class.getName());
     
-    private ClassMemberPanelUI ui;
-    private volatile boolean canceled;
-    
-    public ElementScanningTask( ClassMemberPanelUI ui ) {
+    private final ClassMemberPanelUI ui;
+    private boolean canceled;
+
+    public ElementScanningTask(ClassMemberPanelUI ui) {
+        assert ui != null;
         this.ui = ui;
     }
-    
-    public void cancel() {
-        canceled = true;
-//        if ( scanner != null ) {
-//            scanner.cancel();
-//        }
-    }
 
-    public void run(CompilationInfo info) throws Exception {
-        
-        canceled = false; // Task shared for one file needs reset first
-        
+    public @Override void run(ParserResult result) {
+
+        resume();
+
         //System.out.println("The task is running" + info.getFileObject().getNameExt() + "=====================================" ) ;
-        
-        final List<StructureItem> items = new ArrayList<StructureItem>();
-        StructureItem rootDescription = new StructureItem() {
-            public String getName() {
-                return null;
-            }
 
-            public String getHtml(HtmlFormatter formatter) {
-                return null;
-            }
-
-            public ElementHandle getElementHandle() {
-                throw new UnsupportedOperationException("Not supported on the Root Node.");
-            }
-
-            public ElementKind getKind() {
-                return ElementKind.OTHER;
-            }
-
-            public Set<Modifier> getModifiers() {
-                return Collections.emptySet();
-            }
-
-            public boolean isLeaf() {
-                return false;
-            }
-
-            public List<? extends StructureItem> getNestedItems() {
-                return items;
-            }
-
-            public long getPosition() {
-                return 0;
-            }
-            public long getEndPosition() {
-                return Long.MAX_VALUE;
-            }
-
-            public ImageIcon getCustomIcon() {
-                return null;
-            }
-            
-            public String getSortText() {
-                return null;
-            }
-        };
-        
-        Set<String> mimeTypes = info.getEmbeddedMimeTypes();
-        LanguageRegistry registry = LanguageRegistry.getInstance();
-        List<String> sortedMimes = new ArrayList<String>(mimeTypes);
-        // TODO - sort results by something more interesting than the alphabetical
-        // order of their mimetypes...
-        Collections.sort(sortedMimes);
-        
-        List<MimetypeRootNode> roots = new ArrayList<MimetypeRootNode>();
-        int mimetypesWithElements = 0;
-        for (String mimeType : mimeTypes) {
-            Language language = registry.getLanguageByMimeType(mimeType);
-            StructureScanner scanner = language.getStructure();
-            if (scanner != null) {
-                long startTime = System.currentTimeMillis();
-                List<? extends StructureItem> children = scanner.scan(info);
-                long endTime = System.currentTimeMillis();
-                Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + mimeType + ")",
-                    new Object[] {info.getFileObject(), endTime - startTime});
-                
-                if(children.size() > 0) {
-                    mimetypesWithElements++;
-                }
-                roots.add(new MimetypeRootNode(language, children));
-            }
+        final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
+        if (fileObject == null) {
+            return;
         }
+        
+        final int [] mimetypesWithElements = new int [] { 0 };
+        final List<MimetypeRootNode> roots = new ArrayList<MimetypeRootNode>();
+        try {
+            ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
+                public @Override void run(ResultIterator resultIterator) throws Exception {
+                    Language language = LanguageRegistry.getInstance().getLanguageByMimeType(resultIterator.getSnapshot().getMimeType());
+                    StructureScanner scanner = language.getStructure();
+                    if (scanner != null) {
+                        long startTime = System.currentTimeMillis();
+                        Parser.Result r = resultIterator.getParserResult();
+                        if (r instanceof ParserResult) {
+                            List<? extends StructureItem> children = scanner.scan((ParserResult) r);
+                            long endTime = System.currentTimeMillis();
+                            Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + language.getMimeType() + ")",
+                                    new Object[]{fileObject, endTime - startTime});
+
+                            if (children.size() > 0) {
+                                mimetypesWithElements[0]++;
+                            }
+                            roots.add(new MimetypeRootNode(language, children));
+                        }
+                    }
+
+                    for(Embedding e : resultIterator.getEmbeddings()) {
+                        run(resultIterator.getResultIterator(e));
+                    }
+                }
+            });
+        } catch (ParseException e) {
+            LOG.log(Level.WARNING, null, e);
+        }
+
         if (roots.size() > 1) {
             Collections.sort(roots, new Comparator<MimetypeRootNode>() {
                 public int compare(MimetypeRootNode o1, MimetypeRootNode o2) {
@@ -172,25 +142,98 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 }
             });
         }
-        
-        if(mimetypesWithElements > 1) {
+
+        List<StructureItem> items = new ArrayList<StructureItem>();
+        if (mimetypesWithElements[0] > 1) {
             //at least two languages provided some elements - use the root mimetype nodes
-            for(MimetypeRootNode root : roots) {
+            for (MimetypeRootNode root : roots) {
                 items.add(root);
             }
         } else {
             //just one or none language provided elements - put them to the root
-            for(MimetypeRootNode root : roots) {
+            for (MimetypeRootNode root : roots) {
                 items.addAll(root.getNestedItems());
             }
         }
-        
-        if ( !canceled ) {
-            ui.refresh( rootDescription, info.getFileObject() );
-            
+
+        if (!isCancelled()) {
+            ui.refresh(new RootStructureItem(items), fileObject);
         }
     }
-    
+
+    public @Override int getPriority() {
+        return Integer.MAX_VALUE;
+    }
+
+    public @Override Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    public @Override synchronized void cancel() {
+        canceled = true;
+    }
+
+    public synchronized void resume() {
+        canceled = false;
+    }
+
+    public synchronized boolean isCancelled() {
+        return canceled;
+    }
+
+    private static final class RootStructureItem implements StructureItem {
+
+        private final List<? extends StructureItem> items;
+
+        public RootStructureItem(List<? extends StructureItem> items) {
+            this.items = items;
+        }
+        
+        public String getName() {
+            return null;
+        }
+
+        public String getHtml(HtmlFormatter formatter) {
+            return null;
+        }
+
+        public ElementHandle getElementHandle() {
+            throw new UnsupportedOperationException("Not supported on the Root Node.");
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.OTHER;
+        }
+
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        public boolean isLeaf() {
+            return false;
+        }
+
+        public List<? extends StructureItem> getNestedItems() {
+            return items;
+        }
+
+        public long getPosition() {
+            return 0;
+        }
+
+        public long getEndPosition() {
+            return Long.MAX_VALUE;
+        }
+
+        public ImageIcon getCustomIcon() {
+            return null;
+        }
+
+        public String getSortText() {
+            return null;
+        }
+    } // End of RootStructureItem class
+
     static final class MimetypeRootNode implements StructureItem {
 
         //hack - see the getSortText() comment
@@ -206,24 +249,23 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         private static final String YAML_SORT_TEXT = "4";//NOI18N
         private static final String RUBY_SORT_TEXT = "5";//NOI18N
         private static final String OTHER_SORT_TEXT = "9";//NOI18N
-        
         Language language;
         private List<? extends StructureItem> items;
         long from, to;
-        
+
         private MimetypeRootNode(Language lang, List<? extends StructureItem> items) {
             this.language = lang;
             this.items = items;
             this.from = items.size() > 0 ? items.get(0).getPosition() : 0;
             this.to = items.size() > 0 ? items.get(items.size() - 1).getEndPosition() : 0;
         }
-        
+
         @Override
         public boolean equals(Object o) {
-            if(!(o instanceof MimetypeRootNode)) {
+            if (!(o instanceof MimetypeRootNode)) {
                 return false;
             }
-            MimetypeRootNode compared = (MimetypeRootNode)o;
+            MimetypeRootNode compared = (MimetypeRootNode) o;
             return language.equals(compared.language);
         }
 
@@ -233,7 +275,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             hash = 97 * hash + (this.language != null ? this.language.hashCode() : 0);
             return hash;
         }
-        
+
         public String getName() {
             return language.getDisplayName();
         }
@@ -243,9 +285,9 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             //node when user moves caret in the source.
             //Since the navigator tree is a generic graph if there are more
             //embedded languages we need to use some tricks...
-            if(language.getMimeType().equals(CSS_MIMETYPE)) {
+            if (language.getMimeType().equals(CSS_MIMETYPE)) {
                 return CSS_SORT_TEXT;
-            } else if(language.getMimeType().equals(JAVASCRIPT_MIMETYPE)) {
+            } else if (language.getMimeType().equals(JAVASCRIPT_MIMETYPE)) {
                 return JAVASCRIPT_SORT_TEXT;
             } else if (language.getMimeType().equals(HTML_MIMETYPE)) {
                 return HTML_SORT_TEXT;
@@ -256,7 +298,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             } else {
                 return OTHER_SORT_TEXT + getName();
             }
-            
+
         }
 
         public String getHtml(HtmlFormatter formatter) {
@@ -293,10 +335,8 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
 
         public ImageIcon getCustomIcon() {
             String iconBase = language.getIconBase();
-            return  iconBase == null ? null : new ImageIcon(ImageUtilities.loadImage(iconBase));
+            return iconBase == null ? null : new ImageIcon(ImageUtilities.loadImage(iconBase));
         }
-
-        
     }
 }    
     

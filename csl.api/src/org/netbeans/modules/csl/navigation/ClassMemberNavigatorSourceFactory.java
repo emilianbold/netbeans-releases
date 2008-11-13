@@ -40,18 +40,15 @@
  */
 package org.netbeans.modules.csl.navigation;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.csl.api.CancellableTask;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.napi.gsfret.source.Source.Priority;
-import org.netbeans.modules.csl.core.LanguageRegistry;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.openide.util.Lookup;
-import org.netbeans.modules.csl.api.Phase;
-import org.netbeans.napi.gsfret.source.support.LookupBasedSourceTaskFactory;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -62,63 +59,80 @@ import org.netbeans.napi.gsfret.source.support.LookupBasedSourceTaskFactory;
  *
  * @author Jan Lahoda, Petr Hrebejk
  */
-public final class ClassMemberNavigatorSourceFactory extends LookupBasedSourceTaskFactory {
-            
+public final class ClassMemberNavigatorSourceFactory extends TaskFactory {
+
+    private static ClassMemberNavigatorSourceFactory instance = null;
     private ClassMemberPanelUI ui;
-    private static final CancellableTask<CompilationInfo> EMPTY_TASK = new CancellableTask<CompilationInfo>() {
+    private static final ParserResultTask<ParserResult> EMPTY_TASK = new ParserResultTask<ParserResult>() {
+        public @Override void cancel() {
+            // no-op
+        }
 
-        public void cancel() {}
+        public @Override void run(ParserResult result) {
+            // no-op
+        }
 
-        public void run(CompilationInfo parameter) throws Exception {}
+        public @Override int getPriority() {
+            return Integer.MAX_VALUE;
+        }
+
+        public @Override Class<? extends Scheduler> getSchedulerClass() {
+            return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
+        }
     };
     
-    static ClassMemberNavigatorSourceFactory getInstance() {
-        return Lookup.getDefault().lookup(ClassMemberNavigatorSourceFactory.class);
+    public static synchronized ClassMemberNavigatorSourceFactory getInstance() {
+        if (instance == null) {
+            instance = new ClassMemberNavigatorSourceFactory();
+        }
+        return instance;
     }
     
-    public ClassMemberNavigatorSourceFactory() {        
-        super(Phase.ELEMENTS_RESOLVED, Priority.LOW);
-    }
-
-    public synchronized CancellableTask<CompilationInfo> createTask(FileObject file) {
-        // System.out.println("CREATE TASK FOR " + file.getNameExt() );
-        if ( ui == null) {
-            return EMPTY_TASK;
-        }
-        else {
-            return ui.getTask();
-        }
-    }
-
-    public List<FileObject> getFileObjects() {
-        List<FileObject> result = new ArrayList<FileObject>();
-
-        // Filter uninteresting files from the lookup
-        LanguageRegistry registry = LanguageRegistry.getInstance();
-        for( FileObject fileObject : super.getFileObjects() ) {
-            if (!registry.isSupported(FileUtil.getMIMEType(fileObject))) {
-                continue;
-            }
-            result.add(fileObject);
-        }
-        
-        if (result.size() == 1)
-            return result;
-
-        return Collections.emptyList();
-    }
-
-    public synchronized void setLookup(Lookup l, ClassMemberPanelUI ui) {
-        this.ui = ui;
-        super.setLookup(l);
+    private ClassMemberNavigatorSourceFactory() {
+        super(); // XXX: Phase.ELEMENTS_RESOLVED, Priority.LOW
     }
 
     @Override
-    protected void lookupContentChanged() {
-          // System.out.println("lookupContentChanged");
-          if ( ui != null ) {
-            ui.showWaitNode(); // Creating new task (file changed)
-          }
-    }    
-    
+    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        // System.out.println("CREATE TASK FOR " + file.getNameExt() );
+        if ( ui == null) {
+            return Collections.singleton(EMPTY_TASK);
+        }
+        else {
+            return Collections.singleton(ui.getTask());
+        }
+    }
+
+// XXX: parsingapi
+//    public List<FileObject> getFileObjects() {
+//        List<FileObject> result = new ArrayList<FileObject>();
+//
+//        // Filter uninteresting files from the lookup
+//        LanguageRegistry registry = LanguageRegistry.getInstance();
+//        for( FileObject fileObject : super.getFileObjects() ) {
+//            if (!registry.isSupported(FileUtil.getMIMEType(fileObject))) {
+//                continue;
+//            }
+//            result.add(fileObject);
+//        }
+//
+//        if (result.size() == 1)
+//            return result;
+//
+//        return Collections.emptyList();
+//    }
+
+    public synchronized void setLookup(Lookup l, ClassMemberPanelUI ui) {
+        this.ui = ui;
+    }
+
+// XXX: parsingapi
+//    @Override
+//    protected void lookupContentChanged() {
+//          // System.out.println("lookupContentChanged");
+//          if ( ui != null ) {
+//            ui.showWaitNode(); // Creating new task (file changed)
+//          }
+//    }
+
 }
