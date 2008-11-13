@@ -1,0 +1,5 @@
+some_function(:a => 1, :b=> 2, :a => 3, :a => 4)
+                                        --
+HINT:Key "a" is defined more than once
+HINT:Key "a" is defined more than once
+HINT:Key "a" is defined more than once
