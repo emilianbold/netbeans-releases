@@ -1004,37 +1004,16 @@ public class IndentSupport {
         return i;
     }
 
-    protected boolean getFormatSpaceBeforeMethodCallParenthesis() {
-        //return getCodeStyle().getFormatSpaceBeforeParenthesis();
-        return getCodeStyle().spaceBeforeMethodCallParen();
-    }
-
-    protected boolean getFormatSpaceAfterComma() {
-        return getCodeStyle().spaceAfterComma();
-    }
-
     protected boolean indentCasesFromSwitch() {
         return getCodeStyle().indentCasesFromSwitch();
-    }
-
-    protected boolean getFormatNewlineBeforeBrace() {
-        return getCodeStyle().getFormatNewlineBeforeBrace() != CodeStyle.BracePlacement.SAME_LINE;
     }
 
     protected boolean isHalfIndentNewlineBeforeBrace() {
         return getCodeStyle().getFormatNewlineBeforeBrace() == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED;
     }
 
-    protected boolean getFormatNewlineBeforeBraceSwitch() {
-        return getCodeStyle().getFormatNewLineBeforeBraceSwitch() != CodeStyle.BracePlacement.SAME_LINE;
-    }
-
     protected boolean isHalfIndentNewlineBeforeBraceSwitch() {
         return getCodeStyle().getFormatNewLineBeforeBraceSwitch() == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED;
-    }
-
-    protected boolean getFormatNewlineBeforeBraceDeclaration() {
-        return getCodeStyle().getFormatNewlineBeforeBraceDeclaration() != CodeStyle.BracePlacement.SAME_LINE;
     }
 
     protected boolean isHalfIndentNewlineBeforeBraceDeclaration() {
