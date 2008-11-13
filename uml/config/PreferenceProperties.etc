@@ -1,9 +1,7 @@
 <?xml version="1.0"?>
 <PropertyDefinitions>
     <PropertyDefinition name="Default" displayName="PSK_DEFAULT" image="" helpText="PSK_DEFAULT_HLP">
-        <aDefinition name="HideDescribeViews" displayName="PSK_HIDEDESCRIBEVIEWS" controlType="list" values="PSK_YES|PSK_NO" defaultValue="PSK_YES" helpText="PSK_HIDEDESCRIBEVIEWS_HLP"/>
         <aDefinition name="AutoSaveOperation" displayName="" controlType="" values="PSK_ALWAYS|PSK_NEVER|PSK_ASK" defaultValue="PSK_ASK" helpText="PSK_AUTOSAVEOPERATION_HLP"/>
-        <aDefinition name="ArtifactDeleteDeletesFile" displayName="PSK_ARTIFACTDELETEDELETESFILE" controlType="list" values="PSK_ALWAYS|PSK_NEVER|PSK_ASK" defaultValue="PSK_ASK" helpText="PSK_ARTIFACTDELETEDELETESFILE_HLP"/>
         <aDefinition name="AutoSaveInterval" displayName="" controlType="" defaultValue="10" helpText="PSK_AUTOSAVEINTERVAL_HLP"/>
         <aDefinition name="ProjectNamespace" displayName="" helpText="PSK_USEQNAME_HLP" controlType="" values="PSK_YES|PSK_NO" defaultValue="PSK_NO"/>
         <aDefinition name="ShowAliasedNames" displayName="PSK_SHOWALIASEDNAMES" controlType="list" values="PSK_YES|PSK_NO" defaultValue="PSK_NO" helpText="PSK_SHOWALIASEDNAMES_HLP"/>
