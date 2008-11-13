@@ -1,0 +1,14 @@
+some_function1("a" => 1, "b"=> 2, "a" => 3)
+                                  ---
+HINT:Key "a" is defined more than once
+HINT:Key "a" is defined more than once
+some_function2(:a => 1, :b=> 2, :a => 3)
+                                --
+HINT:Key "a" is defined more than once
+HINT:Key "a" is defined more than once
+    'USR1'    => :exit,
+    ------
+HINT:Key "USR1" is defined more than once
+    'USR1'    => :exit,
+    ------
+HINT:Key "USR1" is defined more than once

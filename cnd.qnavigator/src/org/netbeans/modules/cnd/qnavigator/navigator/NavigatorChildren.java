@@ -42,6 +42,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -67,7 +68,8 @@ public class NavigatorChildren extends Children.SortedArray {
     }
 
     @Override
-    protected Collection initCollection() {
+    @SuppressWarnings("unchecked")
+    protected Collection<Node> initCollection() {
         List<CppDeclarationNode> retValue = new ArrayList<CppDeclarationNode>();
         if (container != null) {
             if (CsmKindUtilities.isClass(container)) {
@@ -89,7 +91,7 @@ public class NavigatorChildren extends Children.SortedArray {
             }
         }
         Collections.<CppDeclarationNode>sort(retValue);
-        return retValue;
+        return (Collection)retValue;
     }
 
     private void initClassifier(CsmClass cls, List<CppDeclarationNode> retValue) {

@@ -2276,5 +2276,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
         }
         return sb.toString();
     }
+
+    public boolean isStopped() {
+        return false;
+    }
 }
 

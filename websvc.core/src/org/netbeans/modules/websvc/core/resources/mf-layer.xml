@@ -151,9 +151,6 @@ made subject to such option by the copyright holder.
     <folder name="Projects">
         <!-- populate J2SE Project Lookup with WS Client Support -->
         <folder name="org-netbeans-modules-java-j2seproject">
-            <folder name="Lookup">
-                <file name="org-netbeans-modules-websvc-core-jaxws-projects-J2SEWSSupportLookupProvider.instance"/>
-            </folder>
             <folder name="Nodes">
                 <file name="org-netbeans-modules-websvc-core-ProjectWebServiceNodeFactory.instance">
                     <attr name="position" intvalue="260"/>
@@ -161,9 +158,6 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
         <folder name="org-netbeans-modules-web-project">
-            <folder name="Lookup">
-                <file name="org-netbeans-modules-websvc-core-jaxws-projects-JavaEEWSSupportLookupProvider.instance"/>
-            </folder>  
             <folder name="Nodes">
                 <file name="org-netbeans-modules-websvc-core-ProjectWebServiceNodeFactory.instance">
                     <attr name="position" intvalue="400"/>
@@ -171,18 +165,10 @@ made subject to such option by the copyright holder.
                 </folder>
         </folder>
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
-            <folder name="Lookup">
-                <file name="org-netbeans-modules-websvc-core-jaxws-projects-JavaEEWSSupportLookupProvider.instance"/>
-            </folder>
             <folder name="Nodes">
                 <file name="org-netbeans-modules-websvc-core-ProjectWebServiceNodeFactory.instance">
                     <attr name="position" intvalue="155"/>
                 </file>
-            </folder>
-        </folder>
-        <folder name="org-netbeans-modules-j2ee-clientproject">
-            <folder name="Lookup">
-                <file name="org-netbeans-modules-websvc-core-jaxws-projects-JavaEEWSSupportLookupProvider.instance"/>
             </folder>
         </folder>
     </folder>

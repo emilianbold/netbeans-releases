@@ -80,7 +80,7 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
     
     private GdbDebugger getDebugger() {
         if (debugger == null) {
-            debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+            debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
         }
         return debugger;
     }

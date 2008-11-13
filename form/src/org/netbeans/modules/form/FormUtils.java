@@ -495,8 +495,6 @@ public class FormUtils
                 border.getTitleFont(),
                 border.getTitleColor());
         }
-        if (o.getClass() == Color.class)
-            return new Color(((Color)o).getRGB());
         if (o instanceof Dimension)
             return new Dimension((Dimension)o);
         if (o instanceof Point)
@@ -505,9 +503,8 @@ public class FormUtils
             return new Rectangle((Rectangle)o);
         if (o instanceof Insets)
             return ((Insets)o).clone();
-        if (o instanceof GradientPaint) {
-            GradientPaint gp = (GradientPaint)o;
-            return new GradientPaint(gp.getPoint1(), gp.getColor1(), gp.getPoint2(), gp.getColor2(), gp.isCyclic());
+        if (o instanceof Paint) {
+            return o;
         }
         if (o.getClass() == DefaultListModel.class) {
             // avoid potential problems with serialization of listeners (#72802)

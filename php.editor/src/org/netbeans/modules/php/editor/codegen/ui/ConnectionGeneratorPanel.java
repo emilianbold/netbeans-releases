@@ -55,11 +55,14 @@ import org.openide.util.NbBundle;
  */
 public class ConnectionGeneratorPanel extends javax.swing.JPanel {
 
+    private final boolean mySQLOnly;
+    private final boolean passwordRequired;
+
     private DialogDescriptor descriptor;
     private DatabaseConnection dbconn;
 
-    public static DatabaseConnection selectConnection() {
-        ConnectionGeneratorPanel panel = new ConnectionGeneratorPanel();
+    public static DatabaseConnection selectConnection(DatabaseConnection selectedDBConn, boolean mySQLOnly, boolean passwordRequired) {
+        ConnectionGeneratorPanel panel = new ConnectionGeneratorPanel(selectedDBConn, mySQLOnly, passwordRequired);
         DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(ConnectionGeneratorPanel.class, "MSG_SelectConnection"));
         panel.initialize(desc);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
@@ -72,13 +75,17 @@ public class ConnectionGeneratorPanel extends javax.swing.JPanel {
         return null;
     }
 
-    private ConnectionGeneratorPanel() {
+    private ConnectionGeneratorPanel(DatabaseConnection dbconn, boolean mySQLOnly, boolean passwordRequired) {
+        this.dbconn = dbconn;
+        this.mySQLOnly = mySQLOnly;
+        this.passwordRequired = passwordRequired;
         initComponents();
     }
 
     private void initialize(DialogDescriptor descriptor) {
         this.descriptor = descriptor;
         DatabaseExplorerUIs.connect(dbconnComboBox, ConnectionManager.getDefault());
+        dbconnComboBox.setSelectedItem(dbconn);
         setErrorMessage(NbBundle.getMessage(ConnectionGeneratorPanel.class, "ERR_SelectConnection"));
     }
 
@@ -91,15 +98,19 @@ public class ConnectionGeneratorPanel extends javax.swing.JPanel {
         dbconn = (DatabaseConnection) selected;
         DatabaseURL url = DatabaseURL.detect(dbconn.getDatabaseURL());
         String errorMessage = null;
-        if (url == null || url.getServer() != Server.MYSQL) {
+        if (mySQLOnly && (url == null || url.getServer() != Server.MYSQL)) {
             errorMessage = NbBundle.getMessage(ConnectionGeneratorPanel.class, "ERR_UnknownServer");
             dbconn = null;
         }
         if (dbconn != null) {
-            if (dbconn.getPassword() == null) {
+            if (dbconn.getJDBCConnection() == null) {
                 ConnectionManager.getDefault().showConnectionDialog(dbconn);
             }
-            if (dbconn.getPassword() == null) {
+            if (dbconn.getJDBCConnection() == null) {
+                errorMessage = NbBundle.getMessage(ConnectionGeneratorPanel.class, "ERR_CouldNotConnect");
+                dbconn = null;
+            }
+            if (passwordRequired && dbconn.getPassword() == null) {
                 errorMessage = NbBundle.getMessage(ConnectionGeneratorPanel.class, "ERR_NoPassword");
                 dbconn = null;
             }

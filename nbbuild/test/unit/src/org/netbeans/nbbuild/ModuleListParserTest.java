@@ -82,12 +82,13 @@ public class ModuleListParserTest extends TestCase {
     public void testScanSourcesInNetBeansOrg() throws Exception {
         Hashtable<String,String> properties = new Hashtable<String,String>();
         properties.put("nb_all", nball.getAbsolutePath());
-        File build = file(nball, "build");
+        File build = file(nball, "nbbuild/netbeans");
         properties.put("netbeans.dest.dir", build.getAbsolutePath());
         properties.put("nb.cluster.foo", "beans,clazz");
         properties.put("nb.cluster.foo.dir", "foodir");
         properties.put("nb.cluster.bar", "core.startup");
         properties.put("nb.cluster.bar.dir", "bardir");
+        properties.put("basedir", new File(nball, "nbbuild").getAbsolutePath());
         long start = System.currentTimeMillis();
         ModuleListParser p = new ModuleListParser(properties, ParseProjectXml.TYPE_NB_ORG, null);
         System.err.println("Scanned " + nball + " sources in " + (System.currentTimeMillis() - start) + "msec");

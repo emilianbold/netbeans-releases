@@ -202,7 +202,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     @Override
     public Action getPreferredAction() {
         if (CsmKindUtilities.isOffsetable(object)){
-            return new GoToDeclarationAction((CsmOffsetable)object);
+            return new GoToDeclarationAction(object);
         }
         return null;
     }

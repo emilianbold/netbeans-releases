@@ -353,7 +353,7 @@ public class JavacParser extends Parser {
             //Not sure about the parsing.api contract for multiple files
             //maybe not needed and assertion is enough
             final ClasspathInfo providedInfo = ((ClasspathInfoProvider)task).getClasspathInfo();
-            if (providedInfo != null && cpInfo != providedInfo) {
+            if (providedInfo != null && !providedInfo.equals(cpInfo)) {
                 if (sourceCount != 0) {
                     LOGGER.fine ("Task "+task+" has changed ClasspathInfo form: " + cpInfo +" to:" + providedInfo); //NOI18N
                 }
@@ -484,11 +484,11 @@ public class JavacParser extends Parser {
                 assert !it.hasNext();
                 final Document doc = listener == null ? null : listener.document;
                 if (doc != null && supportsReparse && !clone) {
-                    FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc,Trees.instance(currentInfo.getJavacTask()).getSourcePositions());
+                    FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc,Trees.instance(currentInfo.getJavacTask()).getSourcePositions(),this.canceled);
                     v.visit(unit, null);
                     synchronized (positions) {
                         positions.clear();
-                        positions.addAll(v.posRegions);
+                        positions.addAll(v.getResult());
                     }
                 }
                 currentPhase = Phase.PARSED;

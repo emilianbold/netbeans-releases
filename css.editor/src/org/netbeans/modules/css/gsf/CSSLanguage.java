@@ -48,6 +48,7 @@ import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.gsf.spi.CommentHandler;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 
 /**
@@ -65,6 +66,11 @@ public class CSSLanguage extends DefaultLanguageConfig {
                 || (c == '-') || (c == '@') 
                 || (c == '&') || (c == '_')
                 || (c == '#');
+    }
+
+    @Override
+    public CommentHandler getCommentHandler() {
+        return new CssCommentHandler();
     }
 
     @Override

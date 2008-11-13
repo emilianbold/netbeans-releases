@@ -99,42 +99,42 @@ class SynchronizedFileIndex implements FileIndex {
     }
     
     public Iterator<Key> getKeySetIterator() {
-	return new SyncRemoveIterator(delegate.getKeySetIterator());
+        return new SyncRemoveIterator<Key>(delegate.getKeySetIterator());
     }
     
     public Collection<Key> keySet() {
-	indexLock.readLock().lock();
-	try {
-	    return new ArrayList(delegate.keySet());
-	}  finally {
-	    indexLock.readLock().unlock();
-	}
+        indexLock.readLock().lock();
+        try {
+            return new ArrayList<Key>(delegate.keySet());
+        }  finally {
+            indexLock.readLock().unlock();
+        }
     }
     
     public int put(Key key, long offset, int size) {
-	indexLock.writeLock().lock();
-	try {
-	    return delegate.put(key, offset, size);
-	} finally {
-	    indexLock.writeLock().unlock();
-	}
+        indexLock.writeLock().lock();
+        try {
+            return delegate.put(key, offset, size);
+        } finally {
+            indexLock.writeLock().unlock();
+        }
     }
     
     public int remove(Key key) {
-	indexLock.writeLock().lock();
-	try {
-	    return delegate.remove(key);
-	} finally {
-	    indexLock.writeLock().unlock();
-	}
+        indexLock.writeLock().lock();
+        try {
+            return delegate.remove(key);
+        } finally {
+            indexLock.writeLock().unlock();
+        }
     }
     
     public ChunkInfo get(Key key) {
-	indexLock.readLock().lock();
-	try {
-	    return delegate.get(key);
-	} finally {
-	    indexLock.readLock().unlock();
-	}
+        indexLock.readLock().lock();
+        try {
+            return delegate.get(key);
+        } finally {
+            indexLock.readLock().unlock();
+        }
     }    
 }

@@ -64,6 +64,9 @@ import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -201,13 +204,32 @@ public class GdbProxyEngine {
                     if (rc == 0) {
                         debugger.finish(false);
                     } else {
-                        debugger.unexpectedGdbExit(rc);
+                        unexpectedGdbExit(rc);
                     }
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
             }
         });
+    }
+
+    private void unexpectedGdbExit(int rc) {
+        String msg;
+
+        if (rc < 0) {
+            msg = NbBundle.getMessage(GdbDebugger.class, "ERR_UnexpectedGdbExit");  // NOI18N
+        } else {
+            msg = NbBundle.getMessage(GdbDebugger.class, "ERR_UnexpectedGdbExitRC", rc);  // NOI18N
+        }
+
+        NotifyDescriptor nd = new NotifyDescriptor(msg,
+                NbBundle.getMessage(GdbDebugger.class, "TITLE_UnexpectedGdbFailure"), // NOI18N
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.ERROR_MESSAGE,
+                new Object[] { NotifyDescriptor.OK_OPTION },
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(nd);
+        debugger.finish(false);
     }
     
     private void remoteDebugger(GdbDebugger debugger, List<String> debuggerCommand, String[] debuggerEnvironment, String workingDirectory, String cspath) {

@@ -265,7 +265,7 @@ public final class PlatformInfo {
             return file.listFiles();
         } else {
             CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
-            if (provider.run(hkey, "ls -A1", null) == 0) {
+            if (provider.run(hkey, "ls -A1", null) == 0) { //NOI18N
                 String files = provider.getOutput();
                 if (files != null) {
                     BufferedReader bufferedReader = new BufferedReader(new StringReader(files));
@@ -294,7 +294,7 @@ public final class PlatformInfo {
             return file.isDirectory();
         } else {
             CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
-            return provider.run(hkey, "test -d \"" + file.getPath() + "\"", null) == 0;
+            return provider.run(hkey, "test -d \"" + file.getPath() + "\"", null) == 0; //NOI18N
         }
     }
 
@@ -304,7 +304,7 @@ public final class PlatformInfo {
             return file.isFile();
         } else {
             CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
-            return provider.run(hkey, "test -f \"" + file.getPath() + "\"", null) == 0;
+            return provider.run(hkey, "test -f \"" + file.getPath() + "\"", null) == 0; //NOI18N
         }
     }
 
@@ -314,7 +314,7 @@ public final class PlatformInfo {
             return file.canRead();
         } else {
             CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
-            return provider.run(hkey, "test -r \"" + file.getPath() + "\"", null) == 0;
+            return provider.run(hkey, "test -r \"" + file.getPath() + "\"", null) == 0; //NOI18N
         }
 
     }

@@ -10,7 +10,7 @@
     <artifactId>profiler</artifactId>
     <packaging>nbm</packaging>
     <version>3.2-SNAPSHOT</version>
-    <name>Netbeans Maven2 profiler support</name>
+    <name>NetBeans Maven2 profiler support</name>
     <description>profiler support</description>
     <dependencies>
         <dependency>

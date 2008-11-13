@@ -52,7 +52,6 @@ import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertyEditorSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -92,14 +91,20 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
     private String userCodeLabel;
     private String userCode = ""; // NOI18N
     protected WeakReference<DesignComponent> component;
+    private LinkedHashMap<PropertyEditorElement, Integer> elements;
 
     @Override
     public void cleanUp(DesignComponent component) {
         super.cleanUp(component);
+        if (elements != null) {
+            elements.clear();
+            elements = null;
+        }
         if (customEditor != null) {
             customEditor.cleanUp();
             customEditor = null;
         }
+
         userCodeRadioButton = null;
         messageLabel = null;
         this.component = null;
@@ -107,20 +112,19 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
 
     protected PropertyEditorUserCode(String userCodeLabel) {
         this.userCodeLabel = userCodeLabel;
-        messageLabel = new JLabel(" "); //NOI18N
-        Color nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
-        if (nbErrorForeground == null) {
-            nbErrorForeground = new Color(255, 0, 0);
-        }
-        messageLabel.setForeground(nbErrorForeground);
-        customEditor = new CustomEditor();
     }
 
     /**
      * This method should be invoked from subclass to init elements.
      */
     protected void initElements(Collection<PropertyEditorElement> elements) {
-        customEditor.init(elements);
+        int i = 0;
+        if (elements != null && elements.size() > 0) {
+            this.elements = new LinkedHashMap<PropertyEditorElement, Integer>(elements.size());
+        }
+        for (PropertyEditorElement element : elements) {
+            this.elements.put(element, i++);
+        }
     }
 
     /**
@@ -128,7 +132,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
      * the Elements by seting index as a Integer value in the elements map. 
      */
     protected void initElements(LinkedHashMap<PropertyEditorElement, Integer> elements) {
-        customEditor.init(elements);
+        this.elements = elements;
     }
 
     /**
@@ -155,11 +159,21 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
      */
     @Override
     public Component getCustomEditor() {
-        initCustomEditor();
+        if (customEditor == null) {
+            initCustomEditor();
+        }
         return customEditor;
     }
 
     private void initCustomEditor() {
+        messageLabel = new JLabel(" "); //NOI18N
+        Color nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
+        if (nbErrorForeground == null) {
+            nbErrorForeground = new Color(255, 0, 0);
+        }
+        messageLabel.setForeground(nbErrorForeground);
+        customEditor = new CustomEditor();
+        customEditor.init(elements);
         PropertyValue value = (PropertyValue) super.getValue();
         if (isCurrentValueAUserCodeType()) {
             customEditor.setUserCodeText(value.getUserCode());
@@ -197,7 +211,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
         if (canWrite()) {
             if (text.equals(NULL_TEXT)) {
                 super.setValue(NULL_VALUE);
-            } else {
+            } else if (customEditor != null) {
                 customEditor.setText(text);
             }
         }
@@ -334,7 +348,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
                     if (pee instanceof CleanUp) {
                         ((CleanUp) pee).clean(null);
                     }
-                 }
+                }
                 elementsMap.clear();
                 elementsMap = null;
             }
@@ -345,10 +359,12 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
                 userCodeEditorPane.getDocument().removeDocumentListener(this);
                 userCodeEditorPane = null;
             }
+
             this.removeAll();
         }
 
         private void initComponents() {
+
             setLayout(new GridBagLayout());
             ButtonGroup buttonGroup = new ButtonGroup();
             GridBagConstraints constraints = new GridBagConstraints();
@@ -406,15 +422,8 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             userCodeEditorPane.getAccessibleContext().setAccessibleDescription(
                     userCodeRadioButton.getAccessibleContext().getAccessibleDescription());
             userCodeEditorPane.addFocusListener(this);
-            //userCodeEditorPane.setFont(userCodeRadioButton.getFont());
-            SwingUtilities.invokeLater(new Runnable() {
-
-                //otherwise we get: java.lang.AssertionError: BaseKit.install() incorrectly called from non-AWT thread.
-                public void run() {
-                    userCodeEditorPane.setContentType("text/x-java"); // NOI18N
-                    userCodeEditorPane.getDocument().addDocumentListener(CustomEditor.this);
-                }
-            });
+            userCodeEditorPane.setContentType("text/x-java"); // NOI18N
+            userCodeEditorPane.getDocument().addDocumentListener(CustomEditor.this);
             jsp.setViewportView(userCodeEditorPane);
             jsp.setPreferredSize(new Dimension(400, 100));
             jsp.setMinimumSize(new Dimension(400, 100));
@@ -466,6 +475,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             add(messageLabel, constraints);
 
             selectDefaultRadioButton();
+            customEditor.initRetoucheStuff();
         }
 
         public void initRetoucheStuff() {
@@ -481,6 +491,14 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
                 int offset = CodeUtils.getMethodOffset(context);
                 DialogBinding.bindComponentToFile(context.getDataObject().getPrimaryFile(), offset, 0, userCodeEditorPane);
                 PropertyEditorUserCode.setupTextUndoRedo(userCodeEditorPane);
+            }
+
+            if (getValue() instanceof PropertyValue) {
+                PropertyValue value = (PropertyValue) getValue();
+                if (value.getKind() == PropertyValue.Kind.USERCODE) {
+                    setUserCodeText(value.getUserCode());
+                    this.repaint();
+                }
             }
         }
 
@@ -520,6 +538,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
         }
 
         public void insertUpdate(DocumentEvent evt) {
+
             if (userCodeEditorPane.hasFocus()) {
                 userCodeRadioButton.setSelected(true);
                 setNewValue();
@@ -542,7 +561,6 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
 
         @Override
         public void addNotify() {
-            customEditor.initRetoucheStuff();
             super.addNotify();
         }
 

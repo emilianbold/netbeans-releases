@@ -88,8 +88,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Parameters;
 import org.openide.util.UserQuestionException;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
@@ -159,13 +159,13 @@ public final class ReferencesSupport {
         return findReferencedObject(csmFile, doc, offset, null, null);
     }
 
-    /*static*/ static CsmObject findOwnerObject(CsmFile csmFile, BaseDocument baseDocument, int offset, Token<CppTokenId> token) {
+    /*static*/ static CsmObject findOwnerObject(CsmFile csmFile, BaseDocument baseDocument, int offset, TokenItem<CppTokenId> token) {
         CsmObject csmOwner = CsmOffsetResolver.findObject(csmFile, offset);
         return csmOwner;
     }
 
     /*package*/ CsmObject findReferencedObject(CsmFile csmFile, final BaseDocument doc,
-            final int offset, Token<CppTokenId> jumpToken, FileReferencesContext fileReferencesContext) {
+            final int offset, TokenItem<CppTokenId> jumpToken, FileReferencesContext fileReferencesContext) {
         CsmObject csmItem = null;
         // emulate hyperlinks order
         // first ask includes handler if offset in include sring token
@@ -173,7 +173,7 @@ public final class ReferencesSupport {
         if (jumpToken == null) {
             doc.readLock();
             try {
-                jumpToken = CndTokenUtilities.getTokenCheckPrev(doc, offset, true);
+                jumpToken = CndTokenUtilities.getTokenCheckPrev(doc, offset);
             } finally {
                 doc.readUnlock();
             }
@@ -192,7 +192,7 @@ public final class ReferencesSupport {
 
         // if failed => ask declarations handler
         if (csmItem == null) {
-            int key = jumpToken.offset(null);
+            int key = jumpToken.offset();
             if (key < 0) {
                 key = offset;
             }
@@ -217,12 +217,12 @@ public final class ReferencesSupport {
     }
 
     public static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
-            Token<CppTokenId> tokenUnderOffset, final int offset) {
+            TokenItem<CppTokenId> tokenUnderOffset, final int offset) {
         return findDeclaration(csmFile, doc, tokenUnderOffset, offset, null);
     }
 
     private static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
-            Token<CppTokenId> tokenUnderOffset, final int offset, FileReferencesContext fileReferencesContext) {
+            TokenItem<CppTokenId> tokenUnderOffset, final int offset, FileReferencesContext fileReferencesContext) {
         // fast check, if possible
         int[] idFunBlk = null;
         CsmObject csmItem = null;
@@ -317,12 +317,12 @@ public final class ReferencesSupport {
     }
 
     private static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
-            Token<CppTokenId> tokenUnderOffset, final int offset, final QueryScope queryScope, FileReferencesContext fileReferencesContext) {
+            TokenItem<CppTokenId> tokenUnderOffset, final int offset, final QueryScope queryScope, FileReferencesContext fileReferencesContext) {
         assert csmFile != null;
         if (tokenUnderOffset == null && doc instanceof AbstractDocument) {
             ((AbstractDocument) doc).readLock();
             try {
-                tokenUnderOffset = CndTokenUtilities.getTokenCheckPrev(doc, offset, false);
+                tokenUnderOffset = CndTokenUtilities.getTokenCheckPrev(doc, offset);
             } finally {
                 ((AbstractDocument) doc).readUnlock();
             }
@@ -361,7 +361,7 @@ public final class ReferencesSupport {
         ReferenceImpl ref = null;
         doc.readLock();
         try {
-            Token<CppTokenId> token = CndTokenUtilities.getTokenCheckPrev(doc, offset, false);
+            TokenItem<CppTokenId> token = CndTokenUtilities.getTokenCheckPrev(doc, offset);
             if (isSupportedToken(token)) {
                 ref = createReferenceImpl(file, doc, offset, token, null);
             }
@@ -371,7 +371,7 @@ public final class ReferencesSupport {
         return ref;
     }
 
-    public static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token<CppTokenId> token, CsmReferenceKind kind) {
+    public static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset, TokenItem<CppTokenId> token, CsmReferenceKind kind) {
         assert token != null;
         assert file != null : "null file for document " + doc + " on offset " + offset + " " + token;
         if (token.id() == CppTokenId.THIS) {
@@ -381,7 +381,7 @@ public final class ReferencesSupport {
         }
     }
 
-    private static boolean isSupportedToken(Token<CppTokenId> token) {
+    private static boolean isSupportedToken(TokenItem<CppTokenId> token) {
         return token != null &&
                 (CsmIncludeHyperlinkProvider.isSupportedToken(token) || CsmHyperlinkProvider.isSupportedToken(token));
     }
@@ -394,7 +394,7 @@ public final class ReferencesSupport {
             int offset = getRefOffset(ref);
             BaseDocument doc = getRefDocument(ref);
             if (doc != null) {
-                Token<CppTokenId> token = getRefTokenIfPossible(ref);
+                TokenItem<CppTokenId> token = getRefTokenIfPossible(ref);
                 target = findDeclaration(ref.getContainingFile(), doc, token, offset, QueryScope.LOCAL_QUERY, null);
                 setResolvedInfo(ref, target);
             }
@@ -423,7 +423,7 @@ public final class ReferencesSupport {
     }
 
     /*package*/
-    static Token<CppTokenId> getRefTokenIfPossible(CsmReference ref) {
+    static TokenItem<CppTokenId> getRefTokenIfPossible(CsmReference ref) {
         if (ref instanceof ReferenceImpl) {
             return ((ReferenceImpl) ref).getToken();
         } else {
@@ -550,7 +550,7 @@ public final class ReferencesSupport {
             try {
                 int offset = ref.getStartOffset();
                 // check previous token
-                Token<CppTokenId> token = CndTokenUtilities.shiftToNonWhiteBwd(doc, offset);
+                TokenItem<CppTokenId> token = CndTokenUtilities.getFirstNonWhiteBwd(doc, offset);
                 if (token != null) {
                     switch (token.id()) {
                         case DOT:

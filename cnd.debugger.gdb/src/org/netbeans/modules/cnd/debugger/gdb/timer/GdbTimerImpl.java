@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.debugger.gdb.timer.TimerRecord.RecordType;
  */
 class GdbTimerImpl extends GdbTimer {
     
-    private Queue<TimerRecord> queue = new LinkedList();
+    private Queue<TimerRecord> queue = new LinkedList<TimerRecord>();
     private int skipCount = 0;
     private boolean in_use = false;
     

@@ -205,18 +205,19 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="1430"/>
                     </file>
 
+                    <file name="generate-code">
+                        <attr name="position" intvalue="1480"/>
+                    </file>
+
+                    <file name="fix-imports">
+                        <attr name="position" intvalue="1520"/>
+                    </file>
+
                     <file name="format">
                         <attr name="position" intvalue="1580"/>
                     </file>                    
                                                             
 
-                    <file name="fix-imports">
-                        <attr name="position" intvalue="1520"/>
-                    </file>
-                    <file name="generate-code">
-                        <attr name="position" intvalue="1480"/>
-                    </file>
-                    
                     <file name="SeparatorBeforeCut.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1960"/>

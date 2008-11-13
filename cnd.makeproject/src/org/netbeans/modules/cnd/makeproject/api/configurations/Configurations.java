@@ -102,20 +102,20 @@ public class Configurations {
     }
     */
     public synchronized Configurations init(Configuration[] confs, int defaultConf) {
-	configurations.clear();
-	for (int i = 0; i < confs.length; i ++) {
-	    configurations.add(confs[i]);
+        configurations.clear();
+        for (int i = 0; i < confs.length; i++) {
+            configurations.add(confs[i]);
         }
-	if (defaultConf >= 0 && confs != null && confs.length > 0) {
-	    setActive(defaultConf);
+        if (defaultConf >= 0 && confs != null && confs.length > 0) {
+            setActive(defaultConf);
             if (tasks.size() > 0) {
-                for(Runnable task : tasks) {
+                for (Runnable task : tasks) {
                     runOnCodeModelReadiness(task, false);
                 }
                 tasks.clear();
             }
         }
-	return this;
+        return this;
     }
 
     public void runOnCodeModelReadiness(Runnable task){
@@ -143,7 +143,7 @@ public class Configurations {
      * Get all configurations
     */
     public Configuration[] getConfs() {
-	return (Configuration[]) configurations.toArray(new Configuration[size()]);
+        return configurations.toArray(new Configuration[size()]);
     }
 
     public Collection<Configuration> getConfsAsCollection() {
@@ -153,30 +153,30 @@ public class Configurations {
     }
     
     public Configuration[] getClonedConfs() {
-	Configuration[] cs = new Configuration[size()];
-	for (int i = 0; i < size(); i++) {
-	    Configuration c = (Configuration)configurations.get(i);
-	    cs[i] = c.cloneConf();
-	}
-	return cs;
+        Configuration[] cs = new Configuration[size()];
+        for (int i = 0; i < size(); i++) {
+            Configuration c = configurations.get(i);
+            cs[i] = c.cloneConf();
+        }
+        return cs;
     }
 
     public String[] getConfsAsDisplayNames() {
-	String[] names = new String[size()];
-	for (int i = 0; i < size(); i++) {
-	    Configuration configuration = (Configuration)configurations.get(i);
-	    names[i] = configuration.toString();
-	}
-	return names;
+        String[] names = new String[size()];
+        for (int i = 0; i < size(); i++) {
+            Configuration configuration = configurations.get(i);
+            names[i] = configuration.toString();
+        }
+        return names;
     }
 
     public String[] getConfsAsNames() {
-	String[] names = new String[size()];
-	for (int i = 0; i < size(); i++) {
-	    Configuration configuration = (Configuration)configurations.get(i);
-	    names[i] = configuration.getName();
-	}
-	return names;
+        String[] names = new String[size()];
+        for (int i = 0; i < size(); i++) {
+            Configuration configuration = configurations.get(i);
+            names[i] = configuration.getName();
+        }
+        return names;
     }
 
     
@@ -184,32 +184,32 @@ public class Configurations {
      * Get a specific configuration
      */
     public Configuration getConf(int index) {
-	checkValidIndex(index);
-	return (Configuration)configurations.get(index);
+        checkValidIndex(index);
+        return configurations.get(index);
     }
 
     public Configuration getConfByDisplayName(String displayName) {
-	    Configuration ret = null;
-	    for (Iterator it = configurations.iterator(); it.hasNext(); ) {
-		Configuration c = (Configuration)it.next();
-		if (c.getDisplayName().equals(displayName)) {
-		    ret = c;
-		    break;
-		}
-	    }
-	    return ret;
+        Configuration ret = null;
+        for (Iterator it = configurations.iterator(); it.hasNext();) {
+            Configuration c = (Configuration) it.next();
+            if (c.getDisplayName().equals(displayName)) {
+                ret = c;
+                break;
+            }
+        }
+        return ret;
     }
 
     public Configuration getConf(String name) {
-	    Configuration ret = null;
-	    for (Iterator it = configurations.iterator(); it.hasNext(); ) {
-		Configuration c = (Configuration)it.next();
-		if (c.getName().equals(name)) {
-		    ret = c;
-		    break;
-		}
-	    }
-	    return ret;
+        Configuration ret = null;
+        for (Iterator it = configurations.iterator(); it.hasNext();) {
+            Configuration c = (Configuration) it.next();
+            if (c.getName().equals(name)) {
+                ret = c;
+                break;
+            }
+        }
+        return ret;
     }
 
 
@@ -217,20 +217,22 @@ public class Configurations {
      * Set default configuration
      */
     public void setActive(Configuration def) {
-        if (def == null)
+        if (def == null) {
             return;
+        }
         Configuration old = getActive();
-        if (def == old)
+        if (def == old) {
             return; // Nothing has changed
+        }
         
-	    for (Iterator it = configurations.iterator(); it.hasNext(); ) {
-		Configuration c = (Configuration)it.next();
-		c.setDefault(false);
+        for (Iterator it = configurations.iterator(); it.hasNext();) {
+            Configuration c = (Configuration) it.next();
+            c.setDefault(false);
             if (c == def) {
-	    def.setDefault(true);
-        pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, old, def);
-        pcs.firePropertyChange(PROP_DEFAULT, null, null);
-    }
+                def.setDefault(true);
+                pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, old, def);
+                pcs.firePropertyChange(PROP_DEFAULT, null, null);
+            }
         }
     }
 
@@ -243,16 +245,16 @@ public class Configurations {
 
     public void setActive(int index) {
         Configuration old = getActive();
-	checkValidIndex(index);
-	Configuration def = (Configuration)configurations.get(index);
-	if (def != null) {
-	    for (Iterator it = configurations.iterator(); it.hasNext(); ) {
-		Configuration c = (Configuration)it.next();
-		c.setDefault(false);
-	    }
-	    def.setDefault(true);
-	}
-        
+        checkValidIndex(index);
+        Configuration def = configurations.get(index);
+        if (def != null) {
+            for (Iterator it = configurations.iterator(); it.hasNext();) {
+                Configuration c = (Configuration) it.next();
+                c.setDefault(false);
+            }
+            def.setDefault(true);
+        }
+
         pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, old, def);
         pcs.firePropertyChange(PROP_DEFAULT, null, null);
     }
@@ -262,11 +264,12 @@ public class Configurations {
      * Get default configuration
      */
     public String getActiveDisplayName() {
-	String defDisplayName = null;
-	Configuration def = getActive();
-	if (def != null)
-	    defDisplayName = def.getDisplayName();
-	return defDisplayName;
+        String defDisplayName = null;
+        Configuration def = getActive();
+        if (def != null) {
+            defDisplayName = def.getDisplayName();
+        }
+        return defDisplayName;
     }
     
     /**
@@ -303,16 +306,16 @@ public class Configurations {
      * Check valid index
      */
     private void checkValidIndex(int index) {
-	if (index < 0 || index >= size()) {
-	    // Error ???
-	    // FIXUP ???
-	}
+        if (index < 0 || index >= size()) {
+            // Error ???
+            // FIXUP ???
+        }
     }
 
     public Configurations cloneConfs() {
-	Configurations clone = new Configurations();
-	clone.init(getClonedConfs(), getActiveAsIndex());
-	return clone;
+        Configurations clone = new Configurations();
+        clone.init(getClonedConfs(), getActiveAsIndex());
+        return clone;
     }
     
 }

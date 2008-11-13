@@ -56,14 +56,4 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-<!--
-    <folder name="Menu">
-        <folder name="Tools">
-            <file name="DerbyDatabaseAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.derby.DerbyDatabaseAction"/>
-                <attr name="position" intvalue="80"/>
-            </file>
-            </folder>
-    </folder>
--->
 </filesystem>

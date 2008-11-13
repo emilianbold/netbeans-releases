@@ -2282,6 +2282,8 @@ org.netbeans.modules.apisupport.project.universe.NetBeansOrgEntry
 org.netbeans.modules.asm.core.assistance.CodeHighlightFactory
 org.netbeans.modules.asm.core.dataobjects.AsmDataLoader
 org.netbeans.modules.asm.core.dataobjects.AsmDataObject
+org.netbeans.modules.autoupdate.pluginimporter.Installer
+org.netbeans.modules.autoupdate.pluginimporter.StatusLineImportIcon
 org.netbeans.modules.autoupdate.services.InstallManager
 org.netbeans.modules.autoupdate.ui.actions.AvailableUpdatesNotification
 org.netbeans.modules.autoupdate.ui.actions.AvailableUpdatesNotification$UpdatesFlasher

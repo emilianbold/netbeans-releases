@@ -453,7 +453,7 @@ public class CsmCompletionExpression {
         }
 
         tokenBlocks[tokenCountM3++] = CppTokenId;
-        tokenBlocks[tokenCountM3++] = new Integer(tokenOffset);
+        tokenBlocks[tokenCountM3++] = Integer.valueOf(tokenOffset);
         tokenBlocks[tokenCountM3++] = tokenText;
     }
 

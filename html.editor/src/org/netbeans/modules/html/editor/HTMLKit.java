@@ -73,18 +73,21 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.*;
 import org.netbeans.editor.BaseKit.DeleteCharAction;
+import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.html.*;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.gsf.GsfEditorKitFactory.NextCharProvider;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.gsfret.InstantRenameAction;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.SelectCodeElementAction;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.editor.ext.html.HtmlIndenter;
+import org.netbeans.modules.gsf.ToggleBlockCommentAction;
+import org.netbeans.modules.html.editor.gsf.HtmlCommentHandler;
 import org.openide.util.Exceptions;
 
 /**
@@ -164,6 +167,9 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
             new InstantRenameAction(),
+            new ToggleBlockCommentAction(new HtmlCommentHandler()),
+            new ExtKit.CommentAction(""), //NOI18N
+            new ExtKit.UncommentAction("") //NOI18N
         };
         return TextAction.augmentList(super.createActions(), HTMLActions);
     }

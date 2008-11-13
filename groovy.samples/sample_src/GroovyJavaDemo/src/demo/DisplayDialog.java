@@ -108,7 +108,7 @@ public class DisplayDialog extends javax.swing.JDialog {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                DisplayDialog dialog = new DisplayDialog(new javax.swing.JFrame(), true);
+                DisplayDialog dialog = new DisplayDialog(null, true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {

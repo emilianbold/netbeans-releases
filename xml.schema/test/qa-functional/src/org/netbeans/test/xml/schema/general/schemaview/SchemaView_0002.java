@@ -62,6 +62,7 @@ import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.jemmy.Timeouts;
 
 /**
  *
@@ -145,6 +146,17 @@ public class SchemaView_0002 extends SchemaView {
   {
     String[] asButtons = { "Find Next", "Find Previous", "Clear" };
     System.out.println( "+++ Enter." );
+
+    // Set new timeout
+    Timeouts t =  top.getTimeouts( );
+    long lBack = 0;
+    if( !bPresent )
+    {
+      lBack = t.getTimeout( "ComponentOperator.WaitComponentTimeout" );
+      t.setTimeout( "ComponentOperator.WaitComponentTimeout", 1000 );
+      top.setTimeouts( t );
+    }
+
     for( String s : asButtons )
     {
       try
@@ -155,6 +167,8 @@ public class SchemaView_0002 extends SchemaView {
         if( !bPresent )
         {
           System.out.println( "+++ Should not be present." );
+          t.setTimeout( "ComponentOperator.WaitComponentTimeout", lBack );
+          top.setTimeouts( t );
           return false;
         }
       }
@@ -169,6 +183,11 @@ public class SchemaView_0002 extends SchemaView {
       }
     }
     System.out.println( "+++ Done." );
+    if( !bPresent )
+    {
+      t.setTimeout( "ComponentOperator.WaitComponentTimeout", lBack );
+      top.setTimeouts( t );
+    }
     return true;
   }
 

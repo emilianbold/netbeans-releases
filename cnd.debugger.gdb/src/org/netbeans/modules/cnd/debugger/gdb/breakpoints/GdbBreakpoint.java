@@ -43,8 +43,8 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointListener;
@@ -83,7 +83,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
     private int                         suspend = SUSPEND_ALL;
     private String                      threadID = "1"; // NOI18N
     private String                      printText;
-    private HashSet                     breakpointListeners = new HashSet();
+    private final Set<GdbBreakpointListener>  breakpointListeners = new CopyOnWriteArraySet<GdbBreakpointListener>();
     private GdbDebugger                 debugger;
     private String                      condition = ""; // NOI18N
     private int                         skipCount = 0;
@@ -385,9 +385,8 @@ public abstract class GdbBreakpoint extends Breakpoint {
      * @param event a event to be fired
      */
     public void fireGdbBreakpointChange(GdbBreakpointEvent event) {
-        Iterator i = ((HashSet) breakpointListeners.clone()).iterator();
-        while (i.hasNext()) {
-            ((GdbBreakpointListener) i.next()).breakpointReached(event);
+        for (GdbBreakpointListener listener : breakpointListeners) {
+            listener.breakpointReached(event);
         }
     }
     
