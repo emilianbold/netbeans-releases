@@ -93,8 +93,25 @@ public final class TestExecutionManager {
         return INSTANCE;
     }
 
+    synchronized void finish() {
+        setFinished(true);
+    }
+
     synchronized void reset() {
         this.finished = false;
+    }
+    /**
+     * Inits our TestExecutionManager with the given RubyExecution. Does not
+     * run the execution.
+     *
+     * @param rubyDescriptor
+     */
+    synchronized void init(RubyExecutionDescriptor rubyDescriptor) {
+
+        RubyProcessCreator rpc = new RubyProcessCreator(rubyDescriptor);
+
+        ExecutionDescriptor descriptor = rubyDescriptor.toExecutionDescriptor();
+        execution = ExecutionService.newService(rpc, descriptor, rubyDescriptor.getDisplayName());
     }
     /**
      * Starts a RubyExecution with the given executionDescriptor and testRecognizer.
@@ -154,7 +171,7 @@ public final class TestExecutionManager {
      * false otherwise.
      */
     public synchronized boolean isFinished() {
-        return result != null && result.isDone();
+        return finished || (result != null && result.isDone());
     }
     
     private void setFinished(boolean finished) {
@@ -188,7 +205,11 @@ public final class TestExecutionManager {
      * computed test statuses.
      */
     public synchronized void refresh() {
-        outConvertor.refreshSession();
-        errConvertor.refreshSession();
+        if (outConvertor != null) {
+            outConvertor.refreshSession();
+        }
+        if (errConvertor != null) {
+            errConvertor.refreshSession();
+        }
     }
 }

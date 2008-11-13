@@ -318,7 +318,6 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         }
         task.addTaskParameters("SPEC_OPTS=" + options); //NOI18N
 
-        FileLocator locator = project.getLookup().lookup(FileLocator.class);
         TestSession session = new TestSession(task.getDisplayName(),
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
@@ -334,9 +333,11 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         taskDescriptor.postBuild(new Runnable() {
 
             public void run() {
+                TestExecutionManager.getInstance().finish();
                 convertor.refreshSession();
             }
         });
+        TestExecutionManager.getInstance().init(taskDescriptor);
     }
 
 }

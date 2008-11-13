@@ -179,7 +179,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         return type == TestType.TEST_UNIT;
     }
 
-    public void customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug) {
+    public void customize(Project project, RakeTask task, final RubyExecutionDescriptor taskDescriptor, boolean debug) {
         boolean useRunner = TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.TEST_TASKS, task, new DefaultTaskEvaluator() {
 
             public boolean isDefault(RakeTask task) {
@@ -214,9 +214,11 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         taskDescriptor.postBuild(new Runnable() {
 
             public void run() {
+                TestExecutionManager.getInstance().finish();
                 testConvertor.refreshSession();
             }
         });
+        TestExecutionManager.getInstance().init(taskDescriptor);
   }
 
 }
