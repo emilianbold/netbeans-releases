@@ -89,6 +89,11 @@ if [ -n $BUILD_ID ]; then
     fi
 fi
 
+mkdir -p $DIST/deploy
+mv $DIST/uc* $DIST/deploy/
+mkdir -p $DIST/deploy/ml
+mv $DIST/ml/uc* $DIST/deploy/ml/
+
 if [ -z $DIST_SERVER ]; then
     exit 0;
 fi
