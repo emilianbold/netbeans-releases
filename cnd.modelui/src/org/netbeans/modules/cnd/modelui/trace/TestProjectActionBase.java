@@ -161,7 +161,7 @@ public abstract class TestProjectActionBase extends NodeAction {
             if (!(o instanceof Project)) {
                 return null;
             }
-            NativeProject nativeProject = (NativeProject) ((Project) o).getLookup().lookup(NativeProject.class);
+            NativeProject nativeProject = ((Project) o).getLookup().lookup(NativeProject.class);
             if (nativeProject == null) {
                 return null;
             }

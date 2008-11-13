@@ -28,13 +28,14 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
-import org.netbeans.editor.Formatter;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.editor.indent.CppIndentTask;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
+import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 import org.netbeans.modules.cnd.test.base.BaseDocumentUnitTestCase;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -95,7 +96,6 @@ public class CCFormatterBaseUnitTestCase extends BaseDocumentUnitTestCase {
             EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.C), style);
         }
     }
-    
 
     /**
      * Perform new-line insertion followed by indenting of the new line
@@ -103,29 +103,34 @@ public class CCFormatterBaseUnitTestCase extends BaseDocumentUnitTestCase {
      * The caret position should be marked in the document text by '|'.
      */
     protected void indentNewLine() {
-        Formatter f = getDocument().getFormatter();
-	try {
-	    f.indentLock();
-	    int offset = f.indentNewLine(getDocument(), getCaretOffset());
-	    getCaret().setDot(offset);
-	} finally {
-	    f.indentUnlock();
-	}
+        try {
+            int offset = getCaretOffset();
+            getDocument().insertString(offset, "\n", null); // NOI18N
+//            Indent indent = Indent.get(getDocument());
+//            indent.lock();
+//            try {
+//                indent.reindent(offset-1);
+//            } finally {
+//                indent.unlock();
+//            }
+            CppIndentTask task = new CppIndentTask(getDocument());
+            task.reindent(offset+1);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
-    
+
     /**
      * Perform reformatting of the whole document's text.
      */
     protected void reformat() {
-        Formatter f = getDocument().getFormatter();
+        Reformatter f = new Reformatter(getDocument(), CodeStyle.getDefault(getDocument()));
         try {
-	    f.reformatLock();
-            f.reformat(getDocument(), 0, getDocument().getLength());
+            f.reformat();
         } catch (BadLocationException e) {
             e.printStackTrace(getLog());
             fail(e.getMessage());
-        } finally {
-	    f.reformatUnlock();
-	}
+    	}
     }
+
 }

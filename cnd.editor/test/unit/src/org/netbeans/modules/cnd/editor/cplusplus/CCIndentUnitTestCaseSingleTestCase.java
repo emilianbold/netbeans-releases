@@ -43,5 +43,20 @@ public class CCIndentUnitTestCaseSingleTestCase extends CCFormatterBaseUnitTestC
     public CCIndentUnitTestCaseSingleTestCase(String testMethodName) {
         super(testMethodName);
     }
+    /**
+     * test parameter aligning
+     */
+    public void testIdentMethodParameters2() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+                putBoolean(EditorOptions.alignMultilineMethodParams, true);
+        setLoadDocumentText(
+            "int longmain(int a,|\n");
+        indentNewLine();
+        assertDocumentText("Incorrect identing of main",
+            "int longmain(int a,\n" +
+            "             \n");
+    }
 
 }
