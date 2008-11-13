@@ -158,12 +158,12 @@ public class ProfileGenerator implements CodeGenerator {
                     }
                     if (panel.isActiovationByOS()) {
                         ActivationOS os = model.getFactory().createActivationOS();
-                        if (Utilities.isWindows()) {
-                            os.setFamily("Windows");//NOI18N
-                        } else if (Utilities.isMac()) {
+                        if (Utilities.isMac()) {
                             os.setFamily("MacOS");//NOI18N
                         } else if (Utilities.isUnix()) {
                             os.setFamily("Linux");//NOI18N
+                        } else {
+                            os.setFamily("Windows");
                         }
                         act.setActivationOS(os);
                     }
