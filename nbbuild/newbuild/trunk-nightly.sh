@@ -94,6 +94,10 @@ mv $DIST/uc* $DIST/deploy/
 mkdir -p $DIST/deploy/ml
 mv $DIST/ml/uc* $DIST/deploy/ml/
 
+cp $DIST_SERVER2/latest/zip/netbeans-$BUILDNUM.zip $TEST_LOCATION/NetBeans.zip
+cp $DIST_SERVER2/latest/zip/netbeans-$BUILDNUM-java.zip $TEST_LOCATION/NetBeansJavaEE.zip
+cp $DIST_SERVER2/latest/zip/testdist-*.zip $TEST_LOCATION/testdist.zip
+
 if [ -z $DIST_SERVER ]; then
     exit 0;
 fi
