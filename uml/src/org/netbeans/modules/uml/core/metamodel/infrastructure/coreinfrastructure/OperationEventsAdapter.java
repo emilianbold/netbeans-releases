@@ -53,7 +53,6 @@ public class OperationEventsAdapter implements IOperationEventsSink
 {
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IOperationEventsSink#onConditionPreAdded(com.embarcadero.describe.coreinfrastructure.IOperation, com.embarcadero.describe.foundation.IConstraint, boolean, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onConditionPreAdded(
       IOperation oper,
@@ -65,7 +64,6 @@ public class OperationEventsAdapter implements IOperationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IOperationEventsSink#onConditionAdded(com.embarcadero.describe.coreinfrastructure.IOperation, com.embarcadero.describe.foundation.IConstraint, boolean, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onConditionAdded(
       IOperation oper,
@@ -77,7 +75,6 @@ public class OperationEventsAdapter implements IOperationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IOperationEventsSink#onConditionPreRemoved(com.embarcadero.describe.coreinfrastructure.IOperation, com.embarcadero.describe.foundation.IConstraint, boolean, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onConditionPreRemoved(
       IOperation oper,
@@ -89,7 +86,6 @@ public class OperationEventsAdapter implements IOperationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IOperationEventsSink#onConditionRemoved(com.embarcadero.describe.coreinfrastructure.IOperation, com.embarcadero.describe.foundation.IConstraint, boolean, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onConditionRemoved(
       IOperation oper,
@@ -101,7 +97,6 @@ public class OperationEventsAdapter implements IOperationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IOperationEventsSink#onPreQueryModified(com.embarcadero.describe.coreinfrastructure.IOperation, boolean, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreQueryModified(
       IOperation oper,
@@ -112,7 +107,6 @@ public class OperationEventsAdapter implements IOperationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IOperationEventsSink#onQueryModified(com.embarcadero.describe.coreinfrastructure.IOperation, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onQueryModified(IOperation oper, IResultCell cell)
    {
@@ -120,7 +114,6 @@ public class OperationEventsAdapter implements IOperationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IOperationEventsSink#onRaisedExceptionPreAdded(com.embarcadero.describe.coreinfrastructure.IOperation, com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onRaisedExceptionPreAdded(
       IOperation oper,
@@ -131,7 +124,6 @@ public class OperationEventsAdapter implements IOperationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IOperationEventsSink#onRaisedExceptionAdded(com.embarcadero.describe.coreinfrastructure.IOperation, com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onRaisedExceptionAdded(
       IOperation oper,
@@ -142,7 +134,6 @@ public class OperationEventsAdapter implements IOperationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IOperationEventsSink#onRaisedExceptionPreRemoved(com.embarcadero.describe.coreinfrastructure.IOperation, com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onRaisedExceptionPreRemoved(
       IOperation oper,
@@ -153,7 +144,6 @@ public class OperationEventsAdapter implements IOperationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IOperationEventsSink#onRaisedExceptionRemoved(com.embarcadero.describe.coreinfrastructure.IOperation, com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onRaisedExceptionRemoved(
       IOperation oper,
@@ -164,7 +154,6 @@ public class OperationEventsAdapter implements IOperationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IOperationEventsSink#onPreOperationPropertyModified(com.embarcadero.describe.coreinfrastructure.IOperation, int, boolean, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreOperationPropertyModified(
       IOperation oper,
@@ -176,7 +165,6 @@ public class OperationEventsAdapter implements IOperationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IOperationEventsSink#onOperationPropertyModified(com.embarcadero.describe.coreinfrastructure.IOperation, int, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onOperationPropertyModified(
       IOperation oper,

@@ -170,14 +170,12 @@ public class DiagramAndPresentationNavigator implements IDiagramAndPresentationN
    }
    
    /* (non-Javadoc)
-    * @see org.netbeans.modules.uml.ui.support.IDiagramAndPresentationNavigator#navigateToPresentationTarget(int, com.embarcadero.describe.foundation.IElement, com.embarcadero.describe.gui.support.diagramsupport.IPresentationTargets)
     */
    public boolean navigateToPresentationTarget(int pParent, IElement pParentModelElement, ETList<IPresentationTarget> pPossibleTargets)
    {
    		return navigateToPresentationTarget(pParentModelElement, pPossibleTargets, false);
    }
    /* (non-Javadoc)
-    * @see org.netbeans.modules.uml.ui.support.IDiagramAndPresentationNavigator#handleNavigation(int, com.embarcadero.describe.foundation.IElement, boolean)
     */
    public boolean handleNavigation(int pParent, IElement pElement, boolean isShift)
    {

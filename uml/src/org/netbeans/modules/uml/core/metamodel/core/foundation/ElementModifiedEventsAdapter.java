@@ -54,7 +54,6 @@ public class ElementModifiedEventsAdapter implements IElementModifiedEventsSink
 {
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IElementModifiedEventsSink#onElementPreModified(com.embarcadero.describe.foundation.IVersionableElement, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onElementPreModified(
       IVersionableElement element,
@@ -64,7 +63,6 @@ public class ElementModifiedEventsAdapter implements IElementModifiedEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IElementModifiedEventsSink#onElementModified(com.embarcadero.describe.foundation.IVersionableElement, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onElementModified(IVersionableElement element, IResultCell cell)
    {

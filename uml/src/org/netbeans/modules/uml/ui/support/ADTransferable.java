@@ -93,7 +93,7 @@ public class ADTransferable implements Transferable
    
    /** 
     * Create a new transferable object.  The ADTransferable transerable know
-    * how to handle drag and drop objects for Embarcadero's Describe application.
+    * how to handle drag and drop objects.
     * There are two data flavors supported by ADTransferable.  
     * 
     * The StringFlavor is string representation of the XML document that 
