@@ -135,6 +135,7 @@ public class OperationPanel extends javax.swing.JPanel {
         pProgress.add (mainLabel, BorderLayout.NORTH);
         pProgress.add (progressComponent, BorderLayout.CENTER);
         pProgress.add (detailLabel, BorderLayout.SOUTH);
+        pAboveSpace.setVisible(true);
         revalidate ();
     }
     
@@ -167,6 +168,7 @@ public class OperationPanel extends javax.swing.JPanel {
         pProgress.removeAll ();
         pProgress.add (getTitleComponent (msg), BorderLayout.NORTH);
         pProgress.add (getElementsComponent (elements), BorderLayout.CENTER);
+        pAboveSpace.setVisible(false);
         revalidate ();
     }
     
@@ -174,6 +176,7 @@ public class OperationPanel extends javax.swing.JPanel {
         pProgress.removeAll ();
         pProgress.add (getTitleComponent (msg), BorderLayout.NORTH);
         pProgress.add (getElementsComponent (elements), BorderLayout.CENTER);
+        pAboveSpace.setVisible(false);
         revalidate ();
     }
     
