@@ -328,6 +328,16 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                     VariableElement param = paramIter.next();
                     RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, param.asType());
                 }
+            } else if (members[i].getGroup() == MemberInfo.Group.FIELD) {
+                if (members[i].getModifiers().contains(Modifier.STATIC)) {
+                    // do not check since static fields cannot use type parameter of the enclosing class
+                    continue;
+                }
+                @SuppressWarnings("unchecked")
+                ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) members[i].getElementHandle();
+                VariableElement elm = handle.resolve(javac);
+                TypeMirror asType = elm.asType();
+                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, asType);
             } else if (members[i].getGroup() == MemberInfo.Group.IMPLEMENTS) {
                 // check implements
                 TypeMirrorHandle handle = (TypeMirrorHandle) members[i].getElementHandle();
