@@ -81,6 +81,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.options.MarkOccurencesSettings;
@@ -151,7 +152,7 @@ public class MarkOccurrencesHighlighter extends ParserResultTask {
             return;
 
         Logger.getLogger("TIMER").log(Level.FINE, "Occurrences",
-            new Object[] {((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), (System.currentTimeMillis() - start)});
+            new Object[] {NbEditorUtilities.getFileObject(doc), (System.currentTimeMillis() - start)});
 
         if (bag == null) {
             if (node.getBoolean(MarkOccurencesSettings.KEEP_MARKS, true)) {

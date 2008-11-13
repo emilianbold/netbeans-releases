@@ -46,6 +46,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import java.util.Collections;
 import java.util.EnumSet;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -57,6 +58,10 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.LazyCompletionItem;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
@@ -67,13 +72,13 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  */
 public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCompletionItem {
     
-    public static final LazyTypeCompletionItem create(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, JavaSource javaSource, boolean insideNew) {
-        return new LazyTypeCompletionItem(handle, kinds, substitutionOffset, javaSource, insideNew);
+    public static final LazyTypeCompletionItem create(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew) {
+        return new LazyTypeCompletionItem(handle, kinds, substitutionOffset, source, insideNew);
     }
     
     private ElementHandle<TypeElement> handle;
     private EnumSet<ElementKind> kinds;
-    private JavaSource javaSource;
+    private Source source;
     private boolean insideNew;
     private String name;
     private String simpleName;
@@ -82,11 +87,11 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
     private CharSequence sortText;
     private int prefWidth = -1;
     
-    private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, JavaSource javaSource, boolean insideNew) {
+    private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew) {
         super(substitutionOffset);
         this.handle = handle;
         this.kinds = kinds;
-        this.javaSource = javaSource;
+        this.source = source;
         this.insideNew = insideNew;
         this.name = handle.getQualifiedName();
         int idx = name.lastIndexOf('.'); //NOI18N
@@ -102,10 +107,10 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
                 return false;
             }
             try {
-                long t = System.currentTimeMillis();
-                javaSource.runUserActionTask(new Task<CompilationController>() {
-
-                    public void run(CompilationController controller) throws Exception {
+                ParserManager.parse(Collections.singletonList(source), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        CompilationController controller = CompilationController.get(resultIterator.getParserResult(substitutionOffset));
                         controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         Scope scope = controller.getTrees().getScope(controller.getTreeUtilities().pathFor(substitutionOffset));
                         if (!isAnnonInner()) {
@@ -118,7 +123,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
                         }
                         handle = null;
                     }
-                }, true);
+                });
             } catch(Throwable t) {
             }
         }

@@ -25,34 +25,45 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.api.java.source.ui;
+package org.netbeans.api.editor;
 
+import javax.swing.JEditorPane;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
  *
- * @author Dusan Balek, Jan Lahoda
- * @since 1.1
+ * @author Dusan Balek
  */
 public final class DialogBinding {
 
-    private DialogBinding() {}
-    
     /**
      * Bind given component and given file together.
      * @param fileObject to bind
      * @param offset position at which content of the component will be virtually placed
      * @param length how many characters replace from the original file
      * @param component component to bind
-     * @return {@link JavaSource} or null
-     * @throws {@link IllegalArgumentException} if fileObject is null
-     * @since 1.1
-     * @deprecated Use {@link org.netbeans.api.editor.DialogBinding#bindComponentToFile(FileObject,int,int,JTextComponent)} instead.
      */
-    public static JavaSource bindComponentToFile(FileObject fileObject, int offset, int length, JTextComponent component) throws IllegalArgumentException {
-        org.netbeans.api.editor.DialogBinding.bindComponentToFile(fileObject, offset, length, component);
-        return null;
+    public static void bindComponentToFile(final FileObject fileObject, int offset, int length, final JTextComponent component) {
+        Parameters.notNull("fileObject", fileObject); //NOI18N
+        Parameters.notNull("component", component); //NOI18N
+        if (!fileObject.isValid() || !fileObject.isData())
+            return;
+        if (component instanceof JEditorPane)
+            ((JEditorPane)component).setEditorKit(MimeLookup.getLookup(fileObject.getMIMEType()).lookup(EditorKit.class));
+        Document doc = component.getDocument();
+        doc.putProperty("mimeType", "text/x-dialog-binding"); //NOI18N
+        InputAttributes inputAttributes = new InputAttributes();
+        Language language = MimeLookup.getLookup("text/x-dialog-binding").lookup(Language.class); //NOI18N
+        inputAttributes.setValue(language, "dialogBinding.fileObject", fileObject, true); //NOI18N
+        inputAttributes.setValue(language, "dialogBinding.offset", offset, true); //NOI18N
+        inputAttributes.setValue(language, "dialogBinding.length", length, true); //NOI18N
+        doc.putProperty(InputAttributes.class, inputAttributes);
     }
 }
