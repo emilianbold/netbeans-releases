@@ -155,7 +155,25 @@ public final class ClasspathInfo {
                 cachedCompileClassPath,
                 outputClassPath);        
     }
-    
+
+    @Override
+    public int hashCode() {
+        return this.srcClassPath == null ? 0 : this.srcClassPath.entries().size();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof ClasspathInfo) {
+            ClasspathInfo other = (ClasspathInfo) obj;
+            return this.srcClassPath == null ? other.srcClassPath == null : this.srcClassPath.equals(other.srcClassPath) &&
+                   this.compileClassPath.equals(other.compileClassPath) &&
+                   this.bootClassPath.equals(other.bootClassPath);
+        }
+        return false;
+    }
     // Factory methods ---------------------------------------------------------
     
     
