@@ -315,17 +315,12 @@ public final class TreePathHandle {
 
     private static final class TreeDelegate implements Delegate {
         
-        private PositionRef position;
-
-        private KindPath kindPath;
-
-        private FileObject file;
-
-        private ElementHandle enclosingElement;
-
-        private boolean enclElIsCorrespondingEl;
-
-        private Tree.Kind kind;
+        private final PositionRef position;
+        private final KindPath kindPath;
+        private final FileObject file;
+        private final ElementHandle enclosingElement;
+        private final boolean enclElIsCorrespondingEl;
+        private final Tree.Kind kind;
 
         private TreeDelegate(PositionRef position, KindPath kindPath, FileObject file, ElementHandle element, boolean enclElIsCorrespondingEl) {
             this.kindPath = kindPath;
@@ -344,7 +339,11 @@ public final class TreePathHandle {
                         kind = Tree.Kind.VARIABLE;
                     } else if (k == ElementKind.METHOD || k == ElementKind.CONSTRUCTOR) {
                         kind = Tree.Kind.METHOD;
+                    } else {
+                        kind = null;
                     }
+                } else {
+                    kind = null;
                 }
             }
         }
@@ -544,10 +543,10 @@ public final class TreePathHandle {
     
     private static final class ElementDelegate implements Delegate {
 
-        private ElementHandle<? extends Element> el;
-        private URL source;
-        private String qualName;
-        private ClasspathInfo cpInfo;
+        private final ElementHandle<? extends Element> el;
+        private final URL source;
+        private final String qualName;
+        private final ClasspathInfo cpInfo;
 
         public ElementDelegate(ElementHandle<? extends Element> el, URL source, String qualName, ClasspathInfo cpInfo) {
             this.el = el;

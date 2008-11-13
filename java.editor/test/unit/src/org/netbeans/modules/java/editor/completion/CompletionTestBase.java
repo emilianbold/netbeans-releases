@@ -77,10 +77,12 @@ import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.classpath.GlobalSourcePathTestUtil;
+import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
@@ -96,6 +98,7 @@ import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 import org.openide.util.lookup.Lookups;
@@ -149,12 +152,36 @@ public class CompletionTestBase extends NbTestCase {
         File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();
         IndexUtil.setCacheFolder(cacheFolder);
+        final ClassPath bootPath = createClassPath(System.getProperty("sun.boot.class.path"));
+        ClassPathProvider cpp = new ClassPathProvider() {
+            public ClassPath findClassPath(FileObject file, String type) {
+                try {
+                    if (type == ClassPath.SOURCE) {
+                        return ClassPathSupport.createClassPath(new FileObject[]{FileUtil.toFileObject(getWorkDir())});
+                    }
+                    if (type == ClassPath.COMPILE) {
+                        return ClassPathSupport.createClassPath(new FileObject[0]);
+                    }
+                    if (type == ClassPath.BOOT) {
+                        return bootPath;
+                    }
+                } catch (IOException ex) {}
+                return null;
+            }
+        };
+        SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
+        MimeDataProvider mdp = new MimeDataProvider() {
+            public Lookup getLookup(MimePath mimePath) {
+                return Lookups.fixed(new JavaKit(), new JavacParserFactory());
+            }
+        };
+        Lkp.initLookups(new Object[] {repository, loader, cpp, mdp});
+        JEditorPane.registerEditorKitForContentType("text/x-java", "org.netbeans.modules.editor.java.JavaKit");
         final ClassPath sourcePath = ClassPathSupport.createClassPath(new FileObject[] {FileUtil.toFileObject(getDataDir())});
         final ClassIndexManager mgr  = ClassIndexManager.getDefault();
         for (ClassPath.Entry entry : sourcePath.entries()) {
             mgr.createUsagesQuery(entry.getURL(), true);
         }
-        final ClassPath bootPath = createClassPath(System.getProperty("sun.boot.class.path"));
         final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, ClassPathSupport.createClassPath(new URL[0]), sourcePath);
         assertNotNull(cpInfo);
         final JavaSource js = JavaSource.create(cpInfo);
@@ -175,25 +202,6 @@ public class CompletionTestBase extends NbTestCase {
                 }
             }
         }, true);                        
-        ClassPathProvider cpp = new ClassPathProvider() {
-            public ClassPath findClassPath(FileObject file, String type) {
-                if (type == ClassPath.SOURCE)
-                    return sourcePath;
-                    if (type == ClassPath.COMPILE)
-                        return ClassPathSupport.createClassPath(new FileObject[0]);
-                    if (type == ClassPath.BOOT)
-                        return bootPath;
-                    return null;
-            }
-        };                               
-        SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
-        MimeDataProvider mdp = new MimeDataProvider() {
-            public Lookup getLookup(MimePath mimePath) {
-                return Lookups.singleton(new JavaKit());
-            }
-        };
-        Lkp.initLookups(new Object[] {repository, loader, cpp, mdp});
-        JEditorPane.registerEditorKitForContentType("text/x-java", "org.netbeans.modules.editor.java.JavaKit");
         Utilities.setCaseSensitive(true);
     }
     
@@ -220,8 +228,8 @@ public class CompletionTestBase extends NbTestCase {
         int textToInsertLength = textToInsert != null ? textToInsert.length() : 0;
         if (textToInsertLength > 0)
             doc.insertString(caretPos, textToInsert, null);
-        JavaSource js = JavaSource.forDocument(doc);
-        List<? extends CompletionItem> items = JavaCompletionProvider.query(js, CompletionProvider.COMPLETION_QUERY_TYPE, caretPos + textToInsertLength, caretPos + textToInsertLength);
+        Source s = Source.create(doc);
+        List<? extends CompletionItem> items = JavaCompletionProvider.query(s, CompletionProvider.COMPLETION_QUERY_TYPE, caretPos + textToInsertLength, caretPos + textToInsertLength);
         Collections.sort(items, CompletionItemComparator.BY_PRIORITY);
         
         File output = new File(getWorkDir(), getName() + ".out");

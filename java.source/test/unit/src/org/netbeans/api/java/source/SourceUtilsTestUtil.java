@@ -56,12 +56,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import junit.framework.Assert;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.ActivatedDocumentListener;
+import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -135,6 +139,8 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         DEFAULT_LOOKUP.setLookup(extraLookupContent, SourceUtilsTestUtil.class.getClassLoader());
         
         SourceUtilsTestUtil2.disableLocks();
+        
+        prepareParser();
     }
     
     static {
@@ -147,6 +153,12 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         prepareTest(sourceRoot, buildRoot, cache, new FileObject[0]);
     }
     
+    @SuppressWarnings("deprecation")
+    private static void prepareParser() {
+        FileUtil.setMIMEType("java", JavacParser.MIME_TYPE); //NOI18N
+        MockMimeLookup.setInstances(MimePath.get(JavacParser.MIME_TYPE), new JavacParserFactory());
+    }
+
     public static void prepareTest(FileObject sourceRoot, FileObject buildRoot, FileObject cache, FileObject[] classPathElements) throws Exception {
         if (extraLookupContent == null)
             prepareTest(new String[0], new Object[0]);
