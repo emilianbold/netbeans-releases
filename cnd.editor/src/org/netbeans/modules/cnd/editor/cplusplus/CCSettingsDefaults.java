@@ -81,11 +81,11 @@ public class CCSettingsDefaults {
     public static final Acceptor defaultIndentHotCharsAcceptor = new Acceptor() {
             public boolean accept(char ch) {
                 switch (ch) {
-                case '{':
-                case '}':
-                    return true;
+                    case ':':
+                    case '{':
+                    case '}':
+                        return true;
                 }
-
                 return false;
             }
         };

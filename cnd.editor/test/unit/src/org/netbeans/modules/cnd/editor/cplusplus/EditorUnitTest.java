@@ -28,35 +28,24 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
-import org.netbeans.modules.cnd.editor.options.EditorOptions;
+import org.netbeans.junit.NbTestSuite;
 
 /**
- * Class was taken from java
- * Links point to java IZ.
- * C/C++ specific tests begin from testReformatSimpleClass
  *
  * @author Alexander Simon
  */
-public class CCIndentUnitTestCaseSingleTestCase extends CCFormatterBaseUnitTestCase {
+public class EditorUnitTest extends NbTestSuite {
 
-    public CCIndentUnitTestCaseSingleTestCase(String testMethodName) {
-        super(testMethodName);
-    }
-    /**
-     * test parameter aligning
-     */
-    public void testIdentMethodParameters2() {
-        setCppEditorKit(false);
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
-                putBoolean(EditorOptions.alignMultilineMethodParams, true);
-        setLoadDocumentText(
-            "int longmain(int a,|\n");
-        indentNewLine();
-        assertDocumentText("Incorrect identing of main",
-            "int longmain(int a,\n" +
-            "             \n");
+    public EditorUnitTest() {
+        super("C/C++ Editor");
+        addTestSuite(BracketCompletionTestCase.class);
+        addTestSuite(IndentTestCase.class);
+        addTestSuite(FormatterTestCase.class);
+        addTestSuite(SpaceAndLineSeparatorTestCase.class);
+
     }
 
+    public static NbTestSuite suite() {
+        return new EditorUnitTest();
+    }
 }
