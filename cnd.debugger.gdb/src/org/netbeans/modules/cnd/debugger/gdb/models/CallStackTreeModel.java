@@ -64,7 +64,7 @@ import org.openide.util.RequestProcessor;
  */
 public class CallStackTreeModel implements TreeModel {
     private final GdbDebugger     debugger;
-    private final Collection listeners = new HashSet();
+    private final Collection<ModelListener> listeners = new HashSet();
     private Listener            listener;
     
    
