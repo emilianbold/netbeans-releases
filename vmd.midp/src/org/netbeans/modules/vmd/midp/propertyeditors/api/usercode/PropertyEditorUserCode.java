@@ -41,8 +41,8 @@
 package org.netbeans.modules.vmd.midp.propertyeditors.api.usercode;
 
 import java.awt.event.FocusEvent;
+import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ui.DialogBinding;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
