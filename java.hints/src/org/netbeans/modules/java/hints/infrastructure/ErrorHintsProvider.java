@@ -296,6 +296,8 @@ public final class ErrorHintsProvider extends ParserResultTask {
     private Position[] getLine(CompilationInfo info, Diagnostic d, final Document doc, int startOffset, int endOffset) throws IOException {
         StyledDocument sdoc = (StyledDocument) doc;
         DataObject dObj = (DataObject)doc.getProperty(doc.StreamDescriptionProperty );
+        if (dObj == null)
+            return new Position[] {null, null};
         LineCookie lc = dObj.getCookie(LineCookie.class);
         int lineNumber = NbDocument.findLineNumber(sdoc, info.getPositionConverter().getOriginalPosition(startOffset));
         int lineOffset = NbDocument.findLineOffset(sdoc, lineNumber);

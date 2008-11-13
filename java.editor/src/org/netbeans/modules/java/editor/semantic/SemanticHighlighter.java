@@ -109,6 +109,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -376,9 +377,9 @@ public class SemanticHighlighter extends ParserResultTask {
         }
         
         setter.setColorings(doc, newColoring, addedTokens, removedTokens);
-        
+
         Logger.getLogger("TIMER").log(Level.FINE, "Semantic",
-            new Object[] {((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), System.currentTimeMillis() - start});
+            new Object[] {NbEditorUtilities.getFileObject(doc), System.currentTimeMillis() - start});
         
         return false;
     }
