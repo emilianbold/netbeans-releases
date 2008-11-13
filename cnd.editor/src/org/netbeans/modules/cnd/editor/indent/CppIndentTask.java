@@ -82,10 +82,6 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         return null;
     }
 
-    public boolean isHotChar(int caretOffset, char c){
-        return false;
-    }
-
     private TokenItem moveToFirstLineImportantToken(TokenItem token){
         TokenItem t = token;
         while(true) {

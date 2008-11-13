@@ -76,6 +76,7 @@ import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
+import org.netbeans.modules.cnd.editor.indent.HotCharIndent;
 import org.netbeans.modules.editor.NbEditorKit;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -308,30 +309,19 @@ public class CCKit extends NbEditorKit {
 
         @Override
         protected void checkIndentHotChars(JTextComponent target, String typedText) {
-            if (typedText.length()>0 && CCSettingsDefaults.getDefaultIndentHotCharsAcceptor().accept(typedText.charAt(0))){
-                BaseDocument doc = Utilities.getDocument(target);
-                if (doc != null) {
-                    int offset = target.getCaretPosition();
-                    Indent indent = Indent.get(doc);
-                    indent.lock();
-                    try {
-                        indent.reindent(offset);
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } finally{
-                        indent.unlock();
-                    }
-
-//                    // To fix IZ#130504 we need to differ different reasons line indenting request,
-//                    // but ATM there is no way to transfer this info from here to FormatSupport
-//                    // correctly over FormatWriter because it's final class for some reasons.
-//                    // But java editor has the same bug, so one day we may have such possibility
-//                    doc.putProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY, Boolean.TRUE);
-//                    super.checkIndentHotChars(target, typedText);
-//                    doc.putProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY, null);
+            BaseDocument doc = Utilities.getDocument(target);
+            int offset = target.getCaretPosition();
+            if (HotCharIndent.INSTANCE.getKeywordBasedReformatBlock(doc, offset, typedText)) {
+                Indent indent = Indent.get(doc);
+                indent.lock();
+                try {
+                    indent.reindent(offset);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally{
+                    indent.unlock();
                 }
             }
-
         }
 
         @Override

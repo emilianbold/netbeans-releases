@@ -28,9 +28,6 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
-import org.netbeans.modules.cnd.editor.options.EditorOptions;
-
 /**
  * Class was taken from java
  * Links point to java IZ.

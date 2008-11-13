@@ -33,6 +33,7 @@ import javax.swing.text.EditorKit;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.indent.CppIndentTask;
+import org.netbeans.modules.cnd.editor.indent.HotCharIndent;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 import org.netbeans.modules.cnd.test.base.BaseDocumentUnitTestCase;
@@ -154,7 +155,7 @@ public class EditorBase extends BaseDocumentUnitTestCase {
     protected void typeChar(char ch, boolean indentNewLine) throws Exception {
         int pos = getCaretOffset();
         getDocument ().insertString(pos, String.valueOf(ch), null);
-        if (CCSettingsDefaults.getDefaultIndentHotCharsAcceptor().accept(ch)){
+        if (HotCharIndent.INSTANCE.getKeywordBasedReformatBlock(getDocument(), pos, ""+ch)) {
             indentLine();
             indentNewLine = false;
         }
