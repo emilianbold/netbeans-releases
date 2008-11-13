@@ -55,7 +55,11 @@ public final class CndLexerUtilities {
     public static final String C_MIME_TYPE = "text/x-c";// NOI18N
     public static final String CPLUSPLUS_MIME_TYPE = "text/x-c++";    // NOI18N
     public static final String PREPROC_MIME_TYPE = "text/x-cpp-preprocessor";// NOI18N
+    public static final String FORTRAN_MIME_TYPE = "text/x-fortran";// NOI18N
     public static final String LEXER_FILTER = "lexer-filter"; // NOI18N
+
+    public static final String FORTRAN_FREE_FORMAT = "fortran-free-format"; // NOI18N
+    public static final String FORTRAN_MAXIMUM_TEXT_WIDTH = "fortran-maximum-text-width"; // NOI18N
 
     private CndLexerUtilities() {
     }
@@ -125,6 +129,10 @@ public final class CndLexerUtilities {
     }
 
     public static boolean isCppIdentifierPart(int codePoint) {
+        return Character.isJavaIdentifierPart(codePoint);
+    }
+
+    public static boolean isFortranIdentifierPart(int codePoint) {
         return Character.isJavaIdentifierPart(codePoint);
     }
 
@@ -234,6 +242,7 @@ public final class CndLexerUtilities {
     private static Filter<CppTokenId> FILTER_STD_CPP;
     private static Filter<CppTokenId> FILTER_GCC_CPP;
     private static Filter<CppTokenId> FILTER_PREPRPOCESSOR;
+    private static Filter<FortranTokenId> FILTER_FORTRAN;
 
     public static Filter<CppTokenId> getDefatultFilter(boolean cpp) {
         return cpp ? getStdCppFilter() : getStdCFilter();
@@ -285,6 +294,14 @@ public final class CndLexerUtilities {
             addGccOnlyCppOnlyKeywords(FILTER_GCC_CPP);
         }
         return FILTER_GCC_CPP;
+    }
+
+    public synchronized static Filter<FortranTokenId> getFortranFilter() {
+        if (FILTER_FORTRAN == null) {
+            FILTER_FORTRAN = new Filter<FortranTokenId>();
+            addFortranKeywords(FILTER_FORTRAN);
+        }
+        return FILTER_FORTRAN;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -462,8 +479,180 @@ public final class CndLexerUtilities {
         addToFilter(ids, filterToModify);
     }
 
+    private static void addFortranKeywords(Filter<FortranTokenId> filterToModify) {
+        FortranTokenId[] ids = new FortranTokenId[]{
+            // Keyword
+            FortranTokenId.KW_ACCESS_EQ,
+            FortranTokenId.KW_ACTION_EQ,
+            FortranTokenId.KW_ADVANCE_EQ,
+            FortranTokenId.KW_ALLOCATABLE,
+            FortranTokenId.KW_ALLOCATE,
+            FortranTokenId.KW_APOSTROPHE,
+            FortranTokenId.KW_ASSIGNMENT,
+            FortranTokenId.KW_BACKSPACE,
+            FortranTokenId.KW_BLANK_EQ,
+            FortranTokenId.KW_BLOCK,
+            FortranTokenId.KW_BLOCKDATA,
+            FortranTokenId.KW_CALL,
+            FortranTokenId.KW_CASE,
+            FortranTokenId.KW_CHARACTER,
+            FortranTokenId.KW_CLOSE,
+            FortranTokenId.KW_COMMON,
+            FortranTokenId.KW_COMPLEX,
+            FortranTokenId.KW_CONTAINS,
+            FortranTokenId.KW_CONTINUE,
+            FortranTokenId.KW_CYCLE,
+            FortranTokenId.KW_DATA,
+            FortranTokenId.KW_DEALLOCATE,
+            FortranTokenId.KW_DEFAULT,
+            FortranTokenId.KW_DELIM_EQ,
+            FortranTokenId.KW_DIMENSION,
+            FortranTokenId.KW_DIRECT_EQ,
+            FortranTokenId.KW_DO,
+            FortranTokenId.KW_DOUBLE,
+            FortranTokenId.KW_DOUBLEPRECISION,
+            FortranTokenId.KW_ELEMENTAL,
+            FortranTokenId.KW_ELSE,
+            FortranTokenId.KW_ELSEIF,
+            FortranTokenId.KW_ELSEWHERE,
+            FortranTokenId.KW_END,
+            FortranTokenId.KW_ENDASSOCIATE,
+            FortranTokenId.KW_ENDBLOCK,
+            FortranTokenId.KW_ENDBLOCKDATA,
+            FortranTokenId.KW_ENDDO,
+            FortranTokenId.KW_END_EQ,
+            FortranTokenId.KW_ENDFILE,
+            FortranTokenId.KW_ENDFORALL,
+            FortranTokenId.KW_ENDFUNCTION,
+            FortranTokenId.KW_ENDIF,
+            FortranTokenId.KW_ENDINTERFACE,
+            FortranTokenId.KW_ENDMAP,
+            FortranTokenId.KW_ENDMODULE,
+            FortranTokenId.KW_ENDPROGRAM,
+            FortranTokenId.KW_ENDSELECT,
+            FortranTokenId.KW_ENDSTRUCTURE,
+            FortranTokenId.KW_ENDSUBROUTINE,
+            FortranTokenId.KW_ENDTYPE,
+            FortranTokenId.KW_ENDUNION,
+            FortranTokenId.KW_ENDWHERE,
+            FortranTokenId.KW_ENTRY,
+            FortranTokenId.KW_EOR_EQ,
+            FortranTokenId.KW_EQUIVALENCE,
+            FortranTokenId.KW_ERR_EQ,
+            FortranTokenId.KW_EXIST_EQ,
+            FortranTokenId.KW_EXIT,
+            FortranTokenId.KW_EXTERNAL,
+            FortranTokenId.KW_FILE,
+            FortranTokenId.KW_FILE_EQ,
+            FortranTokenId.KW_FORALL,
+            FortranTokenId.KW_FORM_EQ,
+            FortranTokenId.KW_FORMAT,
+            FortranTokenId.KW_FORMATTED,
+            FortranTokenId.KW_FUNCTION,
+            FortranTokenId.KW_GO,
+            FortranTokenId.KW_GOTO,
+            FortranTokenId.KW_IF,
+            FortranTokenId.KW_IMPLICIT,
+            FortranTokenId.KW_IN,
+            FortranTokenId.KW_INCLUDE,
+            FortranTokenId.KW_INOUT,
+            FortranTokenId.KW_INQUIRE,
+            FortranTokenId.KW_INTEGER,
+            FortranTokenId.KW_INTENT,
+            FortranTokenId.KW_INTERFACE,
+            FortranTokenId.KW_INTRINSIC,
+            FortranTokenId.KW_IOSTAT_EQ,
+            FortranTokenId.KW_KIND,
+            FortranTokenId.KW_LEN,
+            FortranTokenId.KW_LOGICAL,
+            FortranTokenId.KW_MAP,
+            FortranTokenId.KW_MODULE,
+            FortranTokenId.KW_NAME_EQ,
+            FortranTokenId.KW_NAMED_EQ,
+            FortranTokenId.KW_NAMELIST,
+            FortranTokenId.KW_NEXTREC,
+            FortranTokenId.KW_NML_EQ,
+            FortranTokenId.KW_NONE,
+            FortranTokenId.KW_NULLIFY,
+            FortranTokenId.KW_NUMBER_EQ,
+            FortranTokenId.KW_ONLY,
+            FortranTokenId.KW_OPEN,
+            FortranTokenId.KW_OPENED_EQ,
+            FortranTokenId.KW_OPERATOR,
+            FortranTokenId.KW_OPTIONAL,
+            FortranTokenId.KW_OUT,
+            FortranTokenId.KW_PAD_EQ,
+            FortranTokenId.KW_PARAMETER,
+            FortranTokenId.KW_POINTER,
+            FortranTokenId.KW_POSITION_EQ,
+            FortranTokenId.KW_PRECISION,
+            FortranTokenId.KW_PRINT,
+            FortranTokenId.KW_PRIVATE,
+            FortranTokenId.KW_PROCEDURE,
+            FortranTokenId.KW_PROGRAM,
+            FortranTokenId.KW_PUBLIC,
+            FortranTokenId.KW_PURE,
+            FortranTokenId.KW_QUOTE,
+            FortranTokenId.KW_READ,
+            FortranTokenId.KW_READ_EQ,
+            FortranTokenId.KW_READWRITE_EQ,
+            FortranTokenId.KW_REAL,
+            FortranTokenId.KW_REC_EQ,
+            FortranTokenId.KW_RECL_EQ,
+            FortranTokenId.KW_RECURSIVE,
+            FortranTokenId.KW_RESULT,
+            FortranTokenId.KW_RETURN,
+            FortranTokenId.KW_REWIND,
+            FortranTokenId.KW_SAVE,
+            FortranTokenId.KW_SELECT,
+            FortranTokenId.KW_SELECTCASE,
+            FortranTokenId.KW_SELECTTYPE,
+            FortranTokenId.KW_SEQUENCE,
+            FortranTokenId.KW_SEQUENTIAL_EQ,
+            FortranTokenId.KW_SIZE,
+            FortranTokenId.KW_SIZE_EQ,
+            FortranTokenId.KW_STAT_EQ,
+            FortranTokenId.KW_STATUS_EQ,
+            FortranTokenId.KW_STOP,
+            FortranTokenId.KW_STRUCTURE,
+            FortranTokenId.KW_SUBROUTINE,
+            FortranTokenId.KW_TARGET,
+            FortranTokenId.KW_THEN,
+            FortranTokenId.KW_TO,
+            FortranTokenId.KW_TYPE,
+            FortranTokenId.KW_UNFORMATTED_EQ,
+            FortranTokenId.KW_UNION,
+            FortranTokenId.KW_USE,
+            FortranTokenId.KW_WHERE,
+            FortranTokenId.KW_WHILE,
+            FortranTokenId.KW_WRITE,
+            FortranTokenId.KW_WRITE_EQ,
+            // Keyword Operator
+            FortranTokenId.KWOP_EQ,
+            FortranTokenId.KWOP_NE,
+            FortranTokenId.KWOP_LT,
+            FortranTokenId.KWOP_LE,
+            FortranTokenId.KWOP_GT,
+            FortranTokenId.KWOP_GE,
+            FortranTokenId.KWOP_AND,
+            FortranTokenId.KWOP_OR,
+            FortranTokenId.KWOP_NOT,
+            FortranTokenId.KWOP_EQV,
+            FortranTokenId.KWOP_NEQV,
+            FortranTokenId.KWOP_TRUE,
+            FortranTokenId.KWOP_FALSE};
+        addToFilter(ids, filterToModify);
+    }
+
     private static void addToFilter(CppTokenId[] ids, Filter<CppTokenId> filterToModify) {
         for (CppTokenId id : ids) {
+            assert id.fixedText() != null : "id " + id + " must have fixed text";
+            filterToModify.addMatch(id.fixedText(), id);
+        }
+    }
+
+    private static void addToFilter(FortranTokenId[] ids, Filter<FortranTokenId> filterToModify) {
+        for (FortranTokenId id : ids) {
             assert id.fixedText() != null : "id " + id + " must have fixed text";
             filterToModify.addMatch(id.fixedText(), id);
         }
