@@ -314,6 +314,12 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
             </folder>
+            <folder name="x-dialog-binding">
+                <file name="org-netbeans-modules-java-editor-semantic-HighlightsLayerFactoryImpl.instance" />
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
+                </folder>
+            </folder>
         </folder>
 
         <folder name="AnnotationTypes">
