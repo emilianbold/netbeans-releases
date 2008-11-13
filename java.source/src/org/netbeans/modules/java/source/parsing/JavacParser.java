@@ -484,11 +484,11 @@ public class JavacParser extends Parser {
                 assert !it.hasNext();
                 final Document doc = listener == null ? null : listener.document;
                 if (doc != null && supportsReparse && !clone) {
-                    FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc,Trees.instance(currentInfo.getJavacTask()).getSourcePositions());
+                    FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc,Trees.instance(currentInfo.getJavacTask()).getSourcePositions(),this.canceled);
                     v.visit(unit, null);
                     synchronized (positions) {
                         positions.clear();
-                        positions.addAll(v.posRegions);
+                        positions.addAll(v.getResult());
                     }
                 }
                 currentPhase = Phase.PARSED;

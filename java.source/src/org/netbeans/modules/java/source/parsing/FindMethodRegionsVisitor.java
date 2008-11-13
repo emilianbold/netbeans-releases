@@ -47,6 +47,7 @@ import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.source.util.SourcePositions;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.java.source.usages.Pair;
@@ -58,17 +59,27 @@ import org.openide.util.Exceptions;
  */
 class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> {
         
-        final Document doc;
-        final SourcePositions pos;
-        CompilationUnitTree cu;
+        private final Document doc;
+        private final SourcePositions pos;
+        private final AtomicBoolean canceled;
+        private CompilationUnitTree cu;
+        private final List<Pair<DocPositionRegion,MethodTree>> posRegions = new LinkedList<Pair<DocPositionRegion, MethodTree>>();
         
-        final List<Pair<DocPositionRegion,MethodTree>> posRegions = new LinkedList<Pair<DocPositionRegion, MethodTree>>();
-        
-        public FindMethodRegionsVisitor (final Document doc, final SourcePositions pos) {
+        public FindMethodRegionsVisitor (final Document doc, final SourcePositions pos, final AtomicBoolean canceled) {
             assert doc != null;
-            assert pos != null;            
+            assert pos != null;
+            assert canceled != null;
             this.doc = doc;
             this.pos = pos;
+            this.canceled = canceled;
+        }
+
+        public List<Pair<DocPositionRegion,MethodTree>> getResult () {
+            //todo: threading, user of returned value should do the check
+            if (canceled.get()) {
+                posRegions.clear();
+            }
+            return posRegions;
         }
 
         @Override
@@ -91,14 +102,15 @@ class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> {
         @Override
         public Void visitMethod(MethodTree node, Void p) {            
             assert cu != null;
-            int startPos = (int) pos.getStartPosition(cu, node.getBody());
-            int endPos = (int) pos.getEndPosition(cu, node.getBody());
-            if (startPos >=0) {
-                try {
-                    posRegions.add(Pair.<DocPositionRegion,MethodTree>of(new DocPositionRegion(doc,startPos,endPos),node));
-                } catch (BadLocationException e) {
-                    //todo: reocvery
-                    Exceptions.printStackTrace(e);
+            if (!canceled.get()) {
+                int startPos = (int) pos.getStartPosition(cu, node.getBody());
+                int endPos = (int) pos.getEndPosition(cu, node.getBody());
+                if (startPos >=0) {
+                    try {
+                        posRegions.add(Pair.<DocPositionRegion,MethodTree>of(new DocPositionRegion(doc,startPos,endPos),node));
+                    } catch (BadLocationException e) {
+                        posRegions.clear();
+                    }
                 }
             }            
             return null;
