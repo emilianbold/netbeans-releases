@@ -80,7 +80,7 @@ public class RefreshClientDialog extends javax.swing.JPanel {
         }
     }
  
-    public static RefreshClientDialog.Result open(boolean downloadWsdl, String implClass, String url) {
+    public static RefreshClientDialog.Result open(boolean downloadWsdl, String url) {
         String title = NbBundle.getMessage(RefreshClientDialog.class, "MSG_ConfirmClientRefresh");
         RefreshClientDialog refreshDialog = new RefreshClientDialog(downloadWsdl, url);
         NotifyDescriptor desc = new NotifyDescriptor.Confirmation(refreshDialog, title, NotifyDescriptor.YES_NO_OPTION);
@@ -88,10 +88,10 @@ public class RefreshClientDialog extends javax.swing.JPanel {
         if (result.equals(NotifyDescriptor.CLOSED_OPTION) || result.equals(NotifyDescriptor.NO_OPTION)) {
             return Result.CLOSE;
         } else if (refreshDialog.downloadWsdl()) {
-            Result res = Result.DOWNLOAD_WSDL;
+            Result res = Result.DOWNLOAD_AND_REFRESH;
             res.setWsdlUrl(refreshDialog.getWsdlUrl());
             return res;
-        } else return Result.CLOSE;
+        } else return Result.REFRESH_ONLY;
         
     }
     
@@ -162,8 +162,8 @@ public class RefreshClientDialog extends javax.swing.JPanel {
     
     public static enum Result {
         CLOSE,
-        DOWNLOAD_WSDL,
-        DO_ALL;
+        DOWNLOAD_AND_REFRESH,
+        REFRESH_ONLY;
         
         private String wsdlUrl;
         
