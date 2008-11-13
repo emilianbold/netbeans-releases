@@ -134,9 +134,9 @@ public final class CreateDiagramFromSelectedElementsAction extends CookieAction
         {
             IElement curElement = (IElement)curNode.getCookie(IElement.class);
 
-            // if an operation is selected, 
-            // then there can only be one selected element
-            if (curElement instanceof IOperation && nodes.length > 1)
+            // if an operation is selected, then use re operation with the same funtionality
+            // in releases <=6.5 cdfs and re operation was there if only one operation was selected.
+            if (curElement instanceof IOperation)
                 retVal = false;
 
             else if (canDiagramBeCreatedFromElement(curElement))
