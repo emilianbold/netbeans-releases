@@ -115,6 +115,6 @@ public final class TokenItem {
 
     @Override
     public String toString() {
-        return tokenId+"("+index+")";
+        return tokenId+"("+index+")"; // NOI18N
     }
 }
