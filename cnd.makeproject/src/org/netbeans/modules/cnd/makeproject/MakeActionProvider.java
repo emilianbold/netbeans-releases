@@ -498,7 +498,15 @@ public class MakeActionProvider implements ActionProvider {
                         runProfile = conf.getProfile().cloneProfile();
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
                         String path = ""; // NOI18N
+                        // Add paths from subprojetcs
                         Iterator iter = subProjectOutputLocations.iterator();
+                        while (iter.hasNext()) {
+                            String location = FilePathAdaptor.naturalize((String)iter.next());
+                            path = location + ";" + path; // NOI18N
+                        }
+                        // Add paths from -L option
+                        List list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
+                        iter = list.iterator();
                         while (iter.hasNext()) {
                             String location = FilePathAdaptor.naturalize((String)iter.next());
                             path = location + ";" + path; // NOI18N

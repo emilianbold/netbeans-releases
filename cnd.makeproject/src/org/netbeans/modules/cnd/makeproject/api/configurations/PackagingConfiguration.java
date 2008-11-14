@@ -309,7 +309,7 @@ public class PackagingConfiguration {
         @Override
         public void setValue(String s) {
             if (s != null) {
-                String displayName = (String)s;
+                String displayName = s;
                 String name = PackagerManager.getDefault().getName(displayName);
                 if (name != null) {
                     getType().setValue(name);
