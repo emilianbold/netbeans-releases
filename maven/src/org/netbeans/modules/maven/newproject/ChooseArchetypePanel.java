@@ -300,16 +300,34 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     public void run() {
         Lookup.Result<ArchetypeProvider> res = Lookup.getDefault().lookup(new Lookup.Template<ArchetypeProvider>(ArchetypeProvider.class));
         List<Archetype> archetypes = new ArrayList<Archetype>();
+        ArchetypeProvider local = null;
         for (ArchetypeProvider provider : res.allInstances()) {
+            if (provider instanceof LocalRepoProvider) {
+                local = provider;
+                continue;
+            }
             for (Archetype ar : provider.getArchetypes()) {
                 if (!archetypes.contains(ar)) {
                     archetypes.add(ar);
                 }
             }
         }
+        archetypes.add(LOADING_ARCHETYPE);
         archetypes.add(REMOTE_PLACEHOLDER);
         Childs childs = (Childs)manager.getRootContext().getChildren();
-        childs.addArchetypes(archetypes);
+        childs.setArchetypes(archetypes);
+        if (local != null) {
+            for (Archetype ar : local.getArchetypes()) {
+                if (!archetypes.contains(ar)) {
+                    archetypes.add(ar);
+                }
+            }
+        }
+        archetypes.remove(LOADING_ARCHETYPE);
+        archetypes.remove(REMOTE_PLACEHOLDER);
+        archetypes.add(REMOTE_PLACEHOLDER);
+        childs.setArchetypes(archetypes);
+
         try {
             manager.setSelectedNodes(new Node[] {manager.getRootContext().getChildren().getNodes()[0]});
         } catch (PropertyVetoException e) {
@@ -422,7 +440,12 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
         private void addArchetypes(Collection<Archetype> archetypes) {
             keys.addAll(archetypes);
-            keys.remove(LOADING_ARCHETYPE);
+            setKeys(keys);
+            refresh();
+        }
+
+        private void setArchetypes(Collection<Archetype> archetypes) {
+            keys = new ArrayList(archetypes);
             setKeys(keys);
             refresh();
         }
