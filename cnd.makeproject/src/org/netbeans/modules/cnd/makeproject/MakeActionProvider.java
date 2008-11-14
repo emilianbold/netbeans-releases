@@ -51,6 +51,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -510,18 +511,32 @@ public class MakeActionProvider implements ActionProvider {
                         runProfile.getEnvironment().putenv(pi.getPathName(), path);
                     } else if (Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_MACOSX) {
                         // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
+                        StringBuffer path = new StringBuffer();
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
+                        // Add paths from subprojetcs
                         Iterator iter = subProjectOutputLocations.iterator();
-                        if (iter.hasNext()) {
-                            String extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DYLD_LIBRARY_PATH"); // NOI18N
+                        while (iter.hasNext()) {
+                            String location = FilePathAdaptor.naturalize((String)iter.next());
+                            if (path.length() > 0) {
+                                path.append(":"); // NOI18N
+                            }
+                            path.append(location);
+                        }
+                        // Add paths from -L option
+                        List list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
+                        iter = list.iterator();
+                        while (iter.hasNext()) {
+                            String location = FilePathAdaptor.naturalize((String)iter.next());
+                            if (path.length() > 0) {
+                                path.append(":"); // NOI18N
+                            }
+                            path.append(location);
+                        }
+                        if (path.length() > 0) {
                             runProfile = conf.getProfile().cloneProfile();
-                            StringBuffer path = new StringBuffer();
-                            while (iter.hasNext()) {
-                                String location = FilePathAdaptor.naturalize((String)iter.next());
-                                if (path.length() > 0) {
-                                    path.append(":"); // NOI18N
-                                }
-                                path.append(location);
+                            String extPath = runProfile.getEnvironment().getenv("DYLD_LIBRARY_PATH"); // NOI18N
+                            if (extPath == null) {
+                                extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DYLD_LIBRARY_PATH"); // NOI18N
                             }
                             if (extPath != null) {
                                 path.append(":" + extPath); // NOI18N
