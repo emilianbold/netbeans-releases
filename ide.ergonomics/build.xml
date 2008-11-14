@@ -13,11 +13,22 @@
 
     <target name="-disable-kits" depends="init-tasks">
         <mkdir dir="${release.dir}/config/Modules"/>
-        <createmodulexml xmldir="${release.dir}/config/Modules">
-            <disabled dir="${netbeans.dest.dir}">
-                <include name="**/modules/*.jar"/>
-                <exclude name="platform*/modules/**"/>
-                <exclude name="ide1*/modules/**"/>
+        <subant genericantfile="build.xml" target="-disable-one-cluster">
+            <property name="xmldir" value="${release.dir}/config/Modules"/>
+            <dirset dir="${netbeans.dest.dir}">
+                <include name="*"/>
+                <exclude name="ide1*"/>
+                <exclude name="platform*"/>
+                <exclude name="bin"/>
+                <exclude name="etc"/>
+            </dirset>
+        </subant>
+    </target>
+
+    <target name="-disable-one-cluster" depends="init-tasks">
+        <createmodulexml xmldir="${xmldir}">
+            <disabled dir=".">
+                <include name="modules/*.jar"/>
             </disabled>
         </createmodulexml>
     </target>
