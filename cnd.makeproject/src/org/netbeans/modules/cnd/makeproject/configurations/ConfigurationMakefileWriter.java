@@ -278,7 +278,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
     }
     
-    private void writeBuildTarget(MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    protected void writeBuildTarget(MakeConfiguration conf, BufferedWriter bw) throws IOException {
         String output = getOutput(conf);
         bw.write("# Build Targets\n"); // NOI18N
         if (conf.isCompileConfiguration()) {
@@ -350,7 +350,7 @@ public class ConfigurationMakefileWriter {
             bw.write("\t" + archiverConfiguration.getRunRanlib().getOption() + " " + output + "\n"); // NOI18N
     }
     
-    private void writeCompileTargets(MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    protected void writeCompileTargets(MakeConfiguration conf, BufferedWriter bw) throws IOException {
         Item[] items = projectDescriptor.getProjectItems();
         if (conf.isCompileConfiguration()) {
             String target = null;
