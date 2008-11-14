@@ -616,7 +616,7 @@ public class CsmKindUtilities {
         return false;
     }
     
-    public static boolean isIdentifiable(Object obj) {
+    public static <T extends CsmObject> boolean isIdentifiable(T obj) {
         if (obj instanceof CsmIdentifiable) {
             return true;
         } else {
