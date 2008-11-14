@@ -45,17 +45,10 @@ import java.util.HashMap;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ParserEventController;
 // $ANTLR 2.7.2: "EmbarcaderoJava.tree.g" -> "EmbarcaderoJavaTreeParser.java"$
 
-import antlr.TreeParser;
-import antlr.Token;
 import antlr.collections.AST;
 import antlr.RecognitionException;
-import antlr.ANTLRException;
 import antlr.NoViableAltException;
-import antlr.MismatchedTokenException;
-import antlr.SemanticException;
 import antlr.collections.impl.BitSet;
-import antlr.ASTPair;
-import antlr.collections.impl.ASTArray;
 
 
 /** Java 1.3 AST Recognizer Grammar

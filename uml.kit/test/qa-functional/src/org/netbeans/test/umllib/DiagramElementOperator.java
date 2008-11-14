@@ -711,9 +711,7 @@ public class DiagramElementOperator extends Operator implements Actionable {
     }
 
     private void dummy() {
-        //diagramOperator.getDrawingArea
-        //com.embarcadero.uml.ui.swing.drawingarea.ADGraphWindow a;
-        // a.sc
+
     }
 
 

@@ -48,7 +48,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -178,15 +177,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
                 name = name.substring (name.lastIndexOf ('/') + 1);
             }
             
-            FileObject fo = getTargetFolderFromGUI();
-            try {
-                Templates.setTargetFolder(settings, fo);
-            } catch (IllegalArgumentException iae) {
-                ErrorManager.getDefault().annotate(iae, ErrorManager.EXCEPTION, null, 
-                        NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_Cannot_Create_Folder", 
-                        gui.getTargetFolder()), null, null);
-                throw iae;
-            }
+            Templates.setTargetFolder(settings, getTargetFolderFromGUI());
             Templates.setTargetName(settings, name);
         }
         settings.putProperty("NewFileWizard_Title", null); // NOI18N
@@ -219,8 +210,8 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
             try {
                 targetFolder = FileUtil.createFolder( rootFolder, folderName );
             } catch (IOException ioe) {
-                // XXX
                 // Can't create the folder
+                throw new IllegalArgumentException(ioe); // ioe already annotated
             }
         }
         

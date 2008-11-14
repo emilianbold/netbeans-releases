@@ -77,7 +77,7 @@ public class ConnectionGenerator implements CodeGenerator {
     }
 
     public void invoke() {
-        DatabaseConnection dbconn = ConnectionGeneratorPanel.selectConnection();
+        DatabaseConnection dbconn = ConnectionGeneratorPanel.selectConnection(null, true, true);
         if (dbconn == null) {
             return;
         }

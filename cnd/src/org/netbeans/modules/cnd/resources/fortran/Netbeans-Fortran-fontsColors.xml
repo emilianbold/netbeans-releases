@@ -37,23 +37,40 @@ Contributor(s):
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="fortran-block-comment" default="comment"/>
-    <fontcolor name="fortran-char-literal" default="char"/>
-    <fontcolor name="fortran-errors" default="error"/>
-    <fontcolor name="fortran-identifier" default="identifier"/>
-    <fontcolor name="fortran-keywords" default="keyword"/>
-    <fontcolor name="fortran-line-comment" default="comment"/>
-    <fontcolor name="fortran-numeric-literals" default="number"/>
-    <fontcolor name="fortran-operators" default="operator"/>
-    <fontcolor name="fortran-keyword-operators" default="operator"/>
-    <fontcolor name="fortran-special-characters" default="char"/>
 
-    <!-- use bold "char" settings as default for preprocessor-->
-    <fontcolor name="fortran-preprocessor" default="char">
-        <font style="bold"/>
-    </fontcolor> 
-    <fontcolor name="fortran-sys-include" default="string"/>
-    <fontcolor name="fortran-user-include" default="string"/>
-    <fontcolor name="fortran-string-literal" default="string"/>
-    <fontcolor name="fortran-whitespace" default="whitespace"/>
+    <!-- FortranTokenId categories -->
+    <fontcolor name="character" default="char"/>
+    <fontcolor name="errors" default="error"/>
+    <fontcolor name="identifier" default="identifier"/>
+    <fontcolor name="keyword" default="keyword"/>
+    <fontcolor name="literal" default="keyword" />
+    <fontcolor name="comment" default="comment"/>
+    <fontcolor name="number" default="number"/>
+    <fontcolor name="operator" default="operator"/>
+    <fontcolor name="string" default="string"/>
+    <fontcolor name="separator" default="separator"/>
+    <fontcolor name="whitespace" default="whitespace"/>
+    <fontcolor name="keyword-directive" default="keyword"/>
+
+    <!-- CppStringTokenId categories -->
+    <fontcolor name="string-escape" default="string">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="string-escape-invalid" waveUnderlined="CE7B00" default="string">
+        <font style="bold" />
+    </fontcolor>
+
+    <!-- Preprocessor categories -->
+    <fontcolor name="preprocessor" foreColor="009B00"/>
+    <fontcolor name="preprocessor-keyword-directive" default="preprocessor">
+        <!--font style="bold" /-->
+    </fontcolor>
+    <fontcolor name="preprocessor-keyword" default="preprocessor-keyword-directive">
+    </fontcolor>
+    <fontcolor name="preprocessor-system-include-literal" default="string">
+        <!--font style="italic"/-->
+    </fontcolor>
+    <fontcolor name="preprocessor-user-include-literal" default="string">
+    </fontcolor>
+    <fontcolor name="preprocessor-identifier" default="identifier"/>
 </fontscolors>

@@ -53,7 +53,6 @@ public class RelationEventsAdapter implements IRelationEventsSink
 {
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IRelationEventsSink#onPreRelationEndModified(com.embarcadero.describe.foundation.IRelationProxy, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreRelationEndModified(IRelationProxy proxy, IResultCell cell)
    {
@@ -61,7 +60,6 @@ public class RelationEventsAdapter implements IRelationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IRelationEventsSink#onRelationEndModified(com.embarcadero.describe.foundation.IRelationProxy, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onRelationEndModified(IRelationProxy Payload, IResultCell cell)
    {
@@ -69,7 +67,6 @@ public class RelationEventsAdapter implements IRelationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IRelationEventsSink#onPreRelationEndAdded(com.embarcadero.describe.foundation.IRelationProxy, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreRelationEndAdded(IRelationProxy proxy, IResultCell cell)
    {
@@ -77,7 +74,6 @@ public class RelationEventsAdapter implements IRelationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IRelationEventsSink#onRelationEndAdded(com.embarcadero.describe.foundation.IRelationProxy, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onRelationEndAdded(IRelationProxy proxy, IResultCell cell)
    {
@@ -85,7 +81,6 @@ public class RelationEventsAdapter implements IRelationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IRelationEventsSink#onPreRelationEndRemoved(com.embarcadero.describe.foundation.IRelationProxy, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreRelationEndRemoved(IRelationProxy proxy, IResultCell cell)
    {
@@ -93,7 +88,6 @@ public class RelationEventsAdapter implements IRelationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IRelationEventsSink#onRelationEndRemoved(com.embarcadero.describe.foundation.IRelationProxy, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onRelationEndRemoved(IRelationProxy proxy, IResultCell cell)
    {
@@ -101,7 +95,6 @@ public class RelationEventsAdapter implements IRelationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IRelationEventsSink#onPreRelationCreated(com.embarcadero.describe.foundation.IRelationProxy, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreRelationCreated(IRelationProxy proxy, IResultCell cell)
    {
@@ -109,7 +102,6 @@ public class RelationEventsAdapter implements IRelationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IRelationEventsSink#onRelationCreated(com.embarcadero.describe.foundation.IRelationProxy, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onRelationCreated(IRelationProxy proxy, IResultCell cell)
    {
@@ -117,7 +109,6 @@ public class RelationEventsAdapter implements IRelationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IRelationEventsSink#onPreRelationDeleted(com.embarcadero.describe.foundation.IRelationProxy, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreRelationDeleted(IRelationProxy proxy, IResultCell cell)
    {
@@ -125,7 +116,6 @@ public class RelationEventsAdapter implements IRelationEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IRelationEventsSink#onRelationDeleted(com.embarcadero.describe.foundation.IRelationProxy, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onRelationDeleted(IRelationProxy proxy, IResultCell cell)
    {

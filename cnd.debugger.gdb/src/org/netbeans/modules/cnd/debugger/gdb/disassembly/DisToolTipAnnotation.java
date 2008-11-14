@@ -89,7 +89,7 @@ public class DisToolTipAnnotation extends Annotation implements Runnable {
         RequestProcessor.getDefault ().post (this);
         return null;
     }
-    
+
     public void run() {
         if (lp == null || ec == null) {
             return;
@@ -114,6 +114,7 @@ public class DisToolTipAnnotation extends Annotation implements Runnable {
         
         String toolTipText = null;
         
+        @SuppressWarnings("unchecked")
         Collection<RegisterValue> regValues = (Collection<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
         if (regValues != null) {
             for (RegisterValue value : regValues) {

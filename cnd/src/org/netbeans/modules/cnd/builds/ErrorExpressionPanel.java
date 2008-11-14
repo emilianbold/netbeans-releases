@@ -61,7 +61,7 @@ public final class ErrorExpressionPanel extends javax.swing.JPanel
 					/*implements EnhancedCustomPropertyEditor*/ {
 
     /** Reference to ErrorDescriptionPropertyEditor */
-    private ErrorExpressionEditor editor;
+    private final ErrorExpressionEditor editor;
 
     static final long serialVersionUID =-2763818133650482979L;
 
@@ -121,7 +121,7 @@ public final class ErrorExpressionPanel extends javax.swing.JPanel
      *  Gettero for the property value that is result of the CustomPropertyEditor.
      *
      *  @return The property value
-     *  @exception InvalidStateException when the custom property editor does not
+     *  @throws IllegalStateException when the custom property editor does not
      *   represent valid property value (and thus it should not be set)
      * FIXUP: EnhancedCustomPropertyEditor is now deprecated so this method will not get called anymore.
      * FIXUP: See TargetEditor how to rewrite...
@@ -130,12 +130,13 @@ public final class ErrorExpressionPanel extends javax.swing.JPanel
         return descriptions;
     }
 
+    @Override
     public java.awt.Dimension getPreferredSize() {
         Dimension d = super.getPreferredSize();
 
         if (d.width < 400) {
-	    d.width = 400;
-	}
+            d.width = 400;
+        }
 
         return d;
     }
@@ -375,12 +376,12 @@ public final class ErrorExpressionPanel extends javax.swing.JPanel
         presetsScroll = new javax.swing.JScrollPane ();
 
         errorDescriptions = new javax.swing.JList ();
-        errorDescriptions.addMouseListener (new java.awt.event.MouseAdapter () {
-                                                public void mouseClicked (java.awt.event.MouseEvent evt) {
-                                                    errorDescriptionsMouseClicked (evt);
-                                                }
-                                            }
-                                           );
+        errorDescriptions.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                errorDescriptionsMouseClicked(evt);
+            }
+        });
 
         presetsScroll.setViewportView (errorDescriptions);
         gridBagConstraints1 = new java.awt.GridBagConstraints ();
@@ -397,18 +398,22 @@ public final class ErrorExpressionPanel extends javax.swing.JPanel
             java.util.Collection exprs = editor.getExpressionsVector ();
             int pos = errorDescriptions.getSelectedIndex ();
             exprs.remove (descriptions);
-            if (pos >= exprs.size ()) pos = exprs.size () - 1;
+            if (pos >= exprs.size()) {
+                pos = exprs.size() - 1;
+            }
             if (pos >= 0) {
                 descriptions = editor.getExpressions ()[pos];
-            } else
+            } else {
                 descriptions = null;
+            }
             updateList ();
         }
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void changeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeButtonActionPerformed
-        if ("".equals (presetNameField.getText ())) // NOI18N
+        if ("".equals (presetNameField.getText ())) { // NOI18N
             return;
+        }
         ErrorExpression expr = descriptions;
         int fPos = 0;
         int lPos = 0;
@@ -432,9 +437,10 @@ public final class ErrorExpressionPanel extends javax.swing.JPanel
     }//GEN-LAST:event_changeButtonActionPerformed
 
     private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        if ("".equals (presetNameField.getText ())) // NOI18N
+        if ("".equals (presetNameField.getText ())) {// NOI18N
             return;
-        ErrorExpression[] exprsAr = editor.getExpressions ();
+        }
+        ErrorExpression[] exprsAr = editor.getExpressions();
 	/* // FIXUP - TRUNK - THP
         for (int i = 0; i < exprsAr.length; i++)
             if (exprsAr[i].getName ().equals (presetNameField.getText ()))
@@ -455,11 +461,11 @@ public final class ErrorExpressionPanel extends javax.swing.JPanel
             return; // [PENDING - notify user]
         }
         synchronized (editor) {
-            java.util.Collection exprs = editor.getExpressionsVector ();
-            int pos = errorDescriptions.getSelectedIndex ();
-            exprs.add (expr);
+            java.util.Collection<ErrorExpression> exprs = editor.getExpressionsVector();
+            int pos = errorDescriptions.getSelectedIndex();
+            exprs.add(expr);
             descriptions = expr;
-            updateList ();
+            updateList();
         }
     }//GEN-LAST:event_addButtonActionPerformed
 

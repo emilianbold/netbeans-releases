@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
                     <folder name="experimental">
                         <attr name="position" intvalue="300"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
+                        <file name="org-netbeans-modules-ruby-extrahints-DuplicateHashKeys.instance"/>
                         <!-- Add your rules here! -->
                     </folder>    
                 </folder>    

@@ -352,7 +352,6 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertEquals(ext, fo2.getExt());
     }
 
-    @RandomlyFails
     public void testFileUtilToFileObjectIsValid() throws Exception {
         char SEP = File.separatorChar;
         final File fileF = new File(FileUtil.toFile(root).getAbsolutePath() + SEP + "dir" + SEP + "file2");
@@ -363,7 +362,8 @@ public class BaseFileObjectTestHid extends TestBaseHid{
             new FileOutputStream(fileF).close();
             root.getFileSystem().refresh(false);
             final List valid = new ArrayList();
-            FileUtil.toFileObject(fileF).addFileChangeListener(new FileChangeListener() {
+            FileObject fo = FileUtil.toFileObject(fileF);
+            fo.addFileChangeListener(new FileChangeListener() {
                 public void fileAttributeChanged(FileAttributeEvent fe) {
                     update();
                 }

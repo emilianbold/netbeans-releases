@@ -54,7 +54,6 @@ public class TypedElementEventsAdapter implements ITypedElementEventsSink
 {
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.ITypedElementEventsSink#onPreMultiplicityModified(com.embarcadero.describe.coreinfrastructure.ITypedElement, com.embarcadero.describe.foundation.IMultiplicity, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreMultiplicityModified(
       ITypedElement element,
@@ -65,7 +64,6 @@ public class TypedElementEventsAdapter implements ITypedElementEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.ITypedElementEventsSink#onMultiplicityModified(com.embarcadero.describe.coreinfrastructure.ITypedElement, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onMultiplicityModified(ITypedElement element, IResultCell cell)
    {
@@ -73,7 +71,6 @@ public class TypedElementEventsAdapter implements ITypedElementEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.ITypedElementEventsSink#onPreTypeModified(com.embarcadero.describe.coreinfrastructure.ITypedElement, com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreTypeModified(
       ITypedElement element,
@@ -84,7 +81,6 @@ public class TypedElementEventsAdapter implements ITypedElementEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.ITypedElementEventsSink#onTypeModified(com.embarcadero.describe.coreinfrastructure.ITypedElement, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onTypeModified(ITypedElement element, IResultCell cell)
    {
@@ -92,7 +88,6 @@ public class TypedElementEventsAdapter implements ITypedElementEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.ITypedElementEventsSink#onPreLowerModified(com.embarcadero.describe.coreinfrastructure.ITypedElement, com.embarcadero.describe.foundation.IMultiplicity, com.embarcadero.describe.foundation.IMultiplicityRange, java.lang.String, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreLowerModified(
       ITypedElement element,
@@ -105,7 +100,6 @@ public class TypedElementEventsAdapter implements ITypedElementEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.ITypedElementEventsSink#onLowerModified(com.embarcadero.describe.coreinfrastructure.ITypedElement, com.embarcadero.describe.foundation.IMultiplicity, com.embarcadero.describe.foundation.IMultiplicityRange, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onLowerModified(
       ITypedElement element,
@@ -117,7 +111,6 @@ public class TypedElementEventsAdapter implements ITypedElementEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.ITypedElementEventsSink#onPreUpperModified(com.embarcadero.describe.coreinfrastructure.ITypedElement, com.embarcadero.describe.foundation.IMultiplicity, com.embarcadero.describe.foundation.IMultiplicityRange, java.lang.String, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreUpperModified(
       ITypedElement element,
@@ -130,7 +123,6 @@ public class TypedElementEventsAdapter implements ITypedElementEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.ITypedElementEventsSink#onUpperModified(com.embarcadero.describe.coreinfrastructure.ITypedElement, com.embarcadero.describe.foundation.IMultiplicity, com.embarcadero.describe.foundation.IMultiplicityRange, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onUpperModified(
       ITypedElement element,
@@ -142,7 +134,6 @@ public class TypedElementEventsAdapter implements ITypedElementEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.ITypedElementEventsSink#onPreRangeAdded(com.embarcadero.describe.coreinfrastructure.ITypedElement, com.embarcadero.describe.foundation.IMultiplicity, com.embarcadero.describe.foundation.IMultiplicityRange, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreRangeAdded(
       ITypedElement element,
@@ -154,7 +145,6 @@ public class TypedElementEventsAdapter implements ITypedElementEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.ITypedElementEventsSink#onRangeAdded(com.embarcadero.describe.coreinfrastructure.ITypedElement, com.embarcadero.describe.foundation.IMultiplicity, com.embarcadero.describe.foundation.IMultiplicityRange, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onRangeAdded(
       ITypedElement element,
@@ -166,7 +156,6 @@ public class TypedElementEventsAdapter implements ITypedElementEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.ITypedElementEventsSink#onPreRangeRemoved(com.embarcadero.describe.coreinfrastructure.ITypedElement, com.embarcadero.describe.foundation.IMultiplicity, com.embarcadero.describe.foundation.IMultiplicityRange, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreRangeRemoved(
       ITypedElement element,
@@ -178,7 +167,6 @@ public class TypedElementEventsAdapter implements ITypedElementEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.ITypedElementEventsSink#onRangeRemoved(com.embarcadero.describe.coreinfrastructure.ITypedElement, com.embarcadero.describe.foundation.IMultiplicity, com.embarcadero.describe.foundation.IMultiplicityRange, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onRangeRemoved(
       ITypedElement element,
@@ -190,7 +178,6 @@ public class TypedElementEventsAdapter implements ITypedElementEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.ITypedElementEventsSink#onPreOrderModified(com.embarcadero.describe.coreinfrastructure.ITypedElement, com.embarcadero.describe.foundation.IMultiplicity, boolean, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreOrderModified(
       ITypedElement element,
@@ -202,7 +189,6 @@ public class TypedElementEventsAdapter implements ITypedElementEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.ITypedElementEventsSink#onOrderModified(com.embarcadero.describe.coreinfrastructure.ITypedElement, com.embarcadero.describe.foundation.IMultiplicity, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onOrderModified(
       ITypedElement element,

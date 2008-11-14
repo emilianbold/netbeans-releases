@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -92,7 +93,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         changeSupport.removeChangeListener(listener);
     }
 
-    public JPanel getComponent() {
+    public JComponent getComponent() {
         return this;
     }
 

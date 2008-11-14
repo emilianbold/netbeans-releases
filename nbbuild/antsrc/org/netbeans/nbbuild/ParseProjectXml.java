@@ -1341,6 +1341,10 @@ public final class ParseProjectXml extends Task {
             if (testDeps.fullySpecified) {
                 continue;
             }
+            if (new File(moduleProject, "test/" + testDeps.testtype + "/src").isDirectory()) {
+                log("Warning: " + testCnb + " lacks a " + testDeps.testtype +
+                        " test dependency on org.netbeans.libs.junit4; using default dependencies for compatibility", Project.MSG_WARN);
+            }
             for (String library : new String[]{"org.netbeans.libs.junit4", "org.netbeans.modules.nbjunit", "org.netbeans.insane"}) {
                 testDeps.addOptionalDependency(new TestDep(library, modules, false, false, true, testDeps));
             }

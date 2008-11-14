@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.db.sql.editor.api.completion;
 
+import org.netbeans.modules.db.sql.analyzer.SQLStatementAnalyzer;
+import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv;
 import org.netbeans.modules.db.sql.editor.completion.SQLCompletionQuery;
 
 /**
@@ -54,13 +56,23 @@ public class SQLCompletion {
         return new SQLCompletion(initContext);
     }
 
+    public static boolean canComplete(SQLCompletionContext context) {
+        String statement = context.getStatement().toString();
+        if (statement == null) {
+            throw new NullPointerException("The context's charSequence property should not be null.");
+        }
+        SQLCompletionEnv env = SQLCompletionEnv.forStatement(statement, 0, null);
+        return SQLStatementAnalyzer.detectKind(env.getTokenSequence()) != null;
+    }
+
     private SQLCompletion(SQLCompletionContext initContext) {
         this.initContext = initContext;
         delegate = new SQLCompletionQuery(initContext.getDatabaseConnection());
     }
 
     public void query(SQLCompletionResultSet resultSet, SubstitutionHandler substitutionHandler) {
-        delegate.query(resultSet, initContext.getCharSequence().toString(), initContext.getOffset(), substitutionHandler);
+        SQLCompletionEnv env = SQLCompletionEnv.forStatement(initContext.getStatement().toString(), initContext.getOffset(), substitutionHandler);
+        delegate.query(resultSet, env);
     }
 
     // If needed, and when supported by SQLCompletionQuery,
