@@ -116,6 +116,30 @@ public final class CndLexerUtilities {
         return null;
     }
 
+    public static TokenSequence<FortranTokenId> getFortranTokenSequence(final Document doc, final int offset) {
+        TokenHierarchy th = doc != null ? TokenHierarchy.get(doc) : null;
+        TokenSequence<FortranTokenId> ts = th != null ? getFortranTokenSequence(th, offset) : null;
+        return ts;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static TokenSequence<FortranTokenId> getFortranTokenSequence(final TokenHierarchy hierarchy, final int offset) {
+        if (hierarchy != null) {
+            TokenSequence<?> ts = hierarchy.tokenSequence();
+            while(ts != null && (offset == 0 || ts.moveNext())) {
+                ts.move(offset);
+                if (ts.language() == FortranTokenId.languageFortran()) {
+                    return (TokenSequence<FortranTokenId>)ts;
+                }
+                if (!ts.moveNext() && !ts.movePrevious()) {
+                    return null;
+                }
+                ts = ts.embedded();
+            }
+        }
+        return null;
+    }
+
     public static boolean isCppIdentifierStart(char ch) {
         return Character.isJavaIdentifierStart(ch);
     }
@@ -482,15 +506,15 @@ public final class CndLexerUtilities {
     private static void addFortranKeywords(Filter<FortranTokenId> filterToModify) {
         FortranTokenId[] ids = new FortranTokenId[]{
             // Keyword
-            FortranTokenId.KW_ACCESS_EQ,
-            FortranTokenId.KW_ACTION_EQ,
-            FortranTokenId.KW_ADVANCE_EQ,
+            FortranTokenId.KW_ACCESS,
+            FortranTokenId.KW_ACTION,
+            FortranTokenId.KW_ADVANCE,
             FortranTokenId.KW_ALLOCATABLE,
             FortranTokenId.KW_ALLOCATE,
             FortranTokenId.KW_APOSTROPHE,
             FortranTokenId.KW_ASSIGNMENT,
             FortranTokenId.KW_BACKSPACE,
-            FortranTokenId.KW_BLANK_EQ,
+            FortranTokenId.KW_BLANK,
             FortranTokenId.KW_BLOCK,
             FortranTokenId.KW_BLOCKDATA,
             FortranTokenId.KW_CALL,
@@ -505,9 +529,9 @@ public final class CndLexerUtilities {
             FortranTokenId.KW_DATA,
             FortranTokenId.KW_DEALLOCATE,
             FortranTokenId.KW_DEFAULT,
-            FortranTokenId.KW_DELIM_EQ,
+            FortranTokenId.KW_DELIM,
             FortranTokenId.KW_DIMENSION,
-            FortranTokenId.KW_DIRECT_EQ,
+            FortranTokenId.KW_DIRECT,
             FortranTokenId.KW_DO,
             FortranTokenId.KW_DOUBLE,
             FortranTokenId.KW_DOUBLEPRECISION,
@@ -521,7 +545,6 @@ public final class CndLexerUtilities {
             FortranTokenId.KW_ENDBLOCKDATA,
             FortranTokenId.KW_ENDDO,
             FortranTokenId.KW_ENDENUM,
-            FortranTokenId.KW_END_EQ,
             FortranTokenId.KW_ENDFILE,
             FortranTokenId.KW_ENDFORALL,
             FortranTokenId.KW_ENDFUNCTION,
@@ -537,16 +560,15 @@ public final class CndLexerUtilities {
             FortranTokenId.KW_ENDUNION,
             FortranTokenId.KW_ENDWHERE,
             FortranTokenId.KW_ENTRY,
-            FortranTokenId.KW_EOR_EQ,
+            FortranTokenId.KW_EOR,
             FortranTokenId.KW_EQUIVALENCE,
-            FortranTokenId.KW_ERR_EQ,
-            FortranTokenId.KW_EXIST_EQ,
+            FortranTokenId.KW_ERR,
+            FortranTokenId.KW_EXIST,
             FortranTokenId.KW_EXIT,
             FortranTokenId.KW_EXTERNAL,
             FortranTokenId.KW_FILE,
-            FortranTokenId.KW_FILE_EQ,
             FortranTokenId.KW_FORALL,
-            FortranTokenId.KW_FORM_EQ,
+            FortranTokenId.KW_FORM,
             FortranTokenId.KW_FORMAT,
             FortranTokenId.KW_FORMATTED,
             FortranTokenId.KW_FUNCTION,
@@ -562,30 +584,30 @@ public final class CndLexerUtilities {
             FortranTokenId.KW_INTENT,
             FortranTokenId.KW_INTERFACE,
             FortranTokenId.KW_INTRINSIC,
-            FortranTokenId.KW_IOSTAT_EQ,
+            FortranTokenId.KW_IOSTAT,
             FortranTokenId.KW_KIND,
             FortranTokenId.KW_LEN,
             FortranTokenId.KW_LOGICAL,
             FortranTokenId.KW_MAP,
             FortranTokenId.KW_MODULE,
-            FortranTokenId.KW_NAME_EQ,
-            FortranTokenId.KW_NAMED_EQ,
+            FortranTokenId.KW_NAME,
+            FortranTokenId.KW_NAMED,
             FortranTokenId.KW_NAMELIST,
             FortranTokenId.KW_NEXTREC,
-            FortranTokenId.KW_NML_EQ,
+            FortranTokenId.KW_NML,
             FortranTokenId.KW_NONE,
             FortranTokenId.KW_NULLIFY,
-            FortranTokenId.KW_NUMBER_EQ,
+            FortranTokenId.KW_NUMBER,
             FortranTokenId.KW_ONLY,
             FortranTokenId.KW_OPEN,
-            FortranTokenId.KW_OPENED_EQ,
+            FortranTokenId.KW_OPENED,
             FortranTokenId.KW_OPERATOR,
             FortranTokenId.KW_OPTIONAL,
             FortranTokenId.KW_OUT,
-            FortranTokenId.KW_PAD_EQ,
+            FortranTokenId.KW_PAD,
             FortranTokenId.KW_PARAMETER,
             FortranTokenId.KW_POINTER,
-            FortranTokenId.KW_POSITION_EQ,
+            FortranTokenId.KW_POSITION,
             FortranTokenId.KW_PRECISION,
             FortranTokenId.KW_PRINT,
             FortranTokenId.KW_PRIVATE,
@@ -595,11 +617,10 @@ public final class CndLexerUtilities {
             FortranTokenId.KW_PURE,
             FortranTokenId.KW_QUOTE,
             FortranTokenId.KW_READ,
-            FortranTokenId.KW_READ_EQ,
-            FortranTokenId.KW_READWRITE_EQ,
+            FortranTokenId.KW_READWRITE,
             FortranTokenId.KW_REAL,
-            FortranTokenId.KW_REC_EQ,
-            FortranTokenId.KW_RECL_EQ,
+            FortranTokenId.KW_REC,
+            FortranTokenId.KW_RECL,
             FortranTokenId.KW_RECURSIVE,
             FortranTokenId.KW_RESULT,
             FortranTokenId.KW_RETURN,
@@ -609,11 +630,10 @@ public final class CndLexerUtilities {
             FortranTokenId.KW_SELECTCASE,
             FortranTokenId.KW_SELECTTYPE,
             FortranTokenId.KW_SEQUENCE,
-            FortranTokenId.KW_SEQUENTIAL_EQ,
+            FortranTokenId.KW_SEQUENTIAL,
             FortranTokenId.KW_SIZE,
-            FortranTokenId.KW_SIZE_EQ,
-            FortranTokenId.KW_STAT_EQ,
-            FortranTokenId.KW_STATUS_EQ,
+            FortranTokenId.KW_STAT,
+            FortranTokenId.KW_STATUS,
             FortranTokenId.KW_STOP,
             FortranTokenId.KW_STRUCTURE,
             FortranTokenId.KW_SUBROUTINE,
@@ -621,13 +641,12 @@ public final class CndLexerUtilities {
             FortranTokenId.KW_THEN,
             FortranTokenId.KW_TO,
             FortranTokenId.KW_TYPE,
-            FortranTokenId.KW_UNFORMATTED_EQ,
+            FortranTokenId.KW_UNFORMATTED,
             FortranTokenId.KW_UNION,
             FortranTokenId.KW_USE,
             FortranTokenId.KW_WHERE,
             FortranTokenId.KW_WHILE,
             FortranTokenId.KW_WRITE,
-            FortranTokenId.KW_WRITE_EQ,
             // Keyword Operator
             FortranTokenId.KWOP_EQ,
             FortranTokenId.KWOP_NE,

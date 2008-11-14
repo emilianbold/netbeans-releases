@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.rm;
 
+import java.util.HashMap;
 import javax.xml.namespace.QName;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
@@ -64,10 +66,15 @@ public enum RMQName {
 
     static final String RM_HEADERS_NS_URI = "http://schemas.xmlsoap.org/ws/2005/02/rm";    //NOI18
 
-    static final String RM_NS_URI = "http://schemas.xmlsoap.org/ws/2005/02/rm/policy";    //NOI18N
-    static final String RM_12_NS_URI = "http://docs.oasis-open.org/ws-rx/wsrmp/200702";    //NOI18N
-
     static final String RM_NS_PREFIX = "wsrm";                                            //NOI18N
+
+    static final String RM_NS_URI = "http://schemas.xmlsoap.org/ws/2005/02/rm/policy";    //NOI18N
+    static final String RM_NS_URI_EXT = "http://schemas.xmlsoap.org/ws/2005/02/rm/wsrm-policy.xsd";    //NOI18N
+    static final String RM_NS_URI_LOCAL = "nbres:/org/netbeans/modules/websvc/wsitmodelext/catalog/resources/wsrm-policy-200502.xsd";    //NOI18N
+
+    static final String RM_12_NS_URI = "http://docs.oasis-open.org/ws-rx/wsrmp/200702";    //NOI18N
+    static final String RM_12_NS_URI_EXT = "http://docs.oasis-open.org/ws-rx/wsrmp/200702/wsrmp-1.2-schema-200702.xsd";    //NOI18N
+    static final String RM_12_NS_URI_LOCAL = "nbres:/org/netbeans/modules/websvc/wsitmodelext/catalog/resources/wsrmp-1.2-schema-200702.xsd";    //NOI18N
 
     static QName createRMQName(String localName){
         return new QName(RM_NS_URI, localName, RM_NS_PREFIX);
@@ -106,4 +113,30 @@ public enum RMQName {
         return qnames;
     }
     private final QName qName;
+
+    public Map<String, String> getSchemaLocations(boolean local) {
+        HashMap<String, String> hmap = new HashMap<String, String>();
+        for (ConfigVersion cfg : ConfigVersion.values()) {
+            try {
+                String nsUri = getNamespaceUri(cfg);
+                if (nsUri != null) {
+                    hmap.put(nsUri, getSchemaLocation(nsUri, local));
+                }
+            } catch (IllegalArgumentException iae) {
+                // ignore - just skip this
+            }
+        }
+        return hmap;
+    }
+
+    public String getSchemaLocation(String namespace, boolean local) {
+        if (RM_NS_URI.equals(namespace)) {
+            return local ? RM_NS_URI_LOCAL : RM_NS_URI_EXT;
+        }
+        if (RM_12_NS_URI.equals(namespace)) {
+            return local ? RM_12_NS_URI_LOCAL : RM_12_NS_URI_EXT;
+        }
+        return null;
+    }
+
 }

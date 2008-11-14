@@ -67,151 +67,149 @@ public class MakefileSourcesPanel extends EnterItemsPanel {
      * Constructor for the Makefile sources panel.
      */
     public MakefileSourcesPanel(MakefileWizard wd) {
-	super(wd);
-	String subtitle = new String(getString("LBL_MakefileSourcesPanel")); // NOI18N
-	setSubTitle(subtitle);
-	this.getAccessibleContext().setAccessibleDescription(subtitle);
-	initialized = false;
+        super(wd);
+        String subtitle = getString("LBL_MakefileSourcesPanel"); // NOI18N
+        setSubTitle(subtitle);
+        this.getAccessibleContext().setAccessibleDescription(subtitle);
+        initialized = false;
     }
 
 
     /** Defer widget creation until the panel needs to be displayed */
     private void create() {
-	int flags;
-	String msg;
-	if (getMakefileData().getMakefileType() == MakefileData.COMPLEX_MAKEFILE_TYPE) {
-	    flags = EXPAND_DIRS | MSP_FILTER | DYNAMIC_DEFAULT_BUTTONS | DYNAMIC_LAST_BUTTON | ITEMS_REQUIRED | DIR_AND_FILE_CHOOSER;
-	    msg = getString("LBL_SourceNamesComplex"); // NOI18N
-	}
-	else {
-	    flags = EXPAND_DIRS | MSP_FILTER | DYNAMIC_DEFAULT_BUTTONS | ITEMS_REQUIRED;
-	    msg = getString("LBL_SourceNamesSimple"); // NOI18N
-	}
-	create(msg, getString("MNEM_SourceNames").charAt(0), flags); // NOI18N
+        int flags;
+        String msg;
+        if (getMakefileData().getMakefileType() == MakefileData.COMPLEX_MAKEFILE_TYPE) {
+            flags = EXPAND_DIRS | MSP_FILTER | DYNAMIC_DEFAULT_BUTTONS | DYNAMIC_LAST_BUTTON | ITEMS_REQUIRED | DIR_AND_FILE_CHOOSER;
+            msg = getString("LBL_SourceNamesComplex"); // NOI18N
+        } else {
+            flags = EXPAND_DIRS | MSP_FILTER | DYNAMIC_DEFAULT_BUTTONS | ITEMS_REQUIRED;
+            msg = getString("LBL_SourceNamesSimple"); // NOI18N
+        }
+        create(msg, getString("MNEM_SourceNames").charAt(0), flags); // NOI18N
     }
 
     /** Set the label for the Source List */
     @Override
     protected String getListLabel() {
-	return getString("LBL_SourceList");				// NOI18N
+        return getString("LBL_SourceList"); // NOI18N
     }
 
     /** Set the mnemonic for the Source List */
     @Override
     protected char getListMnemonic() {
-	return getString("MNEM_SourceList").charAt(0);			// NOI18N
+        return getString("MNEM_SourceList").charAt(0); // NOI18N
     }
 
 
     /** Get the title and message for the error dialog */
     protected ErrorInfo getErrorInfo() {
-	return new ErrorInfo(getString("DLG_NoFilesError"),		// NOI18N
-			getString("MSG_NoFilesMatched"));		// NOI18N
+        return new ErrorInfo(getString("DLG_NoFilesError"), // NOI18N
+                getString("MSG_NoFilesMatched")); // NOI18N
     }
 
 
     /** Validate the source files */
     @Override
-    public void validateData(ArrayList msgs, int key) {
-	TargetData target = getMakefileData().getTarget(key);
+    public void validateData(ArrayList<String> msgs, int key) {
+        TargetData target = getMakefileData().getTarget(key);
 
-	String[] slist = target.getSourcesList();
-	if (slist == null) {
-	    warn(msgs, WARN_NO_SRC_FILES, target.getName());
-	} else {
-	    String cwd = getMakefileData().getBaseDirectory(MakefileData.EXPAND);
-	    ArrayList dne = new ArrayList();
-	    int absCount = 0;
-	    int hdrCount = 0;
-	    int i;
+        String[] slist = target.getSourcesList();
+        if (slist == null) {
+            warn(msgs, WARN_NO_SRC_FILES, target.getName());
+        } else {
+            String cwd = getMakefileData().getBaseDirectory(MakefileData.EXPAND);
+            ArrayList<String> dne = new ArrayList<String>();
+            int absCount = 0;
+            int hdrCount = 0;
+            int i;
 
-	    for (i = 0; i < slist.length; i++) {
-		String srcFile = slist[i].toString();
+            for (i = 0; i < slist.length; i++) {
+                String srcFile = slist[i].toString();
 
-		if (srcFile.startsWith("/")) {				// NOI18N
-		    absCount++;
-		}
+                if (srcFile.startsWith("/")) { // NOI18N
+                    absCount++;
+                }
 
-		if (srcFile.endsWith(".h")) {				// NOI18N
-		    hdrCount++;
-		}
+                if (srcFile.endsWith(".h")) { // NOI18N
+                    hdrCount++;
+                }
 
-		File file;
-		if (srcFile.startsWith(File.separator)) {
-		    file = new File(srcFile);
-		} else {
-		    file = new File(cwd, srcFile);
-		}
-		if (!file.exists()) {
-		    dne.add(new StringBuffer("\t").    			// NOI18N
-				append(file.getPath()).append("\n"));	// NOI18N
-		}
-	    }
+                File file;
+                if (srcFile.startsWith(File.separator)) {
+                    file = new File(srcFile);
+                } else {
+                    file = new File(cwd, srcFile);
+                }
+                if (!file.exists()) {
+                    dne.add("\t" + file.getPath() + "\n"); // NOI18N
+                }
+            }
 
-	    if (absCount > 0) {
-		warn(msgs, WARN_ABSPATH_SRC_COUNT, target.getName(),
-				new Integer(absCount).toString());
-	    }
+            if (absCount > 0) {
+                warn(msgs, WARN_ABSPATH_SRC_COUNT, target.getName(),
+                        String.valueOf(absCount));
+            }
 
-	    if (hdrCount > 0) {
-		warn(msgs, WARN_HDR_SRC_COUNT, target.getName(),
-				new Integer(hdrCount).toString());
-	    }
+            if (hdrCount > 0) {
+                warn(msgs, WARN_HDR_SRC_COUNT, target.getName(),
+                        String.valueOf(hdrCount));
+            }
 
-	    if (dne.size() > 0) {
-		if (dne.size() < MAX_ITEMS_TO_SHOW) {
-		    warn(msgs, WARN_DNE_FILES, target.getName());
-		    for (i = 0; i < dne.size(); i++) {
-			msgs.add(dne.get(i));
-		    }
-		    msgs.add(new String("\n"));				// NOI18N
-		} else {
-		    warn(msgs, WARN_DNE_COUNT, target.getName(),
-					new Integer(dne.size()).toString());
-		}
-	    }
-	}
+            if (dne.size() > 0) {
+                if (dne.size() < MAX_ITEMS_TO_SHOW) {
+                    warn(msgs, WARN_DNE_FILES, target.getName());
+                    for (i = 0; i < dne.size(); i++) {
+                        msgs.add(dne.get(i));
+                    }
+                    msgs.add("\n"); // NOI18N
+                } else {
+                    warn(msgs, WARN_DNE_COUNT, target.getName(),
+                            String.valueOf(dne.size()));
+                }
+            }
+        }
     }
 
 
     /** Create the widgets if not initialized. Also initialize the text field */
     @Override
     public void addNotify() {
-	TargetData target = getMakefileData().getCurrentTarget();
-	key = target.getKey();
+        TargetData target = getMakefileData().getCurrentTarget();
+        key = target.getKey();
 
-	if (!initialized) {
-	    create();
-	    srcFilter = getString("DFLT_SourceFilter");			// NOI18N
-	    initialized = true;
-	}
+        if (!initialized) {
+            create();
+            srcFilter = getString("DFLT_SourceFilter"); // NOI18N
+            initialized = true;
+        }
 
-	// Initialize the text field
-	getEntryText().setText(srcFilter);
-	
-	// Initialize the list. First, remove any from the JList. Then, add any
-	// entries from the target into the JList.
-	DefaultListModel model = (DefaultListModel) getList().getModel();
-	model.removeAllElements();
-	String[] slist = target.getSourcesList();
-	if (slist != null) {
-	    for (int i = 0; i < slist.length; i++) {
-		model.addElement(slist[i]);
-	    }
-	}
+        // Initialize the text field
+        getEntryText().setText(srcFilter);
 
-	super.addNotify();
+        // Initialize the list. First, remove any from the JList. Then, add any
+        // entries from the target into the JList.
+        DefaultListModel model = (DefaultListModel) getList().getModel();
+        model.removeAllElements();
+        String[] slist = target.getSourcesList();
+        if (slist != null) {
+            for (int i = 0; i < slist.length; i++) {
+                model.addElement(slist[i]);
+            }
+        }
+
+        super.addNotify();
     }
 
 
     /** Get the data from the panel and update the target */
     @Override
     public void removeNotify() {
-	super.removeNotify();
+        super.removeNotify();
 
-	TargetData target = getMakefileData().getTarget(key);
+        TargetData target = getMakefileData().getTarget(key);
 
-	String[] slist = getListItems();
-	target.setSourcesList(slist);
+        String[] slist = getListItems();
+        target.setSourcesList(slist);
     }
 }

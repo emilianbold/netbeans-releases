@@ -42,10 +42,13 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security;
 
+import java.util.HashMap;
 import javax.xml.namespace.QName;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.SchemaLocationProvider;
 
 /**
  *
@@ -188,11 +191,21 @@ public enum SecurityPolicyQName {
     XPATH10(createSecurityPolicyQName("XPath10")),  //NOI18N
     XPATHFILTER20(createSecurityPolicyQName("XPathFilter20"));  //NOI18N
     
+    public static final String SECPOLICY_NS_PREFIX = "sp";         //NOI18N
+
     public static final String SECPOLICY_NS = 
             "http://schemas.xmlsoap.org/ws/2005/07/securitypolicy"; //NOI18N
+    public static final String SECPOLICY_NS_EXT =
+            "http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/ws-securitypolicy.xsd"; //NOI18N
+    public static final String SECPOLICY_NS_LOCAL =
+            "nbres:/org/netbeans/modules/websvc/wsitmodelext/catalog/resources/ws-securitypolicy.xsd"; //NOI18N
+
     public static final String SECPOLICY_13_NS =
             "http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702"; //NOI18N
-    public static final String SECPOLICY_NS_PREFIX = "sp";         //NOI18N
+    public static final String SECPOLICY_13_NS_EXT =
+            "http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/ws-securitypolicy-1.2.xsd"; //NOI18N
+    public static final String SECPOLICY_13_NS_LOCAL =
+            "nbres:/org/netbeans/modules/websvc/wsitmodelext/catalog/resources/ws-securitypolicy-1.2.xsd"; //NOI18N
             
     public static QName createSecurityPolicyQName(String localName){
         return new QName(SECPOLICY_NS, localName, SECPOLICY_NS_PREFIX);
@@ -213,7 +226,7 @@ public enum SecurityPolicyQName {
         }
         return null;
     }
-    
+
     public static ConfigVersion getConfigVersion(QName q) {
         for (ConfigVersion cfgVersion : ConfigVersion.values()) {
             if (getQNames(cfgVersion).contains(q)) {
@@ -234,5 +247,30 @@ public enum SecurityPolicyQName {
         return qnames;
     }    
     private final QName qName;
+
+    public Map<String, String> getSchemaLocations(boolean local) {
+        HashMap<String, String> hmap = new HashMap<String, String>();
+        for (ConfigVersion cfg : ConfigVersion.values()) {
+            try {
+                String nsUri = getNamespaceUri(cfg);
+                if (nsUri != null) {
+                    hmap.put(nsUri, getSchemaLocation(nsUri, local));
+                }
+            } catch (IllegalArgumentException iae) {
+                // ignore - just skip this
+            }
+        }
+        return hmap;
+    }
+
+    public String getSchemaLocation(String namespace, boolean local) {
+        if (SECPOLICY_NS.equals(namespace)) {
+            return local ? SECPOLICY_NS_LOCAL : SECPOLICY_NS_EXT;
+        }
+        if (SECPOLICY_13_NS.equals(namespace)) {
+            return local ? SECPOLICY_13_NS_LOCAL : SECPOLICY_13_NS_EXT;
+        }
+        return null;
+    }
 
 }
