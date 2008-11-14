@@ -115,7 +115,6 @@ public class CosChecker implements PrerequisitesChecker {
                     ActionProvider.COMMAND_RUN_SINGLE.equals(actionName) ||
                     ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName))) {
                 long stamp = getLastCoSLastTouch(config, true);
-                System.out.println("stamp=" + stamp);
                 //check the COS timestamp against critical files (pom.xml)
                 // if changed, don't do COS.
                 if (checkImportantFiles(stamp, config)) {
@@ -181,7 +180,6 @@ public class CosChecker implements PrerequisitesChecker {
                 }
             }
             long stamp = getLastCoSLastTouch(config, true);
-            System.out.println("stamp=" + stamp);
             //check the COS timestamp against critical files (pom.xml)
             // if changed, don't do COS.
             if (checkImportantFiles(stamp, config)) {
