@@ -28,8 +28,6 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import javax.swing.text.BadLocationException;
-import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 
@@ -39,9 +37,9 @@ import org.netbeans.modules.cnd.editor.options.EditorOptions;
  * C/C++ specific tests begin from testSystemInclude
  * @author Alexander Simon
  */
-public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase  {
+public class BracketCompletionTestCase extends EditorBase  {
 
-    public CCBracketCompletionUnitTestCase(String testMethodName) {
+    public BracketCompletionTestCase(String testMethodName) {
         super(testMethodName);
     }
     
@@ -771,47 +769,4 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
             );
     }
 
-    // ------- Private methods -------------
-    
-    private void typeChar(char ch, boolean isIndent) throws Exception {
-        int pos = getCaretOffset();
-        getDocument ().insertString(pos, String.valueOf(ch), null);
-        BracketCompletion.charInserted(getDocument(), pos, getCaret(), ch);
-        if (isIndent) {
-            super.indentNewLine();
-        }
-    }
-
-    private void typeQuoteChar(char ch) throws Exception {
-        typeChar(ch, false);
-    }
-    
-    private boolean isSkipRightParen() {
-        return isSkipRightBracketOrParen(true);
-    }
-    
-    private boolean isSkipRightBracketOrParen(boolean parenthesis) {
-        CppTokenId bracketTokenId = parenthesis
-        ? CppTokenId.RPAREN
-        : CppTokenId.RBRACKET;
-        
-        try {
-            return BracketCompletion.isSkipClosingBracket(getDocument(),
-            getCaretOffset(), bracketTokenId);
-        } catch (BadLocationException e) {
-            e.printStackTrace(getLog());
-            fail();
-            return false; // should never be reached
-        }
-    }
-
-    private boolean isAddRightBrace() {
-        try {
-            return BracketCompletion.isAddRightBrace(getDocument(), getCaretOffset());
-        } catch (BadLocationException e) {
-            e.printStackTrace(getLog());
-            fail();
-            return false; // should never be reached
-        }
-    }
 }

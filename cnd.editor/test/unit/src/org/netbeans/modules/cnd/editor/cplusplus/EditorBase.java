@@ -30,8 +30,10 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.indent.CppIndentTask;
+import org.netbeans.modules.cnd.editor.indent.HotCharIndent;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 import org.netbeans.modules.cnd.test.base.BaseDocumentUnitTestCase;
@@ -41,10 +43,10 @@ import org.openide.util.Exceptions;
  *
  * @author Alexander Simon
  */
-public class CCFormatterBaseUnitTestCase extends BaseDocumentUnitTestCase {
+public class EditorBase extends BaseDocumentUnitTestCase {
     private boolean isCPP = true;
     
-    public CCFormatterBaseUnitTestCase(String testMethodName) {
+    public EditorBase(String testMethodName) {
         super(testMethodName);
     }
     
@@ -121,6 +123,21 @@ public class CCFormatterBaseUnitTestCase extends BaseDocumentUnitTestCase {
     }
 
     /**
+     * Perform new-line insertion followed by indenting of the new line
+     * by the formatter.
+     * The caret position should be marked in the document text by '|'.
+     */
+    protected void indentLine() {
+        try {
+            int offset = getCaretOffset();
+            CppIndentTask task = new CppIndentTask(getDocument());
+            task.reindent(offset);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    /**
      * Perform reformatting of the whole document's text.
      */
     protected void reformat() {
@@ -133,4 +150,51 @@ public class CCFormatterBaseUnitTestCase extends BaseDocumentUnitTestCase {
     	}
     }
 
+    // ------- Private methods -------------
+
+    protected void typeChar(char ch, boolean indentNewLine) throws Exception {
+        int pos = getCaretOffset();
+        getDocument ().insertString(pos, String.valueOf(ch), null);
+        if (HotCharIndent.INSTANCE.getKeywordBasedReformatBlock(getDocument(), pos, ""+ch)) {
+            indentLine();
+            indentNewLine = false;
+        }
+        BracketCompletion.charInserted(getDocument(), pos, getCaret(), ch);
+        if (indentNewLine) {
+            indentNewLine();
+        }
+    }
+
+    protected void typeQuoteChar(char ch) throws Exception {
+        typeChar(ch, false);
+    }
+
+    protected boolean isSkipRightParen() {
+        return isSkipRightBracketOrParen(true);
+    }
+
+    protected boolean isSkipRightBracketOrParen(boolean parenthesis) {
+        CppTokenId bracketTokenId = parenthesis
+        ? CppTokenId.RPAREN
+        : CppTokenId.RBRACKET;
+
+        try {
+            return BracketCompletion.isSkipClosingBracket(getDocument(),
+            getCaretOffset(), bracketTokenId);
+        } catch (BadLocationException e) {
+            e.printStackTrace(getLog());
+            fail();
+            return false; // should never be reached
+        }
+    }
+
+    protected boolean isAddRightBrace() {
+        try {
+            return BracketCompletion.isAddRightBrace(getDocument(), getCaretOffset());
+        } catch (BadLocationException e) {
+            e.printStackTrace(getLog());
+            fail();
+            return false; // should never be reached
+        }
+    }
 }

@@ -63,8 +63,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import org.apache.commons.net.ProtocolCommandEvent;
-import org.apache.commons.net.ProtocolCommandListener;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.common.PasswordPanel;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
@@ -74,6 +72,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
  * @author Tomas Mysik
@@ -81,9 +80,9 @@ import org.openide.windows.InputOutput;
 public class SftpClient implements RemoteClient {
     private static final Logger LOGGER = Logger.getLogger(SftpClient.class.getName());
 
-    private static final com.jcraft.jsch.Logger DEV_NULL_LOGGER = new DevNullLogger();
+    private static final SftpLogger DEV_NULL_LOGGER = new DevNullLogger();
     private final SftpConfiguration configuration;
-    private final InputOutput io;
+    private final SftpLogger sftpLogger;
     private Session sftpSession;
     private ChannelSftp sftpClient;
 
@@ -91,12 +90,19 @@ public class SftpClient implements RemoteClient {
     public SftpClient(SftpConfiguration configuration, InputOutput io) {
         assert configuration != null;
         this.configuration = configuration;
-        this.io = io;
+
+        if (io != null) {
+            sftpLogger = new SftpLogger(io);
+            LOGGER.log(Level.FINE, "Protocol command listener added");
+        } else {
+            sftpLogger = DEV_NULL_LOGGER;
+            LOGGER.log(Level.FINE, "No protocol command listener will be used");
+        }
     }
 
     private void init() throws RemoteException {
         if (sftpClient != null && sftpClient.isConnected()) {
-            LOGGER.log(Level.FINE, "SFTP client alredy created and connected");
+            LOGGER.log(Level.FINE, "SFTP client already created and connected");
             return;
         }
         LOGGER.log(Level.FINE, "SFTP client creating");
@@ -119,10 +125,7 @@ public class SftpClient implements RemoteClient {
         Channel channel = null;
         jsch = new JSch();
         try {
-            if (io != null) {
-                JSch.setLogger(new SftpLogger(io));
-                LOGGER.log(Level.FINE, "Protocol command listener added");
-            }
+            JSch.setLogger(sftpLogger);
             sftpSession = jsch.getSession(username, host, port);
             if (PhpProjectUtils.hasText(knownHostsFile)) {
                 jsch.setKnownHosts(knownHostsFile);
@@ -153,6 +156,7 @@ public class SftpClient implements RemoteClient {
         init();
         assert sftpClient.isConnected();
         try {
+
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Remote server version is " + sftpClient.getServerVersion());
             }
@@ -175,6 +179,11 @@ public class SftpClient implements RemoteClient {
             sftpSession.disconnect();
             LOGGER.log(Level.FINE, "Remote client disconnected");
         }
+        sftpClient = null;
+        sftpSession = null;
+
+        sftpLogger.info("QUIT"); // NOI18N
+        sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_Goodbye"));
     }
 
     /** not supported by JSCh */
@@ -196,39 +205,61 @@ public class SftpClient implements RemoteClient {
 
     public String printWorkingDirectory() throws RemoteException {
         try {
-            return sftpClient.pwd();
+            sftpLogger.info("PWD"); // NOI18N
+
+            String pwd = sftpClient.pwd();
+
+            sftpLogger.info(pwd);
+            return pwd;
         } catch (SftpException ex) {
             LOGGER.log(Level.FINE, "Error while pwd", ex);
+            sftpLogger.error(ex.getLocalizedMessage());
             throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotPwd", configuration.getHost()), ex);
         }
     }
 
     public boolean storeFile(String remote, InputStream local) throws RemoteException {
         try {
+            sftpLogger.info("STOR " + remote); // NOI18N
+
             sftpClient.put(local, remote);
+
+            sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_FileReceiveOk"));
             return true;
         } catch (SftpException ex) {
             LOGGER.log(Level.FINE, "Error while storing file " + remote, ex);
+            sftpLogger.error(ex.getLocalizedMessage());
             throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotStoreFile", remote), ex);
         }
     }
 
     public boolean deleteFile(String pathname) throws RemoteException {
         try {
+            sftpLogger.info("DELE " + pathname); // NOI18N
+
             sftpClient.rm(pathname);
+
+            sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_FileDeleteOk"));
             return true;
         } catch (SftpException ex) {
             LOGGER.log(Level.FINE, "Error while deleting file " + pathname, ex);
+            sftpLogger.error(ex.getLocalizedMessage());
             return false;
         }
     }
 
     public boolean rename(String from, String to) throws RemoteException {
         try {
+            sftpLogger.info("RNFR " + from); // NOI18N
+            sftpLogger.info("RNTO " + to); // NOI18N
+
             sftpClient.rename(from, to);
+
+            sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_RenameSuccessful"));
             return true;
         } catch (SftpException ex) {
             LOGGER.log(Level.FINE, String.format("Error while renaming file %s -> %s", from, to), ex);
+            sftpLogger.error(ex.getLocalizedMessage());
             return false;
         }
     }
@@ -236,14 +267,20 @@ public class SftpClient implements RemoteClient {
     public List<RemoteFile> listFiles(PathInfo pathInfo) throws RemoteException {
         List<RemoteFile> result = null;
         try {
+            sftpLogger.info("LIST"); // NOI18N
+            sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_DirListing"));
+
             @SuppressWarnings("unchecked")
             Vector<ChannelSftp.LsEntry> files = sftpClient.ls(sftpClient.pwd());
             result = new ArrayList<RemoteFile>(files.size());
             for (ChannelSftp.LsEntry entry : files) {
                 result.add(new RemoteFileImpl(entry));
             }
+
+            sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_DirectorySendOk"));
         } catch (SftpException ex) {
             LOGGER.log(Level.FINE, "Error while listing files for " + pathInfo, ex);
+            sftpLogger.error(ex.getLocalizedMessage());
             throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotListFiles", pathInfo.getFullPath()), ex);
         }
         return result;
@@ -251,68 +288,46 @@ public class SftpClient implements RemoteClient {
 
     public boolean retrieveFile(String remote, OutputStream local) throws RemoteException {
         try {
+            sftpLogger.info("RETR " + remote); // NOI18N
+
             sftpClient.get(remote, local);
+
+            sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_FileSendOk"));
             return true;
         } catch (SftpException ex) {
             LOGGER.log(Level.FINE, "Error while retrieving file " + remote, ex);
+            sftpLogger.error(ex.getLocalizedMessage());
             throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotStoreFile", remote), ex);
         }
     }
 
     public boolean changeWorkingDirectory(String pathname) throws RemoteException {
         try {
+            sftpLogger.info("CWD " + pathname); // NOI18N
+
             sftpClient.cd(pathname);
+
+            sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_CdOk"));
             return true;
         } catch (SftpException ex) {
             LOGGER.log(Level.FINE, "Error while changing directory " + pathname, ex);
+            sftpLogger.error(NbBundle.getMessage(SftpClient.class, "LOG_CdKo"));
             return false;
         }
     }
 
     public boolean makeDirectory(String pathname) throws RemoteException {
         try {
+            sftpLogger.info("MKD " + pathname); // NOI18N
+
             sftpClient.mkdir(pathname);
+
+            sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_MkDirOk", pathname));
             return true;
         } catch (SftpException ex) {
             LOGGER.log(Level.FINE, "Error while creating directory " + pathname, ex);
+            sftpLogger.error(ex.getLocalizedMessage());
             return false;
-        }
-    }
-
-    // XXX
-    private static final class PrintCommandListener implements ProtocolCommandListener {
-        private final InputOutput io;
-
-        public PrintCommandListener(InputOutput io) {
-            assert io != null;
-            this.io = io;
-        }
-
-        public void protocolCommandSent(ProtocolCommandEvent event) {
-            processEvent(event);
-        }
-
-        public void protocolReplyReceived(ProtocolCommandEvent event) {
-            processEvent(event);
-        }
-
-        private void processEvent(ProtocolCommandEvent event) {
-            String message = event.getMessage();
-            if (message.startsWith("PASS ")) { // NOI18N
-                // hide password
-                message = "PASS ******\n"; // NOI18N
-            }
-//            if (event.isReply()
-//                    && (FTPReply.isNegativeTransient(event.getReplyCode()) || FTPReply.isNegativePermanent(event.getReplyCode()))) {
-//                io.getErr().print(message);
-//                io.getErr().flush();
-//            } else {
-//                io.getOut().print(message);
-//                io.getOut().flush();
-//            }
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Command listener: " + message.trim());
-            }
         }
     }
 
@@ -341,11 +356,10 @@ public class SftpClient implements RemoteClient {
         }
     }
 
-    private static final class SftpLogger implements com.jcraft.jsch.Logger {
+    private static class SftpLogger implements com.jcraft.jsch.Logger {
         private final InputOutput io;
 
         public SftpLogger(InputOutput io) {
-            assert io != null;
             this.io = io;
         }
 
@@ -354,12 +368,26 @@ public class SftpClient implements RemoteClient {
         }
 
         public void log(int level, String message) {
-            // XXX how to find out negative response?
-            io.getOut().println(message);
-            io.getOut().flush();
+            assert io != null;
+            OutputWriter writer = null;
+            if (level <= com.jcraft.jsch.Logger.INFO) {
+                writer = io.getOut();
+            } else {
+                writer = io.getErr();
+            }
+            writer.println(message.trim());
+            writer.flush();
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Command listener: " + message.trim());
             }
+        }
+
+        public void info(String message) {
+            log(com.jcraft.jsch.Logger.INFO, message);
+        }
+
+        public void error(String message) {
+            log(com.jcraft.jsch.Logger.ERROR, message);
         }
     }
 
@@ -368,12 +396,18 @@ public class SftpClient implements RemoteClient {
      * (this exception makes oproblems to NB output window).
      * @see #disconnect()
      */
-    private static final class DevNullLogger implements com.jcraft.jsch.Logger {
+    private static final class DevNullLogger extends SftpLogger {
 
+        public DevNullLogger() {
+            super(null);
+        }
+
+        @Override
         public boolean isEnabled(int level) {
             return false;
         }
 
+        @Override
         public void log(int level, String message) {
         }
     }

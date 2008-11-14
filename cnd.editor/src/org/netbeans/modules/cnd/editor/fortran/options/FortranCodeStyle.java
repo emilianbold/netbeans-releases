@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,46 +37,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.editor.completion;
+package org.netbeans.modules.cnd.editor.fortran.options;
+
+import java.util.prefs.Preferences;
 
 import javax.swing.text.Document;
-import junit.framework.TestCase;
-import org.netbeans.lib.lexer.test.ModificationTextDocument;
-import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv.Context;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 
-/**
- *
- * @author Andrei Badea
+/** 
+ * 
+ * @author Alexander Simon
  */
-public class SQLCompletionEnvTest extends TestCase {
-
-    public SQLCompletionEnvTest(String testName) {
-        super(testName);
+public final class FortranCodeStyle {
+    
+    private Preferences preferences;
+    
+    private FortranCodeStyle(Preferences preferences) {
+        this.preferences = preferences;
     }
 
-    public void testGetContext() throws Exception {
-        Document doc = new ModificationTextDocument();
-        doc.insertString(0, "select a from b", null);
-        for (int i = 0; i < 6; i++) {
-            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
-            assertTrue(env.isSelect());
-            assertNull(env.getContext());
-        }
-        for (int i = 6; i < 13; i++) {
-            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
-            assertTrue(env.isSelect());
-            assertEquals(Context.SELECT, env.getContext());
-        }
-        for (int i = 13; i < doc.getLength(); i++ ) {
-            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
-            assertTrue(env.isSelect());
-            assertEquals(Context.FROM, env.getContext());
-        }
+    /** For testing purposes only */
+    public static FortranCodeStyle get(Preferences prefs) {
+        return new FortranCodeStyle(prefs);
+    }
+
+    public static FortranCodeStyle get(Document doc) {
+        return new FortranCodeStyle(CodeStylePreferences.get(doc).getPreferences());
+    }
+
+    // General tabs and indents ------------------------------------------------
+    
+    public boolean expandTabToSpaces() {
+        return preferences.getBoolean(FmtOptions.expandTabToSpaces, FmtOptions.getDefaultAsBoolean(FmtOptions.expandTabToSpaces));
+    }
+
+    public int getTabSize() {
+        return preferences.getInt(FmtOptions.tabSize, FmtOptions.getDefaultAsInt(FmtOptions.tabSize));
+    }
+
+    public int getIndentSize() {
+        return preferences.getInt(FmtOptions.indentSize, FmtOptions.getDefaultAsInt(FmtOptions.indentSize));
+    }
+
+    public boolean isFreeFormatFortran() {
+        return preferences.getBoolean(FmtOptions.freeFormat, FmtOptions.getDefaultAsBoolean(FmtOptions.freeFormat));
+    }
+
+    /** For testing purposes only */
+    public void setFreeFormatFortran(boolean freeFormat) {
+        preferences.putBoolean(FmtOptions.freeFormat, freeFormat);
     }
 }

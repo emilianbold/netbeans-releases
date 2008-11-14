@@ -84,4 +84,9 @@ public final class FortranCodeStyle {
     public boolean isFreeFormatFortran() {
         return preferences.getBoolean(FmtOptions.freeFormat, FmtOptions.getDefaultAsBoolean(FmtOptions.freeFormat));
     }
+
+    /** For testing purposes only */
+    public void setFreeFormatFortran(boolean freeFormat) {
+        preferences.putBoolean(FmtOptions.freeFormat, freeFormat);
+    }
 }

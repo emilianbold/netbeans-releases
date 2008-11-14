@@ -29,6 +29,7 @@
 package org.netbeans.modules.cnd.editor.fortran;
 
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 
 /**
@@ -48,6 +49,7 @@ public class FortranIndentUnitTestCase extends FortranFormatterBaseUnitTestCase 
         setLoadDocumentText(
                 "program p|"
                 );
+        setDefaultsOptions();
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line program indent",
                 "program p\n" +
@@ -55,11 +57,13 @@ public class FortranIndentUnitTestCase extends FortranFormatterBaseUnitTestCase 
                 );
     }
 
+
     public void testEndProgramIndent() {
         setLoadDocumentText(
                 "program p\n"+
                 "    end progra|"
                 );
+        setDefaultsOptions();
         typeChar('m', true);
         assertDocumentTextAndCaret("Incorrect new-line end program indent",
                 "program p\n" +
@@ -72,6 +76,7 @@ public class FortranIndentUnitTestCase extends FortranFormatterBaseUnitTestCase 
                 "program p\n"+
                 "    endprogra|"
                 );
+        setDefaultsOptions();
         typeChar('m', true);
         assertDocumentTextAndCaret("Incorrect new-line end program indent",
                 "program p\n" +
@@ -83,6 +88,7 @@ public class FortranIndentUnitTestCase extends FortranFormatterBaseUnitTestCase 
         setLoadDocumentText(
                 "subroutine p(c)|"
                 );
+        setDefaultsOptions();
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line subroutine indent",
                 "subroutine p(c)\n"+
@@ -95,6 +101,7 @@ public class FortranIndentUnitTestCase extends FortranFormatterBaseUnitTestCase 
                 "subroutine p(c)\n"+
                 "    end subroutin|"
                 );
+        setDefaultsOptions();
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect new-line emd subroutine indent",
                 "subroutine p(c)\n"+
@@ -107,6 +114,7 @@ public class FortranIndentUnitTestCase extends FortranFormatterBaseUnitTestCase 
                 "subroutine p(c)\n"+
                 "    endsubroutin|"
                 );
+        setDefaultsOptions();
         typeChar('e', true);
         assertDocumentTextAndCaret("Incorrect new-line end subroutine indent",
                 "subroutine p(c)\n"+
@@ -118,6 +126,7 @@ public class FortranIndentUnitTestCase extends FortranFormatterBaseUnitTestCase 
         setLoadDocumentText(
                 "if (a .eq. 0) then|"
                 );
+        setDefaultsOptions();
         indentNewLine();
         assertDocumentTextAndCaret("Incorrect new-line if indent",
                 "if (a .eq. 0) then\n"+
@@ -139,6 +148,7 @@ public class FortranIndentUnitTestCase extends FortranFormatterBaseUnitTestCase 
                 "             c = 0\n"+
                 "             end i|"
                 );
+        setDefaultsOptions();
         typeChar('f', true);
         assertDocumentTextAndCaret("Infinite loop CR# 6749526",
                 "program test\n"+

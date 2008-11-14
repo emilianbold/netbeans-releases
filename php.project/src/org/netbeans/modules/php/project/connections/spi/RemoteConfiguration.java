@@ -42,7 +42,7 @@ package org.netbeans.modules.php.project.connections.spi;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 
 /**
- * Class representing a remote configuration.
+ * Class representing a remote configuration (e.g. FTP, SFTP).
  * @author Tomas Mysik
  * @see org.netbeans.modules.php.project.connections.RemoteConnections
  * @see org.netbeans.modules.php.project.connections.RemoteConnections#getRemoteConfigurations()
@@ -51,6 +51,10 @@ public abstract class RemoteConfiguration {
     private final String displayName;
     private final String name;
 
+    /**
+     * Create new remote configuration based on the given {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration}
+     * @param cfg {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration} with configuration data.
+     */
     public RemoteConfiguration(final ConfigManager.Configuration cfg) {
         assert cfg.getName() != null;
         assert cfg.getDisplayName() != null;
@@ -67,10 +71,20 @@ public abstract class RemoteConfiguration {
         this.displayName = displayName;
     }
 
+    /**
+     * Get the display name of this configuration.
+     * @return the display name of this configuration.
+     * @see #getName()
+     */
     public String getDisplayName() {
         return displayName;
     }
 
+    /**
+     * Get the name of this configuration.
+     * @return the name of this configuration.
+     * @see #getDisplayName()
+     */
     public String getName() {
         return name;
     }

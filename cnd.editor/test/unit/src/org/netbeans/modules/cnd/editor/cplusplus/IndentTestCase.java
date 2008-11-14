@@ -38,9 +38,9 @@ import org.netbeans.modules.cnd.editor.options.EditorOptions;
  *
  * @author Alexander Simon
  */
-public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
+public class IndentTestCase extends EditorBase {
 
-    public CCIndentUnitTestCase(String testMethodName) {
+    public IndentTestCase(String testMethodName) {
         super(testMethodName);
     }
 

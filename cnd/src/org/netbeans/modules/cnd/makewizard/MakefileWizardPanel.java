@@ -38,8 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package  org.netbeans.modules.cnd.makewizard;
+package org.netbeans.modules.cnd.makewizard;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
@@ -61,22 +60,18 @@ public abstract class MakefileWizardPanel extends JPanel {
     /*
      * Default preferred width of the panel - should be the same for
      * all panels within one wizard.
-     */ 
+     */
     protected static final int DEFAULT_WIDTH = 400;
 
     /* Default preferred height of the panel - should be the same for
      * all panels within one wizard.
-     */ 
+     */
     protected static final int DEFAULT_HEIGHT = 325;
-
     private Vector listvec;
-
     /** The MakefileWizard controlling this panel */
     private MakefileWizard wd;
-
     /** Show up to this many items in validating lists */
     protected final static int MAX_ITEMS_TO_SHOW = 5;
-
     protected final static String WARN_CWD_NOT_DIR;
     protected final static String WARN_CWD_DOES_NOT_EXIST;
     protected final static String WARN_MAKEFILE_NOT_READABLE;
@@ -105,126 +100,116 @@ public abstract class MakefileWizardPanel extends JPanel {
     protected final static String WARN_EXTRA_LINES_IN_TARGET;
     protected final static String WARN_INVALID_LINES_IN_TARGET;
 
+
     static {
-	WARN_CWD_NOT_DIR = "WARN_CWD_NOT_DIR";				// NOI18N
-	WARN_CWD_DOES_NOT_EXIST = "WARN_CWD_DOES_NOT_EXIST";		// NOI18N
-	WARN_MAKEFILE_NOT_READABLE = "WARN_MAKEFILE_NOT_READABLE";	// NOI18N
-	WARN_MAKEFILE_NOT_WRITABLE = "WARN_MAKEFILE_NOT_WRITABLE";	// NOI18N
-	WARN_PARENT_DOES_NOT_EXIST = "WARN_PARENT_DOES_NOT_EXIST";	// NOI18N
-	WARN_PARENT_NOT_WRITABLE = "WARN_PARENT_NOT_WRITABLE";		// NOI18N
-	WARN_BINDIR_DOES_NOT_EXIST = "WARN_BINDIR_DOES_NOT_EXIST";	// NOI18N
-	WARN_BINDIR_NOT_WRITABLE = "WARN_BINDIR_NOT_WRITABLE";		// NOI18N
-	WARN_CANNOT_CREATE_OUTPUT_DIR = "WARN_CANNOT_CREATE_OUTPUT_DIR";// NOI18N
-	WARN_CANNOT_WRITE_TO_OUTPUT_DIR =
-			"WARN_CANNOT_WRITE_TO_OUTPUT_DIR";		// NOI18N
-	WARN_GUIDIR_NOT_WRITABLE = "WARN_GUIDIR_NOT_WRITABLE";		// NOI18N
-	WARN_NO_SRC_FILES = "WARN_NO_SRC_FILES";			// NOI18N
-	WARN_ABSPATH_SRC_COUNT = "WARN_ABSPATH_SRC_COUNT";		// NOI18N
-	WARN_HDR_SRC_COUNT = "WARN_HDR_SRC_COUNT";			// NOI18N
-	WARN_DNE_FILES = "WARN_DNE_FILES";				// NOI18N
-	WARN_DNE_COUNT = "WARN_DNE_COUNT";				// NOI18N
-	WARN_NO_INC_DIRS = "WARN_NO_INC_DIRS";				// NOI18N
-	WARN_DNE_INCDIR = "WARN_DNE_INCDIR";				// NOI18N
-	WARN_DNE_INCDIR_COUNT = "WARN_DNE_INCDIR_COUNT";		// NOI18N
-	WARN_INC_NOT_DIR = "WARN_INC_NOT_DIR";				// NOI18N
-	WARN_INC_NOT_DIR_COUNT = "WARN_INC_NOT_DIR_COUNT";		// NOI18N
-	WARN_SUBDIR_DOES_NOT_EXIST = "WARN_SUBDIR_DOES_NOT_EXIST";	// NOI18N
-	WARN_SUBDIR_NOT_WRITABLE = "WARN_SUBDIR_NOT_WRITABLE";		// NOI18N
-	WARN_INFINITE_RECURSION = "WARN_INFINITE_RECURSION";		// NOI18N
-	WARN_INVALID_MAKEFLAGS = "WARN_INVALID_MAKEFLAGS";		// NOI18N
-	WARN_EXTRA_LINES_IN_TARGET = "WARN_EXTRA_LINES_IN_TARGET";	// NOI18N
-	WARN_INVALID_LINES_IN_TARGET = "WARN_INVALID_LINES_IN_TARGET";	// NOI18N
+        WARN_CWD_NOT_DIR = "WARN_CWD_NOT_DIR";				// NOI18N
+        WARN_CWD_DOES_NOT_EXIST = "WARN_CWD_DOES_NOT_EXIST";		// NOI18N
+        WARN_MAKEFILE_NOT_READABLE = "WARN_MAKEFILE_NOT_READABLE";	// NOI18N
+        WARN_MAKEFILE_NOT_WRITABLE = "WARN_MAKEFILE_NOT_WRITABLE";	// NOI18N
+        WARN_PARENT_DOES_NOT_EXIST = "WARN_PARENT_DOES_NOT_EXIST";	// NOI18N
+        WARN_PARENT_NOT_WRITABLE = "WARN_PARENT_NOT_WRITABLE";		// NOI18N
+        WARN_BINDIR_DOES_NOT_EXIST = "WARN_BINDIR_DOES_NOT_EXIST";	// NOI18N
+        WARN_BINDIR_NOT_WRITABLE = "WARN_BINDIR_NOT_WRITABLE";		// NOI18N
+        WARN_CANNOT_CREATE_OUTPUT_DIR = "WARN_CANNOT_CREATE_OUTPUT_DIR";// NOI18N
+        WARN_CANNOT_WRITE_TO_OUTPUT_DIR =
+                "WARN_CANNOT_WRITE_TO_OUTPUT_DIR";		// NOI18N
+        WARN_GUIDIR_NOT_WRITABLE = "WARN_GUIDIR_NOT_WRITABLE";		// NOI18N
+        WARN_NO_SRC_FILES = "WARN_NO_SRC_FILES";			// NOI18N
+        WARN_ABSPATH_SRC_COUNT = "WARN_ABSPATH_SRC_COUNT";		// NOI18N
+        WARN_HDR_SRC_COUNT = "WARN_HDR_SRC_COUNT";			// NOI18N
+        WARN_DNE_FILES = "WARN_DNE_FILES";				// NOI18N
+        WARN_DNE_COUNT = "WARN_DNE_COUNT";				// NOI18N
+        WARN_NO_INC_DIRS = "WARN_NO_INC_DIRS";				// NOI18N
+        WARN_DNE_INCDIR = "WARN_DNE_INCDIR";				// NOI18N
+        WARN_DNE_INCDIR_COUNT = "WARN_DNE_INCDIR_COUNT";		// NOI18N
+        WARN_INC_NOT_DIR = "WARN_INC_NOT_DIR";				// NOI18N
+        WARN_INC_NOT_DIR_COUNT = "WARN_INC_NOT_DIR_COUNT";		// NOI18N
+        WARN_SUBDIR_DOES_NOT_EXIST = "WARN_SUBDIR_DOES_NOT_EXIST";	// NOI18N
+        WARN_SUBDIR_NOT_WRITABLE = "WARN_SUBDIR_NOT_WRITABLE";		// NOI18N
+        WARN_INFINITE_RECURSION = "WARN_INFINITE_RECURSION";		// NOI18N
+        WARN_INVALID_MAKEFLAGS = "WARN_INVALID_MAKEFLAGS";		// NOI18N
+        WARN_EXTRA_LINES_IN_TARGET = "WARN_EXTRA_LINES_IN_TARGET";	// NOI18N
+        WARN_INVALID_LINES_IN_TARGET = "WARN_INVALID_LINES_IN_TARGET";	// NOI18N
     }
-
-
     // for strings...
-    private ResourceBundle	bundle;
+    private ResourceBundle bundle;
 
     MakefileWizardPanel(MakefileWizard wd) {
-	bundle = NbBundle.getBundle(MakefileWizardPanel.class);
-	this.wd = wd;
-	putClientProperty(WizardDescriptor.PROP_LEFT_DIMENSION, getLeftDimension());  // NOI18N
+        bundle = NbBundle.getBundle(MakefileWizardPanel.class);
+        this.wd = wd;
+        putClientProperty(WizardDescriptor.PROP_LEFT_DIMENSION, getLeftDimension());  // NOI18N
     }
-
 
     /** @return preferred size of the wizard panel - it should be the
      * same for all panels within one Wizard so that the wizard dialog
      * does not change its size when switching between panels */
+    @Override
     public Dimension getPreferredSize() {
-	return new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        return new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
-
 
     /** Get the the subtitle of this panel */
     public String getSubTitle() {
-	return getName();
+        return getName();
     }
-
 
     /** Set the subtitle of this panel */
     public void setSubTitle(String subtitle) {
-	setName(subtitle);
+        setName(subtitle);
     }
-
 
     /** Get the MakefileData of this panel */
     protected MakefileData getMakefileData() {
-	return wd.getMakefileData();
+        return wd.getMakefileData();
     }
 
     /** Get the TemplateWizard of this panel */
     protected TemplateWizard getTemplateWizard() {
-	return wd.getTemplateWizard();
+        return wd.getTemplateWizard();
     }
-
 
     /** Used by panels which don't use removeNotify to update their data */
+    @Override
     public void removeNotify() {
-	super.removeNotify();
+        super.removeNotify();
     }
-
 
     /**
      *  Default validation method for derived classes which do not need to
      *  write their own validation method.
      */
-    public void validateData(ArrayList msgs, int key) {
+    public void validateData(ArrayList<String> msgs, int key) {
     }
-
 
     /**
      *  Put together the proper warning int he msgs ArrayList
      */
-    protected void warn(ArrayList msgs, String prop) {
-	msgs.add(NbBundle.getMessage(getClass(),
-			    prop, new String("    ")));			// NOI18N
+    protected void warn(ArrayList<String> msgs, String prop) {
+        msgs.add(NbBundle.getMessage(getClass(),
+                prop, new String("    ")));			// NOI18N
     }
-
 
     /**
      *  Put together the proper warning int he msgs ArrayList
      */
-    protected void warn(ArrayList msgs, String prop, String arg1) {
-	msgs.add(NbBundle.getMessage(getClass(),
-			    prop, new String("    "), arg1));		// NOI18N
+    protected void warn(ArrayList<String> msgs, String prop, String arg1) {
+        msgs.add(NbBundle.getMessage(getClass(),
+                prop, new String("    "), arg1));		// NOI18N
     }
-
 
     /**
      *  Put together the proper warning int he msgs ArrayList
      */
-    protected void warn(ArrayList msgs, String prop, String arg1, String arg2) {
-	msgs.add(NbBundle.getMessage(getClass(),
-			    prop, new String("    "), arg1, arg2));	// NOI18N
+    protected void warn(ArrayList<String> msgs, String prop, String arg1, String arg2) {
+        msgs.add(NbBundle.getMessage(getClass(),
+                prop, new String("    "), arg1, arg2));	// NOI18N
     }
-
 
     /** Make sure the Steps panel is wide enough */
     private Dimension getLeftDimension() {
-	return new Dimension(220, 233);
+        return new Dimension(220, 233);
     }
 
-  
     /**
      *  Fire a {@link PropertyChangeEvent} to each listener.
      *  @param propertyName the programmatic name of the property that
@@ -233,25 +218,25 @@ public abstract class MakefileWizardPanel extends JPanel {
      *  @param newValue the new value of the property
      */
     protected void fireChange() {
-	Vector vecclone = (Vector)listvec.clone();
-	Enumeration en = vecclone.elements();
-	ChangeEvent evt = new ChangeEvent(this);
-	while(en.hasMoreElements()) {
-	    ChangeListener elist = (ChangeListener) en.nextElement();
-	    elist.stateChanged(evt);
-	}
+        Vector vecclone = (Vector) listvec.clone();
+        Enumeration en = vecclone.elements();
+        ChangeEvent evt = new ChangeEvent(this);
+        while (en.hasMoreElements()) {
+            ChangeListener elist = (ChangeListener) en.nextElement();
+            elist.stateChanged(evt);
+        }
     }
 
     /** Helper method for getting a string from a bundle */
     protected String getString(String s) {
-	return bundle.getString(s);
+        return bundle.getString(s);
     }
 
     /**
      *  The default validation method. Most panels don't do validation so don't
      *  need to override this.
      */
-    public boolean isPanelValid() { 
-	return true;
+    public boolean isPanelValid() {
+        return true;
     }
 }

@@ -40,9 +40,9 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter;
  *
  * @author Alexander Simon
  */
-public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
+public class FormatterTestCase extends EditorBase {
 
-    public CCNewFormatterUnitTestCase(String testMethodName) {
+    public FormatterTestCase(String testMethodName) {
         super(testMethodName);
     }
 

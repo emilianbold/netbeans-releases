@@ -174,7 +174,6 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
     * @param pElement[in]  The element in which to get its children
     * @return              A collection of tree items (including elements, diagrams,
     *                      relationships)
-    * @see org.netbeans.modules.uml.ui.support.projecttreesupport.IProjectTreeBuilder#retrieveChildItemsForElement(java.lang.Object, com.embarcadero.describe.foundation.IElement)
     */
    public ITreeItem[] retrieveChildItemsForElement(Object pDisp, IElement pEle)
    {
@@ -288,7 +287,6 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
    }
 
    /* (non-Javadoc)
-    * @see org.netbeans.modules.uml.ui.support.projecttreesupport.IProjectTreeBuilder#retrieveChildItemsForWorkspace(com.embarcadero.describe.workspacemanagement.IWorkspace)
     */
    public ITreeItem[] retrieveChildItemsForWorkspace(IWorkspace pWork)
    {
@@ -1251,53 +1249,6 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
       Object retVal = null;
       
       IElement curE = object;
-//      if((id != null) && (id.length() > 0))
-//      {
-//         // TODO: The reflection must be removed after the bindings are no longer used.
-//         {
-//            Class classType;
-//            try
-//            {
-//               classType = Class.forName(id);
-//      
-//      
-//               Class[] params = null;//{com.embarcadero.com.Dispatch.class};
-//               Constructor constructor = classType.getConstructor(params);      
-//         
-//               Object[] paramInstances = {curE};
-//               curE = (IElement)constructor.newInstance(paramInstances);
-//            }
-//            catch (ClassNotFoundException e1)
-//            {
-//               // TODO Auto-generated catch block
-//               e1.printStackTrace();
-//            } catch (SecurityException e)
-//            {
-//               // TODO Auto-generated catch block
-//               e.printStackTrace();
-//            } catch (NoSuchMethodException e)
-//            {
-//               // TODO Auto-generated catch block
-//               e.printStackTrace();
-//            } catch (IllegalArgumentException e)
-//            {
-//               // TODO Auto-generated catch block
-//               e.printStackTrace();
-//            } catch (InstantiationException e)
-//            {
-//               // TODO Auto-generated catch block
-//               e.printStackTrace();
-//            } catch (IllegalAccessException e)
-//            {
-//               // TODO Auto-generated catch block
-//               e.printStackTrace();
-//            } catch (InvocationTargetException e)
-//            {
-//               // TODO Auto-generated catch block
-//               e.printStackTrace();
-//            }      
-//         }
-//      }
 
       Class elementClass = curE.getClass();
       try

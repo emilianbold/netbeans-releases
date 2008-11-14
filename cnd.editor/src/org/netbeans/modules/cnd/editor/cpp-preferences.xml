@@ -54,12 +54,6 @@ made subject to such option by the copyright holder.
     <entry name="identifier-acceptor"
            value="org.netbeans.modules.cnd.editor.cplusplus.CCSettingsDefaults.getDefaultIdentifierAcceptor"
            javaType="methodvalue" />
-    <entry name="word-match-static-words"
-           value="org.netbeans.modules.cnd.editor.cplusplus.CCSettingsDefaults.getDefaultWordMatchStaticWords"
-           javaType="methodvalue" />
-    <entry name="indent-hot-chars-acceptor"
-           value="org.netbeans.modules.cnd.editor.cplusplus.CCSettingsDefaults.getDefaultIndentHotCharsAcceptor"
-           javaType="methodvalue" />
     <entry name="code-folding-enable" value="true" javaType="java.lang.Boolean" />
     <entry name="pair-characters-completion" value="true" javaType="java.lang.Boolean" />
     <entry name="javadoc-auto-popup" value="false" javaType="java.lang.Boolean" />

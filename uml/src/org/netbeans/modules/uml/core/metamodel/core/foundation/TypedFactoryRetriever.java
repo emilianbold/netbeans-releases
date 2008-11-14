@@ -150,10 +150,11 @@ public class TypedFactoryRetriever < T >
    {
       try
       {
-         return (T)FactoryRetriever.instance().clone(elementToClone);
+          return (T)FactoryRetriever.instance().clone(elementToClone);
       }
       catch(ClassCastException e)
       {
+          e.printStackTrace();
       }
       
       return null;

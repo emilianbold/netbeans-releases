@@ -1,4 +1,4 @@
-NETBEANS IDE 6.5 ("Product")
+NETBEANS IDE - Development Version ("Product")
 
 Please review the complete list of open-source licenses
 governing software  included in the Product. They can be
@@ -14,7 +14,7 @@ unspecified.
 Please review the list of libraries and licenses provided
 for use. This license file contains four distinct licenses.
 
-Unless specified below, the use of NetBeans IDE 6.5 and
+Unless specified below, the use of NetBeans IDE and
 components from the GlassFish runtime are governed by the
 terms of either the GNU General Public License Version 2 
 with Classpath Exception ("GPLv2 with Classpath Exception")

@@ -112,4 +112,9 @@ public final class TokenItem {
         hash = 43 * hash + (this.tokenId != null ? this.tokenId.hashCode() : 0);
         return hash;
     }
+
+    @Override
+    public String toString() {
+        return tokenId+"("+index+")"; // NOI18N
+    }
 }

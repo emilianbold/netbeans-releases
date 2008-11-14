@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/javascript/libraries/yahooui/Bundle</localizing-bundle>
     <volume>
         <type>scriptpath</type>
-	<resource>jar:nbinst:///modules/ext/javascript/yui-2.5.2.zip!/</resource>
+	<resource>jar:nbinst:///modules/ext/javascript/yui-2.6.0.zip!/</resource>
     </volume>
     <!-- volume>
         <type>javadoc</type>

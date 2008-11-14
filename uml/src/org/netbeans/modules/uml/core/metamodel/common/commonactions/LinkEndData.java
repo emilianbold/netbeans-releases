@@ -87,7 +87,6 @@ public class LinkEndData extends Element implements ILinkEndData
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.uml.core.metamodel.common.commonactions.ILinkEndData#setValue(com.embarcadero.describe.basicactions.IInputPin)
      */
     public void setValue(IInputPin pPin)
     {

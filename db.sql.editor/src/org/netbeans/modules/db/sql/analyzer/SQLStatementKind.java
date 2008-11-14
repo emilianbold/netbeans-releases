@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,42 +31,19 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor.cplusplus;
-
-import junit.framework.TestCase;
+package org.netbeans.modules.db.sql.analyzer;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Andrei Badea
  */
-public class SpaceAndLineSeparatorUnitTestCase extends TestCase {
-    
-    public SpaceAndLineSeparatorUnitTestCase(String testName) {
-        super(testName);
-    }
-    
-    public void testIsSpace() {
-        boolean res = Character.isSpaceChar(' ');
-        assertTrue("Character.isSpaceChar for ' ' must be true", res);
-        res = Character.isSpaceChar('\n');
-        assertFalse("Character.isSpaceChar for '\\n' must be false ", res);
-        res = Character.isSpaceChar('\t');
-        assertFalse("Character.isSpaceChar for '\\t' must be false", res);
-        res = Character.isSpaceChar('\r');
-        assertFalse("Character.isSpaceChar for '\\r' must be false", res);
-    }
-    
-    public void testIsWhitespace() {
-        boolean res = Character.isWhitespace(' ');
-        assertTrue("Character.isWhitespace for ' ' must be true", res);
-        res = Character.isWhitespace('\n');
-        assertTrue("Character.isWhitespace for '\\n' must be true ", res);
-        res = Character.isWhitespace('\t');
-        assertTrue("Character.isWhitespace for '\\t' must be true", res);
-        res = Character.isWhitespace('\r');
-        assertTrue("Character.isWhitespace for '\\r' must be true", res);
-    }
-    
+public enum SQLStatementKind {
+
+    SELECT
 }

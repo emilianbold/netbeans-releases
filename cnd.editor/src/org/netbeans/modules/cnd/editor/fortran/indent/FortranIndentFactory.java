@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,43 +31,23 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.editor.cplusplus;
+package org.netbeans.modules.cnd.editor.fortran.indent;
 
-import javax.swing.text.EditorKit;
-import org.netbeans.modules.cnd.test.base.BaseDocumentUnitTestCase;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
 
 /**
- * base test case for C++ language based document
- * @author Vladimir Voskresensky
+ *
+ * @author Alexander Simon
  */
-public class CCBaseDocumentUnitTestCase 
-        extends BaseDocumentUnitTestCase 
-{
-    private boolean isPlusPlus;
-    
-    public CCBaseDocumentUnitTestCase(String testMethodName) {
-        super(testMethodName);
-        this.isPlusPlus = true;
-    }
-    
-    /**
-     * Create editor kit instance to be returned
-     * by {@link #getEditorKit()}.
-     * <br>
-     * The returned editor kit should return
-     * <code>BaseDocument</code> instances
-     * from its {@link javax.swing.text.EditorKit.createDefaultDocument()}.
-     */    
-    protected EditorKit createEditorKit() {
-        if (isCPlusPlus()) {
-            return new CCKit();
-        } else {
-            return new CKit();
-        }
-    }
+public class FortranIndentFactory implements IndentTask.Factory {
 
-    protected boolean isCPlusPlus() {
-        return this.isPlusPlus;
+    public FortranIndentTask createTask(Context context) {
+        return new FortranIndentTask(context);
     }
 }

@@ -317,7 +317,7 @@ public final class ToolchainManager {
         if (key == null || pattern == null) {
             return null;
         }
-        String base = readRegestry(key, pattern);
+        String base = readRegistry(key, pattern);
         if (base != null && d.getBaseFolderSuffix() != null){
             base += "/"+d.getBaseFolderSuffix(); // NOI18N
         }
@@ -333,7 +333,7 @@ public final class ToolchainManager {
         if (key == null || pattern == null) {
             return null;
         }
-        String base = readRegestry(key, pattern);
+        String base = readRegistry(key, pattern);
         if (base != null && d.getCommandFolderSuffix() != null){
             base += "\\"+d.getCommandFolderSuffix(); // NOI18N
         }
@@ -353,7 +353,7 @@ public final class ToolchainManager {
         return base;
     }
 
-    private String readRegestry(String key, String pattern) {
+    private String readRegistry(String key, String pattern) {
         List<String> list = new ArrayList<String>();
         list.add("C:/Windows/System32/reg.exe"); // NOI18N
         list.add("query"); // NOI18N
@@ -379,6 +379,10 @@ public final class ToolchainManager {
             }
         } catch (Exception ex) {
             if (TRACE) {ex.printStackTrace();}
+        }
+        if (base == null && key.startsWith("hklm\\")) { // NOI18N
+            // Cygwin on my Vista system has this information in HKEY_CURRENT_USER
+            base = readRegistry("hkcu\\" + key.substring(5), pattern); // NOI18N
         }
         return base;
     }
