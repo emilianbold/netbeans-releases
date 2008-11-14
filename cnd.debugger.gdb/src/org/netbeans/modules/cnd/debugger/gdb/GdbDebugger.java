@@ -1844,7 +1844,6 @@ public class GdbDebugger implements PropertyChangeListener {
      *
      * @param reason a reason why program is stopped
      */
-    @SuppressWarnings("unchecked")
     private boolean breakpointValidation(int token, Object o) {
         BreakpointImpl impl = pendingBreakpointMap.get(token);
 
@@ -1853,9 +1852,10 @@ public class GdbDebugger implements PropertyChangeListener {
                 impl.addError((String) o);
             } else if (o instanceof Map || o == null) {
                 pendingBreakpointMap.remove(token);
-                impl.completeValidation((Map<String, String>) o);
-                if (o != null && impl.getBreakpoint().getValidity() == Breakpoint.VALIDITY.VALID && impl.getBreakpoint().isEnabled()) {
-                    Map<String, String> map = (Map) o;
+                @SuppressWarnings("unchecked")
+                Map<String, String> map = (Map<String, String>)o;
+                impl.completeValidation(map);
+                if (map != null && impl.getBreakpoint().getValidity() == Breakpoint.VALIDITY.VALID && impl.getBreakpoint().isEnabled()) {
                     String fullname = map.get("fullname"); // NOI18N
                     String file = map.get("file"); // NOI18N
                     String line = map.get("line"); // NOI18N
@@ -1877,7 +1877,8 @@ public class GdbDebugger implements PropertyChangeListener {
             }
             return true;
         } else if (o instanceof Map) { // temporary breakpoints aren't NetBeans breakpoints...
-            Map<String, String> map = (Map) o;
+            @SuppressWarnings("unchecked")
+            Map<String, String> map = (Map<String, String>) o;
             String number = map.get("number"); // NOI18N
             String fullname = map.get("fullname"); // NOI18N
             String file = map.get("file"); // NOI18N
