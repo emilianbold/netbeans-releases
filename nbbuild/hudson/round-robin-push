@@ -1,7 +1,10 @@
 #!/bin/sh
 
 [ -n "$pop_url" ] || exit 101
-[ -n "$pop_build_info" ] || exit 102
+if [ -z "$pop_build_info" ]; then
+    pop_build_info="nbbuild/build/build_info"
+fi
+[ -n "$pop_job" ] || exit 103
 
 [ -n "$push_url" ] || exit 113
 [ -n "$push_username" ] || exit 114
@@ -12,8 +15,18 @@ export ANT_OPTS
 HGMERGE=merge
 export HGMERGE
 
+BUILD_LAST=`curl $pop_job/lastBuild/buildNumber`
+BUILD_STABLE=`curl $pop_job/lastStableBuild/buildNumber`
+echo Last build: $BUILD_LAST
+echo Last stable build: $BUILD_STABLE
+
+if [ "$BUILD_LAST" != "$BUILD_STABLE" ]; then
+    echo Build is not stable, exiting
+    exit 1
+fi
+
 echo Getting Build Info
-HGINFO=`curl $pop_build_info`
+HGINFO=`curl $pop_job/lastStableBuild/artifact/$pop_build_info`
 echo $HGINFO
 [ -n "$HGINFO" ] || (echo No Build Info; exit 1)
 
