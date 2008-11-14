@@ -60,9 +60,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementChangeEven
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementLifeTimeEventDispatcher;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.PreventElementReEntrance;
-//import com.embarcadero.describe.foundation.IConfigManager;
-//import com.embarcadero.describe.foundation.ConfigManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationValidatorEventDispatcher;
 import org.netbeans.modules.uml.core.metamodel.dynamics.DynamicsEventDispatcher;

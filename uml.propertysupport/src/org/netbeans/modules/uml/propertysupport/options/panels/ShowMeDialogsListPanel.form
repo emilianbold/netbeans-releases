@@ -11,6 +11,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -25,7 +26,7 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="mainLabel" alignment="0" max="32767" attributes="0"/>
+                  <Component id="mainLabel" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="1"/>
@@ -36,7 +37,6 @@
                           <Component id="jLabel10" alignment="0" min="-2" max="-2" attributes="1"/>
                           <Component id="jLabel7" alignment="0" min="-2" max="-2" attributes="1"/>
                           <Component id="jLabel8" alignment="0" min="-2" max="-2" attributes="1"/>
-                          <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="1"/>
                           <Component id="jLabel20" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -50,17 +50,12 @@
                                   <Component id="deleteConnectorCB" alignment="0" max="32767" attributes="3"/>
                                   <Component id="overwriteCB" alignment="0" max="32767" attributes="3"/>
                                   <Component id="transformCB" alignment="0" min="-2" pref="169" max="-2" attributes="3"/>
-                                  <Component id="convertOldDiagramsCB" alignment="1" pref="169" max="32767" attributes="3"/>
+                                  <Component id="convertOldDiagramsCB" alignment="1" min="-2" pref="169" max="-2" attributes="3"/>
                               </Group>
-                              <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="deleteFileCB" alignment="1" min="-2" pref="169" max="-2" attributes="3"/>
-                                  <Component id="filterWarningCB" alignment="1" min="-2" pref="169" max="-2" attributes="3"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="filterWarningCB" min="-2" pref="169" max="-2" attributes="3"/>
                           </Group>
                       </Group>
                   </Group>
@@ -75,11 +70,6 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="mainLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="1"/>
-                  <Component id="deleteFileCB" alignment="3" min="-2" max="-2" attributes="1"/>
-              </Group>
-              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="filterWarningCB" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -124,7 +114,7 @@
                   <Component id="convertOldDiagramsCB" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel20" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="15" max="32767" attributes="0"/>
+              <EmptySpace pref="47" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -136,19 +126,6 @@
           <ResourceString bundle="org/netbeans/modules/uml/propertysupport/options/panels/Bundle.properties" key="mainLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabel1">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="deleteFileCB"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/uml/propertysupport/options/panels/Bundle.properties" key="jLabel1.text_3" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AuxValues>
-        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>
@@ -252,16 +229,6 @@
       </Properties>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="deleteFileCB">
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection component="jLabel1" name="text" type="property"/>
-        </Property>
-      </AccessibilityProperties>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JComboBox (displayChoices);"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JComboBox" name="filterWarningCB">

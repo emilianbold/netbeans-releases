@@ -98,9 +98,6 @@ public class Preferences {
                                 "UML_USE_GENERICS_DEFAULT";
     public static final String RECONNECT_LINKS = "UML_Reconnect to Presentation Boundary" ;
 
-    public static final String CONFIRM_SOURCE_DELETE =
-                   "ArtifactDeleteDeletesFile";
-
 
     /**
      * Adds a preference watcher for the given preference. Watchers are notified
@@ -239,16 +236,12 @@ public class Preferences {
             java.util.prefs.Preferences prefs = NbPreferences.forModule (DummyCorePreference.class) ;
             
             reconnectLinks = prefs.getBoolean(RECONNECT_LINKS, true);
-            promptSaveWorkspace = true;
-
-            defaultElementName = NbBundle.getMessage (Preferences.class, "UNNAMED"); // NOI18N
             
             collectionOverride = prefs.get(COLLECTION_OVERRIDE,"java.util.ArrayList"); // NOI18N
-            confirmSourceDelete = getPreference(CONFIRM_SOURCE_DELETE);
 
             readWatchedPreferences();
         }
-        catch (ClobberedException ex) {
+        catch (RuntimeException ex) {
             Log.stackTrace(ex);
             UMLSupport.reviveDescribe();
             readPreferences();
@@ -339,38 +332,6 @@ public class Preferences {
     }
 
     /**
-     * Returns whether integrations should prompt for the location to create a
-     * new Describe project, when creating a Describe project for a newly
-     * created IDE project.
-     * @return <code>true</code> if the integration should prompt the user to
-     *         choose a location for the new Describe project.
-     */
-    public static boolean isPromptProjectLocation() {
-        throw new UnsupportedOperationException ("This pref is no long valid.");
-    }
-
-    /**
-     * Returns whether integrations should prompt to save the current Describe
-     * workspace/project when switching between IDE projects.
-     * @return <code>true</code> if the integration should prompt to save
-     *         Describe metadata.
-     */
-    public static boolean isPromptSaveWorkspace() {
-        return promptSaveWorkspace;
-    }
-
-    /**
-     * Returns whether integrations should prompt for the location to create a
-     * new Describe workspace, when creating or opening a Describe workspace for
-     * a newly created IDE project.
-     * @return <code>true</code> if the integration should prompt the user to
-     *         choose a location for the new Describe workspace.
-     */
-    public static boolean isPromptWksLocation() {
-        throw new UnsupportedOperationException ("This pref is no long valid.");
-    }
-
-    /**
      * Returns whether links are reconnected to presentations element
      * boundaries.
      *
@@ -402,98 +363,6 @@ public class Preferences {
         //preferenceCache.remove(USE_GENERICS_DEFAULT);
 	return NbPreferences.forModule(DummyCorePreference.class).getBoolean("UML_USE_GENERICS_DEFAULT",true);
     }
-
-
-    /**
-     * Returns the absolute path to the Describe workspace to be used by default
-     * when connecting to new IDE projects.
-     *
-     * @return <code>String</code> - the absolute path to the default Describe
-     *         workspace .etw file.
-     */
-    public static String getDefaultWorkspacePath() {
-        // Point to the location specified (i.e. <workspaceFolder>/Default.etw)
-        // else if workspaceFolder == null
-        // Point at default workspace:
-        // ${DESCRIBEHOME}/Workspaces/Default/Default.etw
-
-        if (defaultWorkspaceLocation == null
-            || defaultWorkspaceLocation.trim().length() == 0) {
-            UMLSupport gps = UMLSupport.getUMLSupport();
-
-            String workspaceFolder = UMLSupport.getUMLSupport()
-                .getIDEManager().getDefaultWorkspaceDirectory();
-            Log.out("readPreferences: IDE's workspace folder : "
-                    + workspaceFolder);
-            try {
-                File workspaceLocation = null;
-
-                if (workspaceFolder != null &&
-                    workspaceFolder.trim().length() > 0)
-                    workspaceLocation = new File(new File(workspaceFolder),
-                                                 DEF_WKS_FILE);
-                else
-                    workspaceLocation = new File(new File(gps.getApplication().
-                        getInstallLocation()).getParentFile().getParentFile(),
-                                                 REL_DEF_WKS_LOC);
-
-                return workspaceLocation.toString();
-            }
-            catch (Exception ignored) {}
-        }
-
-        if (defaultWorkspaceLocation != null &&
-            defaultWorkspaceLocation.trim().length() == 0)
-            defaultWorkspaceLocation = null;
-        return defaultWorkspaceLocation;
-    }
-
-    /**
-     * Checks if the default location preference is set.     *
-     */
-    public static boolean isDefaultWorkspacePathEmpty() {
-        return (defaultWorkspaceLocation == null ||
-                defaultWorkspaceLocation.trim().length() == 0);
-    }
-
-    /**
-     * Sets the absolute path to the Describe workspace to be used as the
-     * default when connecting to new IDE projects.
-     *
-     * @param path A <code>String</code> with the absolute path to the workspace
-     *             .etw file.
-     */
-    public static void setDefaultWorkspacePath(String path) {
-        //kris richards - this pref does not really exist.
-        throw new UnsupportedOperationException ("DefaultWSLocation pref is no long valid.");
-    }
-
-    /**
-     * Sets the preference state of "Prompt for workspace path".
-     *
-     * @param path A <code>true</code> for PSK_YES, <code>false</code> for
-     *             PSK_NO.
-     */
-    public static void setPromptWksLocation(boolean state) {
-        throw new UnsupportedOperationException ("This pref is no long valid.");
-    }
-
-    /**
-     * Sets the preference state of "Delete file with artifacts".
-     *
-     * @param val PSK_ASK, PSK_NEVER and PSK_ALWAYS.
-     */
-    public static void setDeleteFileWithArtifact(String val) {
-        confirmSourceDelete = val;
-        setPreference(CONFIRM_SOURCE_DELETE, val);
-    }
-
-
-    public static String getDeleteFileWithArtifact() {
-        return confirmSourceDelete;
-    }
-
-
 
     /**
      * Sets whether links are reconnected to presentation element boundaries.
@@ -548,14 +417,6 @@ public class Preferences {
                     + " to delete - " + prefKey);
     }
 
-
-    private static boolean getBooleanPreference(String prefKey){
-        String val = getPreference(prefKey);
-        if(val == null && UMLSupport.isClobbered())
-            throw new ClobberedException();
-        return PSK_YES.equals(getPreference(prefKey));
-    }
-
     private static String getPreference(String prefKey) {
         if (prefKey == null || !initPreferenceManager()) return null;
 
@@ -603,7 +464,7 @@ public class Preferences {
 
         prefMan = null;
         try {
-            prefMan = UMLSupport.getUMLSupport()
+            prefMan = UMLSupport
                 .getProduct()
                 .getPreferenceManager();
         }
@@ -616,24 +477,14 @@ public class Preferences {
 
 
     // Individual preference properties
-    private static boolean promptSaveWorkspace;
     private static boolean reconnectLinks;
 //    private static boolean useGenericsForCollections;
 
-    private static String  defaultWorkspaceLocation;
-    private static String  defaultElementName;
     private static String  collectionOverride;
-    private static String  confirmSourceDelete;
     private static IPreferenceManager2 prefMan = null;
-    private static String REL_DEF_WKS_LOC = "Workspaces/Default/Default.etw";
-    private static String DEF_WKS_FILE = "Default.etw";
 
     private static HashMap watches;
     private static HashMap watchers;
 
     private static HashMap preferenceCache = new HashMap();
-
-    static class ClobberedException extends RuntimeException {
-
-    }
 }

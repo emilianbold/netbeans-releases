@@ -83,7 +83,7 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
     private RequestProcessor evaluationRP = new RequestProcessor();
     
     private RequestProcessor.Task evaluationTask;
-    
+
     private final LinkedList evaluationQueue = new LinkedList();
     
     
@@ -119,7 +119,8 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
             }
         }
     }
-    
+
+    @SuppressWarnings("unchecked")
     private void postEvaluationMonitor(Object o, Runnable whenEvaluated) {
         synchronized (evaluationQueue) {
             if (evaluationQueue.contains(o) &&
@@ -428,8 +429,8 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
     
     // helper methods ..........................................................
     
-    private HashMap typeToFilter;
-    private HashMap ancestorToFilter;
+    private HashMap<String, VariablesFilter> typeToFilter;
+    private HashMap<String, VariablesFilter> ancestorToFilter;
     
     /**
      * @param o The object to get the filter for
@@ -441,8 +442,8 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
      */
     private VariablesFilter getFilter (Object o, boolean checkEvaluated, Runnable whenEvaluated) {
         if (typeToFilter == null) {
-            typeToFilter = new HashMap ();
-            ancestorToFilter = new HashMap ();
+            typeToFilter = new HashMap<String, VariablesFilter>();
+            ancestorToFilter = new HashMap<String, VariablesFilter>();
             List l = lookupProvider.lookup (null, VariablesFilter.class);
             int i, k = l.size ();
             for (i = 0; i < k; i++) {
@@ -480,7 +481,7 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         }
         
         String type = v.getType ();
-        VariablesFilter vf = (VariablesFilter) typeToFilter.get (type);
+        VariablesFilter vf = typeToFilter.get (type);
         if (vf != null) {
             return vf;
         }
@@ -491,7 +492,7 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         ov = ov.getSuper ();
         while (ov != null) {
             type = ov.getType ();
-            vf = (VariablesFilter) ancestorToFilter.get (type);
+            vf = ancestorToFilter.get (type);
             if (vf != null) return vf;
             ov = ov.getSuper ();
         }

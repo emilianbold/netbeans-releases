@@ -319,7 +319,6 @@ public class ClassInfo extends ElementInfo
     }
     
     /* (non-Javadoc)
-     * @see com.embarcadero.integration.events.ElementInfo#getOwningProject()
      */
     public IProject getOwningProject()
     {

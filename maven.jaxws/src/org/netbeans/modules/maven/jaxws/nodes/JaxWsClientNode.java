@@ -47,31 +47,19 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
+import org.netbeans.modules.maven.jaxws.actions.JaxWsRefreshAction;
 import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
-//import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsRefreshClientAction;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandler;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerChain;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerChains;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerClass;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModel;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModelFactory;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.DefinitionsBindings;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;
-//import org.netbeans.modules.websvc.core.ConfigureHandlerAction;
-//import org.netbeans.modules.websvc.core.ConfigureHandlerCookie;
-//import org.netbeans.modules.websvc.core.webservices.ui.panels.MessageHandlerPanel;
-//import org.netbeans.modules.websvc.core.wseditor.support.WSEditAttributesAction;
-//import org.netbeans.modules.websvc.jaxws.api.JaxWsRefreshCookie;
+import org.netbeans.modules.websvc.api.support.RefreshClientDialog;
+import org.netbeans.modules.websvc.api.support.RefreshCookie;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
-//import org.netbeans.modules.xml.retriever.catalog.Utilities;
-//import org.netbeans.modules.xml.xam.ModelSource;
-//import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
@@ -90,7 +78,7 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 
-public class JaxWsClientNode extends AbstractNode implements OpenCookie {
+public class JaxWsClientNode extends AbstractNode implements OpenCookie, RefreshCookie {
     JaxWsService client;
     JAXWSLightSupport jaxWsSupport;
     InstanceContent content;
@@ -230,7 +218,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie {
     public Action[] getActions(boolean context) {
         ArrayList<Action> actions = new ArrayList<Action>(Arrays.asList(
             SystemAction.get(OpenAction.class),
-//            SystemAction.get(JaxWsRefreshClientAction.class),
+            SystemAction.get(JaxWsRefreshAction.class),
 //            null,
 //            SystemAction.get(WSEditAttributesAction.class),
 //            null,
@@ -456,6 +444,47 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie {
     
     void setModelGenerationFinished(boolean value) {
         modelGenerationFinished=value;
-    }    
+    }
+
+    public void refreshService(boolean replaceLocalWsdl) {
+        if (replaceLocalWsdl) {
+            RefreshClientDialog.Result result = RefreshClientDialog.open(true, client.getWsdlUrl());
+            if (RefreshClientDialog.Result.CLOSE.equals(result)) return;
+            else if (RefreshClientDialog.Result.REFRESH_ONLY.equals(result)) {
+                //((JaxWsClientChildren)getChildren()).refreshKeys(false);
+                updateNode();               
+            } else {
+                wsdlFileObject= null;
+                //((JaxWsClientChildren)getChildren()).refreshKeys(true, result);
+            }
+        } else {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(JaxWsClientNode.class,
+                    "MSG_RefreshClient"))); //NOI18N           
+            //((JaxWsClientChildren)getChildren()).refreshKeys(false);
+        }
+    }
+    
+    private void updateNode() {
+        final WsdlModeler wsdlModeler = getWsdlModeler();
+        if (wsdlModeler != null) {
+            wsdlModeler.generateWsdlModel(new WsdlModelListener() {
+
+                public void modelCreated(WsdlModel model) {
+                    wsdlModel = model;
+                    setModelGenerationFinished(true);
+                    changeIcon();
+                    System.out.println("model created "+model);
+                    if (model == null) {
+                        System.out.println("creationException = "+wsdlModeler.getCreationException());
+                        DialogDisplayer.getDefault().notify(
+                                new WsImportFailedMessage(false, wsdlModeler.getCreationException()));
+                    }
+                    ((JaxWsClientChildren)getChildren()).setWsdlModel(wsdlModel);
+                    ((JaxWsClientChildren)getChildren()).updateKeys();
+                }
+            });
+        }
+    }
  
 }

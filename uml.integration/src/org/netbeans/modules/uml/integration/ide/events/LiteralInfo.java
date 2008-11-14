@@ -94,7 +94,6 @@ public class LiteralInfo extends ElementInfo
     }
     
     /* (non-Javadoc)
-     * @see com.embarcadero.integration.events.ElementInfo#getOwningProject()
      */
     public IProject getOwningProject() {
         return literal != null?

@@ -55,7 +55,6 @@ public class AffectedElementEventsAdapter implements IAffectedElementEventsSink
 {
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IAffectedElementEventsSink#onPreImpacted(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.foundationcollections.IVersionableElements, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreImpacted(
       IClassifier classifier,
@@ -66,7 +65,6 @@ public class AffectedElementEventsAdapter implements IAffectedElementEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IAffectedElementEventsSink#onImpacted(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.foundationcollections.IVersionableElements, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onImpacted(
       IClassifier classifier,

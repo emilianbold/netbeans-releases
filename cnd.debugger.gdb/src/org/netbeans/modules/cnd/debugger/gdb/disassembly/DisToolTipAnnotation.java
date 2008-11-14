@@ -89,7 +89,8 @@ public class DisToolTipAnnotation extends Annotation implements Runnable {
         RequestProcessor.getDefault ().post (this);
         return null;
     }
-    
+
+    @SuppressWarnings("unchecked")
     public void run() {
         if (lp == null || ec == null) {
             return;

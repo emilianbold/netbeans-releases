@@ -55,7 +55,6 @@ public class NamespaceModifiedEventsAdapter
 {
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.INamespaceModifiedEventsSink#onPreElementAddedToNamespace(com.embarcadero.describe.foundation.INamespace, com.embarcadero.describe.foundation.INamedElement, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreElementAddedToNamespace(
       INamespace space,
@@ -66,7 +65,6 @@ public class NamespaceModifiedEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.INamespaceModifiedEventsSink#onElementAddedToNamespace(com.embarcadero.describe.foundation.INamespace, com.embarcadero.describe.foundation.INamedElement, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onElementAddedToNamespace(
       INamespace space,

@@ -41,6 +41,7 @@
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -77,8 +78,6 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
 
     private PropertyEditorTimeout() {
         super(NbBundle.getMessage(PropertyEditorTimeout.class, "LBL_TIMEOUT_UCLABEL")); // NOI18N
-        initComponents();
-        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     public static final PropertyEditorTimeout createInstance() {
@@ -197,6 +196,17 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
         }
         return false;
     }
+
+    @Override
+    public Component getCustomEditor() {
+        if (customEditor == null) {
+            initComponents();
+            initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+        return super.getCustomEditor();
+    }
+
+
 
     private class CustomEditor extends JPanel implements ActionListener, DocumentListener, FocusListener {
 

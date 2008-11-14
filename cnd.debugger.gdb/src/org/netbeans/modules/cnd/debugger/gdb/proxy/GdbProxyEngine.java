@@ -134,43 +134,6 @@ public class GdbProxyEngine {
         }
     }
     
-//    private void newRemoteDebugger(String hkey, List<String> debuggerCommand, String[] debuggerEnvironment, String workingDirectory, String cspath) throws IOException {
-//        Map<String, String> env = new HashMap<String, String>();
-//        PlatformInfo pi = PlatformInfo.getDefault(hkey);
-//        String pathname = pi.getPathName();
-//        for (String var : debuggerEnvironment) {
-//            String key, value;
-//            int idx = var.indexOf('=');
-//            if (idx != -1) {
-//                key = var.substring(0, idx);
-//                value = var.substring(idx + 1);
-//                if (key.equals(pathname)) {
-//                    env.put(key, value + File.pathSeparator + cspath);
-//                } else {
-//                    env.put(key, value);
-//                }
-//            }
-//        }
-//
-//        if (!env.containsKey(pathname)) {
-//            env.put(pathname, pi.getPathAsString() + pi.pathSeparator() + cspath); // NOI18N
-//        }
-//        provider = InteractiveCommandProvider.getDefault(hkey);
-//        provider.run(debuggerCommand, workingDirectory, env);
-//
-//        toGdb = gdbReader(provider.getInputStream(), provider.getOutputStream());
-//        new RequestProcessor("GdbReaperThread").post(new Runnable() { // NOI18N
-//            public void run() {
-//                int rc = provider.waitFor();
-//                if (rc == 0) {
-//                    debugger.finish(false);
-//                } else {
-//                    debugger.unexpectedGdbExit(rc);
-//                }
-//            }
-//        });
-//    }
-    
     private void localDebugger(List<String> debuggerCommand, String[] debuggerEnvironment, String workingDirectory, String cspath) throws IOException {
         ProcessBuilder pb = new ProcessBuilder(debuggerCommand);
         Map<String, String> env = pb.environment();
@@ -189,9 +152,7 @@ public class GdbProxyEngine {
                 }
             }
         }
-        if (!env.containsKey(pathname)) {
-            env.put(pathname, Path.getPathAsString() + File.pathSeparator + cspath); // NOI18N
-        }
+        env.put(pathname, Path.getPathAsString() + File.pathSeparator + cspath);
         pb.directory(new File(workingDirectory));
         pb.redirectErrorStream(true);
         
