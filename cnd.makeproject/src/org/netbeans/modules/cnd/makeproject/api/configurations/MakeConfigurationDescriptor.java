@@ -241,7 +241,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         Iterator it;
 
         synchronized (projectItemsChangeListeners) {
-            it = new HashSet(projectItemsChangeListeners).iterator();
+            it = new HashSet<ChangeListener>(projectItemsChangeListeners).iterator();
         }
         ChangeEvent ev = new ProjectItemChangeEvent(this, item, action);
         while (it.hasNext()) {
@@ -545,8 +545,8 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
 
         // Check metadata files are writable
-        Vector metadataFiles = new Vector();
-        Vector notOkFiles = new Vector();
+        Vector<String> metadataFiles = new Vector<String>();
+        Vector<String> notOkFiles = new Vector<String>();
         metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "project.xml"); // NOI18N
         metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "configurations.xml"); // NOI18N
         metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "Makefile-impl.mk"); // NOI18N
@@ -556,7 +556,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         } // NOI18N
         boolean allOk = true;
         for (int i = 0; i < metadataFiles.size(); i++) {
-            File file = new File((String) metadataFiles.elementAt(i));
+            File file = new File(metadataFiles.elementAt(i));
             if (!file.exists()) {
                 continue;
             }
@@ -793,7 +793,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 addSourceRoot(l);
             }
         }
-        MakeSources makeSources = (MakeSources) getProject().getLookup().lookup(MakeSources.class);
+        MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
         if (makeSources != null) {
             makeSources.sourceRootsChanged();
         }
@@ -951,7 +951,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
 
-    private void addFiles(Folder folder, File dir, boolean addSubFolders, FileFilter filter, ProgressHandle handle, ArrayList filesAdded, boolean notify) {
+    private void addFiles(Folder folder, File dir, boolean addSubFolders, FileFilter filter, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded, boolean notify) {
         File[] files = dir.listFiles();
         if (files == null) {
             return;
