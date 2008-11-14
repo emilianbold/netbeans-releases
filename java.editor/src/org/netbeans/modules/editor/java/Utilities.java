@@ -73,10 +73,14 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.java.editor.options.CodeCompletionPanel;
+import org.openide.filesystems.FileObject;
 import org.openide.util.WeakListeners;
 
 /**
@@ -266,6 +270,12 @@ public class Utilities {
             ((AbstractDocument)doc).readLock();
         }
         try {
+        if (doc.getLength() == 0 && "text/x-dialog-binding".equals(doc.getProperty("mimeType"))) { //NOI18N
+            InputAttributes attributes = (InputAttributes) doc.getProperty(InputAttributes.class);
+            LanguagePath path = LanguagePath.get(MimeLookup.getLookup("text/x-dialog-binding").lookup(Language.class)); //NOI18N
+            FileObject fo = (FileObject)attributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
+            return "text/x-java".equals(fo.getMIMEType()); //NOI18N
+        }
         TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
         if (ts == null)
             return false;        

@@ -57,7 +57,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.TreeModelListener;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.tree.DefaultTreeModel;
-import org.netbeans.api.java.source.ui.DialogBinding;
+import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
 
@@ -66,7 +66,6 @@ import org.openide.util.*;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.form.project.ClassPathUtils;
-import org.openide.text.CloneableEditorSupport;
 
 /**
  * A class that contains utility methods for the formeditor.
@@ -922,7 +921,6 @@ public class FormUtils
     }
 
     public static void setupEditorPane(javax.swing.JEditorPane editor, FileObject srcFile, int ccPosition) {
-        editor.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-java")); // NOI18N
         DialogBinding.bindComponentToFile(srcFile, ccPosition, 0, editor);
 
         // do not highlight current row
