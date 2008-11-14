@@ -41,7 +41,10 @@
 
 package org.netbeans.api.java.source;
 
+import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.util.Log;
 import java.io.*;
+import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Level;
@@ -52,10 +55,18 @@ import javax.swing.text.StyledDocument;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ModificationResult.CreateChange;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavaSourceSupportAccessor;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -70,17 +81,70 @@ import org.openide.text.PositionRef;
  */
 public final class ModificationResult {
 
-    private JavaSource js;
+    private Collection<Source> sources;
     private boolean committed;
     Map<FileObject, List<Difference>> diffs = new HashMap<FileObject, List<Difference>>();
     Map<?, int[]> tag2Span = new IdentityHashMap<Object, int[]>();
     
     /** Creates a new instance of ModificationResult */
     ModificationResult(final JavaSource js) {
-        this.js = js;
+        this.sources = JavaSourceAccessor.getINSTANCE().getSources(js);
+    }
+
+    private ModificationResult(Collection<Source> sources) {
+        this.sources = sources;
     }
 
     // API of the class --------------------------------------------------------
+
+    public static ModificationResult runModificationTask(final Collection<Source> sources, final UserTask task) throws ParseException {
+        final ModificationResult result = new ModificationResult(sources);
+        final JavacParser[] theParser = new JavacParser[1];
+        ParserManager.parse(sources, new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                resultIterator = JavacParser.MIME_TYPE.equals(resultIterator.getSnapshot().getMimeType()) ? resultIterator : findEmbeddedJava(resultIterator);
+                if (resultIterator != null) {
+                    Parser.Result parserResult = resultIterator.getParserResult();
+                    final CompilationController cc = CompilationController.get(parserResult);
+                    assert cc != null;
+                    final WorkingCopy copy = new WorkingCopy (cc.impl);
+                    assert WorkingCopy.instance == null;
+                    WorkingCopy.instance = new WeakReference<WorkingCopy>(copy);
+                    try {
+                        task.run(resultIterator);
+                    } finally {
+                        WorkingCopy.instance = null;
+                    }
+                    final JavacTaskImpl jt = copy.impl.getJavacTask();
+                    Log.instance(jt.getContext()).nerrors = 0;
+                    theParser[0] = copy.impl.getParser();
+                    final List<ModificationResult.Difference> diffs = copy.getChanges(result.tag2Span);
+                    if (diffs != null && diffs.size() > 0)
+                        result.diffs.put(copy.getFileObject(), diffs);
+                }
+            }
+            private ResultIterator findEmbeddedJava(final ResultIterator theMess) throws ParseException {
+                final Collection<Embedding> todo = new LinkedList<Embedding>();
+                //BFS should perform better than DFS in this dark.
+                for (Embedding embedding : theMess.getEmbeddings()) {
+                    if (JavacParser.MIME_TYPE.equals(embedding.getMimeType()))
+                        return theMess.getResultIterator(embedding);
+                    else
+                        todo.add(embedding);
+                }
+                for (Embedding embedding : todo) {
+                    ResultIterator result = findEmbeddedJava(theMess.getResultIterator(embedding));
+                    if (result != null)
+                        return result;
+                }
+                return null;
+            }
+        });
+        if (theParser[0] != null)
+            theParser[0].invalidate();
+        return result;
+    }
     
     public Set<? extends FileObject> getModifiedFileObjects() {
         return diffs.keySet();
@@ -119,22 +183,24 @@ public final class ModificationResult {
             } finally {
                 RepositoryUpdater.getDefault().unlockRU();
                 Set<FileObject> alreadyRefreshed = new HashSet<FileObject>();
-                if (this.js != null) {
-                    JavaSourceAccessor.getINSTANCE().revalidate(this.js);
-                    alreadyRefreshed.addAll(js.getFileObjects());
+                if (this.sources != null) {
+                    if (sources.size() == 1) // moved from JavaSourceAccessor.revalidate(Java Source)
+                        Utilities.revalidate(sources.iterator().next());
+                    for (Source source : sources)
+                        alreadyRefreshed.add(source.getFileObject());
                 }
                 for (FileObject currentlyVisibleInEditor : JavaSourceSupportAccessor.ACCESSOR.getVisibleEditorsFiles()) {
                     if (!alreadyRefreshed.contains(currentlyVisibleInEditor)) {
-                        JavaSource source = JavaSource.forFileObject(currentlyVisibleInEditor);                
+                        Source source = Source.create(currentlyVisibleInEditor);
                         if (source != null) {
-                            JavaSourceAccessor.getINSTANCE().revalidate(source);
+                            Utilities.revalidate(source);
                         }
                     }
                 }
             }
         } finally {
             this.committed = true;
-            this.js = null;
+            this.sources = null;
         }
     }
             

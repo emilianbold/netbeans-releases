@@ -461,8 +461,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                             toolTip = new MethodParamsTipPaintComponent(params, types.length, component);
                         startPos = (int)sourcePositions.getEndPosition(env.getRoot(), mi.getMethodSelect());
                         String text = controller.getText().substring(startPos, offset);
-                        anchorOffset = startPos + controller.getPositionConverter().getOriginalPosition(text.indexOf('(')); //NOI18N
-                        toolTipOffset = startPos + controller.getPositionConverter().getOriginalPosition(text.lastIndexOf(',')); //NOI18N
+                        anchorOffset = startPos + controller.getSnapshot().getOriginalOffset(text.indexOf('(')); //NOI18N
+                        toolTipOffset = startPos + controller.getSnapshot().getOriginalOffset(text.lastIndexOf(',')); //NOI18N
                         if (toolTipOffset < anchorOffset)
                             toolTipOffset = anchorOffset;
                         return;
@@ -500,8 +500,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                             pos = (int)sourcePositions.getStartPosition(root, path.getLeaf());
                         }
                         String text = controller.getText().substring(pos, offset);
-                        anchorOffset = pos + controller.getPositionConverter().getOriginalPosition(text.indexOf('(')); //NOI18N
-                        toolTipOffset = pos + controller.getPositionConverter().getOriginalPosition(text.lastIndexOf(',')); //NOI18N
+                        anchorOffset = pos + controller.getSnapshot().getOriginalOffset(text.indexOf('(')); //NOI18N
+                        toolTipOffset = pos + controller.getSnapshot().getOriginalOffset(text.lastIndexOf(',')); //NOI18N
                         if (toolTipOffset < anchorOffset)
                             toolTipOffset = anchorOffset;
                         return;
@@ -544,7 +544,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (env == null)
                 return;
             results = new ArrayList<JavaCompletionItem>();
-            anchorOffset = controller.getPositionConverter().getOriginalPosition(env.getOffset());
+            anchorOffset = controller.getSnapshot().getOriginalOffset(env.getOffset());
             TreePath path = env.getPath();
             switch(path.getLeaf().getKind()) {
                 case COMPILATION_UNIT:
@@ -4218,7 +4218,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private Env getCompletionEnvironment(CompilationController controller, boolean upToOffset) throws IOException {
             controller.toPhase(Phase.PARSED);
-            int offset = controller.getPositionConverter().getJavaSourcePosition(caretOffset);
+            int offset = controller.getSnapshot().getEmbeddedOffset(caretOffset);
             if (offset < 0)
                 return null;
             String prefix = null;
