@@ -354,7 +354,8 @@ public final class Source {
                 DataObject dataObject = DataObject.find(fileObject);
                 ec = dataObject.getLookup().lookup(EditorCookie.class);
             } catch (DataObjectNotFoundException ex) {
-                LOG.log(Level.WARNING, null, ex);
+                //DataobjectNotFoundException may happen in case of deleting opened file
+                //handled by returning null
             }
 
             if (ec != null) {
