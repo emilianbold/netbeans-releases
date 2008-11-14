@@ -163,15 +163,12 @@ public class Reformatter implements ReformatTask {
         int startOffset = region.getStartOffset() - shift;
         int endOffset = region.getEndOffset() - shift;
         int originalEndOffset = endOffset;
-        PositionConverter converter = controller.getPositionConverter();
-        if (converter != null) {
-            startOffset = converter.getJavaSourcePosition(startOffset);
-            if (startOffset < 0)
-                return;
-            endOffset = converter.getJavaSourcePosition(endOffset);
-            if (endOffset < 0)
-                return;
-        }
+        startOffset = controller.getSnapshot().getEmbeddedOffset(startOffset);
+        if (startOffset < 0)
+            return;
+        endOffset = controller.getSnapshot().getEmbeddedOffset(endOffset);
+        if (endOffset < 0)
+            return;
         int embeddingOffset = -1;
         if (!"text/x-java".equals(context.mimePath())) { //NOI18N
             TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
@@ -298,10 +295,8 @@ public class Reformatter implements ReformatTask {
                 }
                 end = endOffset;
             }
-            if (converter != null) {
-                start = converter.getOriginalPosition(start);
-                end = converter.getOriginalPosition(end);
-            }
+            start = controller.getSnapshot().getOriginalOffset(start);
+            end = controller.getSnapshot().getOriginalOffset(end);
             start += shift;
             end += shift;
             doc.remove(start, end - start);
