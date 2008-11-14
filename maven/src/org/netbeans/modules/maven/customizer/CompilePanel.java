@@ -163,9 +163,9 @@ public class CompilePanel extends javax.swing.JPanel {
                             // in this case clean up the auxiliary config
                             props.put(Constants.HINT_COMPILE_ON_SAVE, null, true);
                         }
+                        handle.markAsModified(handle.getProfileModel());
+                        return;
                     }
-                    handle.markAsModified(handle.getProfileModel());
-                    return;
                 }
 
                 if (handle.getProject().getProperties().containsKey(Constants.HINT_COMPILE_ON_SAVE)) {
