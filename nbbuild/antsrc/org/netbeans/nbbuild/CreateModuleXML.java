@@ -47,6 +47,7 @@ import org.apache.tools.ant.*;
 import java.util.jar.*;
 import java.io.*;
 import java.util.zip.ZipEntry;
+import org.apache.tools.ant.types.Mapper;
 
 /** Create XML files corresponding to the set of known modules
  * without actually running the IDE.
@@ -59,7 +60,7 @@ public class CreateModuleXML extends Task {
     private final List<FileSet> autoload = new ArrayList<FileSet>(1);
     private final List<FileSet> eager = new ArrayList<FileSet>(1);
     private final List<FileSet> hidden = new ArrayList<FileSet>(1);
-    
+
     /** Add a set of module JARs that should be enabled.
      */
     public void addEnabled(FileSet fs) {
