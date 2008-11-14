@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.php.project.connections.spi;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 
@@ -48,19 +48,54 @@ import org.netbeans.modules.php.project.connections.ConfigManager;
  */
 public interface RemoteConfigurationPanel {
 
-    void addChangeListener(ChangeListener listener);
-    void removeChangeListener(ChangeListener listener);
-    JPanel getComponent();
-    void read(ConfigManager.Configuration configuration);
-    void store(ConfigManager.Configuration configuration);
     /**
-     * Check whether the configuration is valid, it means it contains no errors.
-     * @return <code>true</code> if the configuration contains no errors, <code>false</code> otherwise.
+     * Attach a {@link ChangeListener change listener} that is to be notified of changes
+     * in the configration panel (e.g., the result of the {@link #isValidConfiguration} method
+     * has changed).
+     *
+     * @param listener a listener.
+     */
+    void addChangeListener(ChangeListener listener);
+
+    /**
+     * Remove a {@link ChangeListener change listener}.
+     *
+     * @param listener a listener.
+     */
+    void removeChangeListener(ChangeListener listener);
+
+    /**
+     * Return a UI component used to allow the user to customize this {@link RemoteConfiguration remote configuration}.
+     *
+     * @return a component which provides a configuration UI, never <code>null</code>.
+     *         This method might be called more than once and it is expected to always
+     *         return the same instance.
+     */
+    JComponent getComponent();
+
+    /**
+     *
+     * @param configuration {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration} to read data from.
+     */
+    void read(ConfigManager.Configuration configuration);
+
+    /**
+     *
+     * @param configuration {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration} to store data to.
+     */
+    void store(ConfigManager.Configuration configuration);
+
+    /**
+     * Check whether this {@link RemoteConfiguration configuration} is valid, it means it contains no errors.
+     * @return <code>true</code> if this {@link RemoteConfiguration remote configuration} contains no errors, <code>false</code> otherwise.
      */
     boolean isValidConfiguration();
+
     /**
-     * Get the error messsage if the configuration is not valid.
-     * @return error messsage if the configuration is not valid, <code>null</code> otherwise.
+     * Get the error messsage if this {@link RemoteConfiguration remote configuration} is not valid.
+     * Optionally it can return a message as a e.g. warning; it is completely up to an implementor
+     * what to return if this {@link RemoteConfiguration remote configuration} is not valid.
+     * @return error messsage if this {@link RemoteConfiguration remote configuration} is not valid.
      * @see #isValid()
      */
     String getError();

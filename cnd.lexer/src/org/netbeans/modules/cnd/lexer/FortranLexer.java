@@ -91,10 +91,13 @@ public class FortranLexer implements Lexer<FortranTokenId> {
     private static final int IN_APOSTROPHE_CHAR = 21; // after id
 
     // specifies if the string is defined in double quotes or single quote
-    private static boolean STRING_IN_DOUBLE_QUOTE = true;
+    private boolean stringInDoubleQuote = true;
+
+    // specifies if the free style comment
+    private boolean lineCommentFree = true;
 
     // this variable is put for detecting the "_" in integers and reals
-    private static boolean HAS_NUMERIC_UNDERSCORE = false;
+    private boolean hasNumericUnderscore = false;
 
     // Internal state of the lexical analyzer
     private int state = INIT;
@@ -108,8 +111,14 @@ public class FortranLexer implements Lexer<FortranTokenId> {
         this.tokenFactory = info.tokenFactory();
         Filter<FortranTokenId> filter = (Filter<FortranTokenId>) info.getAttributeValue(CndLexerUtilities.LEXER_FILTER); // NOI18N
         this.lexerFilter = filter != null ? filter : defaultFilter;
-        this.maximumTextWidth = (Integer) info.getAttributeValue(CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH);
-        this.fortranFreeFormat = (Boolean) info.getAttributeValue(CndLexerUtilities.FORTRAN_FREE_FORMAT);
+        Object o = info.getAttributeValue(CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH);
+        if(o != null) {
+            this.maximumTextWidth = (Integer) o;
+        }
+        o = info.getAttributeValue(CndLexerUtilities.FORTRAN_FREE_FORMAT);
+        if(o != null) {
+            this.fortranFreeFormat = (Boolean) o;
+        }
         setState((State) info.state());
     }
 
@@ -139,6 +148,8 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                         break;
                     }
                     switch (c) {
+                        case '#':
+                            return finishSharp();
                         case '\n':
                             lineColomn = 0;
                             return token(FortranTokenId.NEW_LINE);
@@ -157,12 +168,12 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                         case '"':
                             //make sure that this case is always after cases b, o and z
                             state = IN_STRING;
-                            STRING_IN_DOUBLE_QUOTE = true;
+                            stringInDoubleQuote = true;
                             break;
                         case '\'': {
                             //make sure that this case is always after cases b, o and z
                             state = IN_STRING;
-                            STRING_IN_DOUBLE_QUOTE = false;
+                            stringInDoubleQuote = false;
                             break;
                         }
                         case '/':
@@ -180,11 +191,13 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                             break;
                         case '!':
                             // Fortran comments begin with a ! and last to end of line
+                            lineCommentFree = true;
                             state = IN_LINE_COMMENT;
                             break;
                         case 'C':
                         case 'c':
                             if ((lineColomn == 1) && !fortranFreeFormat) {
+                                lineCommentFree = false;
                                 state = IN_LINE_COMMENT;
                             } else {
                                 backup(1);
@@ -324,7 +337,11 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                             state = INIT;
                             if (input.readLength() > 1) {
                                 backup(1);
-                                return token(FortranTokenId.LINE_COMMENT);
+                                if(lineCommentFree) {
+                                    return token(FortranTokenId.LINE_COMMENT_FREE);
+                                } else {
+                                    return token(FortranTokenId.LINE_COMMENT_FIXED);
+                                }
                             } else {
                                 lineColomn = 0;
                                 return token(FortranTokenId.NEW_LINE);
@@ -346,13 +363,13 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                             backup(1);
                             return token(FortranTokenId.STRING_LITERAL);
                         case '"':
-                            if (STRING_IN_DOUBLE_QUOTE) {
+                            if (stringInDoubleQuote) {
                                 state = INIT;
                                 return token(FortranTokenId.STRING_LITERAL);
                             }
                             break;
                         case '\'':
-                            if (!STRING_IN_DOUBLE_QUOTE) {
+                            if (!stringInDoubleQuote) {
                                 state = INIT;
                                 return token(FortranTokenId.STRING_LITERAL);
                             }
@@ -526,12 +543,12 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                     }
                     switch (c) {
                         case '_':
-                            HAS_NUMERIC_UNDERSCORE = true;
+                            hasNumericUnderscore = true;
                             break;
                         case '.':
-                            if (HAS_NUMERIC_UNDERSCORE) {
+                            if (hasNumericUnderscore) {
                                 state = INIT;
-                                HAS_NUMERIC_UNDERSCORE = false;
+                                hasNumericUnderscore = false;
                                 return token(FortranTokenId.ERR_INVALID_INTEGER);
                             } else {
                                 state = IN_REAL;
@@ -541,15 +558,15 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                         case 'D':
                         case 'e':
                         case 'E':
-                            if (!HAS_NUMERIC_UNDERSCORE) {
+                            if (!hasNumericUnderscore) {
                                 state = IN_REAL;
                             }
                             break;
                         default:
-                            if (((HAS_NUMERIC_UNDERSCORE) && (!(Character.isLetterOrDigit(c)))) ||
-                                    ((!HAS_NUMERIC_UNDERSCORE) && (!(Character.isDigit(c))))) {
+                            if (((hasNumericUnderscore) && (!(Character.isLetterOrDigit(c)))) ||
+                                    ((!hasNumericUnderscore) && (!(Character.isDigit(c))))) {
                                 state = INIT;
-                                HAS_NUMERIC_UNDERSCORE = false;
+                                hasNumericUnderscore = false;
                                 backup(1);
                                 return token(FortranTokenId.NUM_LITERAL_INT);
                             }
@@ -563,20 +580,20 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                     }
                     switch (c) {
                         case '_':
-                            HAS_NUMERIC_UNDERSCORE = true;
+                            hasNumericUnderscore = true;
                             break;
                         case 'd':
                         case 'D':
                         case 'e':
                         case 'E':
-                            if (!HAS_NUMERIC_UNDERSCORE) {
+                            if (!hasNumericUnderscore) {
                                 break;
                             }
                         default:
-                            if (((HAS_NUMERIC_UNDERSCORE) && (!(Character.isLetterOrDigit(c)))) ||
-                                    ((!HAS_NUMERIC_UNDERSCORE) && (!(Character.isDigit(c))))) {
+                            if (((hasNumericUnderscore) && (!(Character.isLetterOrDigit(c)))) ||
+                                    ((!hasNumericUnderscore) && (!(Character.isDigit(c))))) {
                                 state = INIT;
-                                HAS_NUMERIC_UNDERSCORE = false;
+                                hasNumericUnderscore = false;
                                 backup(1);
                                 return token(FortranTokenId.NUM_LITERAL_REAL);
                             }
@@ -632,54 +649,60 @@ public class FortranLexer implements Lexer<FortranTokenId> {
          * Scanner first checks whether this is completely the last
          * available buffer.
          */
-        switch (state) {
-            case IN_WHITESPACE:
-                state = INIT;
-                return token(FortranTokenId.WHITESPACE);
-            case AFTER_B:
-            case AFTER_O:
-            case AFTER_Z:
-                state = INIT;
-                return token(FortranTokenId.IDENTIFIER);
-            case IN_BINARY:
-                state = INIT;
-                return token(FortranTokenId.ERR_INVALID_BINARY_LITERAL);
-            case IN_OCTAL:
-                state = INIT;
-                return token(FortranTokenId.ERR_INVALID_OCTAL_LITERAL);
-            case IN_HEX:
-                state = INIT;
-                return token(FortranTokenId.ERR_INVALID_HEX_LITERAL);
-            case IN_STRING:
-            case IN_STRING_AFTER_BSLASH:
-                return token(FortranTokenId.STRING_LITERAL); // hold the state
-            case AFTER_SLASH:
-                state = INIT;
-                return token(FortranTokenId.OP_DIV);
-            case AFTER_EQ:
-                state = INIT;
-                return token(FortranTokenId.EQ);
-            case AFTER_STAR:
-                state = INIT;
-                return token(FortranTokenId.OP_MUL);
-            case IN_LINE_COMMENT:
-                return token(FortranTokenId.LINE_COMMENT); //stay in line-comment state
-            case AFTER_LESSTHAN:
-                state = INIT;
-                return token(FortranTokenId.OP_LT);
-            case AFTER_GREATERTHAN:
-                state = INIT;
-                return token(FortranTokenId.OP_GT);
-            case IN_INT:
-                state = INIT;
-                return token(FortranTokenId.NUM_LITERAL_INT);
-            case IN_REAL:
-                state = INIT;
-                return token(FortranTokenId.NUM_LITERAL_REAL);
-            case AFTER_DOT:
-                state = INIT;
-                return token(FortranTokenId.DOT);
-        } //switch
+        if (input.readLength() > 0) {
+            switch (state) {
+                case IN_WHITESPACE:
+                    state = INIT;
+                    return token(FortranTokenId.WHITESPACE);
+                case AFTER_B:
+                case AFTER_O:
+                case AFTER_Z:
+                    state = INIT;
+                    return token(FortranTokenId.IDENTIFIER);
+                case IN_BINARY:
+                    state = INIT;
+                    return token(FortranTokenId.ERR_INVALID_BINARY_LITERAL);
+                case IN_OCTAL:
+                    state = INIT;
+                    return token(FortranTokenId.ERR_INVALID_OCTAL_LITERAL);
+                case IN_HEX:
+                    state = INIT;
+                    return token(FortranTokenId.ERR_INVALID_HEX_LITERAL);
+                case IN_STRING:
+                case IN_STRING_AFTER_BSLASH:
+                    return token(FortranTokenId.STRING_LITERAL); // hold the state
+                case AFTER_SLASH:
+                    state = INIT;
+                    return token(FortranTokenId.OP_DIV);
+                case AFTER_EQ:
+                    state = INIT;
+                    return token(FortranTokenId.EQ);
+                case AFTER_STAR:
+                    state = INIT;
+                    return token(FortranTokenId.OP_MUL);
+                case IN_LINE_COMMENT:
+                    if (lineCommentFree) {
+                        return token(FortranTokenId.LINE_COMMENT_FREE);
+                    } else {
+                        return token(FortranTokenId.LINE_COMMENT_FIXED);
+                    }
+                case AFTER_LESSTHAN:
+                    state = INIT;
+                    return token(FortranTokenId.OP_LT);
+                case AFTER_GREATERTHAN:
+                    state = INIT;
+                    return token(FortranTokenId.OP_GT);
+                case IN_INT:
+                    state = INIT;
+                    return token(FortranTokenId.NUM_LITERAL_INT);
+                case IN_REAL:
+                    state = INIT;
+                    return token(FortranTokenId.NUM_LITERAL_REAL);
+                case AFTER_DOT:
+                    state = INIT;
+                    return token(FortranTokenId.DOT);
+            } //switch
+        }
 
         /* At this stage there's no more text in the scanned buffer, but
          * this buffer is not the last so the scan will continue on another
@@ -720,6 +743,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
     private boolean isLineBeyondLimit() {
         if ((lineColomn > maximumTextWidth) &&
                 (state != IN_LINE_COMMENT)) {
+            lineCommentFree = true;
             state = IN_LINE_COMMENT;
             return true;
         }
@@ -753,6 +777,24 @@ public class FortranLexer implements Lexer<FortranTokenId> {
     private FortranTokenId getKeywordOrIdentifierID(CharSequence text) {
         FortranTokenId id = lexerFilter.check(text);
         return id != null ? id : FortranTokenId.IDENTIFIER;
+    }
+
+    /**
+     * This function recognizes preprocessor directives
+     */
+    @SuppressWarnings("fallthrough")
+    protected Token<FortranTokenId> finishSharp() {
+        // one prerpocessor directive block
+        while (true) {
+            switch (read()) {
+                case '\r':
+                    input.consumeNewline();
+                    // nobreak
+                case '\n':
+                case EOF:
+                    return token(FortranTokenId.PREPROCESSOR_DIRECTIVE);
+            }
+        }
     }
 
     /**
