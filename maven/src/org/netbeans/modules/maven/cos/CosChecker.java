@@ -101,10 +101,37 @@ public class CosChecker implements PrerequisitesChecker {
     }
 
     public boolean checkRunConfig(RunConfig config) {
-        String actionName = config.getActionName();
         if (config.getProject() == null) {
             return true;
         }
+
+        if (!checkRunMainClass(config)) {
+            return false;
+        }
+
+        if (!checkRunTest(config)) {
+            return false;
+        }
+
+        long touch1 = getLastCoSLastTouch(config, true);
+        long touch2 = getLastCoSLastTouch(config, false);
+        if ((touch1 != 0 && touch1 != Long.MAX_VALUE) ||
+                (touch2 != 0 && touch2 != Long.MAX_VALUE)) {
+            try {
+                cleanGeneratedClassfiles(config);
+            } catch (IOException ex) {
+                if (!"clean".equals(config.getGoals().get(0))) { //NOI18N
+                    config.getGoals().add(0, "clean"); //NOI18N
+                }
+                Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Compile on Save Clean failed", ex);
+            }
+        }
+        return true;
+    }
+
+
+    private boolean checkRunMainClass(RunConfig config) {
+        String actionName = config.getActionName();
         //compile on save stuff
         if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
             if ((NbMavenProject.TYPE_JAR.equals(
@@ -167,7 +194,11 @@ public class CosChecker implements PrerequisitesChecker {
                 }
             }
         }
+        return true;
+    }
 
+    private boolean checkRunTest(RunConfig config) {
+        String actionName = config.getActionName();
         if (RunUtils.hasTestCompileOnSaveEnabled(config) &&
                 (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
                 ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName))) {
@@ -299,21 +330,6 @@ public class CosChecker implements PrerequisitesChecker {
                     touchCoSTimeStamp(config, false);
                 }
                 return false;
-            } else {
-            }
-        }
-
-        long touch1 = getLastCoSLastTouch(config, true);
-        long touch2 = getLastCoSLastTouch(config, false);
-        if ((touch1 != 0 && touch1 != Long.MAX_VALUE) ||
-                (touch2 != 0 && touch2 != Long.MAX_VALUE)) {
-            try {
-                cleanGeneratedClassfiles(config);
-            } catch (IOException ex) {
-                if (!"clean".equals(config.getGoals().get(0))) { //NOI18N
-                    config.getGoals().add(0, "clean"); //NOI18N
-                }
-                Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Compile on Save Clean failed", ex);
             }
         }
         return true;
