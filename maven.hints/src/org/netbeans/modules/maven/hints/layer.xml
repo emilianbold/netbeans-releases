@@ -85,4 +85,16 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
+    <folder name="OptionsDialog">
+      <folder name="Editor">
+          <folder name="Hints">
+              <folder name="text">
+                  <folder name="x-maven-pom+xml">
+                      <file name="org.netbeans.modules.maven.hints.pom.HintsOptionsPanelController.instance"/>
+                  </folder>
+              </folder>
+          </folder>
+      </folder>
+  </folder>
+
 </filesystem>

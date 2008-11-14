@@ -41,9 +41,12 @@ package org.netbeans.modules.maven.hints.pom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.maven.hints.pom.spi.Configuration;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
 import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.BuildBase;
@@ -67,10 +70,21 @@ import org.openide.util.NbBundle;
  * @author mkleint
  */
 public class ReleaseVersionError implements POMErrorFixProvider {
+    private Configuration configuration;
+
+    public ReleaseVersionError() {
+        configuration = new Configuration("ReleaseVersionError", //NOI18N
+                "No metaversions for plugins",
+                "Shall not use release/latest/snapshot versions for plugins.",
+                true, Configuration.HintSeverity.WARNING);
+    }
 
     public List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj) {
         assert model != null;
         List<ErrorDescription> toRet = new ArrayList<ErrorDescription>();
+        if (!configuration.isEnabled(configuration.getPreferences())) {
+            return toRet;
+        }
         Build bld = model.getProject().getBuild();
         if (bld != null) {
             checkPluginList(bld.getPlugins(), model, toRet);
@@ -131,13 +145,22 @@ public class ReleaseVersionError implements POMErrorFixProvider {
                 if (ver != null && ("RELEASE".equals(ver) || "LATEST".equals(ver))) { //NOI18N
                     int position = plg.findChildElementPosition(model.getPOMQNames().VERSION.getQName());
                     Line line = NbEditorUtilities.getLine(model.getBaseDocument(), position, false);
-                    toRet.add(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, 
+                    toRet.add(ErrorDescriptionFactory.createErrorDescription(
+                                   configuration.getSeverity(configuration.getPreferences()).toEditorSeverity(),
                             NbBundle.getMessage(ReleaseVersionError.class, "DESC_RELEASE_VERSION"),
                             Collections.<Fix>emptyList(), //Collections.<Fix>singletonList(new ReleaseFix(plg)),
                             model.getBaseDocument(), line.getLineNumber() + 1));
                 }
             }
         }
+    }
+
+    public JComponent getCustomizer(Preferences preferences) {
+        return null;
+    }
+
+    public Configuration getConfiguration() {
+        return configuration;
     }
 
 }
