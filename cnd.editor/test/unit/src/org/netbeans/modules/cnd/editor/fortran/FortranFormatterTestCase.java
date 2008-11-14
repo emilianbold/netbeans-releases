@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,56 +31,35 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor.fortran.options;
+package org.netbeans.modules.cnd.editor.fortran;
 
-import java.util.prefs.Preferences;
-
-import javax.swing.text.Document;
-import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
-
-/** 
- * 
+/**
+ *
  * @author Alexander Simon
  */
-public final class FortranCodeStyle {
-    
-    private Preferences preferences;
-    
-    private FortranCodeStyle(Preferences preferences) {
-        this.preferences = preferences;
+public class FortranFormatterTestCase extends FortranEditorBase {
+
+    public FortranFormatterTestCase(String testMethodName) {
+        super(testMethodName);
     }
 
-    /** For testing purposes only */
-    public static FortranCodeStyle get(Preferences prefs) {
-        return new FortranCodeStyle(prefs);
+    public void testProgramFormat() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "  program p\n"+
+                " end program\n"
+                );
+        reformat();
+        assertDocumentTextAndCaret("Incorrect program reformat",
+                "program p\n"+
+                "end program\n"
+                );
     }
 
-    public static FortranCodeStyle get(Document doc) {
-        return new FortranCodeStyle(CodeStylePreferences.get(doc).getPreferences());
-    }
-
-    // General tabs and indents ------------------------------------------------
-    
-    public boolean expandTabToSpaces() {
-        return preferences.getBoolean(FmtOptions.expandTabToSpaces, FmtOptions.getDefaultAsBoolean(FmtOptions.expandTabToSpaces));
-    }
-
-    public int getTabSize() {
-        return preferences.getInt(FmtOptions.tabSize, FmtOptions.getDefaultAsInt(FmtOptions.tabSize));
-    }
-
-    public int getIndentSize() {
-        return preferences.getInt(FmtOptions.indentSize, FmtOptions.getDefaultAsInt(FmtOptions.indentSize));
-    }
-
-    public boolean isFreeFormatFortran() {
-        return preferences.getBoolean(FmtOptions.freeFormat, FmtOptions.getDefaultAsBoolean(FmtOptions.freeFormat));
-    }
-
-    /** For testing purposes only */
-    public void setFreeFormatFortran(boolean freeFormat) {
-        preferences.putBoolean(FmtOptions.freeFormat, freeFormat);
-    }
 }

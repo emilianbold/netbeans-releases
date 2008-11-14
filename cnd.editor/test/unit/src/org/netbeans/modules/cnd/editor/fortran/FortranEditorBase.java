@@ -41,7 +41,9 @@ package org.netbeans.modules.cnd.editor.fortran;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
-import org.netbeans.editor.Formatter;
+import org.netbeans.modules.cnd.editor.fortran.indent.FortranHotCharIndent;
+import org.netbeans.modules.cnd.editor.fortran.indent.FortranIndentTask;
+import org.netbeans.modules.cnd.editor.fortran.indent.FortranReformatter;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 import org.netbeans.modules.cnd.test.FormatterBaseDocumentUnitTestCase;
 import org.openide.util.Exceptions;
@@ -50,9 +52,9 @@ import org.openide.util.Exceptions;
  *
  * @author Alexander Simon
  */
-public class FortranFormatterBaseUnitTestCase extends FormatterBaseDocumentUnitTestCase {
+public class FortranEditorBase extends FormatterBaseDocumentUnitTestCase {
 
-    public FortranFormatterBaseUnitTestCase(String testMethodName) {
+    public FortranEditorBase(String testMethodName) {
         super(testMethodName);
     }
 
@@ -70,45 +72,54 @@ public class FortranFormatterBaseUnitTestCase extends FormatterBaseDocumentUnitT
      * by the formatter.
      * The caret position should be marked in the document text by '|'.
      */
+    protected void indentLine() {
+        try {
+            int offset = getCaretOffset();
+            FortranIndentTask task = new FortranIndentTask(getDocument());
+            task.reindent(offset);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    /**
+     * Perform new-line insertion followed by indenting of the new line
+     * by the formatter.
+     * The caret position should be marked in the document text by '|'.
+     */
     protected void indentNewLine() {
-        Formatter f = getDocument().getFormatter();
-	try {
-	    f.indentLock();
-	    int offset = f.indentNewLine(getDocument(), getCaretOffset());
-	    getCaret().setDot(offset);
-	} finally {
-	    f.indentUnlock();
-	}
+        try {
+            int offset = getCaretOffset();
+            getDocument().insertString(offset, "\n", null); // NOI18N
+            FortranIndentTask task = new FortranIndentTask(getDocument());
+            task.reindent(offset+1);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     /**
      * Perform reformatting of the whole document's text.
      */
     protected void reformat() {
-        Formatter f = getDocument().getFormatter();
+        FortranReformatter f = new FortranReformatter(getDocument(), FortranCodeStyle.get(getDocument()));
         try {
-	    f.reformatLock();
-            f.reformat(getDocument(), 0, getDocument().getLength());
+            f.reformat();
         } catch (BadLocationException e) {
             e.printStackTrace(getLog());
             fail(e.getMessage());
-        } finally {
-	    f.reformatUnlock();
-	}
+    	}
     }
 
-    protected void typeChar(char ch, boolean isIndent) {
-        int pos = getCaretOffset();
+    protected void typeChar(char ch, boolean indentNewLine) {
         try {
+            int pos = getCaretOffset();
             getDocument().insertString(pos, String.valueOf(ch), null);
-            if (isIndent) {
-                Formatter f = getDocument().getFormatter();
-                f.indentLock();
-                try {
-                    getDocument().getFormatter().indentLine(getDocument(), pos);
-                } finally {
-                    f.indentUnlock();
-                }
+            if (FortranHotCharIndent.INSTANCE.getKeywordBasedReformatBlock(getDocument(), pos, ""+ch)) {
+                indentLine();
+                indentNewLine = false;
+            }
+            if (indentNewLine) {
+                indentNewLine();
             }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
