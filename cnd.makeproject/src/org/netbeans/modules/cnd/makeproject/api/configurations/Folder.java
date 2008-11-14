@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.loaders.CndDataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 public class Folder {
@@ -199,7 +200,7 @@ public class Folder {
     }
     
     private void insertItemElement(Item element) {
-        String name1 = ((Item)element).getSortName();
+        String name1 = (element).getSortName();
         int indexAt = items.size() - 1;
         while (indexAt >= 0) {
             Object o = items.elementAt(indexAt);
@@ -263,7 +264,7 @@ public class Folder {
             DataObject dao = item.getDataObject();
             if (dao instanceof CndDataObject) {
                 CndDataObject dataObject = (CndDataObject) dao;
-                MyNativeFileItemSet myNativeFileItemSet = (MyNativeFileItemSet)dataObject.getCookie(MyNativeFileItemSet.class);
+                MyNativeFileItemSet myNativeFileItemSet = dataObject.getCookie(MyNativeFileItemSet.class);
                 if (myNativeFileItemSet == null) {
                     myNativeFileItemSet = new MyNativeFileItemSet();
                     dataObject.addCookie(myNativeFileItemSet);
@@ -384,7 +385,7 @@ public class Folder {
             }
             if (dataObject instanceof CndDataObject) {
                 CndDataObject cndDataObject = (CndDataObject)dataObject;
-                MyNativeFileItemSet myNativeFileItemSet = (MyNativeFileItemSet)cndDataObject.getCookie(MyNativeFileItemSet.class);
+                MyNativeFileItemSet myNativeFileItemSet = cndDataObject.getCookie(MyNativeFileItemSet.class);
                 if (myNativeFileItemSet != null) {
                     myNativeFileItemSet.remove(item);
                     if (myNativeFileItemSet.isEmpty())

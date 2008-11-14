@@ -354,7 +354,7 @@ public class MakeConfiguration extends Configuration {
                 copiedAuxs.add(((ItemConfiguration) auxs[i]).copy(copy));
             } else {
                 String id = auxs[i].getId();
-                ConfigurationAuxObject copyAux = (ConfigurationAuxObject) copy.getAuxObject(id);
+                ConfigurationAuxObject copyAux = copy.getAuxObject(id);
                 if (copyAux != null) {
                     copyAux.assign(auxs[i]);
                     copiedAuxs.add(copyAux);
@@ -413,10 +413,10 @@ public class MakeConfiguration extends Configuration {
         return clone;
     }
 
-    /** @deprecated Use org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration.getBuildSheet() instead */
-    public Sheet getGeneralSheet(Project project) {
-        return getBuildSheet(project);
-    }
+//    /** @deprecated Use org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration.getBuildSheet() instead */
+//    public Sheet getGeneralSheet(Project project) {
+//        return getBuildSheet(project);
+//    }
 
     public Sheet getBuildSheet(Project project) {
         Sheet sheet = new Sheet();
