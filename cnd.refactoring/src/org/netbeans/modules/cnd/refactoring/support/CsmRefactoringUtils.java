@@ -171,7 +171,7 @@ public class CsmRefactoringUtils {
     }
     
     @SuppressWarnings("unchecked")
-    public static <T> CsmUID<T> getHandler(T element) {
+    public static <T extends CsmObject> CsmUID<T> getHandler(T element) {
         CsmUID<T> uid = null;
         if (CsmKindUtilities.isIdentifiable(element)) {
             uid = ((CsmIdentifiable<T>)element).getUID();
