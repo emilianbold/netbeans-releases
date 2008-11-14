@@ -43,32 +43,22 @@ package org.netbeans.modules.websvc.saas.services.strikeiron.ui;
 
 import com.strikeiron.search.AUTHENTICATIONSTYLE;
 import com.strikeiron.search.ArrayOfMarketPlaceService;
-import com.strikeiron.search.LicenseInfo;
 import com.strikeiron.search.MarketPlaceService;
-import com.strikeiron.search.ObjectFactory;
-import com.strikeiron.search.RegisteredUser;
-import com.strikeiron.search.SISearchService;
-import com.strikeiron.search.SISearchServiceSoap;
 import com.strikeiron.search.SORTBY;
 import com.strikeiron.search.SearchOutPut;
-//FIXME - Refactor
-//import com.sun.xml.ws.developer.WSBindingProvider;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.websvc.saas.spi.ServiceData;
+import org.netbeans.modules.websvc.saas.services.strikeiron.StrikeIronSearch;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceData;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 import org.openide.util.NbBundle;
@@ -79,6 +69,7 @@ import org.openide.util.RequestProcessor;
  * @author nam
  */
 public class ServiceTableModel extends DefaultTableModel {
+    private static final long serialVersionUID = 1L;
     public static final QName SI_SEARCH_SERVICE = new QName("http://www.strikeiron.com", "SISearchService");
     public static final String STRIKE_IRON_HOME = WsdlServiceProxyDescriptor.WEBSVC_HOME + "/strikeiron";
     public static final String SEARCH_PROPERTIES = "search.properties";
@@ -93,12 +84,11 @@ public class ServiceTableModel extends DefaultTableModel {
     static final int COLUMN_SELECT = 0;
     
     private String wsdlLocation;
-    private String userId = "Sun_Search@strikeiron.com";
-    private String password = "SearchSun.01";
+    private String userId;
+    private String password;
     private AUTHENTICATIONSTYLE authenticationStyle = AUTHENTICATIONSTYLE.SIMPLE_PARAM;
     private Boolean useCustomWSDL = Boolean.TRUE;
     private SORTBY sortBy = SORTBY.NAME;
-    private SISearchService sservice;
     private List<? extends WsdlServiceData> result;
 
     private String status;
@@ -149,26 +139,10 @@ public class ServiceTableModel extends DefaultTableModel {
     public void setSortBy(SORTBY v) {
         sortBy = v;
     }
-    
-    private String getUserId() {
-        return userId;
-    }
-    
-    private String getPassword() {
-        return password;
-    }
-    
-    public String getSearchServiceUrl() {
-        return getWsdlLocation().toExternalForm();
-    }
 
     public WsdlServiceData getService(int row) {
         return result.get(row);
     }
-    
-    public static final String SEARCH_COMPLETE = "searchCompleted";
-    public static final String SEARCH_CANCELLED = "searchCancelled";
-    public static final String SEARCH_ERROR = "searchError";
     
     public interface SearchListener extends EventListener {
         void searchCompleted(ChangeEvent e);
@@ -228,18 +202,6 @@ public class ServiceTableModel extends DefaultTableModel {
         return warnsOrErrors;
     }
 
-    private URL getWsdlLocation() {
-        if (wsdlLocation == null) {
-            return null;
-        }
-        try {
-            return new URL(wsdlLocation);
-        } catch(Exception ex) {
-            Logger.global.log(Level.WARNING, ex.getLocalizedMessage(), ex);
-            return null;
-        }
-    }
-    
     private List<? extends WsdlServiceData> convertResult(List<MarketPlaceService> rawResult) {
         List<WsdlServiceData> converted = new ArrayList<WsdlServiceData>();
         if (rawResult != null) {
@@ -273,51 +235,30 @@ public class ServiceTableModel extends DefaultTableModel {
         fireTableDataChanged();
         
         try {
-            // init service only when needed to avoid unecessary internet access
-            if (sservice == null) {
-                URL url = getWsdlLocation();
-                if (url == null) {
-                    sservice = new SISearchService();
-                } else {
-                    sservice = new SISearchService(url, SI_SEARCH_SERVICE);
+            SearchOutPut output = StrikeIronSearch.search(userId, password,
+                    searchTerm, sortBy, useCustomWSDL, authenticationStyle);
+            if (output != null) {
+                ArrayOfMarketPlaceService amps = output.getStrikeIronWebServices();
+                if (amps != null) {
+                    result = convertResult(output.getStrikeIronWebServices().getMarketPlaceService());
+                }
+                if (output.getServiceStatus() != null) {
+                    String msg = output.getServiceStatus().getStatusDescription();
+                    if (msg == null || msg.trim().length() == 0 || msg.startsWith("Found")) { //NOI18N
+                        setStatusMessage(NbBundle.getMessage(ServiceTableModel.class, "MSG_Found", result.size()));
+                    } else {
+                        setErrorMessage(NbBundle.getMessage(ServiceTableModel.class, "MSG_ERROR", msg));
+                    }
                 }
             }
-            SISearchServiceSoap port = sservice.getSISearchServiceSoap();
-            setHeaderParameters(port);
-            //FIXME - Refactor
-//            SearchOutPut output = port.search(searchTerm, sortBy, useCustomWSDL, authenticationStyle);
-//            if (output != null) {
-//                ArrayOfMarketPlaceService amps = output.getStrikeIronWebServices();
-//                if (amps != null) {
-//                    result = convertResult(output.getStrikeIronWebServices().getMarketPlaceService());
-//                }
-//            }
-//            if (output != null && output.getServiceStatus() != null) {
-//                String msg = output.getServiceStatus().getStatusDescription();
-//                if (msg == null || msg.trim().length() == 0 || msg.startsWith("Found")) { //NOI18N
-//                    setStatusMessage(NbBundle.getMessage(ServiceTableModel.class, "MSG_Found", result.size()));
-//                } else {
-//                    setErrorMessage(NbBundle.getMessage(ServiceTableModel.class, "MSG_ERROR", msg));
-//                }
-//            }
             fireTableDataChanged();
         } catch (Exception ex) {
             setErrorMessage(ex.getLocalizedMessage());
+            ex.printStackTrace();
         } finally {
             fireSearchEnded();
             searchTask = null;
         }
-    }
-    
-    private void setHeaderParameters(SISearchServiceSoap port) {
-        RegisteredUser ru = new RegisteredUser();
-        ru.setUserID(userId);
-        ru.setPassword(password);
-        LicenseInfo li = new LicenseInfo();
-        li.setRegisteredUser(ru);
-        //FIXME - Refactor
-//        WSBindingProvider bp = (WSBindingProvider) port;
-//        bp.setOutboundHeaders(new ObjectFactory().createLicenseInfo(li));
     }
 
     @Override

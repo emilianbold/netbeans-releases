@@ -1,7 +1,42 @@
 /*
- * FindServiceUI.java
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Created on October 31, 2007, 2:42 PM
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.websvc.saas.services.strikeiron.ui;
@@ -19,7 +54,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.websvc.saas.spi.ServiceData;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceData;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.util.Cancellable;
@@ -30,7 +64,7 @@ import org.openide.util.NbBundle;
  * @author  nam
  */
 public class FindServiceUI extends javax.swing.JPanel {
-    
+    private static final long serialVersionUID = 1L;
     private ProgressHandle progressHandle;
     private JComponent progressComponent;
     private boolean jaxrpcWarned = false;
@@ -208,8 +242,8 @@ public class FindServiceUI extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(bSearch)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(progressContainerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE))
+                        .add(progressContainerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 744, Short.MAX_VALUE))
                 .addContainerGap())
         );
         searchPanelLayout.setVerticalGroup(
@@ -221,17 +255,11 @@ public class FindServiceUI extends javax.swing.JPanel {
                     .add(bSearch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(progressContainerPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         tpTabs.addTab(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.searchPanel.TabConstraints.tabTitle"), searchPanel); // NOI18N
-
-        settingsPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                settingsPanelMousePressed(evt);
-            }
-        });
 
         jlAuthenticationMode.setText(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.jlAuthenticationMode.text")); // NOI18N
 
@@ -262,8 +290,8 @@ public class FindServiceUI extends javax.swing.JPanel {
                     .add(jlSortBy))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbSortBy, 0, 467, Short.MAX_VALUE)
-                    .add(cbAuthenticationMode, 0, 467, Short.MAX_VALUE))
+                    .add(cbSortBy, 0, 607, Short.MAX_VALUE)
+                    .add(cbAuthenticationMode, 0, 607, Short.MAX_VALUE))
                 .addContainerGap())
         );
         settingsPanelLayout.setVerticalGroup(
@@ -277,7 +305,7 @@ public class FindServiceUI extends javax.swing.JPanel {
                 .add(settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jlSortBy)
                     .add(cbSortBy, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(249, Short.MAX_VALUE))
+                .addContainerGap(226, Short.MAX_VALUE))
         );
 
         tpTabs.addTab(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.settingsPanel.TabConstraints.tabTitle"), settingsPanel); // NOI18N
@@ -289,8 +317,6 @@ public class FindServiceUI extends javax.swing.JPanel {
         cancelButton.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
 
         addButton.setText(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.addButton.text")); // NOI18N
-        addButton.setActionCommand(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.addButton.actionCommand")); // NOI18N
-        addButton.setLabel(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.addButton.label")); // NOI18N
         addButton.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -300,12 +326,12 @@ public class FindServiceUI extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(labelDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 611, Short.MAX_VALUE)
-                    .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 611, Short.MAX_VALUE)
+                    .add(labelDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 807, Short.MAX_VALUE)
+                    .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 807, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(statusMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
-                        .add(16, 16, 16)
-                        .add(addButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(statusMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 638, Short.MAX_VALUE)
+                        .add(8, 8, 8)
+                        .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(cancelButton)))
                 .addContainerGap())
@@ -349,10 +375,6 @@ public class FindServiceUI extends javax.swing.JPanel {
     private void cbSortByActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSortByActionPerformed
         getModel().setSortBy((SORTBY)cbSortBy.getSelectedItem());
     }//GEN-LAST:event_cbSortByActionPerformed
-
-    private void settingsPanelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_settingsPanelMousePressed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_settingsPanelMousePressed
 
     private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tpTabsStateChanged
         if (settingsPanel.isShowing()) {
