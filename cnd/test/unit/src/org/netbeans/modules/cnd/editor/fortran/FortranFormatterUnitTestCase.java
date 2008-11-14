@@ -28,22 +28,21 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
-import org.netbeans.junit.NbTestSuite;
-
 /**
+ * Tests for Fortran formatter
  *
- * @author Alexander Simon
+ * @author Nick Krasilnikov
  */
-public class FortranFormatterUnitTest extends NbTestSuite {
+public class FortranFormatterUnitTestCase extends FortranFormatterBaseUnitTestCase {
 
-    public FortranFormatterUnitTest() {
-        super("C/C++ Formatter");
-        //addTestSuite(FortranBracketCompletionUnitTestCase.class);
-        addTestSuite(FortranIndentUnitTestCase.class);
-        addTestSuite(FortranFormatterUnitTestCase.class);
+    public FortranFormatterUnitTestCase(String testMethodName) {
+        super(testMethodName);
     }
 
-    public static NbTestSuite suite() {
-        return new FortranFormatterUnitTest();
+    public void testProgramIndent() {
+
     }
+
 }
+
+
