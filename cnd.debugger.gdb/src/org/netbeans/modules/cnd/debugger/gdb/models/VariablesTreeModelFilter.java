@@ -84,7 +84,7 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
     
     private RequestProcessor.Task evaluationTask;
 
-    private final LinkedList evaluationQueue = new LinkedList();
+    private final LinkedList<Object> evaluationQueue = new LinkedList<Object>();
     
     
     public VariablesTreeModelFilter (ContextProvider lookupProvider) {
@@ -120,7 +120,6 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void postEvaluationMonitor(Object o, Runnable whenEvaluated) {
         synchronized (evaluationQueue) {
             if (evaluationQueue.contains(o) &&

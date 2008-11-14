@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
-import java.util.*;
 import javax.swing.Action;
 import javax.swing.text.Caret;
 import javax.swing.text.Position;
@@ -68,9 +67,6 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseKit.InsertBreakAction;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.SyntaxUpdateTokens;
-import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.TokenID;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
@@ -114,25 +110,6 @@ public class CCKit extends NbEditorKit {
         super.initDocument(doc);
         doc.putProperty(InputAttributes.class, getLexerAttributes());
         doc.putProperty(Language.class, getLanguage());
-        doc.putProperty(SyntaxUpdateTokens.class,
-                new SyntaxUpdateTokens() {
-
-                    private List<TokenInfo> tokenList = new ArrayList<TokenInfo>();
-
-                    public void syntaxUpdateStart() {
-                        tokenList.clear();
-                    }
-
-                    public List syntaxUpdateEnd() {
-                        return tokenList;
-                    }
-
-                    public void syntaxUpdateToken(TokenID id, TokenContextPath contextPath, int offset, int length) {
-                        if (CCTokenContext.LINE_COMMENT == id) {
-                            tokenList.add(new TokenInfo(id, contextPath, offset, length));
-                        }
-                    }
-                });
     }
 
     protected Language<CppTokenId> getLanguage() {

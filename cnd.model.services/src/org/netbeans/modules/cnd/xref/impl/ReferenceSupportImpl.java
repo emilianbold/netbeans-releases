@@ -127,20 +127,21 @@ public class ReferenceSupportImpl {
         return end;
     }
     
-    @SuppressWarnings("unchecked")
     public <T extends CsmObject> CsmUID<T> getUID(T element) {
         CsmUID<T> uid = null;
-        if (CsmKindUtilities.isIdentifiable(element)) {
-            uid = ((CsmIdentifiable<T>)element).getUID();
+        if (CsmKindUtilities.<T>isIdentifiable(element)) {
+            @SuppressWarnings("unchecked")
+            CsmIdentifiable<T> obj = (CsmIdentifiable<T>)element;
+            uid = obj.getUID();
             boolean checkAssert = false;
             assert checkAssert = true;
             if (checkAssert && (uid.getObject() == null)) {
-                System.err.println("UID " + uid + "can't return object " + element);
+                System.err.println("UID " + uid + "can't return object " + obj);
                 uid = null;
             }
         } 
         if (uid == null) {
-            uid = new SelfUID(element);
+            uid = new SelfUID<T>(element);
         }
         return uid;
     }
