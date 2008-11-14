@@ -174,7 +174,12 @@ public final class SourceCache {
         if (!_parsed) {
             boolean parseSuccess = false;
             try {
-                parser.parse (getSnapshot (), task, event);
+                final Snapshot snapshot = getSnapshot ();
+                final FileObject file = snapshot.getSource().getFileObject();
+                if (file != null && !file.isValid()) {
+                    return null;
+                }
+                parser.parse (snapshot, task, event);
                 parseSuccess = true;
             } finally {
                 if (!parseSuccess) {
