@@ -276,7 +276,23 @@ public class TaskProcessor {
      */ 
     public static void addPhaseCompletionTasks(final Collection<SchedulerTask> tasks, final SourceCache cache,
             boolean bridge, Class<? extends Scheduler> schedulerType) {
+        addPhaseCompletionTasks(tasks, cache, cache.getSnapshot().getSource(), bridge, schedulerType);
+    }
+
+    /**
+     * Adds the task, used by addPhaseCompletionTasks and updatePhaseCompletionTask, can be called under
+     * INTERNAL_LOCK. The original addPhaseCompletionTasks cannot be called under INTERNAL_LOCK as it
+     * calls {@link SourceCache#getSnapshot()} which takes private SourceCache lock.
+     * @param tasks
+     * @param cache
+     * @param source
+     * @param bridge
+     * @param schedulerType
+     */
+    private static void addPhaseCompletionTasks(final Collection<SchedulerTask> tasks, final SourceCache cache,
+            final Source source, boolean bridge, Class<? extends Scheduler> schedulerType) {
         Parameters.notNull("task", tasks);   //NOI18N
+        Parameters.notNull("source", source);   //NOI18N
         Parameters.notNull("cache", cache);   //NOI18N
         List<Request> requests = new ArrayList<Request> ();
         for (SchedulerTask task : tasks) {
@@ -287,8 +303,9 @@ public class TaskProcessor {
             }
             requests.add (new Request (task, cache, true, bridge, schedulerType));
         }
-        if (!requests.isEmpty ())
-            handleAddRequests (requests);
+        if (!requests.isEmpty ()) {
+            handleAddRequests (source, requests);
+        }
     }
     
     
@@ -379,7 +396,7 @@ public class TaskProcessor {
         Parameters.notNull("schedulerType", schedulerType);
         synchronized (INTERNAL_LOCK) {
             removePhaseCompletionTasks(remove, source);
-            addPhaseCompletionTasks(add, cache, false, schedulerType);
+            addPhaseCompletionTasks(add, cache, source, false, schedulerType);
         }
 
     }
@@ -455,19 +472,18 @@ public class TaskProcessor {
     static void scheduleSpecialTask (final SchedulerTask task) {
         assert task != null;
         final Request rq = new Request(task, null, false, true, null);
-        handleAddRequests (Collections.<Request>singletonList (rq));
+        handleAddRequests (null,Collections.<Request>singletonList (rq));
     }
     
     
     //Private methods
-    private static void handleAddRequests (final List<Request> requests) {
+    private static void handleAddRequests (final Source source, final List<Request> requests) {
         assert requests != null;
         if (requests.isEmpty()) {
             return;
         }
-        final SourceCache src = requests.get (0).cache;
-        if (src != null) {
-            SourceAccessor.getINSTANCE().assignListeners(src.getSnapshot ().getSource ());
+        if (source != null) {
+            SourceAccessor.getINSTANCE().assignListeners(source);
         }
         //Issue #102073 - removed running task which is readded is not performed
         int priority = Integer.MAX_VALUE;
