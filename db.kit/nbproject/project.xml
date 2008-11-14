@@ -9,19 +9,19 @@
                     <code-name-base>org.netbeans.modules.db</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.24</specification-version>
+                        <specification-version>1.30.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.db.core</code-name-base>
                     <run-dependency>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.7.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.db.dataview</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.0.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

@@ -9,7 +9,7 @@
                     <code-name-base>org.netbeans.core</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>3.6</specification-version>
+                        <specification-version>3.10.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -42,7 +42,7 @@
                     <code-name-base>org.netbeans.modules.favorites</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.12</specification-version>
+                        <specification-version>1.14.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
