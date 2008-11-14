@@ -19,7 +19,9 @@ STATUS=$TMP/$$-status
 curl $pop_job/buildStatus -D "$STATUS"
 cat "$STATUS"
 
-if ! grep "Location:.*blue\(_anime\)*.gif" "$STATUS"; then
+if grep "Location:.*blue\(_anime\)*.gif" "$STATUS"; then
+    echo Build seems to be stable
+else
     echo Build is not stable, exiting
     rm "$STATUS"
     exit 1
