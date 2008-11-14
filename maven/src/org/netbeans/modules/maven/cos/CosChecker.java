@@ -106,13 +106,14 @@ public class CosChecker implements PrerequisitesChecker {
             return true;
         }
         //compile on save stuff
-        if (NbMavenProject.TYPE_JAR.equals(
-                config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType())) {
-
-            if (RunUtils.hasApplicationCompileOnSaveEnabled(config) &&
+        if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
+            if ((NbMavenProject.TYPE_JAR.equals(
+                config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType())
+                &&
                     (ActionProvider.COMMAND_RUN.equals(actionName) ||
-                    ActionProvider.COMMAND_DEBUG.equals(actionName) ||
-                    ActionProvider.COMMAND_RUN_SINGLE.equals(actionName) ||
+                    ActionProvider.COMMAND_DEBUG.equals(actionName)))
+                ||
+                    (ActionProvider.COMMAND_RUN_SINGLE.equals(actionName) ||
                     ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName))) {
                 long stamp = getLastCoSLastTouch(config, true);
                 //check the COS timestamp against critical files (pom.xml)
@@ -127,16 +128,26 @@ public class CosChecker implements PrerequisitesChecker {
                 Map<String, Object> params = new HashMap<String, Object>();
                 params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
                 params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
-                params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, createRuntimeClassPath(config.getMavenProject(), false));
+                if (ActionProvider.COMMAND_RUN_SINGLE.equals(actionName) ||
+                    ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName)) {
+                    params.put(JavaRunner.PROP_EXECUTE_FILE, config.getSelectedFileObject());
+                } else {
+                    params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, createRuntimeClassPath(config.getMavenProject(), false));
+                }
                 //exec:exec property
                 String exargs = config.getProperties().getProperty("exec.args"); //NOI18N
                 if (exargs != null) {
                     String[] args = RunJarPanel.splitAll(exargs);
-                    params.put(JavaRunner.PROP_CLASSNAME, args[1]);
+                    if (params.get(JavaRunner.PROP_EXECUTE_FILE) == null) {
+                        params.put(JavaRunner.PROP_CLASSNAME, args[1]);
+                    }
                     String[] appargs = args[2].split(" ");
                     params.put(JavaRunner.PROP_APPLICATION_ARGS, Arrays.asList(appargs));
                     //jvm args, add and for debugging, remove the debugging ones..
                     params.put(JavaRunner.PROP_RUN_JVMARGS, extractDebugJVMOptions(args[2]));
+                }
+                if (params.get(JavaRunner.PROP_EXECUTE_FILE) != null ||
+                        params.get(JavaRunner.PROP_CLASSNAME) != null) {
                     String action2Quick = action2Quick(actionName);
                     boolean supported = JavaRunner.isSupported(action2Quick, params);
                     if (supported) {
@@ -150,8 +161,6 @@ public class CosChecker implements PrerequisitesChecker {
                             touchCoSTimeStamp(config, false);
                         }
                         return false;
-                    } else {
-                        //just skip
                     }
                 } else {
                     //TODO what to do now? skip?
