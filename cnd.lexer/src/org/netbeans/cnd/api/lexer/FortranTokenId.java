@@ -282,7 +282,8 @@ public enum FortranTokenId implements TokenId {
 
     WHITESPACE(null, "whitespace"), // NOI18N
     NEW_LINE(null, "whitespace"), // NOI18N
-    LINE_COMMENT(null, "comment"), // NOI18N
+    LINE_COMMENT_FIXED(null, "comment"), // NOI18N
+    LINE_COMMENT_FREE(null, "comment"), // NOI18N
 
     // Errors
     ERROR(null, "error"), // NOI18N
@@ -291,7 +292,11 @@ public enum FortranTokenId implements TokenId {
     ERR_INVALID_BINARY_LITERAL(null, "error"), // NOI18N
     ERR_INVALID_CHAR(null, "error"), // NOI18N
     ERR_INVALID_INTEGER(null, "error"), // NOI18N
-    ERR_INCOMPLETE_STRING_LITERAL(null, "error"); // NOI18N
+    ERR_INCOMPLETE_STRING_LITERAL(null, "error"), // NOI18N
+
+    // Prerpocessor
+    //   - on top level
+    PREPROCESSOR_DIRECTIVE(null, "preprocessor"); // NOI18N
 
     // Make sure string names are the same used in the tokenIds above
     public static final String WHITESPACE_CATEGORY = "whitespace"; // NOI18N
@@ -303,6 +308,8 @@ public enum FortranTokenId implements TokenId {
     public static final String STRING_CATEGORY = "string"; // NOI18N
     public static final String OPERATOR_CATEGORY = "operator"; // NOI18N
     public static final String SPECIAL_CATEGORY = "special"; // NOI18N
+    public static final String PREPROCESSOR_CATEGORY = "preprocessor"; // NOI18N
+
     private final String fixedText;
     private final String primaryCategory;
 

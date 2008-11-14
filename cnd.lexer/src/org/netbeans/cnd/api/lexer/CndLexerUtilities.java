@@ -520,6 +520,7 @@ public final class CndLexerUtilities {
             FortranTokenId.KW_ENDBLOCK,
             FortranTokenId.KW_ENDBLOCKDATA,
             FortranTokenId.KW_ENDDO,
+            FortranTokenId.KW_ENDENUM,
             FortranTokenId.KW_END_EQ,
             FortranTokenId.KW_ENDFILE,
             FortranTokenId.KW_ENDFORALL,
