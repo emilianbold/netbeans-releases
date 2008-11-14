@@ -130,7 +130,7 @@ public class FortranReformatter implements ReformatTask {
     }
 
     private void reformatImpl(TokenSequence<FortranTokenId> ts, int startOffset, int endOffset) throws BadLocationException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public ExtraLock reformatLock() {
