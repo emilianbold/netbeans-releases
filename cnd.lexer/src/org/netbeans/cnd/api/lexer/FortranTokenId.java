@@ -391,6 +391,8 @@ public enum FortranTokenId implements TokenId {
             switch (token.id()) {
                 case STRING_LITERAL:
                     return LanguageEmbedding.create(CppStringTokenId.languageDouble(), 0, 0);
+                case PREPROCESSOR_DIRECTIVE:
+                    return LanguageEmbedding.create(CppTokenId.languagePreproc(), 0, 0);
             }
             return null; // No embedding
         }

@@ -60,8 +60,8 @@ public class FortranLexer implements Lexer<FortranTokenId> {
     protected static final int EOF = LexerInput.EOF;
     private final LexerInput input;
     private final TokenFactory<FortranTokenId> tokenFactory;
-    private int maximumTextWidth;
-    private boolean fortranFreeFormat;
+    private boolean fortranFreeFormat = true;
+    private int maximumTextWidth = 132; // standard length limit for fortran free format
     private final Filter<FortranTokenId> lexerFilter;
 
     // internal analyzer states
