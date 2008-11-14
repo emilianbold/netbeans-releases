@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -698,7 +699,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         public void removeChangeListener(ChangeListener listener) {
         }
 
-        public JPanel getComponent() {
+        public JComponent getComponent() {
             return PANEL;
         }
 
