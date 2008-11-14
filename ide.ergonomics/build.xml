@@ -19,6 +19,7 @@
                 <include name="*"/>
                 <exclude name="ide1*"/>
                 <exclude name="platform*"/>
+                <exclude name="nb*.*"/>
                 <exclude name="bin"/>
                 <exclude name="etc"/>
             </dirset>
@@ -28,7 +29,15 @@
     <target name="-disable-one-cluster" depends="init-tasks">
         <createmodulexml xmldir="${xmldir}">
             <disabled dir=".">
-                <include name="modules/*.jar"/>
+                <and>
+                    <filename name="modules/*.jar"/>
+                    <custom 
+                        classname="org.netbeans.nbbuild.ModuleStateSelector"
+                        classpath="${nb_all}/nbbuild/nbantext.jar"
+                    >
+                        <param name="acceptEnabled" value="true"/>
+                    </custom>
+                </and>
             </disabled>
         </createmodulexml>
     </target>
