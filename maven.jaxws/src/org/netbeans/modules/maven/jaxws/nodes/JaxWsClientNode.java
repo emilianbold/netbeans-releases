@@ -40,14 +40,23 @@
  */
 package org.netbeans.modules.maven.jaxws.nodes;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportIml;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
+import org.netbeans.modules.maven.jaxws.WSUtils;
 import org.netbeans.modules.maven.jaxws.actions.JaxWsRefreshAction;
+import org.netbeans.modules.maven.jaxws.wizards.JaxWsClientCreator;
 import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
@@ -67,6 +76,7 @@ import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.HelpCtx;
@@ -448,20 +458,100 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
 
     public void refreshService(boolean replaceLocalWsdl) {
         if (replaceLocalWsdl) {
-            RefreshClientDialog.Result result = RefreshClientDialog.open(true, client.getWsdlUrl());
+            String wsdlUrl = client.getWsdlUrl();
+            if (wsdlUrl == null) {
+                if (wsdlFileObject != null) {
+                    Project project = FileOwnerQuery.getOwner(wsdlFileObject);
+                    Preferences prefs = ProjectUtils.getPreferences(project, JaxWsService.class,true);
+                    if (prefs != null) {
+                        wsdlUrl = prefs.get(wsdlFileObject.getName(), null);
+                        if (wsdlUrl != null) {
+                            client.setWsdlUrl(wsdlUrl);
+                        }
+                    }
+                }
+            }
+            RefreshClientDialog.Result result = RefreshClientDialog.open(true, wsdlUrl);
             if (RefreshClientDialog.Result.CLOSE.equals(result)) return;
             else if (RefreshClientDialog.Result.REFRESH_ONLY.equals(result)) {
-                //((JaxWsClientChildren)getChildren()).refreshKeys(false);
                 updateNode();               
             } else {
-                wsdlFileObject= null;
-                //((JaxWsClientChildren)getChildren()).refreshKeys(true, result);
+                // replace local wsdl with downloaded version
+                FileObject localWsdlFolder = jaxWsSupport.getLocalWsdlFolder(false);
+                
+                if (localWsdlFolder != null) {                   
+                    String newWsdlUrl = result.getWsdlUrl(); 
+                    if (newWsdlUrl.length() > 0 && !newWsdlUrl.equals(wsdlUrl)) {
+                        wsdlUrl = newWsdlUrl;
+                        client.setWsdlUrl(wsdlUrl);
+                    }
+                    FileObject wsdlFo = null;
+                    try {
+                        wsdlFo = WSUtils.retrieveResource(
+                                localWsdlFolder,
+                                jaxWsSupport.getCatalog().toURI(),
+                                new URI(wsdlUrl));
+                    } catch (URISyntaxException ex) {
+                        //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        String mes = NbBundle.getMessage(JaxWsClientCreator.class, "ERR_IncorrectURI", wsdlUrl); // NOI18N
+                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(desc);
+                    } catch (UnknownHostException ex) {
+                        //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        String mes = NbBundle.getMessage(JaxWsClientCreator.class, "ERR_UnknownHost", ex.getMessage()); // NOI18N
+                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(desc);
+                    } catch (IOException ex) {
+                        //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        String mes = NbBundle.getMessage(JaxWsClientCreator.class, "ERR_WsdlRetrieverFailure", wsdlUrl); // NOI18N
+                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(desc);
+                    }
+                    if (wsdlFo != null) {
+                        wsdlFileObject = wsdlFo;
+                        String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
+                        // TODO: Need to update pom.xml if WSDL URL is changed 
+                        /*
+                        String[] filepaths = PluginPropertyUtils.getPluginPropertyList(project, "org.codehaus.mojo", "jaxws-maven-plugin", "wsdlFiles", "wsdlFile",
+                            "wsimport");
+                        try {
+                            ModelHandle mavenHandle = ModelHandleUtils.createModelHandle(project);
+                            if (mavenHandle != null) {
+                                Plugin jaxWsPlugin = MavenModelUtils.getJaxWSPlugin(mavenHandle);
+                                if (jaxWsPlugin == null) {
+                                    // add jax-ws plugin
+                                    jaxWsPlugin = MavenModelUtils.addJaxWSPlugin(mavenHandle);
+                                }                       
+                                if (jaxWsPlugin != null) {
+                                    // writing wsdlFile to plugin
+                                    MavenModelUtils.addWsdlFile(mavenHandle, jaxWsPlugin, relativePath);
+                                }
+
+                                Plugin warPlugin = MavenModelUtils.getWarPlugin(mavenHandle);
+
+                                if (warPlugin == null) {
+                                    warPlugin = MavenModelUtils.addWarlugin(mavenHandle);
+                                }
+
+                                ModelHandleUtils.writeModelHandle(mavenHandle, project);
+                                                  }
+
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                        Preferences prefs = ProjectUtils.getPreferences(project, JaxWsService.class,true);
+                        if (prefs != null) {
+                            prefs.put(wsdlFo.getName(), wsdlUrl);
+                        }
+                        */
+                        updateNode();
+                    }
+                } else {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                            NbBundle.getMessage(JaxWsClientNode.class, "MSG_RefreshClient")));        
+                    updateNode();
+                }
             }
-        } else {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(JaxWsClientNode.class,
-                    "MSG_RefreshClient"))); //NOI18N           
-            //((JaxWsClientChildren)getChildren()).refreshKeys(false);
         }
     }
     
@@ -474,9 +564,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                     wsdlModel = model;
                     setModelGenerationFinished(true);
                     changeIcon();
-                    System.out.println("model created "+model);
                     if (model == null) {
-                        System.out.println("creationException = "+wsdlModeler.getCreationException());
                         DialogDisplayer.getDefault().notify(
                                 new WsImportFailedMessage(false, wsdlModeler.getCreationException()));
                     }

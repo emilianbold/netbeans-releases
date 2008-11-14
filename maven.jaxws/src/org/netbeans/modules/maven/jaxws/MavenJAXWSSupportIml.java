@@ -45,8 +45,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.prefs.Preferences;
 import org.apache.maven.model.Plugin;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -82,6 +84,21 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
 
     public void removeService(JaxWsService service) {
         services.remove(service);
+        String localWsdl = service.getLocalWsdl();
+        if (localWsdl != null) {
+            // remove auxiliary wsdl url property
+            FileObject wsdlFolder = getLocalWsdlFolder(false);
+            if (wsdlFolder != null) {
+                FileObject wsdlFo = wsdlFolder.getFileObject(localWsdl);
+                if (wsdlFo != null) {
+                    Preferences prefs = ProjectUtils.getPreferences(prj, JaxWsService.class, true);
+                    if (prefs != null) {
+                        prefs.remove(wsdlFo.getName());
+                    }                    
+                }
+            }
+            
+        }
     }
 
     public JaxWsService getService(String implClass) {
