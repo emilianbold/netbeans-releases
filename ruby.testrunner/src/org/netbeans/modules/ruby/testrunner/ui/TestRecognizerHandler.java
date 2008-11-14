@@ -62,6 +62,10 @@ abstract class TestRecognizerHandler {
         if (!regex.endsWith(".*")) { //NOI18N
             regex += ".*";  //NOI18N
         }
+        // see #151725
+        if (!regex.startsWith(".*")) { //NOI18N
+            regex = ".*" + regex; //NOI18N
+        }
         this.pattern = Pattern.compile(regex, Pattern.DOTALL);
     }
 
