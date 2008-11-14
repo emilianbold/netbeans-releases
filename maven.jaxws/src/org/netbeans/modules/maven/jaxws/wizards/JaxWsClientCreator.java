@@ -44,7 +44,9 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.prefs.Preferences;
 import org.apache.maven.model.Plugin;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
@@ -126,11 +128,13 @@ public class JaxWsClientCreator implements ClientCreator {
             }
             if (wsdlFo != null) {
                 MavenModelUtils.addJaxws21Library(project);
-                String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
-                JaxWsService service = new JaxWsService(relativePath, false);
-                
-                String[] filepaths = PluginPropertyUtils.getPluginPropertyList(project, "org.codehaus.mojo", "jaxws-maven-plugin", "wsdlFiles", "wsdlFile",
-                    "wsimport");
+                String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);               
+                String[] filepaths = PluginPropertyUtils.getPluginPropertyList(project,
+                       "org.codehaus.mojo", //NOI18N
+                       "jaxws-maven-plugin", //NOI18N
+                       "wsdlFiles", //NOI18N
+                       "wsdlFile", //NOI18N
+                       "wsimport"); //NOI18N
                               
                 try {
                     ModelHandle mavenHandle = ModelHandleUtils.createModelHandle(project);
@@ -156,6 +160,10 @@ public class JaxWsClientCreator implements ClientCreator {
                     
                 } catch (Exception ex) {
                     ex.printStackTrace();
+                }
+                Preferences prefs = ProjectUtils.getPreferences(project, JaxWsService.class,true);
+                if (prefs != null) {
+                    prefs.put(wsdlFo.getName(), wsdlUrl);
                 }
             }
         }

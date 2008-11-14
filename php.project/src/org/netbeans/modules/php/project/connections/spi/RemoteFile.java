@@ -40,11 +40,38 @@
 package org.netbeans.modules.php.project.connections.spi;
 
 /**
+ * Representation of a remote (FTP, SFTP etc.) file.
  * @author Tomas Mysik
  */
 public interface RemoteFile {
+
+    /**
+     * Return the name of the file.
+     * @return the file name.
+     */
     String getName();
+
+    /**
+     * Return <code>true</code> if the remote file is directory, <code>false</code> otherwise.
+     * @return <code>true</code> if the remote file is directory, <code>false</code> otherwise.
+     * @see #isFile()
+     */
     boolean isDirectory();
+
+    /**
+     * Return <code>true</code> if the remote file is file, <code>false</code> otherwise.
+     * <p>
+     * In most cases it is just opposite to {@link #isDirectory()}.
+     * @return <code>true</code> if the remote file is file, <code>false</code> otherwise
+     * @see #isDirectory()
+     */
     boolean isFile();
+
+    /**
+     * Return the file size (in bytes) of the remote file.
+     * <p>
+     * Not guaranteed what is returned for directories.
+     * @return the file size (in bytes) of the remote file.
+     */
     long getSize();
 }

@@ -1699,7 +1699,24 @@ public class FileObjectTestHid extends TestBaseHid {
 
         fsAssert ("Writable fs should allow to create new folder",fo != null);                
     }
-    
+
+    /** Test of createFolder method, of class org.openide.filesystems.FileObject.
+     * Folder name with slash is not allowed (see #153000). */
+    public void testCreateFolderWithSlash() throws IOException {
+        checkSetUp();
+        String[] folderNames = {"Folder/", "/Folder", "\\Folder", "Folder\\", "Fol/der", "Fol\\der"};
+        for (String folderName : folderNames) {
+            try {
+                root.createFolder(folderName);
+                fsFail("Folder name with slash should cause exception (" + folderName + ").");
+            } catch (IOException ioe) {
+                // OK - thrown from AbstractFileObject
+            } catch (IllegalArgumentException iae) {
+                // OK - thrown from FolderObj
+            }
+        }
+    }
+
     /** Test of createData  method, of class org.openide.filesystems.FileObject. */            
     public void testCreateData () throws IOException {
         checkSetUp();

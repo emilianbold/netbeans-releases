@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,53 +39,54 @@
  * made subject to such option by the copyright holder.
  */
 
+package org.netbeans.modules.cnd.editor.fortran.options;
 
-package org.netbeans.modules.websvc.wsitmodelext.rm;
+import java.util.prefs.Preferences;
 
-import javax.xml.namespace.QName;
-import java.util.HashSet;
-import java.util.Set;
+import javax.swing.text.Document;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 
-/**
- *
- * @author Martin Grebac
+/** 
+ * 
+ * @author Alexander Simon
  */
-public enum RM12QName {
-    RMASSERTION(createRM11QName("RMAssertion")),                                //NOI18N
-    DELIVERYASSURANCE(createRM11QName("DeliveryAssurance")),                    //NOI18N
-    INORDER(createRM11QName("InOrder")),                                        //NOI18N
-    EXACTLYONCE(createRM11QName("ExactlyOnce")),                                //NOI18N
-    ATLEASTONCE(createRM11QName("AtLeastOnce")),                                //NOI18N
-    ATMOSTONCE(createRM11QName("AtMostOnce")),                                //NOI18N
-    SEQUENCETRANSPORTSECURITY(createRM11QName("SequenceTransportSecurity")),    //NOI18N
-    SEQUENCESTR(createRM11QName("SequenceSTR"));                                //NOI18N
+public final class FortranCodeStyle {
+    
+    private Preferences preferences;
+    
+    private FortranCodeStyle(Preferences preferences) {
+        this.preferences = preferences;
+    }
 
-    public static final String RM_HEADERS_NS_URI = "http://docs.oasis-open.org/ws-rx/wsrm/200702";    //NOI18N
-    
-    public static final String RM_11_NS_URI = "http://docs.oasis-open.org/ws-rx/wsrmp/200702";    //NOI18N
-    public static final String RM_11_NS_PREFIX = "wsrm11";                                            //NOI18N
-    
-    public static QName createRM11QName(String localName){
-        return new QName(RM_11_NS_URI, localName, RM_11_NS_PREFIX);
+    /** For testing purposes only */
+    public static FortranCodeStyle get(Preferences prefs) {
+        return new FortranCodeStyle(prefs);
     }
-    
-    RM12QName(QName name) {
-        qName = name;
-    }
-    
-    public QName getQName(){
-        return qName;
-    }
-    private static Set<QName> qnames = null;
-    public static Set<QName> getQNames() {
-        if (qnames == null) {
-            qnames = new HashSet<QName>();
-            for (RM12QName wq : values()) {
-                qnames.add(wq.getQName());
-            }
-        }
-        return qnames;
-    }
-    private final QName qName;
 
+    public static FortranCodeStyle get(Document doc) {
+        return new FortranCodeStyle(CodeStylePreferences.get(doc).getPreferences());
+    }
+
+    // General tabs and indents ------------------------------------------------
+    
+    public boolean expandTabToSpaces() {
+        return preferences.getBoolean(FmtOptions.expandTabToSpaces, FmtOptions.getDefaultAsBoolean(FmtOptions.expandTabToSpaces));
+    }
+
+    public int getTabSize() {
+        return preferences.getInt(FmtOptions.tabSize, FmtOptions.getDefaultAsInt(FmtOptions.tabSize));
+    }
+
+    public int getIndentSize() {
+        return preferences.getInt(FmtOptions.indentSize, FmtOptions.getDefaultAsInt(FmtOptions.indentSize));
+    }
+
+    public boolean isFreeFormatFortran() {
+        return preferences.getBoolean(FmtOptions.freeFormat, FmtOptions.getDefaultAsBoolean(FmtOptions.freeFormat));
+    }
+
+    /** For testing purposes only */
+    public void setFreeFormatFortran(boolean freeFormat) {
+        preferences.putBoolean(FmtOptions.freeFormat, freeFormat);
+    }
 }
