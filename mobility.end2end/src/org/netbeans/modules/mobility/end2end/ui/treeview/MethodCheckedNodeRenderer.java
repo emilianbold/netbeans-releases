@@ -12,6 +12,8 @@ import java.awt.Font;
 import java.awt.event.ItemListener;
 import java.beans.BeanInfo;
 import java.io.CharConversionException;
+import java.util.List;
+
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -109,7 +111,7 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
     public void setText(final String text) {
         jLabel1.setText(text);
     }
-
+    
     public String getText() {
         return jLabel1.getText();
     }

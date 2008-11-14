@@ -75,7 +75,7 @@ testmodule() {
 ant clean $ANT_PARAM || exit 2
 ant build $ANT_PARAM || exit 2
 ant commit-validation $ANT_PARAM || echo commit-validation >$RESULT
-ant build-test-dist || echo build-test-dist >>$RESULT
+ant build-test-dist $ANT_PARAM || echo build-test-dist >>$RESULT
 
 testmodule openide.util
 
