@@ -174,29 +174,32 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
          //need to check if there interaction, it's specific to diagram so is handed in engine
          IDiagram dgr=getScene().getDiagram();
          INamespace ns=dgr.getNamespace();
-         String type=ns.getExpandedElementType();
-         if(! type.equalsIgnoreCase("interaction"))
+         if(ns!=null)//there may be some problem with project
          {
-             //create interaction
-             Object value = FactoryRetriever.instance().createType("Interaction",
-             ns);
-
-             INamedElement inter = null;
-             if(value instanceof INamedElement)
+             String type=ns.getExpandedElementType();
+             if(! type.equalsIgnoreCase("interaction"))
              {
-                 inter = (INamedElement)value;
+                 //create interaction
+                 Object value = FactoryRetriever.instance().createType("Interaction",
+                 ns);
+
+                 INamedElement inter = null;
+                 if(value instanceof INamedElement)
+                 {
+                     inter = (INamedElement)value;
+                 }
+                 //
+                 interaction=(IInteraction) inter;
+                 //
+                 inter.setName(dgr.getName());//by default the same as diagram
+                 //inter.setNamespace(ns);
+                 ns.addOwnedElement(inter);
+                 dgr.setNamespace((Namespace) inter);
              }
-             //
-             interaction=(IInteraction) inter;
-             //
-             inter.setName(dgr.getName());//by default the same as diagram
-             //inter.setNamespace(ns);
-             ns.addOwnedElement(inter);
-             dgr.setNamespace((Namespace) inter);
-         }
-         else
-         {
-             interaction=(IInteraction) ns;
+             else
+             {
+                 interaction=(IInteraction) ns;
+             }
          }
         if(DEFAULT_MOVE_STRATEGY == null)
         {
