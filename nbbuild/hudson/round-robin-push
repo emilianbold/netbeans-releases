@@ -10,7 +10,7 @@ fi
 [ -n "$push_username" ] || exit 114
 
 if [ -z "$TMP" ]; then
-  TMP ="/tmp"
+  TMP="/tmp"
 fi
 
 
