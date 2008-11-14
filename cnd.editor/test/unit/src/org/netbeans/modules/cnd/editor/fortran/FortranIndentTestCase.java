@@ -28,9 +28,7 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
-import org.netbeans.modules.cnd.editor.options.EditorOptions;
 
 /**
  * Class was taken from java
@@ -39,9 +37,9 @@ import org.netbeans.modules.cnd.editor.options.EditorOptions;
  *
  * @author Alexander Simon
  */
-public class FortranIndentUnitTestCase extends FortranFormatterBaseUnitTestCase {
+public class FortranIndentTestCase extends FortranEditorBase {
 
-    public FortranIndentUnitTestCase(String testMethodName) {
+    public FortranIndentTestCase(String testMethodName) {
         super(testMethodName);
     }
 
@@ -57,6 +55,43 @@ public class FortranIndentUnitTestCase extends FortranFormatterBaseUnitTestCase 
                 );
     }
 
+    public void testProgramIndent1() {
+        setLoadDocumentText(
+                "      program p|"
+                );
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect new-line program indent",
+                "      program p\n" +
+                "          |"
+                );
+    }
+
+    public void testProgramIndent2() {
+        setLoadDocumentText(
+                "program p|"
+                );
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect new-line program indent",
+                "program p\n" +
+                "      |"
+                );
+    }
+
+    public void testProgramIndent3() {
+        setLoadDocumentText(
+                "program p|\n"
+                );
+        setDefaultsOptions();
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect new-line program indent",
+                "program p\n" +
+                "    |\n"
+                );
+    }
 
     public void testEndProgramIndent() {
         setLoadDocumentText(
@@ -72,6 +107,20 @@ public class FortranIndentUnitTestCase extends FortranFormatterBaseUnitTestCase 
     }
 
     public void testEndProgramIndent2() {
+        setLoadDocumentText(
+                "program p\n"+
+                "    end progra|"
+                );
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('m', true);
+        assertDocumentTextAndCaret("Incorrect new-line end program indent",
+                "program p\n" +
+                "      end program|"
+                );
+    }
+
+    public void testEndProgramIndent3() {
         setLoadDocumentText(
                 "program p\n"+
                 "    endprogra|"

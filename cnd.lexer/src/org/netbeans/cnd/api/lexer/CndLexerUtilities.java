@@ -116,6 +116,30 @@ public final class CndLexerUtilities {
         return null;
     }
 
+    public static TokenSequence<FortranTokenId> getFortranTokenSequence(final Document doc, final int offset) {
+        TokenHierarchy th = doc != null ? TokenHierarchy.get(doc) : null;
+        TokenSequence<FortranTokenId> ts = th != null ? getFortranTokenSequence(th, offset) : null;
+        return ts;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static TokenSequence<FortranTokenId> getFortranTokenSequence(final TokenHierarchy hierarchy, final int offset) {
+        if (hierarchy != null) {
+            TokenSequence<?> ts = hierarchy.tokenSequence();
+            while(ts != null && (offset == 0 || ts.moveNext())) {
+                ts.move(offset);
+                if (ts.language() == FortranTokenId.languageFortran()) {
+                    return (TokenSequence<FortranTokenId>)ts;
+                }
+                if (!ts.moveNext() && !ts.movePrevious()) {
+                    return null;
+                }
+                ts = ts.embedded();
+            }
+        }
+        return null;
+    }
+
     public static boolean isCppIdentifierStart(char ch) {
         return Character.isJavaIdentifierStart(ch);
     }
