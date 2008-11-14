@@ -48,20 +48,69 @@ import org.openide.windows.InputOutput;
  * @author Tomas Mysik
  */
 public interface RemoteConnectionProvider {
+
     /**
      * Get the display name of the remote connection, e.g. <i>FTP</i>, <i>SFTP</i> etc.
      * @return the display name.
      */
     String getDisplayName();
+
     /**
-     * Get the list of property names which will be used (and stored).
+     * Get the list of property names which will be used by this connection type.
      * @return the list of property names.
      */
     Set<String> getPropertyNames();
-    /** put default values there */
+
+    /**
+     * Create {@link RemoteConfiguration remote configuration} for this connection type
+     * for the given {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration configuration}.
+     * This {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration configuration}
+     * should be somehow "marked" (it is up to each connection provider implementation) by this connection mark so it can be later recognized as
+     * a {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration configuration}
+     * for this connection type. It is suitable to put all the default values in it as well.
+     * @param configuration
+     * @return {@link RemoteConfiguration remote configuration}, never <code>null</code>.
+     */
     RemoteConfiguration createRemoteConfiguration(ConfigManager.Configuration configuration);
-    /** can throw exception if <code>configuration</code> contains invalid properties */
+
+    /**
+     * Get a {@link RemoteConfiguration remote configuration} if
+     * {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration configuration}
+     * is configuration of this connection type, <code>null</code> otherwise.
+     * <p>
+     * <b>This method can throw an exception</b> if
+     * {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration configuration}
+     * contains invalid values.
+     * @param configuration {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration configuration}
+     *                      from which {@link RemoteConfiguration remote configuration} can be created.
+     * @return {@link RemoteConfiguration remote configuration} if this connection type is interested
+     *         in {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration configuration}
+     *         or <code>null</code>.
+     * @see #createRemoteConfiguration(org.netbeans.modules.php.project.connections.ConfigManager.Configuration)
+     */
     RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration);
+
+    /**
+     * Similar to {@link #getRemoteConfiguration(org.netbeans.modules.php.project.connections.ConfigManager.Configuration)};
+     * get the {@link RemoteClient remote client} if the {@link RemoteConfiguration remote configuration} belongs
+     * to this connection type, <code>null</code> otherwise.
+     * @param remoteConfiguration {@link RemoteConfiguration remote configuration} with information remote connection.
+     * @param io {@link InputOutput}, the displayer of protocol commands, can be <code>null</code>.
+     * @return {@link RemoteClient remote client} or <code>null</code>.
+     * @see #getRemoteConfiguration(org.netbeans.modules.php.project.connections.ConfigManager.Configuration)
+     */
     RemoteClient getRemoteClient(RemoteConfiguration remoteConfiguration, InputOutput io);
+
+    /**
+     * Get a {@link RemoteConfigurationPanel remote configuration panel} if
+     * {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration configuration}
+     * is configuration of this connection type, <code>null</code> otherwise.
+     * @param configuration {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration configuration}
+     *                      from which {@link RemoteConfigurationPanel remote configuration panel} can be created.
+     * @return {@link RemoteConfigurationPanel remote configuration panel} if this connection type is interested
+     *         in {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration configuration}
+     *         or <code>null</code>.
+     * @see #getRemoteConfiguration(org.netbeans.modules.php.project.connections.ConfigManager.Configuration)
+     */
     RemoteConfigurationPanel getRemoteConfigurationPanel(ConfigManager.Configuration configuration);
 }
