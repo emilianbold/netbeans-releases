@@ -310,7 +310,9 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 
    public static void writeAll(ModelHandle handle, NbMavenProjectImpl project) throws IOException {
         Utilities.saveChanges(handle.getPOMModel());
-        Utilities.saveChanges(handle.getProfileModel());
+        if (handle.isModified(handle.getProfileModel())) {
+            Utilities.saveChanges(handle.getProfileModel());
+        }
         if (handle.isModified(handle.getActionMappings())) {
             writeNbActionsModel(project.getProjectDirectory(), handle.getActionMappings(), M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
         }
