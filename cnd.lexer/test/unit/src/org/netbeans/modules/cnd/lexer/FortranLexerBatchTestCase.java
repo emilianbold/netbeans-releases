@@ -223,11 +223,11 @@ public class FortranLexerBatchTestCase extends TestCase {
         String text = getAllKeywords();
         TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_ACCESS_EQ, "access");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_ACCESS, "access");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_ACTION_EQ, "action");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_ACTION, "action");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_ADVANCE_EQ, "advance");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_ADVANCE, "advance");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_ALLOCATABLE, "allocatable");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
@@ -239,7 +239,7 @@ public class FortranLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_BACKSPACE, "backspace");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NEW_LINE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_BLANK_EQ, "blank");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_BLANK, "blank");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_BLOCK, "block");
 
@@ -272,11 +272,11 @@ public class FortranLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_DEFAULT, "default");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_DELIM_EQ, "delim");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_DELIM, "delim");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_DIMENSION, "dimension");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_DIRECT_EQ, "direct");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_DIRECT, "direct");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_DO, "do");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
@@ -293,7 +293,7 @@ public class FortranLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_ELSEWHERE, "elsewhere");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_END_EQ, "end");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_END, "end");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_ENDASSOCIATE, "endassociate");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
@@ -305,7 +305,7 @@ public class FortranLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_ENDENUM, "endenum");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_END_EQ, "end");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_END, "end");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_ENDFILE, "endfile");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
@@ -338,26 +338,26 @@ public class FortranLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_ENTRY, "entry");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_EOR_EQ, "eor");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_EOR, "eor");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_EQUIVALENCE, "equivalance");
 
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_ERR_EQ, "err");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_ERR, "err");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_EXIST_EQ, "exist");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_EXIST, "exist");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_EXIT, "exit");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_EXTERNAL, "external");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NEW_LINE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_FILE_EQ, "file");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_FILE, "file");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_FILE_EQ, "file");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_FILE, "file");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_FORALL, "forall");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_FORM_EQ, "form");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_FORM, "form");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_FORMAT, "format");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
@@ -391,7 +391,7 @@ public class FortranLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_INTRINSIC, "intrinsic");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_IOSTAT_EQ, "iostat");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_IOSTAT, "iostat");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_KIND, "kind");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
@@ -403,28 +403,28 @@ public class FortranLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_MODULE, "module");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_NAME_EQ, "name");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_NAME, "name");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_NAMED_EQ, "named");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_NAMED, "named");
 
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_NAMELIST, "namelist");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_NEXTREC, "nextrec");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_NML_EQ, "nml");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_NML, "nml");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_NONE, "none");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_NULLIFY, "nullify");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_NUMBER_EQ, "number");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_NUMBER, "number");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NEW_LINE, "\n");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_ONLY, "only");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_OPEN, "open");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_OPENED_EQ, "opened");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_OPENED, "opened");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_OPERATOR, "operator");
 
@@ -433,13 +433,13 @@ public class FortranLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_OUT, "out");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_PAD_EQ, "pad");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_PAD, "pad");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_PARAMETER, "parameter");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_POINTER, "pointer");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_POSITION_EQ, "position");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_POSITION, "position");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_PRECISION, "precision");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NEW_LINE, "\n");
@@ -458,17 +458,17 @@ public class FortranLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_QUOTE, "quote");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_READ_EQ, "read");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_READ, "read");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_READ_EQ, "read");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_READ, "read");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NEW_LINE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_READWRITE_EQ, "readwrite");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_READWRITE, "readwrite");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_REAL, "real");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_REC_EQ, "rec");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_REC, "rec");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_RECL_EQ, "recl");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_RECL, "recl");
 
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_RECURSIVE, "recursive");
@@ -489,16 +489,16 @@ public class FortranLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_SEQUENCE, "sequence");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_SEQUENTIAL_EQ, "sequential");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_SEQUENTIAL, "sequential");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_SIZE_EQ, "size");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_SIZE, "size");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_SIZE_EQ, "size");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_SIZE, "size");
 
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_STAT_EQ, "stat");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_STAT, "stat");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_STATUS_EQ, "status");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_STATUS, "status");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_STOP, "stop");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
@@ -514,7 +514,7 @@ public class FortranLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_TYPE, "type");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_UNFORMATTED_EQ, "unformatted");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_UNFORMATTED, "unformatted");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_UNION, "union");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
@@ -525,9 +525,9 @@ public class FortranLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_WHILE, "while");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_WRITE_EQ, "write");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_WRITE, "write");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_WRITE_EQ, "write");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_WRITE, "write");
     }
 
     public void testNonKeywords() {
