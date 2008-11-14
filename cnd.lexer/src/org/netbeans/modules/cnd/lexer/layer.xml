@@ -58,7 +58,7 @@ made subject to such option by the copyright holder.
             </folder>   
             <folder name="x-fortran">
                 <file name="language.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.cnd.api.lexer.CppTokenId.languageCpp"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.cnd.api.lexer.FortranTokenId.languageFortran"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
             </folder>
