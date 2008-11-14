@@ -46,22 +46,28 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.java.project.runner.JavaRunner;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
@@ -87,7 +93,6 @@ import org.openide.util.Exceptions;
 public class CosChecker implements PrerequisitesChecker {
 
     private static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
-
     private static final String MAVEN_MAIN_COS = ".netbeans_CoS_timestamp_main"; //NOI18N
     private static final String MAVEN_TEST_COS = ".netbeans_CoS_timestamp_test"; //NOI18N
 
@@ -105,16 +110,15 @@ public class CosChecker implements PrerequisitesChecker {
                 config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType())) {
 
             if (RunUtils.hasApplicationCompileOnSaveEnabled(config) &&
-                   (ActionProvider.COMMAND_RUN.equals(actionName) ||
+                    (ActionProvider.COMMAND_RUN.equals(actionName) ||
                     ActionProvider.COMMAND_DEBUG.equals(actionName) ||
                     ActionProvider.COMMAND_RUN_SINGLE.equals(actionName) ||
-                    ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName)))
-            {
+                    ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName))) {
                 long stamp = getLastCoSLastTouch(config, true);
                 System.out.println("stamp=" + stamp);
                 //check the COS timestamp against critical files (pom.xml)
                 // if changed, don't do COS.
-                if (checkImportantFiles(stamp,config)) {
+                if (checkImportantFiles(stamp, config)) {
                     return true;
                 }
 
@@ -160,8 +164,8 @@ public class CosChecker implements PrerequisitesChecker {
         }
 
         if (RunUtils.hasTestCompileOnSaveEnabled(config) &&
-                   (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
-                    ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName))) {
+                (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
+                ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName))) {
             String testng = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
                     Constants.PLUGIN_SUREFIRE, "testNGArtifactName", "test"); //NOI18N
             if (testng == null) {
@@ -217,18 +221,18 @@ public class CosChecker implements PrerequisitesChecker {
             if (sysProps != null) {
                 for (Map.Entry key : sysProps.entrySet()) {
                     jvmProps.add("-D" + key.getKey() + "=" + key.getValue()); //NOI18N
-                    jvmPropNames.add((String)key.getKey());
+                    jvmPropNames.add((String) key.getKey());
                 }
             }
             //add properties from action config,
             if (config.getProperties() != null) {
-               for (Map.Entry entry : config.getProperties().entrySet()) {
+                for (Map.Entry entry : config.getProperties().entrySet()) {
                     //TODO do these have preference to ones defined in surefire plugin?
-                   if (!jvmPropNames.contains((String)entry.getKey())) {
-                       jvmProps.add("-D" + entry.getKey() + "=" + entry.getValue());
-                       jvmPropNames.add((String)entry.getKey());
-                   }
-               }
+                    if (!jvmPropNames.contains((String) entry.getKey())) {
+                        jvmProps.add("-D" + entry.getKey() + "=" + entry.getValue());
+                        jvmPropNames.add((String) entry.getKey());
+                    }
+                }
             }
 
             String argLine = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
@@ -275,9 +279,9 @@ public class CosChecker implements PrerequisitesChecker {
             if (supported) {
                 try {
                     ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
-                    //TODO listen on result of execution
-                    //if failed, tweak the timestamps to force a non-CoS build
-                    //next time around.
+                //TODO listen on result of execution
+                //if failed, tweak the timestamps to force a non-CoS build
+                //next time around.
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (UnsupportedOperationException ex) {
@@ -290,7 +294,43 @@ public class CosChecker implements PrerequisitesChecker {
             } else {
             }
         }
+
+        long touch1 = getLastCoSLastTouch(config, true);
+        long touch2 = getLastCoSLastTouch(config, false);
+        if ((touch1 != 0 && touch1 != Long.MAX_VALUE) ||
+                (touch2 != 0 && touch2 != Long.MAX_VALUE)) {
+            try {
+                cleanGeneratedClassfiles(config);
+            } catch (IOException ex) {
+                if (!"clean".equals(config.getGoals().get(0))) { //NOI18N
+                    config.getGoals().add(0, "clean"); //NOI18N
+                }
+                Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Complile on Save Clean failed", ex);
+            }
+        }
         return true;
+    }
+
+    static void cleanGeneratedClassfiles(RunConfig config) throws IOException { // #145243
+        //we execute normal maven build, but need to clean any
+        // CoS classes present.
+        deleteCoSTimeStamp(config, true);
+        deleteCoSTimeStamp(config, false);
+        Project p = config.getProject();
+        List<ClassPath> executePaths = new ArrayList<ClassPath>();
+        for (SourceGroup g : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            FileObject root = g.getRootFolder();
+            ClassPath cp = ClassPath.getClassPath(root, ClassPath.EXECUTE);
+            if (cp != null) {
+                executePaths.add(cp);
+            }
+        }
+        int res = JavaRunner.execute(JavaRunner.QUICK_CLEAN, Collections.singletonMap(
+                JavaRunner.PROP_EXECUTE_CLASSPATH, ClassPathSupport.createProxyClassPath(executePaths.toArray(new ClassPath[0])))).
+                result();
+        if (res != 0) {
+            throw new IOException("Failed to clean NetBeans-generated classes");
+        }
     }
 
     private boolean checkImportantFiles(long stamp, RunConfig rc) {
@@ -336,8 +376,7 @@ public class CosChecker implements PrerequisitesChecker {
         List<URI> roots;
         if (test) {
             roots = TestRuntimeClassPathImpl.createPath(prj);
-        }
-        else {
+        } else {
             roots = RuntimeClassPathImpl.createPath(prj);
         }
         return ClassPathSupport.createClassPath(AbstractProjectClassPathImpl.getPath(roots.toArray(new URI[0])));
@@ -419,9 +458,6 @@ public class CosChecker implements PrerequisitesChecker {
         }
     }
 
-
-
-
     private String action2Quick(String actionName) {
         if (ActionProvider.COMMAND_CLEAN.equals(actionName)) {
             return JavaRunner.QUICK_CLEAN;
@@ -434,7 +470,7 @@ public class CosChecker implements PrerequisitesChecker {
         } else if (ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName)) {
             return JavaRunner.QUICK_TEST_DEBUG;
         }
-        assert false: "Cannot convert " + actionName + " to quick actions.";
+        assert false : "Cannot convert " + actionName + " to quick actions.";
         return null;
     }
 
@@ -448,5 +484,4 @@ public class CosChecker implements PrerequisitesChecker {
             }
         }
     }
-
 }
