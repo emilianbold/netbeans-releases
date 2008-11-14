@@ -230,9 +230,7 @@ public class CreateModuleXML extends Task {
                     if (isHidden) {
                         File h = new File(xml.getParentFile(), xml.getName() + "_hidden");
                         h.createNewFile();
-                    }
-                    
-                    if (isEager || isAutoload || isEnabled) {
+                    } else {
                         OutputStream os = new FileOutputStream(xml);
                         try {
                             PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
