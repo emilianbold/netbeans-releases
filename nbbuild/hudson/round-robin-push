@@ -15,15 +15,16 @@ export ANT_OPTS
 HGMERGE=merge
 export HGMERGE
 
-BUILD_LAST=`curl $pop_job/lastBuild/buildNumber`
-BUILD_STABLE=`curl $pop_job/lastStableBuild/buildNumber`
-echo Last build: $BUILD_LAST
-echo Last stable build: $BUILD_STABLE
+STATUS=$TMP/$$-status
+curl $pop_job/buildStatus -D "$STATUS"
+cat "$STATUS"
 
-if [ "$BUILD_LAST" != "$BUILD_STABLE" ]; then
+if ! grep "Location:.*blue\(_anime\)*.gif" "$STATUS"; then
     echo Build is not stable, exiting
+    rm "$STATUS"
     exit 1
 fi
+rm "$STATUS"
 
 echo Getting Build Info
 HGINFO=`curl $pop_job/lastStableBuild/artifact/$pop_build_info`
