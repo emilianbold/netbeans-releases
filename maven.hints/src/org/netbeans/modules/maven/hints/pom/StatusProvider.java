@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -93,10 +95,9 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             try {
                 model.sync();
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Errror while syncing pom model.", ex);
             }
             if (!model.getState().equals(Model.State.VALID)) {
-                System.out.println("invalidating..");
                 HintsController.setErrors(document, "pom", Collections.<ErrorDescription>emptyList());
                 return false;
             }
