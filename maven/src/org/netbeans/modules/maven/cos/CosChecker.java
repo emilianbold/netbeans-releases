@@ -132,20 +132,16 @@ public class CosChecker implements PrerequisitesChecker {
                 String exargs = config.getProperties().getProperty("exec.args"); //NOI18N
                 if (exargs != null) {
                     String[] args = RunJarPanel.splitAll(exargs);
-                    System.out.println("jvmargs=" + args[0]);
-                    System.out.println("clazz=" + args[1]);
-                    System.out.println("args=" + args[2]);
                     params.put(JavaRunner.PROP_CLASSNAME, args[1]);
                     String[] appargs = args[2].split(" ");
                     params.put(JavaRunner.PROP_APPLICATION_ARGS, Arrays.asList(appargs));
-                    //TODO jvm args, add and for debugging, remove the debugging ones..
-//                    params.put(JavaRunner.PROP_RUN_JVMARGS, args[2]);
+                    //jvm args, add and for debugging, remove the debugging ones..
+                    params.put(JavaRunner.PROP_RUN_JVMARGS, extractDebugJVMOptions(args[2]));
                     String action2Quick = action2Quick(actionName);
                     boolean supported = JavaRunner.isSupported(action2Quick, params);
                     if (supported) {
                         try {
                             JavaRunner.execute(action2Quick, params);
-                            touchCoSTimeStamp(config, false);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         } catch (UnsupportedOperationException ex) {
@@ -155,6 +151,7 @@ public class CosChecker implements PrerequisitesChecker {
                         }
                         return false;
                     } else {
+                        //just skip
                     }
                 } else {
                     //TODO what to do now? skip?
@@ -243,8 +240,12 @@ public class CosChecker implements PrerequisitesChecker {
                     Exceptions.printStackTrace(ex);
                 }
             } else {
-                //TODO jvm args from the argLine exec property,
+                // jvm args from the argLine exec property,
                 //add and for debugging, remove the debugging ones..
+                argLine = config.getProperties().getProperty("argLine");
+                if (argLine != null) {
+                    jvmProps.addAll(extractDebugJVMOptions(argLine));
+                }
             }
 
             //add additionalClasspathElements parameter in surefire plugin..
@@ -303,7 +304,7 @@ public class CosChecker implements PrerequisitesChecker {
                 if (!"clean".equals(config.getGoals().get(0))) { //NOI18N
                     config.getGoals().add(0, "clean"); //NOI18N
                 }
-                Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Complile on Save Clean failed", ex);
+                Logger.getLogger(CosChecker.class.getName()).log(Level.INFO, "Compile on Save Clean failed", ex);
             }
         }
         return true;
@@ -411,6 +412,10 @@ public class CosChecker implements PrerequisitesChecker {
     }
 
     private boolean touchCoSTimeStamp(RunConfig rc, boolean test) {
+        return touchCoSTimeStamp(rc, test, System.currentTimeMillis());
+    }
+
+    private boolean touchCoSTimeStamp(RunConfig rc, boolean test, long stamp) {
         if (rc.getProject() == null) {
             return false;
         }
@@ -431,9 +436,8 @@ public class CosChecker implements PrerequisitesChecker {
             } catch (IOException ex) {
                 return false;
             }
-        } else {
-            return check.setLastModified(System.currentTimeMillis());
-        }
+        } 
+        return check.setLastModified(stamp);
     }
 
     private static void deleteCoSTimeStamp(RunConfig rc, boolean test) {
@@ -454,6 +458,31 @@ public class CosChecker implements PrerequisitesChecker {
         if (check.exists()) {
             check.delete();
         }
+    }
+
+
+    static List<String> extractDebugJVMOptions(String argLine) {
+        String[] split = argLine.split(" ");
+        List<String> toRet = new ArrayList<String>();
+        for (String arg : split) {
+            if ("-Xdebug".equals(arg)) { //NOI18N
+                continue;
+            }
+            if ("-Djava.compiler=none".equals(arg)) { //NOI18N
+                continue;
+            }
+            if ("-Xnoagent".equals(arg)) { //NOI18N
+                continue;
+            }
+            if (arg.startsWith("-Xrunjdwp")) { //NOI18N
+                continue;
+            }
+            if (arg.trim().length() == 0) {
+                continue;
+            }
+            toRet.add(arg);
+        }
+        return toRet;
     }
 
     private String action2Quick(String actionName) {
