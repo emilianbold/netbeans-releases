@@ -9,6 +9,11 @@ fi
 [ -n "$push_url" ] || exit 113
 [ -n "$push_username" ] || exit 114
 
+if [ -z "$TMP" ]; then
+  TMP="/tmp"
+fi
+
+
 
 ANT_OPTS="-Xmx512m -XX:MaxPermSize=128m"
 export ANT_OPTS
@@ -19,7 +24,7 @@ STATUS=$TMP/$$-status
 curl $pop_job/buildStatus -D "$STATUS"
 cat "$STATUS"
 
-if grep "Location:.*blue\(_anime\)*.gif" "$STATUS"; then
+if grep "Location:.*blue[_anime]*.gif.*" "$STATUS"; then
     echo Build seems to be stable
 else
     echo Build is not stable, exiting

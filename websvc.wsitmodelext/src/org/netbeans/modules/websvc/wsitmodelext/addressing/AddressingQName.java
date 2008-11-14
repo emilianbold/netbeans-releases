@@ -58,8 +58,13 @@ public enum AddressingQName {
     SERVICENAME(createAddressingQName("ServiceName")),                          //NOI18N
     PORTTYPE(createAddressingQName("PortType"));                                //NOI18N
 
-    public static final String ADDRESSING_NS_URI = "http://schemas.xmlsoap.org/ws/2004/08/addressing/policy";  //NOI18N
     public static final String ADDRESSING_NS_PREFIX = "wsa";                                           //NOI18N
+
+    public static final String ADDRESSING_NS_URI = "http://schemas.xmlsoap.org/ws/2004/08/addressing/policy";  //NOI18N
+
+    // TODO - find the schema location
+    public static final String ADDRESSING_NS_URI_EXT = null;  //NOI18N
+    public static final String ADDRESSING_NS_URI_LOCAL = null;  //NOI18N
     
     public static QName createAddressingQName(String localName){
         return new QName(ADDRESSING_NS_URI, localName, ADDRESSING_NS_PREFIX);
