@@ -107,6 +107,9 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             Lookup.Result<POMErrorFixProvider> res = lkp.lookupResult(POMErrorFixProvider.class);
             List<ErrorDescription> err = new ArrayList<ErrorDescription>();
             for (POMErrorFixProvider prov : res.allInstances()) {
+                if (!prov.getConfiguration().isEnabled(prov.getConfiguration().getPreferences())) {
+                    continue;
+                }
                List<ErrorDescription> lst = prov.getErrorsForDocument(model, project);
                if (lst != null) {
                    err.addAll(lst);

@@ -86,9 +86,6 @@ public class ReleaseVersionError implements POMErrorFixProvider {
     public List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj) {
         assert model != null;
         List<ErrorDescription> toRet = new ArrayList<ErrorDescription>();
-        if (!configuration.isEnabled(configuration.getPreferences())) {
-            return toRet;
-        }
         boolean release = getConfiguration().getPreferences().getBoolean(PROP_RELEASE, true);
         boolean latest = getConfiguration().getPreferences().getBoolean(PROP_LATEST, true);
         boolean snapshot = getConfiguration().getPreferences().getBoolean(PROP_SNAPSHOT, false);

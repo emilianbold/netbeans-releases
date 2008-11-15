@@ -83,9 +83,6 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
     public List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj) {
         assert model != null;
         List<ErrorDescription> toRet = new ArrayList<ErrorDescription>();
-        if (!configuration.isEnabled(configuration.getPreferences())) {
-            return toRet;
-        }
 
         Map<String, String> managed = collectManaged(prj);
         if (managed.size() == 0) {
