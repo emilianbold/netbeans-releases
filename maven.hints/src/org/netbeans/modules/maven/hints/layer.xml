@@ -68,6 +68,7 @@ made subject to such option by the copyright holder.
 
     <folder name="org-netbeans-modules-maven-hints">
         <file name="org-netbeans-modules-maven-hints-pom-ReleaseVersionError.instance"/>
+        <file name="org-netbeans-modules-maven-hints-pom-OverridePluginManagementError.instance"/>
     </folder>
 
     <folder name="Editors">
