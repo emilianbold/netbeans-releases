@@ -72,10 +72,14 @@ import org.openide.util.NbBundle;
 public class ReleaseVersionError implements POMErrorFixProvider {
     private Configuration configuration;
 
+    static final String PROP_RELEASE = "release";//NOI18N
+    static final String PROP_LATEST = "latest";//NOI18N
+    static final String PROP_SNAPSHOT = "snapshot";//NOI18N
+
     public ReleaseVersionError() {
         configuration = new Configuration("ReleaseVersionError", //NOI18N
-                "No metaversions for plugins",
-                "Shall not use release/latest/snapshot versions for plugins.",
+                org.openide.util.NbBundle.getMessage(ReleaseVersionError.class, "TIT_ReleaseLatestVersion"),
+                org.openide.util.NbBundle.getMessage(ReleaseVersionError.class, "DESC_ReleaseLatestVersion"),
                 true, Configuration.HintSeverity.WARNING);
     }
 
@@ -85,12 +89,15 @@ public class ReleaseVersionError implements POMErrorFixProvider {
         if (!configuration.isEnabled(configuration.getPreferences())) {
             return toRet;
         }
+        boolean release = getConfiguration().getPreferences().getBoolean(PROP_RELEASE, true);
+        boolean latest = getConfiguration().getPreferences().getBoolean(PROP_LATEST, true);
+        boolean snapshot = getConfiguration().getPreferences().getBoolean(PROP_SNAPSHOT, false);
         Build bld = model.getProject().getBuild();
         if (bld != null) {
-            checkPluginList(bld.getPlugins(), model, toRet);
+            checkPluginList(bld.getPlugins(), model, toRet, release, latest, snapshot);
             PluginManagement pm = bld.getPluginManagement();
             if (pm != null) {
-                checkPluginList(pm.getPlugins(), model, toRet);
+                checkPluginList(pm.getPlugins(), model, toRet, release, latest, snapshot);
             }
         }
         List<Profile> profiles = model.getProject().getProfiles();
@@ -98,10 +105,10 @@ public class ReleaseVersionError implements POMErrorFixProvider {
             for (Profile prof : profiles) {
                 BuildBase base = prof.getBuildBase();
                 if (base != null) {
-                    checkPluginList(base.getPlugins(), model, toRet);
+                    checkPluginList(base.getPlugins(), model, toRet, release, latest, snapshot);
                     PluginManagement pm = base.getPluginManagement();
                     if (pm != null) {
-                        checkPluginList(pm.getPlugins(), model, toRet);
+                        checkPluginList(pm.getPlugins(), model, toRet, release, latest, snapshot);
                     }
                 }
             }
@@ -138,11 +145,14 @@ public class ReleaseVersionError implements POMErrorFixProvider {
 //
 //    }
 
-    private void checkPluginList(List<Plugin> plugins, POMModel model, List<ErrorDescription> toRet) {
+    private void checkPluginList(List<Plugin> plugins, POMModel model, List<ErrorDescription> toRet, boolean release, boolean latest, boolean snapshot) {
         if (plugins != null) {
             for (Plugin plg : plugins) {
                 String ver = plg.getVersion();
-                if (ver != null && ("RELEASE".equals(ver) || "LATEST".equals(ver))) { //NOI18N
+                if (ver != null && ((release && "RELEASE".equals(ver)) ||  //NOI18N
+                        (latest &&"LATEST".equals(ver)) || //NOI18N
+                        (snapshot && ver.endsWith("SNAPSHOT")) //NOI18N
+                    )) {
                     int position = plg.findChildElementPosition(model.getPOMQNames().VERSION.getQName());
                     Line line = NbEditorUtilities.getLine(model.getBaseDocument(), position, false);
                     toRet.add(ErrorDescriptionFactory.createErrorDescription(
@@ -156,7 +166,7 @@ public class ReleaseVersionError implements POMErrorFixProvider {
     }
 
     public JComponent getCustomizer(Preferences preferences) {
-        return null;
+        return new ReleaseVersionErrorCustomizer(preferences);
     }
 
     public Configuration getConfiguration() {

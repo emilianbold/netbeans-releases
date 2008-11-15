@@ -88,7 +88,7 @@ public final class Configuration {
 //                return p;
 //            }
 //        }
-        return NbPreferences.forModule(this.getClass()).node("org/netbeans/modules/maven/hints").node(getId()); //NOI18N
+        return NbPreferences.forModule(this.getClass()).node(getId()); //NOI18N
     }
 
 
