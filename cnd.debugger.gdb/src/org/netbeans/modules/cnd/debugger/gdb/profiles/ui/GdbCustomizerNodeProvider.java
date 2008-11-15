@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,54 +39,56 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.fortran.options;
+package org.netbeans.modules.cnd.debugger.gdb.profiles.ui;
 
-import java.util.prefs.Preferences;
+import java.util.ResourceBundle;
+import org.openide.util.NbBundle;
+import org.openide.nodes.Sheet;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
+import org.openide.util.HelpCtx;
 
-import javax.swing.text.Document;
-import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
+public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
 
-/** 
- * 
- * @author Alexander Simon
- */
-public final class FortranCodeStyle {
+    private ResourceBundle bundle;
+    private CustomizerNode customizerNode = null;
     
-    private Preferences preferences;
-    
-    private FortranCodeStyle(Preferences preferences) {
-        this.preferences = preferences;
+    public CustomizerNode factoryCreate() {
+        if (customizerNode == null) {
+            customizerNode = new GdbCustomizerNode("Debug", getString("Debug")); // NOI18N
+        }
+	return customizerNode;
     }
 
-    /** For testing purposes only */
-    public static FortranCodeStyle get(Preferences prefs) {
-        return new FortranCodeStyle(prefs);
+    /** Look up i18n strings here */
+    private String getString(String s) {
+	if (bundle == null) {
+	    bundle = NbBundle.getBundle(GdbCustomizerNodeProvider.class);
+	}
+	return bundle.getString(s);
     }
 
-    public static FortranCodeStyle get(Document doc) {
-        return new FortranCodeStyle(CodeStylePreferences.get(doc).getPreferences());
-    }
+    static class GdbCustomizerNode extends CustomizerNode {
 
-    // General tabs and indents ------------------------------------------------
-    
-    public boolean expandTabToSpaces() {
-        return preferences.getBoolean(FmtOptions.expandTabToSpaces, FmtOptions.getDefaultAsBoolean(FmtOptions.expandTabToSpaces));
-    }
+	public GdbCustomizerNode(String name, String displayName) {
+	    super(name, displayName, null);
+	}
 
-    public int getTabSize() {
-        return preferences.getInt(FmtOptions.tabSize, FmtOptions.getDefaultAsInt(FmtOptions.tabSize));
-    }
-
-    public int getIndentSize() {
-        return preferences.getInt(FmtOptions.indentSize, FmtOptions.getDefaultAsInt(FmtOptions.indentSize));
-    }
-
-    public boolean isFreeFormatFortran() {
-        return preferences.getBoolean(FmtOptions.freeFormat, FmtOptions.getDefaultAsBoolean(FmtOptions.freeFormat));
-    }
-
-    /** For testing purposes only */
-    public void setFreeFormatFortran(boolean freeFormat) {
-        preferences.putBoolean(FmtOptions.freeFormat, freeFormat);
+        @Override
+	public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor,
+		    Configuration configuration) {
+	    GdbProfile profile = (GdbProfile) configuration.getAuxObject(GdbProfile.GDB_PROFILE_ID);
+	    return profile == null ? null : profile.getSheet();
+	}
+        
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("ProjectPropsDebugging"); // NOI18N
+        }
     }
 }
