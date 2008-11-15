@@ -53,25 +53,30 @@ import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.openide.util.HelpCtx;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
-public class ProfileNodeProvider implements CustomizerNodeProvider {
+public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
 
     private ResourceBundle bundle;
     private CustomizerNode customizerNode = null;
     
     public CustomizerNode factoryCreate() {
-        if (customizerNode == null)
-            customizerNode = createDebugNode();
+        if (customizerNode == null) {
+            customizerNode = new GdbCustomizerNode("Debug", getString("Debug")); // NOI18N
+        }
 	return customizerNode;
     }
 
-    public CustomizerNode createDebugNode() {
-	return new CndProfileGeneralCustomizerNode("Debug", getString("Debug"),null); // NOI18N
+    /** Look up i18n strings here */
+    private String getString(String s) {
+	if (bundle == null) {
+	    bundle = NbBundle.getBundle(GdbCustomizerNodeProvider.class);
+	}
+	return bundle.getString(s);
     }
 
-    static class CndProfileGeneralCustomizerNode extends CustomizerNode {
+    static class GdbCustomizerNode extends CustomizerNode {
 
-	public CndProfileGeneralCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-	    super(name, displayName, children);
+	public GdbCustomizerNode(String name, String displayName) {
+	    super(name, displayName, null);
 	}
 
         @Override
@@ -85,13 +90,5 @@ public class ProfileNodeProvider implements CustomizerNodeProvider {
         public HelpCtx getHelpCtx() {
             return new HelpCtx("ProjectPropsDebugging"); // NOI18N
         }
-    }
-
-    /** Look up i18n strings here */
-    private String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(ProfileNodeProvider.class);
-	}
-	return bundle.getString(s);
     }
 }
