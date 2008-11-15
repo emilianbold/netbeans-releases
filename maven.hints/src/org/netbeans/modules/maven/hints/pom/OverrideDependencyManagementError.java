@@ -138,10 +138,13 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
     private Map<String, String> collectManaged(Project prj) {
         NbMavenProject project = prj.getLookup().lookup(NbMavenProject.class);
         @SuppressWarnings("unchecked")
-        List<org.apache.maven.model.Dependency> plugins = project.getMavenProject().getDependencyManagement().getDependencies();
         HashMap<String, String> toRet = new HashMap<String, String>();
-        for (org.apache.maven.model.Dependency dep : plugins) {
-            toRet.put(dep.getGroupId() + ":" + dep.getArtifactId(), dep.getVersion()); //NOI18N
+        org.apache.maven.model.DependencyManagement dm = project.getMavenProject().getDependencyManagement();
+        if (dm != null) {
+            List<org.apache.maven.model.Dependency> plugins = dm.getDependencies();
+            for (org.apache.maven.model.Dependency dep : plugins) {
+                toRet.put(dep.getGroupId() + ":" + dep.getArtifactId(), dep.getVersion()); //NOI18N
+            }
         }
         return toRet;
     }
