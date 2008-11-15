@@ -52,6 +52,7 @@ import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.View;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 
 /**
@@ -68,6 +69,7 @@ public class JDBCSchema extends SchemaImplementation {
     protected final boolean synthetic;
 
     protected Map<String, Table> tables;
+    protected Map<String, View> views;
 
     public JDBCSchema(JDBCCatalog jdbcCatalog, String name, boolean _default, boolean synthetic) {
         this.jdbcCatalog = jdbcCatalog;
@@ -101,6 +103,16 @@ public class JDBCSchema extends SchemaImplementation {
     }
 
     @Override
+    public View getView(String name) {
+        return MetadataUtilities.find(name, initViews());
+    }
+
+    @Override
+    public Collection<View> getViews() {
+        return initViews().values();
+    }
+
+    @Override
     public String toString() {
         return "JDBCSchema[name='" + name + "',default=" + _default + ",synthetic=" + synthetic + "]"; // NOI18N
     }
@@ -130,6 +142,31 @@ public class JDBCSchema extends SchemaImplementation {
         tables = Collections.unmodifiableMap(newTables);
     }
 
+    private JDBCView createJDBCView(String viewName) {
+        return new JDBCView(this, viewName);
+    }
+
+    private void createViews() {
+        LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
+        Map<String, View> newViews = new LinkedHashMap<String, View>();
+        try {
+            ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getTables(jdbcCatalog.getName(), name, "%", new String[] { "VIEW" }); // NOI18N
+            try {
+                while (rs.next()) {
+                    String viewName = rs.getString("TABLE_NAME"); // NOI18N
+                    View view = createJDBCView(viewName).getView();
+                    newViews.put(viewName, view);
+                    LOGGER.log(Level.FINE, "Created view {0}", view);
+                }
+            } finally {
+                rs.close();
+            }
+        } catch (SQLException e) {
+            throw new MetadataException(e);
+        }
+        views = Collections.unmodifiableMap(newViews);
+    }
+
     private Map<String, Table> initTables() {
         if (tables != null) {
             return tables;
@@ -151,5 +188,13 @@ public class JDBCSchema extends SchemaImplementation {
             return;
         }
         ((JDBCTable) MetadataAccessor.getDefault().getTableImpl(table)).refresh();
+    }
+
+    private Map<String, View> initViews() {
+        if (views != null) {
+            return views;
+        }
+        createViews();
+        return views;
     }
 }

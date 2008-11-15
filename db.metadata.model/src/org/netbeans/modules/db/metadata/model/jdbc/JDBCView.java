@@ -37,67 +37,59 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model;
+package org.netbeans.modules.db.metadata.model.jdbc;
 
-import org.netbeans.modules.db.metadata.model.api.Catalog;
+import java.util.Collection;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
-import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
-import org.netbeans.modules.db.metadata.model.api.View;
-import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
-import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
-import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
-import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ViewImplementation;
 
 /**
- *
- * @author Andrei Badea
+ * This class delegates to an underlying table implementation, as basically
+ * a view is a kind of table.  I didn't do this as inheritance because I
+ * did not want to hard-code an inheritance relationship into the API.  Who
+ * knows, for some implementations, a view is not a table.
+ * 
+ * @author David Van Couvering
  */
-public abstract class MetadataAccessor {
+public class JDBCView extends ViewImplementation {
+    private static final Logger LOGGER = Logger.getLogger(JDBCView.class.getName());
 
-    private static volatile MetadataAccessor accessor;
+    private final JDBCTable table;
 
-    public static void setDefault(MetadataAccessor accessor) {
-        if (MetadataAccessor.accessor != null) {
-            throw new IllegalStateException();
-        }
-        MetadataAccessor.accessor = accessor;
+    public JDBCView(JDBCSchema jdbcSchema, String name) {
+        table = new JDBCTable(jdbcSchema, name);
     }
 
-    public static MetadataAccessor getDefault() {
-        if (accessor != null) {
-            return accessor;
-        }
-        Class c = Metadata.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
-        return accessor;
+    @Override
+    public String toString() {
+        return "JDBCView[name='" + getName() + "']"; // NOI18N
     }
 
-    public abstract MetadataModel createMetadataModel(MetadataModelImplementation impl);
+    @Override
+    public Schema getParent() {
+        return table.getParent();
+    }
 
-    public abstract Metadata createMetadata(MetadataImplementation impl);
+    @Override
+    public String getName() {
+        return table.getName();
+    }
 
-    public abstract Catalog createCatalog(CatalogImplementation impl);
+    @Override
+    public Collection<Column> getColumns() {
+        return table.getColumns();
+    }
 
-    public abstract Schema createSchema(SchemaImplementation impl);
+    @Override
+    public Column getColumn(String name) {
+        return table.getColumn(name);
+    }
 
-    public abstract Table createTable(TableImplementation impl);
+    @Override
+    public void refresh() {
+        table.refresh();
+    }
 
-    public abstract Column createColumn(ColumnImplementation impl);
-
-    public abstract View createView(ViewImplementation impl);
-
-    public abstract CatalogImplementation getCatalogImpl(Catalog catalog);
-
-    public abstract SchemaImplementation getSchemaImpl(Schema schema);
-
-    public abstract TableImplementation getTableImpl(Table table);
 }
