@@ -94,10 +94,12 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             assert model != null;
             try {
                 model.sync();
+                model.refresh();
             } catch (IOException ex) {
                 Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Errror while syncing pom model.", ex);
             }
             if (!model.getState().equals(Model.State.VALID)) {
+                Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Pom model document is not valid, is " + model.getState());
                 HintsController.setErrors(document, "pom", Collections.<ErrorDescription>emptyList());
                 return false;
             }
@@ -120,6 +122,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 FileObject fo = dobj.getPrimaryFile();
                 ModelSource ms = Utilities.createModelSource(fo, true);
                 model = POMModelFactory.getDefault().getModel(ms);
+                model.setAutoSyncActive(false);
                 project = FileOwnerQuery.getOwner(fo);
 //                //TODO weak listener
                 fo.addFileChangeListener(new FileChangeAdapter() {
