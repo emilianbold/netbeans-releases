@@ -59,6 +59,10 @@ cd Contents/Resources/NetBeans*/${NB_CLUSTER_DIR}
 mkdir -p var
 touch var/license_accepted
 
+#fix for 151681
+cd "$NETBEANS_INSTALL_DIR"
+"$dirname"/perm.sh
+
 #add Product ID
 "$dirname"/addproduct_id.sh "NB"
 
