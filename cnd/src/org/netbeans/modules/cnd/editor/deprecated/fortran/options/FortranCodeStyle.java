@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.fortran.options;
+package org.netbeans.modules.cnd.editor.deprecated.fortran.options;
 
 import java.util.prefs.Preferences;
 
