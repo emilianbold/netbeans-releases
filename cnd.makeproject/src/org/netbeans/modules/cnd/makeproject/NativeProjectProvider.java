@@ -629,7 +629,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
-            ArrayList vec2 = new ArrayList<String>();
+            ArrayList<String> vec2 = new ArrayList<String>();
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
             // Convert all paths to absolute paths
             Iterator iter = vec2.iterator();
