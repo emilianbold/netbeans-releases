@@ -60,4 +60,8 @@ public abstract class ProfilesModel extends AbstractDocumentModel<ProfilesCompon
      */
     public abstract ProfilesRoot getProfilesRoot();
 
+    @Override
+    public void refresh() {
+        super.refresh();
+    }
 }

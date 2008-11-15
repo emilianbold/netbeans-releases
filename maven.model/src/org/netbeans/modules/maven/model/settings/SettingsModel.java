@@ -60,4 +60,9 @@ public abstract class SettingsModel extends AbstractDocumentModel<SettingsCompon
      */
     public abstract Settings getSettings();
 
+    @Override
+    public void refresh() {
+        super.refresh();
+    }
+
 }

@@ -60,4 +60,9 @@ public abstract class POMModel extends AbstractDocumentModel<POMComponent> {
      */
     public abstract Project getProject();
 
+    @Override
+    public void refresh() {
+        super.refresh();
+    }
+
 }
