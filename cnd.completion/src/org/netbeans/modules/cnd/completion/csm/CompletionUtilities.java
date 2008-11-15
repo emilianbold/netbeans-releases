@@ -144,7 +144,6 @@ public class CompletionUtilities {
                 baseDoc = (BaseDocument)doc;
             }
             baseDoc = baseDoc != null ? baseDoc : (BaseDocument)target.getDocument();
-            SyntaxSupport sup = baseDoc.getSyntaxSupport();
             int[] idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock(baseDoc, dotPos);
             
             if (idFunBlk == null) {
@@ -153,7 +152,7 @@ public class CompletionUtilities {
             
             boolean searchFuncsOnly = (idFunBlk.length == 3);
             for (int ind = idFunBlk.length - 1; ind >= 1; ind--) {
-                CsmCompletionResult result = query.query(target, baseDoc, idFunBlk[ind], sup, true, false);
+                CsmCompletionResult result = query.query(target, baseDoc, idFunBlk[ind], true, false);
                 if (result != null && result.getItems().size() > 0) {
                     List<CsmObject> filter = getAssociatedObjects(result.getItems(), searchFuncsOnly);
                     CsmObject itm = filter.size() > 0 ? filter.get(0) : getAssociatedObject(result.getItems().get(0));
@@ -161,7 +160,7 @@ public class CompletionUtilities {
                         // It is overloaded method, lets check for the right one
                         int endOfMethod = findEndOfMethod(baseDoc, idFunBlk[ind]-1);
                         if (endOfMethod > -1){
-                            CsmCompletionResult resultx = query.query(target, baseDoc, endOfMethod, sup, true, false);
+                            CsmCompletionResult resultx = query.query(target, baseDoc, endOfMethod, true, false);
                             if (resultx != null && resultx.getItems().size() > 0) {
                                 return getAssociatedObject(resultx.getItems().get(0));
                             }

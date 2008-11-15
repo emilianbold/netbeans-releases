@@ -54,7 +54,6 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
@@ -246,40 +245,36 @@ public class CsmCompletionProvider implements CompletionProvider {
             boolean hide = (caretOffset <= queryAnchorOffset) && (filterPrefix == null);
             if (!hide) {
                 creationCaretOffset = caretOffset;
-                SyntaxSupport syntSupp = Utilities.getSyntaxSupport(component);
-                if (syntSupp != null) {
-                    CsmSyntaxSupport sup = (CsmSyntaxSupport) syntSupp.get(CsmSyntaxSupport.class);
-                    NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
-                    NbCsmCompletionQuery.CsmCompletionResult res = query.query(component, caretOffset, sup);
-                    if (res == null || (res.getItems().isEmpty() && (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY))) {
-                        // switch to global context
-                        if (TRACE) {
-                            System.err.println("query switch to global" + getTestState()); // NOI18N
-                        }
+                NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
+                NbCsmCompletionQuery.CsmCompletionResult res = query.query(component, caretOffset);
+                if (res == null || (res.getItems().isEmpty() && (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY))) {
+                    // switch to global context
+                    if (TRACE) {
+                        System.err.println("query switch to global" + getTestState()); // NOI18N
+                    }
+                    queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
+                    if (res == null || res.isSimpleVariableExpression()) {
+                        // try once more for non dereferenced expressions
+                        query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
+                        res = query.query(component, caretOffset);
+                    }
+                    if (TRACE) {
+                        System.err.println("query switched to global" + getTestState()); // NOI18N
+                    }
+                }
+                if (res != null) {
+                    if (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY &&
+                            !res.isSimpleVariableExpression()) {
+                        // change to global mode
                         queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
-                        if (res == null || res.isSimpleVariableExpression()) {
-                            // try once more for non dereferenced expressions
-                            query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
-                            res = query.query(component, caretOffset, sup);
-                        }
-                        if (TRACE) {
-                            System.err.println("query switched to global" + getTestState()); // NOI18N
-                        }
                     }
-                    if (res != null) {
-                        if (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY &&
-                                !res.isSimpleVariableExpression()) {
-                            // change to global mode
-                            queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
-                        }
-                        queryAnchorOffset = res.getSubstituteOffset();
-                        Collection<CompletionItem> items = res.getItems();
-                        // no more title in NB 6 in completion window
-                        //resultSet.setTitle(res.getTitle());
-                        resultSet.setAnchorOffset(queryAnchorOffset);
-                        queryResult = res;
-                        addItems(resultSet, items);
-                    }
+                    queryAnchorOffset = res.getSubstituteOffset();
+                    Collection<CompletionItem> items = res.getItems();
+                    // no more title in NB 6 in completion window
+                    //resultSet.setTitle(res.getTitle());
+                    resultSet.setAnchorOffset(queryAnchorOffset);
+                    queryResult = res;
+                    addItems(resultSet, items);
                 }
             } else {
                 if (TRACE) {
@@ -408,7 +403,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             BaseDocument bdoc = (BaseDocument) doc;
             //NbCsmCompletionQuery.CsmCompletionResult res = null;// (NbCsmCompletionQuery.CsmCompletionResult)query.tipQuery(component, caretOffset, bdoc.getSyntaxSupport(), false);
 //            NbCsmCompletionQuery query = new NbCsmCompletionQuery();
-            NbCsmCompletionQuery.CsmCompletionResult res = query.query(component, caretOffset, bdoc.getSyntaxSupport(), true, false);
+            NbCsmCompletionQuery.CsmCompletionResult res = query.query(component, caretOffset, true, false);
             if (res != null) {
                 queryCaretOffset = caretOffset;
                 List<List<String>> list = new ArrayList<List<String>>();
