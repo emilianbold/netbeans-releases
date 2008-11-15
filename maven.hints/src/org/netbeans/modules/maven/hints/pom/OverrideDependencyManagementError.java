@@ -42,7 +42,9 @@ package org.netbeans.modules.maven.hints.pom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
@@ -85,8 +87,7 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
             return toRet;
         }
 
-        List<String> managed = collectManaged(prj);
-        System.out.println("managed=" + Arrays.deepToString(managed.toArray()));
+        Map<String, String> managed = collectManaged(prj);
         if (managed.size() == 0) {
             return toRet;
         }
@@ -102,7 +103,7 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
 
     }
 
-    private void checkDependencyList(List<Dependency> deps, POMModel model, List<ErrorDescription> toRet, List<String> managed) {
+    private void checkDependencyList(List<Dependency> deps, POMModel model, List<ErrorDescription> toRet, Map<String, String> managed) {
         if (deps != null) {
             for (Dependency dep : deps) {
                 String ver = dep.getVersion();
@@ -110,12 +111,13 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
                     String art = dep.getArtifactId();
                     String gr = dep.getGroupId();
                     String key = gr + ":" + art; //NOI18N
-                    if (managed.contains(key)) {
+                    if (managed.keySet().contains(key)) {
                         int position = dep.findChildElementPosition(model.getPOMQNames().VERSION.getQName());
                         Line line = NbEditorUtilities.getLine(model.getBaseDocument(), position, false);
+                        String managedver = managed.get(key);
                         toRet.add(ErrorDescriptionFactory.createErrorDescription(
                                        configuration.getSeverity(configuration.getPreferences()).toEditorSeverity(),
-                                "Overrides version defined in DependencyManagement.",
+                                NbBundle.getMessage(OverrideDependencyManagementError.class, "TXT_OverrideDependencyManagementError", managedver),
                                 Collections.<Fix>emptyList(), //Collections.<Fix>singletonList(new ReleaseFix(plg)),
                                 model.getBaseDocument(), line.getLineNumber() + 1));
                     }
@@ -133,13 +135,13 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
         return configuration;
     }
 
-    private List<String> collectManaged(Project prj) {
+    private Map<String, String> collectManaged(Project prj) {
         NbMavenProject project = prj.getLookup().lookup(NbMavenProject.class);
         @SuppressWarnings("unchecked")
         List<org.apache.maven.model.Dependency> plugins = project.getMavenProject().getDependencyManagement().getDependencies();
-        List<String> toRet = new ArrayList<String>();
+        HashMap<String, String> toRet = new HashMap<String, String>();
         for (org.apache.maven.model.Dependency dep : plugins) {
-            toRet.add(dep.getGroupId() + ":" + dep.getArtifactId());
+            toRet.put(dep.getGroupId() + ":" + dep.getArtifactId(), dep.getVersion()); //NOI18N
         }
         return toRet;
     }

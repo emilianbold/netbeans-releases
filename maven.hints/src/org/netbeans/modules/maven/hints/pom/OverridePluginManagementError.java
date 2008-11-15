@@ -42,7 +42,9 @@ package org.netbeans.modules.maven.hints.pom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
@@ -84,7 +86,7 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
             return toRet;
         }
 
-        List<String> managed = collectManaged(prj);
+        Map<String, String> managed = collectManaged(prj);
         if (managed.size() == 0) {
             return toRet;
         }
@@ -106,7 +108,7 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
 
     }
 
-    private void checkPluginList(List<Plugin> plugins, POMModel model, List<ErrorDescription> toRet, List<String> managed) {
+    private void checkPluginList(List<Plugin> plugins, POMModel model, List<ErrorDescription> toRet, Map<String, String> managed) {
         if (plugins != null) {
             for (Plugin plg : plugins) {
                 String ver = plg.getVersion();
@@ -115,12 +117,13 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
                     String gr = plg.getGroupId();
                     gr = gr != null ? gr : Constants.GROUP_APACHE_PLUGINS;
                     String key = gr + ":" + art; //NOI18N
-                    if (managed.contains(key)) {
+                    if (managed.keySet().contains(key)) {
                         int position = plg.findChildElementPosition(model.getPOMQNames().VERSION.getQName());
                         Line line = NbEditorUtilities.getLine(model.getBaseDocument(), position, false);
+                        String managedver = managed.get(key);
                         toRet.add(ErrorDescriptionFactory.createErrorDescription(
                                        configuration.getSeverity(configuration.getPreferences()).toEditorSeverity(),
-                                "Overrides version defined in PluginManagement.",
+                                NbBundle.getMessage(OverridePluginManagementError.class, "TXT_OverridePluginManagementError", managedver),
                                 Collections.<Fix>emptyList(), //Collections.<Fix>singletonList(new ReleaseFix(plg)),
                                 model.getBaseDocument(), line.getLineNumber() + 1));
                     }
@@ -138,13 +141,13 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
         return configuration;
     }
 
-    private List<String> collectManaged(Project prj) {
+    private Map<String, String> collectManaged(Project prj) {
         NbMavenProject project = prj.getLookup().lookup(NbMavenProject.class);
         @SuppressWarnings("unchecked")
         List<org.apache.maven.model.Plugin> plugins = project.getMavenProject().getPluginManagement().getPlugins();
-        List<String> toRet = new ArrayList<String>();
+        Map<String, String> toRet = new HashMap<String, String>();
         for (org.apache.maven.model.Plugin plg : plugins) {
-            toRet.add(plg.getKey());
+            toRet.put(plg.getKey(), plg.getVersion());
         }
         return toRet;
     }
