@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,40 +38,57 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.vmd.io.javame;
 
-import org.netbeans.modules.mobility.snippets.SnippetsPaletteSupport;
-import org.netbeans.modules.vmd.api.io.DataEditorView;
-import org.netbeans.modules.vmd.api.io.DataEditorViewLookupFactory;
-import org.netbeans.modules.vmd.api.io.DataObjectContext;
-import org.netbeans.modules.vmd.api.model.Debug;
-import org.openide.util.Lookup;
+package org.netbeans.modules.cnd.debugger.gdb.profiles.ui;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.ResourceBundle;
+import org.openide.util.NbBundle;
+import org.openide.nodes.Sheet;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
+import org.openide.util.HelpCtx;
 
-/**
- * @author David Kaspar
- */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.DataEditorViewLookupFactory.class)
-public final class MESourceLookupFactory implements DataEditorViewLookupFactory {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
+public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
+
+    private ResourceBundle bundle;
+    private CustomizerNode customizerNode = null;
     
-    public Collection<? extends Object> getLookupObjects(DataObjectContext context, DataEditorView view) {
-        try {
-            if (view instanceof MESourceEditorView  &&  view.getKind() == DataEditorView.Kind.CODE)
-                return Arrays.asList (SnippetsPaletteSupport.getPaletteController(), context.getDataObject ());
-        } catch (IOException e) {
-            Debug.warning(e);
+    public CustomizerNode factoryCreate() {
+        if (customizerNode == null) {
+            customizerNode = new GdbCustomizerNode("Debug", getString("Debug")); // NOI18N
         }
-        return Collections.singleton(context.getDataObject ());
+	return customizerNode;
     }
-    
-    public Collection<? extends Lookup> getLookups(DataObjectContext context, DataEditorView view) {
-        if (view.getKind().equals(DataEditorView.Kind.CODE))
-            return Collections.singleton(view.getContext().getDataObject().getNodeDelegate().getLookup());
-        return null;
+
+    /** Look up i18n strings here */
+    private String getString(String s) {
+	if (bundle == null) {
+	    bundle = NbBundle.getBundle(GdbCustomizerNodeProvider.class);
+	}
+	return bundle.getString(s);
     }
-    
+
+    static class GdbCustomizerNode extends CustomizerNode {
+
+	public GdbCustomizerNode(String name, String displayName) {
+	    super(name, displayName, null);
+	}
+
+        @Override
+	public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor,
+		    Configuration configuration) {
+	    GdbProfile profile = (GdbProfile) configuration.getAuxObject(GdbProfile.GDB_PROFILE_ID);
+	    return profile == null ? null : profile.getSheet();
+	}
+        
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("ProjectPropsDebugging"); // NOI18N
+        }
+    }
 }

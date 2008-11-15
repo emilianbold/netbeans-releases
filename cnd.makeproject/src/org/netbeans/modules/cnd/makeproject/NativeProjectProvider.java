@@ -200,7 +200,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (makeConfiguration != null) {
             for (Object lib : makeConfiguration.getSubProjects()){
                 Project prj = (Project)lib;
-                NativeProject nativeProject = (NativeProject)prj.getLookup().lookup(NativeProject.class);
+                NativeProject nativeProject = prj.getLookup().lookup(NativeProject.class);
                 if (nativeProject != null){
                     list.add(nativeProject);
                 }
@@ -568,7 +568,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (list.size() > 1 || (projectChanged && list.size() == 1)) {
             fireFilesPropertiesChanged(list);
         } else if (list.size() == 1) {
-            fireFilePropertiesChanged((NativeFileItem)list.get(0));
+            fireFilePropertiesChanged(list.get(0));
         } else {
             // nothing
         }

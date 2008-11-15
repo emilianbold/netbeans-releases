@@ -77,8 +77,7 @@ public class MakeConfiguration extends Configuration {
         getString("MakefileName"),
         getString("ApplicationName"),
         getString("DynamicLibraryName"),
-        getString("StaticLibraryName"),
-    };
+        getString("StaticLibraryName"),};
     public static final int TYPE_MAKEFILE = 0;
     public static final int TYPE_APPLICATION = 1;
     public static final int TYPE_DYNAMIC_LIB = 2;
@@ -109,7 +108,7 @@ public class MakeConfiguration extends Configuration {
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
         this(baseDir, name, configurationTypeValue, CompilerSetManager.getDefaultDevelopmentHost());
-    }    
+    }
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String host) {
         super(baseDir, name);
@@ -348,13 +347,13 @@ public class MakeConfiguration extends Configuration {
         copy.assign(this);
         // copy aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects();
-        Vector copiedAuxs = new Vector();
+        Vector<ConfigurationAuxObject> copiedAuxs = new Vector<ConfigurationAuxObject>();
         for (int i = 0; i < auxs.length; i++) {
             if (auxs[i] instanceof ItemConfiguration) {
                 copiedAuxs.add(((ItemConfiguration) auxs[i]).copy(copy));
             } else {
                 String id = auxs[i].getId();
-                ConfigurationAuxObject copyAux = (ConfigurationAuxObject) copy.getAuxObject(id);
+                ConfigurationAuxObject copyAux = copy.getAuxObject(id);
                 if (copyAux != null) {
                     copyAux.assign(auxs[i]);
                     copiedAuxs.add(copyAux);
@@ -413,11 +412,10 @@ public class MakeConfiguration extends Configuration {
         return clone;
     }
 
-    /** @deprecated Use org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration.getBuildSheet() instead */
-    public Sheet getGeneralSheet(Project project) {
-        return getBuildSheet(project);
-    }
-
+//    /** @deprecated Use org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration.getBuildSheet() instead */
+//    public Sheet getGeneralSheet(Project project) {
+//        return getBuildSheet(project);
+//    }
     public Sheet getBuildSheet(Project project) {
         Sheet sheet = new Sheet();
 
@@ -507,9 +505,9 @@ public class MakeConfiguration extends Configuration {
             // Base it on actual files added to project
             for (int x = 0; x < items.length; x++) {
                 ItemConfiguration itemConfiguration = items[x].getItemConfiguration(this);
-                if (itemConfiguration == null || 
-                    itemConfiguration.getExcluded() == null || 
-                    itemConfiguration.getExcluded().getValue()) {
+                if (itemConfiguration == null ||
+                        itemConfiguration.getExcluded() == null ||
+                        itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
                 if (itemConfiguration.getTool() == Tool.CCompiler) {
@@ -592,13 +590,13 @@ public class MakeConfiguration extends Configuration {
 //        ret += Platforms.getPlatform(getPlatform().getValue()).getName();
 //        return ret;
     }
-    
+
     public static String getVariant(CompilerSet compilerSet, int platform) {
         return compilerSet.getName() + "-" + Platforms.getPlatform(platform).getName(); // NOI18N
     }
 
     public Set/*<Project>*/ getSubProjects() {
-        Set subProjects = new HashSet();
+        Set<Project> subProjects = new HashSet<Project>();
         LibrariesConfiguration librariesConfiguration = getLinkerConfiguration().getLibrariesConfiguration();
         LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
         for (int j = 0; j < libraryItems.length; j++) {
@@ -621,8 +619,8 @@ public class MakeConfiguration extends Configuration {
         return subProjects;
     }
 
-    public Set/*<String>*/ getSubProjectLocations() {
-        Set subProjectLocations = new HashSet();
+    public Set<String> getSubProjectLocations() {
+        Set<String> subProjectLocations = new HashSet<String>();
         LibrariesConfiguration librariesConfiguration = getLinkerConfiguration().getLibrariesConfiguration();
         LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
         for (int j = 0; j < libraryItems.length; j++) {
@@ -634,8 +632,8 @@ public class MakeConfiguration extends Configuration {
         return subProjectLocations;
     }
 
-    public Set/*<String>*/ getSubProjectOutputLocations() {
-        Set subProjectOutputLocations = new HashSet();
+    public Set<String> getSubProjectOutputLocations() {
+        Set<String> subProjectOutputLocations = new HashSet<String>();
         LibrariesConfiguration librariesConfiguration = getLinkerConfiguration().getLibrariesConfiguration();
         LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
         for (int j = 0; j < libraryItems.length; j++) {
@@ -651,7 +649,7 @@ public class MakeConfiguration extends Configuration {
         }
         return subProjectOutputLocations;
     }
-    
+
     public String getOutputValue() {
         String output = null;
         if (isLinkerConfiguration()) {
@@ -665,7 +663,7 @@ public class MakeConfiguration extends Configuration {
         }
         return output;
     }
-    
+
     public String getAbsoluteOutputValue() {
         String output = getOutputValue();
 
@@ -678,7 +676,7 @@ public class MakeConfiguration extends Configuration {
         }
         return expandMacros(output);
     }
-    
+
     public String expandMacros(String val) {
         // Substitute macros
         val = IpeUtils.expandMacro(val, "${OUTPUT_PATH}", getOutputValue()); // NOI18N
