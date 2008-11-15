@@ -63,7 +63,7 @@ public class CustomizerRootNodeProvider {
 
     private List<CustomizerNode> getCustomizerNodesRegisteredOldStyle() {
         if (customizerNodes == null) {
-            customizerNodes = new ArrayList();
+            customizerNodes = new ArrayList<CustomizerNode>();
         }
         return customizerNodes;
     }
@@ -99,7 +99,7 @@ public class CustomizerRootNodeProvider {
         }
         return null;
     }
-    
+
     public List<CustomizerNode> getCustomizerNodes(String id) {
         ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
         List<CustomizerNode> nodes = getCustomizerNodes();
