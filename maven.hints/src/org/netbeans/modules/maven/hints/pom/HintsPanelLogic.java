@@ -342,7 +342,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
 
         if ( o instanceof POMErrorFixProvider ) {
             POMErrorFixProvider hint = (POMErrorFixProvider)o;
-            boolean value = hint.getConfiguration().isEnabled(getCurrentPrefernces(hint));
+            boolean value = !hint.getConfiguration().isEnabled(getCurrentPrefernces(hint));
             Preferences mn = getPreferences4Modification(hint);
             hint.getConfiguration().setEnabled(mn, value);
             model.nodeChanged(node);
