@@ -75,7 +75,12 @@ import org.openide.util.lookup.Lookups;
 public final class StatusProvider implements UpToDateStatusProviderFactory {
 
     public UpToDateStatusProvider createUpToDateStatusProvider(Document document) {
-        return new StatusProviderImpl(document);
+        FileObject fo = NbEditorUtilities.getFileObject(document);
+        if (fo != null && "text/x-maven-pom+xml".equals(fo.getMIMEType())) { //NOI18N
+            //workaround for wrong mimetype registration.
+                return new StatusProviderImpl(document);
+        }
+        return null;
     }
 
     static class StatusProviderImpl extends UpToDateStatusProvider {
@@ -90,7 +95,11 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         }
 
 
-        private boolean checkHints() {
+        private void checkHints() {
+            HintsController.setErrors(document, "pom", findHints(model, project));
+        }
+
+        static List<ErrorDescription> findHints(POMModel model, Project project) {
             assert model != null;
             try {
                 model.sync();
@@ -98,14 +107,17 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             } catch (IOException ex) {
                 Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Errror while syncing pom model.", ex);
             }
+            List<ErrorDescription> err = new ArrayList<ErrorDescription>();
             if (!model.getState().equals(Model.State.VALID)) {
                 Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Pom model document is not valid, is " + model.getState());
-                HintsController.setErrors(document, "pom", Collections.<ErrorDescription>emptyList());
-                return false;
+                return err;
+            }
+            if (model.getProject() == null) {
+                Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Pom model root element missing");
+                return err;
             }
             Lookup lkp = Lookups.forPath("org-netbeans-modules-maven-hints"); //NOI18N
             Lookup.Result<POMErrorFixProvider> res = lkp.lookupResult(POMErrorFixProvider.class);
-            List<ErrorDescription> err = new ArrayList<ErrorDescription>();
             for (POMErrorFixProvider prov : res.allInstances()) {
                 if (!prov.getConfiguration().isEnabled(prov.getConfiguration().getPreferences())) {
                     continue;
@@ -115,14 +127,12 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                    err.addAll(lst);
                }
             }
-            HintsController.setErrors(document, "pom", err);
-            return true;
+            return err;
         }
 
         private void initializeModel() {
-            DataObject dobj = NbEditorUtilities.getDataObject(document);
-            if (dobj != null) {
-                FileObject fo = dobj.getPrimaryFile();
+            FileObject fo = NbEditorUtilities.getFileObject(document);
+            if (fo != null) {
                 ModelSource ms = Utilities.createModelSource(fo, true);
                 model = POMModelFactory.getDefault().getModel(ms);
                 model.setAutoSyncActive(false);
