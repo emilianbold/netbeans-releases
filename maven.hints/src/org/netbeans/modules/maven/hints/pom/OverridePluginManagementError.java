@@ -58,6 +58,8 @@ import org.netbeans.modules.maven.model.pom.BuildBase;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Profile;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -120,7 +122,7 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
                         toRet.add(ErrorDescriptionFactory.createErrorDescription(
                                        configuration.getSeverity(configuration.getPreferences()).toEditorSeverity(),
                                 NbBundle.getMessage(OverridePluginManagementError.class, "TXT_OverridePluginManagementError", managedver),
-                                Collections.<Fix>emptyList(), //Collections.<Fix>singletonList(new ReleaseFix(plg)),
+                                Collections.<Fix>singletonList(new OverrideFix(plg)),
                                 model.getBaseDocument(), line.getLineNumber() + 1));
                     }
                 }
@@ -146,6 +148,33 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
             toRet.put(plg.getKey(), plg.getVersion());
         }
         return toRet;
+    }
+
+    private static class OverrideFix implements Fix {
+        private Plugin plugin;
+
+        OverrideFix(Plugin plg) {
+            plugin = plg;
+        }
+
+        public String getText() {
+            return NbBundle.getMessage(OverridePluginManagementError.class, "TEXT_OverridePluginFix");
+        }
+
+        public ChangeInfo implement() throws Exception {
+            ChangeInfo info = new ChangeInfo();
+            POMModel mdl = plugin.getModel();
+            if (!mdl.getState().equals(Model.State.VALID)) {
+                return info;
+            }
+            mdl.startTransaction();
+            try {
+                plugin.setVersion(null);
+            } finally {
+                mdl.endTransaction();
+            }
+            return info;
+        }
     }
 
 }
