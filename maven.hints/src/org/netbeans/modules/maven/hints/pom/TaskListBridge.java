@@ -74,7 +74,7 @@ public class TaskListBridge extends FileTaskScanner {
 
     @Override
     public List<? extends Task> scan(FileObject resource) {
-        if ("text/x-maven-pom+xml".equals(resource.getMIMEType()) 
+        if ("text/x-maven-pom+xml".equals(resource.getMIMEType()) //NOI18N
                 && "pom.xml".equals(resource.getNameExt())) { //NOI18N
             Project prj = FileOwnerQuery.getOwner(resource);
             if (prj != null && prj.getLookup().lookup(NbMavenProject.class) != null) {
