@@ -113,7 +113,7 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
                         toRet.add(ErrorDescriptionFactory.createErrorDescription(
                                        configuration.getSeverity(configuration.getPreferences()).toEditorSeverity(),
                                 NbBundle.getMessage(OverrideDependencyManagementError.class, "TXT_OverrideDependencyManagementError", managedver),
-                                Collections.<Fix>singletonList(new ReleaseFix(dep)),
+                                Collections.<Fix>singletonList(new OverrideFix(dep)),
                                 model.getBaseDocument(), line.getLineNumber() + 1));
                     }
                 }
@@ -144,10 +144,10 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
         return toRet;
     }
 
-    private static class ReleaseFix implements Fix {
+    private static class OverrideFix implements Fix {
         private Dependency dependency;
 
-        ReleaseFix(Dependency dep) {
+        OverrideFix(Dependency dep) {
             dependency = dep;
         }
 
