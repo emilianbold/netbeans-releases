@@ -40,7 +40,6 @@
 package org.netbeans.modules.maven.hints.pom;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -49,16 +48,15 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.hints.pom.spi.Configuration;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
-import org.netbeans.modules.maven.model.pom.Build;
-import org.netbeans.modules.maven.model.pom.BuildBase;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Profile;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -115,7 +113,7 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
                         toRet.add(ErrorDescriptionFactory.createErrorDescription(
                                        configuration.getSeverity(configuration.getPreferences()).toEditorSeverity(),
                                 NbBundle.getMessage(OverrideDependencyManagementError.class, "TXT_OverrideDependencyManagementError", managedver),
-                                Collections.<Fix>emptyList(), //Collections.<Fix>singletonList(new ReleaseFix(plg)),
+                                Collections.<Fix>singletonList(new ReleaseFix(dep)),
                                 model.getBaseDocument(), line.getLineNumber() + 1));
                     }
                 }
@@ -144,6 +142,34 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
             }
         }
         return toRet;
+    }
+
+    private static class ReleaseFix implements Fix {
+        private Dependency dependency;
+
+        ReleaseFix(Dependency dep) {
+            dependency = dep;
+        }
+
+        public String getText() {
+            return NbBundle.getMessage(OverrideDependencyManagementError.class, "TEXT_OverrideDependencyFix");
+        }
+
+        public ChangeInfo implement() throws Exception {
+            ChangeInfo info = new ChangeInfo();
+            POMModel mdl = dependency.getModel();
+            if (!mdl.getState().equals(Model.State.VALID)) {
+                return info;
+            }
+            mdl.startTransaction();
+            try {
+                dependency.setVersion(null);
+            } finally {
+                mdl.endTransaction();
+            }
+            return info;
+        }
+
     }
 
 }
