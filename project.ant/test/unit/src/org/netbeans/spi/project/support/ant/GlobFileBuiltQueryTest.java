@@ -56,6 +56,7 @@ import org.openide.loaders.DataObject;
 
 // XXX testChangesFromAntPropertyChanges
 import org.openide.util.test.MockChangeListener;
+import org.openide.util.test.MockLookup;
 
 /**
  * Test functionality of GlobFileBuiltQuery.
@@ -64,9 +65,7 @@ import org.openide.util.test.MockChangeListener;
 public class GlobFileBuiltQueryTest extends NbTestCase {
     
     static {
-        TestUtil.setLookup(new Object[] {
-            AntBasedTestUtil.testAntBasedProjectType(),
-        });
+        MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType());
     }
     
     public GlobFileBuiltQueryTest(String name) {

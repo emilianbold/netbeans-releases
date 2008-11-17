@@ -51,6 +51,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -69,9 +70,7 @@ public class OpenProjectsTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         scratch = TestUtil.makeScratchDir(this);
-        TestUtil.setLookup(new Object[] {
-            TestUtil.testProjectFactory(),
-        });
+        MockLookup.setInstances(TestUtil.testProjectFactory());
         
         assertNotNull(testProjectFolder = scratch.createFolder("test"));
         assertNotNull(testProjectFolder.createFolder("testproject"));

@@ -52,10 +52,9 @@ import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.api.project.ProjectInformation;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -81,16 +80,14 @@ public class ProjectGeneratorTest extends NbTestCase {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
-        TestUtil.setLookup(Lookups.fixed(new Object[] {
+        MockLookup.setInstances(
             new AntBasedProjectFactorySingleton(),
-            AntBasedTestUtil.testAntBasedProjectType(),
-        }));
+            AntBasedTestUtil.testAntBasedProjectType());
     }
     
     protected void tearDown() throws Exception {
         scratch = null;
         projdir = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
     

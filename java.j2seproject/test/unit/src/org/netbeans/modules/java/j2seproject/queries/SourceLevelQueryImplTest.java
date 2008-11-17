@@ -62,6 +62,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.test.MockLookup;
 
 /**
  * Tests for SourceLevelQueryImpl
@@ -83,12 +84,12 @@ public class SourceLevelQueryImplTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(new Object[] {
+        MockLookup.setInstances(
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.java.project.ProjectSourceLevelQueryImpl(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
             new TestPlatformProvider ()
-        });
+        );
         Properties p = System.getProperties();
         if (p.getProperty ("netbeans.user") == null) {
             p.put("netbeans.user", FileUtil.toFile(TestUtil.makeScratchDir(this)).getAbsolutePath());

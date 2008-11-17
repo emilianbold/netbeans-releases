@@ -71,26 +71,6 @@ public final class TestUtil {
     
     private TestUtil() {}
     
-    /**
-     * Set the global default lookup.
-     * Caution: if you don't include Lookups.metaInfServices, you may have trouble,
-     * e.g. {@link #makeScratchDir} will not work.
-     * @deprecated Use {@link MockLookup} instead.
-     */
-    @Deprecated
-    public static void setLookup(Lookup l) {
-        MockLookup.setLookup(l);
-    }
-    
-    /**
-     * Set the global default lookup with some fixed instances including META-INF/services/*.
-     * @deprecated Use {@link MockLookup} instead.
-     */
-    @Deprecated
-    public static void setLookup(Object... instances) {
-        MockLookup.setInstances(instances);
-    }
-    
     private static boolean warned = false;
     /**
      * Create a scratch directory for tests.

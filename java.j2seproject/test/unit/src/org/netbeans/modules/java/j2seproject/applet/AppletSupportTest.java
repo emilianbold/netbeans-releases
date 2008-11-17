@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Collections;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.openide.modules.SpecificationVersion;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.project.TestUtil;
@@ -64,6 +63,7 @@ import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.util.test.MockLookup;
 
 public class AppletSupportTest extends NbTestCase {
 
@@ -83,13 +83,13 @@ public class AppletSupportTest extends NbTestCase {
         JavaPlatform platform1 = new TestPlatform("TP1","tp1",new Specification("j2se", new SpecificationVersion("1.4")));
         JavaPlatform platform2 = new TestPlatform("TP2","tp2",new Specification("j2se", new SpecificationVersion("1.5")));
         JavaPlatform platform3 = new TestPlatform("TP2","tp3",new Specification("j2se", new SpecificationVersion("1.5.1")));
-        TestUtil.setLookup(new Object[] {
+        MockLookup.setInstances(
             new PlatformProviderImpl(new JavaPlatform[] {
                 platform1,
                 platform2,
                 platform3
-            }),
-        });
+            })
+        );
         scratch = TestUtil.makeScratchDir(this);
         FileObject folderWithSpaces = scratch.createFolder("Folder With Spaces");
         projdir = folderWithSpaces.createFolder("proj");

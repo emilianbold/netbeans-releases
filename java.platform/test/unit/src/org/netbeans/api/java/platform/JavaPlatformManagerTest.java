@@ -52,14 +52,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author Tomas Zezula, Jesse Glick
@@ -72,11 +71,11 @@ public class JavaPlatformManagerTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(Lookups.fixed(new Object[] {new TestJavaPlatformProvider()}));
+        MockLookup.setInstances(new TestJavaPlatformProvider());
     }
 
     public void testGetDefaultPlatform() {
-        TestUtil.setLookup(new Object[0]); // make sure we are using pure defaults
+        MockLookup.setInstances(); // make sure we are using pure defaults
         JavaPlatformManager manager = JavaPlatformManager.getDefault ();
         assertNotNull (manager);
         JavaPlatform p = manager.getDefaultPlatform();

@@ -50,7 +50,6 @@ import java.util.Collections;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
@@ -58,6 +57,7 @@ import org.netbeans.api.project.TestUtil;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.util.test.MockLookup;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Document;
@@ -78,10 +78,10 @@ public class SourceRootsTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(new Object[] {
+        MockLookup.setInstances(
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
-        });
+        );
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
@@ -103,7 +103,6 @@ public class SourceRootsTest extends NbTestCase {
         pm = null;
         pp = null;
         helper = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
 

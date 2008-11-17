@@ -63,10 +63,9 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 
 /**
- * Tests for {@link BootClassPathImplementation}.
  * @author Tomas Zezula
  */
 public class BootClassPathImplementationTest extends NbTestCase {
@@ -93,18 +92,17 @@ public class BootClassPathImplementationTest extends NbTestCase {
         ClassPath defBCP = ClassPathSupport.createClassPath(new URL[]{defaultPlatformBootRoot.getURL()});
         ClassPath expBCP = ClassPathSupport.createClassPath(new URL[]{explicitPlatformBootRoot.getURL()});
         tp = new TestPlatformProvider (defBCP, expBCP);
-        TestUtil.setLookup(new Object[] {
+        MockLookup.setInstances(
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
             tp
-        });
+        );
     }
 
     protected void tearDown() throws Exception {
         scratch = null;
         projdir = null;
         pm = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
     

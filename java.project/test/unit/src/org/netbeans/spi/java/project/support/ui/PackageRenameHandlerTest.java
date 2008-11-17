@@ -49,6 +49,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author Jan Becicka
@@ -80,7 +81,7 @@ public class PackageRenameHandlerTest extends NbTestCase {
     }
     
     public void testRenameHandlerNotCalled() throws Exception {
-        TestUtil.setLookup(new Object[0]);
+        MockLookup.setInstances();
         frh.called = false;
         
         n.setName("blabla");
@@ -88,7 +89,7 @@ public class PackageRenameHandlerTest extends NbTestCase {
     }
     
     public void testRenameHandlerCalled() throws Exception {
-        TestUtil.setLookup(new Object[] {frh});
+        MockLookup.setInstances(frh);
         frh.called = false;
         
         n.setName("foo");// NOI18N
