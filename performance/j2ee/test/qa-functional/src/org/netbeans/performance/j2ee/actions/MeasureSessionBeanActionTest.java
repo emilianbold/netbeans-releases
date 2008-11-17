@@ -39,102 +39,104 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2ee.menus;
+package org.netbeans.performance.j2ee.actions;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
 
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jellytools.RuntimeTabOperator;
+import javax.swing.JTextField;
+
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Test of popup menu on nodes in Runtime View
- * @author  juhrik@netbeans.org, mmirilovic@netbeans.org
+ * Test of finishing dialogs from EJB source editor.
+ *
+ * @author  lmartinek@netbeans.org
  */
+public class MeasureSessionBeanActionTest extends PerformanceTestCase {
+    
+    private static EditorOperator editor;
+    private static NbDialogOperator dialog;
 
+    private String popup_menu;
+    private String title;
+    private String name;
 
-public class AppServerPopupMenuTest extends PerformanceTestCase {
     
-    private static RuntimeTabOperator runtimeTab;
-    protected static Node dataObjectNode;
-    
-    private final String SERVER_REGISTRY = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE");
-    
-   
     /**
-     * Creates a new instance of AppServerPopupMenuTest
+     * Creates a new instance of MeasureSessionBeanActionTest
      */
-    public AppServerPopupMenuTest(String testName) {
+    public MeasureSessionBeanActionTest(String testName) {
         super(testName);
+        expectedTime = WINDOW_OPEN;
     }
     
     /**
-     * Creates a new instance of AppServerPopupMenuTest
+     * Creates a new instance of MeasureSessionBeanActionTest
      */
-    public AppServerPopupMenuTest(String testName, String performanceDataName) {
+    public MeasureSessionBeanActionTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
+        expectedTime = WINDOW_OPEN;
     }
-    
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
-             .addTest(AppServerPopupMenuTest.class)
+             .addTest(MeasureSessionBeanActionTest.class)
              .enableModules(".*").clusters(".*")));
         return suite;
     }
 
-    public void testAppServerPopupMenuRuntime(){
-        testMenu(SERVER_REGISTRY + "|" + "GlassFish V2");
-    }
-    
-    private void testMenu(String path){
-        try {
-            runtimeTab = new RuntimeTabOperator();
-            dataObjectNode = new Node(runtimeTab.getRootNode(), path);
-            doMeasurement();
-        } catch (Exception e) {
-            throw new Error("Exception thrown",e);
-        }
-    }
-    
-            /**
-     * Closes the popup by sending ESC key event.
-     */
-    @Override
-    public void close(){
-        //testedComponentOperator.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
-        // Above sometimes fails in QUEUE mode waiting to menu become visible.
-        // This pushes Escape on underlying JTree which should be always visible
-        dataObjectNode.tree().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-    }
-    
-    
-    @Override
-    public void prepare() {
-        dataObjectNode.select();
-    }
-
-    @Override
-    public ComponentOperator open() {
-        java.awt.Point point = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
-        int button = dataObjectNode.tree().getPopupMouseButton();
-        dataObjectNode.tree().clickMouse(point.x, point.y, 1, button);
-        return new JPopupMenuOperator();
+     public void testAddBusinessMethod(){
+        WAIT_AFTER_OPEN = 1000;
+        popup_menu = "EJB Methods|Add Business Method";
+        title = "Add Business Method...";
+        name = "testBusinessMethod";
+        doMeasurement();
     }
     
     @Override
     public void initialize() {
-        //Utils.startStopServer(true);
+        // open a java file in the editor
+        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"),"Enterprise Beans|TestSessionSB");
+        new OpenAction().performAPI(openFile);
+        editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
+//        new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
+        editor.select(11);
+//        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
     }
     
-    @Override
-    public void shutdown() {
-        //Utils.startStopServer(false);
+    public void prepare() {
+        new ActionNoBlock(null,popup_menu).perform(editor);
+        dialog = new NbDialogOperator(title);
+        JLabelOperator lblOper = new JLabelOperator(dialog, "Name");
+        new JTextFieldOperator((JTextField)lblOper.getLabelFor()).setText(name+CommonUtilities.getTimeIndex());
+   }
+    
+    public ComponentOperator open(){
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        dialog.ok();
+        return null;
     }
 
- 
+    @Override
+    public void shutdown(){
+        repaintManager().resetRegionFilters();   
+        new SaveAllAction().performAPI();
+        editor.closeDiscard();
+    }
+    
 }

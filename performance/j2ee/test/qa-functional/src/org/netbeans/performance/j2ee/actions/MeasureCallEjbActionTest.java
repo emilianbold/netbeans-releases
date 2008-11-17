@@ -42,6 +42,7 @@
 package org.netbeans.performance.j2ee.actions;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2ee.setup.J2EESetup;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -52,28 +53,28 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test of finishing dialogs from WS source editor.
  *
  * @author  lmartinek@netbeans.org
  */
-public class MeasureCallEjbAction extends PerformanceTestCase {
+public class MeasureCallEjbActionTest extends PerformanceTestCase {
     
     private static EditorOperator editor;
     private static NbDialogOperator dialog;
     
     private int index;
 
-    public static final String suiteName="UI Responsiveness J2EE Actions";    
-    
+  
     /**
      * Creates a new instance of MeasureWebServiceAction 
      */
-    public MeasureCallEjbAction(String testName) {
+    public MeasureCallEjbActionTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN = 5000;
@@ -82,12 +83,20 @@ public class MeasureCallEjbAction extends PerformanceTestCase {
     /**
      * Creates a new instance of MeasureEntityBeanAction 
      */
-    public MeasureCallEjbAction(String testName, String performanceDataName) {
+    public MeasureCallEjbActionTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN = 5000;
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
+             .addTest(MeasureCallEjbActionTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
     public void testCallEjbAction() {
         doMeasurement();
     }

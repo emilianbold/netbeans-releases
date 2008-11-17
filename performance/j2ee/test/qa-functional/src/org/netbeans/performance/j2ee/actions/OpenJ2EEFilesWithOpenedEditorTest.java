@@ -45,22 +45,23 @@ package org.netbeans.performance.j2ee.actions;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
+import org.netbeans.performance.j2ee.setup.J2EESetup;
 
 /**
  * Test of opening files.
  *
  * @author  lmartinek@netbeans.org
  */
-public class OpenJ2EEFilesWithOpenedEditor extends OpenJ2EEFiles {
-    
-    public static final String suiteName="UI Responsiveness J2EE Actions";    
+public class OpenJ2EEFilesWithOpenedEditorTest extends OpenJ2EEFilesTest {
     
     /**
      * Creates a new instance of OpenFiles
      * @param testName the name of the test
      */
-    public OpenJ2EEFilesWithOpenedEditor(String testName) {
+    public OpenJ2EEFilesWithOpenedEditorTest(String testName) {
         super(testName);
     }
     
@@ -69,11 +70,19 @@ public class OpenJ2EEFilesWithOpenedEditor extends OpenJ2EEFiles {
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public OpenJ2EEFilesWithOpenedEditor(String testName, String performanceDataName) {
+    public OpenJ2EEFilesWithOpenedEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
     }
-    
-      public void testOpeningJava(){
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
+             .addTest(OpenJ2EEFilesWithOpenedEditorTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testOpeningJava(){
         super.testOpeningJava();
     }
     
@@ -108,7 +117,5 @@ public class OpenJ2EEFilesWithOpenedEditor extends OpenJ2EEFiles {
         super.initialize();
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"), "Source Packages|test|TestSessionRemote.java"));
     }
-    
-   
     
 }

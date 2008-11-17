@@ -43,32 +43,33 @@ package org.netbeans.performance.j2ee.actions;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
-//import java.util.HashMap;
+import org.netbeans.performance.j2ee.setup.J2EESetup;
+
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
-//import org.netbeans.modules.editor.java.JavaKit;
-//import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+
 /**
  * Test of opening files.
  *
  * @author  lmartinek@netbeans.org
  */
-public class OpenJ2EEFiles extends PerformanceTestCase {
+public class OpenJ2EEFilesTest extends PerformanceTestCase {
     
     /** Node to be opened/edited */
     public static Node openNode ;
@@ -89,13 +90,12 @@ public class OpenJ2EEFiles extends PerformanceTestCase {
     
     protected static String EDIT = org.netbeans.jellytools.Bundle.getStringTrimmed("org/openide/actions/Bundle", "Edit");
     
-    public static final String suiteName="UI Responsiveness J2EE Actions";    
-    
+   
     /**
      * Creates a new instance of OpenFiles
      * @param testName the name of the test
      */
-    public OpenJ2EEFiles(String testName) {
+    public OpenJ2EEFilesTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
@@ -105,9 +105,17 @@ public class OpenJ2EEFiles extends PerformanceTestCase {
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public OpenJ2EEFiles(String testName, String performanceDataName) {
+    public OpenJ2EEFilesTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
+             .addTest(OpenJ2EEFilesTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
         class PhaseHandler extends Handler {
@@ -134,115 +142,90 @@ public class OpenJ2EEFiles extends PerformanceTestCase {
     
     public void testOpeningJava(){
         WAIT_AFTER_OPEN = 1000;
-        //MEASURE_PAINT_NUMBER = 1;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-EJBModule";
         filePath = "Source Packages|test|TestSessionRemote.java";
         editorTitle = "TestSessionRemote.java";
         menuItem = OPEN;
-        //repaintManager().setOnlyEditor(true);
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         doMeasurement();
     }
     
     public void testOpeningSessionBean(){
         WAIT_AFTER_OPEN = 1000;
-        //MEASURE_PAINT_NUMBER = 1;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-EJBModule";
         filePath = "Enterprise Beans|TestSessionSB";
         editorTitle = "TestSessionBean.java";
         menuItem = OPEN;
-        //repaintManager().setOnlyEditor(true);
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         doMeasurement();
     }
 
     public void testOpeningEntityBean(){
         WAIT_AFTER_OPEN = 1000;
-        //MEASURE_PAINT_NUMBER = 1;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-EJBModule";
         filePath = "Enterprise Beans|TestEntityEB";
         editorTitle = "TestEntityBean.java";
         menuItem = OPEN;
-        //repaintManager().setOnlyEditor(true);
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         doMeasurement();
     }
     
     public void testOpeningEjbJarXml(){
         WAIT_AFTER_OPEN = 1000;
-        //MEASURE_PAINT_NUMBER = 1;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-EJBModule";
         filePath = "Configuration Files|ejb-jar.xml";
         editorTitle = "ejb-jar.xml";
         menuItem = OPEN;
-        //repaintManager().setOnlyEditor(false);
         repaintManager().resetRegionFilters();    
         doMeasurement();
     }
     
     public void testOpeningSunEjbJarXml(){
         WAIT_AFTER_OPEN = 1000;
-        //MEASURE_PAINT_NUMBER = 1;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-EJBModule";
         filePath = "Configuration Files|sun-ejb-jar.xml";
         editorTitle = "sun-ejb-jar.xml";
         menuItem = OPEN;
-        //repaintManager().setOnlyEditor(false);
         repaintManager().resetRegionFilters();    
         doMeasurement();
     }
 
     public void testOpeningApplicationXml(){
         WAIT_AFTER_OPEN = 1000;
-        //MEASURE_PAINT_NUMBER = 1;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication";
         filePath = "Configuration Files|application.xml";
         editorTitle = "application.xml";
         menuItem = EDIT;
-        //repaintManager().setOnlyEditor(true);
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         doMeasurement();
     }
     
     public void testOpeningSunApplicationXml(){
         WAIT_AFTER_OPEN = 1000;
-        //MEASURE_PAINT_NUMBER = 1;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication";
         filePath = "Configuration Files|sun-application.xml";
         editorTitle = "sun-application.xml";
         menuItem = OPEN;
-        //repaintManager().setOnlyEditor(false);
         repaintManager().resetRegionFilters();   
         doMeasurement();
     }
     
     @Override
     public void initialize(){
-        //repaintManager().setOnlyEditor(true);
         EditorOperator.closeDiscardAll();
-/*        BaseOptions options = BaseOptions.getOptions(JavaKit.class);
-        options.setStatusBarCaretDelay(0);
-        HashMap props = new HashMap();
-        props.put(org.netbeans.editor.SettingsNames.CODE_FOLDING_ENABLE, Boolean.FALSE);
-        options.setCodeFoldingProps(props);*/
-        /* TODO doesn't work after retouche integration
-        JavaSettings java_settings = JavaSettings.getDefault();
-        java_settings.setShowOverriding(false);
-        java_settings.enableCompileStatus(false);
-         */ 
+
     }
 
     @Override
     public void shutdown(){
         Logger.getLogger("TIMER").removeHandler(phaseHandler);
-        //repaintManager().setOnlyEditor(false);
         repaintManager().resetRegionFilters();   
         EditorOperator.closeDiscardAll();
     }
@@ -282,13 +265,6 @@ public class OpenJ2EEFiles extends PerformanceTestCase {
             // HACK
             new SaveAllAction().performAPI();
             ((TopComponentOperator)testedComponentOperator).close();
-            /*
-            if (getName().equals("testOpeningSunApplicationXml")) {
-                ((TopComponentOperator)testedComponentOperator).close();
-            } else {
-                ((TopComponentOperator)testedComponentOperator).closeDiscard();
-            }
-            */
         }
         else {
             throw new Error ("no component to close");

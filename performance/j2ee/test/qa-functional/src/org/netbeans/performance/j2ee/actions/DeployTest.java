@@ -43,19 +43,22 @@ package org.netbeans.performance.j2ee.actions;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.performance.j2ee.setup.J2EESetup;
 
 import java.io.InputStream;
 import java.net.URL;
+
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 
 /**
@@ -63,20 +66,19 @@ import org.netbeans.jemmy.operators.Operator;
  *
  * @author  lmartinek@netbeans.org
  */
-public class Deploy extends PerformanceTestCase {
+public class DeployTest extends PerformanceTestCase {
     
     private Node node;
 
-    public static final String suiteName="UI Responsiveness J2EE Actions";    
-    
+  
     /**
      * Creates a new instance of CreateJ2EEProject
      * @param testName the name of the test
      */
-    public Deploy(String testName) {
+    public DeployTest(String testName) {
         super(testName);
         expectedTime = 60000;
-        WAIT_AFTER_OPEN=240000;
+        WAIT_AFTER_OPEN=120000;
     }
     
     /**
@@ -84,12 +86,20 @@ public class Deploy extends PerformanceTestCase {
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public Deploy(String testName, String performanceDataName) {
+    public DeployTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 60000;
-        WAIT_AFTER_OPEN=240000;
+        WAIT_AFTER_OPEN=120000;
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
+             .addTest(DeployTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
     public void testDeploy() {
         doMeasurement();
     }
@@ -102,20 +112,20 @@ public class Deploy extends PerformanceTestCase {
         tree.setComparator(new Operator.DefaultStringComparator(true, true));
         node = new ProjectRootNode(tree, "DeployTest");
         node.performPopupAction("Build");
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 120000);
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 60000);
         MainWindowOperator.getDefault().waitStatusText("Finished building build.xml (dist)");
     }
     
     @Override
     public void shutdown() {
         RuntimeTabOperator runtimeTab = RuntimeTabOperator.invoke();
-        Node node = new Node(runtimeTab.getRootNode(), Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE")
+        node = new Node(runtimeTab.getRootNode(), Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE")
                 +"|Glassfish V2|"
                 + Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_Applications") + "|"
                 + Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_AppModules") + "|"
                 + "DeployTest");
         node.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_Undeploy"));
-        node.waitNotPresent();
+        //node.waitNotPresent();
         
         CommonUtilities.stopApplicationServer();
     }
@@ -125,7 +135,7 @@ public class Deploy extends PerformanceTestCase {
     }
     
     public ComponentOperator open(){
-        node.performPopupAction("Undeploy and Deploy");
+        node.performPopupAction("Deploy");
         return null;
     }
     

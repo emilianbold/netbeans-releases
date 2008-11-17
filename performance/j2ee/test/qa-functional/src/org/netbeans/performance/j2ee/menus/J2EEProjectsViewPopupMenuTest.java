@@ -46,15 +46,18 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2ee.setup.J2EESetup;
 
 
 /**
  * Test of popup menu on nodes in Projects View.
  * @author  lmartinek@netbeans.org
  */
-public class J2EEProjectsViewPopupMenu extends PerformanceTestCase {
+public class J2EEProjectsViewPopupMenuTest extends PerformanceTestCase {
     
     private static ProjectsTabOperator projectsTab = null;
     protected static Node dataObjectNode;
@@ -63,22 +66,29 @@ public class J2EEProjectsViewPopupMenu extends PerformanceTestCase {
                 "org.netbeans.modules.j2ee.earproject.ui.Bundle",
                 "LBL_LogicalViewNode");
     
-    public static final String suiteName="UI Responsiveness J2EE Menus";    
-    
+   
     /**
-     * Creates a new instance of J2EEProjectsViewPopupMenu 
+     * Creates a new instance of J2EEProjectsViewPopupMenuTest
      */
-    public J2EEProjectsViewPopupMenu(String testName) {
+    public J2EEProjectsViewPopupMenuTest(String testName) {
         super(testName);
     }
-    
+
+
     /**
-     * Creates a new instance of J2EEProjectsViewPopupMenu 
+     * Creates a new instance of J2EEProjectsViewPopupMenuTest
      */
-    public J2EEProjectsViewPopupMenu(String testName, String performanceDataName) {
+    public J2EEProjectsViewPopupMenuTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
     }
     
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
+             .addTest(J2EEProjectsViewPopupMenuTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
     
     public void testEARProjectNodePopupMenu() {
         testNode(getEARProjectNode(), null);

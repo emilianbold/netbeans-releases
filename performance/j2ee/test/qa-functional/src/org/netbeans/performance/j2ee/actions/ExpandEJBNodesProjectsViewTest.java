@@ -42,20 +42,22 @@
 package org.netbeans.performance.j2ee.actions;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2ee.setup.J2EESetup;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.jellytools.actions.RestoreWindowAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test of expanding nodes/folders in the Explorer.
  *
  * @author  mmirilovic@netbeans.org
  */
-public class ExpandEJBNodesProjectsView extends PerformanceTestCase {
+public class ExpandEJBNodesProjectsViewTest extends PerformanceTestCase {
     
     /** Name of the folder which test creates and expands */
     private static String project;
@@ -72,13 +74,12 @@ public class ExpandEJBNodesProjectsView extends PerformanceTestCase {
     /** Project with data for these tests */
     private static String testDataProject = "TestApplication-EJBModule";
     
-    public static final String suiteName="UI Responsiveness J2EE Actions";    
-    
+  
     /**
      * Creates a new instance of ExpandNodesInExplorer
      * @param testName the name of the test
      */
-    public ExpandEJBNodesProjectsView(String testName) {
+    public ExpandEJBNodesProjectsViewTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
@@ -88,11 +89,19 @@ public class ExpandEJBNodesProjectsView extends PerformanceTestCase {
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public ExpandEJBNodesProjectsView(String testName, String performanceDataName) {
+    public ExpandEJBNodesProjectsViewTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
+             .addTest(ExpandEJBNodesProjectsViewTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
 
     public void testExpandEjbProjectNode(){
         WAIT_AFTER_OPEN = 1000;
@@ -109,17 +118,13 @@ public class ExpandEJBNodesProjectsView extends PerformanceTestCase {
         pathToFolderNode = "Enterprise Beans";
         doMeasurement();
     }
-    
+  
     
     @Override
     public void initialize(){
         projectTab = new ProjectsTabOperator();
         new MaximizeWindowAction().performAPI(projectTab);
-        
         projectTab.getProjectRootNode(testDataProject).collapse();
-        
-        turnBadgesOff();
-        //repaintManager().setOnlyExplorer(true);
         repaintManager().addRegionFilter(repaintManager().EXPLORER_FILTER);
     }
         
@@ -144,25 +149,9 @@ public class ExpandEJBNodesProjectsView extends PerformanceTestCase {
     
     @Override
     public void shutdown() {
-        //repaintManager().setOnlyExplorer(false);
         repaintManager().resetRegionFilters();
-        turnBadgesOn();
         projectTab.getProjectRootNode(testDataProject).collapse();
         new RestoreWindowAction().performAPI(projectTab);
     }
 
-    /**
-     * turn badges off
-     */
-    protected void turnBadgesOff() {
-        System.setProperty("perf.dont.resolve.java.badges", "true");
-    }
-
-    /**
-     * turn badges on
-     */
-    protected void turnBadgesOn() {
-        System.setProperty("perf.dont.resolve.java.badges", "false");
-    }
-    
 }

@@ -41,84 +41,77 @@
 
 package org.netbeans.performance.j2ee.dialogs;
 
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyProperties;
-
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2ee.setup.J2EESetup;
 
 /**
- * Test of dialogs from EJB source editor.
+ * Test of Project Properties Window
  *
- * @author  lmartinek@netbeans.org
+ * @author  mmirilovic@netbeans.org
  */
-public class InvokeEJBAction extends PerformanceTestCase {
+public class SelectJ2EEModuleDialogTest extends PerformanceTestCase {
     
-    private static EditorOperator editor;
-    
-    private String popupMenu = null;
-    private String dialogTitle = null;
+    private static Node testNode;
+    private String TITLE;
     
     /**
-     * Creates a new instance of InvokeEJBAction 
+     * Creates a new instance of SelectJ2EEModuleDialogTest
      */
-    public InvokeEJBAction(String testName) {
+    public SelectJ2EEModuleDialogTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 1000;
+        WAIT_AFTER_OPEN = 2000;
     }
     
     /**
-     * Creates a new instance of InvokeEJBAction 
+     * Creates a new instance of SelectJ2EEModuleDialogTest
      */
-    public InvokeEJBAction(String testName, String performanceDataName) {
-        super(testName, performanceDataName);
+    public SelectJ2EEModuleDialogTest(String testName, String performanceDataName) {
+        super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 1000;
+        WAIT_AFTER_OPEN = 2000;
     }
-    
-    public void testAddBusinessMethodDialog(){
-        popupMenu = "EJB Methods|Add Business Method";
-        dialogTitle = "Add Business Method";
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
+             .addTest(SelectJ2EEModuleDialogTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testSelectJ2EEModuleDialog() {
         doMeasurement();
     }
 
-    public void testCallEJBDialog(){
-        popupMenu = "Enterprise Resources|" + 
-                org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbAction");
-        dialogTitle = "Call Enterprise Bean";
-        doMeasurement();
-    }
-    
     public void initialize() {
-        
-        // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"),"Enterprise Beans|TestSessionSB");
-        new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
-        new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
-        editor.select(11);
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
+        JTreeOperator tree = new ProjectsTabOperator().tree();
+        tree.setComparator(new Operator.DefaultStringComparator(true, true));
+        String JAVA_EE_MODULES = Bundle.getStringTrimmed(
+                "org.netbeans.modules.j2ee.earproject.ui.Bundle",
+                "LBL_LogicalViewNode");
+        testNode = new Node(new ProjectRootNode(tree, "TestApplication"), JAVA_EE_MODULES);
     }
     
     public void prepare() {
         // do nothing
-   }
-    
-    public ComponentOperator open(){
-        new ActionNoBlock(null,popupMenu).perform(editor);
-        return new NbDialogOperator(dialogTitle);
     }
-
-    public void shutdown(){
-        editor.closeDiscard();
+    
+    public ComponentOperator open() {
+        // invoke Window / Properties from the main menu
+        testNode.performPopupActionNoBlock("Add Java EE Module...");
+        return new NbDialogOperator("Add Java EE Module");
     }
     
 }

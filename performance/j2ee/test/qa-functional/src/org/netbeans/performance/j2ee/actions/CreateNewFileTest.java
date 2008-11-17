@@ -43,9 +43,9 @@ package org.netbeans.performance.j2ee.actions;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.performance.j2ee.setup.J2EESetup;
 
 import org.netbeans.jellytools.EditorOperator;
-
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.NewFileAction;
@@ -54,14 +54,15 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test of Open File Dialog
  *
  * @author  lmartinek@netbeans.org
  */
-public class CreateNewFile extends PerformanceTestCase {
+public class CreateNewFileTest extends PerformanceTestCase {
     
     private NewFileWizardOperator wizard;
     
@@ -72,34 +73,40 @@ public class CreateNewFile extends PerformanceTestCase {
     private String packageName;
     private boolean isEntity = false;
 
-    public static final String suiteName="UI Responsiveness J2EE Actions";    
-    
-    /**
-     * Creates a new instance of CreateNewFile 
+   /**
+     * Creates a new instance of CreateNewFileTest
      */
-    public CreateNewFile(String testName) {
+    public CreateNewFileTest(String testName) {
         super(testName);
         expectedTime = 5000;
     }
     
     /**
-     * Creates a new instance of CreateNewFile 
+     * Creates a new instance of CreateNewFileTest
      */
-    public CreateNewFile(String testName, String performanceDataName) {
+    public CreateNewFileTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = 5000;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
+             .addTest(CreateNewFileTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
     
     public void testCreateNewSessionBean() {
         WAIT_AFTER_OPEN = 10000;
         project = "TestApplication-ejb";
-        category = "Enterprise";
+        category = "Java EE";
         fileType = "Session Bean";
         fileName = "NewTestSession";
         packageName = "test.newfiles";
         doMeasurement();
     }
-    
+
     public void testCreateNewEntityBean() {
         WAIT_AFTER_OPEN = 10000;
         project = "TestApplication-ejb";
@@ -120,7 +127,7 @@ public class CreateNewFile extends PerformanceTestCase {
         packageName = "test.newfiles";
         doMeasurement();
     }
-     
+
     @Override
     public void initialize() {
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"), "Source Packages|test|TestSessionRemote.java"));

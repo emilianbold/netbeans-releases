@@ -48,17 +48,20 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2ee.setup.J2EESetup;
 
-import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
  * Test of dialogs from WS source editor.
  *
  * @author  lmartinek@netbeans.org
  */
-public class InvokeWSAction extends PerformanceTestCase {
+public class InvokeWSActionTest extends PerformanceTestCase {
     
     private static EditorOperator editor;
     private static Node node;
@@ -67,21 +70,29 @@ public class InvokeWSAction extends PerformanceTestCase {
     private String dialogTitle = null;
     
     /**
-     * Creates a new instance of InvokeWSAction 
+     * Creates a new instance of InvokeWSActionTest
      */
-    public InvokeWSAction(String testName) {
+    public InvokeWSActionTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN = 1000;
     }
     
     /**
-     * Creates a new instance of InvokeWSAction 
+     * Creates a new instance of InvokeWSActionTest
      */
-    public InvokeWSAction(String testName, String performanceDataName) {
+    public InvokeWSActionTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN = 1000;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
+             .addTest(InvokeWSActionTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
     
     public void testAddOperationDialog(){

@@ -49,18 +49,22 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.nodes.Node;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
+
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.performance.j2ee.setup.J2EESetup;
+
 
 /**
  * Test of finishing dialogs from WS source editor.
  *
  * @author  lmartinek@netbeans.org
  */
-public class MeasureWebServiceAction extends PerformanceTestCase {
+public class MeasureWebServiceActionTest extends PerformanceTestCase {
     
     private static EditorOperator editor;
     private static NbDialogOperator dialog;
@@ -70,12 +74,11 @@ public class MeasureWebServiceAction extends PerformanceTestCase {
     private String title;
     private String name;
     
-    public static final String suiteName="UI Responsiveness J2EE Actions";    
-    
+  
     /**
-     * Creates a new instance of MeasureWebServiceAction 
+     * Creates a new instance of MeasureWebServiceActionTest
      */
-    public MeasureWebServiceAction(String testName) {
+    public MeasureWebServiceActionTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
@@ -83,11 +86,19 @@ public class MeasureWebServiceAction extends PerformanceTestCase {
     /**
      * Creates a new instance of MeasureEntityBeanAction 
      */
-    public MeasureWebServiceAction(String testName, String performanceDataName) {
+    public MeasureWebServiceActionTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
+             .addTest(MeasureWebServiceActionTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
      public void testAddOperation(){
         WAIT_AFTER_OPEN = 5000;
         popup_menu = Bundle.getString(
@@ -112,7 +123,6 @@ public class MeasureWebServiceAction extends PerformanceTestCase {
     }
     
     public void prepare() {
-        //new ActionNoBlock(null,popup_menu).perform(editor);
         openFile.performPopupActionNoBlock(popup_menu);
         dialog = new NbDialogOperator(title);
         new JTextFieldOperator(dialog).setText(name+CommonUtilities.getTimeIndex());

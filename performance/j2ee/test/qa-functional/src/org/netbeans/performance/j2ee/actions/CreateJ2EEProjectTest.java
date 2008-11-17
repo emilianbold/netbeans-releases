@@ -43,13 +43,20 @@ package org.netbeans.performance.j2ee.actions;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.performance.j2ee.setup.J2EESetup;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
 
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.LogRecord;
+import java.util.logging.Level;
 
 
 /**
@@ -57,38 +64,68 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
  *
  * @author  lmartinek@netbeans.org
  */
-public class CreateJ2EEProject extends PerformanceTestCase {
+public class CreateJ2EEProjectTest extends PerformanceTestCase {
     
     private NewProjectNameLocationStepOperator wizard_location;
     
     private String category, project, project_name;
     private boolean createSubProjects = false;
-    
-    public static final String suiteName="UI Responsiveness J2EE Actions";    
-    
+	private Logger TIMER=null;
+   
     /**
-     * Creates a new instance of CreateJ2EEProject
+     * Creates a new instance of CreateJ2EEProjectTest
      * @param testName the name of the test
      */
-    public CreateJ2EEProject(String testName) {
+    public CreateJ2EEProjectTest(String testName) {
         super(testName);
         expectedTime = 20000;
-        WAIT_AFTER_OPEN=20000;
+        WAIT_AFTER_OPEN=40000;
     }
     
     /**
-     * Creates a new instance of CreateJ2EEProject
+     * Creates a new instance of CreateJ2EEProjectTest
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public CreateJ2EEProject(String testName, String performanceDataName) {
+    public CreateJ2EEProjectTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 20000;
-        WAIT_AFTER_OPEN=20000;
+        WAIT_AFTER_OPEN=40000;
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
+             .addTest(CreateJ2EEProjectTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+        class PhaseHandler extends Handler {
+
+            public boolean published = false;
+
+            public void publish(LogRecord record) {
+
+            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]"))
+               ActionTracker.getInstance().stopRecording();
+
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+
+        }
+
+    PhaseHandler phaseHandler=new PhaseHandler();
+
+
+
     public void testCreateEnterpriseApplicationProject(){
-        category = "Enterprise";
+        category = "Java EE";
         project = "Enterprise Application";
         project_name = "MyApp";
         createSubProjects = true;
@@ -96,7 +133,7 @@ public class CreateJ2EEProject extends PerformanceTestCase {
     }
    
     public void testCreateStandaloneEnterpriseApplicationProject(){
-        category = "Enterprise";
+        category = "Java EE";
         project = "Enterprise Application";
         project_name = "MyStandaloneApp";
         createSubProjects = false;
@@ -104,26 +141,36 @@ public class CreateJ2EEProject extends PerformanceTestCase {
     }
 
     public void testCreateEJBModuleProject(){
-        category = "Enterprise";
+        category = "Java EE";
         project = "EJB Module";
         project_name = "MyEJBModule";
         doMeasurement();
     }
-    
+    public void testCreateEnterpriseApplicationClient(){
+        category = "Java EE";
+        project = "Enterprise Application Client";
+        project_name = "MyEntAppClient";
+        doMeasurement();
+    }
+
+
     @Override
     public void initialize(){
     }
     
     public void prepare(){
+        TIMER=Logger.getLogger("TIMER");
+	    TIMER.setLevel(Level.FINE);
+        TIMER.addHandler(phaseHandler);
+
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
-        wizard_location.txtProjectLocation().setText(System.getProperty("xtest.tmpdir"));
+        wizard_location.txtProjectLocation().setText(System.getProperty("nbjunit.workdir")+java.io.File.separator+"tmpdir");
         project_name += CommonUtilities.getTimeIndex();
         wizard_location.txtProjectName().setText(project_name);
-        //project_name = wizard_location.txtProjectName().getText();
         wizard_location.next();
         if (project.equals("Enterprise Application")) {
             JCheckBoxOperator createEjb = new JCheckBoxOperator(wizard_location, "Ejb");
@@ -140,10 +187,17 @@ public class CreateJ2EEProject extends PerformanceTestCase {
     
     @Override
     public void close(){
-   /*     ProjectSupport.closeProject(project_name);
-        ProjectSupport.closeProject(project_name+"-EJBModule");
-        ProjectSupport.closeProject(project_name+"-WebModule");*/
+     
     }
-    
+
+    @Override
+    public void shutdown() {
+      TIMER.removeHandler(phaseHandler);
+      CommonUtilities.deleteProject(project_name);
+      if (project.equals("Enterprise Application")) {
+        CommonUtilities.deleteProject(project_name+"-ejb");
+        CommonUtilities.deleteProject(project_name+"-war");
+      }
+    }
     
 }

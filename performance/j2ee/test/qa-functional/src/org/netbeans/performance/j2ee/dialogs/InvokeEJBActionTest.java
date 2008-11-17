@@ -39,113 +39,95 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2ee.actions;
+package org.netbeans.performance.j2ee.dialogs;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-
-import javax.swing.JTextField;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.nodes.Node;
-
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
+
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2ee.setup.J2EESetup;
 
 /**
- * Test of finishing dialogs from EJB source editor.
+ * Test of dialogs from EJB source editor.
  *
  * @author  lmartinek@netbeans.org
  */
-public class MeasureEntityBeanAction extends PerformanceTestCase {
+public class InvokeEJBActionTest extends PerformanceTestCase {
     
     private static EditorOperator editor;
-    private static NbDialogOperator dialog;
     
-    private String popup_menu;
-    private String title;
-    private String name;
- 
-    public static final String suiteName="UI Responsiveness J2EE Actions";    
+    private String popupMenu = null;
+    private String dialogTitle = null;
     
     /**
-     * Creates a new instance of MeasureEntityBeanAction 
+     * Creates a new instance of InvokeEJBActionTest
      */
-    public MeasureEntityBeanAction(String testName) {
+    public InvokeEJBActionTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN = 1000;
     }
     
     /**
-     * Creates a new instance of MeasureEntityBeanAction 
+     * Creates a new instance of InvokeEJBActionTest
      */
-    public MeasureEntityBeanAction(String testName, String performanceDataName) {
+    public InvokeEJBActionTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN = 1000;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EESetup.class)
+             .addTest(InvokeEJBActionTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testAddBusinessMethodDialog(){
+        popupMenu = "EJB Methods|Add Business Method";
+        dialogTitle = "Add Business Method";
+        doMeasurement();
+    }
+
+    public void testCallEJBDialog(){
+        popupMenu = "Enterprise Resources|" + 
+                org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbAction");
+        dialogTitle = "Call Enterprise Bean";
+        doMeasurement();
     }
     
-     public void testAddBusinessMethod(){
-        WAIT_AFTER_OPEN = 1000;
-        popup_menu = "EJB Methods|Add Business Method";
-        title = "Add Business Method";
-        name = "testBusinessMethod";
-        doMeasurement();
-    }
-
-     public void testAddFinderMethod(){
-        WAIT_AFTER_OPEN = 1000;
-        popup_menu = "EJB Methods|Add Finder Method";
-        title = "Add Finder Method";
-        name = "findByTest";
-        doMeasurement();
-    }
-
-     public void testAddSelectMethod(){
-        WAIT_AFTER_OPEN = 1000;
-        popup_menu = "EJB Methods|Add Select Method";
-        title = "Add Select Method";
-        name = "ejbSelectByTest";
-        doMeasurement();
-    }
-     
-     
-    @Override
     public void initialize() {
+        
         // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"),"Enterprise Beans|TestEntityEB");
+        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"),"Enterprise Beans|TestSessionSB");
         new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("TestEntityBean.java");
-//        new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
+        editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
+        new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
         editor.select(11);
-//        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
     }
     
     public void prepare() {
-        new ActionNoBlock(null,popup_menu).perform(editor);
-        dialog = new NbDialogOperator(title);
-//        new JTextFieldOperator(dialog).setText(name+Utils.getTimeIndex());
-        JLabelOperator lblOper = new JLabelOperator(dialog, "Name");
-        new JTextFieldOperator((JTextField)lblOper.getLabelFor()).setText(name+CommonUtilities.getTimeIndex());
-
-//        new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
+        // do nothing
    }
     
     public ComponentOperator open(){
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        dialog.ok();
-        return null;
+        new ActionNoBlock(null,popupMenu).perform(editor);
+        return new NbDialogOperator(dialogTitle);
     }
 
-    @Override
     public void shutdown(){
-        repaintManager().resetRegionFilters();   
-        new SaveAllAction().performAPI();
         editor.closeDiscard();
     }
     
