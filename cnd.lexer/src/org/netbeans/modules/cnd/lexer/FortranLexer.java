@@ -81,7 +81,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
     private static final int IN_STRING_AFTER_BSLASH = 11; //inside string const after backslash
     private static final int IN_LINE_COMMENT = 12;     // inside line comment
     private static final int IN_IDENTIFIER = 13;       // inside identifier
-//    private static final int IN_DOT_IDENTIFIER = 14;   // inside .identifier
+    private static final int IN_DOT_IDENTIFIER = 14;   // inside .identifier
     private static final int IN_WHITESPACE = 15;       // inside white space
     private static final int IN_INT = 16;    // integer number
     private static final int IN_BINARY = 17; // binary number
@@ -216,6 +216,11 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                         case ',':
                             return token(FortranTokenId.COMMA);
                         case ':':
+                            int cc = read();
+                            if (cc == ':') {
+                                return token(FortranTokenId.DOUBLECOLON);
+                            }
+                            backup(1);
                             return token(FortranTokenId.COLON);
                         case '%':
                             return token(FortranTokenId.PERCENT);
@@ -607,10 +612,10 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                     }
                     if (Character.isDigit(c)) {
                         state = IN_REAL;
-//                    } else if (CndLexerUtilities.isFortranIdentifierPart(c)) {
-//                        // Keyword, like .gt., .le., etc.
-//                        backup(1);
-//                        state = IN_DOT_IDENTIFIER;
+                    } else if (CndLexerUtilities.isFortranIdentifierPart(c)) {
+                        // Keyword, like .gt., .le., etc.
+                        backup(2);
+                        state = IN_DOT_IDENTIFIER;
                     } else {
                         state = INIT;
                         backup(1);
@@ -618,24 +623,14 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                     }
                     break;
 
-//                case IN_DOT_IDENTIFIER:
-//                    if (isLineBeyondLimit()) {
-//                        //highlight the first dot and reevaluate the rest of the string since dot
-//                        state = INIT;
-//                        backup(1);
-//                        return token(FortranTokenId.DOT);
-//                    }
-//                    if (CndLexerUtilities.isFortranIdentifierPart(c)) {
-//                        Token<FortranTokenId> t2 = keywordOrIdentifier(c);
-//                        state = INIT;
-//                        c = read();
-//                        backup(1);
-//                        if (c == '\'') {
-//                            state = IN_APOSTROPHE_CHAR;
-//                        }
-//                        return t2;
-//                    }
-//                    break;
+                case IN_DOT_IDENTIFIER:
+                    state = INIT;
+                    Token<FortranTokenId> t2 = keywordOperator(c);
+                    if(t2 != null) {
+                        return t2;
+                    } else {
+                        return token(FortranTokenId.DOT);
+                    }
                 case IN_APOSTROPHE_CHAR:
                     state = INIT;
                     return token(FortranTokenId.APOSTROPHE_CHAR);
@@ -772,11 +767,45 @@ public class FortranLexer implements Lexer<FortranTokenId> {
     }
 
     /**
+     * This function recognizes keyword-operators
+     */
+    private Token<FortranTokenId> keywordOperator(int c) {
+        int readSymbolsNumber = 0;
+        StringBuilder idText = new StringBuilder();
+        idText.append(Character.toLowerCase((char) c));
+        while (true) {
+            c = read();
+            readSymbolsNumber++;
+            if (c == '.') {
+                idText.append(Character.toLowerCase((char) c));
+                FortranTokenId id = getKeywordOperatorID(idText.toString());
+                if(id != null) {
+                    return token(id);
+                } else {
+                    backup(readSymbolsNumber);
+                    return null;
+                }
+            } else if (c == EOF || !CndLexerUtilities.isFortranIdentifierPart(c) || isLineBeyondLimit()) {
+                backup(readSymbolsNumber);
+                return null;
+            } else {
+                idText.append(Character.toLowerCase((char) c));
+            }
+        }
+    }
+    /**
      * This function says is char sequence keyword or identifier
      */
     private FortranTokenId getKeywordOrIdentifierID(CharSequence text) {
         FortranTokenId id = lexerFilter.check(text);
         return id != null ? id : FortranTokenId.IDENTIFIER;
+    }
+
+    /**
+     * This function says is char sequence keyword operator
+     */
+    private FortranTokenId getKeywordOperatorID(CharSequence text) {
+        return lexerFilter.check(text);
     }
 
     /**

@@ -269,7 +269,8 @@ public class TreeMakerUtils {
         
         TypeElement typeElement = wc.getElements().getTypeElement(typeName);
         if (typeElement == null) {
-            throw new IllegalArgumentException("Type " + typeName + " cannot be found"); // NOI18N
+            throw new IllegalArgumentException("Type " + typeName + " cannot be found" +
+                    " among elements of working copy, wc=" + wc + ", elements=" + wc.getElements()); // NOI18N
         }
         return make.QualIdent(typeElement);        
     }

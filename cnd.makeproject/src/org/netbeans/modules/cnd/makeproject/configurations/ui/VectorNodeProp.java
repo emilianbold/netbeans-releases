@@ -128,7 +128,7 @@ public class VectorNodeProp extends PropertySupport {
 
         @Override
         public void setAsText(String text) {
-            List newList = new ArrayList();
+            List<String> newList = new ArrayList<String>();
             StringTokenizer st = new StringTokenizer(text, File.pathSeparator); // NOI18N
             while (st.hasMoreTokens()) {
                 newList.add(st.nextToken());

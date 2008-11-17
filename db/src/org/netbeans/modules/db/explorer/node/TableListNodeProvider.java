@@ -53,7 +53,7 @@ import org.openide.util.Lookup;
  *
  * @author Rob Englander
  */
-public class TableListNodeProvider extends NodeProvider<BaseNode> {
+public class TableListNodeProvider extends NodeProvider {
     
     // lazy initialization holder class idiom for static fields is used
     // for retrieving the factory
@@ -103,7 +103,7 @@ public class TableListNodeProvider extends NodeProvider<BaseNode> {
         } else {
             NodeDataLookup lookup = new NodeDataLookup();
             lookup.add(connection);
-            addNode(new TableListNode(lookup));
+            addNode(TableListNode.create(lookup));
         }
     }
 }

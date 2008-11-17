@@ -58,7 +58,7 @@ import org.openide.util.RequestProcessor;
 // XXX should have an API for this
 class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener {
 
-    private Set files;
+    private Set<FileObject> files;
     private RequestProcessor.Task task;
     private volatile boolean iconChange;
     private volatile boolean nameChange;
@@ -75,7 +75,7 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         super(children, lookup);
     }
 
-    protected final void setFiles(final Set files) {
+    protected final void setFiles(final Set<FileObject> files) {
         if (fs != null && fsl != null) {
             fs.removeFileStatusListener(fsl);
         }
@@ -87,7 +87,7 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         if (files.size() == 0) {
             return;
         }
-        FileObject fo = (FileObject) files.iterator().next();
+        FileObject fo = files.iterator().next();
         if (fo == null) {
             // See IZ 125880
             return;

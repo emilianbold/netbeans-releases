@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
  * @version 1.00
  * implemented after JavaSyntaxSupport
  */
+@Deprecated
 abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
     // Internal C++ declaration token processor states

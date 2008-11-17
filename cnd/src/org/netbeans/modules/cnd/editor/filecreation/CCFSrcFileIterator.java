@@ -38,8 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package  org.netbeans.modules.cnd.editor.filecreation;
+package org.netbeans.modules.cnd.editor.filecreation;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -47,6 +46,7 @@ import java.util.Collections;
 import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.event.ChangeEvent;
@@ -65,38 +65,38 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.util.Lookup;
 
 public class CCFSrcFileIterator implements TemplateWizard.Iterator {
+
     /** Holds list of event listeners */
-    private static Vector listenerList = null;
+    private static Vector<SrcFileWizardListener> listenerList = null;
+    protected WizardDescriptor.Panel<WizardDescriptor> targetChooserDescriptorPanel;
 
-    protected WizardDescriptor.Panel targetChooserDescriptorPanel;
-
-    public WizardDescriptor.Panel current() {
-	return targetChooserDescriptorPanel;
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
+        return targetChooserDescriptorPanel;
     }
-    
+
     public boolean hasNext() {
-	return false;
+        return false;
     }
 
     public boolean hasPrevious() {
-	return false;
+        return false;
     }
-    
+
     public synchronized void nextPanel() {
     }
-    
+
     public synchronized void previousPanel() {
     }
 
-    public void initialize (TemplateWizard wiz) {
+    public void initialize(TemplateWizard wiz) {
         DataObject dobj = wiz.getTemplate();
         Collection<? extends CndHandlableExtensions> lookupAll = Lookup.getDefault().lookupAll(CndHandlableExtensions.class);
 
-        if (lookupAll.contains( dobj.getLoader() )) {
-            Project project = Templates.getProject( wiz );
+        if (lookupAll.contains(dobj.getLoader())) {
+            Project project = Templates.getProject(wiz);
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-            ExtensionsSettings es = ExtensionsSettings.getInstance((CndHandlableExtensions)wiz.getTemplate().getLoader());
+            ExtensionsSettings es = ExtensionsSettings.getInstance((CndHandlableExtensions) wiz.getTemplate().getLoader());
             // this is the only place where we want to differ c headers from cpp headers (creation of new one)
             if (dobj instanceof HDataObject && dobj.getPrimaryFile().getPath().indexOf("cpp") == -1) { //NOI18N
                 es = es.getSpecializedInstance("c-header"); //NOI18N
@@ -106,81 +106,80 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
             targetChooserDescriptorPanel = wiz.targetChooser();
         }
     }
-    
-    public void uninitialize (TemplateWizard wiz) {
-    }
-    
-    public Set instantiate (TemplateWizard wiz) throws IOException {
-        DataFolder targetFolder = wiz.getTargetFolder ();
-        DataObject template = wiz.getTemplate ();
 
-	String filename = wiz.getTargetName();
+    public void uninitialize(TemplateWizard wiz) {
+    }
+
+    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
+        DataFolder targetFolder = wiz.getTargetFolder();
+        DataObject template = wiz.getTemplate();
+
+        String filename = wiz.getTargetName();
 
         DataObject result = template.createFromTemplate(targetFolder, filename);
-        
-	if (result != null) {
-	    fireWizardEvent(new EventObject(result));
-	    OpenCookie open = (OpenCookie) result.getCookie (OpenCookie.class);
-	    if (open != null) {
-		open.open ();
-	    }
-	}
 
-	return Collections.singleton(result);
+        if (result != null) {
+            fireWizardEvent(new EventObject(result));
+            OpenCookie open = result.getCookie(OpenCookie.class);
+            if (open != null) {
+                open.open();
+            }
+        }
+
+        return Collections.<DataObject>singleton(result);
     }
+    private final /*transient*/ Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // Set<ChangeListener>
 
-    private /*transient*/ Set listeners = new HashSet(1); // Set<ChangeListener>
     public final void addChangeListener(ChangeListener l) {
-        synchronized(listeners) {
+        synchronized (listeners) {
             listeners.add(l);
         }
     }
+
     public final void removeChangeListener(ChangeListener l) {
-        synchronized(listeners) {
+        synchronized (listeners) {
             listeners.remove(l);
         }
     }
+
     protected final void fireChangeEvent() {
-        Iterator it;
-       
+        Iterator<ChangeListener> it;
+
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+            (it.next()).stateChanged(ev);
         }
     }
 
     public String name() {
-	return ""; // NOI18N ?????
+        return ""; // NOI18N ?????
     }
 
     /* ------------------------------------------*/
+    protected static void fireWizardEvent(EventObject e) {
+        List<SrcFileWizardListener> listeners = getListenerList();
 
-    protected static void fireWizardEvent(EventObject e)
-    {
-	Vector listeners = getListenerList();
-
-	for (int i = listeners.size()-1; i >= 0; i--) {
-	    ((SrcFileWizardListener)listeners.elementAt(i)).srcFileCreated(e);
-	}
+        for (int i = listeners.size() - 1; i >= 0; i--) {
+            (listeners.get(i)).srcFileCreated(e);
+        }
     }
 
-    private static Vector getListenerList() {
-	if (listenerList == null) {
-	    listenerList = new Vector(0);
-	}
-	return listenerList;
+    private static List<SrcFileWizardListener> getListenerList() {
+        if (listenerList == null) {
+            listenerList = new Vector<SrcFileWizardListener>(0);
+        }
+        return listenerList;
     }
 
     public static void addSrcFileWizardListener(SrcFileWizardListener l) {
-	getListenerList().add(l);
+        getListenerList().add(l);
     }
 
     public static void removeSrcFileWizardListener(SrcFileWizardListener l) {
-	getListenerList().remove(l);
+        getListenerList().remove(l);
     }
-
 }
 

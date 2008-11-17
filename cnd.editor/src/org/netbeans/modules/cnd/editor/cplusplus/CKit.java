@@ -38,26 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 /** C++ editor kit with appropriate document */
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 import java.awt.event.ActionEvent;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
 
 public class CKit extends CCKit {
 
@@ -75,56 +75,55 @@ public class CKit extends CCKit {
     public Syntax createSyntax(Document doc) {
         return new CSyntax();
     }
-    
+
     @Override
     protected Language<CppTokenId> getLanguage() {
         return CppTokenId.languageC();
     }
-    
+
     @Override
     protected Filter<CppTokenId> getFilter() {
         return CndLexerUtilities.getGccCFilter();
     }
-    
+
     @Override
     protected Action getCommentAction() {
-        return new CCommentAction(); 
+        return new CCommentAction();
     }
-    
+
     @Override
     protected Action getUncommentAction() {
-        return new CUncommentAction(); 
+        return new CUncommentAction();
     }
-    
+
     @Override
     protected Action getToggleCommentAction() {
-        return new CToggleCommentAction(); 
+        return new CToggleCommentAction();
     }
-    
     private static String START_BLOCK_COMMENT = "/*"; // NOI18N
     private static String END_BLOCK_COMMENT = "*/"; // NOI18N
-
     private static String insertStartCommentString = START_BLOCK_COMMENT + "\n"; // NOI18N
     private static String insertEndCommentString = END_BLOCK_COMMENT + "\n"; // NOI18N
-    
+
     private static final class CCommentAction extends CommentAction {
+
         private CCommentAction() {
             // fake string 
             super("//"); // NOI18N 
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             doCStyleComment(target);
         }
-        
+
         private static void doCStyleComment(final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
                     target.getToolkit().beep();
                     return;
                 }
-                final BaseDocument doc = (BaseDocument)target.getDocument();
+                final BaseDocument doc = (BaseDocument) target.getDocument();
                 doc.runAtomic(new Runnable() {
 
                     public void run() {
@@ -161,36 +160,36 @@ public class CKit extends CCKit {
                         }
                     }
                 });
-            }        
-        }        
+            }
+        }
     }
-    
+
     private static final class CUncommentAction extends UncommentAction {
+
         private CUncommentAction() {
             // fake string 
             super("//"); // NOI18N 
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             doCStyleUncomment(target);
         }
-        
+
         private static void doCStyleUncomment(final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
                     target.getToolkit().beep();
                     return;
                 }
-                final BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.runAtomic(new Runnable() {
+                final BaseDocument doc = (BaseDocument) target.getDocument();
+                doc.runAtomicAsUser(new Runnable() {
 
                     public void run() {
                         Caret caret = target.getCaret();
                         try {
                             int startPos;
                             int endPos;
-                            //if (caret.isSelectionVisible()) {
                             if (Utilities.isSelectionShowing(caret)) {
                                 startPos = target.getSelectionStart();
                                 endPos = target.getSelectionEnd();
@@ -202,15 +201,19 @@ public class CKit extends CCKit {
                                 endPos = startPos = target.getSelectionStart();
                             }
                             // get token inside selection
-                            CCSyntaxSupport sup = (CCSyntaxSupport) Utilities.getSyntaxSupport(target);
-                            TokenItem item = sup.getTokenChain(startPos, endPos);
-                            while (item != null && item.getOffset() < endPos &&
-                                    item.getTokenID() == CCTokenContext.WHITESPACE) {
-                                item = item.getNext();
+                            TokenSequence<CppTokenId> ts = BracketCompletion.cppTokenSequence(doc, startPos, false);
+                            if (ts == null) {
+                                return;
                             }
-                            if (item != null && item.getTokenID() == CCTokenContext.BLOCK_COMMENT) {
-                                int commentBlockStartOffset = item.getOffset();
-                                int commentBlockEndOffset = commentBlockStartOffset + item.getImage().length();
+                            Token<CppTokenId> tok = ts.token();
+                            int offset = ts.offset();
+                            while (offset < endPos && tok.id() == CppTokenId.WHITESPACE && ts.moveNext()) {
+                                tok = ts.token();
+                                offset = ts.offset();
+                            }
+                            if (tok.id() == CppTokenId.BLOCK_COMMENT) {
+                                int commentBlockStartOffset = offset;
+                                int commentBlockEndOffset = commentBlockStartOffset + tok.length();
                                 int startLineStartPos = Utilities.getRowStart(doc, commentBlockStartOffset);
                                 int startLineEndPos = Utilities.getRowEnd(doc, startLineStartPos);
                                 String startLineContent = doc.getText(startLineStartPos, startLineEndPos - startLineStartPos);
@@ -244,15 +247,16 @@ public class CKit extends CCKit {
                     }
                 });
             }
-        }        
+        }
     }
-    
+
     private static final class CToggleCommentAction extends ToggleCommentAction {
+
         private CToggleCommentAction() {
             // fake string 
             super("//"); // NOI18N 
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (allComments(target)) {
@@ -262,13 +266,14 @@ public class CKit extends CCKit {
             }
         }
 
-        private boolean allComments(final JTextComponent target) {           
-            final BaseDocument doc = (BaseDocument)target.getDocument();
-            final boolean res[] = new boolean[] { false };
-            doc.runAtomic(new Runnable() {
+        private boolean allComments(final JTextComponent target) {
+            final BaseDocument doc = (BaseDocument) target.getDocument();
+            final AtomicBoolean res = new AtomicBoolean(false);
+            doc.runAtomicAsUser(new Runnable() {
+
                 public void run() {
                     Caret caret = target.getCaret();
-                    TokenItem item = null;
+                    Token<CppTokenId> tok = null;
                     try {
                         int startPos;
                         int endPos;
@@ -284,21 +289,22 @@ public class CKit extends CCKit {
                             endPos = startPos = target.getSelectionStart();
                         }
                         // get token inside selection
-                        CCSyntaxSupport sup = (CCSyntaxSupport) Utilities.getSyntaxSupport(target);
-                        item = sup.getTokenChain(startPos, endPos);
-                        while (item != null && item.getOffset() < endPos &&
-                                (item.getTokenID() == CCTokenContext.WHITESPACE)) {
+                        TokenSequence<CppTokenId> ts = BracketCompletion.cppTokenSequence(doc, startPos, false);
+                        if (ts == null) {
+                            return;
+                        }
+                        tok = ts.token();
+                        while (ts.offset() < endPos && tok.id() == CppTokenId.WHITESPACE && ts.moveNext()) {
                             // all in comment means only whitespaces or block commens
-                            item = item.getNext();
-                        }                        
+                            tok = ts.token();
+                        }
                     } catch (BadLocationException e) {
                         target.getToolkit().beep();
                     }
-                    res[0] = (item != null) && (item.getTokenID() == CCTokenContext.BLOCK_COMMENT);
+                    res.set((tok != null) && (tok.id() == CppTokenId.BLOCK_COMMENT));
                 }
             });
-            return res[0];
+            return res.get();
         }
     }
-
 }

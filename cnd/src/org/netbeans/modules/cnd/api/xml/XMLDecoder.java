@@ -38,11 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.api.xml;
 
 import java.util.HashMap;
 
+import java.util.Map;
 import org.xml.sax.Attributes;
 
 /**
@@ -63,17 +63,16 @@ import org.xml.sax.Attributes;
  * then the following trace of XML elements and corresponding callbacks
  * will occur:
  * <pre>
- &lt;family&gt;					start(null)
-    &lt;person firstName="X" lastName="Y"/&gt;	PersonXMLDecoder.start(...)
-    &lt;heritage&gt;Algebra&lt;/heritage&gt;		startElement("heritage", ...)
-						endElement("heritage", "Algebra");
- &lt;/family&gt;					end();
+&lt;family&gt;					start(null)
+&lt;person firstName="X" lastName="Y"/&gt;	PersonXMLDecoder.start(...)
+&lt;heritage&gt;Algebra&lt;/heritage&gt;		startElement("heritage", ...)
+endElement("heritage", "Algebra");
+&lt;/family&gt;					end();
  * </pre>
  * <p>
  * An XMLDecoder should be extended by a subclass, which would typically also
  * implement {@link XMLEncoder} to create a <b>codec</b>.
  */
-
 public abstract class XMLDecoder {
 
     abstract protected String tag();
@@ -87,89 +86,89 @@ public abstract class XMLDecoder {
     abstract protected void endElement(String name, String currentText);
 
     protected void registerXMLDecoder(XMLDecoder decoder) {
-	tagMap.put(decoder.tag(), decoder);
+        tagMap.put(decoder.tag(), decoder);
     }
 
     protected void deregisterXMLDecoder(XMLDecoder decoder) {
-	tagMap.remove(decoder.tag());
+        tagMap.remove(decoder.tag());
     }
-
-
-    private HashMap/*<String,XMLDecoder>*/ tagMap = new HashMap();
+    private Map<String, XMLDecoder> tagMap = new HashMap<String, XMLDecoder>();
     private XMLDecoder currentDecoder;
     private String currentElement;
 
     public XMLDecoder() {
-    } 
+    }
 
     void _startElement(String name, Attributes atts) throws VersionException {
-	if (checkStartRecursion(name, atts))
-	    return;
-	else
-	    startElement(name, atts);
+        if (checkStartRecursion(name, atts)) {
+            return;
+        } else {
+            startElement(name, atts);
+        }
     }
 
     void _endElement(String name, String currentText) {
-	// see if need to terminate the current decoder
-	if (checkEndRecursion(name, currentText)) {
-	    return;
-	} else {
-	    // pass on to current decoder
-	    endElement(name, currentText);
-    }
+        // see if need to terminate the current decoder
+        if (checkEndRecursion(name, currentText)) {
+            return;
+        } else {
+            // pass on to current decoder
+            endElement(name, currentText);
+        }
     }
 
     private boolean checkStartRecursion(String name, Attributes atts)
-	throws VersionException {
+            throws VersionException {
 
-	if (currentDecoder != null) {
-	    currentDecoder._startElement(name, atts);
-	    return true;
-	}
+        if (currentDecoder != null) {
+            currentDecoder._startElement(name, atts);
+            return true;
+        }
 
-	XMLDecoder tentativeDecoder = (XMLDecoder) tagMap.get(name);
-	if (tentativeDecoder != null) {
-	    /* DEBUG
-	    System.out.println("Switching to decoder for " + name);
-	    */
-	    tentativeDecoder.start(atts);	// throws VersionException
-	    // everything went fine, commit to it
-	    currentDecoder = tentativeDecoder;
-	    currentElement = name;
-	    return true;
-	}
-	return false;
+        XMLDecoder tentativeDecoder = tagMap.get(name);
+        if (tentativeDecoder != null) {
+            /* DEBUG
+            System.out.println("Switching to decoder for " + name);
+             */
+            tentativeDecoder.start(atts);	// throws VersionException
+            // everything went fine, commit to it
+            currentDecoder = tentativeDecoder;
+            currentElement = name;
+            return true;
+        }
+        return false;
     }
 
     private boolean checkEndRecursion(String name, String currentText) {
-	if (currentDecoder != null) {
-	    if (currentDecoder.checkEndRecursion(name, currentText)) {
-		return true;
-	    } else if (name.equals(currentElement)) {
-		// ending this decoder
-		currentDecoder.end();
-		currentDecoder = null;
-		currentElement = null;
-		return true;
-	    } else {
-		currentDecoder.endElement(name, currentText);
-	    return true;
-	}
-	}
-	return false;
+        if (currentDecoder != null) {
+            if (currentDecoder.checkEndRecursion(name, currentText)) {
+                return true;
+            } else if (name.equals(currentElement)) {
+                // ending this decoder
+                currentDecoder.end();
+                currentDecoder = null;
+                currentElement = null;
+                return true;
+            } else {
+                currentDecoder.endElement(name, currentText);
+                return true;
+            }
+        }
+        return false;
     }
 
     private void registerXMLDecoder(String tag, XMLDecoder decoder) {
-	tagMap.put(tag, decoder);
+        tagMap.put(tag, decoder);
     }
 
     protected void checkVersion(Attributes atts, String what, int maxVersion)
-        throws VersionException {
+            throws VersionException {
 
         int version = 0;
         String versionString = atts.getValue("version");        // NOI18N
-        if (versionString != null)
+        if (versionString != null) {
             version = new Integer(versionString).intValue();
+        }
         if (version > maxVersion) {
             throw new VersionException(what, maxVersion, version);
         }

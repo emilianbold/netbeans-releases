@@ -140,7 +140,7 @@ public class DefaultProjectActionHandler implements ActionListener {
     
     private static InputOutput mainTab = null;
     private static HandleEvents mainTabHandler = null;
-    private static ArrayList tabNames = new ArrayList();
+    private static ArrayList<String> tabNames = new ArrayList<String>();
     
     class HandleEvents implements ExecutionListener {
         private InputOutput ioTab = null;

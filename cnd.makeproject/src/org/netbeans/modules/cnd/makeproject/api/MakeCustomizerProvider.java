@@ -285,7 +285,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         Iterator it;
 
         synchronized (actionListenerList) {
-            it = new HashSet(actionListenerList).iterator();
+            it = new HashSet<ActionListener>(actionListenerList).iterator();
         }
         while (it.hasNext()) {
             ((ActionListener) it.next()).actionPerformed(e);
