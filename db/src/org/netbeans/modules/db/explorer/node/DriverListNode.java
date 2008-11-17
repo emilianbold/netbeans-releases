@@ -57,7 +57,13 @@ public class DriverListNode extends BaseNode {
     private static final String ICONBASE = null;
     private static final String FOLDER = "DriverList"; //NOI18N
 
-    public DriverListNode(NodeDataLookup lookup) {
+    public static DriverListNode create(NodeDataLookup dataLookup) {
+        DriverListNode node = new DriverListNode(dataLookup);
+        node.setup();
+        return node;
+    }
+
+    private DriverListNode(NodeDataLookup lookup) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER);
     }
         

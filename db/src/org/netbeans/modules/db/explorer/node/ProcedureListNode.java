@@ -52,7 +52,13 @@ public class ProcedureListNode extends BaseNode {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
     private static final String FOLDER = "ProcedureList"; //NOI18N
 
-    public ProcedureListNode(NodeDataLookup lookup) {
+    public static ProcedureListNode create(NodeDataLookup dataLookup) {
+        ProcedureListNode node = new ProcedureListNode(dataLookup);
+        node.setup();
+        return node;
+    }
+
+    private ProcedureListNode(NodeDataLookup lookup) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER);
     }
     
