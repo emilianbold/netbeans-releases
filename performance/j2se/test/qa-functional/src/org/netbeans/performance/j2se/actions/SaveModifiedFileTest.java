@@ -39,83 +39,86 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2se.footprints;
+package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
+
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.actions.SaveAction;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Measure J2SE Project Workflow Memory footprint
+ * Test of Save modified file.
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author  mmirilovic@netbeans.org
  */
-public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
+public class SaveModifiedFileTest extends PerformanceTestCase {
 
-    private String j2seproject;
-    public static final String suiteName="J2SE Footprints suite";
+    /** Editor with opened file */
+    public static EditorOperator editorOperator;
     
-
     /**
-     * Creates a new instance of J2SEProjectWorkflow
+     * Creates a new instance of SaveModifiedFile
      * @param testName the name of the test
      */
-    public J2SEProjectWorkflow(String testName) {
+    public SaveModifiedFileTest(String testName) {
         super(testName);
-        prefix = "J2SE Project Workflow |";
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_PREPARE=2000;
     }
     
     /**
-     * Creates a new instance of J2SEProjectWorkflow
+     * Creates a new instance of SaveModifiedFile
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public J2SEProjectWorkflow(String testName, String performanceDataName) {
+    public SaveModifiedFileTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        prefix = "J2SE Project Workflow |";
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_PREPARE=2000;
     }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+             .addTest(SaveModifiedFileTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testSaveModifiedFile(){
+        doMeasurement();
+    }    
     
-    public void testMeasureMemoryFootprint() {
-        super.testMeasureMemoryFootprint();
+    @Override
+    public void initialize(){
+        EditorOperator.closeDiscardAll();
+	SourcePackagesNode spn=new SourcePackagesNode("PerformanceTestData");
+	Node n=new Node(spn, "org.netbeans.test.performance|Main.java");
+        new OpenAction().performAPI(n);
+        editorOperator = new EditorOperator("Main.java");
     }
 
     @Override
-    public void setUp() {
-        //do nothing
+    public void shutdown(){
+        EditorOperator.closeDiscardAll();
     }
     
-    public void prepare() {
-    }
-    
-    @Override
-    public void initialize() {
-        super.initialize();
-        CommonUtilities.closeAllDocuments();
-        CommonUtilities.closeMemoryToolbar();
+    public void prepare(){
+        editorOperator.setCaretPosition(1, 3);
+        editorOperator.txtEditorPane().typeText("XXX");
     }
     
     public ComponentOperator open(){
-        // Create, edit, build and execute a sample J2SE project
-        j2seproject = CommonUtilities.createproject("Samples|Java", "Anagram Game", true);
-        
-        CommonUtilities.openFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java", false);
-        CommonUtilities.editFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java");
-        CommonUtilities.buildProject(j2seproject);
-        //runProject(j2seproject,true);
-        //debugProject(j2seproject,true);
-        //testProject(j2seproject);
-        //collapseProject(j2seproject);
-        
+        new SaveAction().performShortcut(editorOperator);
+        editorOperator.waitModified(false);
         return null;
-    }
-    
-    @Override
-    public void close(){
-        CommonUtilities.deleteProject(j2seproject);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new J2SEProjectWorkflow("measureMemoryFooprint"));
     }
     
 }

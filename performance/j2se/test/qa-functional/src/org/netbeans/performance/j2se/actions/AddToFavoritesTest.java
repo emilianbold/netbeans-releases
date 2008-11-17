@@ -39,83 +39,87 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2se.footprints;
+package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
+
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.FavoritesOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Measure J2SE Project Workflow Memory footprint
+ * Tests Add to Favorites.
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author  mmirilovic@netbeans.org
  */
-public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
+public class AddToFavoritesTest extends PerformanceTestCase {
 
-    private String j2seproject;
-    public static final String suiteName="J2SE Footprints suite";
+    protected static String ADD_TO_FAVORITES, REMOVE_FROM_FAVORITES;
+    private String fileProject, filePackage, fileName;
+    private Node addToFavoritesNode;
+    private FavoritesOperator favoritesWindow;
     
-
+    
     /**
-     * Creates a new instance of J2SEProjectWorkflow
+     * Creates a new instance of AddToFavorites
      * @param testName the name of the test
      */
-    public J2SEProjectWorkflow(String testName) {
+    public AddToFavoritesTest(String testName) {
         super(testName);
-        prefix = "J2SE Project Workflow |";
+        expectedTime = WINDOW_OPEN;
     }
     
     /**
-     * Creates a new instance of J2SEProjectWorkflow
+     * Creates a new instance of AddToFavorites
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public J2SEProjectWorkflow(String testName, String performanceDataName) {
+    public AddToFavoritesTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        prefix = "J2SE Project Workflow |";
+        expectedTime = WINDOW_OPEN;
     }
-    
-    public void testMeasureMemoryFootprint() {
-        super.testMeasureMemoryFootprint();
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+             .addTest(AddToFavoritesTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testAddJavaFile(){
+        fileProject = "PerformanceTestData";
+        filePackage = "org.netbeans.test.performance";
+        fileName = "Main20kB.java";
+        doMeasurement();
+    }
+
+    public void initialize() {
+        ADD_TO_FAVORITES = Bundle.getStringTrimmed("org.openide.actions.Bundle","CTL_Tools") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.favorites.Bundle","ACT_Add"); // Tools|Add to Favorites
+        REMOVE_FROM_FAVORITES = Bundle.getStringTrimmed("org.netbeans.modules.favorites.Bundle","ACT_Remove"); // Remove from Favorites
+    }
+
+    public ComponentOperator open(){
+        addToFavoritesNode.performMenuAction(ADD_TO_FAVORITES);
+        favoritesWindow = new FavoritesOperator();
+        return favoritesWindow;
     }
 
     @Override
-    public void setUp() {
-        //do nothing
+    public void close() {
+        favoritesWindow.maximize();
+    	Node n=new Node(favoritesWindow.tree(), fileName);
+        n.performPopupAction(REMOVE_FROM_FAVORITES);
+        favoritesWindow.close();
     }
     
     public void prepare() {
-    }
-    
-    @Override
-    public void initialize() {
-        super.initialize();
-        CommonUtilities.closeAllDocuments();
-        CommonUtilities.closeMemoryToolbar();
-    }
-    
-    public ComponentOperator open(){
-        // Create, edit, build and execute a sample J2SE project
-        j2seproject = CommonUtilities.createproject("Samples|Java", "Anagram Game", true);
-        
-        CommonUtilities.openFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java", false);
-        CommonUtilities.editFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java");
-        CommonUtilities.buildProject(j2seproject);
-        //runProject(j2seproject,true);
-        //debugProject(j2seproject,true);
-        //testProject(j2seproject);
-        //collapseProject(j2seproject);
-        
-        return null;
-    }
-    
-    @Override
-    public void close(){
-        CommonUtilities.deleteProject(j2seproject);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new J2SEProjectWorkflow("measureMemoryFooprint"));
+        addToFavoritesNode = new Node(new SourcePackagesNode(fileProject), filePackage + '|' + fileName);
     }
     
 }

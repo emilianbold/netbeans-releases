@@ -8,7 +8,7 @@
  * Development and Distribution License("CDDL") (collectively, the
  * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
+ * http:www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
@@ -38,65 +38,35 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.performance.j2se.setup;
 
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.jellytools.JellyTestCase;
-import java.io.*;
-import org.openide.util.Exceptions;
+package org.myorg.systemproperties;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+
+
 
 /**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests
  *
- * @author  mmirilovic@netbeans.org
+ * @author Administrator
  */
-public class J2SESetup extends JellyTestCase {
-
-    public J2SESetup(java.lang.String testName) {
-        super(testName);
+public class PropertiesNotifier {
+    private static Set listeners = new HashSet();
+    public static void addChangeListener(ChangeListener listener) {
+        listeners.add(listener);
     }
-
-    public void testCloseWelcome() {
-        CommonUtilities.closeWelcome();
+    public static void removeChangeListener(ChangeListener
+            listener) {
+        listeners.remove(listener);
     }
-
-    public void testCloseMemoryToolbar() {
-        CommonUtilities.closeMemoryToolbar();
-    }
-
-    public void testAddTomcatServer() {
-        CommonUtilities.addTomcatServer();
-    }
-
-    public void testOpenDataProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testOpenFoldersProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestFoldersData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testOpenNBProject() {
-
-        try {
-            this.openDataProjects("SystemProperties");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testCloseTaskWindow() {
-        CommonUtilities.closeTaskWindow();
+    public static void changed() {
+        ChangeEvent ev = new ChangeEvent(PropertiesNotifier.class);
+        Iterator it = listeners.iterator();
+        while (it.hasNext())
+            ((ChangeListener) it.next()).stateChanged(ev);
     }
 }

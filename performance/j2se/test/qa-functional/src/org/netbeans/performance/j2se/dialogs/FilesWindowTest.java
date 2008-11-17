@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,83 +39,69 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2se.footprints;
+package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
+
+import org.netbeans.jellytools.FilesTabOperator;
+import org.netbeans.jellytools.actions.FilesViewAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Measure J2SE Project Workflow Memory footprint
- *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * Test opening Files Tab.
+ * @author  mmirilovic@netbeans.org
  */
-public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
+public class FilesWindowTest extends PerformanceTestCase {
 
-    private String j2seproject;
-    public static final String suiteName="J2SE Footprints suite";
     
-
-    /**
-     * Creates a new instance of J2SEProjectWorkflow
-     * @param testName the name of the test
-     */
-    public J2SEProjectWorkflow(String testName) {
+    /** Creates a new instance of FilesWindow */
+    public FilesWindowTest(String testName) {
         super(testName);
-        prefix = "J2SE Project Workflow |";
-    }
-    
-    /**
-     * Creates a new instance of J2SEProjectWorkflow
-     * @param testName the name of the test
-     * @param performanceDataName measured values will be saved under this name
-     */
-    public J2SEProjectWorkflow(String testName, String performanceDataName) {
-        super(testName, performanceDataName);
-        prefix = "J2SE Project Workflow |";
-    }
-    
-    public void testMeasureMemoryFootprint() {
-        super.testMeasureMemoryFootprint();
+        expectedTime = WINDOW_OPEN;
     }
 
-    @Override
-    public void setUp() {
-        //do nothing
+    /** Creates a new instance of FilesWindow*/
+    public FilesWindowTest(String testName, String performanceDataName) {
+        super(testName,performanceDataName);
+        expectedTime = WINDOW_OPEN;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+             .addTest(FilesWindowTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
     
     public void prepare() {
     }
-    
-    @Override
+
     public void initialize() {
-        super.initialize();
-        CommonUtilities.closeAllDocuments();
-        CommonUtilities.closeMemoryToolbar();
+        new FilesTabOperator().close();
     }
     
-    public ComponentOperator open(){
-        // Create, edit, build and execute a sample J2SE project
-        j2seproject = CommonUtilities.createproject("Samples|Java", "Anagram Game", true);
-        
-        CommonUtilities.openFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java", false);
-        CommonUtilities.editFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java");
-        CommonUtilities.buildProject(j2seproject);
-        //runProject(j2seproject,true);
-        //debugProject(j2seproject,true);
-        //testProject(j2seproject);
-        //collapseProject(j2seproject);
-        
-        return null;
+    public ComponentOperator open() {
+        // invoke Files from the main menu
+        new FilesViewAction().performMenu();
+        return new FilesTabOperator();
+    }
+    
+    public void testFilesWindow() {
+        doMeasurement();
+    }    
+    
+    @Override
+    public void close() {
+        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
+            ((FilesTabOperator)testedComponentOperator).close();
     }
     
     @Override
-    public void close(){
-        CommonUtilities.deleteProject(j2seproject);
+    public void shutdown() {
+        new FilesViewAction().perform();
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new J2SEProjectWorkflow("measureMemoryFooprint"));
-    }
-    
 }

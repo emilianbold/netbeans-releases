@@ -39,83 +39,66 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2se.footprints;
+package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
+
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Measure J2SE Project Workflow Memory footprint
+ * Test of Find In Projects dialog.
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author  mmirilovic@netbeans.org
  */
-public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
+public class FindInProjectsTest extends PerformanceTestCase {
 
-    private String j2seproject;
-    public static final String suiteName="J2SE Footprints suite";
+    private String MENU, TITLE;
     
-
-    /**
-     * Creates a new instance of J2SEProjectWorkflow
-     * @param testName the name of the test
-     */
-    public J2SEProjectWorkflow(String testName) {
+    /** Creates a new instance of FindInProjects */
+    public FindInProjectsTest(String testName) {
         super(testName);
-        prefix = "J2SE Project Workflow |";
+        expectedTime = WINDOW_OPEN;
     }
     
-    /**
-     * Creates a new instance of J2SEProjectWorkflow
-     * @param testName the name of the test
-     * @param performanceDataName measured values will be saved under this name
-     */
-    public J2SEProjectWorkflow(String testName, String performanceDataName) {
+    /** Creates a new instance of FindInProjects */
+    public FindInProjectsTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        prefix = "J2SE Project Workflow |";
-    }
-    
-    public void testMeasureMemoryFootprint() {
-        super.testMeasureMemoryFootprint();
+        expectedTime = WINDOW_OPEN;
     }
 
-    @Override
-    public void setUp() {
-        //do nothing
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+             .addTest(FindInProjectsTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
     
-    public void prepare() {
-    }
+    public void testFindInProjects() {
+        doMeasurement();
+    }     
     
     @Override
-    public void initialize() {
-        super.initialize();
-        CommonUtilities.closeAllDocuments();
-        CommonUtilities.closeMemoryToolbar();
+    public void initialize(){
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Edit") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle","LBL_Action_FindInProjects");
+        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle","LBL_FindInProjects");
+    }
+    
+    public void prepare(){
+        new SourcePackagesNode("PerformanceTestData").select();
     }
     
     public ComponentOperator open(){
-        // Create, edit, build and execute a sample J2SE project
-        j2seproject = CommonUtilities.createproject("Samples|Java", "Anagram Game", true);
-        
-        CommonUtilities.openFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java", false);
-        CommonUtilities.editFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java");
-        CommonUtilities.buildProject(j2seproject);
-        //runProject(j2seproject,true);
-        //debugProject(j2seproject,true);
-        //testProject(j2seproject);
-        //collapseProject(j2seproject);
-        
-        return null;
-    }
-    
-    @Override
-    public void close(){
-        CommonUtilities.deleteProject(j2seproject);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new J2SEProjectWorkflow("measureMemoryFooprint"));
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        return new NbDialogOperator(TITLE);
     }
     
 }

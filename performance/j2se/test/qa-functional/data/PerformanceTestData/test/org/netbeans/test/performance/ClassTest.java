@@ -8,7 +8,7 @@
  * Development and Distribution License("CDDL") (collectively, the
  * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
+ * http:www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
@@ -38,65 +38,36 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.performance.j2se.setup;
+package org.netbeans.test.performance;
 
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.jellytools.JellyTestCase;
-import java.io.*;
-import org.openide.util.Exceptions;
+import junit.framework.*;
 
 /**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests
  *
- * @author  mmirilovic@netbeans.org
+ * @author radim
  */
-public class J2SESetup extends JellyTestCase {
+public class ClassTest extends TestCase {
 
-    public J2SESetup(java.lang.String testName) {
+    public ClassTest(String testName) {
         super(testName);
     }
 
-    public void testCloseWelcome() {
-        CommonUtilities.closeWelcome();
+    protected void setUp() throws java.lang.Exception {
     }
 
-    public void testCloseMemoryToolbar() {
-        CommonUtilities.closeMemoryToolbar();
+    protected void tearDown() throws java.lang.Exception {
     }
 
-    public void testAddTomcatServer() {
-        CommonUtilities.addTomcatServer();
+    public static junit.framework.Test suite() {
+
+        junit.framework.TestSuite suite = new junit.framework.TestSuite(ClassTest.class);
+
+        return suite;
     }
 
-    public void testOpenDataProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    // TODO add test methods here. The name must begin with 'test'. For example:
+    public void testInit() {
+        Class clz = new Class ();
     }
-
-    public void testOpenFoldersProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestFoldersData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testOpenNBProject() {
-
-        try {
-            this.openDataProjects("SystemProperties");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testCloseTaskWindow() {
-        CommonUtilities.closeTaskWindow();
-    }
+    
 }

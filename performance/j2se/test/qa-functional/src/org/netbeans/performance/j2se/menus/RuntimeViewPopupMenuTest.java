@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,65 +38,63 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.performance.j2se.setup;
 
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.jellytools.JellyTestCase;
-import java.io.*;
-import org.openide.util.Exceptions;
+package org.netbeans.performance.j2se.menus;
+
+import org.netbeans.modules.performance.utilities.ValidatePopupMenuOnNodes;
+import org.netbeans.performance.j2se.setup.J2SESetup;
+
+import org.netbeans.jellytools.RuntimeTabOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests
- *
- * @author  mmirilovic@netbeans.org
+ * Test of popup menu on nodes in Runtime View
+ * @author  juhrik@netbeans.org, mmirilovic@netbeans.org
  */
-public class J2SESetup extends JellyTestCase {
 
-    public J2SESetup(java.lang.String testName) {
+
+public class RuntimeViewPopupMenuTest extends ValidatePopupMenuOnNodes{
+
+    private static RuntimeTabOperator runtimeTab;
+    private final String SERVER_REGISTRY = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE");
+
+    
+    /** Creates a new instance of RuntimeViewPopupMenu */
+    public RuntimeViewPopupMenuTest(String testName) {
         super(testName);
     }
-
-    public void testCloseWelcome() {
-        CommonUtilities.closeWelcome();
+    
+    /** Creates a new instance of RuntimeViewPopupMenu */
+    public RuntimeViewPopupMenuTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+    }
+    
+    
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+             .addTest(RuntimeViewPopupMenuTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+    public void testServerRegistryPopupMenuRuntime(){
+        testMenu(SERVER_REGISTRY);
+    }
+    
+    public void testTomcatPopupMenuRuntime(){
+        testMenu(SERVER_REGISTRY + "|Tomcat");
+    }
+    
+    private void testMenu(String path){
+        runtimeTab = new RuntimeTabOperator();
+        dataObjectNode = new Node(runtimeTab.getRootNode(), path);
+        doMeasurement();
     }
 
-    public void testCloseMemoryToolbar() {
-        CommonUtilities.closeMemoryToolbar();
-    }
+    @Override
+    public void shutdown(){
+    } 
 
-    public void testAddTomcatServer() {
-        CommonUtilities.addTomcatServer();
-    }
-
-    public void testOpenDataProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testOpenFoldersProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestFoldersData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testOpenNBProject() {
-
-        try {
-            this.openDataProjects("SystemProperties");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testCloseTaskWindow() {
-        CommonUtilities.closeTaskWindow();
-    }
 }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,83 +39,92 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2se.footprints;
+package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
+
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.actions.CloseViewAction;
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Measure J2SE Project Workflow Memory footprint
+ * Test of Closing Editor tabs.
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author  mmirilovic@netbeans.org
  */
-public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
-
-    private String j2seproject;
-    public static final String suiteName="J2SE Footprints suite";
+public class CloseEditorModifiedTest extends PerformanceTestCase {
     
-
+    /** Editor with opened file */
+    public static EditorOperator editorOperator;
+    /** Dialog with asking for Save */
+    private static NbDialogOperator dialog;
+    
+    
     /**
-     * Creates a new instance of J2SEProjectWorkflow
+     * Creates a new instance of CloseEditor
      * @param testName the name of the test
      */
-    public J2SEProjectWorkflow(String testName) {
+    public CloseEditorModifiedTest(String testName) {
         super(testName);
-        prefix = "J2SE Project Workflow |";
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=2000;
     }
     
     /**
-     * Creates a new instance of J2SEProjectWorkflow
+     * Creates a new instance of CloseEditor
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public J2SEProjectWorkflow(String testName, String performanceDataName) {
+    public CloseEditorModifiedTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        prefix = "J2SE Project Workflow |";
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=2000;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+             .addTest(CloseEditorModifiedTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
     
-    public void testMeasureMemoryFootprint() {
-        super.testMeasureMemoryFootprint();
+    public void testCloseEditorModified(){
+        doMeasurement();
+    }    
+    
+    @Override
+    public void initialize(){
+        EditorOperator.closeDiscardAll();
+        new OpenAction().performPopup(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main.java"));
+        editorOperator = new EditorOperator("Main.java");
     }
 
     @Override
-    public void setUp() {
-        //do nothing
+    public void shutdown(){
+        EditorOperator.closeDiscardAll();
     }
     
-    public void prepare() {
-    }
-    
-    @Override
-    public void initialize() {
-        super.initialize();
-        CommonUtilities.closeAllDocuments();
-        CommonUtilities.closeMemoryToolbar();
+    public void prepare(){
+        editorOperator.txtEditorPane().typeText("XXX");
     }
     
     public ComponentOperator open(){
-        // Create, edit, build and execute a sample J2SE project
-        j2seproject = CommonUtilities.createproject("Samples|Java", "Anagram Game", true);
-        
-        CommonUtilities.openFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java", false);
-        CommonUtilities.editFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java");
-        CommonUtilities.buildProject(j2seproject);
-        //runProject(j2seproject,true);
-        //debugProject(j2seproject,true);
-        //testProject(j2seproject);
-        //collapseProject(j2seproject);
-        
-        return null;
+        new CloseViewAction().performMenu(editorOperator); 
+        dialog = new NbDialogOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.text.Bundle", "LBL_SaveFile_Title"));
+        return dialog;
     }
     
     @Override
     public void close(){
-        CommonUtilities.deleteProject(j2seproject);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new J2SEProjectWorkflow("measureMemoryFooprint"));
+        dialog.cancel();
     }
     
 }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,65 +38,61 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.performance.j2se.setup;
 
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.jellytools.JellyTestCase;
-import java.io.*;
-import org.openide.util.Exceptions;
+package org.netbeans.performance.j2se.dialogs;
+
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
+
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests
+ * Test of Java Platform Manager
  *
  * @author  mmirilovic@netbeans.org
  */
-public class J2SESetup extends JellyTestCase {
+public class JavaPlatformManagerTest extends PerformanceTestCase {
 
-    public J2SESetup(java.lang.String testName) {
+    private String MENU, TITLE;
+
+    /** Creates a new instance of JavaPlatformManager */
+    public JavaPlatformManagerTest(String testName) {
         super(testName);
+        expectedTime = WINDOW_OPEN;
+    }
+    
+    /** Creates a new instance of JavaPlatformManager */
+    public JavaPlatformManagerTest(String testName, String performanceDataName) {
+        super(testName,performanceDataName);
+        expectedTime = WINDOW_OPEN;
     }
 
-    public void testCloseWelcome() {
-        CommonUtilities.closeWelcome();
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+             .addTest(JavaPlatformManagerTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
-    public void testCloseMemoryToolbar() {
-        CommonUtilities.closeMemoryToolbar();
+    public void testJavaPlatformManager() {
+        doMeasurement();
     }
-
-    public void testAddTomcatServer() {
-        CommonUtilities.addTomcatServer();
+        
+    public void prepare() {
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.java.platform.ui.Bundle","CTL_PlatformManager");
+        TITLE = Bundle.getStringTrimmed("org.netbeans.api.java.platform.Bundle","TXT_PlatformsManager");
+   }
+    
+    public ComponentOperator open() {
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        return new NbDialogOperator(TITLE);
     }
-
-    public void testOpenDataProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testOpenFoldersProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestFoldersData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testOpenNBProject() {
-
-        try {
-            this.openDataProjects("SystemProperties");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testCloseTaskWindow() {
-        CommonUtilities.closeTaskWindow();
-    }
+    
 }

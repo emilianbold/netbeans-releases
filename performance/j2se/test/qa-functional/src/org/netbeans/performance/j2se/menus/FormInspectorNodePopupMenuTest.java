@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,65 +38,63 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.performance.j2se.setup;
+package org.netbeans.performance.j2se.menus;
 
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.jellytools.JellyTestCase;
-import java.io.*;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.performance.utilities.ValidatePopupMenuOnNodes;
+import org.netbeans.performance.j2se.setup.J2SESetup;
+
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests
- *
- * @author  mmirilovic@netbeans.org
+ * Test of popup menu on node in Component Inspector.
+ * @author  juhrik@netbeans.org, mmirilovic@netbeans.org
  */
-public class J2SESetup extends JellyTestCase {
+public class FormInspectorNodePopupMenuTest extends ValidatePopupMenuOnNodes {
 
-    public J2SESetup(java.lang.String testName) {
+
+
+    /** Creates a new instance of FormInspectorNodePopupMenu */
+    public FormInspectorNodePopupMenuTest(String testName) {
         super(testName);
     }
-
-    public void testCloseWelcome() {
-        CommonUtilities.closeWelcome();
+    
+    /** Creates a new instance of FormInspectorNodePopupMenu */
+    public FormInspectorNodePopupMenuTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
     }
 
-    public void testCloseMemoryToolbar() {
-        CommonUtilities.closeMemoryToolbar();
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+             .addTest(FormInspectorNodePopupMenuTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
-    public void testAddTomcatServer() {
-        CommonUtilities.addTomcatServer();
+    public void testFormNodePopupMenuInspector(){
+        doMeasurement();
+    }
+   
+    @Override
+     public void initialize(){
+        CommonUtilities.openSmallFormFile();
+     }
+    
+    @Override
+    public void shutdown(){
+        EditorOperator.closeDiscardAll();
     }
 
-    public void testOpenDataProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    @Override
+    public void prepare(){
+        String path = "[JFrame]";
+        dataObjectNode = new Node(new ComponentInspectorOperator().treeComponents(), path);
+        super.prepare();
     }
 
-    public void testOpenFoldersProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestFoldersData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testOpenNBProject() {
-
-        try {
-            this.openDataProjects("SystemProperties");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testCloseTaskWindow() {
-        CommonUtilities.closeTaskWindow();
-    }
 }

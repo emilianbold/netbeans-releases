@@ -39,83 +39,88 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2se.footprints;
+package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
+
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
 
 /**
- * Measure J2SE Project Workflow Memory footprint
+ * Test of typing in opened source editor.
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
-
-    private String j2seproject;
-    public static final String suiteName="J2SE Footprints suite";
+public class CommentingCodeInEditorTest extends PerformanceTestCase {
     
-
-    /**
-     * Creates a new instance of J2SEProjectWorkflow
-     * @param testName the name of the test
-     */
-    public J2SEProjectWorkflow(String testName) {
+    private EditorOperator editorOperator;
+    protected String fileName;
+    protected int caretPositionX, caretPositionY;
+    Node fileToBeOpened;
+    
+    /** Creates a new instance of TypingInEditor */
+    public CommentingCodeInEditorTest(String testName) {
         super(testName);
-        prefix = "J2SE Project Workflow |";
+        WAIT_AFTER_OPEN = 200;
     }
     
-    /**
-     * Creates a new instance of J2SEProjectWorkflow
-     * @param testName the name of the test
-     * @param performanceDataName measured values will be saved under this name
-     */
-    public J2SEProjectWorkflow(String testName, String performanceDataName) {
+    /** Creates a new instance of TypingInEditor */
+    public CommentingCodeInEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        prefix = "J2SE Project Workflow |";
+        WAIT_AFTER_OPEN = 200;
     }
-    
-    public void testMeasureMemoryFootprint() {
-        super.testMeasureMemoryFootprint();
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+             .addTest(CommentingCodeInEditorTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+  
+    public void testCommentingCode() {
+        fileName = "Main20kB.java";
+        caretPositionX = 53;
+        caretPositionY = 1;
+        fileToBeOpened = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
+        doMeasurement();
     }
 
     @Override
-    public void setUp() {
-        //do nothing
+    public void initialize() {
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
     }
     
     public void prepare() {
-    }
-    
-    @Override
-    public void initialize() {
-        super.initialize();
-        CommonUtilities.closeAllDocuments();
-        CommonUtilities.closeMemoryToolbar();
+        new OpenAction().performAPI(fileToBeOpened);
+        editorOperator = EditorWindowOperator.getEditor(fileName);
+        editorOperator.setCaretPosition(caretPositionX,caretPositionY);
+        editorOperator.typeKey('/');
+        editorOperator.typeKey('*');
     }
     
     public ComponentOperator open(){
-        // Create, edit, build and execute a sample J2SE project
-        j2seproject = CommonUtilities.createproject("Samples|Java", "Anagram Game", true);
-        
-        CommonUtilities.openFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java", false);
-        CommonUtilities.editFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java");
-        CommonUtilities.buildProject(j2seproject);
-        //runProject(j2seproject,true);
-        //debugProject(j2seproject,true);
-        //testProject(j2seproject);
-        //collapseProject(j2seproject);
-        
+        editorOperator.typeKey('a');
         return null;
+    }
+   
+    @Override
+    public void close() {
+        editorOperator.closeDiscard();
     }
     
     @Override
-    public void close(){
-        CommonUtilities.deleteProject(j2seproject);
+    public void shutdown() {
+        repaintManager().resetRegionFilters();
+        editorOperator.closeDiscard();
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new J2SEProjectWorkflow("measureMemoryFooprint"));
-    }
-    
+
 }

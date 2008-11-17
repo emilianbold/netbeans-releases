@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,83 +39,72 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2se.footprints;
+package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
+
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.RuntimeTabOperator;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
+
 
 /**
- * Measure J2SE Project Workflow Memory footprint
+ * Test of New Database Connection dialog
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
+public class NewDatabaseConnectionDialogTest extends PerformanceTestCase {
 
-    private String j2seproject;
-    public static final String suiteName="J2SE Footprints suite";
+    private Node thenode;
+    private String BUNDLE, MENU, TITLE;
     
-
-    /**
-     * Creates a new instance of J2SEProjectWorkflow
-     * @param testName the name of the test
-     */
-    public J2SEProjectWorkflow(String testName) {
+    
+    /** Creates a new instance of NewDatabaseConnectionDialog */
+    public NewDatabaseConnectionDialogTest(String testName) {
         super(testName);
-        prefix = "J2SE Project Workflow |";
+        expectedTime = WINDOW_OPEN;
     }
     
-    /**
-     * Creates a new instance of J2SEProjectWorkflow
-     * @param testName the name of the test
-     * @param performanceDataName measured values will be saved under this name
-     */
-    public J2SEProjectWorkflow(String testName, String performanceDataName) {
-        super(testName, performanceDataName);
-        prefix = "J2SE Project Workflow |";
-    }
-    
-    public void testMeasureMemoryFootprint() {
-        super.testMeasureMemoryFootprint();
+    /** Creates a new instance of NewDatabaseConnectionDialog */
+    public NewDatabaseConnectionDialogTest(String testName, String performanceDataName) {
+        super(testName,performanceDataName);
+        expectedTime = WINDOW_OPEN;
     }
 
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+             .addTest(NewDatabaseConnectionDialogTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testNewDatabaseConnectionDialog() {
+        doMeasurement();
+    }
+        
     @Override
-    public void setUp() {
-        //do nothing
+    public void initialize() {
+        BUNDLE = "org.netbeans.modules.db.resources.Bundle";
+        MENU = Bundle.getStringTrimmed(BUNDLE,"ConnectUsing");
+        TITLE = Bundle.getStringTrimmed(BUNDLE,"NewConnectionDialogTitle");
+        
+        String NODE = Bundle.getStringTrimmed(BUNDLE,"NDN_Databases") + "|" + Bundle.getStringTrimmed(BUNDLE,"NDN_Drivers") + "|" + "JDBC-ODBC Bridge"; //NOI18N impossible
+        thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), NODE);
+        thenode.select();
     }
     
     public void prepare() {
     }
-    
-    @Override
-    public void initialize() {
-        super.initialize();
-        CommonUtilities.closeAllDocuments();
-        CommonUtilities.closeMemoryToolbar();
-    }
-    
-    public ComponentOperator open(){
-        // Create, edit, build and execute a sample J2SE project
-        j2seproject = CommonUtilities.createproject("Samples|Java", "Anagram Game", true);
         
-        CommonUtilities.openFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java", false);
-        CommonUtilities.editFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java");
-        CommonUtilities.buildProject(j2seproject);
-        //runProject(j2seproject,true);
-        //debugProject(j2seproject,true);
-        //testProject(j2seproject);
-        //collapseProject(j2seproject);
-        
-        return null;
-    }
-    
-    @Override
-    public void close(){
-        CommonUtilities.deleteProject(j2seproject);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new J2SEProjectWorkflow("measureMemoryFooprint"));
+    public ComponentOperator open() {
+        thenode.callPopup().pushMenu(MENU);
+        return new NbDialogOperator(TITLE);
     }
     
 }

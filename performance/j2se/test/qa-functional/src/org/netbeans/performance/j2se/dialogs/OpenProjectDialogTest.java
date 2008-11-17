@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,27 +39,66 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2se;
+package org.netbeans.performance.j2se.dialogs;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
+
 /**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests
+ * Test of Open Project Dialog
  *
- * @author  rkubacki@netbeans.org, mmirilovic@netbeans.org
+ * @author  mmirilovic@netbeans.org
  */
-public class MeasureJ2SESetupTest {
+public class OpenProjectDialogTest extends PerformanceTestCase {
+
+    private String MENU, TITLE;
+   
+
+    /** Creates a new instance of OpenProjectDialog */
+    public OpenProjectDialogTest(String testName) {
+        super(testName);
+        expectedTime = WINDOW_OPEN;
+    }
+    
+    /** Creates a new instance of OpenProjectDialog */
+    public OpenProjectDialogTest(String testName, String performanceDataName) {
+        super(testName,performanceDataName);
+        expectedTime = WINDOW_OPEN;
+    }
 
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2SE Setup suite");
-        System.setProperty("suitename", MeasureJ2SESetupTest.class.getCanonicalName());
-
-        suite.addTest(NbModuleSuite.create(J2SESetup.class, ".*", ".*"));
-
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+             .addTest(OpenProjectDialogTest.class)
+             .enableModules(".*").clusters(".*")));
         return suite;
     }
+    
+    public void testOpenProjectDialog() {
+        doMeasurement();
+    }
+        
+    public void prepare() {
+    }
+    
+    @Override
+    public void initialize() {
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/File") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle","LBL_OpenProjectAction_Name");
+        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle","LBL_PrjChooser_Title");
+    }
+    
+    public ComponentOperator open() {
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        return new NbDialogOperator(TITLE);
+    }
+    
 }

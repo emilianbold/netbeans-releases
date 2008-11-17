@@ -8,7 +8,7 @@
  * Development and Distribution License("CDDL") (collectively, the
  * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
+ * http:www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
@@ -38,65 +38,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.performance.j2se.setup;
 
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.jellytools.JellyTestCase;
-import java.io.*;
-import org.openide.util.Exceptions;
+package org.myorg.systemproperties;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests
  *
- * @author  mmirilovic@netbeans.org
+ * @author Administrator
  */
-public class J2SESetup extends JellyTestCase {
-
-    public J2SESetup(java.lang.String testName) {
-        super(testName);
+public class AllPropsChildren extends Children.Keys {
+    private ChangeListener listener;
+    protected void addNotify() {
+        refreshList();
+        PropertiesNotifier.addChangeListener(listener = new
+                ChangeListener() {
+            public void stateChanged(ChangeEvent ev) {
+                refreshList();
+            }
+        });
     }
-
-    public void testCloseWelcome() {
-        CommonUtilities.closeWelcome();
-    }
-
-    public void testCloseMemoryToolbar() {
-        CommonUtilities.closeMemoryToolbar();
-    }
-
-    public void testAddTomcatServer() {
-        CommonUtilities.addTomcatServer();
-    }
-
-    public void testOpenDataProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+    protected void removeNotify() {
+        if (listener != null) {
+            PropertiesNotifier.removeChangeListener(listener);
+            listener = null;
         }
+        setKeys(Collections.EMPTY_SET);
     }
-
-    public void testOpenFoldersProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestFoldersData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    protected Node[] createNodes(Object key) {
+        return new Node[] { new OnePropNode((String) key) };
     }
-
-    public void testOpenNBProject() {
-
-        try {
-            this.openDataProjects("SystemProperties");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testCloseTaskWindow() {
-        CommonUtilities.closeTaskWindow();
+    
+    private void refreshList() {
+        List keys = new ArrayList();
+        Properties p = System.getProperties();
+        Enumeration e = p.propertyNames();
+        while (e.hasMoreElements()) keys.add(e.nextElement());
+        Collections.sort(keys);
+        setKeys(keys);
     }
 }

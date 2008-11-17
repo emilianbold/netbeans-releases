@@ -39,83 +39,76 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2se.footprints;
+package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
+
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Measure J2SE Project Workflow Memory footprint
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author mkhramov@netbeans.org
  */
-public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
+public class CompareMemorySnapshotsDialogTest  extends PerformanceTestCase {
 
-    private String j2seproject;
-    public static final String suiteName="J2SE Footprints suite";
-    
+    private JDialogOperator comparerDlg;
 
     /**
-     * Creates a new instance of J2SEProjectWorkflow
-     * @param testName the name of the test
+     * 
+     * @param testName 
      */
-    public J2SEProjectWorkflow(String testName) {
+    public CompareMemorySnapshotsDialogTest(String testName) {
         super(testName);
-        prefix = "J2SE Project Workflow |";
-    }
-    
-    /**
-     * Creates a new instance of J2SEProjectWorkflow
-     * @param testName the name of the test
-     * @param performanceDataName measured values will be saved under this name
-     */
-    public J2SEProjectWorkflow(String testName, String performanceDataName) {
-        super(testName, performanceDataName);
-        prefix = "J2SE Project Workflow |";
-    }
-    
-    public void testMeasureMemoryFootprint() {
-        super.testMeasureMemoryFootprint();
+        expectedTime = WINDOW_OPEN;
     }
 
-    @Override
-    public void setUp() {
-        //do nothing
+    /**
+     * 
+     * @param testName
+     * @param performanceDataName 
+     */
+    public CompareMemorySnapshotsDialogTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+        expectedTime = WINDOW_OPEN;
     }
-    
-    public void prepare() {
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+             .addTest(CompareMemorySnapshotsDialogTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testCompareMemorySnapshotsDialog() {
+        doMeasurement();
     }
     
     @Override
     public void initialize() {
-        super.initialize();
-        CommonUtilities.closeAllDocuments();
-        CommonUtilities.closeMemoryToolbar();
     }
-    
-    public ComponentOperator open(){
-        // Create, edit, build and execute a sample J2SE project
-        j2seproject = CommonUtilities.createproject("Samples|Java", "Anagram Game", true);
-        
-        CommonUtilities.openFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java", false);
-        CommonUtilities.editFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java");
-        CommonUtilities.buildProject(j2seproject);
-        //runProject(j2seproject,true);
-        //debugProject(j2seproject,true);
-        //testProject(j2seproject);
-        //collapseProject(j2seproject);
-        
-        return null;
+
+    public void prepare() {
     }
-    
+
+    public ComponentOperator open() {
+        new ActionNoBlock("Profile|Compare Memory Snapshots",null).performMenu(); // NOI18N
+        comparerDlg = new JDialogOperator("Select Snapshot to Compare");  // NOI18N              
+        return comparerDlg;
+    }
+
     @Override
-    public void close(){
-        CommonUtilities.deleteProject(j2seproject);
+    public void close() {
+        comparerDlg.close();
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new J2SEProjectWorkflow("measureMemoryFooprint"));
+
+    @Override
+    public void shutdown() {
     }
-    
+
 }

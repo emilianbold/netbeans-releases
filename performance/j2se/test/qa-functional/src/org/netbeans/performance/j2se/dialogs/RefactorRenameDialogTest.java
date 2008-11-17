@@ -39,83 +39,69 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2se.footprints;
+package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
+
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Measure J2SE Project Workflow Memory footprint
+ * Test of Refactor | Rename Dialog
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author  mmirilovic@netbeans.org
  */
-public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
+public class RefactorRenameDialogTest extends PerformanceTestCase {
 
-    private String j2seproject;
-    public static final String suiteName="J2SE Footprints suite";
+    private static Node testNode;
+    private String TITLE, ACTION;
     
-
-    /**
-     * Creates a new instance of J2SEProjectWorkflow
-     * @param testName the name of the test
-     */
-    public J2SEProjectWorkflow(String testName) {
+    /** Creates a new instance of RefactorRenameDialog */
+    public RefactorRenameDialogTest(String testName) {
         super(testName);
-        prefix = "J2SE Project Workflow |";
+        expectedTime = WINDOW_OPEN;
     }
     
-    /**
-     * Creates a new instance of J2SEProjectWorkflow
-     * @param testName the name of the test
-     * @param performanceDataName measured values will be saved under this name
-     */
-    public J2SEProjectWorkflow(String testName, String performanceDataName) {
-        super(testName, performanceDataName);
-        prefix = "J2SE Project Workflow |";
-    }
-    
-    public void testMeasureMemoryFootprint() {
-        super.testMeasureMemoryFootprint();
+    /** Creates a new instance of RefactorRenameDialog */
+    public RefactorRenameDialogTest(String testName, String performanceDataName) {
+        super(testName,performanceDataName);
+        expectedTime = WINDOW_OPEN;
     }
 
-    @Override
-    public void setUp() {
-        //do nothing
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+             .addTest(RefactorRenameDialogTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
-    
-    public void prepare() {
+
+    public void testRefactorRenameDialog() {
+        doMeasurement();
     }
     
     @Override
     public void initialize() {
-        super.initialize();
-        CommonUtilities.closeAllDocuments();
-        CommonUtilities.closeMemoryToolbar();
+        String BUNDLE = "org.netbeans.modules.refactoring.java.ui.Bundle";
+        TITLE = Bundle.getStringTrimmed(BUNDLE,"LBL_Rename");  // "Rename"
+        BUNDLE = "org.netbeans.modules.refactoring.spi.impl.Bundle";
+        ACTION = Bundle.getStringTrimmed(BUNDLE,"Menu/Refactoring") + "|" + Bundle.getStringTrimmed(BUNDLE,"LBL_RenameAction"); // "Refactor|Rename..."
+        testNode = new Node(new SourcePackagesNode("PerformanceTestData"),"org.netbeans.test.performance|Main20kB.java");
     }
     
-    public ComponentOperator open(){
-        // Create, edit, build and execute a sample J2SE project
-        j2seproject = CommonUtilities.createproject("Samples|Java", "Anagram Game", true);
-        
-        CommonUtilities.openFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java", false);
-        CommonUtilities.editFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java");
-        CommonUtilities.buildProject(j2seproject);
-        //runProject(j2seproject,true);
-        //debugProject(j2seproject,true);
-        //testProject(j2seproject);
-        //collapseProject(j2seproject);
-        
-        return null;
+    public ComponentOperator open() {
+        testNode.performPopupAction(ACTION);
+        return new NbDialogOperator(TITLE);
     }
-    
+
     @Override
-    public void close(){
-        CommonUtilities.deleteProject(j2seproject);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new J2SEProjectWorkflow("measureMemoryFooprint"));
+    public void prepare() {
     }
     
 }

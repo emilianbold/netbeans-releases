@@ -8,7 +8,7 @@
  * Development and Distribution License("CDDL") (collectively, the
  * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
+ * http:www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
@@ -38,65 +38,21 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.performance.j2se.setup;
 
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.jellytools.JellyTestCase;
-import java.io.*;
-import org.openide.util.Exceptions;
 
-/**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests
- *
- * @author  mmirilovic@netbeans.org
+/* This is test class which should has 1 kB size
+
+ ************************************************************************************************************************************
+ ************************************************************************************************************************************
+ *********************************************************************************************************
  */
-public class J2SESetup extends JellyTestCase {
 
-    public J2SESetup(java.lang.String testName) {
-        super(testName);
+package org.netbeans.test.performance;
+
+public class Class {
+
+    /** Creates a new instance of Class */
+    public Class() {
     }
-
-    public void testCloseWelcome() {
-        CommonUtilities.closeWelcome();
-    }
-
-    public void testCloseMemoryToolbar() {
-        CommonUtilities.closeMemoryToolbar();
-    }
-
-    public void testAddTomcatServer() {
-        CommonUtilities.addTomcatServer();
-    }
-
-    public void testOpenDataProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testOpenFoldersProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestFoldersData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testOpenNBProject() {
-
-        try {
-            this.openDataProjects("SystemProperties");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testCloseTaskWindow() {
-        CommonUtilities.closeTaskWindow();
-    }
+    
 }
