@@ -162,4 +162,24 @@ public class RemoteFile extends File {
         CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
         return provider.run(hkey, "test -r \"" + getPath() + "\"", null) == 0; //NOI18N
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RemoteFile other = (RemoteFile) obj;
+        if ((this.hkey == null) ? (other.hkey != null) : !this.hkey.equals(other.hkey)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() + hkey.hashCode() + 7;
+    }
 }
