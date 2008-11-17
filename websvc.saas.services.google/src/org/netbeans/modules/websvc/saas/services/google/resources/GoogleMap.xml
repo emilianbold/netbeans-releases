@@ -58,7 +58,7 @@
         <group name="Google">
         </group>
         <code-gen>
-            <artifacts targets="servlet,resource,jsp">
+            <artifacts targets="java,servlet,resource,jsp">
                 <artifact id="GoogleMapService" type="template"
                     url="Templates/SaaSServices/GoogleMapService.java"/>
                 <artifact id="googlemapservice" type="template"
