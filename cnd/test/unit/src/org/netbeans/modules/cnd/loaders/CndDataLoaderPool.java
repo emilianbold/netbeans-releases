@@ -63,7 +63,7 @@ public class CndDataLoaderPool extends DataLoaderPool {
                                         new ExeLoader()};
     }
     
-    protected Enumeration loaders() {
+    protected Enumeration<? extends DataLoader> loaders() {
         return Enumerations.array(loaders);
     }
 }

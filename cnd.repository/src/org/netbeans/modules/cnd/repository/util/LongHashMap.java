@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.repository.util;
 
-import  java.io.*;
 import  java.util.*;
 
 /**
