@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
+import org.netbeans.modules.cnd.editor.deprecated.fortran.options.FortranCodeStyle;
+
 /**
  *
  * @author Alexander Simon
@@ -49,17 +51,128 @@ public class FortranFormatterTestCase extends FortranEditorBase {
         super(testMethodName);
     }
 
-    public void testProgramFormat() {
-        setDefaultsOptions();
-        setLoadDocumentText(
-                "  program p\n"+
-                " end program\n"
-                );
+    @Override
+    protected void assertDocumentText(String msg, String expectedText) {
+        super.assertDocumentText(msg, expectedText);
         reformat();
-        assertDocumentTextAndCaret("Incorrect program reformat",
+        super.assertDocumentText(msg+" (not stable)", expectedText);
+    }
+
+    public void testProgramFormat() {
+        setLoadDocumentText(
+                "  program   p\n"+
+                "  i = 6\n"+
+                " end  program\n"
+                );
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("Incorrect program reformat",
                 "program p\n"+
+                "    i = 6\n"+
                 "end program\n"
                 );
     }
 
+    public void testIfFormat() {
+        setLoadDocumentText(
+                "subroutine  p\n"+
+                "  if (i .eq. 6) then\n"+
+                "  i =5\n"+
+                "  else\n"+
+                "  i=8\n"+
+                "  endif\n"+
+                " end  subroutine\n"
+                );
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("Incorrect program reformat",
+                "subroutine p\n"+
+                "    if (i .eq. 6) then\n"+
+                "        i = 5\n"+
+                "    else\n"+
+                "        i = 8\n"+
+                "    endif\n"+
+                "end subroutine\n"
+                );
+    }
+
+    public void testIfFixedFormat() {
+        setLoadDocumentText(
+                "subroutine  p\n"+
+                "  if (i .eq. 6) then\n"+
+                "  i =5\n"+
+                "  else\n"+
+                "  i=8\n"+
+                "  endif\n"+
+                " end  subroutine\n"
+                );
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        reformat();
+        assertDocumentText("Incorrect program reformat",
+                "     subroutine p\n"+
+                "         if (i .eq. 6) then\n"+
+                "             i = 5\n"+
+                "         else\n"+
+                "             i = 8\n"+
+                "         endif\n"+
+                "     end subroutine\n"
+                );
+    }
+
+    public void testEleIfFormat() {
+        setLoadDocumentText(
+                "subroutine  p\n"+
+                "  if (i .eq. 6) then\n"+
+                "  i =5\n"+
+                "  elseif (i.eq.9) then \n"+
+                "  i=8\n"+
+                "  else\n"+
+                "  i=8\n"+
+                "  endif\n"+
+                " end  subroutine\n"
+                );
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("Incorrect program reformat",
+                "subroutine p\n"+
+                "    if (i .eq. 6) then\n"+
+                "        i = 5\n"+
+                "    else\n"+
+                "        i = 8\n"+
+                "    endif\n"+
+                "end subroutine\n"
+                );
+    }
+
+    public void testTypeFormat() {
+        setLoadDocumentText(
+                "  type   point\n"+
+                "  real :: X,Y\n"+
+                " end  type  point\n"
+                );
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("Incorrect type reformat",
+                "type point\n"+
+                "    real :: X, Y\n"+
+                "end type point\n"
+                );
+    }
+
+    public void testTypeFixedFormat() {
+        setLoadDocumentText(
+                "  type   point\n"+
+                "  real :: X,Y\n"+
+                " end  type  point\n"
+                );
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        reformat();
+        assertDocumentText("Incorrect type reformat",
+                "     type point\n"+
+                "         real :: X, Y\n"+
+                "     end type point\n"
+                );
+    }
 }
