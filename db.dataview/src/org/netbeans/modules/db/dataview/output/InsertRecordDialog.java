@@ -89,6 +89,14 @@ class InsertRecordDialog extends javax.swing.JDialog {
 
         jSplitPane1.setBottomComponent(null);
 
+        KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false);
+        Action enterAction = new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+                 executeBtnActionPerformed(null);
+            }
+        };
+
         KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
         Action escapeAction = new AbstractAction() {
 
@@ -97,7 +105,9 @@ class InsertRecordDialog extends javax.swing.JDialog {
             }
         };
         getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escape, "ESCAPE"); // NOI18N
+        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(enter, "ENTER"); // NOI18N
         getRootPane().getActionMap().put("ESCAPE", escapeAction); // NOI18N
+        getRootPane().getActionMap().put("ENTER", enterAction); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -258,59 +268,59 @@ class InsertRecordDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-private void cancelBtnActionPerformed(java.awt.event.ActionEvent evt) {
-    dispose();
-}
+    private void cancelBtnActionPerformed(java.awt.event.ActionEvent evt) {
+        dispose();
+    }
 
-private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {
-    String[] insertSQL = null;
-    try {
-        Object[] insertedRow = getInsertValues();
+    private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {
+        String[] insertSQL = null;
+        try {
+            Object[] insertedRow = getInsertValues();
 
-        SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
-        insertSQL = stmtBldr.generateInsertStatement(insertedRow);
-        SQLExecutionHelper execHelper = dataView.getSQLExecutionHelper();
-        execHelper.executeInsertRow(insertSQL, insertedRow);
-    } catch (DBException ex) {
-        if (jSplitPane1.getBottomComponent() == null) {
+            SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
+            insertSQL = stmtBldr.generateInsertStatement(insertedRow);
+            SQLExecutionHelper execHelper = dataView.getSQLExecutionHelper();
+            execHelper.executeInsertRow(insertSQL, insertedRow);
+        } catch (DBException ex) {
+            if (jSplitPane1.getBottomComponent() == null) {
+                jSplitPane1.setDividerLocation(250);
+                jSplitPane1.setBottomComponent(jScrollPane2);
+                previewBtn.setText(NbBundle.getMessage(InsertRecordDialog.class, "LBL_hide_sql"));
+            }
+            jEditorPane1.setForeground(Color.red);
+            jEditorPane1.setContentType("text/plain"); // NOI18N
+            jEditorPane1.setText(ex.getMessage());
+
+            return;
+        }
+        dispose();
+    }
+
+    private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {
+        int rows = dataView.getDataViewDBTable().getColumnCount();
+        for (int i = 0; i < rows; i++) {
+            if (dataView.getDataViewDBTable().getColumn(i).isGenerated()) {
+                colValueTextField[i].setText("<GENERATED>"); // NOI18N
+                colValueTextField[i].setEditable(false);
+            } else {
+                colValueTextField[i].setText(""); // NOI18N
+                colValueTextField[i].setEditable(true);
+            }
+        }
+        refreshSQL();
+    }
+
+    private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
+        if (evt.getActionCommand().equalsIgnoreCase(NbBundle.getMessage(InsertRecordDialog.class, "LBL_show_sql"))) {
             jSplitPane1.setDividerLocation(250);
             jSplitPane1.setBottomComponent(jScrollPane2);
-            previewBtn.setText(NbBundle.getMessage(InsertRecordDialog.class,"LBL_hide_sql"));
-        }
-        jEditorPane1.setForeground(Color.red);
-        jEditorPane1.setContentType("text/plain"); // NOI18N
-        jEditorPane1.setText(ex.getMessage());
-
-        return;
-    }
-    dispose();
-}
-
-private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {
-    int rows = dataView.getDataViewDBTable().getColumnCount();
-    for (int i = 0; i < rows; i++) {
-        if (dataView.getDataViewDBTable().getColumn(i).isGenerated()) {
-            colValueTextField[i].setText("<GENERATED>"); // NOI18N
-            colValueTextField[i].setEditable(false);
+            refreshSQL();
+            previewBtn.setText(NbBundle.getMessage(InsertRecordDialog.class, "LBL_hide_sql"));
         } else {
-            colValueTextField[i].setText(""); // NOI18N
-            colValueTextField[i].setEditable(true);
+            jSplitPane1.setBottomComponent(null);
+            previewBtn.setText(NbBundle.getMessage(InsertRecordDialog.class, "LBL_show_sql"));
         }
     }
-    refreshSQL();
-}
-
-private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
-    if (evt.getActionCommand().equalsIgnoreCase(NbBundle.getMessage(InsertRecordDialog.class,"LBL_show_sql"))) {
-        jSplitPane1.setDividerLocation(250);
-        jSplitPane1.setBottomComponent(jScrollPane2);
-        refreshSQL();
-        previewBtn.setText(NbBundle.getMessage(InsertRecordDialog.class,"LBL_hide_sql"));
-    } else {
-        jSplitPane1.setBottomComponent(null);
-        previewBtn.setText(NbBundle.getMessage(InsertRecordDialog.class,"LBL_show_sql"));
-    }
-}
 
     private void refreshSQL() {
         try {
@@ -333,14 +343,14 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
         Connection conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
         Map<Integer, String> typeInfo = Collections.emptyMap();
         try {
-            if(conn != null) {
+            if (conn != null) {
                 DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
                 typeInfo = dbMeta.buildDBSpecificDatatypeMap();
-            } 
+            }
         } catch (SQLException ex) {
             // ignore
         }
-        
+
         int rows = dataView.getDataViewDBTable().getColumnCount();
         JLabel[] colNameLabel = new JLabel[rows];
         JLabel[] colDataType = new JLabel[rows];
@@ -360,7 +370,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             colNameLabel[i].setFont(colNameLabel[i].getFont()); // NOI18N
             colNameLabel[i].getAccessibleContext().setAccessibleName(colNameLabel[i].getName());
             colNameLabel[i].getAccessibleContext().setAccessibleDescription(colNameLabel[i].getName());
-            
+
             gridBagConstraints.gridx = gridx;
             gridBagConstraints.gridy = gridy;
             gridBagConstraints.insets = new java.awt.Insets(0, 0, bottom, right);
@@ -400,7 +410,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
 
             colDataType[i].setText(typeName);
             colDataType[i].setDisplayedMnemonicIndex(-1);
-           
+
             colNameLabel[i].setLabelFor(colValueTextField[i]);
             colDataType[i].setLabelFor(colValueTextField[i]);
 
