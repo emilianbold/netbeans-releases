@@ -95,7 +95,7 @@ public class PackagingNodeProp extends PropertySupport {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-	return new Editor((PackagingConfiguration)packagingConfiguration);
+	return new Editor(packagingConfiguration);
     }
 
     @Override

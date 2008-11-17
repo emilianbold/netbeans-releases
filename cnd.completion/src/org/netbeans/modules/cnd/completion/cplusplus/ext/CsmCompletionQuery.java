@@ -145,10 +145,9 @@ abstract public class CsmCompletionQuery {
         setCsmItemFactory(new CsmCompletionQuery.DefaultCsmItemFactory());
     }
 
-    public CsmCompletionResult query(JTextComponent component, int offset,
-            SyntaxSupport support) {
+    public CsmCompletionResult query(JTextComponent component, int offset) {
         boolean sort = false; // TODO: review
-        return query(component, offset, support, false, sort);
+        return query(component, offset, false, sort);
     }
 
     /**
@@ -166,9 +165,9 @@ abstract public class CsmCompletionQuery {
      * @return result of the query or null if there's no result.
      */
     public CsmCompletionResult query(JTextComponent component, int offset,
-            SyntaxSupport support, boolean openingSource, boolean sort) {
+            boolean openingSource, boolean sort) {
         BaseDocument doc = (BaseDocument) component.getDocument();
-        return query(component, doc, offset, support, openingSource, sort);
+        return query(component, doc, offset, openingSource, sort);
     }
 
     public static boolean checkCondition(CsmSyntaxSupport sup, final int dot) {
@@ -197,7 +196,7 @@ abstract public class CsmCompletionQuery {
 //        return processedToken;
 //    }
     public CsmCompletionResult query(JTextComponent component, final BaseDocument doc, final int offset,
-            SyntaxSupport support, boolean openingSource, boolean sort) {
+            boolean openingSource, boolean sort) {
         // remember baseDocument here. it is accessible by getBaseDocument() {
 
         // method for subclasses of JavaCompletionQuery, ie. NbJavaCompletionQuery
@@ -205,6 +204,7 @@ abstract public class CsmCompletionQuery {
 
         CsmCompletionResult ret = null;
 
+        SyntaxSupport support = doc.getSyntaxSupport();
         CsmSyntaxSupport sup = (CsmSyntaxSupport) support.get(CsmSyntaxSupport.class);
 
         if (!checkCondition(sup, offset)) {

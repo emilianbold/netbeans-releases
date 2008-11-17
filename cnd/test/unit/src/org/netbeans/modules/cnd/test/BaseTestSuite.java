@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.test;
 
+import junit.framework.TestCase;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -80,7 +81,7 @@ public class BaseTestSuite extends NbTestSuite {
      * starting with "test" as test cases to the suite.
      *
      */
-    public BaseTestSuite(Class theClass) {       
+    public BaseTestSuite(Class<? extends TestCase> theClass) {
         super(theClass);
     }
 

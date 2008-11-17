@@ -51,6 +51,7 @@ import org.netbeans.api.visual.graph.layout.UniversalGraph;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
 /**
  *
@@ -78,9 +79,18 @@ public class ContainerAgnosticLayout<N, E> implements GraphLayoutListener {
                 continue;
             }
 
+            boolean onscene=false;
             Widget parent = w.getParentWidget();
+            if(parent!=null && parent instanceof LayerWidget)
+            {
+                parent=parent.getParentWidget();
+                if(parent!=null && parent instanceof DesignerScene)
+                {
+                    onscene=true;
+                }
+            }
 
-            if (!(parent instanceof LayerWidget)) {
+            if (!onscene) {
                 w.setVisible(false);
                 hiddenWidgets.add(w);
             }

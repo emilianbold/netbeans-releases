@@ -63,7 +63,7 @@ public class CustomizerRootNodeProvider {
 
     private List<CustomizerNode> getCustomizerNodesRegisteredOldStyle() {
         if (customizerNodes == null) {
-            customizerNodes = new ArrayList();
+            customizerNodes = new ArrayList<CustomizerNode>();
         }
         return customizerNodes;
     }
@@ -99,7 +99,7 @@ public class CustomizerRootNodeProvider {
         }
         return null;
     }
-    
+
     public List<CustomizerNode> getCustomizerNodes(String id) {
         ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
         List<CustomizerNode> nodes = getCustomizerNodes();
@@ -123,7 +123,7 @@ public class CustomizerRootNodeProvider {
      * Get list (dynamic) registered via services
      */
     private static Set<CustomizerNodeProvider> getCustomizerNodeProviders() {
-        HashSet providers = new HashSet();
+        HashSet<CustomizerNodeProvider> providers = new HashSet<CustomizerNodeProvider>();
         Lookup.Template template = new Lookup.Template(CustomizerNodeProvider.class);
         Lookup.Result result = Lookup.getDefault().lookup(template);
         Collection collection = result.allInstances();
@@ -131,7 +131,7 @@ public class CustomizerRootNodeProvider {
         while (iterator.hasNext()) {
             Object caop = iterator.next();
             if (caop instanceof CustomizerNodeProvider) {
-                providers.add(caop);
+                providers.add((CustomizerNodeProvider)caop);
             }
         }
         return providers;

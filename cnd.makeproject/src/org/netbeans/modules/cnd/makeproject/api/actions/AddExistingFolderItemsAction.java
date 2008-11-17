@@ -84,7 +84,7 @@ public class AddExistingFolderItemsAction extends NodeAction {
         Folder folder = (Folder)n.getValue("Folder"); // NOI18N
         assert folder != null;
         
-        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
         MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
         
         if (!makeConfigurationDescriptor.okToChange()) {

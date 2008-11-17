@@ -38,43 +38,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.ui;
 
 import java.util.Vector;
 
 public class LogicalViewNodeProviders {
+
     private static LogicalViewNodeProviders instance = null;
-    private Vector providers = null;
+    private Vector<LogicalViewNodeProvider> providers = null;
 
     public static LogicalViewNodeProviders getInstance() {
-	if (instance == null)
-	    instance = new LogicalViewNodeProviders();
-	return instance;
+        if (instance == null) {
+            instance = new LogicalViewNodeProviders();
+        }
+        return instance;
     }
 
-    public Vector getProviders() {
-	if (providers == null) {
-	    providers = new Vector();
-	}
-	return providers;
+    public Vector<LogicalViewNodeProvider> getProviders() {
+        if (providers == null) {
+            providers = new Vector<LogicalViewNodeProvider>();
+        }
+        return providers;
     }
 
     public LogicalViewNodeProvider[] getProvidersAsArray() {
-	Vector cn = getProviders();
-	return (LogicalViewNodeProvider[]) cn.toArray(new LogicalViewNodeProvider[cn.size()]);
+        Vector<LogicalViewNodeProvider> cn = getProviders();
+        return cn.toArray(new LogicalViewNodeProvider[cn.size()]);
     }
-    
-    
+
     public void addProvider(LogicalViewNodeProvider provider) {
-	synchronized(getProviders()) {
-	    getProviders().add(provider);
-	}
+        synchronized (getProviders()) {
+            getProviders().add(provider);
+        }
     }
 
     public void removeProvider(LogicalViewNodeProvider provider) {
-	synchronized(getProviders()) {
-	    getProviders().remove(provider);
-	}
+        synchronized (getProviders()) {
+            getProviders().remove(provider);
+        }
     }
 }

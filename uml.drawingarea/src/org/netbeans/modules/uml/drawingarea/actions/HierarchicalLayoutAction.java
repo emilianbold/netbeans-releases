@@ -46,14 +46,10 @@ import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
-import org.netbeans.api.visual.animator.AnimatorEvent;
-import org.netbeans.api.visual.animator.AnimatorListener;
-import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
-import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
 import org.netbeans.api.visual.graph.layout.GraphLayoutListener;
 import org.netbeans.api.visual.graph.layout.UniversalGraph;
-import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
+import org.netbeans.modules.uml.drawingarea.layout.HierarchicalLayout;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.support.ContainerAgnosticLayout;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
@@ -100,33 +96,7 @@ public class HierarchicalLayoutAction extends AbstractAction implements GraphLay
             return;
         }
 
-        animated = scene.getNodes().size() < MAX_NODES_TO_ANIMATE ? true : false;
-        GraphLayout gLayout = GraphLayoutFactory.createHierarchicalGraphLayout(scene, animated, true, 25, 35);
-
-        gLayout.addGraphLayoutListener(this);
-
-        scene.getSceneAnimator().getPreferredLocationAnimator().addAnimatorListener(new AnimatorListener() {
-
-            public void animatorStarted(AnimatorEvent event) {}
-
-            public void animatorReset(AnimatorEvent event) {}
-
-            public void animatorFinished(AnimatorEvent event) {
-                movePalette() ;
-                scene.getSceneAnimator().getPreferredLocationAnimator().removeAnimatorListener(this);
-                //set diagram dirty
-                if ((scene != null) && (scene.getTopComponent() != null) && (scene.getTopComponent() instanceof UMLDiagramTopComponent))
-                {
-                    ((UMLDiagramTopComponent)scene.getTopComponent()).setDiagramDirty(true);
-                }
-            }
-
-            public void animatorPreTick(AnimatorEvent event) {}
-
-            public void animatorPostTick(AnimatorEvent event) {}
-
-        });
-
+        GraphLayout gLayout = new HierarchicalLayout(scene, false, false, 25, 25);
 
         new ContainerAgnosticLayout(scene, gLayout);
         gLayout.layoutGraph(scene);

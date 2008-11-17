@@ -60,6 +60,10 @@ import org.xml.sax.helpers.DefaultHandler;
 public class HelperMIMEResolver extends MIMEResolver {
 
     private static final String FCSDOCTYPE = "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN";
+
+    public HelperMIMEResolver() {
+        super("text/x-nbeditor-fontcolorsettings");
+    }
     
     @Override
     public String findMIMEType(FileObject fo) {

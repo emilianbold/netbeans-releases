@@ -61,9 +61,10 @@ public class MeasureJ2EEMenusTest  {
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Menus suite");
         System.setProperty("suitename", MeasureJ2EEMenusTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness J2EE Menus suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AppServerPopupMenu.class)
-        .addTest(J2EEProjectsViewPopupMenu.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AppServerPopupMenuTest.class)
+        .addTest(J2EEProjectsViewPopupMenuTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
        
         return suite;

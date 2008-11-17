@@ -307,7 +307,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
             final CompilerSet focs = ocs;
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    ServerList server = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+                    ServerList server = Lookup.getDefault().lookup(ServerList.class);
                     if (server != null) {
                         ServerRecord record = server.get(key);
                         if (record != null) {

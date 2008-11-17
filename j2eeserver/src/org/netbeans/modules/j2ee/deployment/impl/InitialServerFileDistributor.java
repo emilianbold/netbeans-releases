@@ -204,12 +204,7 @@ public class InitialServerFileDistributor extends ServerProgress {
                 FileObject sourceFO = entry.getFileObject();
                 FileObject destFolder = ServerFileDistributor.findOrCreateParentFolder(destRoot, relativePath);
                 if (sourceFO.isData ()) {
-                    if (Utilities.isWindows()) {
-                        // we clould use this for both
-                        copyFile(sourceFO, dir, relativePath);
-                    } else {
-                        FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
-                    }
+                    copyFile(sourceFO, dir, relativePath);
                 }
             }
             
@@ -241,7 +236,6 @@ public class InitialServerFileDistributor extends ServerProgress {
     //
     private void copyFile(FileObject sourceObject, File directory, String relativePath) throws IOException {  
         File destFile = new File(directory, relativePath);
-        FileObject targetObject = FileUtil.createData(destFile);
         FileOutputStream os = new FileOutputStream(destFile);
         FileInputStream fis = null;
         InputStream is = null;

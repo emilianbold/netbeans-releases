@@ -86,7 +86,7 @@ made subject to such option by the copyright holder.
                     <folder name="x-fortran">
                         <file name="TabsAndIndents.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.fortran.options.FmtTabsIndents.getController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.deprecated.fortran.options.FmtTabsIndents.getController"/>
                             <attr name="position" intvalue="100"/>
                         </file>
                     </folder>

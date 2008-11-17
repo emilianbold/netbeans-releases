@@ -572,7 +572,7 @@ public class MakefileWizard implements TemplateWizard.Iterator {
 
     /** Toplevel validation method. Gathers warnings from all panels */
     public ArrayList validateAllData() {
-        ArrayList msgs = new ArrayList();
+        ArrayList<String> msgs = new ArrayList<String>();
         int key = -1;
 
         for (int i = 0; i < panels.length; i++) {

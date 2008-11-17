@@ -65,7 +65,7 @@ public class NewFolderAction extends NodeAction {
 	Project project = (Project)n.getValue("Project"); // NOI18N
 	assert project != null;
         
-        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
         MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
         if (!makeConfigurationDescriptor.okToChange()) {
             return;
