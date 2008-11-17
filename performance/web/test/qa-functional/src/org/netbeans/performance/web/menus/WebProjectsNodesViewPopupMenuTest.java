@@ -41,19 +41,22 @@
 
 package org.netbeans.performance.web.menus;
 
-import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.web.setup.WebSetup;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 
 /**
  * Test of popup menu on nodes in Projects View.
  * @author  mmirilovic@netbeans.org
  */
-public class WebProjectsViewPopupMenu extends PerformanceTestCase {
+public class WebProjectsNodesViewPopupMenuTest extends PerformanceTestCase {
     
     private static ProjectsTabOperator projectsTab = null;
         protected static Node dataObjectNode;
@@ -62,16 +65,23 @@ public class WebProjectsViewPopupMenu extends PerformanceTestCase {
         
 
     /** Creates a new instance of ProjectsViewPopupMenu */
-    public WebProjectsViewPopupMenu(String testName) {
+    public WebProjectsNodesViewPopupMenuTest(String testName) {
         super(testName);
     }
     
     /** Creates a new instance of ProjectsViewPopupMenu */
-    public WebProjectsViewPopupMenu(String testName, String performanceDataName) {
+    public WebProjectsNodesViewPopupMenuTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
+             .addTest(WebProjectsNodesViewPopupMenuTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
     public void testProjectNodePopupMenuProjects() {
         testNode(getProjectNode());
     }

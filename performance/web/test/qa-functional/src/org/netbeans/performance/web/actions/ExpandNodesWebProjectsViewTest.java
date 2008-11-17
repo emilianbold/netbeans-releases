@@ -42,21 +42,22 @@
 package org.netbeans.performance.web.actions;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
-
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.jellytools.actions.RestoreWindowAction;
-
 import org.netbeans.jellytools.nodes.Node;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.web.setup.WebSetup;
+
 /**
  * Test of expanding nodes/folders in the Explorer.
  *
  * @author  mmirilovic@netbeans.org
  */
-public class ExpandNodesWebProjectsView extends PerformanceTestCase {
+public class ExpandNodesWebProjectsViewTest extends PerformanceTestCase {
     /** Name of the folder which test creates and expands */
     private static String project;
     /** Path to the folder which test creates and expands */
@@ -68,14 +69,12 @@ public class ExpandNodesWebProjectsView extends PerformanceTestCase {
     /** Project with data for these tests */
     private static String testDataProject = "PerformanceTestFolderWebApp";
     
-    public static final String suiteName="UI Responsiveness Web Actions suite";    
-
    
     /**
      * Creates a new instance of ExpandNodesInExplorer
      * @param testName the name of the test
      */
-    public ExpandNodesWebProjectsView(String testName) {
+    public ExpandNodesWebProjectsViewTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
 //        init();
@@ -86,12 +85,20 @@ public class ExpandNodesWebProjectsView extends PerformanceTestCase {
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public ExpandNodesWebProjectsView(String testName, String performanceDataName) {
+    public ExpandNodesWebProjectsViewTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
 //        init();
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
+             .addTest(ExpandNodesWebProjectsViewTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
     public void testExpandProjectNode(){
         pathToFolderNode = "";
         project = testDataProject;

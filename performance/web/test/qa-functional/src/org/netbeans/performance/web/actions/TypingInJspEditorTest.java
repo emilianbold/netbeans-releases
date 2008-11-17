@@ -41,106 +41,84 @@
 
 package org.netbeans.performance.web.actions;
 
-import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
-import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;/**
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.web.setup.WebSetup;
+
+/**
  * Test of typing in opened source editor.
  *
  * @author  anebuzelsky@netbeans.org
  */
-public class TypingInJspEditor extends PerformanceTestCase {
+public class TypingInJspEditorTest extends PerformanceTestCase {
     private String file;
     private int line;
     
-    public static final String suiteName="UI Responsiveness Web Actions suite";    
     
     /** Creates a new instance of TypingInEditor */
-    public TypingInJspEditor(String file, int line, String testName) {
+    public TypingInJspEditorTest(String testName) {
         super(testName);
-        this.file = file;
-        this.line = line;
         init();
     }
     
     /** Creates a new instance of TypingInEditor */
-    public TypingInJspEditor(String file, int line, String testName, String performanceDataName) {
+    public TypingInJspEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        this.file = file;
-        this.line = line;
         init();
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
+             .addTest(TypingInJspEditorTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
     
     protected void init() {
-//        super.init();
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_PREPARE = 3000;
         WAIT_AFTER_OPEN = 100;
+        line=10;
     }
     
     private EditorOperator editorOperator;
     
     public void testTypingInJspEditor() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        file = "Test.jsp";
+        doMeasurement();
     }
     
-    public void testTypingInJspEditorAtBeginningOfLargeFile() {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    public void testTypingInJspEditorAtEndOfLargeFile() {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    public void testTypingInJspEditorInTheMiddleOfLargeFile() {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 
     public void testTypingInJspEditorWithLargeFile() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        file = "BigJSP.jsp";
+        doMeasurement();
     }
 
     protected void initialize() {
-        System.out.println("=== " + this.getClass().getName() + " ===");
-//        jspOptions().setCaretBlinkRate(0);
-        // delay between the caret stops and the update of his position in status bar
-//        jspOptions().setStatusBarCaretDelay(0);
-//        jspOptions().setFontSize(20);
-//        jspOptions().setCodeFoldingEnable(false);
-        // open a java file in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|"+file));
         editorOperator = new EditorWindowOperator().getEditor(file);
-        // go to the right place
         editorOperator.setCaretPositionToLine(line);
-        // make the file modified
-        //XXX new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER)).perform(editorOperator);
-        //wait painting pf folds in the editor
-        new EventTool().waitNoEvent(1000);
     }
     
     public void prepare() {
    }
     
     public ComponentOperator open(){
-        //repaintManager().setOnlyEditor(true);
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-//        KeyStroke keyA = KeyStroke.getKeyStroke('a');
-//        new ActionNoBlock(null, null, keyA).perform(editorOperator);
         editorOperator.typeKey('a');
         return null;
     }
     
     public void close() {
-        //repaintManager().setOnlyEditor(false);
         repaintManager().resetRegionFilters();
        
     }

@@ -44,11 +44,15 @@ package org.netbeans.performance.web.actions;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
+
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
+import org.netbeans.performance.web.setup.WebSetup;
+
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -60,16 +64,16 @@ import java.util.logging.LogRecord;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class OpenServletFile extends PerformanceTestCase {
+public class OpenWebFilesTest extends PerformanceTestCase {
     
     /** Node to be opened/edited */
     public static Node openNode ;
     
     /** Folder with data */
     public static String fileProject;
-    
+ 
     /** Folder with data  */
-    public static String filePackage;
+    public static String fileFolder;
     
     /** Name of file to open */
     public static String fileName;
@@ -81,14 +85,14 @@ public class OpenServletFile extends PerformanceTestCase {
     
     protected static String EDIT = "Edit"; //NOI18N
     
-    public static final String suiteName="UI Responsiveness Web Actions suite";    
+    protected static String WEB_PAGES = "Web Pages"; //NOI18N
     
-    
+ 
     /**
      * Creates a new instance of OpenFiles
      * @param testName the name of the test
      */
-    public OpenServletFile(String testName) {
+    public OpenWebFilesTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
@@ -98,9 +102,17 @@ public class OpenServletFile extends PerformanceTestCase {
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public OpenServletFile(String testName, String performanceDataName) {
+    public OpenWebFilesTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
+             .addTest(OpenWebFilesTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
         class PhaseHandler extends Handler {
@@ -124,24 +136,72 @@ public class OpenServletFile extends PerformanceTestCase {
 
     PhaseHandler phaseHandler=new PhaseHandler();
     
-    public void testOpeningServletFile(){
-        WAIT_AFTER_OPEN = 1000;
-       //repaintManager().setOnlyEditor(true);
-//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        setJavaEditorCaretFilteringOn();
+    public void testOpeningWebXmlFile(){
+        WAIT_AFTER_OPEN = 2000;
+        setXMLEditorCaretFilteringOn();
         fileProject = "TestWebProject";
-        filePackage = "test";
-        fileName = "TestServlet.java";
+        fileFolder = "WEB-INF"; 
+        fileName = "web.xml";
+        menuItem = EDIT;
+        doMeasurement();
+    }
+
+    public void testOpeningContextXmlFile(){
+        WAIT_AFTER_OPEN = 2000;
+        setXMLEditorCaretFilteringOn();
+        fileProject = "TestWebProject";
+        fileFolder = "META-INF"; 
+        fileName = "context.xml";
+        menuItem = EDIT;
+        doMeasurement();
+    }    
+
+    public void testOpeningJSPFile(){
+        WAIT_AFTER_OPEN = 2000;
+        setXMLEditorCaretFilteringOn();
+        fileProject = "TestWebProject";
+        fileFolder = "";
+        fileName = "Test.jsp";
+        menuItem = OPEN;
+        doMeasurement();
+    }
+
+    public void testOpeningBigJSPFile(){
+        WAIT_AFTER_OPEN = 2000;
+        setXMLEditorCaretFilteringOn();
+        fileProject = "TestWebProject";
+        fileFolder = "";
+        fileName = "BigJSP.jsp";
         menuItem = OPEN;
         doMeasurement();
     }
     
-    public void testOpeningJavaFile(){
-        WAIT_AFTER_OPEN = 1000;
-        //repaintManager().setOnlyEditor(true);
+    public void testOpeningHTMLFile(){
+        WAIT_AFTER_OPEN = 2000;
+        setXMLEditorCaretFilteringOn();
         fileProject = "TestWebProject";
-        filePackage = "test";
-        fileName = "Main.java";
+        fileFolder = "";
+        fileName = "HTML.html";
+        menuItem = OPEN;
+        doMeasurement();
+    }
+
+    public void testOpeningTagFile(){
+        WAIT_AFTER_OPEN = 2000;
+        setXMLEditorCaretFilteringOn();
+        fileProject = "TestWebProject";
+        fileFolder = "WEB-INF|tags"; 
+        fileName = "mytag.tag";
+        menuItem = OPEN;
+        doMeasurement();
+    }
+
+    public void testOpeningTldFile(){
+        WAIT_AFTER_OPEN = 2000;
+        setXMLEditorCaretFilteringOn();
+        fileProject = "TestWebProject";
+        fileFolder = "WEB-INF"; 
+        fileName = "MyTLD.tld";
         menuItem = OPEN;
         doMeasurement();
     }
@@ -153,15 +213,18 @@ public class OpenServletFile extends PerformanceTestCase {
     public void shutdown(){
         Logger.getLogger("TIMER").removeHandler(phaseHandler);
         EditorOperator.closeDiscardAll();
+        repaintManager().resetRegionFilters();
+        
     }
     
     public void prepare(){
         Logger.getLogger("TIMER").setLevel(Level.FINE);
         Logger.getLogger("TIMER").addHandler(phaseHandler);
-        this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),"Source Packages" + '|' +  filePackage + '|' + fileName);
+        System.out.println("PREPARE: "+WEB_PAGES + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName);
+        this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),WEB_PAGES + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName);
         
         if (this.openNode == null) {
-            fail ("Cannot find node ["+"Source Packages" + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+            fail ("Cannot find node ["+WEB_PAGES  + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName + "] in project [" + fileProject + "]");
         }
         log("========== Open file path ="+this.openNode.getPath());
     }
@@ -169,30 +232,30 @@ public class OpenServletFile extends PerformanceTestCase {
     public ComponentOperator open(){
         JPopupMenuOperator popup =  this.openNode.callPopup();
         if (popup == null) {
-            fail ("Cannot get context menu for node ["+"Source Packages" + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+            fail ("Cannot get context menu for node ["+WEB_PAGES + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName + "] in project [" + fileProject + "]");
         }
         log("------------------------- after popup invocation ------------");
         try {
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        setJavaEditorCaretFilteringOn();
+            repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
             popup.pushMenu(this.menuItem);
         }
         catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            fail ("Cannot push menu item "+this.menuItem+" of node ["+"Source Packages" + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+            fail ("Cannot push menu item "+this.menuItem+" of node ["+WEB_PAGES  + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName + "] in project [" + fileProject + "]");
         }
         log("------------------------- after open ------------");
-        return new EditorOperator(this.fileName);
+
+        return null;
+
     }
     
     public void close(){
-        //repaintManager().setOnlyEditor(false);
-        repaintManager().resetRegionFilters(); // added - was missing
-        if (testedComponentOperator != null) {
-            ((EditorOperator)testedComponentOperator).closeDiscard();
+        EditorOperator editor = new EditorOperator(this.fileName);
+        if (editor == null) {
+            editor.closeDiscard();
         }
-        else {
-            fail ("no component to close");
-        }
+
+        repaintManager().resetRegionFilters();
+        
     }
     
 }

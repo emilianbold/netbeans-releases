@@ -41,18 +41,20 @@
 
 package org.netbeans.performance.web.actions;
 
-
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
+import org.netbeans.performance.web.setup.WebSetup;
 
 /**
  * Test of opening files.
  *
  * @author  mmirilovic@netbeans.org
  */
-public class OpenWebFilesWithOpenedEditor extends OpenWebFiles {
+public class OpenServletFileWithOpenedEditorTest extends OpenServletFileTest {
     
     public static final String suiteName="UI Responsiveness Web Actions suite";    
     
@@ -60,7 +62,7 @@ public class OpenWebFilesWithOpenedEditor extends OpenWebFiles {
      * Creates a new instance of OpenFiles
      * @param testName the name of the test
      */
-    public OpenWebFilesWithOpenedEditor(String testName) {
+    public OpenServletFileWithOpenedEditorTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
@@ -70,40 +72,24 @@ public class OpenWebFilesWithOpenedEditor extends OpenWebFiles {
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public OpenWebFilesWithOpenedEditor(String testName, String performanceDataName) {
+    public OpenServletFileWithOpenedEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
-    
-    
-    public void testOpeningWebXmlFile(){
-        super.testOpeningWebXmlFile();
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
+             .addTest(OpenServletFileWithOpenedEditorTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
-    public void testOpeningContextXmlFile(){
-        super.testOpeningContextXmlFile();
-    }    
-
-    public void testOpeningJSPFile(){
-        super.testOpeningJSPFile();
-    }
-
-    public void testOpeningBigJSPFile(){
-        super.testOpeningBigJSPFile();
+    public void testOpeningServletFile(){
+        super.testOpeningServletFile();
     }
     
-    public void testOpeningHTMLFile(){
-        super.testOpeningHTMLFile();
-    }
 
-    public void testOpeningTagFile(){
-        super.testOpeningTagFile();
-    }
-
-    public void testOpeningTldFile(){
-        super.testOpeningTldFile();
-    }    
-    
     /**
      * Initialize test - open Main.java file in the Source Editor.
      */
