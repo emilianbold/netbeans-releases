@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
+import org.netbeans.modules.cnd.editor.deprecated.fortran.options.FortranCodeStyle;
+
 /**
  *
  * @author Alexander Simon
@@ -49,18 +51,4 @@ public class FortranFormatterSingleTestCase  extends FortranEditorBase {
         super(testMethodName);
     }
 
-    public void testTypeFormat() {
-        setLoadDocumentText(
-                "  type   point\n"+
-                "  real :: X,Y\n"+
-                " end  type  point\n"
-                );
-        setDefaultsOptions();
-        reformat();
-        assertDocumentText("Incorrect type reformat",
-                "type point\n"+
-                "    real :: X, Y\n"+
-                "end type point\n"
-                );
-    }
 }

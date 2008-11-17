@@ -155,19 +155,27 @@ class FortranBracesStack {
     }
         
     public int getIndent(){
+        int shift = 0;
+        if (!codeStyle.isFreeFormatFortran()){
+            shift = 5;
+        }
         FortranStackEntry top = peek();
         if (top != null) {
-            return top.getIndent();
+            return shift + top.getIndent();
         }
-        return 0;
+        return shift;
     }
 
     public int getSelfIndent(){
+        int shift = 0;
+        if (!codeStyle.isFreeFormatFortran()){
+            shift = 5;
+        }
         FortranStackEntry top = peek();
         if (top != null) {
-            return top.getSelfIndent();
+            return shift + top.getSelfIndent();
         }
-        return 0;
+        return shift;
     }
 
     private void push(FortranStackEntry entry) {

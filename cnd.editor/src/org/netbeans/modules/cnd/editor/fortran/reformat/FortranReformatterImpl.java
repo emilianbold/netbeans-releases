@@ -229,6 +229,7 @@ public class FortranReformatterImpl {
                     break;
                 }
                 case KW_ELSE:
+                case KW_ELSEIF:
                 {
                     if (doFormat()) {
                        formatElse(previous);
@@ -453,6 +454,17 @@ public class FortranReformatterImpl {
                 ts.replacePrevious(previous, 0, 0, false);
             }
         } else {
+            int space = -1;
+            if (space == -1) {
+                space = getIndent();
+            }
+            if (current.id() == WHITESPACE) {
+                ts.replaceCurrent(current, 0, space, true);
+            } else {
+                if (space > 0) {
+                    ts.addBeforeCurrent(0, space, true);
+                }
+            }
             return;
         }
         Token<FortranTokenId> next = ts.lookNext();
@@ -604,9 +616,7 @@ public class FortranReformatterImpl {
             // will be formatted on new line
             return;
         }
-        if (previous == null) {
-            ts.replaceCurrent(current, 0, 0, false);
-        } else {
+        if (previous != null) {
             ts.replaceCurrent(current, 0, 1, false);
         }
     }
