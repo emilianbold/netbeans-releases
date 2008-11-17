@@ -45,41 +45,97 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
+import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
+ * NodeRegistry contains all of the NodeProvider instances defined in a folder in
+ * the xml layer.  The folder used for the lookup uses the path:
+ * 
+ *      Databases/Explorer/[folder]/NodeProviders
+ * 
+ *      where [folder] is the specific folder name associated with a given node type.
+ * 
+ * The providers are retrieved by lookup from the xml layer.  The NodeRegistry is used 
+ * by the BaseNode instance to retrieve its list of child nodes.
+ * 
  * @author Rob Englander
  */
 public class NodeRegistry implements ChangeListener {
     private static final String PATH = "Databases/Explorer/"; //NOI18N
     private static final String NODEPROVIDERS = "/NodeProviders"; //NOI18N
     
-    private ChangeSupport eventSupport;
-    private List<NodeProvider> providers = new CopyOnWriteArrayList<NodeProvider>();
+    private final ChangeSupport eventSupport;
+    private final List<NodeProvider> providers = new CopyOnWriteArrayList<NodeProvider>();
 
-    public NodeRegistry(String folder, Lookup dataLookup) {
+    private Lookup.Result lookupResult;
+    
+    /** 
+     * Create an instance of NodeRegistry.
+     * 
+     * @param folder the name of the xml layer folder to use
+     * @param dataLookup the lookup to use when creating node providers
+     * @return the NodeRegistry instance
+     */
+    public static NodeRegistry create(String folder, NodeDataLookup dataLookup) {
+        NodeRegistry registry = new NodeRegistry();
+        registry.init(folder, dataLookup);
+        return registry;
+    }
+
+    private NodeRegistry() {
         eventSupport = new ChangeSupport(this);
-        loadProviders(folder, dataLookup);
     }
     
-    private void loadProviders(String folder, Lookup dataLookup) {
+    /**
+     * Initialize the registry
+     * @param folder the name of the xml layer folder to use
+     * @param dataLookup the lookup to use when creating providers
+     */
+    private void init(String folder, final Lookup dataLookup) {
         Lookup lookup = Lookups.forPath(PATH + folder + NODEPROVIDERS);
-        Collection<NodeProviderFactory> factoryList = (Collection<NodeProviderFactory>)lookup.lookupAll(NodeProviderFactory.class);
+        lookupResult = lookup.lookupResult(NodeProviderFactory.class);
+
+        initProviders(dataLookup);
+        
+        // listen for changes and re-init the providers when the lookup changes
+        lookup.lookupResult(NodeProviderFactory.class).addLookupListener(
+            new LookupListener() {
+                public void resultChanged(LookupEvent ev) {
+                    initProviders(dataLookup);
+                    eventSupport.fireChange();
+                }
+            }
+        );
+    }
+    
+    /**
+     * Initialize the node providers
+     * 
+     * @param lookup the lookup to use when creating each provider
+     */
+    private synchronized void initProviders(Lookup lookup) {
+        providers.clear();
+        Collection<NodeProviderFactory> factoryList = lookupResult.allInstances();
         for (NodeProviderFactory factory : factoryList) {
-            NodeProvider provider = factory.createInstance(dataLookup);
+            NodeProvider provider = factory.createInstance(lookup);
             provider.addChangeListener(this);
             providers.add(provider);
         }
     }
     
-    public List<BaseNode> getNodes() {
-        List<BaseNode> results = new ArrayList<BaseNode>();
+    /**
+     * 
+     * @return
+     */
+    public Collection<? extends Node> getNodes() {
+        List<Node> results = new ArrayList<Node>();
 
         for (NodeProvider provider : providers) {
             results.addAll(provider.getNodes());
