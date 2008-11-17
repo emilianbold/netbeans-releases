@@ -1,23 +1,18 @@
 package org.netbeans.test.installer;
 
 import java.util.logging.Logger;
-import junit.framework.TestCase;
 
 /**
  *
  * @author Mikhail Vaysman
  */
-public class InstallerTest extends TestCase {
-
-    public InstallerTest() {
-        super("Installer test");
-    }
+public class Installer {
 
     @org.junit.Test
     public void testInstaller() {
         TestData data = new TestData(Logger.getLogger("global"));
 
-        Utils.phaseOne(this, data, "all");
+        Utils.phaseOne(data, "all");
 
         //select apache
         Utils.stepChooseComponet("Apache Tomcat");

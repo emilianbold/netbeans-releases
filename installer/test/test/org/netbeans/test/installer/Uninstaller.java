@@ -9,11 +9,7 @@ import junit.framework.TestCase;
  *
  * @author Mikhail Vaysman
  */
-public class UninstallerTest extends TestCase {
-
-    public UninstallerTest() {
-        super("Installer test");
-    }
+public class Uninstaller {
 
     @org.junit.Test
     public void testUninstaller() {
