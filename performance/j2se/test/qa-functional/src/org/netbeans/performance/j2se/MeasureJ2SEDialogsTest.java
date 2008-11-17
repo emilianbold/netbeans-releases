@@ -43,6 +43,7 @@ package org.netbeans.performance.j2se;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.dialogs.*;
 
@@ -53,70 +54,58 @@ import org.netbeans.performance.j2se.dialogs.*;
  */
 public class MeasureJ2SEDialogsTest {
 
-
     public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2SE Dialogs suite");
         System.setProperty("suitename", MeasureJ2SEDialogsTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness J2SE Dialogs suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(About.class)
-        .addTest(AddJDBCDriverDialog.class)
-        .addTest(AddProfilingPointWizard.class)
-        .addTest(AddServerInstanceDialog.class)
-        //--.addTest(AddXMLandDTDSchemaCatalog.class)
-        .addTest(AttachDialog.class)
-        //--.addTest(AutoCommentWindow.class)
-        //--.addTest(CompareMemorySnapshotsDialog.class)
-        .addTest(CreateTestsDialog.class)
-        .addTest(DeleteFileDialog.class)
-        .addTest(DocumentsDialog.class)
-        .addTest(FavoritesWindow.class)
-        .addTest(FilesWindow.class)
-        .addTest(FindInProjects.class)
-        //--.addTest(FindInSourceEditor.class)
-        //--.addTest(GotoClassDialog.class)
-        .addTest(GotoLineDialog.class)
-        .addTest(HelpContentsWindow.class)
-        .addTest(HttpMonitorWindow.class)
-        .addTest(InternationalizeDialog.class)
-        .addTest(JavaPlatformManager.class)
-        .addTest(JavadocIndexSearch.class)
-        .addTest(LibrariesManager.class)
-        .addTest(NetBeansPlatformManager.class)
-        .addTest(NewBreakpointDialog.class)
-        .addTest(NewDatabaseConnectionDialog.class)
-        //--.addTest(NewFileDialog.class)
-        .addTest(NewProjectDialog.class)
-        .addTest(NewWatchDialog.class)
-        .addTest(OpenFileDialog.class)
-        .addTest(OpenProjectDialog.class)
-        .addTest(Options.class)
-        .addTest(OutputWindow.class)
-        //--.addTest(OverrideMethods.class)
-        .addTest(PluginManager.class)
-        //--.addTest(ProfilerAboutDialog.class)
-        //--.addTest(ProfilerCalibrationDialog.class)
-        .addTest(ProfilerWindows.class)
-        .addTest(ProjectPropertiesWindow.class)
-        .addTest(ProjectsWindow.class)
-        .addTest(PropertyEditorColor.class)
-        //--.addTest(PropertyEditors.class)
-        //--.addTest(PropertyEditorString.class)
-        .addTest(ProxyConfiguration.class)
-        .addTest(RefactorFindUsagesDialog.class)
-        .addTest(RefactorMoveClassDialog.class)
-        //--.addTest(RefactorRenameDialog.class)
-        .addTest(RuntimeWindow.class)
-        .addTest(SelectProfilingTaskDialog.class)
-        .addTest(ServerManager.class)
-        //--.addTest(SetDefaultServerDialog.class)
-        .addTest(TemplateManager.class)
-        .addTest(ToDoWindow.class)
-        .addTest(VersioningWindow.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AboutDialogTest.class)
+        .addTest(AddJDBCDriverDialogTest.class)
+        .addTest(AddProfilingPointWizardTest.class)
+        .addTest(AddServerInstanceDialogTest.class)
+        .addTest(AttachDialogTest.class)
+        .addTest(CompareMemorySnapshotsDialogTest.class)
+        .addTest(CreateTestsDialogTest.class)
+        .addTest(DeleteFileDialogTest.class)
+        .addTest(DocumentsDialogTest.class)
+        .addTest(FavoritesWindowTest.class)
+        .addTest(FilesWindowTest.class)
+        .addTest(FindInProjectsTest.class)
+        .addTest(GotoLineDialogTest.class)
+        .addTest(HelpContentsWindowTest.class)
+        .addTest(HttpMonitorWindowTest.class)
+        .addTest(InternationalizeDialogTest.class)
+        .addTest(JavaPlatformManagerTest.class)
+        .addTest(JavadocIndexSearchTest.class)
+        .addTest(LibrariesManagerTest.class)
+        .addTest(NetBeansPlatformManagerTest.class)
+        .addTest(NewBreakpointDialogTest.class)
+        .addTest(NewDatabaseConnectionDialogTest.class)
+        .addTest(NewFileDialogTest.class)
+        .addTest(NewProjectDialogTest.class)
+        .addTest(NewWatchDialogTest.class)
+        .addTest(OpenFileDialogTest.class)
+        .addTest(OpenProjectDialogTest.class)
+        .addTest(OptionsTest.class)
+        .addTest(OutputWindowTest.class)
+        .addTest(PluginManagerTest.class)
+        .addTest(ProfilerWindowsTest.class)
+        .addTest(ProjectPropertiesWindowTest.class)
+        .addTest(ProjectsWindowTest.class)
+        .addTest(ProxyConfigurationTest.class)
+        .addTest(RefactorFindUsagesDialogTest.class)
+        .addTest(RefactorMoveClassDialogTest.class)
+        .addTest(RefactorRenameDialogTest.class)
+        .addTest(RuntimeWindowTest.class)
+        .addTest(SelectProfilingTaskDialogTest.class)
+        .addTest(ServerManagerTest.class)
+        .addTest(TemplateManagerTest.class)
+        // needs to be fixed .addTest(ToDoWindowTest.class)
+        .addTest(VersioningWindowTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
   
         return suite;
     }
-    
 }

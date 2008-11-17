@@ -43,143 +43,186 @@ public class FortranIndentTestCase extends FortranEditorBase {
         super(testMethodName);
     }
 
-    public void testProgramIndent() {
+    public void testProgramIndentFree() {
         setLoadDocumentText(
                 "program p|"
                 );
         setDefaultsOptions();
         indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line program indent",
+        assertDocumentTextAndCaret("Incorrect new-line program indent (free form)",
                 "program p\n" +
                 "    |"
                 );
     }
 
-    public void testProgramIndent1() {
+    public void testProgramIndentFixed() {
         setLoadDocumentText(
                 "      program p|"
                 );
         setDefaultsOptions();
         FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
         indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line program indent",
+        assertDocumentTextAndCaret("Incorrect new-line program indent (fixed form)",
                 "      program p\n" +
                 "          |"
                 );
     }
 
-    public void testProgramIndent2() {
-        setLoadDocumentText(
-                "program p|"
-                );
-        setDefaultsOptions();
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line program indent",
-                "program p\n" +
-                "      |"
-                );
-    }
-
-    public void testProgramIndent3() {
-        setLoadDocumentText(
-                "program p|\n"
-                );
-        setDefaultsOptions();
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line program indent",
-                "program p\n" +
-                "    |\n"
-                );
-    }
-
-    public void testEndProgramIndent() {
+    public void testEndProgramIndentFree() {
         setLoadDocumentText(
                 "program p\n"+
                 "    end progra|"
                 );
         setDefaultsOptions();
         typeChar('m', true);
-        assertDocumentTextAndCaret("Incorrect new-line end program indent",
+        assertDocumentTextAndCaret("Incorrect new-line end program indent (free form)",
                 "program p\n" +
                 "end program|"
                 );
     }
 
-    public void testEndProgramIndent2() {
+    public void testEndProgramIndentFixed() {
         setLoadDocumentText(
-                "program p\n"+
+                "      program p\n"+
                 "    end progra|"
                 );
         setDefaultsOptions();
         FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
         typeChar('m', true);
-        assertDocumentTextAndCaret("Incorrect new-line end program indent",
-                "program p\n" +
+        assertDocumentTextAndCaret("Incorrect new-line end program indent (fixed form)",
+                "      program p\n" +
                 "      end program|"
                 );
     }
 
-    public void testEndProgramIndent3() {
+    public void testEndProgramIndent2Free() {
         setLoadDocumentText(
                 "program p\n"+
                 "    endprogra|"
                 );
         setDefaultsOptions();
         typeChar('m', true);
-        assertDocumentTextAndCaret("Incorrect new-line end program indent",
+        assertDocumentTextAndCaret("Incorrect new-line end program indent (free form)",
                 "program p\n" +
                 "endprogram|"
                 );
     }
 
-    public void testSubroutineIndent() {
+    public void testEndProgramIndent2Fixed() {
+        setLoadDocumentText(
+                "      program p\n"+
+                "    endprogra|"
+                );
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('m', true);
+        assertDocumentTextAndCaret("Incorrect new-line end program indent (fixed form)",
+                "      program p\n" +
+                "      endprogram|"
+                );
+    }
+
+    public void testSubroutineIndentFree() {
         setLoadDocumentText(
                 "subroutine p(c)|"
                 );
         setDefaultsOptions();
         indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line subroutine indent",
+        assertDocumentTextAndCaret("Incorrect new-line subroutine indent (free form)",
                 "subroutine p(c)\n"+
                 "    |"
                 );
     }
 
-    public void testEndSubroutineIndent() {
+    public void testSubroutineIndentFixed() {
+        setLoadDocumentText(
+                "      subroutine p(c)|"
+                );
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect new-line subroutine indent (fixed form)",
+                "      subroutine p(c)\n"+
+                "          |"
+                );
+    }
+
+    public void testEndSubroutineIndentFree() {
         setLoadDocumentText(
                 "subroutine p(c)\n"+
                 "    end subroutin|"
                 );
         setDefaultsOptions();
         typeChar('e', true);
-        assertDocumentTextAndCaret("Incorrect new-line emd subroutine indent",
+        assertDocumentTextAndCaret("Incorrect new-line emd subroutine indent (free form)",
                 "subroutine p(c)\n"+
                 "end subroutine|"
                 );
     }
 
-    public void testEndSubroutineIndent2() {
+    public void testEndSubroutineIndentFixed() {
+        setLoadDocumentText(
+                "      subroutine p(c)\n"+
+                "    end subroutin|"
+                );
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('e', true);
+        assertDocumentTextAndCaret("Incorrect new-line emd subroutine indent (fixed form)",
+                "      subroutine p(c)\n"+
+                "      end subroutine|"
+                );
+    }
+
+    public void testEndSubroutineIndent2Free() {
         setLoadDocumentText(
                 "subroutine p(c)\n"+
                 "    endsubroutin|"
                 );
         setDefaultsOptions();
         typeChar('e', true);
-        assertDocumentTextAndCaret("Incorrect new-line end subroutine indent",
+        assertDocumentTextAndCaret("Incorrect new-line end subroutine indent (free form)",
                 "subroutine p(c)\n"+
                 "endsubroutine|"
                 );
     }
 
-    public void testIfIndent() {
+    public void testEndSubroutineIndent2Fixed() {
+        setLoadDocumentText(
+                "      subroutine p(c)\n"+
+                "    endsubroutin|"
+                );
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('e', true);
+        assertDocumentTextAndCaret("Incorrect new-line end subroutine indent (fixed form)",
+                "      subroutine p(c)\n"+
+                "      endsubroutine|"
+                );
+    }
+
+    public void testIfIndentFree() {
         setLoadDocumentText(
                 "if (a .eq. 0) then|"
                 );
         setDefaultsOptions();
         indentNewLine();
-        assertDocumentTextAndCaret("Incorrect new-line if indent",
+        assertDocumentTextAndCaret("Incorrect new-line if indent (free form)",
                 "if (a .eq. 0) then\n"+
                 "    |"
+                );
+    }
+
+    public void testIfIndentFixed() {
+        setLoadDocumentText(
+                "      if (a .eq. 0) then|"
+                );
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect new-line if indent (fixed form)",
+                "      if (a .eq. 0) then\n"+
+                "          |"
                 );
     }
 
