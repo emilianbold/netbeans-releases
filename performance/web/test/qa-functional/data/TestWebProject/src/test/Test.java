@@ -1,4 +1,5 @@
 /*
+ *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
@@ -39,55 +40,29 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.web.actions;
+package test;
 
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.OpenAction;
-
+/*
+ * Test.java
+ *
+ * Created on 26. kvten 2004, 15:50
+ */
 
 /**
- * Test of opening files.
  *
- * @author  mmirilovic@netbeans.org
+ * @author  lm97939
  */
-public class OpenServletFileWithOpenedEditor extends OpenServletFile {
+public class Test {
     
-    public static final String suiteName="UI Responsiveness Web Actions suite";    
-    
-    /**
-     * Creates a new instance of OpenFiles
-     * @param testName the name of the test
-     */
-    public OpenServletFileWithOpenedEditor(String testName) {
-        super(testName);
-        expectedTime = WINDOW_OPEN;
+    /** Creates a new instance of Test */
+    public Test() {
     }
     
     /**
-     * Creates a new instance of OpenFiles
-     * @param testName the name of the test
-     * @param performanceDataName measured values will be saved under this name
+     * @param args the command line arguments
      */
-    public OpenServletFileWithOpenedEditor(String testName, String performanceDataName) {
-        super(testName, performanceDataName);
-        expectedTime = WINDOW_OPEN;
-    }
-    
-    public void testOpeningServletFile(){
-        super.testOpeningServletFile();
-    }
-    
-    public void testOpeningJavaFile(){
-        super.testOpeningJavaFile();
-    }
-    
-    /**
-     * Initialize test - open Main.java file in the Source Editor.
-     */
-    public void initialize(){
-        super.initialize();
-        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Source Packages|test|Test.java"));
+    public static void main(String[] args) {
+        // TODO code application logic here
     }
     
 }

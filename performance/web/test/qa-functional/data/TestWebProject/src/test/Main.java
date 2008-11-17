@@ -1,4 +1,5 @@
 /*
+ *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
@@ -24,7 +25,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,32 +40,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.web;
+package test;
 
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.web.menus.*;
+public class Main {
 
-/**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
- *
- * @author  mmirilovic@netbeans.org
- */
-public class MeasureWebMenusTest {
+    /** Creates a new instance of Main */
+    public Main() {
+        System.out.println("Hello World");
+    }
     
-    public static NbTestSuite suite() {
-        PerformanceTestCase.prepareForMeasurements();
-
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Menus suite");
-        System.setProperty("suitename", MeasureWebMenusTest.class.getCanonicalName());
-        System.setProperty("suite", "UI Responsiveness Web Menus suite");
-
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebProjectsNodesViewPopupMenuTest.class)
-        .addTest(WebRuntimeViewPopupMenuTest.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
-        
-        return suite;
+    private void foo() {
+        javax.swing.JPanel p = new javax.swing.JPanel();
+    }
+    
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        new Main();
     }
     
 }

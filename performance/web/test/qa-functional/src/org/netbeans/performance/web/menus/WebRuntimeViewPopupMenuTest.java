@@ -43,57 +43,71 @@ package org.netbeans.performance.web.menus;
 
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.nodes.Node;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
+import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.performance.web.setup.WebSetup;
 
 /**
  * Test of typing in opened source editor.
  *
  * @author  mschovanek@netbeans.org
  */
-public class WebRuntimeViewPopupMenu extends PerformanceTestCase {
+public class WebRuntimeViewPopupMenuTest extends PerformanceTestCase {
     private Node dataObjectNode;
-    private RuntimeTabOperator runtimeTab = null;
     private boolean isTomcatRunning = false;
     
     // strings
-    private static String SERVERS = Bundle.getStringTrimmed(
-        "org.netbeans.modules.j2ee.deployment.impl.ui.Bundle",
-        "SERVER_REGISTRY_NODE");
-    private static String BUNDLED_TOMCAT = "Tomcat"; // not in a bundle
-    private static String WEB_APPLICATIONS = Bundle.getStringTrimmed(
-        "org.netbeans.modules.tomcat5.nodes.Bundle",
-        "LBL_WebApps");
+    private static String SERVERS=null;
+    private static String TOMCAT = null;
+    private static String WEB_APPLICATIONS=null;
     
     public static final String suiteName="UI Responsiveness Web Menus suite";    
 
     
     /** Creates a new instance of TypingInEditor */
-    public WebRuntimeViewPopupMenu(String testName) {
+    public WebRuntimeViewPopupMenuTest(String testName) {
         super(testName);
         init();
     }
     
     /** Creates a new instance of TypingInEditor */
-    public WebRuntimeViewPopupMenu(String testName, String performanceDataName) {
+    public WebRuntimeViewPopupMenuTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         init();
     }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
+             .addTest(WebRuntimeViewPopupMenuTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
     
     protected void init() {
-//        super.init();
+        SERVERS = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle",
+                "SERVER_REGISTRY_NODE");
+        WEB_APPLICATIONS = Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.nodes.Bundle",
+        "LBL_WebApps");
+        TOMCAT = Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.Bundle",
+        "LBL_TomcatFactory60");
+
         expectedTime = UI_RESPONSE;
         track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
         WAIT_AFTER_PREPARE = 500;
         WAIT_AFTER_OPEN = 1000;
+
     }
     
     public void testServerRegistryPopupMenuRuntime(){
@@ -101,26 +115,25 @@ public class WebRuntimeViewPopupMenu extends PerformanceTestCase {
     }
     
     public void testTomcatPopupMenuRuntime(){
-        testMenu(SERVERS+"|"+BUNDLED_TOMCAT,  false);
+        testMenu(SERVERS+"|"+TOMCAT,  false);
     }
     
     public void testWebModulesPopupMenuRuntime(){
-        testMenu(SERVERS+"|"+BUNDLED_TOMCAT+"|"+WEB_APPLICATIONS, true);
+        testMenu(SERVERS+"|"+TOMCAT+"|"+WEB_APPLICATIONS, true);
     }
-    
+/*
     public void testWebModulePopupMenuRuntime(){
-        testMenu(SERVERS+"|"+BUNDLED_TOMCAT+"|"+WEB_APPLICATIONS+"|/manager", true);
+        testMenu(SERVERS+"|"+TOMCAT+"|"+WEB_APPLICATIONS+"|/manager", true);
     }
-    
+*/
     
     private void testMenu(String path, boolean startTomcat){
         if (startTomcat) {
-            //Macros.startBundledTomact();
+            CommonUtilities.startTomcatServer();
             isTomcatRunning = true;
         }
         RuntimeTabOperator runtimeTab = RuntimeTabOperator.invoke();
         dataObjectNode = new Node(runtimeTab.getRootNode(), path);
-        log("testMenu(): runtimeTab.isValid = "+runtimeTab.isValid());
         doMeasurement();
     }
     
@@ -148,7 +161,7 @@ public class WebRuntimeViewPopupMenu extends PerformanceTestCase {
     
     protected void shutdown() {
         if (isTomcatRunning) {
-      //      Macros.stopBundledTomact();
+            CommonUtilities.stopTomcatServer();
         }
         super.shutdown();
     }

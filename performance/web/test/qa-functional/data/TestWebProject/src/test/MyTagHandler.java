@@ -1,4 +1,5 @@
 /*
+ *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
@@ -24,7 +25,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,32 +40,34 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.web;
+ 
+package test;           
 
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.web.menus.*;
+import javax.servlet.jsp.tagext.*;
+import javax.servlet.jsp.JspWriter;
+import javax.servlet.jsp.JspException;
 
-/**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
+/** 
  *
- * @author  mmirilovic@netbeans.org
+ * @author  lm97939
+ * @version 
  */
-public class MeasureWebMenusTest {
-    
-    public static NbTestSuite suite() {
-        PerformanceTestCase.prepareForMeasurements();
 
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Menus suite");
-        System.setProperty("suitename", MeasureWebMenusTest.class.getCanonicalName());
-        System.setProperty("suite", "UI Responsiveness Web Menus suite");
+public class MyTagHandler extends SimpleTagSupport {
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebProjectsNodesViewPopupMenuTest.class)
-        .addTest(WebRuntimeViewPopupMenuTest.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+    /**Called by the container to invoke this tag. 
+    * The implementation of this method is provided by the tag library developer,
+    * and handles all tag processing, body iteration, etc.
+    */
+    public void doTag() throws JspException {
         
-        return suite;
+        JspWriter out=getJspContext().getOut();
+
+        try {
+            getJspContext().getOut().write( "Hello, world!" );
+        } catch (java.io.IOException ex) {
+            throw new JspException(ex.getMessage());
+        }
+
     }
-    
 }

@@ -44,24 +44,23 @@ package org.netbeans.performance.web;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.web.menus.*;
+import org.netbeans.performance.web.dialogs.*;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
  * @author  mmirilovic@netbeans.org
  */
-public class MeasureWebMenusTest {
+public class MeasureWebDialogsTest {
     
     public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Menus suite");
-        System.setProperty("suitename", MeasureWebMenusTest.class.getCanonicalName());
-        System.setProperty("suite", "UI Responsiveness Web Menus suite");
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Dialogs suite");
+        System.setProperty("suitename", MeasureWebDialogsTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness Web Dialogs suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebProjectsNodesViewPopupMenuTest.class)
-        .addTest(WebRuntimeViewPopupMenuTest.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebProjectPropertiesWindowTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
         
         return suite;

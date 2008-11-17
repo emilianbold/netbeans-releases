@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,32 +39,87 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.web;
+package org.netbeans.performance.web.actions;
 
+
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.web.menus.*;
+
+import org.netbeans.performance.web.setup.WebSetup;
+
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
+ * Test of opening files.
  *
  * @author  mmirilovic@netbeans.org
  */
-public class MeasureWebMenusTest {
+public class OpenWebFilesWithOpenedEditorTest extends OpenWebFilesTest {
     
+   
+    /**
+     * Creates a new instance of OpenFiles
+     * @param testName the name of the test
+     */
+    public OpenWebFilesWithOpenedEditorTest(String testName) {
+        super(testName);
+        expectedTime = WINDOW_OPEN;
+    }
+    
+    /**
+     * Creates a new instance of OpenFiles
+     * @param testName the name of the test
+     * @param performanceDataName measured values will be saved under this name
+     */
+    public OpenWebFilesWithOpenedEditorTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+        expectedTime = WINDOW_OPEN;
+    }
+
     public static NbTestSuite suite() {
-        PerformanceTestCase.prepareForMeasurements();
-
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Menus suite");
-        System.setProperty("suitename", MeasureWebMenusTest.class.getCanonicalName());
-        System.setProperty("suite", "UI Responsiveness Web Menus suite");
-
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebProjectsNodesViewPopupMenuTest.class)
-        .addTest(WebRuntimeViewPopupMenuTest.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
-        
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
+             .addTest(OpenWebFilesWithOpenedEditorTest.class)
+             .enableModules(".*").clusters(".*")));
         return suite;
+    }
+    
+    public void testOpeningWebXmlFile(){
+        super.testOpeningWebXmlFile();
+    }
+
+    public void testOpeningContextXmlFile(){
+        super.testOpeningContextXmlFile();
+    }    
+
+    public void testOpeningJSPFile(){
+        super.testOpeningJSPFile();
+    }
+
+    public void testOpeningBigJSPFile(){
+        super.testOpeningBigJSPFile();
+    }
+    
+    public void testOpeningHTMLFile(){
+        super.testOpeningHTMLFile();
+    }
+
+    public void testOpeningTagFile(){
+        super.testOpeningTagFile();
+    }
+
+    public void testOpeningTldFile(){
+        super.testOpeningTldFile();
+    }    
+    
+    /**
+     * Initialize test - open Main.java file in the Source Editor.
+     */
+    public void initialize(){
+        super.initialize();
+        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Source Packages|test|Test.java"));
     }
     
 }

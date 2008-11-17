@@ -1,4 +1,5 @@
 /*
+ *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
@@ -24,7 +25,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,32 +40,69 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.web;
 
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.web.menus.*;
+/*
+ * TestBean.java
+ *
+ * Created on 22. leden 2004, 14:13
+ */
+
+package test;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author  mmirilovic@netbeans.org
+ * @author  lm97939
  */
-public class MeasureWebMenusTest {
+public class TestBean {
     
-    public static NbTestSuite suite() {
-        PerformanceTestCase.prepareForMeasurements();
-
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Menus suite");
-        System.setProperty("suitename", MeasureWebMenusTest.class.getCanonicalName());
-        System.setProperty("suite", "UI Responsiveness Web Menus suite");
-
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebProjectsNodesViewPopupMenuTest.class)
-        .addTest(WebRuntimeViewPopupMenuTest.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
-        
-        return suite;
+    /**
+     * Holds value of property stringProperty.
+     */
+    private String stringProperty;
+    
+    /**
+     * Holds value of property intProperty.
+     */
+    private int intProperty;
+    
+    /** Creates a new instance of TestBean */
+    public TestBean() {
+    }
+    
+    /**
+     * Getter for property stringProperty.
+     * @return Value of property stringProperty.
+     */
+    public String getStringProperty() {
+        return this.stringProperty;
+    }
+    
+    /**
+     * Setter for property stringProperty.
+     * @param stringProperty New value of property stringProperty.
+     */
+    public void setStringProperty(String stringProperty) {
+        this.stringProperty = stringProperty;
+    }
+    
+    /**
+     * Getter for property intProperty.
+     * @return Value of property intProperty.
+     */
+    public int getIntProperty() {
+        return this.intProperty;
+    }
+    
+    /**
+     * Setter for property intProperty.
+     * @param intProperty New value of property intProperty.
+     */
+    public void setIntProperty(int intProperty) {
+        this.intProperty = intProperty;
+    }
+    
+    public int add(int x) {
+        return getIntProperty() + x ;
     }
     
 }

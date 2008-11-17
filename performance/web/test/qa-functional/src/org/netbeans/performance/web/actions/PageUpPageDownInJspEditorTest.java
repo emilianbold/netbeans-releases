@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,99 +42,107 @@
 package org.netbeans.performance.web.actions;
 
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.Action.Shortcut;
-
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-/**
- * Test of Paste text to opened source editor.
- *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
- */
-public class ToggleBreakpoint extends PerformanceTestCase {
-    private String file;
-    private List bpList = new ArrayList();
 
-    public static final String suiteName="UI Responsiveness Web Actions suite";    
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.web.setup.WebSetup;
+
+
+/**
+ * Test of Page Up and Page Down in opened source editor.
+ *
+ * @author  anebuzelsky@netbeans.org
+ */
+public class PageUpPageDownInJspEditorTest extends PerformanceTestCase {
+
+    private boolean pgup;
+    private String file;
+    private EditorOperator editorOperator;
     
-    /** Creates a new instance of ToggleBreakpoint */
-    public ToggleBreakpoint(String testName) {
+    /** Creates a new instance of PageUpPageDownInEditor */
+    public PageUpPageDownInJspEditorTest(String testName) {
         super(testName);
         init();
     }
     
-    /** Creates a new instance of ToggleBreakpoint */
-    public ToggleBreakpoint(String file, String testName, String performanceDataName) {
+    /** Creates a new instance of PageUpPageDownInEditor */
+    public PageUpPageDownInJspEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        this.file = file;
+        init();
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
+             .addTest(PageUpPageDownInJspEditorTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
     protected void init() {
-//        super.init();
         expectedTime = UI_RESPONSE;
-        WAIT_AFTER_PREPARE = 1000;
-        WAIT_AFTER_OPEN = 100;
-    }
-    private EditorOperator editorOperator1;
-    
-   public void testToggleBreakpoint() {
+        WAIT_AFTER_OPEN = 200;
+   }
+     
+    public void testPageDownInJspEditor() {
+        pgup=false;
+        file="Test.jsp";
         doMeasurement();
-    }    
+    }
+    
+    public void testPageDownInJspEditorWithLargeFile() {
+        pgup=false;
+        file="BigJSP.jsp";
+        doMeasurement();
+    }
+    
+    public void testPageUpInJspEditor() {
+        pgup=true;
+        file="Test.jsp";
+        doMeasurement();
+    }
+    
+    public void testPageUpInJspEditorWithLargeFile() {
+        pgup=true;
+        file="BigJSP.jsp";
+        doMeasurement();
+    }
     
     protected void initialize() {
-        EditorOperator.closeDiscardAll();
-//        jspOptions().setCaretBlinkRate(0);
-        // delay between the caret stops and the update of his position in status bar
-//        jspOptions().setStatusBarCaretDelay(0);
-        // open file in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|"+file));
-        editorOperator1 = new EditorWindowOperator().getEditor(file);
-//        eventTool().waitNoEvent(500);
-//        waitNoEvent(1000);
-//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-    }
+        editorOperator = new EditorWindowOperator().getEditor(file);
+   }
     
     public void prepare() {
-        System.out.println("=== " + this.getClass().getName() + " ===");
-        editorOperator1.makeComponentVisible();
-        editorOperator1.setCaretPosition(7,1);
-//        eventTool().waitNoEvent(100);
+       
     }
     
     public ComponentOperator open(){
-        // Toggle Breakpoint
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_F8, KeyEvent.CTRL_MASK)).perform(editorOperator1);
+        if (pgup){
+            editorOperator.setCaretPositionToLine(100);
+            new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_PAGE_UP)).perform(editorOperator);
+        }
+        else{
+            editorOperator.setCaretPositionToLine(1);
+            new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_PAGE_DOWN)).perform(editorOperator);
+        }
         return null;
     }
     
-    public void close() {
-        deleteAllBreakpoints();
-    }
-    
     protected void shutdown() {
-        repaintManager().resetRegionFilters();
-        editorOperator1.closeDiscard();
-        super.shutdown();
-    }
-    
-    private void deleteAllBreakpoints() {
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_5, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK)).perform();
-        //new BreakpointsWindowAction().perform();
-        //new Action("Window|Debugging|Breakpoints",null).perform();
-        TopComponentOperator tco = new TopComponentOperator("Breakpoints");
-        new Action(null,"Delete All").perform(tco);
-        tco.close();
+       repaintManager().resetRegionFilters(); 
+       editorOperator.closeDiscard();
+       super.shutdown();
     }
 }

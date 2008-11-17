@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,32 +39,75 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.web;
+package org.netbeans.performance.web.dialogs;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.web.setup.WebSetup;
+
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.actions.PropertiesAction;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.web.menus.*;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
+ * Test of Project Properties Window
  *
  * @author  mmirilovic@netbeans.org
  */
-public class MeasureWebMenusTest {
+public class WebProjectPropertiesWindowTest extends PerformanceTestCase {
+
+    private Node testNode;
+    private String TITLE, projectName;
+    
+    public static final String suiteName="UI Responsiveness J2SE Dialogs";    
+    
+    /**
+     * Creates a new instance of WebProjectPropertiesWindowTest
+     */
+    public WebProjectPropertiesWindowTest(String testName) {
+        super(testName);
+        expectedTime = WINDOW_OPEN;
+    }
+    
+    /**
+     * Creates a new instance of WebProjectPropertiesWindowTest
+     */
+    public WebProjectPropertiesWindowTest(String testName, String performanceDataName) {
+        super(testName,performanceDataName);
+        expectedTime = WINDOW_OPEN;
+    }
     
     public static NbTestSuite suite() {
-        PerformanceTestCase.prepareForMeasurements();
-
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Menus suite");
-        System.setProperty("suitename", MeasureWebMenusTest.class.getCanonicalName());
-        System.setProperty("suite", "UI Responsiveness Web Menus suite");
-
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebProjectsNodesViewPopupMenuTest.class)
-        .addTest(WebRuntimeViewPopupMenuTest.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
-        
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
+             .addTest(WebProjectPropertiesWindowTest.class)
+             .enableModules(".*").clusters(".*")));
         return suite;
+    }
+    
+    
+ 
+    public void testWebProject(){
+        projectName = "TestWebProject";
+        doMeasurement();
+    }
+    
+    public void initialize() {
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle","LBL_Customizer_Title", new String[]{projectName});
+        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);
+    }
+    
+    public void prepare() {
+        // do nothing
+    }
+    
+    public ComponentOperator open() {
+        // invoke Window / Properties from the main menu
+        new PropertiesAction().performPopup(testNode);
+        return new NbDialogOperator(TITLE);
     }
     
 }

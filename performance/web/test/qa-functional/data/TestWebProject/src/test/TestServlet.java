@@ -1,4 +1,5 @@
 /*
+ *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
@@ -24,7 +25,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,32 +40,83 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.web;
+/*
+ * TestServlet.java
+ *
+ * Created on 26. kvten 2004, 14:10
+ */
 
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.web.menus.*;
+package test;
+
+import java.io.*;
+import java.net.*;
+
+import javax.servlet.*;
+import javax.servlet.http.*;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author  mmirilovic@netbeans.org
+ * @author  lm97939
+ * @version
  */
-public class MeasureWebMenusTest {
+public class TestServlet extends HttpServlet {
     
-    public static NbTestSuite suite() {
-        PerformanceTestCase.prepareForMeasurements();
-
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Menus suite");
-        System.setProperty("suitename", MeasureWebMenusTest.class.getCanonicalName());
-        System.setProperty("suite", "UI Responsiveness Web Menus suite");
-
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebProjectsNodesViewPopupMenuTest.class)
-        .addTest(WebRuntimeViewPopupMenuTest.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+    /** Initializes the servlet.
+     */
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
         
-        return suite;
+    }
+    
+    /** Destroys the servlet.
+     */
+    public void destroy() {
+        
+    }
+    
+    /** Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
+     * @param request servlet request
+     * @param response servlet response
+     */
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+    throws ServletException, IOException {
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+        /* TODO output your page here
+        out.println("<html>");
+        out.println("<head>");
+        out.println("<title>Servlet</title>");
+        out.println("</head>");
+        out.println("<body>");
+         
+        out.println("</body>");
+        out.println("</html>");
+         */
+        out.close();
+    }
+    
+    /** Handles the HTTP <code>GET</code> method.
+     * @param request servlet request
+     * @param response servlet response
+     */
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    throws ServletException, IOException {
+        processRequest(request, response);
+    }
+    
+    /** Handles the HTTP <code>POST</code> method.
+     * @param request servlet request
+     * @param response servlet response
+     */
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    throws ServletException, IOException {
+        processRequest(request, response);
+    }
+    
+    /** Returns a short description of the servlet.
+     */
+    public String getServletInfo() {
+        return "Short description";
     }
     
 }
