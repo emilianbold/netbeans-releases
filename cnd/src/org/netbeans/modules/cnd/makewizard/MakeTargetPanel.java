@@ -48,6 +48,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -434,9 +435,9 @@ public class MakeTargetPanel extends MakefileWizardPanel
             }
         } else {
             // if subdir is blank check for infinite recursion
-            ArrayList tlist = getMakefileData().getTargetList();
+            List<TargetData> tlist = getMakefileData().getTargetList();
             for (int i = 0; i < tlist.size(); i++) {
-                if (tname.equals(((TargetData) tlist.get(i)).getName())) {
+                if (tname.equals((tlist.get(i)).getName())) {
                     warn(msgs, WARN_INFINITE_RECURSION, tname);
                 }
             }
