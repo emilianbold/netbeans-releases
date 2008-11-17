@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.execution41.org.openide.actions;
 
 import org.openide.ErrorManager;
@@ -52,64 +51,61 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
-import org.openide.windows.WindowManager;
 
 /** Execute a class.
-* Is enabled if the only selected node implements
-* {@link ExecCookie}.
-* @see org.openide.execution
-*
-* @author   Ian Formanek, Jaroslav Tulach, Jan Jancura
-*/
+ * Is enabled if the only selected node implements
+ * {@link ExecCookie}.
+ * @see org.openide.execution
+ *
+ * @author   Ian Formanek, Jaroslav Tulach, Jan Jancura
+ */
 public class ExecuteAction extends CookieAction {
-
-    private static String workspace = "None"; // NOI18N
 
     /** should we run compilation before execution */
     private static boolean runCompilation;
 
     /** Set whether files should be compiled before execution.
-    * @param run <code>true</code> if they should
+     * @param run <code>true</code> if they should
      * @deprecated Only works if the <code>org.openide.compiler</code> module is enabled.
-    */
-    public static void setRunCompilation (boolean run) {
+     */
+    public static void setRunCompilation(boolean run) {
         runCompilation = run;
     }
 
     /** Test whether files will be compiled before execution.
-    * By default they will.
-    * @return <code>true</code> if they will be
+     * By default they will.
+     * @return <code>true</code> if they will be
      * @deprecated Only works if the <code>org.openide.compiler</code> module is enabled.
-    */
-    public static boolean getRunCompilation () {
+     */
+    public static boolean getRunCompilation() {
         return runCompilation;
     }
 
     // init ..........................................................................................
-
     protected Class[] cookieClasses() {
-        return new Class[] { ExecCookie.class };
+        return new Class[]{ExecCookie.class};
     }
 
-    protected void performAction (final Node[] activatedNodes) {
+    protected void performAction(final Node[] activatedNodes) {
         // Running ExecCookie should be fast. But running compilation before
         // may take a long time. To be safe, do it asynch.
         RequestProcessor.getDefault().post(new Runnable() {
+
             public void run() {
                 execute(activatedNodes, runCompilation);
             }
         });
     }
-    
+
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
-    protected int mode () {
+    protected int mode() {
         return MODE_ANY;
     }
 
@@ -118,22 +114,22 @@ public class ExecuteAction extends CookieAction {
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx (ExecuteAction.class);
+        return new HelpCtx(ExecuteAction.class);
     }
 
-    protected String iconResource () {
+    @Override
+    protected String iconResource() {
         return "org/openide/resources/actions/execute.gif"; // NOI18N
     }
 
     // utility methods
-
     /** Execute a list of items by cookie.
-    *
-    * @param execCookies list of {@link ExecCookie}s (any may be <code>null</code>)
-    */
-    public static void execute(Iterator execCookies) {
+     *
+     * @param execCookies list of {@link ExecCookie}s (any may be <code>null</code>)
+     */
+    public static void execute(Iterator<ExecCookie> execCookies) {
         while (execCookies.hasNext()) {
-            ExecCookie cookie = (ExecCookie) execCookies.next();
+            ExecCookie cookie = execCookies.next();
             if (cookie != null) {
                 cookie.start();
             }
@@ -141,19 +137,19 @@ public class ExecuteAction extends CookieAction {
     }
 
     /** Execute some data objects.
-    *
-    * @param dataObjects the data objects (should have {@link ExecCookie} on them if they are to be used)
-    * @param compileBefore <code>true</code> to compile before executing
-    * @return true if compilation succeeded or was not performed, false if compilation failed
-    */
+     *
+     * @param dataObjects the data objects (should have {@link ExecCookie} on them if they are to be used)
+     * @param compileBefore <code>true</code> to compile before executing
+     * @return true if compilation succeeded or was not performed, false if compilation failed
+     */
     public static boolean execute(DataObject[] dataObjects, boolean compileBefore) {
         // search all DataObjects with unique ExecCookies/StartCookies -
         // - it is possible, that multiple activated nodes have the same exec cookie and
         // we have to prevent running it multiple times
-        HashSet execute = new HashSet ();
+        Set<ExecCookie> execute = new HashSet<ExecCookie>();
 
         for (int i = 0; i < dataObjects.length; i++) {
-            ExecCookie exec = (ExecCookie) dataObjects[i].getCookie(ExecCookie.class);
+            ExecCookie exec = dataObjects[i].getCookie(ExecCookie.class);
             if (exec != null) {
                 execute.add(exec);
             }
@@ -169,19 +165,19 @@ public class ExecuteAction extends CookieAction {
     }
 
     /** Execute some nodes.
-    *
-    * @param nodes the nodes (should have {@link ExecCookie} on them if they are to be used)
-    * @param compileBefore <code>true</code> to compile before executing
-    * @return true if compilation succeeded or was not performed, false if compilation failed
-    */
+     *
+     * @param nodes the nodes (should have {@link ExecCookie} on them if they are to be used)
+     * @param compileBefore <code>true</code> to compile before executing
+     * @return true if compilation succeeded or was not performed, false if compilation failed
+     */
     public static boolean execute(Node[] nodes, boolean compileBefore) {
         // find all activatedNodes with unique ExecCookies/StartCookies -
         // - it is possible, that multiple activated nodes have the same exec cookie and
         // we have to prevent running it multiple times
-        HashSet execute = new HashSet ();
+        Set<ExecCookie> execute = new HashSet<ExecCookie>();
 
         for (int i = 0; i < nodes.length; i++) {
-            ExecCookie exec = (ExecCookie) nodes[i].getCookie(ExecCookie.class);
+            ExecCookie exec = nodes[i].getCookie(ExecCookie.class);
             if (exec != null) {
                 execute.add(exec);
             }
@@ -196,12 +192,12 @@ public class ExecuteAction extends CookieAction {
         execute(execute.iterator());
         return true;
     }
-    
+
     private static boolean compile(String methodName, Object[] args) {
         try {
-            Class c = ((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass("org.openide.actions.AbstractCompileAction"); // NOI18N
-            Method m = c.getDeclaredMethod(methodName, new Class[] {args.getClass()});
-            return ((Boolean)m.invoke(null, new Object[] {args})).booleanValue();
+            Class c = (Lookup.getDefault().lookup(ClassLoader.class)).loadClass("org.openide.actions.AbstractCompileAction"); // NOI18N
+            Method m = c.getDeclaredMethod(methodName, new Class[]{args.getClass()});
+            return ((Boolean) m.invoke(null, new Object[]{args})).booleanValue();
         } catch (ClassNotFoundException e) {
             // Failed, but not implausible.
             return false;
@@ -211,5 +207,4 @@ public class ExecuteAction extends CookieAction {
             return false;
         }
     }
-    
 }
