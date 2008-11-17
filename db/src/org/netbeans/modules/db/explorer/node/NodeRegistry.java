@@ -120,7 +120,7 @@ public class NodeRegistry implements ChangeListener {
      * 
      * @param lookup the lookup to use when creating each provider
      */
-    private synchronized void initProviders(Lookup lookup) {
+    private void initProviders(Lookup lookup) {
         providers.clear();
         Collection<NodeProviderFactory> factoryList = lookupResult.allInstances();
         for (NodeProviderFactory factory : factoryList) {
@@ -131,8 +131,9 @@ public class NodeRegistry implements ChangeListener {
     }
     
     /**
+     * Get the list of nodes from all of the registered providers.
      * 
-     * @return
+     * @return the list of nodes
      */
     public Collection<? extends Node> getNodes() {
         List<Node> results = new ArrayList<Node>();
