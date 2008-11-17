@@ -101,6 +101,7 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
         super.tearDown();
     }
     
+    @SuppressWarnings("deprecation")
     public void testFindUnitTest() throws Exception {
         URL u = UnitTestForSourceQuery.findUnitTest(projdir);
         assertNull(u);

@@ -195,7 +195,7 @@ public class BootClassPathImplementationTest extends NbTestCase {
     private static class TestPlatform extends JavaPlatform {
         
         private String systemName;
-        private Map properties;
+        private Map<String,String> properties;
         private ClassPath bootClassPath;
         
         public TestPlatform (String systemName, ClassPath bootCP) {
@@ -224,15 +224,15 @@ public class BootClassPathImplementationTest extends NbTestCase {
             return null;
         }
 
-        public Map getProperties() {
+        public Map<String,String>  getProperties() {
             return this.properties;
         }
 
-        public List getJavadocFolders() {
+        public List<URL> getJavadocFolders() {
             return null;
         }
 
-        public Collection getInstallFolders() {
+        public Collection<FileObject> getInstallFolders() {
             return null;
         }
 

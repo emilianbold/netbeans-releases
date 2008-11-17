@@ -105,13 +105,13 @@ final class ActionFilterNode extends FilterNode {
      */
     static FilterNode create (Node original, UpdateHelper helper, String classPathId, String entryId, String webModuleElementName,
             ClassPathSupport cs, ReferenceHelper rh) {
-        DataObject dobj = (DataObject) original.getLookup().lookup(DataObject.class);
+        DataObject dobj = original.getLookup().lookup(DataObject.class);
         assert dobj != null;
         FileObject root =  dobj.getPrimaryFile();
-        Lookup lkp = new ProxyLookup (new Lookup[] {original.getLookup(), helper == null ?
+        Lookup lkp = new ProxyLookup(original.getLookup(), helper == null ?
             Lookups.singleton (new JavadocProvider(root,root)) :
             Lookups.fixed (new Object[] {new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh),
-            new JavadocProvider(root,root)})});
+            new JavadocProvider(root,root)}));
         return new ActionFilterNode (original, helper == null ? MODE_PACKAGE : MODE_ROOT, root, lkp);
     }
 

@@ -172,7 +172,7 @@ public class AppletSupportTest extends NbTestCase {
     private static class TestPlatform extends JavaPlatform {
 
         private String displayName;
-        private Map props;
+        private Map<String,String> props;
         private Specification spec;
 
         public TestPlatform (String displayName, String antName, Specification spec) {
@@ -189,7 +189,7 @@ public class AppletSupportTest extends NbTestCase {
             return spec;
         }
 
-        public Map getProperties() {
+        public Map<String,String> getProperties() {
             return this.props;
         }
 
@@ -205,7 +205,7 @@ public class AppletSupportTest extends NbTestCase {
             return null;
         }
 
-        public Collection getInstallFolders() {
+        public Collection<FileObject> getInstallFolders() {
             return null;
         }
 
@@ -217,7 +217,7 @@ public class AppletSupportTest extends NbTestCase {
             return null;
         }
 
-        public List getJavadocFolders() {
+        public List<URL> getJavadocFolders() {
             return null;
         }
     }

@@ -377,7 +377,7 @@ public class LibrariesTest extends JellyTestCase {
             reader.close();
         } catch (Exception e) {
         }
-        String[] lines = (String[]) linesList.toArray(new String[0]);
+        String[] lines = linesList.toArray(new String[0]);
         Arrays.sort(lines);
         return lines;
     }

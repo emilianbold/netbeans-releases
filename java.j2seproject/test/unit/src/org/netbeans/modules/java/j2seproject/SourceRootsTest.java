@@ -211,8 +211,9 @@ public class SourceRootsTest extends NbTestCase {
         return fo;
     }
 
+    // XXX use MockPropertyChangeListener
     private static final class TestListener implements PropertyChangeListener {
-        Set events = new HashSet ();
+        Set<String> events = new HashSet<String>();
 
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
@@ -225,7 +226,7 @@ public class SourceRootsTest extends NbTestCase {
             this.events.clear();
         }
 
-        public Set getEvents () {
+        public Set<String> getEvents () {
             return Collections.unmodifiableSet(this.events);
         }
     }

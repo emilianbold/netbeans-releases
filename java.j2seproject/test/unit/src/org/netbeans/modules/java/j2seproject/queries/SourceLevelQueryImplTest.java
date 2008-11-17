@@ -43,7 +43,10 @@ package org.netbeans.modules.java.j2seproject.queries;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -190,15 +193,15 @@ public class SourceLevelQueryImplTest extends NbTestCase {
             return null;
         }
 
-        public java.util.Map getProperties() {
+        public Map<String,String> getProperties() {
             return Collections.singletonMap("platform.ant.name","TestPlatform");
         }
 
-        public java.util.List getJavadocFolders() {
+        public List<URL> getJavadocFolders() {
             return null;
         }
 
-        public java.util.Collection getInstallFolders() {
+        public Collection<FileObject> getInstallFolders() {
             return null;
         }
 

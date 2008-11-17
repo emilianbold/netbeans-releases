@@ -134,7 +134,7 @@ public class J2SEPlatformModule extends ModuleInstall {
             try {
                 DataObject dobj = DataObject.find(defaultPlatform);
                 boolean valid = false;
-                InstanceCookie ic = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
+                InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
                 if (ic != null) {
                     try {
                         ic.instanceCreate();
