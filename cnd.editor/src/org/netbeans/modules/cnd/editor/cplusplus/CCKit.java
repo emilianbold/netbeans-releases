@@ -337,7 +337,6 @@ public class CCKit extends NbEditorKit {
                         // XXX: vv159170 simplest hack
                         // insert "};" for "{" when in "enum", "class", "struct" and union completion
                         TokenItem<CppTokenId> firstNonWhiteBwd = CndTokenUtilities.getFirstNonWhiteBwd(doc, end);
-                        CCSyntaxSupport sup = (CCSyntaxSupport) Utilities.getSyntaxSupport(target);
                         if (firstNonWhiteBwd == null || firstNonWhiteBwd.id() != CppTokenId.LBRACE) {
                             return Boolean.FALSE;
                         }
