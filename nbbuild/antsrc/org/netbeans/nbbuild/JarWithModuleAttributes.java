@@ -48,8 +48,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
@@ -159,8 +157,8 @@ public class JarWithModuleAttributes extends Jar {
                 boolean edited = false;
                 if (implVers != null) {
                     try {
-                        Integer implVersI = new Integer(implVers);
-                        specVersBase += "." + implVersI;
+                        Integer.parseInt(implVers);
+                        specVersBase += "." + implVers;
                         edited = true;
                     } catch (NumberFormatException e) {
                         // OK, ignore it, not numeric.
@@ -179,8 +177,7 @@ public class JarWithModuleAttributes extends Jar {
                                     // Could be interpreted as an integer, but not here - e.g. "050123" is a date.
                                     throw new NumberFormatException(version);
                                 }
-                                Integer versionI = new Integer(version);
-                                additions.put(cnb, versionI);
+                                additions.put(cnb, Integer.valueOf(version));
                             } catch (NumberFormatException e) {
                                 // OK, ignore this one, not numeric.
                                 getProject().log("Warning: in " + ownCnb + ", use of spec.version.base with non-integer OpenIDE-Module-Implementation-Version from " + cnb + " (see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency)", Project.MSG_WARN);
@@ -204,7 +201,7 @@ public class JarWithModuleAttributes extends Jar {
                 getProject().log("Warning: in " + ownCnb + ", not using spec.version.base, yet declaring implementation dependencies; may lead to problems with Auto Update (see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency)", Project.MSG_WARN);
             } else if (implVers != null) {
                 try {
-                    new Integer(implVers);
+                    Integer.parseInt(implVers);
                 } catch (NumberFormatException e) {
                     getProject().log(manifestFile + ": warning: use of non-integer OpenIDE-Module-Implementation-Version may be problematic for clients trying to use spec.version.base (see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency)", Project.MSG_WARN);
                 }
