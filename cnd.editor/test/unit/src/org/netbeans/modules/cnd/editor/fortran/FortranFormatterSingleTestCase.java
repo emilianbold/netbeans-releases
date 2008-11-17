@@ -43,54 +43,24 @@ package org.netbeans.modules.cnd.editor.fortran;
  *
  * @author Alexander Simon
  */
-public class FortranFormatterTestCase extends FortranEditorBase {
+public class FortranFormatterSingleTestCase  extends FortranEditorBase {
 
-    public FortranFormatterTestCase(String testMethodName) {
+    public FortranFormatterSingleTestCase(String testMethodName) {
         super(testMethodName);
     }
 
-    @Override
-    protected void assertDocumentText(String msg, String expectedText) {
-        super.assertDocumentText(msg, expectedText);
-        reformat();
-        super.assertDocumentText(msg+" (not stable)", expectedText);
-    }
-
-    public void testProgramFormat() {
+    public void testTypeFormat() {
         setLoadDocumentText(
-                "  program   p\n"+
-                "  i = 6\n"+
-                " end  program\n"
+                "  type   point\n"+
+                "  real :: X,Y\n"+
+                " end  type  point\n"
                 );
         setDefaultsOptions();
         reformat();
-        assertDocumentText("Incorrect program reformat",
-                "program p\n"+
-                "    i = 6\n"+
-                "end program\n"
-                );
-    }
-
-    public void testIfFormat() {
-        setLoadDocumentText(
-                "subroutine  p\n"+
-                "  if (i .eq. 6) then\n"+
-                "  i =5\n"+
-                "  else\n"+
-                "  i=8\n"+
-                "  endif\n"+
-                " end  subroutine\n"
-                );
-        setDefaultsOptions();
-        reformat();
-        assertDocumentText("Incorrect program reformat",
-                "subroutine p\n"+
-                "    if (i .eq. 6) then\n"+
-                "        i = 5\n"+
-                "    else\n"+
-                "        i = 8\n"+
-                "    endif\n"+
-                "end subroutine\n"
+        assertDocumentText("Incorrect type reformat",
+                "type point\n"+
+                "    real :: X, Y\n"+
+                "end type point\n"
                 );
     }
 }

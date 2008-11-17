@@ -417,7 +417,7 @@ public class FortranIndentSupport {
     }
 
     protected int getShiftWidth() {
-        return codeStyle.getIndentSize();
+        return codeStyle.indentSize();
     }
 
     protected int go(TokenItem t) {
