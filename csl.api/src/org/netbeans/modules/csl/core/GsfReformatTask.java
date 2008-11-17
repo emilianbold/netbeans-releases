@@ -28,6 +28,8 @@
 package org.netbeans.modules.csl.core;
 
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.csl.api.Formatter;
@@ -40,14 +42,16 @@ import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 
 public class GsfReformatTask implements ReformatTask {
 
-    private Context                 context;
-    private Formatter               formatter;
-    private ParserResult            controller;
-    private Source                  source;
+    private static final Logger LOG = Logger.getLogger(GsfReformatTask.class.getName());
+    
+    private final Context context;
+    private final Source source;
+    private Formatter formatter;
     
     
     GsfReformatTask(Source source, Context context) {
@@ -77,33 +81,27 @@ public class GsfReformatTask implements ReformatTask {
     }
 
     public void reformat () throws BadLocationException {
-        Formatter f = getFormatter();
+        final Formatter f = getFormatter();
         
         if (f != null) {
-            if (!f.needsParserResult()) {
-                controller = null;
-            } else 
-            if (controller == null) {
+            if (f.needsParserResult()) {
                 try {
                     ParserManager.parse (
                         Collections.<Source> singleton (source),
                         new UserTask () {
-                            public void run (ResultIterator resultIterator) throws Exception {
+                            public void run (ResultIterator resultIterator) throws ParseException {
                                 ParserResult parserResult = (ParserResult) resultIterator.getParserResult(context.caretOffset ());
                                 parserResult.toPhase (Phase.PARSED);
-                                GsfReformatTask.this.controller = parserResult;
+                                f.reformat (context, parserResult);
                             }
                         }
                     );
-                } catch (Exception ioe) {
-                    //SourceAccessor.getINSTANCE().unlockJavaCompiler();
+                } catch (ParseException e) {
+                    LOG.log(Level.WARNING, null, e);
                 }
-                if (controller == null) {
-                    return;
-                }
+            } else {
+                f.reformat (context, null);
             }
-            
-            f.reformat (context, controller);
         }
     }
 
@@ -125,7 +123,6 @@ public class GsfReformatTask implements ReformatTask {
         }
 
         public void unlock() {
-            controller = null;
 // XXX: parsingapi
 //            SourceAccessor.getINSTANCE().unlockParser();
         }        

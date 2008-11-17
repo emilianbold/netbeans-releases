@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.gsf.api;
+package org.netbeans.modules.csl.api;
 
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.junit.NbTestCase;

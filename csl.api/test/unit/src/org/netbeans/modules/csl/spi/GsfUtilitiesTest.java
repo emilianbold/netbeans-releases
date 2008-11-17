@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.gsf.spi;
+package org.netbeans.modules.csl.spi;
 
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import java.util.prefs.Preferences;
