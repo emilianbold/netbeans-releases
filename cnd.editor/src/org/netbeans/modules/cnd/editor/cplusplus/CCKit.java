@@ -239,7 +239,7 @@ public class CCKit extends NbEditorKit {
                 Cursor origCursor = target.getCursor();
                 target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-                doc.runAtomic(new Runnable() {
+                doc.runAtomicAsUser(new Runnable() {
 
                     public void run() {
                         try {

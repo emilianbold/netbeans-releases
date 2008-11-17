@@ -251,7 +251,7 @@ public class BracketCompletion {
         }
     }
 
-    private static TokenSequence<CppTokenId> cppTokenSequence(BaseDocument doc, int offset, boolean backwardBias) {
+    /*package*/ static TokenSequence<CppTokenId> cppTokenSequence(BaseDocument doc, int offset, boolean backwardBias) {
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(offset, backwardBias);
         // Go from inner to outer TSes
