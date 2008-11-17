@@ -9,6 +9,8 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
 
     public CSSParser() {
        this((CharStream) null);
+       // change manager to our patched one:
+       token_source = new PatchedCSSParserTokenManager(null);
     }
 
     public List<ParseException> errors() {
@@ -2431,8 +2433,7 @@ try {StringBuffer sb = new StringBuffer();
       nesting--;
     else if( t.kind == EOF )
       break;
-  }
-  /*@bgen(jjtree)*/
+  }/*@bgen(jjtree)*/
  } finally {
    if (jjtc000) {
      jjtree.closeNodeScope(jjtn000, true);
@@ -2475,16 +2476,6 @@ try {StringBuffer sb = new StringBuffer();
     try { return !jj_3_2(); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(1, xla); }
-  }
-
-  private boolean jj_3R_65() {
-    Token xsp;
-    if (jj_3R_68()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_68()) { jj_scanpos = xsp; break; }
-    }
-    return false;
   }
 
   private boolean jj_3R_66() {
@@ -2635,6 +2626,16 @@ try {StringBuffer sb = new StringBuffer();
     return false;
   }
 
+  private boolean jj_3R_65() {
+    Token xsp;
+    if (jj_3R_68()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_68()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
   /** Generated Token Manager. */
   public CSSParserTokenManager token_source;
   /** Current token. */
@@ -2644,9 +2645,6 @@ try {StringBuffer sb = new StringBuffer();
   private int jj_ntk;
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
-  /** Whether we are looking ahead. */
-  private boolean jj_lookingAhead = false;
-  private boolean jj_semLA;
   private int jj_gen;
   final private int[] jj_la1 = new int[96];
   static private int[] jj_la1_0;
@@ -2685,7 +2683,6 @@ try {StringBuffer sb = new StringBuffer();
     token_source.ReInit(stream);
     token = new Token();
     jj_ntk = -1;
-    jj_lookingAhead = false;
     jjtree.reset();
     jj_gen = 0;
     for (int i = 0; i < 96; i++) jj_la1[i] = -1;
@@ -2772,7 +2769,7 @@ try {StringBuffer sb = new StringBuffer();
 
 /** Get the specific Token. */
   final public Token getToken(int index) {
-    Token t = jj_lookingAhead ? jj_scanpos : token;
+    Token t = token;
     for (int i = 0; i < index; i++) {
       if (t.next != null) t = t.next;
       else t = t.next = token_source.getNextToken();

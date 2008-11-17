@@ -18,6 +18,8 @@ public class CSSParser {
 
     public CSSParser() {
        this((CharStream) null);
+       // change manager to our patched one:
+       token_source = new PatchedCSSParserTokenManager(null);
     }
 
     public List<ParseException> errors() {
