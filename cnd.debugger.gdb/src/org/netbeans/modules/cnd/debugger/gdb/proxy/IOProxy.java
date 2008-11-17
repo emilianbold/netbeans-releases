@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -235,11 +234,11 @@ public abstract class IOProxy {
                 String tool = "mkfifo"; // NOI18N
                 if (Utilities.isWindows()) {
                     tool += ".exe"; // NOI18N
-                    File toolFile = new File(CppUtils.getCygwinBase() + "/bin", tool); // NOI18N
+                    File toolFile = new File(CompilerSetManager.getCygwinBase() + "/bin", tool); // NOI18N
                     if (toolFile.exists()) {
                         tool = toolFile.getAbsolutePath();
                     } else {
-                        toolFile = new File(CppUtils.getMSysBase() + "/bin", tool); // NOI18N
+                        toolFile = new File(CompilerSetManager.getMSysBase() + "/bin", tool); // NOI18N
                         if (toolFile.exists()) {
                             tool = toolFile.getAbsolutePath();
                         }
