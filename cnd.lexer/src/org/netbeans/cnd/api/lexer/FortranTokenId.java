@@ -65,9 +65,9 @@ public enum FortranTokenId implements TokenId {
     IDENTIFIER(null, "identifier"), // NOI18N
 
     // Keywords
-    KW_ACCESS("access", "keyword"), // NOI18N
-    KW_ACTION("action", "keyword"), // NOI18N
-    KW_ADVANCE("advance", "keyword"), // NOI18N
+//    KW_ACCESS("access", "keyword"), // NOI18N
+//    KW_ACTION("action", "keyword"), // NOI18N
+//    KW_ADVANCE("advance", "keyword"), // NOI18N
     KW_ALLOCATABLE("allocatable", "keyword"), // NOI18N
     KW_ALLOCATE("allocate", "keyword"), // NOI18N
     KW_APOSTROPHE("apostrophe", "keyword"), // NOI18N
@@ -76,7 +76,7 @@ public enum FortranTokenId implements TokenId {
     KW_ASYNCHRONOUS("asynchronous", "keyword"), // NOI18N
     KW_BACKSPACE("backspace", "keyword"), // NOI18N
     KW_BIND("bind", "keyword"), // NOI18N
-    KW_BLANK("blank", "keyword"), // NOI18N
+//    KW_BLANK("blank", "keyword"), // NOI18N
     KW_BLOCK("block", "keyword"), // NOI18N
 
     KW_BLOCKDATA("blockdata", "keyword"), // NOI18N
@@ -93,11 +93,11 @@ public enum FortranTokenId implements TokenId {
     KW_DATA("data", "keyword"), // NOI18N
 
     KW_DEALLOCATE("deallocate", "keyword"), // NOI18N
-    KW_DECIMAL("decimal", "keyword"), // NOI18N
+//    KW_DECIMAL("decimal", "keyword"), // NOI18N
     KW_DEFAULT("default", "keyword"), // NOI18N
-    KW_DELIM("delim", "keyword"), // NOI18N
+//    KW_DELIM("delim", "keyword"), // NOI18N
     KW_DIMENSION("dimension", "keyword"), // NOI18N
-    KW_DIRECT("direct", "keyword"), // NOI18N
+//    KW_DIRECT("direct", "keyword"), // NOI18N
     KW_DO("do", "keyword"), // NOI18N
     KW_DOUBLE("double", "keyword"), // NOI18N
     KW_DOUBLEPRECISION("doubleprecision", "keyword"), // NOI18N
@@ -106,7 +106,7 @@ public enum FortranTokenId implements TokenId {
     KW_ELSEIF("elseif", "keyword"), // NOI18N
 
     KW_ELSEWHERE("elsewhere", "keyword"), // NOI18N
-    KW_ENCODING("encoding", "keyword"), // NOI18N
+//    KW_ENCODING("encoding", "keyword"), // NOI18N
     KW_END("end", "keyword"), // NOI18N
     KW_ENDASSOCIATE("endassociate", "keyword"), // NOI18N
     KW_ENDBLOCK("endblock", "keyword"), // NOI18N
@@ -131,26 +131,26 @@ public enum FortranTokenId implements TokenId {
     KW_ENTRY("entry", "keyword"), // NOI18N
     KW_ENUM("enum", "keyword"), // NOI18N
     KW_ENUMERATOR("enumerator", "keyword"), // NOI18N
-    KW_EOR("eor", "keyword"), // NOI18N
+//    KW_EOR("eor", "keyword"), // NOI18N
     KW_EQUIVALENCE("equivalance", "keyword"), // NOI18N
 
-    KW_ERR("err", "keyword"), // NOI18N
-    KW_ERRMSG("errmsg", "keyword"), // NOI18N
-    KW_EXIST("exist", "keyword"), // NOI18N
+//    KW_ERR("err", "keyword"), // NOI18N
+//    KW_ERRMSG("errmsg", "keyword"), // NOI18N
+//    KW_EXIST("exist", "keyword"), // NOI18N
     KW_EXIT("exit", "keyword"), // NOI18N
     KW_EXTERNAL("external", "keyword"), // NOI18N
-    KW_FILE("file", "keyword"), // NOI18N
+//    KW_FILE("file", "keyword"), // NOI18N
     KW_FLUSH("flush", "keyword"), // NOI18N
-    KW_FMT("fmt", "keyword"), // NOI18N
+//    KW_FMT("fmt", "keyword"), // NOI18N
     KW_FORALL("forall", "keyword"), // NOI18N
-    KW_FORM("form", "keyword"), // NOI18N
+//    KW_FORM("form", "keyword"), // NOI18N
     KW_FORMAT("format", "keyword"), // NOI18N
-    KW_FORMATTED("formatted", "keyword"), // NOI18N
+//    KW_FORMATTED("formatted", "keyword"), // NOI18N
 
     KW_FUNCTION("function", "keyword"), // NOI18N
     KW_GO("go", "keyword"), // NOI18N
     KW_GOTO("goto", "keyword"), // NOI18N
-    KW_ID("id", "keyword"), // NOI18N
+//    KW_ID("id", "keyword"), // NOI18N
     KW_IF("if", "keyword"), // NOI18N
     KW_IMPLICIT("implicit", "keyword"), // NOI18N
     KW_IN("in", "keyword"), // NOI18N
@@ -162,35 +162,35 @@ public enum FortranTokenId implements TokenId {
     KW_INTENT("intent", "keyword"), // NOI18N
     KW_INTERFACE("interface", "keyword"), // NOI18N
     KW_INTRINSIC("intrinsic", "keyword"), // NOI18N
-    KW_IOMSG("iomsg", "keyword"), // NOI18N
-    KW_IOSTAT("iostat", "keyword"), // NOI18N
+//    KW_IOMSG("iomsg", "keyword"), // NOI18N
+//    KW_IOSTAT("iostat", "keyword"), // NOI18N
     KW_KIND("kind", "keyword"), // NOI18N
     KW_LEN("len", "keyword"), // NOI18N
     KW_LOGICAL("logical", "keyword"), // NOI18N
     KW_MAP("map", "keyword"), // NOI18N
     KW_MODULE("module", "keyword"), // NOI18N
-    KW_NAME("name", "keyword"), // NOI18N
-    KW_NAMED("named", "keyword"), // NOI18N
+//    KW_NAME("name", "keyword"), // NOI18N
+//    KW_NAMED("named", "keyword"), // NOI18N
 
     KW_NAMELIST("namelist", "keyword"), // NOI18N
-    KW_NEXTREC("nextrec", "keyword"), // NOI18N
-    KW_NML("nml", "keyword"), // NOI18N
+//    KW_NEXTREC("nextrec", "keyword"), // NOI18N
+//    KW_NML("nml", "keyword"), // NOI18N
     KW_NONE("none", "keyword"), // NOI18N
     KW_NULLIFY("nullify", "keyword"), // NOI18N
-    KW_NUMBER("number", "keyword"), // NOI18N
+//    KW_NUMBER("number", "keyword"), // NOI18N
     KW_ONLY("only", "keyword"), // NOI18N
     KW_OPEN("open", "keyword"), // NOI18N
-    KW_OPENED("opened", "keyword"), // NOI18N
+//    KW_OPENED("opened", "keyword"), // NOI18N
     KW_OPERATOR("operator", "keyword"), // NOI18N
 
     KW_OPTIONAL("optional", "keyword"), // NOI18N
     KW_OUT("out", "keyword"), // NOI18N
-    KW_PAD("pad", "keyword"), // NOI18N
+//    KW_PAD("pad", "keyword"), // NOI18N
     KW_PARAMETER("parameter", "keyword"), // NOI18N
-    KW_PENDING("pending", "keyword"), // NOI18N
+//    KW_PENDING("pending", "keyword"), // NOI18N
     KW_POINTER("pointer", "keyword"), // NOI18N
-    KW_POS("pos", "keyword"), // NOI18N
-    KW_POSITION("position", "keyword"), // NOI18N
+//    KW_POS("pos", "keyword"), // NOI18N
+//    KW_POSITION("position", "keyword"), // NOI18N
     KW_PRECISION("precision", "keyword"), // NOI18N
     KW_PRINT("print", "keyword"), // NOI18N
     KW_PRIVATE("private", "keyword"), // NOI18N
@@ -202,36 +202,36 @@ public enum FortranTokenId implements TokenId {
     KW_PURE("pure", "keyword"), // NOI18N
     KW_QUOTE("quote", "keyword"), // NOI18N
     KW_READ("read", "keyword"), // NOI18N
-    KW_READWRITE("readwrite", "keyword"), // NOI18N
+//    KW_READWRITE("readwrite", "keyword"), // NOI18N
     KW_REAL("real", "keyword"), // NOI18N
-    KW_REC("rec", "keyword"), // NOI18N
-    KW_RECL("recl", "keyword"), // NOI18N
+//    KW_REC("rec", "keyword"), // NOI18N
+//    KW_RECL("recl", "keyword"), // NOI18N
 
     KW_RECURSIVE("recursive", "keyword"), // NOI18N
     KW_RESULT("result", "keyword"), // NOI18N
     KW_RETURN("return", "keyword"), // NOI18N
     KW_REWIND("rewind", "keyword"), // NOI18N
-    KW_ROUND("round", "keyword"), // NOI18N
+//    KW_ROUND("round", "keyword"), // NOI18N
     KW_SAVE("save", "keyword"), // NOI18N
     KW_SELECT("select", "keyword"), // NOI18N
     KW_SELECTCASE("selectcase", "keyword"), // NOI18N
     KW_SELECTTYPE("selecttype", "keyword"), // NOI18N
     KW_SEQUENCE("sequence", "keyword"), // NOI18N
-    KW_SEQUENTIAL("sequential", "keyword"), // NOI18N
-    KW_SIGN("sign", "keyword"), // NOI18N
-    KW_SIZE("size", "keyword"), // NOI18N
+//    KW_SEQUENTIAL("sequential", "keyword"), // NOI18N
+//    KW_SIGN("sign", "keyword"), // NOI18N
+//    KW_SIZE("size", "keyword"), // NOI18N
 
     KW_STAT("stat", "keyword"), // NOI18N
-    KW_STATUS("status", "keyword"), // NOI18N
+//    KW_STATUS("status", "keyword"), // NOI18N
     KW_STOP("stop", "keyword"), // NOI18N
-    KW_STREAM("stream", "keyword"), // NOI18N
+//    KW_STREAM("stream", "keyword"), // NOI18N
     KW_STRUCTURE("structure", "keyword"), // NOI18N
     KW_SUBROUTINE("subroutine", "keyword"), // NOI18N
     KW_TARGET("target", "keyword"), // NOI18N
     KW_THEN("then", "keyword"), // NOI18N
     KW_TO("to", "keyword"), // NOI18N
     KW_TYPE("type", "keyword"), // NOI18N
-    KW_UNFORMATTED("unformatted", "keyword"), // NOI18N
+//    KW_UNFORMATTED("unformatted", "keyword"), // NOI18N
     KW_UNION("union", "keyword"), // NOI18N
     KW_USE("use", "keyword"), // NOI18N
 
