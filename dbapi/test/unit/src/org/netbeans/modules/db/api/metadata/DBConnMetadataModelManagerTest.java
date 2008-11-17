@@ -37,67 +37,58 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model;
+package org.netbeans.modules.db.api.metadata;
 
-import org.netbeans.modules.db.metadata.model.api.Catalog;
-import org.netbeans.modules.db.metadata.model.api.Column;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
-import org.netbeans.modules.db.metadata.model.api.View;
-import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
-import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
-import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
-import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
-import org.netbeans.modules.db.metadata.model.spi.ViewImplementation;
+import org.netbeans.modules.db.test.DBTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 
 /**
  *
- * @author Andrei Badea
+ * @author David
  */
-public abstract class MetadataAccessor {
-
-    private static volatile MetadataAccessor accessor;
-
-    public static void setDefault(MetadataAccessor accessor) {
-        if (MetadataAccessor.accessor != null) {
-            throw new IllegalStateException();
+public class DBConnMetadataModelManagerTest extends DDLTestBase {
+    private static final Action<Metadata> CHECK_TABLE_EXISTS_ACTION = new Action<Metadata>() {
+        public void run(Metadata md) {
+            assertNotNull(getTestTable(md));
         }
-        MetadataAccessor.accessor = accessor;
+    };
+
+    private static Table getTestTable(Metadata md) {
+        return md.getDefaultSchema().getTable(DBTestBase.getTestTableName());
     }
 
-    public static MetadataAccessor getDefault() {
-        if (accessor != null) {
-            return accessor;
-        }
-        Class c = Metadata.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
-        return accessor;
+    public DBConnMetadataModelManagerTest(String name) {
+        super(name);
     }
 
-    public abstract MetadataModel createMetadataModel(MetadataModelImplementation impl);
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
 
-    public abstract Metadata createMetadata(MetadataImplementation impl);
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
 
-    public abstract Catalog createCatalog(CatalogImplementation impl);
+    /**
+     * Test of get method, of class DBConnMetadataModelManager.
+     */
+    @Test
+    public void testGet() throws Exception {
+        DatabaseConnection dbconn = getDatabaseConnection(true);
+        createTestTable();
 
-    public abstract Schema createSchema(SchemaImplementation impl);
-
-    public abstract Table createTable(TableImplementation impl);
-
-    public abstract Column createColumn(ColumnImplementation impl);
-
-    public abstract View createView(ViewImplementation impl);
-
-    public abstract CatalogImplementation getCatalogImpl(Catalog catalog);
-
-    public abstract SchemaImplementation getSchemaImpl(Schema schema);
-
-    public abstract TableImplementation getTableImpl(Table table);
+        MetadataModel model = DBConnMetadataModelManager.get(dbconn);
+        assertNotNull(model);
+        
+        model.runReadAction(CHECK_TABLE_EXISTS_ACTION);
+    }
 }

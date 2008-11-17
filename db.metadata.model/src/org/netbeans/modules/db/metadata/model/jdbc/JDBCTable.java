@@ -125,6 +125,7 @@ public class JDBCTable extends TableImplementation {
         return columns;
     }
 
+    @Override
     public final void refresh() {
         columns = null;
     }
