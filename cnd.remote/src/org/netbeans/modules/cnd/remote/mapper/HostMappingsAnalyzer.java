@@ -70,11 +70,11 @@ public class HostMappingsAnalyzer {
         Map<String, String> secondNetworkNames2Inner = populateMappingsList(secondPI, firstPI);
 
         if (firstNetworkNames2Inner.size() > 0 && secondNetworkNames2Inner.size() > 0) {
-            for (String firstNetworkName : firstNetworkNames2Inner.keySet()) {
-                for (String secondNetworkName : secondNetworkNames2Inner.keySet()) {
+            for (Map.Entry<String, String> firstNetworkName : firstNetworkNames2Inner.entrySet()) {
+                for (Map.Entry<String, String> secondNetworkName : secondNetworkNames2Inner.entrySet()) {
                     //TODO: investigate more complex cases
-                    if (firstNetworkName.equals(secondNetworkName)) {
-                        mappingsFirst2Second.put(firstNetworkNames2Inner.get(firstNetworkName), secondNetworkNames2Inner.get(secondNetworkName));
+                    if (firstNetworkName.getKey().equals(secondNetworkName.getKey())) {
+                        mappingsFirst2Second.put(firstNetworkName.getValue(), secondNetworkName.getValue());
                     }
                 }
             }
