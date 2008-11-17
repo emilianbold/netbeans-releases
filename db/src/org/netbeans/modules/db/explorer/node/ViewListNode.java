@@ -52,7 +52,13 @@ public class ViewListNode extends BaseNode {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
     private static final String FOLDER = "ViewList"; //NOI18N
     
-    public ViewListNode(NodeDataLookup lookup) {
+    public static ViewListNode create(NodeDataLookup dataLookup) {
+        ViewListNode node = new ViewListNode(dataLookup);
+        node.setup();
+        return node;
+    }
+
+    private ViewListNode(NodeDataLookup lookup) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER);
     }
 

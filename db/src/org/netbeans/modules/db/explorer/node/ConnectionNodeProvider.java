@@ -40,15 +40,15 @@
 package org.netbeans.modules.db.explorer.node;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import org.netbeans.api.db.explorer.ConnectionListener;
-import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -56,7 +56,7 @@ import org.openide.util.Lookup;
  * 
  * @author Rob Englander
  */
-public class ConnectionNodeProvider extends NodeProvider<BaseNode> {
+public class ConnectionNodeProvider extends NodeProvider {
     
     // lazy initialization holder class idiom for static fields is used
     // for retrieving the factory
@@ -75,7 +75,7 @@ public class ConnectionNodeProvider extends NodeProvider<BaseNode> {
     private ConnectionList connectionList;
     
     private ConnectionNodeProvider(Lookup lookup) {
-        super(lookup);
+        super(lookup, new ConnectionComparator());
 
         connectionList = getLookup().lookup(ConnectionList.class);
         
@@ -91,30 +91,25 @@ public class ConnectionNodeProvider extends NodeProvider<BaseNode> {
     }
     
     private void update() {
-        List<BaseNode> newList = new ArrayList<BaseNode>();
+        List<Node> newList = new ArrayList<Node>();
         DatabaseConnection[] connections = connectionList.getConnections();
         for (DatabaseConnection connection : connections) {
-            List<BaseNode> matches = getNodes(connection);
+            Collection<Node> matches = getNodes(connection);
             if (matches.size() > 0) {
                 newList.addAll(matches);
             } else {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(connection);
-                newList.add(new ConnectionNode(lookup));
+                newList.add(ConnectionNode.create(lookup));
             }
         }
 
         setNodes(newList);
     }
     
-    @Override
-    protected void sortNodes(List<BaseNode> children) {
-        Collections.sort(children, new ConnectionComparator());
-    }
+    static class ConnectionComparator implements Comparator<Node> {
 
-    class ConnectionComparator implements Comparator<BaseNode> {
-
-        public int compare(BaseNode model1, BaseNode model2) {
+        public int compare(Node model1, Node model2) {
             return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
         }
         

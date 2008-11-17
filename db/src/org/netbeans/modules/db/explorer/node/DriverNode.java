@@ -60,7 +60,13 @@ public class DriverNode extends BaseNode {
     
     private DatabaseDriver databaseDriver;
     
-    public DriverNode(NodeDataLookup lookup) {
+    public static DriverNode create(NodeDataLookup dataLookup) {
+        DriverNode node = new DriverNode(dataLookup);
+        node.setup();
+        return node;
+    }
+
+    private DriverNode(NodeDataLookup lookup) {
         super(lookup, FOLDER);
     }
 

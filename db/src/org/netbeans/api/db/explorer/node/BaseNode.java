@@ -39,6 +39,7 @@
 
 package org.netbeans.api.db.explorer.node;
 
+import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
@@ -48,6 +49,7 @@ import org.netbeans.modules.db.explorer.node.NodeDataLookup;
 import org.netbeans.modules.db.explorer.node.NodeRegistry;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  * This is the base class for all database explorer nodes.  It takes care of setting
@@ -57,17 +59,10 @@ import org.openide.nodes.Children;
  */
 public abstract class BaseNode extends AbstractNode {
 
-    /** the data lookup */
-    private NodeDataLookup dataLookup;
-    
-    /** the action registry */
-    private ActionRegistry actionRegistry = null;
-
-    /** the chile node provider registry */
-    private NodeRegistry nodeRegistry = null;
-
-    /** the child node factory */
-    private ChildNodeFactory childNodeFactory = null;
+    private final NodeDataLookup dataLookup;
+    private final ActionRegistry actionRegistry;
+    private final NodeRegistry nodeRegistry;
+    private final ChildNodeFactory childNodeFactory;
     
     /**
      * Constructor for nodes without children.
@@ -75,8 +70,7 @@ public abstract class BaseNode extends AbstractNode {
      * @param dataLookup the data lookup for this node
      */
     public BaseNode(NodeDataLookup dataLookup, String layerEntry) {
-        super(Children.LEAF, dataLookup);
-        setup(dataLookup, layerEntry, null);
+        this(Children.LEAF, null, dataLookup, layerEntry);
     }
 
     /**
@@ -86,10 +80,17 @@ public abstract class BaseNode extends AbstractNode {
      * @param dataLookup the data lookup for this node
      */
     public BaseNode(ChildNodeFactory childFactory, NodeDataLookup dataLookup, String layerEntry) {
-        super(Children.create(childFactory, true), dataLookup);
-        setup(dataLookup, layerEntry, childFactory);
+        this(Children.create(childFactory, true), childFactory, dataLookup, layerEntry);
     }
 
+    private BaseNode(Children children, ChildNodeFactory factory, NodeDataLookup lookup, String layerEntry) {
+        super(children, lookup);
+        dataLookup = lookup;
+        childNodeFactory = factory;
+        actionRegistry = new ActionRegistry(layerEntry);
+        nodeRegistry = NodeRegistry.create(layerEntry, dataLookup);
+    }
+    
     protected abstract void initialize();
 
     /**
@@ -100,18 +101,12 @@ public abstract class BaseNode extends AbstractNode {
      * @param factory the associated child node factory, or null if this node
      * doesn't provide child nodes.
      */
-    private void setup(NodeDataLookup dataLookup, String layerEntry, ChildNodeFactory factory) {
-        this.dataLookup = dataLookup;
-        this.childNodeFactory = factory;
-        
-        actionRegistry = new ActionRegistry(layerEntry);
-        nodeRegistry = new NodeRegistry(layerEntry, dataLookup);
-
+    protected void setup() {
         // put the node registry and this node into the lookup
         dataLookup.add(nodeRegistry);
         dataLookup.add(this);
         
-        // listen for changes to the node model registry
+        // listen for changes to the node registry
         nodeRegistry.addChangeListener(
             new ChangeListener() {
                 public void stateChanged(ChangeEvent evt) {
@@ -129,7 +124,7 @@ public abstract class BaseNode extends AbstractNode {
      * 
      * @return the list of child nodes.
      */
-    public List<BaseNode> getChildNodes() {
+    public Collection<? extends Node> getChildNodes() {
         return nodeRegistry.getNodes();
     }
 
