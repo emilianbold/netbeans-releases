@@ -41,9 +41,9 @@
 
 package org.netbeans.performance.visualweb.memory;
 
-import org.netbeans.performance.visualweb.footprint.VWPFootprintUtilities;
-import org.netbeans.performance.visualweb.windows.PaletteComponentOperator;
-import org.netbeans.performance.visualweb.windows.WebFormDesignerOperator;
+//import org.netbeans.performance.visualweb.footprint.VWPFootprintUtilities;
+//import org.netbeans.performance.visualweb.dialogs.PaletteComponentOperator;
+//import org.netbeans.performance.visualweb.dialogs.WebFormDesignerOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
@@ -68,8 +68,8 @@ public class StyleBuilderMem extends org.netbeans.modules.performance.utilities.
     private NewProjectNameLocationStepOperator wizard_location;
 
     
-    private PaletteComponentOperator palette;
-    private WebFormDesignerOperator surface;
+//    private PaletteComponentOperator palette;
+//    private WebFormDesignerOperator surface;
     private String categoryName;
     private String componentName;  
     
@@ -114,17 +114,17 @@ public class StyleBuilderMem extends org.netbeans.modules.performance.utilities.
             
 
             try {
-                surface = WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
+//                surface = WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
                 log("Page1 page opened");
                 System.out.println("Page1 page opened");                
             } catch(Exception se) {
-                surface = null;
+//                surface = null;
             }
 
     }
     @Override
     public void prepare() {
-        try {
+/*        try {
             if (surface == null) {
                 System.out.println("Null surface");
                 surface = WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
@@ -150,7 +150,7 @@ public class StyleBuilderMem extends org.netbeans.modules.performance.utilities.
         surface.clickOnSurface(25, 25);
         componentID = new Property(pto,"id").getValue();
         property = new Property(pto,"style"); // NOI18N        
-        
+        */
         
     }
 
@@ -172,7 +172,7 @@ public class StyleBuilderMem extends org.netbeans.modules.performance.utilities.
         log("::close");
 
         try {
-            VWPFootprintUtilities.deleteProject(project_name);
+//            VWPFootprintUtilities.deleteProject(project_name);
         } catch(Exception ee) {
             log("Exception during project deletion: "+ee.getMessage());
         }

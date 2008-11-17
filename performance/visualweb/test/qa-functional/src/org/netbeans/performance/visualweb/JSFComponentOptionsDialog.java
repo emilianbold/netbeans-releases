@@ -39,20 +39,21 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.visualweb.dialogs;
+package org.netbeans.performance.visualweb;
 
-import org.netbeans.performance.visualweb.windows.WebFormDesignerOperator;
-import org.netbeans.performance.visualweb.windows.PaletteComponentOperator;
+import org.netbeans.performance.visualweb.dialogs.*;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+
 /**
  *
  * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
-public class JSFComponentOptionsDialog extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class JSFComponentOptionsDialog extends PerformanceTestCase {
     
     protected PaletteComponentOperator palette;
     protected WebFormDesignerOperator surface;
@@ -73,55 +74,38 @@ public class JSFComponentOptionsDialog extends org.netbeans.modules.performance.
     public JSFComponentOptionsDialog(String testName, String performanceDataName) {
         super(testName, performanceDataName);
     }
-    
+
+
     @Override
     public void initialize() {
-        log("::initialize");
-        
         PaletteComponentOperator.invoke();
         openPageAndAddComponent();
     }
     
     private void openPageAndAddComponent() throws Error {
-        surface = org.netbeans.performance.visualweb.VWPUtilities.openedWebDesignerForJspFile("VisualWebProject", "Page1");
+        surface = org.netbeans.performance.visualweb.VWPUtilities.openedWebDesignerForJspFile("UltraLargeWA", "TestPage");
         palette = new PaletteComponentOperator();
-        
+
         //Select component in palette
         palette.getCategoryListOperator(categoryName).selectItem(componentName);
-        
         //Click on design surface to add selected component on page
         surface.clickOnSurface(new Double(addPoint.getX()).intValue(),new Double(addPoint.getY()).intValue());
-        
-        long click1 = System.currentTimeMillis();
-        log(":: click on surface");
-        //Click some other surface point to make added component deselected
-        
         new QueueTool().waitEmpty();
-        long click2 = System.currentTimeMillis();
-        surface.clickOnSurface(10,10);
-        log(":: click on surface");
-        log(":: Delta = " +(click2-click1));
-        waitNoEvent(5000);
     }
     
     public void prepare() {
-        log("::prepare");
-        surface = WebFormDesignerOperator.findWebFormDesignerOperator("Page1",false);
+        surface = WebFormDesignerOperator.findWebFormDesignerOperator("TestPage",false);
     }
     
-    public ComponentOperator open(){
-        log("::open");
+   public ComponentOperator open(){
         return null;
     }
     
     @Override
     protected void shutdown() {
-        log(":: shutdown");
         surface.closeDiscard();
         try {
-            //new TopComponentOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.ravehelp.dynamichelp.Bundle", "MSG_DynamicHelpTab_name")).close();            
-            new PropertySheetOperator("Page1").close();            
-            
+            new PropertySheetOperator("TestPage").close();
         } catch (TimeoutExpiredException timeoutExpiredException) {
             //do nothing...can be not opened properties and help tabs
         }        

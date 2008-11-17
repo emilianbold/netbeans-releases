@@ -42,7 +42,7 @@
 package org.netbeans.performance.visualweb;
 
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.visualweb.menus.VWProjectsViewPopupMenu;
+import org.netbeans.performance.visualweb.menus.VWProjectsViewPopupMenuTest;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
@@ -57,10 +57,11 @@ public class VWPMeasureMenusTest  {
     public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Menus suite");
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness Visual Web Menus suite");
         System.setProperty("suitename", VWPMeasureMenusTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness Visual Web Menus suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(VWProjectsViewPopupMenu.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(VWProjectsViewPopupMenuTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;

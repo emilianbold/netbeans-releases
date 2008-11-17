@@ -39,14 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.visualweb.windows;
+package org.netbeans.performance.visualweb;
 
 import java.awt.Component;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
@@ -75,7 +74,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     }
     
     public WebFormDesignerOperator(String topComponentName, int Index) {
-        //super(topComponentName,Index);
+
         super(TopComponentOperator.waitTopComponent(null,topComponentName, Index, new WebFormDesignerSubchooser()));
         try {
             surfacecomp = new ComponentOperator(this, new DesignerPaneChooser());
@@ -84,14 +83,15 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
             throw new JemmyException("Cannot find designer surface because of expired timeout");            
         }      
     }
+
     public void SetCaretOff() {
         Component surf = surfacecomp.getSource();
-        
     }
     
     public void SetCaretOn() {
         Component surf = surfacecomp.getSource();        
     }
+
     /**
      * Find web designer operator located certain top component
      * @param topComponentName name of the top component
@@ -100,6 +100,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     public static WebFormDesignerOperator findWebFormDesignerOperator(String topComponentName){
         return findWebFormDesignerOperator(topComponentName, true);
     }
+
     /**
      * Find web designer operator located certain top component
      * @param topComponentName name of the top component
@@ -145,7 +146,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     }
     
     @Override
-    public void closeDiscard() {
+    public  void closeDiscard() {
         
         new Thread(new Runnable() {
             public void run() {
@@ -171,6 +172,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     public void cancelSelection() {
         this.getDesignerPaneComponentOperator().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
     }
+
     public void deleteSelection() {
         this.getDesignerPaneComponentOperator().pushKey(java.awt.event.KeyEvent.VK_DELETE);
     }
@@ -234,6 +236,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
             // NB 6.0 class name
             return component.getClass().getName().equals("org.netbeans.modules.visualweb.designer.DesignerPane");
         }
+
         private void dumpComponent(Component component) {
             System.out.println(component.getClass().toString());
             System.out.println(component.getX());
@@ -242,10 +245,12 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
             System.out.println(component.getHeight());
             
         }
+
         public String getDescription() {
             return "Designer Surface";
         }
     }
+
     public static final class TopComponentSubchooser implements ComponentChooser {
 
         public boolean checkComponent(Component component) {
@@ -259,6 +264,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
             return "Web Designer TopComponent";
         }
     }
+    
     public static final class WebFormDesignerSubchooser implements ComponentChooser {
         public boolean checkComponent(Component component) {
             return component.getClass().getName().equals("org.netbeans.modules.visualweb.designer.jsf.ui.JsfTopComponent");

@@ -45,7 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.performance.visualweb.VWPUtilities;
+//import org.netbeans.performance.visualweb.VWPUtilities;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.LoggingScanClasspath;
@@ -128,11 +128,7 @@ public class VWPScanClasspath extends PerformanceTestCase {
         // do nothing
     }
     
-    public void openHugeAppProject() {
-        VWPUtilities.waitProjectOpenedScanFinished(workdir + java.io.File.separator + "HugeApp");
-        measureClassPathScan();
-        reportPerformance("Scanning Visual Web Project Classpath", wholeClasspathScan, "ms", 1);
-    }
+
     protected void measureClassPathScan() {
         
         LoggingScanClasspath.printMeasuredValues(getLog());

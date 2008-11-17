@@ -39,14 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.visualweb.windows;
+package org.netbeans.performance.visualweb;
 
 import java.awt.Component;
 import java.awt.Container;
 
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.PaletteOperator;
-
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ContainerOperator;
@@ -87,6 +86,7 @@ public class PaletteComponentOperator extends PaletteOperator {
         
         return new JListOperator((javax.swing.JList) expected);
     }
+
     public static PaletteComponentOperator invoke() {
         PaletteComponentOperator testOp = null;
         try {
@@ -100,6 +100,7 @@ public class PaletteComponentOperator extends PaletteOperator {
         }       
         return testOp;        
     }
+
     private static class CategoryListChooser implements ComponentChooser {
         public boolean checkComponent(Component comp) {
             return (comp.getClass().getName().equals("org.netbeans.modules.palette.ui.CategoryList"));

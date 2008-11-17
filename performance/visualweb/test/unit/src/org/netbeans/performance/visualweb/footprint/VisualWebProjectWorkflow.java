@@ -48,9 +48,6 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 
-import org.netbeans.modules.project.ui.test.ProjectSupport;
-
-
 /**
  *
  * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
@@ -83,12 +80,12 @@ public class VisualWebProjectWorkflow extends org.netbeans.modules.performance.u
         
         //webproject = FootprintUtilities.createproject("Web", "Visual Web Application", false);
         webproject = "HugeApp";
-        
+/*
         VWPFootprintUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +webproject); // failing openProject(webproject);
         VWPFootprintUtilities.waitForPendingBackgroundTasks();
         VWPFootprintUtilities.openFile(webproject,webproject.toLowerCase(),"ApplicationBean1.java",true);
         VWPFootprintUtilities.buildproject(webproject);
-        //TODO this takes ages / minutes ;( VWPFootprintUtilities.deployProject(webproject);
+*/        //TODO this takes ages / minutes ;( VWPFootprintUtilities.deployProject(webproject);
         
         return null;
     }
@@ -101,15 +98,15 @@ public class VisualWebProjectWorkflow extends org.netbeans.modules.performance.u
     @Override
     public void initialize() {
         super.initialize();
-        VWPFootprintUtilities.closeAllDocuments();
-        VWPFootprintUtilities.closeMemoryToolbar();
+//        VWPFootprintUtilities.closeAllDocuments();
+//        VWPFootprintUtilities.closeMemoryToolbar();
     }
     
     @Override
     public void close() {
         log("::close");
-        VWPFootprintUtilities.closeAllDocuments();
-        ProjectSupport.closeProject(webproject);
+//        VWPFootprintUtilities.closeAllDocuments();
+//        ProjectSupport.closeProject(webproject);
     }
     
     private void openProject(String projectName) {

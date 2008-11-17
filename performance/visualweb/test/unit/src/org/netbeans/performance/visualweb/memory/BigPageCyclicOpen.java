@@ -41,7 +41,7 @@
 
 package org.netbeans.performance.visualweb.memory;
 
-import org.netbeans.performance.visualweb.windows.WebFormDesignerOperator;
+//import org.netbeans.performance.visualweb.dialogs.WebFormDesignerOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
@@ -50,7 +50,6 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
 /**
  *
  * @author mkhramov@@netbeans.org
@@ -71,7 +70,7 @@ public class BigPageCyclicOpen extends org.netbeans.modules.performance.utilitie
     @Override
     public void initialize() {
       
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+ java.io.File.separatorChar +"UltraLargeWA");
+//        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+ java.io.File.separatorChar +"UltraLargeWA");
     }
     
     @Override
@@ -112,7 +111,7 @@ public class BigPageCyclicOpen extends org.netbeans.modules.performance.utilitie
         long timestart = System.currentTimeMillis();
         PageNode.performPopupActionNoBlock("Open");
         try {
-            WebFormDesignerOperator.findWebFormDesignerOperator(openPage);
+//            WebFormDesignerOperator.findWebFormDesignerOperator(openPage);
         } catch(TimeoutExpiredException tex) {
             log("timeout for Opening page expired");
         }
@@ -127,7 +126,7 @@ public class BigPageCyclicOpen extends org.netbeans.modules.performance.utilitie
     }
     @Override
     public void shutdown() {
-        ProjectSupport.closeProject("UltraLargeWA");
+//        ProjectSupport.closeProject("UltraLargeWA");
         
     }
     public void testMem() {

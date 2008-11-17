@@ -42,7 +42,7 @@
 package org.netbeans.performance.visualweb.memory;
 
 
-import org.netbeans.performance.visualweb.windows.WebFormDesignerOperator;
+//import org.netbeans.performance.visualweb.dialogs.WebFormDesignerOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -58,7 +58,7 @@ import org.netbeans.junit.NbTestSuite;
 public class MultyViewSwitchMem extends org.netbeans.modules.performance.utilities.MemoryFootprintTestCase {
     private Node pagesRoot = null;
     private long oldTimeout;
-    private WebFormDesignerOperator designer;
+//    private WebFormDesignerOperator designer;
     private Runtime rt = Runtime.getRuntime();
     
     public MultyViewSwitchMem(String testName) {
@@ -88,7 +88,7 @@ public class MultyViewSwitchMem extends org.netbeans.modules.performance.utiliti
         JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout",120000);
         PageNode.performPopupActionNoBlock("Open");
         try {
-            designer = WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
+//            designer = WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
         } catch(TimeoutExpiredException tex) {
             log("timeout for Opening page expired");
         }
@@ -98,17 +98,17 @@ public class MultyViewSwitchMem extends org.netbeans.modules.performance.utiliti
     @Override
     public ComponentOperator open() {
         for(int i=0;i<100;i++) {
-            designer.switchToJSPView();            
+/*            designer.switchToJSPView();
             designer.switchToCodeView();
             designer.switchToDesignView();
-            logJVMStats(i);
+  */          logJVMStats(i);
         }
         return null;
 
     }
     @Override
     public void close() {
-        designer.closeDiscard();
+//        designer.closeDiscard();
     }
     private void logJVMStats(int attempt) {
         long totalmemory = rt.totalMemory();
