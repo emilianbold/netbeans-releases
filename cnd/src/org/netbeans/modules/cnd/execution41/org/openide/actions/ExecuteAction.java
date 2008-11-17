@@ -71,6 +71,7 @@ public class ExecuteAction extends CookieAction {
      * @param run <code>true</code> if they should
      * @deprecated Only works if the <code>org.openide.compiler</code> module is enabled.
      */
+    @Deprecated
     public static void setRunCompilation(boolean run) {
         runCompilation = run;
     }
@@ -80,6 +81,7 @@ public class ExecuteAction extends CookieAction {
      * @return <code>true</code> if they will be
      * @deprecated Only works if the <code>org.openide.compiler</code> module is enabled.
      */
+    @Deprecated
     public static boolean getRunCompilation() {
         return runCompilation;
     }
