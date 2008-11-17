@@ -1141,8 +1141,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         }
                 
         public boolean acceptDataObject(DataObject obj) {                
-            FileObject fo = obj.getPrimaryFile();                
-            return  fo.isValid() && VisibilityQuery.getDefault().isVisible(fo) && !(obj instanceof DataFolder) && group.contains(fo);
+            return acceptFileObject(obj.getPrimaryFile());
         }
         
         public void stateChanged( ChangeEvent e) {            
@@ -1158,7 +1157,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         }
 
         public boolean acceptFileObject(FileObject fo) {
-            return VisibilityQuery.getDefault().isVisible(fo);
+            return  fo.isValid() && VisibilityQuery.getDefault().isVisible(fo) && fo.isData() && group.contains(fo);
         }
         
     }

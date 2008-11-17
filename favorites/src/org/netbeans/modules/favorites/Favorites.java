@@ -308,7 +308,7 @@ final class Favorites extends FilterNode implements Index {
         }
 
         public boolean acceptDataObject(DataObject obj) {
-            return VisibilityQuery.getDefault().isVisible(obj.getPrimaryFile());
+            return acceptFileObject(obj.getPrimaryFile());
         }
 
         public void addChangeListener(ChangeListener listener) {
