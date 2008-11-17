@@ -76,6 +76,13 @@ public class NodeRegistry implements ChangeListener {
 
     private Lookup.Result lookupResult;
     
+    /** 
+     * Create an instance of NodeRegistry.
+     * 
+     * @param folder the name of the xml layer folder to use
+     * @param dataLookup the lookup to use when creating node providers
+     * @return the NodeRegistry instance
+     */
     public static NodeRegistry create(String folder, NodeDataLookup dataLookup) {
         NodeRegistry registry = new NodeRegistry();
         registry.init(folder, dataLookup);
@@ -86,12 +93,18 @@ public class NodeRegistry implements ChangeListener {
         eventSupport = new ChangeSupport(this);
     }
     
+    /**
+     * Initialize the registry
+     * @param folder the name of the xml layer folder to use
+     * @param dataLookup the lookup to use when creating providers
+     */
     private void init(String folder, final Lookup dataLookup) {
         Lookup lookup = Lookups.forPath(PATH + folder + NODEPROVIDERS);
         lookupResult = lookup.lookupResult(NodeProviderFactory.class);
 
         initProviders(dataLookup);
         
+        // listen for changes and re-init the providers when the lookup changes
         lookup.lookupResult(NodeProviderFactory.class).addLookupListener(
             new LookupListener() {
                 public void resultChanged(LookupEvent ev) {
@@ -102,6 +115,11 @@ public class NodeRegistry implements ChangeListener {
         );
     }
     
+    /**
+     * Initialize the node providers
+     * 
+     * @param lookup the lookup to use when creating each provider
+     */
     private synchronized void initProviders(Lookup lookup) {
         providers.clear();
         Collection<NodeProviderFactory> factoryList = lookupResult.allInstances();
@@ -112,7 +130,11 @@ public class NodeRegistry implements ChangeListener {
         }
     }
     
-    public List<? extends Node> getNodes() {
+    /**
+     * 
+     * @return
+     */
+    public Collection<? extends Node> getNodes() {
         List<Node> results = new ArrayList<Node>();
 
         for (NodeProvider provider : providers) {

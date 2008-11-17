@@ -60,6 +60,12 @@ public class ConnectionNode extends BaseNode {
     private static final String DISCONNECTEDICONBASE = "org/netbeans/modules/db/resources/connectionDisconnected.gif"; // NOI18N
     private static final String FOLDER = "Connection"; // NOI18N
     
+    /** 
+     * Create an instance of ConnectionNode.
+     * 
+     * @param dataLookup the lookup to use when creating node providers
+     * @return the ConnectionNode instance
+     */
     public static ConnectionNode create(NodeDataLookup dataLookup) {
         ConnectionNode node = new ConnectionNode(dataLookup);
         node.setup();

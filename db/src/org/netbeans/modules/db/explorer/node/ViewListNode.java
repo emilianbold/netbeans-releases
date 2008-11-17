@@ -52,6 +52,12 @@ public class ViewListNode extends BaseNode {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
     private static final String FOLDER = "ViewList"; //NOI18N
     
+    /** 
+     * Create an instance of ViewListNode.
+     * 
+     * @param dataLookup the lookup to use when creating node providers
+     * @return the ViewListNode instance
+     */
     public static ViewListNode create(NodeDataLookup dataLookup) {
         ViewListNode node = new ViewListNode(dataLookup);
         node.setup();

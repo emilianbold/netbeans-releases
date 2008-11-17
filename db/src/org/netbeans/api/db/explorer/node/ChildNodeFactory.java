@@ -39,6 +39,7 @@
 
 package org.netbeans.api.db.explorer.node;
 
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.db.explorer.node.NodeRegistry;
 import org.openide.nodes.ChildFactory;
@@ -54,7 +55,6 @@ import org.openide.util.Lookup;
  */
 public class ChildNodeFactory extends ChildFactory<Lookup> {
     
-    /** the lookup to use */
     private final Lookup dataLookup;
 
     /**
@@ -93,7 +93,7 @@ public class ChildNodeFactory extends ChildFactory<Lookup> {
         
         // the node registry is in the data lookup
         NodeRegistry registry = dataLookup.lookup(NodeRegistry.class);
-        List<? extends Node> nodes = registry.getNodes();
+        Collection<? extends Node> nodes = registry.getNodes();
         for (Node node : nodes) {
             // the key for each node is its lookup
             Lookup lookup = node.getLookup();

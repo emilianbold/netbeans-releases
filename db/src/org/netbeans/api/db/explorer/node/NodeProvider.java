@@ -45,7 +45,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
@@ -60,12 +59,15 @@ import org.openide.util.Lookup;
  * @author Rob Englander
  */
 public abstract class NodeProvider implements Lookup.Provider {
-    private final ChangeSupport changeSupport;
+    // @GuardedBy("nodeSet")
     private final TreeSet<Node> nodeSet;
+    private final ChangeSupport changeSupport;
     private final Lookup lookup;
-    
+
     /**
      * Constructor
+     * 
+     * @param lookup the associated lookup
      */
     public NodeProvider(Lookup lookup) {
         this.lookup = lookup;
@@ -75,6 +77,9 @@ public abstract class NodeProvider implements Lookup.Provider {
     
     /**
      * Constructor
+     * 
+     * @param lookup the associated lookup
+     * @param comparator the comparator to use for sorting the nodes
      */
     public NodeProvider(Lookup lookup, Comparator<Node> comparator) {
         this.lookup = lookup;
@@ -87,7 +92,7 @@ public abstract class NodeProvider implements Lookup.Provider {
     }
         
     /**
-     * Get the list of nodes in proper sort order.
+     * Get the list of nodes.
      * 
      * @return the list of nodes.
      */
@@ -147,32 +152,6 @@ public abstract class NodeProvider implements Lookup.Provider {
     }
     
     /**
-     * Remove a node.
-     * 
-     * @param node the node to remove
-     */
-    public void removeNode(Node node) {
-        synchronized (nodeSet) {
-            nodeSet.remove(node);
-        }
-
-        changeSupport.fireChange();
-    }
-    
-    /**
-     * Remove a list of nodes.
-     * 
-     * @param remove the list of nodes to remove
-     */
-    public void removeNodes(List<Node> remove) {
-        synchronized (nodeSet) {
-            nodeSet.removeAll(remove);
-        }
-
-        changeSupport.fireChange();
-    }
-
-    /**
      * Remove all nodes.
      */
     public void removeAllNodes() {
@@ -183,26 +162,6 @@ public abstract class NodeProvider implements Lookup.Provider {
         changeSupport.fireChange();
     }
     
-    /**
-     * Updates the specified node.  The node is assumed to already
-     * be in the list.
-     * 
-     * @param node the updated node
-     */
-    public void updateNode(Node node) {
-        changeSupport.fireChange();
-    }
-    
-    /**
-     * Updates a list of nodes.  The nodes in the list are assumed to
-     * be in the collection already.
-     * 
-     * @param nodes the list of updated nodes
-     */
-    public void updateNodes(List<Node> nodes) {
-        changeSupport.fireChange();
-    }
-
     /**
      * Add a change listener.
      * 

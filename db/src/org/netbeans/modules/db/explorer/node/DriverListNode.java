@@ -57,6 +57,12 @@ public class DriverListNode extends BaseNode {
     private static final String ICONBASE = null;
     private static final String FOLDER = "DriverList"; //NOI18N
 
+    /** 
+     * Create an instance of DriverListNode.
+     * 
+     * @param dataLookup the lookup to use when creating node providers
+     * @return the DriverListNode instance
+     */
     public static DriverListNode create(NodeDataLookup dataLookup) {
         DriverListNode node = new DriverListNode(dataLookup);
         node.setup();

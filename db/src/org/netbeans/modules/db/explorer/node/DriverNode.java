@@ -60,6 +60,12 @@ public class DriverNode extends BaseNode {
     
     private DatabaseDriver databaseDriver;
     
+    /** 
+     * Create an instance of DriverNode.
+     * 
+     * @param dataLookup the lookup to use when creating node providers
+     * @return the DriverNode instance
+     */
     public static DriverNode create(NodeDataLookup dataLookup) {
         DriverNode node = new DriverNode(dataLookup);
         node.setup();

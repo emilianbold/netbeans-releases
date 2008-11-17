@@ -83,6 +83,14 @@ public abstract class BaseNode extends AbstractNode {
         this(Children.create(childFactory, true), childFactory, dataLookup, layerEntry);
     }
 
+    /**
+     * Private constructor used by the public constructors.
+     * 
+     * @param children the children of this node
+     * @param factory the child factory to use
+     * @param lookup the associated lookup
+     * @param layerEntry the name of the folder in the xml layer
+     */
     private BaseNode(Children children, ChildNodeFactory factory, NodeDataLookup lookup, String layerEntry) {
         super(children, lookup);
         dataLookup = lookup;
@@ -91,6 +99,10 @@ public abstract class BaseNode extends AbstractNode {
         nodeRegistry = NodeRegistry.create(layerEntry, dataLookup);
     }
     
+    /**
+     * Initialize the node.  This method is called before the creation process
+     * completes so that the sub class can perform any initialization it requires.
+     */
     protected abstract void initialize();
 
     /**
