@@ -251,7 +251,6 @@ public class BracketCompletion {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private static TokenSequence<CppTokenId> cppTokenSequence(BaseDocument doc, int offset, boolean backwardBias) {
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(offset, backwardBias);
