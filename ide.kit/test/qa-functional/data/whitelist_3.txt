@@ -1701,6 +1701,7 @@ org.netbeans.modules.debugger.jpda.ui.EditorContextBridge
 org.netbeans.modules.debugger.jpda.ui.JPDAAttachType
 org.netbeans.modules.debugger.jpda.ui.actions.EvaluateAction
 org.netbeans.modules.debugger.jpda.ui.actions.EvaluateAction$EnableListener
+org.netbeans.modules.debugger.jpda.ui.actions.SetCurrentThreadFromHistoryAction
 org.netbeans.modules.debugger.jpda.ui.actions.ToggleBreakpointActionProvider
 org.netbeans.modules.debugger.jpda.ui.actions.ToggleMethodFieldBreakpointAction
 org.netbeans.modules.debugger.jpda.ui.debugging.ThreadsHistoryAction

@@ -48,4 +48,5 @@ made subject to such option by the copyright holder.
     <entry name="indent-shift-width" value="8" javaType="java.lang.Integer" />
     <entry name="word-match-match-case" value="true" javaType="java.lang.Boolean" />
     <entry name="abbrev-reset-acceptor" value="org.netbeans.modules.cnd.editor.makefile.MakefileSettingsFactory.getAbbrevResetAcceptor" javaType="methodvalue" />
+    <entry name="identifier-acceptor" value="org.netbeans.modules.cnd.editor.makefile.MakefileSettingsFactory.getIdentifierAcceptor" javaType="methodvalue" />
 </editor-preferences>
