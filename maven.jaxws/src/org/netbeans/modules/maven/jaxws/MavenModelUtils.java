@@ -284,6 +284,29 @@ public class MavenModelUtils {
         }
     }
     
+    public static void renameWsdlFile(ModelHandle handle, String oldWsdlPath, String newWsdlPath) {       
+        @SuppressWarnings("unchecked")
+        List<Plugin> plugins = handle.getPOMModel().getBuild().getPlugins();
+        for (Plugin plugin : plugins) {
+            if ("org.codehaus.mojo:jaxws-maven-plugin".equalsIgnoreCase(plugin.getKey())) { //NOI18N
+                Xpp3Dom conf = (Xpp3Dom) plugin.getConfiguration();
+                if (conf != null) {
+                    Xpp3Dom wsdlFilesNode = conf.getChild("wsdlFiles"); //NOI18N
+                    if (wsdlFilesNode != null) {
+                        for (Xpp3Dom wsdlFile:wsdlFilesNode.getChildren()) {
+                            if (oldWsdlPath.equals(wsdlFile.getValue())) {
+                                wsdlFile.setValue(newWsdlPath);
+                                handle.markAsModified(handle.getPOMModel());
+                                break;
+                            }
+                        }
+                    }
+                    
+                }
+            }
+        }
+    }
+    
     public static void addJaxws21Library(Project project) throws IOException {
         SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (srcGroups.length > 0) {
