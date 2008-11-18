@@ -480,7 +480,9 @@ public class SQLHistoryPersistenceManager {
                         DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
                         date = df.parse(attrs.getValue(ATTR_DATE_PROPERTY_VALUE));
                     } catch (ParseException ex) {
-                        throw new SAXException();
+                         // # 152486; Date stored is not parsable, so reset the date to the current timestamp
+                         Calendar calendar = Calendar.getInstance();
+                         date = calendar.getTime();
                     }
                 } else {
                     Calendar calendar = Calendar.getInstance();
