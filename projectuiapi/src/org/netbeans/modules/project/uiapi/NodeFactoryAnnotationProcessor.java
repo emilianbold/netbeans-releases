@@ -70,7 +70,7 @@ public class NodeFactoryAnnotationProcessor extends LayerGeneratingProcessor {
             NodeFactory.Registration lpr = e.getAnnotation(NodeFactory.Registration.class);
             for (String type : lpr.projectType()) {
                 layer(e).instanceFile("Projects/" + type + "/Nodes", null, NodeFactory.class).
-                        intvalue("position", lpr.position()).write();
+                        position(lpr.position()).write();
             }
         }
         return true;
