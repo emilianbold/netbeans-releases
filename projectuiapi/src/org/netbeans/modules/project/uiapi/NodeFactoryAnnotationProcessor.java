@@ -58,7 +58,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes("org.netbeans.spi.project.ui.support.NodeFactory.Registration")
+@SupportedAnnotationTypes("org.netbeans.spi.project.ui.support.NodeFactory.Registration")//NOI18N
 public class NodeFactoryAnnotationProcessor extends LayerGeneratingProcessor {
 
     @Override
@@ -69,7 +69,7 @@ public class NodeFactoryAnnotationProcessor extends LayerGeneratingProcessor {
         for (Element e : roundEnv.getElementsAnnotatedWith(NodeFactory.Registration.class)) {
             NodeFactory.Registration lpr = e.getAnnotation(NodeFactory.Registration.class);
             for (String type : lpr.projectType()) {
-                layer(e).instanceFile("Projects/" + type + "/Nodes", null, NodeFactory.class).
+                layer(e).instanceFile("Projects/" + type + "/Nodes", null, NodeFactory.class). //NOI18N
                         position(lpr.position()).write();
             }
         }
