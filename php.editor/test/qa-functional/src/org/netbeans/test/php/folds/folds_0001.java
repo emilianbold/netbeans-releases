@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.cc;
+package org.netbeans.test.php.folds;
 
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -68,11 +68,11 @@ import java.util.List;
  * @author michaelnazarov@netbeans.org
  */
 
-public class Issue141873 extends cc
+public class folds_0001 extends folds
 {
-  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141873";
+  static final String TEST_PHP_NAME = "PhpProject_folds_0001";
 
-  public Issue141873( String arg0 )
+  public folds_0001( String arg0 )
   {
     super( arg0 );
   }
@@ -80,9 +80,9 @@ public class Issue141873 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue141873.class ).addTest(
+      NbModuleSuite.createConfiguration( folds_0001.class ).addTest(
           "CreateApplication",
-          "Issue141873"
+          "FoldIt"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -99,48 +99,27 @@ public class Issue141873 extends cc
     endTest( );
   }
 
-  public void Issue141873( ) throws Exception
+  public void FoldIt( ) throws Exception
   {
     startTest( );
 
     // Get editor
+    // Get editor
     EditorOperator eoPHP = new EditorOperator( "index.php" );
-    Sleep( 1000 );
-    // Locate comment
-    eoPHP.setCaretPosition( "// put your code here", false );
-    // Add new line
-    eoPHP.insert( "\nclass a\n{\n" );
-    Sleep( 1000 );
-
-    // Check constructor
-    String sCode = "function __con";
-    String sIdeal = "function __construct() {";
-    TypeCode( eoPHP, sCode );
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    WaitCompletionScanning( );
-
-    // Get code
-    String sText = eoPHP.getText( eoPHP.getLineNumber( ) - 1 );
-
-    // Check code completion list
-    if( -1 == sText.indexOf( sIdeal ) )
-      fail( "Invalid completion: \"" + sText + "\", should be: \"" + sIdeal + "\"" );
-
-    // Check destructor
-    eoPHP.insert( ";\n" );
-    Sleep( 1000 );
-    sCode = "function __des";
-    sIdeal = "function __destruct()";
-    TypeCode( eoPHP, sCode );
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    WaitCompletionScanning( );
-
-    // Get code
-    sText = eoPHP.getText( eoPHP.getLineNumber( ) );
-
-    // Check code completion list
-    if( -1 == sText.indexOf( sIdeal ) )
-      fail( "Invalid completion: \"" + sText + "\", should be: \"" + sIdeal + "\"" );
+    Sleep( 30000 );
+    for( int i = 1; i <= 12; i++ )
+    {
+      try
+      {
+        eoPHP.collapseFold( i );
+        eoPHP.expandFold( i );
+        System.out.println( "+++" + i );
+      }
+      catch( JemmyException ex )
+      {
+        System.out.println( "---" + i );
+      }
+    }
 
     endTest( );
   }

@@ -39,27 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.cc;
+package org.netbeans.test.php.folds;
 
-import javax.swing.tree.TreePath;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.test.php.GeneralPHP;
 import org.netbeans.jemmy.JemmyException;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import junit.framework.Test;
-import org.netbeans.jemmy.operators.JToggleButtonOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
 
@@ -68,65 +51,10 @@ import java.util.List;
  * @author michaelnazarov@netbeans.org
  */
 
-public class Issue141855 extends cc
+public class folds extends GeneralPHP
 {
-  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141855";
-
-  public Issue141855( String arg0 )
+  public folds( String arg0 )
   {
     super( arg0 );
-  }
-
-  public static Test suite( )
-  {
-    return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue141855.class ).addTest(
-          "CreateApplication",
-          "Issue141855"
-        )
-        .enableModules( ".*" )
-        .clusters( ".*" )
-        //.gui( true )
-      );
-  }
-
-  public void CreateApplication( )
-  {
-    startTest( );
-
-    CreatePHPApplicationInternal( TEST_PHP_NAME );
-
-    endTest( );
-  }
-
-  public void Issue141855( ) throws Exception
-  {
-    startTest( );
-
-    // Get editor
-    EditorOperator eoPHP = new EditorOperator( "index.php" );
-    Sleep( 1000 );
-    // Locate comment
-    eoPHP.setCaretPosition( "?>", false );
-    // Add new line
-    eoPHP.insert( "\n" );
-    Sleep( 1000 );
-    // Press Ctrl+Space
-    eoPHP.typeKey( '<' );
-    Sleep( 1000 );
-    eoPHP.typeKey( '?' );
-    Sleep( 1000 );
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    Sleep( 1000 );
-    // Check code completion list
-    CompletionJListOperator jCompl = GetCompletion( );
-    List list = jCompl.getCompletionItems( );
-    // Magic CC number for complete list
-    if( COMPLETE_CC_LIST_SIZE > list.size( ) )
-      fail( "Invalid CC list size: " + list.size( ) + ", expected: " + COMPLETE_CC_LIST_SIZE );
-
-    jCompl.hideAll( );
-
-    endTest( );
   }
 }
