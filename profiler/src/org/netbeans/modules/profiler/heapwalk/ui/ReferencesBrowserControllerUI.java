@@ -260,7 +260,6 @@ public class ReferencesBrowserControllerUI extends JTitledPanel {
     private JMenuItem showGcRootItem;
     private JMenuItem showInstanceItem;
     private JMenuItem showLoopOriginItem;
-    private JMenuItem showSourceItem;
     private JPanel dataPanel;
     private JPanel noDataPanel;
     private JPopupMenu cornerPopup;
@@ -500,30 +499,11 @@ public class ReferencesBrowserControllerUI extends JTitledPanel {
                 }
             });
 
-        showSourceItem = new JMenuItem(GO_TO_SOURCE_ITEM_TEXT);
-        showSourceItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    int row = fieldsListTable.getSelectedRow();
-
-                    if (row != -1) {
-                        HeapWalkerNode node = (HeapWalkerNode) fieldsListTable.getTree().getPathForRow(row).getLastPathComponent();
-                        String className = node.getType();
-
-                        while (className.endsWith("[]")) {
-                            className = className.substring(0, className.length() - 2); // NOI18N
-                        }
-
-                        NetBeansProfiler.getDefaultNB().openJavaSource(null, className, null, null);
-                    }
-                }
-            });
-
         popup.add(showInstanceItem);
 //        popup.add(showClassItem);
         popup.add(showGcRootItem);
         popup.addSeparator();
         popup.add(showLoopOriginItem);
-        popup.add(showSourceItem);
 
         return popup;
     }
@@ -720,7 +700,6 @@ public class ReferencesBrowserControllerUI extends JTitledPanel {
 //        showClassItem.setEnabled(node instanceof HeapWalkerInstanceNode || node instanceof ClassNode);
         showGcRootItem.setEnabled(node instanceof HeapWalkerInstanceNode && node.currentlyHasChildren() &&
                 (node.getNChildren() != 1 || !HeapWalkerNodeFactory.isMessageNode(node.getChild(0)))); // #124306
-        showSourceItem.setEnabled(node instanceof HeapWalkerInstanceNode);
 
         if ((x == -1) || (y == -1)) {
             Rectangle rowBounds = fieldsListTable.getCellRect(row, 0, true);

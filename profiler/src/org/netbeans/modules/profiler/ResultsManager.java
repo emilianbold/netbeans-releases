@@ -40,7 +40,6 @@
 
 package org.netbeans.modules.profiler;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ProfilerClient;
 import org.netbeans.lib.profiler.ProfilerEngineSettings;
 import org.netbeans.lib.profiler.ProfilerLogger;
@@ -468,9 +467,9 @@ public final class ResultsManager {
         return true;
     }
 
-    public FileObject[] listSavedHeapdumps(Project project) {
+    public FileObject[] listSavedHeapdumps() {
         try {
-            FileObject profilerFolder = IDEUtils.getProjectSettingsFolder(project, false);
+            FileObject profilerFolder = IDEUtils.getProjectSettingsFolder(false);
 
             if (profilerFolder == null) {
                 return new FileObject[0];
@@ -513,9 +512,9 @@ public final class ResultsManager {
         }
     }
 
-    public FileObject[] listSavedSnapshots(Project project) {
+    public FileObject[] listSavedSnapshots() {
         try {
-            FileObject profilerFolder = IDEUtils.getProjectSettingsFolder(project, false);
+            FileObject profilerFolder = IDEUtils.getProjectSettingsFolder(false);
 
             if (profilerFolder == null) {
                 return new FileObject[0];
@@ -682,9 +681,8 @@ public final class ResultsManager {
                 Profiler.getDefault().getLastProfilingSettings().copySettingsInto(settings);
                 settings.setSettingsName(Profiler.getDefault().getLastProfilingSettings().getSettingsName());
 
-                Project profiledProject = ((NetBeansProfiler) Profiler.getDefault()).getProfiledProject();
 
-                return new LoadedSnapshot(snapshot, settings, null, profiledProject);
+                return new LoadedSnapshot(snapshot, settings, null);
             }
         }
 
@@ -778,11 +776,10 @@ public final class ResultsManager {
     public boolean saveSnapshot(LoadedSnapshot ls) {
         FileObject profFile = null;
 
-        Project p = ls.getProject();
         FileObject saveDir = null;
 
         try {
-            saveDir = IDEUtils.getProjectSettingsFolder(p, true);
+            saveDir = IDEUtils.getProjectSettingsFolder( true);
         } catch (IOException e) {
             ErrorManager.getDefault()
                         .annotate(e, MessageFormat.format(CANT_FIND_SNAPSHOT_LOCATION_MSG, new Object[] { e.getMessage() }));
@@ -1106,10 +1103,6 @@ public final class ResultsManager {
         return null;
     }
 
-    private Project findProjectForSnapshot(FileObject selectedFile) {
-        return IDEUtils.getProjectFromSettingsFolder(selectedFile.getParent());
-    }
-
     private LoadedSnapshot loadSnapshotFromFileObject(FileObject selectedFile)
                                                throws IOException {
         DataInputStream dis = null;
@@ -1123,7 +1116,6 @@ public final class ResultsManager {
 
             if (ls != null) {
                 ls.setFile(FileUtil.toFile(selectedFile));
-                ls.setProject(findProjectForSnapshot(selectedFile));
             }
 
             return ls;

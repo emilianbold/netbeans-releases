@@ -348,7 +348,7 @@ public final class HeapDumpAction extends ProfilingAwareAction {
         try {
             String fileName = TAKEN_HEAPDUMP_PREFIX + System.currentTimeMillis();
             FileObject folder = (targetFolder == null)
-                                ? IDEUtils.getProjectSettingsFolder(NetBeansProfiler.getDefaultNB().getProfiledProject(), true)
+                                ? IDEUtils.getProjectSettingsFolder(true)
                                 : FileUtil.toFileObject(FileUtil.normalizeFile(new File(targetFolder)));
 
             return FileUtil.toFile(folder).getAbsolutePath() + File.separator
@@ -407,8 +407,7 @@ public final class HeapDumpAction extends ProfilingAwareAction {
     private String selectTargetDirectory() {
         // Choose heapdump destination
         ChooseHeapdumpTargetPanel targetSelector = getHeapdumpTargetSelector();
-        targetSelector.updateDefaultLocation((NetBeansProfiler.getDefaultNB().getProfiledProject() != null)
-                                             ? LOCATION_PROJECT_STRING : LOCATION_GLOBAL_STRING);
+        targetSelector.updateDefaultLocation( LOCATION_GLOBAL_STRING);
 
         DialogDescriptor desc = new DialogDescriptor(targetSelector, DESTINATION_DIALOG_CAPTION, true,
                                                      new Object[] { targetSelector.getOKButton(), DialogDescriptor.CANCEL_OPTION },

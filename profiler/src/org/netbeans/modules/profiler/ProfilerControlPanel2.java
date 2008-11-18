@@ -40,10 +40,6 @@
 
 package org.netbeans.modules.profiler;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.TargetAppRunner;
 import org.netbeans.lib.profiler.client.MonitoredData;
@@ -102,7 +98,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.ComboBoxUI;
 import javax.swing.plaf.IconUIResource;
 import javax.swing.plaf.basic.BasicComboBoxUI;
-import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 
 
 /**
@@ -562,20 +557,9 @@ public final class ProfilerControlPanel2 extends TopComponent implements Profili
             renderer.setEnabled(rendererOrig.isEnabled());
             renderer.setBorder(rendererOrig.getBorder());
 
-            if ((value != null) && value instanceof Project) {
-                ProjectInformation pi = ProjectUtils.getInformation((Project) value);
-                renderer.setText(pi.getDisplayName());
-                renderer.setIcon(pi.getIcon());
 
-                if (ProjectUtilities.getMainProject() == value) {
-                    renderer.setFontEx(renderer.getFont().deriveFont(Font.BOLD)); // bold for main project
-                } else {
-                    renderer.setFontEx(renderer.getFont().deriveFont(Font.PLAIN));
-                }
-            } else {
                 renderer.setText(rendererOrig.getText());
                 renderer.setIcon(emptyIcon);
-            }
 
             return renderer;
         }
@@ -851,8 +835,8 @@ public final class ProfilerControlPanel2 extends TopComponent implements Profili
         }
     }
 
-    private static final class SnapshotsPanel extends CPPanel implements ListSelectionListener, ActionListener,
-                                                                         PropertyChangeListener {
+    private static final class SnapshotsPanel extends CPPanel implements ListSelectionListener, ActionListener
+                                                                          {
         //~ Instance fields ------------------------------------------------------------------------------------------------------
 
         private DefaultListModel listModel;
@@ -862,7 +846,6 @@ public final class ProfilerControlPanel2 extends TopComponent implements Profili
         private JButton openButton;
         private JComboBox combo;
         private JList list;
-        private Project displayedProject;
         private boolean internalChange = false; // for combo box selection
 
         //~ Constructors ---------------------------------------------------------------------------------------------------------
@@ -917,7 +900,6 @@ public final class ProfilerControlPanel2 extends TopComponent implements Profili
             combo.setBackground(CP_BACKGROUND_COLOR);
 
             combo.addActionListener(this);
-            OpenProjects.getDefault().addPropertyChangeListener(this);
 
             list = new JList(listModel = new DefaultListModel());
             list.getAccessibleContext().setAccessibleName(LIST_ACCESS_NAME);
@@ -1136,22 +1118,17 @@ public final class ProfilerControlPanel2 extends TopComponent implements Profili
 
             updateButtons();
             updateCombo();
-            setDisplayedProject(ProjectUtilities.getMainProject());
+            setDisplayedProject();
         }
 
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
-        public void setDisplayedProject(Project project) {
-            displayedProject = project;
+        public void setDisplayedProject() {
             list.clearSelection(); // clear selection in the list before refreshing it
             refreshList();
             internalChange = true;
 
-            if (project == null) {
-                combo.setSelectedItem(GLOBAL_COMBO_ITEM_STRING);
-            } else {
-                combo.setSelectedItem(project);
-            }
+            combo.setSelectedItem(GLOBAL_COMBO_ITEM_STRING);
 
             internalChange = false;
         }
@@ -1182,18 +1159,9 @@ public final class ProfilerControlPanel2 extends TopComponent implements Profili
                 if (!internalChange) {
                     Object o = combo.getSelectedItem();
 
-                    if (o instanceof Project) {
-                        setDisplayedProject((Project) o);
-                    } else {
-                        setDisplayedProject(null);
-                    }
+                 
+                        setDisplayedProject();
                 }
-            }
-        }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            if ((evt.getPropertyName() != null) && evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
-                updateCombo();
             }
         }
 
@@ -1297,14 +1265,14 @@ public final class ProfilerControlPanel2 extends TopComponent implements Profili
             SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         int selIdx = list.getSelectedIndex();
-                        FileObject[] snapshotsOnDisk = ResultsManager.getDefault().listSavedSnapshots(displayedProject);
+                        FileObject[] snapshotsOnDisk = ResultsManager.getDefault().listSavedSnapshots();
                         listModel.removeAllElements();
 
                         for (int i = 0; i < snapshotsOnDisk.length; i++) {
                             listModel.addElement(snapshotsOnDisk[i]);
                         }
 
-                        FileObject[] heapdumpsOnDisk = ResultsManager.getDefault().listSavedHeapdumps(displayedProject);
+                        FileObject[] heapdumpsOnDisk = ResultsManager.getDefault().listSavedHeapdumps();
 
                         for (int i = 0; i < heapdumpsOnDisk.length; i++) {
                             listModel.addElement(heapdumpsOnDisk[i]);
@@ -1331,29 +1299,7 @@ public final class ProfilerControlPanel2 extends TopComponent implements Profili
         }
 
         private void updateCombo() {
-            Project[] projects = OpenProjects.getDefault().getOpenProjects();
-            Vector items = new Vector(projects.length + 1);
-
-            for (int i = 0; i < projects.length; i++) {
-                items.add(projects[i]);
-            }
-
-            try {
-                Collections.sort(items,
-                                 new Comparator() {
-                        public int compare(Object o1, Object o2) {
-                            Project p1 = (Project) o1;
-                            Project p2 = (Project) o2;
-
-                            return ProjectUtils.getInformation(p1).getDisplayName().toLowerCase()
-                                               .compareTo(ProjectUtils.getInformation(p2).getDisplayName().toLowerCase());
-                        }
-                    });
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, e); // just in case ProjectUtils doesn't provide expected information
-            }
-
-            ;
+            Vector items = new Vector( 1);
 
             items.add(0, GLOBAL_COMBO_ITEM_STRING);
 
@@ -1364,14 +1310,6 @@ public final class ProfilerControlPanel2 extends TopComponent implements Profili
                 comboModel.addElement(items.get(i));
             }
 
-            if ((displayedProject != null) && (comboModel.getIndexOf(displayedProject) != -1)) {
-                internalChange = true;
-                combo.setSelectedItem(displayedProject);
-                internalChange = false;
-            } else {
-                Project mainProject = ProjectUtilities.getMainProject();
-                setDisplayedProject(mainProject);
-            }
         }
     }
 
@@ -1855,10 +1793,6 @@ public final class ProfilerControlPanel2 extends TopComponent implements Profili
 
     public HelpCtx getHelpCtx() {
         return HELP_CTX;
-    }
-
-    public void setProfiledProject(Project project) {
-        snapshotsSnippet.setDisplayedProject(project);
     }
 
     public String getToolTipText() {

@@ -40,7 +40,6 @@
 
 package org.netbeans.modules.profiler.heapwalk;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.heap.*;
 import org.netbeans.modules.profiler.heapwalk.ui.HeapFragmentWalkerUI;
 import java.io.File;
@@ -111,10 +110,6 @@ public class HeapFragmentWalker {
     // --- Public interface ------------------------------------------------------
     public File getHeapDumpFile() {
         return heapWalker.getHeapDumpFile();
-    }
-
-    public Project getHeapDumpProject() {
-        return heapWalker.getHeapDumpProject();
     }
 
     public Heap getHeapFragment() {

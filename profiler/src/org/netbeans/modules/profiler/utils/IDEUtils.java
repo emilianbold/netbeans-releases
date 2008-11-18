@@ -40,12 +40,8 @@
 
 package org.netbeans.modules.profiler.utils;
 
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
@@ -82,7 +78,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.profiler.utilities.queries.SettingsFolderQuery;
+
 
 
 /**
@@ -151,22 +147,6 @@ public final class IDEUtils {
         }
     }
 
-    public static JavaPlatform getJavaPlatformByName(String platformName) {
-        if (platformName != null) {
-            JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(platformName, null);
-
-            for (int i = 0; i < platforms.length; i++) {
-                JavaPlatform platform = platforms[i];
-
-                if ((platformName != null) && platform.getDisplayName().equals((platformName))) {
-                    return platform;
-                }
-            }
-        }
-
-        return null;
-    }
-
     public static String getLibsDir() {
         final File dir = InstalledFileLocator.getDefault()
                                              .locate(ProfilerModule.LIBS_DIR + "/jfluid-server.jar",
@@ -183,172 +163,14 @@ public final class IDEUtils {
         return WindowManager.getDefault().getMainWindow();
     }
 
-    public static int getPlatformArchitecture(JavaPlatform platform) {
-        assert platform != null : "Platform may not be NULL"; // NOI18N
-
-        Map props = platform.getSystemProperties();
-        String arch = (String) props.get("sun.arch.data.model"); // NOI18N
-
-        if (arch == null) {
-            return 32;
-        }
-
-        return Integer.parseInt(arch);
-    }
-
-    public static int getPlatformJDKMinor(JavaPlatform platform) {
-        assert platform != null : "Platform may not be NULL"; // NOI18N
-
-        Map props = platform.getSystemProperties();
-        String ver = (String) props.get("java.version"); // NOI18N
-
-        return Platform.getJDKMinorNumber(ver);
-    }
-
-    /** Gets a version for to provided JavaPlatform. The platform passed cannot be null.
-     *
-     * @param platform A JavaPlatform for which we need the java executable path
-     * @return A path to java executable or null if not found
-     * @see CommonConstants.JDK_15_STRING
-     * @see CommonConstants.JDK_16_STRING
-     * @see CommonConstants.JDK_17_STRING
-     */
-    public static String getPlatformJDKVersion(JavaPlatform platform) {
-        assert platform != null : "Platform may not be NULL"; // NOI18N
-
-        Map props = platform.getSystemProperties();
-        String ver = (String) props.get("java.version"); // NOI18N
-
-        if (ver == null) {
-            return null;
-        }
-
-        if (ver.startsWith("1.5")) {
-            return CommonConstants.JDK_15_STRING; // NOI18N
-        } else if (ver.startsWith("1.6")) {
-            return CommonConstants.JDK_16_STRING; // NOI18N
-        } else if (ver.startsWith("1.7")) {
-            return CommonConstants.JDK_17_STRING; // NOI18N
-        } else {
-            return null;
-        }
-    }
-
-    /** Gets a path to java executable for specified platform. The platform passed cannot be null.
-     * Errors when obtaining the java executable will be reported to the user and null will be returned.
-     *
-     * @param platform A JavaPlatform for which we need the java executable path
-     * @return A path to java executable or null if not found
-     */
-    public static String getPlatformJavaFile(JavaPlatform platform) {
-        assert platform != null : "Platform may not be NULL"; // NOI18N
-
-        FileObject fo = platform.findTool("java"); // NOI18N
-
-        if (fo == null) { // probably invalid platform
-
-            if (ProfilerIDESettings.getInstance().getJavaPlatformForProfiling() == null) {
-                // used platform defined for project
-                Profiler.getDefault()
-                        .displayError(MessageFormat.format(INVALID_PLATFORM_PROJECT_MSG,
-                                                           new Object[] { platform.getDisplayName() }));
-            } else {
-                // used platform defined in Options / Profiler
-                Profiler.getDefault()
-                        .displayError(MessageFormat.format(INVALID_PLATFORM_PROFILER_MSG,
-                                                           new Object[] { platform.getDisplayName() }));
-            }
-
-            return null;
-        }
-
-        String jvmExe = null;
-
-        try {
-            File file = FileUtil.toFile(fo);
-            jvmExe = file.getAbsolutePath();
-            MiscUtils.checkFileForName(jvmExe);
-        } catch (Exception e) {
-            ErrorManager.getDefault()
-                        .annotate(e,
-                                  MessageFormat.format(INVALID_TARGET_JVM_EXEFILE_ERROR, new Object[] { jvmExe, e.getMessage() }));
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
-        }
-
-        return jvmExe;
-    }
-
     public static RequestProcessor getProfilerRequestProcessor() {
         return profilerRequestProcessor;
     }
 
-    public static Project getProjectFromSettingsFolder(FileObject settingsFolder) {
-        if ((settingsFolder == null) || !settingsFolder.getName().equals("profiler")) {
-            return null; // NOI18N
-        }
-
-        FileObject privateFolder = settingsFolder.getParent();
-
-        if ((privateFolder == null) || !privateFolder.getName().equals("private")) {
-            return null; // NOI18N
-        }
-
-        FileObject nbprojectFolder = privateFolder.getParent();
-
-        if ((nbprojectFolder == null) || !nbprojectFolder.getName().equals("nbproject")) {
-            return null; // NOI18N
-        }
-
-        FileObject projectFolder = nbprojectFolder.getParent();
-
-        if (projectFolder == null) {
-            return null;
-        }
-
-        try {
-            return ProjectManager.getDefault().findProject(projectFolder);
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-    public static FileObject getProjectSettingsFolder(Project project, boolean create)
+    public static FileObject getProjectSettingsFolder(boolean create)
                                                throws IOException {
-        if (project == null) { // global folder for attach
 
             return getSettingsFolder(true);
-        } else {
-            // resolve 'nbproject'
-            FileObject nbproject = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
-
-            if ((nbproject == null) && create) {
-                nbproject = project.getProjectDirectory().createFolder("nbproject"); // NOI18N
-            }
-
-            if (nbproject == null) {
-                return null;
-            }
-
-            // resolve 'private'
-            FileObject privateFolder = nbproject.getFileObject("private"); // NOI18N
-
-            if ((privateFolder == null) && create) {
-                privateFolder = nbproject.createFolder("private"); // NOI18N
-            }
-
-            if (privateFolder == null) {
-                return null;
-            }
-
-            // resolve 'profiler'
-            FileObject prof = privateFolder.getFileObject("profiler"); // NOI18N
-
-            if ((prof == null) && create) {
-                prof = privateFolder.createFolder("profiler"); // NOI18N
-            }
-
-            return prof;
-        }
     }
 
     public static String getServicesDir() {
@@ -365,15 +187,14 @@ public final class IDEUtils {
 
     public static FileObject getSettingsFolder(final boolean create)
                                         throws IOException {
-        return SettingsFolderQuery.getDefault().getSettingsFolder(create);
-//        final FileObject folder = Repository.getDefault().getDefaultFileSystem().findResource("Services"); //NOI18N
-//        FileObject settingsFolder = folder.getFileObject(SettingsFolderQuery.getDefault().getSettingsFolder(), null);
-//
-//        if ((settingsFolder == null) && create) {
-//            settingsFolder = folder.createFolder(SettingsFolderQuery.getDefault().getSettingsFolder());
-//        }
-//
-//        return settingsFolder;
+        final FileObject folder = Repository.getDefault().getDefaultFileSystem().findResource("Services"); //NOI18N
+        FileObject settingsFolder = folder.getFileObject(SETTINGS_DIR, null);
+
+        if ((settingsFolder == null) && create) {
+            settingsFolder = folder.createFolder(SETTINGS_DIR);
+        }
+
+        return settingsFolder;
     }
 
     /**
@@ -491,7 +312,7 @@ public final class IDEUtils {
     /**
      * Opens a dialog that allows the user to select one of existing profiling settings
      */
-    public static ProfilingSettings selectSettings(Project project, int type, ProfilingSettings[] availableSettings,
+    public static ProfilingSettings selectSettings(int type, ProfilingSettings[] availableSettings,
                                                    ProfilingSettings settingsToSelect) {
         Object[] settings = new Object[availableSettings.length + 1];
 
@@ -574,9 +395,9 @@ public final class IDEUtils {
                + System.getProperty("profiler.agent.connect.timeout", "10"); // NOI18N // 10 seconds timeout by default
     }
 
-    private static ArrayList getSettings(final Project project, final int mask) {
+    private static ArrayList getSettings(final int mask) {
         final ArrayList matching = new ArrayList();
-        ProfilingSettings[] projectSettings = ProfilingSettingsManager.getDefault().getProfilingSettings(project)
+        ProfilingSettings[] projectSettings = ProfilingSettingsManager.getDefault().getProfilingSettings()
                                                                       .getProfilingSettings();
 
         for (ProfilingSettings settings : projectSettings) {

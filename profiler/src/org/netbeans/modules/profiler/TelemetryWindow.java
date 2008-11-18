@@ -44,6 +44,8 @@ import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.lib.profiler.ui.charts.ChartActionListener;
 import org.netbeans.lib.profiler.ui.charts.SynchronousXYChart;
+import org.netbeans.lib.profiler.ui.components.FlatToolBar;
+import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import org.netbeans.lib.profiler.ui.graphs.GraphPanel;
 import org.netbeans.lib.profiler.ui.graphs.MemoryGraphPanel;
 import org.netbeans.lib.profiler.ui.graphs.SurvivingGenerationsGraphPanel;
@@ -102,7 +104,7 @@ public final class TelemetryWindow extends TopComponent {
 
             setLayout(new BorderLayout());
 
-            final JToolBar toolBar = new JToolBar() {
+            final JToolBar toolBar = new FlatToolBar() {
                 public Component add(Component comp) {
                     if (comp instanceof JButton) {
                         UIUtils.fixButtonUI((JButton) comp);
@@ -154,12 +156,25 @@ public final class TelemetryWindow extends TopComponent {
 
             if (panel.getBigLegendPanel() != null) {
                 legendContainer.add(panel.getBigLegendPanel());
+                panel.getBigLegendPanel().setOpaque(false);
             }
-
+            
             add(toolBar, BorderLayout.NORTH);
             add(graphPanel, BorderLayout.CENTER);
             add(legendContainer, BorderLayout.SOUTH);
 
+            setOpaque(true);
+            setBackground(new HTMLTextArea().getBackground());
+ 	       
+            toolBar.setOpaque(true);
+            toolBar.setBackground(getBackground());
+ 	       
+            graphPanel.setOpaque(true);
+            graphPanel.setBackground(getBackground());
+ 	       
+            legendContainer.setOpaque(true);
+            legendContainer.setBackground(getBackground());
+           
             zoomInButton.addActionListener(this);
             zoomOutButton.addActionListener(this);
             scaleToFitButton.addActionListener(this);
@@ -325,7 +340,8 @@ public final class TelemetryWindow extends TopComponent {
         getAccessibleContext().setAccessibleDescription(TELEMETRY_ACCESS_DESCR);
         setLayout(new BorderLayout());
         tabs = new JTabbedPane();
-
+        tabs.setOpaque(true);
+ 	    tabs.setBackground(new HTMLTextArea().getBackground());
         tabs.setTabPlacement(JTabbedPane.BOTTOM);
         add(tabs, BorderLayout.CENTER);
 
@@ -341,11 +357,19 @@ public final class TelemetryWindow extends TopComponent {
         heapGraph.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 20, Color.WHITE));
         generationsGraph.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 20, Color.WHITE));
         threadsStatsGraph.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 20, Color.WHITE));
-
+        
+        heapGraph.setOpaque(false);
+ 	    generationsGraph.setOpaque(false);
+ 	    threadsStatsGraph.setOpaque(false);
+        
         heapPanel = new GraphTab(heapGraph);
         generationsPanel = new GraphTab(generationsGraph);
         threadsStatsPanel = new GraphTab(threadsStatsGraph);
 
+        heapPanel.setOpaque(false);
+ 	    generationsPanel.setOpaque(false);
+ 	    threadsStatsPanel.setOpaque(false);
+         
         tabs.addTab(MEMORY_HEAP_TAB_NAME, null, heapPanel, MEMORY_HEAP_TAB_DESCR);
         tabs.addTab(MEMORY_GC_TAB_NAME, null, generationsPanel, MEMORY_GC_TAB_DESCR);
         tabs.addTab(THREADS_STATISTICS_TAB_NAME, null, threadsStatsPanel, THREADS_STATISTICS_TAB_DESCR);
