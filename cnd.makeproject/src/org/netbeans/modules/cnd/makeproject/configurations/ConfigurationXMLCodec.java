@@ -197,7 +197,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 }
             }
         } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
-            currentList = new ArrayList();
+            currentList = new ArrayList<String>();
         } else if (element.equals(ItemXMLCodec.ITEM_ELEMENT)) {
             String path = atts.getValue(0);
             path = getString(adjustOffset(path));
