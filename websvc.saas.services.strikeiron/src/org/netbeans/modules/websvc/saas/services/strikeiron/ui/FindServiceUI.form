@@ -85,6 +85,9 @@
         </Property>
       </Properties>
       <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/saas/services/strikeiron/ui/Bundle.properties" key="FindServiceUI.tpTabs.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/websvc/saas/services/strikeiron/ui/Bundle.properties" key="FindServiceUI.tpTabs.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -125,7 +128,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="tfSearch" min="-2" pref="216" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="bSearch" min="-2" pref="85" max="-2" attributes="0"/>
+                              <Component id="bSearch" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="progressContainerPanel" pref="372" max="32767" attributes="0"/>
                           </Group>
@@ -142,14 +145,14 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="2" attributes="0">
                           <Component id="tfSearch" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="bSearch" alignment="2" min="-2" pref="19" max="-2" attributes="0"/>
+                          <Component id="bSearch" alignment="2" min="-2" max="-2" attributes="0"/>
                           <Component id="progressContainerPanel" alignment="2" min="-2" pref="15" max="-2" attributes="0"/>
                           <Component id="searchLabel" alignment="2" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="tableLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="spTab" pref="236" max="32767" attributes="0"/>
+                      <Component id="spTab" pref="234" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -426,6 +429,9 @@
                 </Property>
               </Properties>
               <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/websvc/saas/services/strikeiron/ui/Bundle.properties" key="FindServiceUI.cbAuthenticationMode.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/websvc/saas/services/strikeiron/ui/Bundle.properties" key="FindServiceUI.cbAuthenticationMode.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -441,6 +447,9 @@
                 </Property>
               </Properties>
               <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/websvc/saas/services/strikeiron/ui/Bundle.properties" key="FindServiceUI.cbSortBy.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/websvc/saas/services/strikeiron/ui/Bundle.properties" key="FindServiceUI.cbSortBy.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>

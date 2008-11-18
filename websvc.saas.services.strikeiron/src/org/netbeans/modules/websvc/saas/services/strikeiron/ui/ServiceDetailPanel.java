@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -49,7 +49,6 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -69,20 +68,20 @@ import org.openide.awt.HtmlBrowser;
  * @author nam
  */
 public class ServiceDetailPanel extends JTextPane {
+    private static final long serialVersionUID = 1L;
     private JScrollPane scrollPane;
     private HeaderPanel header;
-    private JLabel title;
     private ServiceData currentData;
 
     public ServiceDetailPanel() {
         header = new HeaderPanel();
-        title = header.getTitle();
-        Border outsideBorder = BorderFactory.createMatteBorder(0, 0, 1, 0, Color.gray);        
+        Border outsideBorder = BorderFactory.createMatteBorder(0, 0, 1, 0, Color.gray);
         Border insideBorder = BorderFactory.createEmptyBorder(3, 3, 3, 3);
         CompoundBorder compoundBorder = BorderFactory.createCompoundBorder(outsideBorder, insideBorder);
         header.setBorder(compoundBorder);
         initHtmlKit();
         header.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 if (KeyEvent.VK_ENTER == evt.getKeyCode()) {
                     if (currentData != null) {
@@ -92,6 +91,7 @@ public class ServiceDetailPanel extends JTextPane {
             }
         });
         header.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (currentData != null) {
                     currentData.setPackageName(header.getPackageName());
@@ -103,7 +103,7 @@ public class ServiceDetailPanel extends JTextPane {
     private void initHtmlKit() {
         HTMLEditorKit htmlkit = new HTMLEditorKit();
         StyleSheet css = htmlkit.getStyleSheet();
-        
+
         if (css.getStyleSheets() == null) {
             StyleSheet css2 = new StyleSheet();
             Font f = new JList().getFont();
@@ -113,9 +113,9 @@ public class ServiceDetailPanel extends JTextPane {
             css2.addStyleSheet(css);
             htmlkit.setStyleSheet(css2);
         }
-        
+
         setEditorKit(htmlkit);
-        
+
         addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent hlevt) {
                 if (EventType.ACTIVATED == hlevt.getEventType()) {
@@ -125,7 +125,7 @@ public class ServiceDetailPanel extends JTextPane {
             }
         });
     }
-    
+
     @Override
     public void addNotify() {
         super.addNotify();
@@ -136,8 +136,8 @@ public class ServiceDetailPanel extends JTextPane {
     public boolean isEditable() {
         return false;
     }
-    
-    JScrollPane getScrollPane() {
+
+    private JScrollPane getScrollPane() {
         if (scrollPane == null) {
             Container p = getParent();
             if (p instanceof JViewport) {
@@ -145,15 +145,15 @@ public class ServiceDetailPanel extends JTextPane {
                 if (gp instanceof JScrollPane) {
                     scrollPane = (JScrollPane)gp;
                 }
-            }            
+            }
         }
         return scrollPane;
     }
-    
+
     void clear() {
         setCurrentService(null);
     }
-    
+
     void setCurrentService(ServiceData service) {
         if (currentData != null) {
             currentData.setPackageName(header.getPackageName());
@@ -170,21 +170,12 @@ public class ServiceDetailPanel extends JTextPane {
             setText("");
         }
     }
-    
-    ServiceData getCurrentService() {
-        return currentData;
-    }
-    
-    String getPackageName() {
-        currentData.setPackageName(header.getPackageName());
-        return currentData.getPackageName();
-    }
-    
+
     public void setTitle(String value) {
-        if (value != null) {                            
-            title.setText("<html><h3>"+value+"</h3></html>");//NOI18N
+        if (value != null) {
+            header.setTitle("<html><h3>" + value + "</h3></html>"); //NOI18N
         } else {
-            title.setText("");
+            header.setTitle("");
         }
     }
 
@@ -194,7 +185,7 @@ public class ServiceDetailPanel extends JTextPane {
             String wsdl = currentData.getUrl();
             String info = currentData.getInfoPage();
             String link = currentData.getPurchaseLink();
-            
+
             details.append("<b>Version: </b>"+currentData.getVersion()+"<br>");
             details.append("<b>Provider: </b>"+currentData.getProviderName()+"<br>");
             details.append("<h3>Description: </h3>"+currentData.getDescription()+"<br>");
@@ -218,5 +209,4 @@ public class ServiceDetailPanel extends JTextPane {
             Logger.global.log (Level.INFO, "No URLDisplayer found.");
         }
     }
-    
 }

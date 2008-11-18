@@ -185,7 +185,16 @@ public class ServiceTableModel extends DefaultTableModel {
         }
         return true;
     }
-    
+
+    /**
+     * Returns number of selected rows in table model.
+     *
+     * @return  number of selected rows (never negative).
+     */
+    public int getSelectedCount() {
+        return selectedRows.size();
+    }
+
     public Set<? extends WsdlServiceData> getSelectedServices() {
         Set<WsdlServiceData> selection = new HashSet<WsdlServiceData>();
         for (int i : selectedRows) {
