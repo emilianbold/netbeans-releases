@@ -270,6 +270,7 @@ public enum FortranTokenId implements TokenId {
     OP_LT_EQ("<=", "operator"), // NOI18N
     OP_GT(">", "operator"), // NOI18N
     OP_GT_EQ(">=", "operator"), // NOI18N
+    OP_LT_GT("<>", "operator"), // NOI18N
 
     // Special Characters
     EQ("=", "special"), // NOI18N
