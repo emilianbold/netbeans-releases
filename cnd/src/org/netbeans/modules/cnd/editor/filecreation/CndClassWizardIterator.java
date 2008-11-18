@@ -40,14 +40,12 @@ package org.netbeans.modules.cnd.editor.filecreation;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.loaders.HDataLoader;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

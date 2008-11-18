@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.editor.fortran.options;
 import java.util.prefs.Preferences;
 
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 
 /** 
@@ -67,6 +68,10 @@ public final class FortranCodeStyle {
         return new FortranCodeStyle(CodeStylePreferences.get(doc).getPreferences());
     }
 
+    public boolean absoluteLabelIndent() {
+        return true;
+    }
+
     // General tabs and indents ------------------------------------------------
     
     public boolean expandTabToSpaces() {
@@ -77,7 +82,15 @@ public final class FortranCodeStyle {
         return preferences.getInt(FmtOptions.tabSize, FmtOptions.getDefaultAsInt(FmtOptions.tabSize));
     }
 
-    public int getIndentSize() {
+    public boolean indentCasesFromSwitch() {
+        return false;
+    }
+
+    public CodeStyle.PreprocessorIndent indentPreprocessorDirectives() {
+        return CodeStyle.PreprocessorIndent.PREPROCESSOR_INDENT;
+    }
+
+    public int indentSize() {
         return preferences.getInt(FmtOptions.indentSize, FmtOptions.getDefaultAsInt(FmtOptions.indentSize));
     }
 
@@ -88,5 +101,89 @@ public final class FortranCodeStyle {
     /** For testing purposes only */
     public void setFreeFormatFortran(boolean freeFormat) {
         preferences.putBoolean(FmtOptions.freeFormat, freeFormat);
+    }
+
+    public boolean sharpAtStartLine() {
+        return true;
+    }
+
+    public boolean spaceAfterComma() {
+        return true;
+    }
+
+    public boolean spaceAroundAssignOps() {
+        return true;
+    }
+
+    public boolean spaceAroundBinaryOps() {
+        return true;
+    }
+
+    public boolean spaceAroundUnaryOps() {
+        return true;
+    }
+
+    public boolean spaceBeforeComma() {
+        return false;
+    }
+
+    public boolean spaceBeforeForParen() {
+        return true;
+    }
+
+    public boolean spaceBeforeIfParen() {
+        return true;
+    }
+
+    public boolean spaceBeforeKeywordParen() {
+        return true;
+    }
+
+    public boolean spaceBeforeMethodCallParen() {
+        return false;
+    }
+
+    public boolean spaceBeforeMethodDeclParen() {
+        return false;
+    }
+
+    public boolean spaceBeforeSwitchParen() {
+        return true;
+    }
+
+    public boolean spaceBeforeWhile() {
+        return true;
+    }
+
+    public boolean spaceBeforeWhileParen() {
+        return true;
+    }
+
+    public boolean spaceWithinForParens() {
+        return true;
+    }
+
+    public boolean spaceWithinIfParens() {
+        return false;
+    }
+
+    public boolean spaceWithinMethodCallParens() {
+        return false;
+    }
+
+    public boolean spaceWithinMethodDeclParens() {
+        return false;
+    }
+
+    public boolean spaceWithinParens() {
+        return false;
+    }
+
+    public boolean spaceWithinSwitchParens() {
+        return true;
+    }
+
+    public boolean spaceWithinWhileParens() {
+        return true;
     }
 }

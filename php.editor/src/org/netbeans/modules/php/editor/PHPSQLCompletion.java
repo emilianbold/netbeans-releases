@@ -39,16 +39,17 @@
 
 package org.netbeans.modules.php.editor;
 
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletion;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionContext;
@@ -72,6 +73,36 @@ import org.openide.text.NbDocument;
 public class PHPSQLCompletion implements CompletionProvider {
 
     private static final Boolean NO_COMPLETION = Boolean.getBoolean("netbeans.php.nosqlcompletion"); // NOI18N
+    private static final String PROP_DBCONN = "dbconn"; // NOI18N
+
+    public static DatabaseConnection getDatabaseConnection(Project project) {
+        String name = getProjectPreferences(project).get(PROP_DBCONN, null);
+        if (name != null) {
+            return ConnectionManager.getDefault().getConnection(name);
+        }
+        return null;
+    }
+
+    public static void setDatabaseConnection(Project project, DatabaseConnection dbconn) {
+        Preferences prefs = getProjectPreferences(project);
+        if (dbconn != null) {
+            prefs.put(PROP_DBCONN, dbconn.getName());
+        } else {
+            prefs.remove(PROP_DBCONN);
+        }
+    }
+
+    private static Preferences getProjectPreferences(Project project) {
+        return ProjectUtils.getPreferences(project, PHPSQLCompletion.class, false);
+    }
+
+    private static Project getProject(Document doc) {
+        FileObject fo = NbEditorUtilities.getFileObject(doc);
+        if (fo != null) {
+            return FileOwnerQuery.getOwner(fo);
+        }
+        return null;
+    }
 
     public CompletionTask createTask(int queryType, JTextComponent component) {
         return new AsyncCompletionTask(new Query(), component);
@@ -154,29 +185,6 @@ public class PHPSQLCompletion implements CompletionProvider {
             }
         }
         return result;
-    }
-
-    // XXX temporary until a way to store/get the dbconn to/from the project is found.
-    private final static Map<Project, DatabaseConnection> project2DBConn = new WeakHashMap<Project, DatabaseConnection>();
-
-    public static DatabaseConnection getDatabaseConnection(Project project) {
-        synchronized (project2DBConn) {
-            return project2DBConn.get(project);
-        }
-    }
-
-    public static void setDatabaseConnection(Project project, DatabaseConnection dbconn) {
-        synchronized (project2DBConn) {
-            project2DBConn.put(project, dbconn);
-        }
-    }
-
-    private static Project getProject(Document doc) {
-        FileObject fo = NbEditorUtilities.getFileObject(doc);
-        if (fo == null) {
-            return null;
-        }
-        return FileOwnerQuery.getOwner(fo);
     }
 
     private static final class Query extends AsyncCompletionQuery {

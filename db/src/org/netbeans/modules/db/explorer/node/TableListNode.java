@@ -52,7 +52,19 @@ public class TableListNode extends BaseNode {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
     private static final String FOLDER = "TableList"; //NOI18N
 
-    public TableListNode(NodeDataLookup lookup) {
+    /** 
+     * Create an instance of TableListNode.
+     * 
+     * @param dataLookup the lookup to use when creating node providers
+     * @return the TableListNode instance
+     */
+    public static TableListNode create(NodeDataLookup dataLookup) {
+        TableListNode node = new TableListNode(dataLookup);
+        node.setup();
+        return node;
+    }
+
+    private TableListNode(NodeDataLookup lookup) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER);
     }
     

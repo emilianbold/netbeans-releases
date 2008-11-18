@@ -84,7 +84,7 @@ public class TickingRepositoryQueue extends RepositoryQueue {
     }
     
     @Override
-    protected KeyValueQueue.Entry createEntry(Key key, Persistent value) {
+    protected KeyValueQueue<Key, Persistent>.Entry createEntry(Key key, Persistent value) {
         return new TickingEntry(key, value, currentTick);
     }
 

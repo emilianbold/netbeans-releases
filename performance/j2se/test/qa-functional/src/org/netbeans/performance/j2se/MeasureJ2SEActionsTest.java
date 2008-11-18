@@ -41,10 +41,11 @@
 
 package org.netbeans.performance.j2se;
 
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.actions.*;
+
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -58,38 +59,35 @@ public class MeasureJ2SEActionsTest {
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2SE Actions suite");
         System.setProperty("suitename", MeasureJ2SEActionsTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness J2SE Actions suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddToFavorites.class)
-        .addTest(CloseAllEditors.class)
-        .addTest(CloseEditor.class)
-        .addTest(CloseEditorModified.class)
-        .addTest(CloseEditorTab.class)
-        .addTest(CreateNBProject.class)
-        .addTest(CreateProject.class)
-        .addTest(DeleteFolder.class)
-        .addTest(ExpandNodesInComponentInspector.class)
-        .addTest(ExpandNodesProjectsView.class)
-        .addTest(JavaCompletionInEditor.class)
-        .addTest(OpenFiles.class)
-        .addTest(OpenFilesNoCloneableEditor.class)
-        .addTest(OpenFilesNoCloneableEditorWithOpenedEditor.class)
-        .addTest(OpenFilesWithOpenedEditor.class)
-        .addTest(OpenFormFile.class)
-        .addTest(OpenFormFileWithOpenedEditor.class)
-        .addTest(OpenJspFile.class)
-        .addTest(OpenJspFileWithOpenedEditor.class)
-        .addTest(PageUpPageDownInEditor.class)
-        .addTest(PasteInEditor.class)
-        .addTest(RefactorFindUsages.class)
-        .addTest(SaveModifiedFile.class)
-        .addTest(SelectCategoriesInNewFile.class)
-        .addTest(SwitchToFile.class)
-        .addTest(SwitchView.class)
-        .addTest(TypingInEditor.class)
-        .addTest(ShiftCodeInEditor.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddToFavoritesTest.class)
+        .addTest(CloseAllEditorsTest.class)
+        .addTest(CloseEditorTest.class)
+        .addTest(CloseEditorModifiedTest.class)
+        .addTest(CloseEditorTabTest.class)
+        .addTest(CommentingCodeInEditorTest.class)
+        .addTest(CreateNBProjectTest.class)
+        .addTest(CreateProjectTest.class)
+        // needs to be fixed .addTest(DeleteFolderTest.class)
+        .addTest(ExpandNodesInComponentInspectorTest.class)
+        .addTest(ExpandNodesProjectsViewTest.class)
+        .addTest(JavaCompletionInEditorTest.class)
+        .addTest(OpenFilesTest.class)
+        .addTest(OpenFilesNoCloneableEditorTest.class)
+        .addTest(OpenFilesNoCloneableEditorWithOpenedEditorTest.class)
+        .addTest(OpenFilesWithOpenedEditorTest.class)
+        .addTest(PageUpPageDownInEditorTest.class)
+        .addTest(PasteInEditorTest.class)
+        .addTest(SaveModifiedFileTest.class)
+        .addTest(SelectCategoriesInNewFileTest.class)
+        .addTest(ShiftCodeInEditorTest.class)
+        // needs to be fixed .addTest(SwitchToFileTest.class)
+        .addTest(SwitchViewTest.class)
+        .addTest(TypingInEditorTest.class)
+        .addTest(RefactorFindUsagesTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
  
         return suite;
     }
-    
 }

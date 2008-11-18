@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.test;
 
+import junit.framework.TestCase;
 import org.netbeans.modules.cnd.test.BaseTestSuite;
 
 /**
@@ -68,7 +69,7 @@ public class ModelImplBaseTestSuite extends BaseTestSuite {
      * Constructs a TestSuite from the given class. Adds all the methods
      * starting with "test" as test cases to the suite.
      */
-    public ModelImplBaseTestSuite(Class theClass) {       
+    public ModelImplBaseTestSuite(Class<? extends TestCase> theClass) {
         super(theClass);
     }
 
