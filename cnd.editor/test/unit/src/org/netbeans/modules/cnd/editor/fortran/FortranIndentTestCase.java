@@ -257,4 +257,45 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 );
     }
 
+    public void testElseIfIndentFree() {
+        setLoadDocumentText(
+                "program A\n" +
+                "    integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
+                "    i = 1\n" +
+                "    if (j(3) == i + 2) then\n" +
+                "        i = j(5)\n" +
+                "        elsei|"
+                );
+        setDefaultsOptions();
+        typeChar('f', true);
+        assertDocumentTextAndCaret("Incorrect new-line else if indent (free form)",
+                "program A\n" +
+                "    integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
+                "    i = 1\n" +
+                "    if (j(3) == i + 2) then\n" +
+                "        i = j(5)\n" +
+                "    elseif|"
+                );
+    }
+
+    public void testWhileIndentFree() {
+        setLoadDocumentText(
+                "program A\n" +
+                "    integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
+                "    i = 1\n" +
+                "    while (j(3) == i + 2)\n" +
+                "        i = j(5)\n" +
+                "        end whil|"
+                );
+        setDefaultsOptions();
+        typeChar('e', true);
+        assertDocumentTextAndCaret("Incorrect new-line while indent (free form)",
+                "program A\n" +
+                "    integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
+                "    i = 1\n" +
+                "    while (j(3) == i + 2)\n" +
+                "        i = j(5)\n" +
+                "    end while|"
+                );
+    }
 }
