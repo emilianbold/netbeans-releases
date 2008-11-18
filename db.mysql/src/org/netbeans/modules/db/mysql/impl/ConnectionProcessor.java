@@ -45,6 +45,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,41 +58,66 @@ import org.openide.util.NbBundle;
 public class ConnectionProcessor implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(ConnectionProcessor.class.getName());
     final BlockingQueue<Runnable> inqueue;
-    
+
+    // INVARIANT: if connection is null or not connected, quoter is null
+    // if connection is connected, quoter is set based on DBMD for the connection
+    // synchronized on this
     private Connection conn;
+    // synchronized on this
+    private Quoter quoter;
+
     private Thread taskThread;
     
-    void setConnection(Connection conn) {
+    synchronized void setConnection(Connection conn) throws DatabaseException {
         this.conn = conn;
     }
     
-    Connection getConnection() {
-        return this.conn;
+    synchronized private void setQuoter() throws DatabaseException {
+        try {
+            if (conn != null && !conn.isClosed()) {
+                this.quoter = SQLIdentifiers.createQuoter(conn.getMetaData());
+            } else {
+                this.quoter = null;
+            }
+        } catch (SQLException sqle) {
+            throw new DatabaseException(sqle);
+        }
+
     }
 
-    void validateConnection() throws DatabaseException {
+    synchronized Connection getConnection() {
+        return conn;
+    }
+
+    synchronized Quoter getQuoter() {
+        return quoter;
+    }
+
+    synchronized void validateConnection() throws DatabaseException {
         try {
             // A connection only needs to be validated if it already exists.
             // We're trying to see if something went wrong to an existing connection...
             if (conn == null) {
                 return;
             }
-            
+
             if (conn.isClosed()) {
                 conn = null;
                 throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"));
             }
 
             // Send a command to the server, if it fails we know the connection is invalid.
-            conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
+            conn.getMetaData().getTables(null, null, " ", new String[]{"TABLE"}).close();
+            quoter = SQLIdentifiers.createQuoter(conn.getMetaData());
         } catch (SQLException e) {
             conn = null;
+            quoter = null;
             LOGGER.log(Level.FINE, null, e);
             throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"), e);
         }
     }
-    
-    boolean isConnected() {
+
+    synchronized boolean isConnected() {
         return conn != null;
     }
 
