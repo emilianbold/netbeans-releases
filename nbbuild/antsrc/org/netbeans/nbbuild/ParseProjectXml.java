@@ -305,8 +305,6 @@ public final class ParseProjectXml extends Task {
             if (getProjectFile() == null) {
                 throw new BuildException("You must set 'project' or 'projectfile'", getLocation());
             }
-            // XXX validate against nbm-project{,2}.xsd; does this require JDK 1.5?
-            // Cf.: ant/project/eg/ValidateAllBySchema.java
             // XXX share parse w/ ModuleListParser
             Document pDoc = XMLUtil.parse(new InputSource(getProjectFile ().toURI().toString()),
                                           false, true, /*XXX*/null, null);
