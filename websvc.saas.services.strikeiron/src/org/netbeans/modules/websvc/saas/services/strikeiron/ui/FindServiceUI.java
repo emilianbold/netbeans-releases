@@ -193,7 +193,6 @@ public class FindServiceUI extends javax.swing.JPanel {
         labelDescription.setText(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.labelDescription.text")); // NOI18N
 
         tpTabs.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        tpTabs.setOpaque(true);
         tpTabs.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 tpTabsStateChanged(evt);
