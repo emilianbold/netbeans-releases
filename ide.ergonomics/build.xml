@@ -13,8 +13,11 @@
 
     <target name="-disable-kits" depends="init-tasks">
         <mkdir dir="${release.dir}/config/Modules"/>
-        <subant genericantfile="build.xml" target="-disable-one-cluster">
+        <subant genericantfile="build.xml" target="-process-one-cluster">
             <property name="xmldir" value="${release.dir}/config/Modules"/>
+            <property name="proxytmp" location="build/proxies"/>
+            <property name="proxyxslt" location="project-wizard.xsl"/>
+            <property name="proxydir" location="build/classes/org/netbeans/modules/ide/ergonomics"/>
             <dirset dir="${netbeans.dest.dir}">
                 <include name="*"/>
                 <exclude name="ide1*"/>
@@ -26,6 +29,43 @@
         </subant>
     </target>
 
+
+    <target name="-process-one-cluster" depends="-proxy-one-cluster,-disable-one-cluster"/>
+
+    <target name="-proxy-one-cluster" depends="init-tasks">
+        <taskdef name="layerindex"
+             classname="org.netbeans.nbbuild.LayerIndex"
+             classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <layerindex resourceid="layers">
+            <modules dir=".">
+                <include name="modules/*.jar"/>
+            </modules>
+        </layerindex>
+
+        <pathconvert property="cluster.name">
+            <path location="."/>
+            <mapper type="flatten"/>
+        </pathconvert>
+
+        <mkdir dir="${proxytmp}"/>
+        <copy todir="${proxytmp}">
+            <resources refid="layers"/>
+        </copy>
+
+        <xslt destdir="${proxytmp}/out" style="${proxyxslt}" useimplicitfileset="false" extension="fragment">
+            <fileset dir="${proxytmp}">
+                <include name="*.xml"/>
+            </fileset>
+        </xslt>
+
+        <concat destfile="${proxydir}/${cluster.name}.xml">
+            <filterchain>
+                <ignoreblank byline="true"/>
+            </filterchain>
+            <fileset dir="${proxytmp}/out">
+            </fileset>
+        </concat>
+    </target>
     <target name="-disable-one-cluster" depends="init-tasks">
         <createmodulexml xmldir="${xmldir}">
             <disabled dir=".">
