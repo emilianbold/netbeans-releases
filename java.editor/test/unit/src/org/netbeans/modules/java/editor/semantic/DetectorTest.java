@@ -376,6 +376,10 @@ public class DetectorTest extends TestBase {
         performTest("DeprecatedClassDeprecatesConstructor");
     }
 
+    public void testAttributeDefaultValue() throws Exception {
+        performTest("AttributeDefaultValue");
+    }
+
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {
