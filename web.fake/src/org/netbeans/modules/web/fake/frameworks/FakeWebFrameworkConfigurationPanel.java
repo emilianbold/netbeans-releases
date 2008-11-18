@@ -45,9 +45,13 @@
 
 package org.netbeans.modules.web.fake.frameworks;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -58,8 +62,19 @@ import org.openide.util.NbBundle;
 public class FakeWebFrameworkConfigurationPanel extends JPanel {
     private static final long serialVersionUID = 2793723169621508L;
 
-    public FakeWebFrameworkConfigurationPanel() {
+    private final String name;
+    private final String codeNameBase;
+
+    public FakeWebFrameworkConfigurationPanel(final String name, final String codeNameBase) {
+        assert name != null;
+        assert codeNameBase != null;
+
+        this.name = name;
+        this.codeNameBase = codeNameBase;
+
         initComponents();
+
+        infoLabel.setText(NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "LBL_Info", name));
     }
 
     /** This method is called from within the constructor to
@@ -73,27 +88,44 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
 
 
         infoLabel = new JLabel();
-        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "FakeWebFrameworkConfigurationPanel.infoLabel.text"));
+        downloadButton = new JButton();
+        Mnemonics.setLocalizedText(infoLabel, "dummy");
+        Mnemonics.setLocalizedText(downloadButton, NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "FakeWebFrameworkConfigurationPanel.downloadButton.text"));
+        downloadButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                downloadButtonActionPerformed(evt);
+            }
+        });
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(infoLabel)
-                .addContainerGap(116, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(infoLabel)
+                    .add(downloadButton))
+                .addContainerGap(181, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(infoLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(downloadButton)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void downloadButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_downloadButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JButton downloadButton;
     private JLabel infoLabel;
     // End of variables declaration//GEN-END:variables
 

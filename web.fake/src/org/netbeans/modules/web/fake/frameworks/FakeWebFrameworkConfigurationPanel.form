@@ -16,10 +16,13 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="infoLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="116" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="infoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="downloadButton" alignment="0" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace pref="181" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -28,6 +31,8 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="infoLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="downloadButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -36,10 +41,18 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="infoLabel">
       <Properties>
+        <Property name="text" type="java.lang.String" value="dummy" noResource="true"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="downloadButton">
+      <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/fake/frameworks/Bundle.properties" key="FakeWebFrameworkConfigurationPanel.infoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/fake/frameworks/Bundle.properties" key="FakeWebFrameworkConfigurationPanel.downloadButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="downloadButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

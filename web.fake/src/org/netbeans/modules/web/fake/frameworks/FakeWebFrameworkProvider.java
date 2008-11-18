@@ -73,7 +73,7 @@ public final class FakeWebFrameworkProvider {
 
             @Override
             public WebModuleExtender createWebModuleExtender(WebModule wm, ExtenderController controller) {
-                return new FakeWebModuleExtender();
+                return new FakeWebModuleExtender(name, codeNameBase);
             }
 
             @Override

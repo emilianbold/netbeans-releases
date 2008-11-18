@@ -54,7 +54,17 @@ import org.openide.util.HelpCtx;
  * @author Tomas Mysik
  */
 public class FakeWebModuleExtender extends WebModuleExtender {
+    private final String name;
+    private final String codeNameBase;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    public FakeWebModuleExtender(final String name, final String codeNameBase) {
+        assert name != null;
+        assert codeNameBase != null;
+
+        this.name = name;
+        this.codeNameBase = codeNameBase;
+    }
 
     @Override
     public void addChangeListener(ChangeListener listener) {
@@ -68,7 +78,7 @@ public class FakeWebModuleExtender extends WebModuleExtender {
 
     @Override
     public JComponent getComponent() {
-        return new FakeWebFrameworkConfigurationPanel();
+        return new FakeWebFrameworkConfigurationPanel(name, codeNameBase);
     }
 
     @Override
