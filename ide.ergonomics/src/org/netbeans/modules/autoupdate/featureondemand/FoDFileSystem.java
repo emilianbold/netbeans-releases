@@ -50,11 +50,13 @@ import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jirka Rechtacek
  */
+@ServiceProvider(service=FileSystem.class)
 public class FoDFileSystem extends MultiFileSystem 
 implements Runnable {
     private static FoDFileSystem INSTANCE;
