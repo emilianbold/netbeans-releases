@@ -81,8 +81,9 @@ public final class CndLexerUtilities {
     public static Language<CppTokenId> getLanguage(final Document doc) {
         // try from property
         Language lang = (Language) doc.getProperty(Language.class);
-        if (lang == null || (lang != CppTokenId.languageC() &&
-                             lang != CppTokenId.languageCpp())) {
+        if (lang == null 
+           || (lang != CppTokenId.languageC() && lang != CppTokenId.languageCpp()
+           && lang != CppTokenId.languagePreproc())) {
             lang = getLanguage((String) doc.getProperty("mimeType")); // NOI18N
         }
         @SuppressWarnings("unchecked")
