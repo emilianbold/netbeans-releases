@@ -83,7 +83,7 @@ public final class FortranCodeStyle {
     }
 
     public boolean indentCasesFromSwitch() {
-        return false;
+        return true;
     }
 
     public CodeStyle.PreprocessorIndent indentPreprocessorDirectives() {
@@ -120,7 +120,7 @@ public final class FortranCodeStyle {
     }
 
     public boolean spaceAroundUnaryOps() {
-        return true;
+        return false;
     }
 
     public boolean spaceBeforeComma() {
@@ -160,7 +160,7 @@ public final class FortranCodeStyle {
     }
 
     public boolean spaceWithinForParens() {
-        return true;
+        return false;
     }
 
     public boolean spaceWithinIfParens() {
@@ -180,10 +180,10 @@ public final class FortranCodeStyle {
     }
 
     public boolean spaceWithinSwitchParens() {
-        return true;
+        return false;
     }
 
     public boolean spaceWithinWhileParens() {
-        return true;
+        return false;
     }
 }
