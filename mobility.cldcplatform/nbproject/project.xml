@@ -200,6 +200,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.vmd.io.javame</friend>
                 <friend>org.netbeans.modules.vmd.midp</friend>
                 <friend>org.netbeans.modules.impng</friend>
+                <friend>org.netbeans.modules.javame.deviceselector</friend>
+                <friend>org.netbeans.modules.javame.platform.jme_sdk</friend>
                 <package>org.netbeans.modules.mobility.cldcplatform</package>
                 <package>org.netbeans.modules.mobility.cldcplatform.wizard</package>
             </friend-packages>

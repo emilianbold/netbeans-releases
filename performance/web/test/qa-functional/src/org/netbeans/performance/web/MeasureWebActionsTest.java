@@ -53,23 +53,24 @@ import org.netbeans.performance.web.actions.*;
  */
 public class MeasureWebActionsTest {
    
-    
     public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Actions suite");
         System.setProperty("suitename", MeasureWebActionsTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness Web Actions suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ExpandNodesWebProjectsView.class)
-        .addTest(JavaCompletionInJspEditor.class)
-        .addTest(OpenServletFile.class)
-        .addTest(OpenServletFileWithOpenedEditor.class)
-        .addTest(OpenWebFiles.class)
-        .addTest(OpenWebFilesWithOpenedEditor.class)
-        .addTest(PageUpPageDownInJspEditor.class)
-        .addTest(PasteInJspEditor.class)
-        .addTest(ToggleBreakpoint.class)
-        .addTest(TypingInJspEditor.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ExpandNodesWebProjectsViewTest.class)
+        // needs to be fixed .addTest(FileSwitchingTest.class)
+        .addTest(JSPCompletionInJspEditorTest.class)
+        .addTest(OpenServletFileTest.class)
+        .addTest(OpenServletFileWithOpenedEditorTest.class)
+        .addTest(OpenWebFilesTest.class)
+        .addTest(OpenWebFilesWithOpenedEditorTest.class)
+        .addTest(PageUpPageDownInJspEditorTest.class)
+        .addTest(PasteInJspEditorTest.class)
+        .addTest(ToggleBreakpointTest.class)
+        .addTest(TypingInJspEditorTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
        

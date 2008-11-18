@@ -49,7 +49,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.io.File;
@@ -60,7 +59,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -83,17 +81,17 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
     public CsmWhereUsedQueryPluginTestCaseBase(String testName) {
         super(testName);
         System.setProperty("cnd.test.skip.coloring", "true");
-    }  
+    }
 
-    protected void performWhereUsed(String source, int line, int column, Map params) throws Exception {
-        performWhereUsed(source, line, column, getName()+".ref", params);
+    protected void performWhereUsed(String source, int line, int column, Map<Object, Boolean> params) throws Exception {
+        performWhereUsed(source, line, column, getName() + ".ref", params);
     }
-    
+
     protected void performWhereUsed(String source, int line, int column) throws Exception {
-        performWhereUsed(source, line, column, getName()+".ref", Collections.emptyMap());
+        performWhereUsed(source, line, column, getName() + ".ref", Collections.<Object, Boolean>emptyMap());
     }
-    
-    protected void performWhereUsed(String source, int line, int column, String goldenFileName, Map params) throws Exception {
+
+    protected void performWhereUsed(String source, int line, int column, String goldenFileName, Map<Object, Boolean> params) throws Exception {
         CsmReference ref = super.getReference(source, line, column);
         assertNotNull(ref);
         CsmObject targetObject = ref.getReferencedObject();
@@ -103,23 +101,23 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
         Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(targetObject, false);
         CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
         query.getContext().add(ar);
-        
+
         // set parameters
-        for (Map.Entry entry : (Set<Map.Entry>)params.entrySet()) {
+        for (Map.Entry entry : params.entrySet()) {
             query.putValue(entry.getKey(), entry.getValue());
         }
-        CsmWhereUsedQueryPlugin whereUsedPlugin = new CsmWhereUsedQueryPlugin(query);        
+        CsmWhereUsedQueryPlugin whereUsedPlugin = new CsmWhereUsedQueryPlugin(query);
         Collection<RefactoringElementImplementation> elements = whereUsedPlugin.doPrepareElements(targetObject);
         dumpAndCheckResults(elements, goldenFileName);
     }
-    
+
     private void dumpAndCheckResults(Collection<RefactoringElementImplementation> elements, String goldenFileName) throws Exception {
         File workDir = getWorkDir();
-        
+
         File output = new File(workDir, goldenFileName);
         PrintStream streamOut = new PrintStream(output);
-        
-	assertNotNull("Result should not be null", elements);
+
+        assertNotNull("Result should not be null", elements);
         List<RefactoringElementImplementation> sortedElems = new ArrayList<RefactoringElementImplementation>(elements);
         Collections.sort(sortedElems, COMPARATOR);
         FileObject lastFO = null;
@@ -134,7 +132,7 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
             streamOut.printf("[%d-%d] %s\n", start, end, elem.getDisplayText());
         }
         streamOut.close();
-        
+
         File goldenDataFile = getGoldenFile(goldenFileName);
         if (!goldenDataFile.exists()) {
             fail("No golden file " + goldenDataFile.getAbsolutePath() + "\n to check with output file " + output.getAbsolutePath());
@@ -144,24 +142,22 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
             File goldenCopyFile = new File(workDir, goldenFileName + ".golden");
             CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenCopyFile); // NOI18N
             fail("OUTPUT Difference between diff " + output + " " + goldenCopyFile); // NOI18N
-        }     
+        }
     }
-    
-    private static final Comparator<RefactoringElementImplementation> COMPARATOR = new 
-            Comparator<RefactoringElementImplementation>() {
-                public int compare(RefactoringElementImplementation o1, RefactoringElementImplementation o2) {
-                    Parameters.notNull("o1", o1);
-                    Parameters.notNull("o2", o2);
-                    String path1 = o1.getParentFile().getPath();
-                    String path2 = o2.getParentFile().getPath();
-                    int res = path1.compareToIgnoreCase(path2);
-                    if (res == 0) {
-                        int offset1 = o1.getPosition().getBegin().getOffset();
-                        int offset2 = o2.getPosition().getBegin().getOffset();
-                        res = offset1 - offset2;
-                    }
-                    return res;
-                }
+    private static final Comparator<RefactoringElementImplementation> COMPARATOR = new Comparator<RefactoringElementImplementation>() {
 
-            };
+        public int compare(RefactoringElementImplementation o1, RefactoringElementImplementation o2) {
+            Parameters.notNull("o1", o1);
+            Parameters.notNull("o2", o2);
+            String path1 = o1.getParentFile().getPath();
+            String path2 = o2.getParentFile().getPath();
+            int res = path1.compareToIgnoreCase(path2);
+            if (res == 0) {
+                int offset1 = o1.getPosition().getBegin().getOffset();
+                int offset2 = o2.getPosition().getBegin().getOffset();
+                res = offset1 - offset2;
+            }
+            return res;
+        }
+    };
 }

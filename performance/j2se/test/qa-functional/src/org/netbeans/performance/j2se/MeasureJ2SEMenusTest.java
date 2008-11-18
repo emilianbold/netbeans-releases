@@ -38,36 +38,36 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.j2se;
 
 import org.netbeans.performance.j2se.menus.*;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
-import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 public class MeasureJ2SEMenusTest {
 
-
-    public static Test suite() {
+    public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
-        NbTestSuite s = new NbTestSuite("UI Responsiveness J2SE Menus suite");
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2SE Menus suite");
         System.setProperty("suitename", MeasureJ2SEMenusTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness J2SE Menus suite");
 
-        s.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MainMenu.class)
-        //--.addTest(MainSubMenus.class)
-        .addTest(EditorDownButtonPopupMenu.class)
-        .addTest(FilesViewPopupMenu.class)
-        .addTest(FormInspectorNodePopupMenu.class)
-        .addTest(ProjectsViewPopupMenu.class)
-        //--.addTest(ProjectsViewSubMenus.class)
-        .addTest(RuntimeViewPopupMenu.class)
-        .addTest(SourceEditorPopupMenu.class)
-        .addTest(ToolsMenu.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MainMenuTest.class)
+        .addTest(MainSubMenusTest.class)
+        .addTest(EditorDownButtonPopupMenuTest.class)
+        .addTest(FilesViewPopupMenuTest.class)
+        .addTest(FormInspectorNodePopupMenuTest.class)
+        .addTest(ProjectsViewPopupMenuTest.class)
+        .addTest(ProjectsViewSubMenusTest.class)
+        .addTest(RuntimeViewPopupMenuTest.class)
+        .addTest(SourceEditorPopupMenuTest.class)
+        .addTest(ToolsMenuTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
-        return s;
+        return suite;
     }
 }

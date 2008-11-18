@@ -40,8 +40,11 @@
 package org.netbeans.api.db.explorer.node;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.TreeSet;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
@@ -55,58 +58,46 @@ import org.openide.util.Lookup;
  * 
  * @author Rob Englander
  */
-public abstract class NodeProvider<N extends Node> implements Lookup.Provider {
-    /** change event support */
-    private ChangeSupport changeSupport;
-    
-    /** the nodes supplied by this provider */
-    private List<N> nodes = new CopyOnWriteArrayList<N>();
-    
-    /** the lookup */
-    private Lookup lookup;
-    
+public abstract class NodeProvider implements Lookup.Provider {
+    // @GuardedBy("nodeSet")
+    private final TreeSet<Node> nodeSet;
+    private final ChangeSupport changeSupport;
+    private final Lookup lookup;
+
     /**
      * Constructor
+     * 
+     * @param lookup the associated lookup
      */
     public NodeProvider(Lookup lookup) {
         this.lookup = lookup;
         changeSupport = new ChangeSupport(this);
+        nodeSet = new TreeSet<Node>();
     }
     
+    /**
+     * Constructor
+     * 
+     * @param lookup the associated lookup
+     * @param comparator the comparator to use for sorting the nodes
+     */
+    public NodeProvider(Lookup lookup, Comparator<Node> comparator) {
+        this.lookup = lookup;
+        changeSupport = new ChangeSupport(this);
+        nodeSet = new TreeSet<Node>(comparator);
+    }
+
     public Lookup getLookup() {
         return lookup;
     }
-    
+        
     /**
-     * Sort a list of nodes.  Subclasses that want to maintain their nodes in
-     * a specific order should override this method.  The default implementation
-     * doesn't alter the order.  This method should not be called directly.  It
-     * is called internally to update the sort order when the collection of nodes is modified
-     * in some way.  Calling this method will not change the order of the provided
-     * nodes, only the order of the list of nodes passed as a parameter.
-     * 
-     * @param nodes the list of nodes to sort
-     */
-    protected void sortNodes(List<N> nodes) {
-    }
-
-    /**
-     * Convenience method for performing a sort and then updating the list of
-     * nodes.
-     */
-    private void sort(List<N> nodeList) {
-        List<N> list = new ArrayList<N>(nodeList);
-        sortNodes(list);
-        nodes = new CopyOnWriteArrayList<N>(list);
-    }
-    
-    /**
-     * Get the list of nodes in proper sort order.
+     * Get the list of nodes.
      * 
      * @return the list of nodes.
      */
-    public List<N> getNodes() {
-        return nodes;
+    public Collection<Node> getNodes() {
+        return Collections.unmodifiableCollection(nodeSet);
     }
     
     /**
@@ -117,16 +108,19 @@ public abstract class NodeProvider<N extends Node> implements Lookup.Provider {
      * 
      * @return the list of nodes that contain a lookup containing the data object
      */
-    public List<N> getNodes(Object dataObject) {
-        List<N> results = new ArrayList<N>();
-        for (N child : nodes) {
-            Object obj = child.getLookup().lookup(dataObject.getClass());
-            if (obj == dataObject) {
-                results.add(child);
+    public Collection<Node> getNodes(Object dataObject) {
+        List<Node> results = new ArrayList<Node>();
+        
+        synchronized (nodeSet) {
+            for (Node child : nodeSet) {
+                Object obj = child.getLookup().lookup(dataObject.getClass());
+                if (obj == dataObject) {
+                    results.add(child);
+                }
             }
         }
         
-        return results;
+        return Collections.unmodifiableCollection(results);
     }
 
     /**
@@ -134,8 +128,12 @@ public abstract class NodeProvider<N extends Node> implements Lookup.Provider {
      * 
      * @param newList the new list of nodes
      */
-    public void setNodes(List<N> newList) {
-        sort(newList);
+    public void setNodes(Collection<Node> newList) {
+        synchronized (nodeSet) {
+            nodeSet.clear();
+            nodeSet.addAll(newList);
+        }
+
         changeSupport.fireChange();
     }
     
@@ -144,62 +142,26 @@ public abstract class NodeProvider<N extends Node> implements Lookup.Provider {
      * 
      * @param node the node to add
      */
-    public void addNode(N node) {
-        nodes.add(node);
-        sort(nodes);
-        changeSupport.fireChange();
-    }
-    
-    /**
-     * Remove a node.
-     * 
-     * @param node the node to remove
-     */
-    public void removeNode(N node) {
-        nodes.remove(node);
-        changeSupport.fireChange();
-    }
-    
-    /**
-     * Remove a list of nodes.
-     * 
-     * @param remove the list of nodes to remove
-     */
-    public void removeNodes(List<N> remove) {
-        nodes.removeAll(remove);
-        changeSupport.fireChange();
-    }
+    public void addNode(Node node) {
 
+        synchronized (nodeSet) {
+            nodeSet.add(node);
+        }
+        
+        changeSupport.fireChange();
+    }
+    
     /**
      * Remove all nodes.
      */
     public void removeAllNodes() {
-        nodes.clear();
-        changeSupport.fireChange();
-    }
-    
-    /**
-     * Updates the specified node.  The node is assumed to already
-     * be in the list.
-     * 
-     * @param node the updated node
-     */
-    public void updateNode(N node) {
-        sort(nodes);
-        changeSupport.fireChange();
-    }
-    
-    /**
-     * Updates a list of nodes.  The nodes in the list are assumed to
-     * be in the collection already.
-     * 
-     * @param nodes the list of updated nodes
-     */
-    public void updateNodes(List<N> nodes) {
-        sort(nodes);
-        changeSupport.fireChange();
-    }
+        synchronized (nodeSet) {
+            nodeSet.clear();
+        }
 
+        changeSupport.fireChange();
+    }
+    
     /**
      * Add a change listener.
      * 

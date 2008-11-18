@@ -42,30 +42,15 @@
 package org.netbeans.performance.j2ee.setup;
 
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-
 import org.netbeans.jellytools.JellyTestCase;
-
 import java.io.IOException;
-import java.io.File;
-
 import org.openide.util.Exceptions;
 
 public class J2EESetup extends JellyTestCase {
     
-    private String workdir;
-    
-    public static final String suiteName="UI Responsiveness J2EE Setup";    
-    
 
     public J2EESetup(java.lang.String testName) {
         super(testName);
-        workdir = System.getProperty("nbjunit.workdir");
-        try {
-            workdir = new File(workdir + "/../../../../../../../nbextra/data/j2eeApps").getCanonicalPath();
-        } catch (IOException ex) {
-            System.err.println("Exception: "+ex);
-        }
-
     }
     
     public void testCloseWelcome() {
@@ -88,22 +73,18 @@ public class J2EESetup extends JellyTestCase {
         CommonUtilities.installPlugin("JAX-RPC Web Services");
     }
                
-    public void testOpenTestApplication() {
-
-        String projectsDir = workdir + File.separator+ "TestApplication";
+    public void testOpenTestApplications() {
         try {
-            this.openProjects(projectsDir);
+            this.openDataProjects("TestApplication");
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-
     }
 
     public void testOpenTestApplication_ejb() {
 
-        String projectsDir = workdir + File.separator+"TestApplication/TestApplication-ejb";
         try {
-            this.openProjects(projectsDir);
+            this.openDataProjects("TestApplication/TestApplication-ejb");
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -112,9 +93,8 @@ public class J2EESetup extends JellyTestCase {
 
     public void testOpenTestApplication_war() {
       
-        String projectsDir = workdir +File.separator+ "TestApplication/TestApplication-war";
         try {
-            this.openProjects(projectsDir);
+            this.openDataProjects("TestApplication/TestApplication-war");
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -123,9 +103,8 @@ public class J2EESetup extends JellyTestCase {
     
     public void testOpenDeployTest() {
 
-        String projectsDir = workdir + File.separator+"DeployTest";
         try {
-            this.openProjects(projectsDir);
+            this.openDataProjects("DeployTest");
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -134,9 +113,8 @@ public class J2EESetup extends JellyTestCase {
 
     public void testOpenDeployTest_ejb() {
 
-        String projectsDir = workdir + File.separator+"DeployTest/DeployTest-ejb";
         try {
-            this.openProjects(projectsDir);
+            this.openDataProjects("DeployTest/DeployTest-ejb");
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -145,9 +123,8 @@ public class J2EESetup extends JellyTestCase {
 
     public void testOpenDeployTest_war() {
 
-        String projectsDir = workdir + File.separator+"DeployTest/DeployTest-war";
         try {
-            this.openProjects(projectsDir);
+            this.openDataProjects("DeployTest/DeployTest-war");
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

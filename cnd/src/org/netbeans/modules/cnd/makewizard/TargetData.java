@@ -619,7 +619,7 @@ final public class TargetData {
 
 	//println("Dumping target[" + key + "]:");			// NOI18N
 	println("    name            = \"" + name + "\"");		// NOI18N
-	println("    type            = " + (String)			// NOI18N
+	println("    type            = " + // NOI18N
 	    (targetType == SIMPLE_EXECUTABLE     ? "SIMPLE_EXECUTABLE" :// NOI18N
 	     targetType == SIMPLE_ARCHIVE        ? "SIMPLE_ARCHIVE" :	// NOI18N
 	     targetType == SIMPLE_SHAREDLIB      ? "SIMPLE_SHAREDLIB" :	// NOI18N

@@ -40,19 +40,20 @@
  */
 package org.netbeans.modules.uml.drawingarea.actions;
 
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
-import org.netbeans.api.visual.graph.layout.GraphLayoutListener;
-import org.netbeans.api.visual.graph.layout.UniversalGraph;
+import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.layout.HierarchicalLayout;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.support.ContainerAgnosticLayout;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogResultKind;
 import org.netbeans.modules.uml.ui.support.QuestionResponse;
@@ -69,7 +70,7 @@ import org.openide.util.NbPreferences;
  *
  * @author Kris Richards
  */
-public class HierarchicalLayoutAction extends AbstractAction implements GraphLayoutListener {
+public class HierarchicalLayoutAction extends AbstractAction {
 
     private DesignerScene scene;
     private final int MAX_NODES_TO_ANIMATE = 50;
@@ -96,11 +97,15 @@ public class HierarchicalLayoutAction extends AbstractAction implements GraphLay
             return;
         }
 
-        GraphLayout gLayout = new HierarchicalLayout(scene, false, false, 25, 25);
+        GraphLayout gLayout = new HierarchicalLayout(scene,new UMLContainerAdapter(), false, false, 25, 25);
 
-        new ContainerAgnosticLayout(scene, gLayout);
         gLayout.layoutGraph(scene);
-
+        movePalette() ;
+        //set diagram dirty
+        if ((scene != null) && (scene.getTopComponent() != null) && (scene.getTopComponent() instanceof UMLDiagramTopComponent))
+        {
+            ((UMLDiagramTopComponent)scene.getTopComponent()).setDiagramDirty(true);
+        }
     }
 
     private void movePalette () {
@@ -110,23 +115,6 @@ public class HierarchicalLayoutAction extends AbstractAction implements GraphLay
         }
     }
     
-    public void graphLayoutStarted(UniversalGraph graph) {
-    }
-
-    public void graphLayoutFinished(UniversalGraph graph) {
-
-        if (animated) {
-            return;
-        }
-        movePalette();
-    }
-
-    public void nodeLocationChanged(UniversalGraph graph, Object node, Point previousPreferredLocation, Point newPreferredLocation) {
-        //do nothing
-    }
-    
-    
-
     @Override
     public boolean isEnabled()
     {
@@ -165,6 +153,27 @@ public class HierarchicalLayoutAction extends AbstractAction implements GraphLay
             resultKind = SimpleQuestionDialogResultKind.SQDRK_RESULT_YES;
         }
         return resultKind == SimpleQuestionDialogResultKind.SQDRK_RESULT_YES;
+    }
+
+    private class UMLContainerAdapter implements HierarchicalLayout.ContainerAdapter
+    {
+        public boolean isInContainer(Widget w) {
+           return w!=null && !(w.getParentWidget()!=null && w.getParentWidget().getParentWidget()!=null && w.getParentWidget().getParentWidget() instanceof Scene);//if not on scene, it's in container
+        }
+
+        public Widget getConteinerNode(Widget w) {
+            Widget ret=null;
+            for(Widget t=w;t!=null;t=t.getParentWidget())
+            {
+                if(t instanceof UMLNodeWidget && t!=w)//first UMLNodeWidget is a conteiner for this element
+                {
+                    ret=t;
+                    break;
+                }
+            }
+            return ret;
+        }
+
     }
 
 }
