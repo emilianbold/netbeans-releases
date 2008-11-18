@@ -35,6 +35,13 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.debugger.jpda</code-name-base>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.22.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.i18n</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
