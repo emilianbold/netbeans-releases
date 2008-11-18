@@ -39,8 +39,7 @@ import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmSyntaxSupport;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -56,7 +55,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
     private final static boolean TRACE = Boolean.getBoolean("cnd.completion.includes.trace");
 
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        CsmSyntaxSupport sup = (CsmSyntaxSupport) Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
+        CompletionSupport sup = CompletionSupport.get(component);
         if (sup == null) {
             return 0;
         }
@@ -68,7 +67,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
             if (TRACE) {
                 System.out.println("offset " + dot); // NOI18N
             }
-            if (!sup.isIncludeCompletionDisabled(dot)) {
+            if (sup.isIncludeCompletionEnabled(dot)) {
                 if (TRACE) {
                     System.out.println("include completion will be shown on " + dot); // NOI18N
                 }
@@ -89,8 +88,8 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
             boolean all = (queryType == COMPLETION_ALL_QUERY_TYPE);
             int dot = component.getCaret().getDot();
-            CsmSyntaxSupport sup = (CsmSyntaxSupport) Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
-            if (!sup.isIncludeCompletionDisabled(dot)) {
+            CompletionSupport sup = CompletionSupport.get(component);
+            if (sup.isIncludeCompletionEnabled(dot)) {
                 if (TRACE) {
                     System.out.println("include completion task is created with offset " + dot); // NOI18N
                 }
