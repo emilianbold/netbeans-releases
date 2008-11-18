@@ -148,6 +148,7 @@ public class FlowAccessController implements AccessController {
         scene.resolveOrderInNodeDescriptors ();
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.AccessControllerFactory.class)
     public static class Factory implements AccessControllerFactory {
 
         public AccessController createAccessController (DesignDocument document) {

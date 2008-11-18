@@ -54,7 +54,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 
 /**
  * Tests for UnitTestForSourceQueryImpl
@@ -78,11 +78,11 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(new Object[] {
+        MockLookup.setInstances(
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.java.project.UnitTestForSourceQueryImpl(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
-        });
+        );
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
@@ -101,6 +101,7 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
         super.tearDown();
     }
     
+    @SuppressWarnings("deprecation")
     public void testFindUnitTest() throws Exception {
         URL u = UnitTestForSourceQuery.findUnitTest(projdir);
         assertNull(u);

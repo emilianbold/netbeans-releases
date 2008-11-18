@@ -305,8 +305,6 @@ public final class ParseProjectXml extends Task {
             if (getProjectFile() == null) {
                 throw new BuildException("You must set 'project' or 'projectfile'", getLocation());
             }
-            // XXX validate against nbm-project{,2}.xsd; does this require JDK 1.5?
-            // Cf.: ant/project/eg/ValidateAllBySchema.java
             // XXX share parse w/ ModuleListParser
             Document pDoc = XMLUtil.parse(new InputSource(getProjectFile ().toURI().toString()),
                                           false, true, /*XXX*/null, null);
@@ -839,10 +837,8 @@ public final class ParseProjectXml extends Task {
                     throw new BuildException("The module " + depJar + " has no public packages and so cannot be compiled against", getLocation());
                 } else if (pubpkgs != null && !runtime && publicPackageJarDir != null) {
                     File splitJar = createPublicPackageJar(additions, pubpkgs, publicPackageJarDir, cnb);
-                    if (splitJar != null) {
-                        additions.clear();
-                        additions.add(splitJar);
-                    }
+                    additions.clear();
+                    additions.add(splitJar);
                 }
             }
             
@@ -1254,16 +1250,6 @@ public final class ParseProjectXml extends Task {
                     ZipEntry inEntry;
                     while ((inEntry = zis.getNextEntry()) != null) {
                         String path = inEntry.getName();
-                        if (path.matches("META-INF/services/(com\\.sun\\.mirror\\.apt\\.AnnotationProcessorFactory|javax\\.annotation\\.processing\\.Processor)")) {
-                            // An annotation processor is called by the compiler,
-                            // so needs to be present in the classpath of the module depending on it.
-                            // Not just the registration but the implementation need to be available;
-                            // and any classes that the impl depends on as well.
-                            // Since this all would be hard to compute, best to just leave the classpath untouched.
-                            os.close();
-                            ppjar.delete();
-                            return null;
-                        }
                         if (!addedPaths.add(path)) {
                             continue;
                         }
@@ -1352,6 +1338,10 @@ public final class ParseProjectXml extends Task {
         for (TestDeps testDeps : testDepsList) {
             if (testDeps.fullySpecified) {
                 continue;
+            }
+            if (new File(moduleProject, "test/" + testDeps.testtype + "/src").isDirectory()) {
+                log("Warning: " + testCnb + " lacks a " + testDeps.testtype +
+                        " test dependency on org.netbeans.libs.junit4; using default dependencies for compatibility", Project.MSG_WARN);
             }
             for (String library : new String[]{"org.netbeans.libs.junit4", "org.netbeans.modules.nbjunit", "org.netbeans.insane"}) {
                 testDeps.addOptionalDependency(new TestDep(library, modules, false, false, true, testDeps));

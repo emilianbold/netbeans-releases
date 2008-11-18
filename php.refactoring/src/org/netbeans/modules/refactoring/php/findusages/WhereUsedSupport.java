@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.refactoring.php.findusages;
@@ -63,9 +63,13 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.AttributedElement;
@@ -201,14 +205,14 @@ public final class WhereUsedSupport {
                 el, offset, info.getFileObject(), attribs) : null;
     }
 
-    public void collectUsages(final FileObject fileObject) {    
+    public void collectUsages(final FileObject fileObject) {
         collectUsages(fileObject, false);
     }
 
-    public void collectDirectSubclasses(final FileObject fileObject) {    
+    public void collectDirectSubclasses(final FileObject fileObject) {
         collectUsages(fileObject, true);
     }
-    
+
     private  void collectUsages(final FileObject fileObject, final boolean directSubclasses) {
         Source source = Source.forFileObject(fileObject);
         try {
@@ -218,8 +222,8 @@ public final class WhereUsedSupport {
                     parameter.toPhase(Phase.RESOLVED);
                     AttributedNodes a = AttributedNodes.getInstance(parameter);
                     Map<ASTNode, AttributedElement> findOccurences = null;
-                    findOccurences = (directSubclasses) ?  a.findDirectSubclasses(aElement) : 
-                        a.findUsages(aElement);                    
+                    findOccurences = (directSubclasses) ?  a.findDirectSubclasses(aElement) :
+                        a.findUsages(aElement);
                     if (findOccurences.size() > 0) {
                         results.addEntry(fileObject, findOccurences);
                     }
@@ -248,7 +252,7 @@ public final class WhereUsedSupport {
     }
 
     public Set<FileObject> getRelevantFiles() {
-        Set<FileObject> relevantFiles = new LinkedHashSet<FileObject>();        
+        Set<FileObject> relevantFiles = new LinkedHashSet<FileObject>();
         SemiAttrsProviderTask attribsTask = new SemiAttrsProviderTask();
         final IndexedElement indexedElement = getIndexElement(aElement);
 
@@ -282,7 +286,7 @@ public final class WhereUsedSupport {
     private Set<? extends FileObject> getAllFiles() {
         Set<FileObject> retval = new LinkedHashSet<FileObject>();
         retval.add(fo);
-        retval.addAll(idx.filesWithIdentifiers(this.getName())); 
+        retval.addAll(idx.filesWithIdentifiers(this.getName()));
         return retval;
     }
 
@@ -314,7 +318,7 @@ public final class WhereUsedSupport {
         }
         return modifier;
     }
-    
+
     public static boolean isAlreadyInResults(ASTNode node, Set<ASTNode> results) {
         OffsetRange newOne = new OffsetRange(node.getStartOffset(), node.getEndOffset());
         for (Iterator<ASTNode> it = results.iterator(); it.hasNext();) {
@@ -326,7 +330,7 @@ public final class WhereUsedSupport {
         }
         return false;
     }
-    
+
     public static boolean matchDirectSubclass(AttributedElement elemToBeFound, ASTNode node, AttributedElement elem) {
         boolean retval = false;
         if (elem != null && elem instanceof ClassElement && node instanceof ClassDeclaration) {
@@ -347,10 +351,11 @@ public final class WhereUsedSupport {
         }
         return retval;
     }
-    
+
     public static WhereUsedSupport.Kind getWhereUsedKind(AttributedElement aElement) {
         Kind retval = null;
         switch (aElement.getKind()) {
+            case IFACE:
             case CLASS:
                 retval = Kind.CLASS;
                 break;
@@ -372,14 +377,14 @@ public final class WhereUsedSupport {
         private Map<FileObject, Map<ASTNode, AttributedElement>> data =
                 new LinkedHashMap<FileObject, Map<ASTNode, AttributedElement>>();
 
-        private Results() {            
+        private Results() {
         }
 
         public Collection<FileObject> getFiles() {
             return data.keySet();
         }
 
-        public Collection<ResultElement> getResultElements(FileObject fo) {            
+        public Collection<ResultElement> getResultElements(FileObject fo) {
             ArrayList<ResultElement> retval = new ArrayList<ResultElement>();
             Map<ASTNode, AttributedElement> values = data.get(fo);
             for (Entry<ASTNode, AttributedElement> entry : values.entrySet()) {

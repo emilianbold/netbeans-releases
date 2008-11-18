@@ -277,6 +277,10 @@ public class GoToSupport {
     }
 
     public static int[] getIdentifierSpan(Document doc, int offset) {
+        if (SourceUtils.isScanInProgress()) {
+            return null;
+        }
+
         FileObject fo = getFileObject(doc);
 
         if (fo == null) {

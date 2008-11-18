@@ -46,6 +46,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public class ArchiveProjectType implements AntBasedProjectType {
     
     private static final String CONFIGURATION_NAME ="data";            //NOI18N

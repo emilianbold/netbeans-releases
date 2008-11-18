@@ -296,10 +296,14 @@ public final class SceneManager {
     public void restoreSelection() {
         if ( m_selectedId != null) {
             SVGObject selectedObj = m_perseusController.getObjectById(m_selectedId);
-            
+
             if (selectedObj != null && (m_selectedTag == null ||
-                m_selectedTag.equals( selectedObj.getSVGElement().getLocalName()))) {
+                    m_selectedTag.equals(selectedObj.getSVGElement().getLocalName()))) {
                 setSelection(m_selectedId, false);
+            } else {
+                // fix for #150939. related to #145987. Clear selection manually 
+                // if there is no more object with id remembered as selected before update
+                setSelection(null, false);
             }
             m_selectedId = null;
         }
@@ -628,7 +632,14 @@ public final class SceneManager {
     public void deleteObject(SVGObject svgObj) {
         SVGObject [] oldSelection = getSelected();
         svgObj.delete();
-        SVGObject [] newSelection = getSelected();
+        // fix for #150324. 
+        // clear selection manually by setting new value to null.
+        // removing transaction is started in separate thread and 
+        //  can be in process at this moment. 
+        // So have two options - wait for it to finish (to use getSelected()) 
+        //  or clear selection manually.
+        //SVGObject [] newSelection = getSelected();
+        SVGObject [] newSelection = null;
         if (!SVGObject.areSame(newSelection, oldSelection)) {
             selectionChanged(newSelection, oldSelection);
         }                    

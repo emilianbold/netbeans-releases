@@ -87,7 +87,7 @@ public final class InputReaders {
      * the returned input reader is closed stream is closed respectively.
      * <p>
      * Returned reader will never call reset on {@link InputProcessor} while
-     * reading.     
+     * reading.
      * <p>
      * Returned reader is <i>not thread safe</i> so it can't be used in
      * multiple instances of {@link InputReaderTask}.

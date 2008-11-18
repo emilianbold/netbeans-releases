@@ -110,7 +110,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 }
             }
         }
-        if (makeCommand == null) {
+        if (makeCommand == null || makeCommand.length()==0) {
             MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
             makeCommand = mes.getMakeCommand();
         }

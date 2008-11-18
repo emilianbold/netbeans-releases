@@ -70,6 +70,7 @@ import org.xml.sax.SAXException;
  *
  * @author girix
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.locator.CatalogModel.class)
 public class RuntimeCatalogModel implements CatalogModel{
     
     /** Creates a new instance of RuntimeCatalogModel */

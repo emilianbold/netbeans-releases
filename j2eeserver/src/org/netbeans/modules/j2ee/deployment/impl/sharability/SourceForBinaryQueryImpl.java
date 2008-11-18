@@ -66,6 +66,7 @@ import org.openide.util.WeakListeners;
  * Finds the locations of sources for various libraries.
  * @author Tomas Zezula
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class)
 public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation2 {
 
     private static final String[] CLASSPATH_VOLUMES = new String[] {

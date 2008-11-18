@@ -53,6 +53,7 @@ import java.util.Set;
 
 public class AddressingFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class EndpointReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -64,6 +65,7 @@ public class AddressingFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AddressFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -75,6 +77,7 @@ public class AddressingFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AddressingServiceNameFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -86,6 +89,7 @@ public class AddressingFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AddressingPortTypeFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -97,6 +101,7 @@ public class AddressingFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class ReferenceParametersFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -108,6 +113,7 @@ public class AddressingFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class ReferencePropertiesFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

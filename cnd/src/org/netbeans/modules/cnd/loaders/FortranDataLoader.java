@@ -56,6 +56,9 @@ import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
  *
  * @author Alexander Simon
  */
+/* XXX would need a public no-arg constructor
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class)
+*/
 public class FortranDataLoader extends CndAbstractDataLoaderExt {
     
     private static FortranDataLoader instance;

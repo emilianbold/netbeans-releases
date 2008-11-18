@@ -42,14 +42,16 @@
 package org.netbeans.modules.ruby.debugger.breakpoints;
 
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.modules.ruby.debugger.ContextProviderWrapper;
-import org.netbeans.modules.ruby.debugger.Util;
 import org.rubyforge.debugcommons.RubyDebuggerException;
 import org.rubyforge.debugcommons.RubyDebuggerProxy;
 import org.rubyforge.debugcommons.model.IRubyBreakpoint;
 
 public abstract class RubyBreakpoint extends Breakpoint implements IRubyBreakpoint {
+    
+    private static final Logger LOGGER = Logger.getLogger(RubyBreakpoint.class.getName());
     
     static final String PROP_UPDATED = "updated"; // NOI18N
 
@@ -84,7 +86,7 @@ public abstract class RubyBreakpoint extends Breakpoint implements IRubyBreakpoi
             try {
                 proxy.updateBreakpoint(this);
             } catch (RubyDebuggerException e) {
-                Util.LOGGER.log(Level.WARNING, "Exception during breakpoint update.", e);
+                LOGGER.log(Level.WARNING, "Exception during breakpoint update: " + e.getLocalizedMessage(), e);
             }
         }
     }

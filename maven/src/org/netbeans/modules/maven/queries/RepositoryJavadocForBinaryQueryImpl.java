@@ -60,6 +60,7 @@ import org.openide.filesystems.URLMapper;
  * looks for the same artifact but of type "javadoc.jar" or "javadoc"
  * @author  Milos Kleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class, position=999)
 public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
     
     public RepositoryJavadocForBinaryQueryImpl() {

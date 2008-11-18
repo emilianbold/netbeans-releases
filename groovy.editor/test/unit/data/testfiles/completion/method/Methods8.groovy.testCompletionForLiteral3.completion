@@ -10,7 +10,6 @@ METHOD     codePointBefore(int)                       int
 METHOD     codePointCount(int, int)                   int
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
-METHOD     compareTo(Object)                          int
 METHOD     compareTo(String)                          int
 METHOD     compareToIgnoreCase(String)                int
 METHOD     concat(String)                             String

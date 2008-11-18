@@ -42,11 +42,6 @@
 package org.netbeans.modules.uml.common;
 
 /**
- * @author Embarcadero Technologies Inc.
- *
- *
- */
-/**
  * Handles locale dependant error messages.
  */
 public interface ETStrings

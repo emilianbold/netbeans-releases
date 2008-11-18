@@ -5,7 +5,6 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.ui;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
@@ -27,7 +26,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.util.Utilities;
 
 /**
  * Top component which displays something.
@@ -196,7 +194,8 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
         public String getColumnName(int column) {
             return columnNames[column];
         }
-        
+
+        @SuppressWarnings("unchecked")
         private void refresh() {
             values.clear();
             Collection<RegisterValue> res = 
@@ -209,7 +208,7 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
         }
     }
     
-    private static final Comparator REGISTER_COMPARATOR = new Comparator<RegisterValue>() {
+    private static final Comparator<RegisterValue> REGISTER_COMPARATOR = new Comparator<RegisterValue>() {
         public int compare(RegisterValue o1, RegisterValue o2) {
             return o1.getName().compareTo(o2.getName());
         }

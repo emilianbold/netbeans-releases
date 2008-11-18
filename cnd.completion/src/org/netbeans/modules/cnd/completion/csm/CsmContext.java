@@ -61,7 +61,7 @@ public class CsmContext {
     private final int offset;
     
     // path of context as ordered list of context entries
-    private List/*<CsmContextEntry>*/ context;
+    private List<CsmContextEntry> context;
     
     // possible not null 
     // when context was found for exact inner object under offset
@@ -71,11 +71,11 @@ public class CsmContext {
     /** Creates a new instance of CsmContext */
     public CsmContext(int offset) {
         this.offset = offset;
-        context = new ArrayList();
+        context = new ArrayList<CsmContextEntry>();
     }
 
     public CsmContextEntry get(int index) {
-        return (CsmContextEntry)context.get(index);
+        return context.get(index);
     }
 
     public CsmContextEntry create(CsmScope scope) {

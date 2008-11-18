@@ -68,14 +68,13 @@ public class WSDL2JavaImpl implements WSDL2Java {
     public WSDL2JavaImpl( WSDL2Java.Configuration configuration ) {
         this.configuration = configuration;
         
-        wsdlParser = new WSDLParser();        
+        wsdlParser = new WSDLParser( configuration.getOriginalWSDLUrl() );        
     }
 
     public boolean generate() {
         uniqueTypeName = new HashMap<QName, Integer>();
         
         try {
-            
             definition = wsdlParser.parse( configuration.getWSDLFileName());
                     
             // Check for validity of the WSDL
@@ -270,7 +269,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             }
 
 
-                            off.write( operation.getName() + "(");
+                            off.write( operation.getJavaName() + "(");
                             
                             Input input = operation.getInput();
                             if (input != null){
@@ -968,7 +967,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                 break;
                             }
 
-                            off.write( operation.getName() + "(");
+                            off.write( operation.getJavaName() + "(");
                             
                             Input input = operation.getInput();
                             if (input != null) {
@@ -1097,9 +1096,9 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                             String typeName = e.getType().getJavaTypeName();
                                             if( typeName == null ) typeName = e.getType().getName() == null ? e.getName().getLocalPart() : e.getType().getName().getLocalPart();
                                             if( !isArray ) {
-                                                off.write( "return " + typeName.replace( '.', '_' ) + "_fromObject((Object[])((Object[]) resultObj)[0]);\n" );
+                                                off.write( "return " + typeName.replace( '.', '_' ) + "_fromObject((Object[])resultObj);\n" );
                                             } else {
-                                                off.write( "return " + typeName.replace( '.', '_' ) + "_ArrayfromObject((Object[])((Object[]) resultObj)[0]);\n" );
+                                                off.write( "return " + typeName.replace( '.', '_' ) + "_ArrayfromObject((Object[]) resultObj);\n" );
                                             }
                                             fromObjects.add( e );
                                         }

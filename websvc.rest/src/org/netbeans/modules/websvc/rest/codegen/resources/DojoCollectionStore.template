@@ -64,10 +64,19 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
         }
 }, _resultToQueryMetadata:function (json) {
         var myObj = eval('('+json+')');
-	return myObj.__CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__;
+        var __CONTAINER_PATH_NAME__ = myObj.__CONTAINER_PATH_NAME__;
+        if(__CONTAINER_PATH_NAME__ == null || __CONTAINER_PATH_NAME__ == undefined || __CONTAINER_PATH_NAME__['@uri'] == undefined) {
+            __CONTAINER_PATH_NAME__ = myObj;
+            useWrap__CONTAINER_NAME__ = false;
+        }
+        return __CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__;
 }, _resultToQueryData:function (json) {
         var myObj = eval('('+json+')');
         var __CONTAINER_PATH_NAME__ = myObj.__CONTAINER_PATH_NAME__;
+        if(__CONTAINER_PATH_NAME__ == null || __CONTAINER_PATH_NAME__ == undefined || __CONTAINER_PATH_NAME__['@uri'] == undefined) {
+            __CONTAINER_PATH_NAME__ = myObj;
+            useWrap__CONTAINER_NAME__ = false;
+        }
         var refs = __CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__;
 	var data = {};
         if(refs != null && refs.length > 0) {

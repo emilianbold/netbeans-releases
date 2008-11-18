@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -42,6 +42,7 @@
 package org.openide.explorer.view;
 
 import java.awt.Image;
+import java.lang.ref.WeakReference;
 import javax.swing.Icon;
 import javax.swing.tree.TreeNode;
 import org.netbeans.junit.NbTestCase;
@@ -61,6 +62,7 @@ public class VisualizerNodeTest extends NbTestCase {
         super(name);
     }
 
+    @Override
     protected boolean runInEQ() {
         return true;
     }
@@ -69,6 +71,7 @@ public class VisualizerNodeTest extends NbTestCase {
         final boolean[] arr = new boolean[1];
         
         AbstractNode a = new AbstractNode(Children.LEAF) {
+            @Override
             public Image getIcon(int type) {
                 arr[0] = true;
                 return null;
@@ -169,7 +172,39 @@ public class VisualizerNodeTest extends NbTestCase {
         assertEquals("No time to update, should be 5", 5, ta.getChildCount());
         assertTrue("Nothing removed, -x still present", isDummyNode(ta.getChildAt(4)));
     }
-    
+
+    public void testVisualizerChildrenGC() throws Exception {
+        LazyChildren ch = new LazyChildren();
+        AbstractNode a = new AbstractNode(ch);
+        VisualizerNode vn = (VisualizerNode) Visualizer.findVisualizer(a);
+        VisualizerChildren vch = vn.getChildren();
+        WeakReference<VisualizerChildren> ref = new WeakReference<VisualizerChildren>(vch);
+        vch = null;
+        boolean gced = true;
+        try {
+            assertGC("", ref);
+        } catch (Error e) {
+            gced = false;
+        }
+        if (gced) {
+            fail("VisualizerChildren should not be GCed.");
+        }
+        TreeNode child = vn.getChildAt(0);
+
+        gced = true;
+        try {
+            assertGC("", ref);
+        } catch (Error e) {
+            gced = false;
+        }
+        if (gced) {
+            fail("VisualizerChildren should not be GCed.");
+        }
+
+        child = null;
+        assertGC("VisualizerChildren should be GCed", ref);
+    }
+
     final boolean isDummyNode(TreeNode visNode) {
         Node node = ((VisualizerNode)(visNode)).node;
         return node.getClass().getName().endsWith("EntrySupport$Lazy$DummyNode");

@@ -728,7 +728,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             config(cmd);
             cli.exec(cmd);
         } catch (IOException ex) {
-            Subversion.LOG.log(Level.WARNING, null, ex);
+            Subversion.LOG.log(Level.FINE, null, ex);
             throw new SVNClientException(ex);
         }
         checkErrors(cmd);

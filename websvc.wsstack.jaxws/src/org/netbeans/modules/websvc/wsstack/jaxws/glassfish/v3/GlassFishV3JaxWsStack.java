@@ -76,6 +76,9 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
     }
     
     public WSStackVersion getVersion() {
+        if (isMetroInstalled()) {
+            return WSStackVersion.valueOf(2, 1, 4, 1);
+        }
         return WSStackVersion.valueOf(2, 1, 3, 0);
     }
 
@@ -90,7 +93,9 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
     }
     
     public boolean isFeatureSupported(Feature feature) {
-        if (feature == JaxWs.Feature.WSIT) return true;
+        if (feature == JaxWs.Feature.WSIT && isMetroInstalled()) {
+            return true;
+        }
         if (feature == JaxWs.Feature.JSR109 && isMetroInstalled()) {
             return true;
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ws.qaf.rest;
 
@@ -52,6 +52,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -122,6 +123,9 @@ public abstract class RestTestBase extends WebServicesTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        //XXX - avoid doubled start/restart of the server
+        //because of JDBC driver deployment (IZ #106586)
+        workaroundIZ106586();
         try {
             Class.forName(JDBC_DRIVER);
             connection = DriverManager.getConnection(JDBC_URL, DB_USERNAME, DB_PASSWORD);
@@ -364,4 +368,27 @@ public abstract class RestTestBase extends WebServicesTestBase {
         Integer i = Integer.getInteger("glassfish.server.port"); //NOI18N
         return i != null ? i.intValue() : 8080;
     }
+
+    private void workaroundIZ106586() {
+        String gfRoot = System.getProperty("glassfish.home"); //NOI18N
+        if (gfRoot == null) {
+            return;
+        }
+        File f = new File(gfRoot, "domains/domain1/lib/derbyclient.jar"); //NOI18N
+        if (f.exists() && f.isFile()) {
+            return;
+        }
+        f = FileUtil.normalizeFile(f);
+        File origDriver = new File(gfRoot, "javadb/lib/derbyclient.jar"); //NOI18N
+        origDriver = FileUtil.normalizeFile(origDriver);
+        FileObject targetFolder = FileUtil.toFileObject(f.getParentFile());
+        try {
+            FileUtil.copyFile(FileUtil.toFileObject(origDriver), targetFolder, "derbyclient"); //NOI18N
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "JDBC Driver was not copied", ex); //NOI18N
+        }
+        File jar = FileUtil.toFile(targetFolder.getFileObject("derbyclient", "jar")); //NOI18N
+        LOGGER.info("JDBC Driver was copied to: " + jar.getAbsolutePath()); //NOI18N
+    }
+
 }

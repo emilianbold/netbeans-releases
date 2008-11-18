@@ -152,7 +152,8 @@ public class EmptyCESHidden extends CloneableEditorSupport {
     }
     
     public static class Env implements CloneableEditorSupport.Env {
-        
+        private Date creation = new Date();
+
         private StringBufferInputStream input;
         private FileOutputStream outFile;
         private CloneableOpenSupport tstInst;
@@ -222,7 +223,7 @@ public class EmptyCESHidden extends CloneableEditorSupport {
         /** The time when the data has been modified
          */
         public Date getTime() {
-            return null;
+            return creation;
         }
         
         /** Obtains the output stream.

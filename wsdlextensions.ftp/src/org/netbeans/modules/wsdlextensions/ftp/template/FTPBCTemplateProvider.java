@@ -23,6 +23,7 @@ import java.io.InputStream;
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider;
 import org.openide.util.NbBundle;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider.class)
 public class FTPBCTemplateProvider extends ExtensibilityElementTemplateProvider {
     
     static final String templateUrl = "/org/netbeans/modules/wsdlextensions/ftp/template/template.xml";

@@ -104,6 +104,7 @@ import org.w3c.dom.Element;
  *   for shorthand properties
  * @author  Tor Norbye
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack.class)
 public class DesignerServiceHackImpl extends DesignerServiceHack {
 //    private static final String[] LENGTH_UNITS =
 //        { "%", "em", "ex", "px", "cm", "mm", "in", "pt", "pc" };

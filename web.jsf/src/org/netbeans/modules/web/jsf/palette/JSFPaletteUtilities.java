@@ -93,7 +93,7 @@ public final class JSFPaletteUtilities {
         return null;
     }
     
-    private static void insertTagLibRef(JTextComponent target, final String prefix, final String uri) {
+    private static void insertTagLibRef(final JTextComponent target, final String prefix, final String uri) {
         Document doc = target.getDocument();
         if (doc != null && doc instanceof BaseDocument) {
             final BaseDocument baseDoc = (BaseDocument) doc;
@@ -102,6 +102,20 @@ public final class JSFPaletteUtilities {
                     try {
                         int pos = 0;  // FIXME: compute better where to insert tag lib definition?
                         String definition = "<%@taglib prefix=\"" + prefix + "\" uri=\"" + uri + "\"%>\n";  //NOI18N
+                        
+                        //test for .jspx. FIXME: find better way to detect xml syntax?.
+                        FileObject fobj = getFileObject(target);
+                        if (fobj != null && "jspx".equals(fobj.getExt())) {
+                            int baseDocLength = baseDoc.getLength();
+                            String text = baseDoc.getText(0, baseDocLength);
+                            String jspRootBegin = "<jsp:root "; //NOI18N
+                            int jspRootIndex = text.indexOf(jspRootBegin);
+                            if (jspRootIndex != -1) {
+                                pos = jspRootIndex + jspRootBegin.length();
+                                definition = "xmlns:" + prefix + "=\"" + uri + "\" ";  //NOI18N
+                            }
+                        }
+                
                         baseDoc.insertString(pos, definition, null);
                     } catch (BadLocationException e) {
                         Exceptions.printStackTrace(e);

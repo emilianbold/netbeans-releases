@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Ryzl
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.deployment.DeploymentPlugin.class, position=105)
 public class WindowsMobileDeploymentPlugin implements DeploymentPlugin {
     
     /* should be set as default property in deploy-wm-impl.xml */

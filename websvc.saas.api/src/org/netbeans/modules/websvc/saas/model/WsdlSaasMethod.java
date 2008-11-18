@@ -99,15 +99,15 @@ public class WsdlSaasMethod extends SaasMethod {
     private void init() {
         if (port == null || operation == null) {
             assert getMethod() != null : "Should have non-null filter method";
-            for (Object p : getSaas().getWsdlModel().getPorts()) {
-                if (! ((WSPort)p).getName().equals(getMethod().getPortName())) {
+            for (WSPort p : getSaas().getWsdlModel().getPorts()) {
+                if (! p.getName().equals(getMethod().getPortName())) {
                     continue;
                 }
-                port = (WSPort) p;
+                port = p;
 
-                for (Object op : port.getOperations()) {
-                    if (((WSOperation)op).getName().equals(getMethod().getOperationName())) {
-                        operation = (WSOperation) op;
+                for (WSOperation op : port.getOperations()) {
+                    if (op.getName().equals(getMethod().getOperationName())) {
+                        operation = op;
                         return;
                     }
                 }

@@ -207,7 +207,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     }
 
     private javax.swing.Timer timer = null;
-    private AtomicBoolean newEvent = new AtomicBoolean(false);
+    private final AtomicBoolean newEvent = new AtomicBoolean(false);
 
     public void actionPerformed(ActionEvent e) {
         newEvent.set(false);
@@ -604,6 +604,9 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     public void lineUpdated(int lineStart, int lineLength, boolean isFinished) {
         synchronized (readLock()) {
             int charLineLength = toCharIndex(lineLength);
+            if (isFinished) {
+                charLineLength -= 1;
+            }
             updateLastLine(lineStartList.size() - 1, charLineLength);
             if (isFinished) {
                 lineStartList.add(lineStart + lineLength);
@@ -688,6 +691,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             return null;
         }
         if (matcher != null && s.equals(lastSearchString)) {
+            matcher.reset();
             return matcher;
         }
         try {
@@ -699,8 +703,8 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 if (!m.find(0)) {
                     return null;
                 }
+                m.reset();
                 matcher = m;
-                matcher.reset();
                 lastSearchString = s;
                 return matcher;
             }

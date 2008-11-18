@@ -73,6 +73,8 @@ public class AnnotationTest extends GeneratorTest {
 //        suite.addTest(new ConstructorRenameTest("testClassToAnnotation"));
 //        suite.addTest(new ConstructorRenameTest("testAddDefaultValue"));
 //        suite.addTest(new ConstructorRenameTest("testRemoveDefaultValue"));
+//        suite.addTest(new AnnotationTest("testAddArrayInitializer1"));
+//        suite.addTest(new AnnotationTest("testAddArrayInitializer2"));
         return suite;
     }
     
@@ -357,6 +359,104 @@ public class AnnotationTest extends GeneratorTest {
                 workingCopy.rewrite(ct.getModifiers(), mt);
             }
             
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddArrayInitializer1() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import hierbas.del.litoral.Test.A;\n" +
+            "\n" +
+            "@A(test={\"first\"})" +
+            "public class Test {\n" +
+            "    @interface A {\n" +
+            "        public String[] test();\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import hierbas.del.litoral.Test.A;\n" +
+            "\n" +
+            "@A(test={\"first\",\"something\"})" +
+            "public class Test {\n" +
+            "    @interface A {\n" +
+            "        public String[] test();\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
+                AnnotationTree an = ct.getModifiers().getAnnotations().get(0);
+                AssignmentTree testArg = (AssignmentTree) an.getArguments().get(0);
+                NewArrayTree nat = (NewArrayTree) testArg.getExpression();
+                NewArrayTree nueNat = make.addNewArrayInitializer(nat, make.Literal("something"));
+
+                workingCopy.rewrite(nat, nueNat);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddArrayInitializer2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import hierbas.del.litoral.Test.A;\n" +
+            "\n" +
+            "@A(test={})" +
+            "public class Test {\n" +
+            "    @interface A {\n" +
+            "        public String[] test();\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import hierbas.del.litoral.Test.A;\n" +
+            "\n" +
+            "@A(test={\"something\"})" +
+            "public class Test {\n" +
+            "    @interface A {\n" +
+            "        public String[] test();\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
+                AnnotationTree an = ct.getModifiers().getAnnotations().get(0);
+                AssignmentTree testArg = (AssignmentTree) an.getArguments().get(0);
+                NewArrayTree nat = (NewArrayTree) testArg.getExpression();
+                NewArrayTree nueNat = make.addNewArrayInitializer(nat, make.Literal("something"));
+
+                workingCopy.rewrite(nat, nueNat);
+            }
+
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

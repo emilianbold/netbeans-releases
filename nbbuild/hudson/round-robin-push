@@ -1,0 +1,89 @@
+#!/bin/sh
+
+[ -n "$pop_url" ] || exit 101
+if [ -z "$pop_build_info" ]; then
+    pop_build_info="nbbuild/build/build_info"
+fi
+[ -n "$pop_job" ] || exit 103
+
+[ -n "$push_url" ] || exit 113
+[ -n "$push_username" ] || exit 114
+
+if [ -z "$TMP" ]; then
+  TMP="/tmp"
+fi
+
+
+
+ANT_OPTS="-Xmx512m -XX:MaxPermSize=128m"
+export ANT_OPTS
+HGMERGE=merge
+export HGMERGE
+
+STATUS=$TMP/$$-status
+curl $pop_job/buildStatus -D "$STATUS"
+cat "$STATUS"
+
+if grep "Location:.*blue[_anime]*.gif.*" "$STATUS"; then
+    echo Build seems to be stable
+else
+    echo Build is not stable, exiting
+    rm "$STATUS"
+    exit 1
+fi
+rm "$STATUS"
+
+echo Getting Build Info
+HGINFO=`curl $pop_job/lastStableBuild/artifact/$pop_build_info`
+echo Build info: $HGINFO
+[ -n "$HGINFO" ] || exit 1
+
+HGID=`echo "$HGINFO" | grep "Hg ID"`
+echo Last build_info line: "$HGID"
+HGTIP=`echo "$HGID" | cut -f 2 -d ":" | while read X; do echo $X; done`
+echo Last OK revision: "$HGTIP"
+
+hg pull -r "$HGTIP" "$pop_url" || exit 5
+if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
+then
+   hg up || exit 6
+else
+   hg merge || exit 7
+   hg ci -u "$push_username"@netbeans.org -m 'Automated merge' || exit 8
+fi
+hg out $push_url
+
+if [ `hg out --template '{node|short}\n' $push_url | wc -l` > 0 ]; then
+    echo "Let the build starts..."
+else
+    echo "No outgoing changes"
+    exit 0
+fi
+
+RESULT=`pwd`/nbbuild/build/test-results.txt
+export RESULT
+rm $RESULT
+
+testmodule() {
+    if ant $ANT_PARAM -f $1/build.xml test-unit -Dtest-unit-sys-prop.ignore.random.failures=true; then
+        echo Test OK: $1
+    else
+        echo $1 >>$RESULT
+    fi
+}
+
+ant clean $ANT_PARAM || exit 2
+ant build $ANT_PARAM || exit 2
+ant commit-validation $ANT_PARAM || echo commit-validation >$RESULT
+ant build-test-dist $ANT_PARAM || echo build-test-dist >>$RESULT
+
+testmodule openide.util
+
+FAILED=`cat $RESULT | wc -l`
+if [ "$FAILED" -gt 0 ]; then
+    echo "No push. Failed tests in following modules:"
+    cat $RESULT
+    exit 5
+fi
+
+hg push "$push_url"

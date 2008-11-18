@@ -41,6 +41,7 @@
 
 package org.openide.nodes;
 
+import java.awt.Panel;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -493,12 +494,7 @@ public abstract class Children extends Object {
      * @since 7.7
      */
     public final List<Node> snapshot() {
-        try {
-            PR.enterReadAccess();
-            return entrySupport().createSnapshot();
-        } finally {
-            PR.exitReadAccess();
-        }
+        return entrySupport().snapshot();
     }
 
     static final int[] getSnapshotIdxs(List<Node> snapshot) {
@@ -1261,7 +1257,12 @@ public abstract class Children extends Object {
     * create()</a>; doing so makes it easy to switch to using child
     * nodes computed on a background thread if necessary for performance
     * reasons.
-     * @param T the type of the key
+    * <p><b>Related documentation</b></p>
+    * <ul>
+    *   <li><a href="http://platform.netbeans.org/tutorials/nbm-nodesapi.html">NetBeans System Properties Module Tutorial</a></li>
+    * </ul>
+    *
+    * @param T the type of the key
     */
     public static abstract class Keys<T> extends Children.Array {
         /** the last runnable (created in method setKeys) for each children object.
@@ -1322,7 +1323,7 @@ public abstract class Children extends Object {
 
                 boolean init = entrySupport().isInitialized();
                 if (init && parent != null) {
-                    List<Node> snapshot = entrySupport.createSnapshot();
+                    List<Node> snapshot = entrySupport.snapshot();
                     if (snapshot.size() > 0) {
                         int[] idxs = getSnapshotIdxs(snapshot);
                         parent.fireSubNodesChangeIdx(false, idxs, null, Collections.<Node>emptyList(), snapshot);

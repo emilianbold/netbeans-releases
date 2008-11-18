@@ -1,0 +1,11 @@
+
+attrs=|DOCUMENTED|NODOC|MODULE|;64
+class=Multibyte
+class-ig=multibyte
+filename=gem:gems/activesupport-2.1.0/lib/active_support/multibyte/chars.rb
+fqn=ActiveSupport::Multibyte
+in=ActiveSupport
+require=active_support/multibyte/chars
+requires=active_support/multibyte/handlers/utf8_handler_proc,active_support/multibyte/handlers/passthru_handler,utf8proc_native,active_support/multibyte/handlers/utf8_handler
+
+

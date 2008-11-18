@@ -47,6 +47,7 @@ import org.netbeans.modules.vmd.api.io.DataObjectContext;
 /**
  * @author David Kaspar
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.DataEditorViewFactory.class)
 public class DocumentEditorViewFactory implements DataEditorViewFactory {
 
     public static final String VMD_STRUCTURE_SHOW = "vmd.structure.show"; // NOI18N

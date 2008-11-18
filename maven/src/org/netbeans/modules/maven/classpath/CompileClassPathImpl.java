@@ -65,23 +65,13 @@ class CompileClassPathImpl extends AbstractProjectClassPathImpl {
         // output folders.. we lways retrieve stuff from local repo..
         @SuppressWarnings("unchecked")
         List<Artifact> arts = getMavenProject().getOriginalMavenProject().getCompileArtifacts();
-        List<File> assemblies = new ArrayList<File>();
         for (Artifact art : arts) {
             if (art.getFile() != null) {
                 File fil = FileUtil.normalizeFile(art.getFile());
-                // the assemblied jars go as last ones, otherwise source for binaries don't really work.
-                // unless one has the assembled source jar s well?? is it possible?
-                if (art.getClassifier() != null) {
-                    assemblies.add(0, fil);
-                } else {
-                    lst.add(fil.toURI());
-                }
+                lst.add(fil.toURI());
             } else {
               //NOPMD   //null means dependencies were not resolved..
             } 
-        }
-        for (File ass : assemblies) {
-            lst.add(ass.toURI());
         }
         URI[] uris = new URI[lst.size()];
         uris = lst.toArray(uris);

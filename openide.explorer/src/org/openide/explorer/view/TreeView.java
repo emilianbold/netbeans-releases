@@ -125,6 +125,7 @@ import javax.swing.plaf.UIResource;
 import javax.swing.text.Position;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.RowMapper;
+import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -790,6 +791,18 @@ public abstract class TreeView extends JScrollPane {
     /** Synchronize the root context from the manager of this Explorer.
     */
     final void synchronizeRootContext() {
+        // #151850 cancel editing before changing root node
+        Mutex.EVENT.readAccess(
+                new Runnable() {
+
+                    public void run() {
+                        TreeCellEditor cellEditor = tree.getCellEditor();
+                        if (cellEditor instanceof TreeViewCellEditor) {
+                            ((TreeViewCellEditor) cellEditor).abortTimer();
+                        }
+                        tree.cancelEditing();
+                    }
+                });
         treeModel.setNode(manager.getRootContext(), visHolder);
     }
 
@@ -2148,7 +2161,8 @@ public abstract class TreeView extends JScrollPane {
             }
 
             public void focusGained(FocusEvent e) {
-                // Do nothing
+                // make sure nothing is selected
+                searchTextField.select(1, 1);
             }
 
             public void focusLost(FocusEvent e) {

@@ -38,6 +38,10 @@ do
   bn=`basename $f`
   if  [ "$bn" != "jhall.jar" ] && [ "$bn" != "derby.jar" ] && [ "$bn" != "derbyclient.jar" ]
   then
+    if [ -f "$f.pack" ] || [ -f "$f.pack.gz" ] ; then 
+        echo "Packed file $f.pack(.gz) exists, skipping packing of the original file $f"
+        continue
+    fi
     echo Packing $f
     $packCommand -J-Xmx256m -g $f.pack $f
     if [ 0 -eq $? ] ; then

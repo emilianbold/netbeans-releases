@@ -59,6 +59,7 @@ import org.openide.filesystems.Repository;
  * user defined global definitions, to be found in the layers.
  * @author mkleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=121)
 public class NbGlobalActionGoalProvider extends AbstractMavenActionsProvider {
     
     public static final String FILENAME = "Projects/org-netbeans-modules-maven/nbactions.xml"; //NOI18N

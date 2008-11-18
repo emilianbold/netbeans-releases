@@ -63,6 +63,7 @@ public abstract class CsmSelect {
     public abstract CsmFilterBuilder getFilterBuilder();
     public abstract Iterator<CsmMacro> getMacros(CsmFile file, CsmFilter filter);
     public abstract Iterator<CsmInclude> getIncludes(CsmFile file, CsmFilter filter);
+    public abstract boolean hasDeclarations(CsmFile file);
     public abstract Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFile file, CsmFilter filter);
     public abstract Iterator<CsmVariable> getStaticVariables(CsmFile file, CsmFilter filter);
     public abstract Iterator<CsmFunction> getStaticFunctions(CsmFile file, CsmFilter filter);
@@ -202,6 +203,15 @@ public abstract class CsmSelect {
                 return service.getStaticFunctions(file, filter);
             }
             return null;
+        }
+
+        @Override
+        public boolean hasDeclarations(CsmFile file) {
+            CsmSelect service = getService();
+            if (service != null) {
+                return service.hasDeclarations(file);
+            }
+            return file.getDeclarations().isEmpty();
         }
     }
 }

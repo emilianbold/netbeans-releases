@@ -91,6 +91,7 @@ import org.openide.ErrorManager;
  *
  * @author Tim Boudreau
  */
+@org.openide.util.lookup.ServiceProvider(service=javax.swing.PopupFactory.class)
 public class ApplePopupFactory extends PopupFactory {
     private static final boolean APPLE_HEAVYWEIGHT = 
             Boolean.getBoolean ("nb.explorer.hw.completions"); //NOI18N

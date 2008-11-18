@@ -43,9 +43,13 @@ package org.netbeans.modules.db.explorer.infos;
 
 import java.io.IOException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.text.MessageFormat;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.explorer.DbUtilities;
 
 import org.netbeans.lib.ddl.impl.AbstractCommand;
@@ -57,10 +61,38 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.impl.TableColumn;
 
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.db.explorer.nodes.ColumnNode;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.openide.actions.DeleteAction;
 
 public class ColumnNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =-1470704512178901918L;
+    private static final Logger LOGGER = Logger.getLogger(ColumnNode.class.getName());
+    private static final double JAVADB_MINOR_VERSION_SUPPORTED = 3;  // Java DB minor version that supports column deletion
+
+    @Override
+    public Vector getActions() {
+        // #149904 [65cat] Cannot remove database table column from action
+        Vector actions = super.getActions();
+        Specification spec = (Specification) getSpecification();
+        // If Java DB doesn't support column deletion, exclude the Delete action
+        if (spec.getProperties().get("DatabaseProductName").equals("Apache Derby"))  { // NOI18N
+            DeleteAction deleteAction = null;
+            for (Object action : actions) {
+                if (!isSupported(spec)) { 
+                    if (action != null) {
+                        if (action instanceof DeleteAction) {
+                            deleteAction = (DeleteAction)action;
+                        }
+                    }
+                }
+            }
+            if (deleteAction != null) {
+                actions.remove(deleteAction);
+            }
+        }
+        return actions;
+    }
     
     public boolean canAdd(Map propmap, String propname) {
         if (propname.equals("decdigits")) { //NOI18N
@@ -287,5 +319,26 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
         return this.getColumnPosition() - 
                 ((ColumnNodeInfo)o2).getColumnPosition();
     }
-    
+
+    private boolean isSupported(Specification spec) {
+        try {
+            int majorVersion = spec.getMetaData().getDatabaseMajorVersion();
+            if (majorVersion < 10) {
+                return false;
+            }
+            String productVersion = spec.getMetaData().getDatabaseProductVersion();
+            int dotLoc = productVersion.indexOf("."); // NOI18N
+            if (dotLoc != -1) {  // check if no "dot" in the release - if future Java DB versions do not support dot releases
+                int minorVersion = Integer.parseInt(productVersion.substring(dotLoc + 1, dotLoc + 2));
+                if (minorVersion < JAVADB_MINOR_VERSION_SUPPORTED) {
+                    return false;
+                }
+            }
+        } catch (SQLException ex) {
+            LOGGER.log(Level.INFO, "ColumnNodeInfo.isSupported() threw SQLException", ex);
+        } catch (NumberFormatException nfe) {
+            LOGGER.log(Level.INFO, "ColumnNodeInfo.isSupported() threw NumberFormatException retrieving the version", nfe);
+        }
+        return true;
+    }
 }

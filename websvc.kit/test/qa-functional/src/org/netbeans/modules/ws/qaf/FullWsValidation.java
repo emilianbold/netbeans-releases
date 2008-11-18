@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.ws.qaf;
@@ -44,8 +44,11 @@ import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
+ *  Test suite for web services support in various project types in the IDE.
  *
- * @author lukas
+ *  Duration of this test suite: aprox. 20min
+ *
+ * @author lukas.jungmann@sun.com
  */
 public class FullWsValidation extends J2eeTestCase {
 
@@ -66,8 +69,13 @@ public class FullWsValidation extends J2eeTestCase {
                 addServerTests(Server.GLASSFISH, NbModuleSuite.emptyConfiguration(), WsValidation.class,
                     "testCreateNewWs",
                     "testAddOperation",
+                    "testSetSOAP",
                     "testStartServer",
                     "testWsHandlers",
+                    "testDeployWsProject",
+                    "testTestWS",
+                    "testGenerateWrapper",
+                    "testGenerateWSDL",
                     "testDeployWsProject",
                     "testCreateWsClient",
                     "testCallWsOperationInServlet",
@@ -79,8 +87,12 @@ public class FullWsValidation extends J2eeTestCase {
                     ), EjbWsValidation.class,
                     "testCreateNewWs",
                     "testAddOperation",
+                    "testSetSOAP",
+                    "testGenerateWSDL",
+                    "testStartServer",
                     "testWsHandlers",
                     "testDeployWsProject",
+                    "testTestWS",
                     "testCreateWsClient",
                     "testCallWsOperationInSessionEJB",
                     "testCallWsOperationInJavaClass",
@@ -98,7 +110,6 @@ public class FullWsValidation extends J2eeTestCase {
                     ), JavaSEWsValidation.class,
                     "testCreateWsClient",
                     "testCallWsOperationInJavaMainClass",
-                    "testFixClientLibraries",
                     "testWsClientHandlers",
                     "testRefreshClientAndReplaceWSDL",
                     "testRunWsClientProject"

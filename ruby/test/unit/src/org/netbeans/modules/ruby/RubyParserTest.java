@@ -41,10 +41,23 @@
 
 package org.netbeans.modules.ruby;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import org.jruby.nb.ast.Node;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParseEvent;
+import org.netbeans.modules.gsf.api.ParseListener;
+import org.netbeans.modules.gsf.api.Parser.Job;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.SourceFileReader;
+import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -177,5 +190,49 @@ public class RubyParserTest extends RubyTestBase {
 
     public void testErrors7() throws Exception {
         checkErrors("testfiles/broken6.rb");
+    }
+
+    public void testValidResult() throws Exception {
+        // Make sure we get a valid parse result out of an aborted parse
+        FileObject fo = getTestFile("testfiles/broken6.rb");
+        ParserFile file = new DefaultParserFile(fo, null, false);
+        List<ParserFile> files = Collections.<ParserFile>singletonList(file);
+        final ParserResult[] resultHolder = new ParserResult[1];
+        final Exception[] exceptionHolder = new Exception[1];
+
+        ParseListener listener = new ParseListener() {
+
+            public void started(ParseEvent e) {
+            }
+
+            public void finished(ParseEvent e) {
+                resultHolder[0] = e.getResult();
+            }
+
+            public void error(Error e) {
+            }
+
+            public void exception(Exception e) {
+                exceptionHolder[0] = e;
+            }
+
+        };
+        TranslatedSource ts = null;
+        SourceFileReader reader = new SourceFileReader() {
+
+            public CharSequence read(ParserFile file) throws IOException {
+                throw new IOException("Simulate failure");
+            }
+
+            public int getCaretOffset(ParserFile file) {
+                return -1;
+            }
+
+        };
+        Job job = new Job(files, listener, reader, ts);
+        new RubyParser().parseFiles(job);
+
+        assertNotNull("Parser result must be nonnull", resultHolder[0]);
+        assertNotNull("Expected to have the listener notified of a failure", exceptionHolder[0]);
     }
 }

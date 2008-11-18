@@ -55,6 +55,7 @@ import org.openide.nodes.Node;
  *
  * @author rico
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.ServiceNodesProvider.class)
 public class JaxrpcServiceNodesProvider implements ServiceNodesProvider{
     
     public JaxrpcServiceNodesProvider() {

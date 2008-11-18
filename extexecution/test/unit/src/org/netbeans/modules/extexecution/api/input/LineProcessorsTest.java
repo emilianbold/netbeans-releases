@@ -155,6 +155,38 @@ public class LineProcessorsTest extends NbTestCase {
         assertClosedConditions(lineProcessor);
     }
 
+    public void testPrintingCloseOrdering() {
+        final TestInputWriter writer = new TestInputWriter(new PrintWriter(System.out));
+        final LineProcessor delegate = LineProcessors.printing(writer, false);
+
+        LineProcessor lineProcessor = new LineProcessor() {
+
+            public void processLine(String line) {
+                delegate.processLine(line);
+            }
+
+            public void reset() {
+                delegate.reset();
+            }
+
+            public void close() {
+                delegate.processLine("closing mark");
+                delegate.close();
+            }
+        };
+
+        for (String line : PRINTING_TEST_LINES) {
+            lineProcessor.processLine(line);
+        }
+        assertEquals(PRINTING_TEST_LINES, writer.getPrinted());
+
+        lineProcessor.close();
+        List<String> printed = new ArrayList<String>(PRINTING_TEST_LINES);
+        printed.add("closing mark");
+        assertEquals(printed, writer.getPrinted());
+        assertClosedConditions(lineProcessor);
+    }
+
     public void testWaiting() throws InterruptedException, BrokenBarrierException {
         final CountDownLatch latch = new CountDownLatch(1);
         final LineProcessor lineProcessor = LineProcessors.patternWaiting(

@@ -63,7 +63,6 @@ import org.netbeans.modules.refactoring.spi.*;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
 import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
-import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.filesystems.FileObject;
 

@@ -77,6 +77,7 @@ import org.openide.util.datatransfer.ExTransferable;
  *
  * @author quynguyen
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider.class)
 public class DesignerWebServiceTransferManager implements ConsumerFlavorProvider {
     static DataFlavor FLAVOR_METHOD_DISPLAY_ITEM;
     static DataFlavor FLAVOR_PORT_DISPLAY_ITEM;

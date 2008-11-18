@@ -38,15 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.io.IOException;
 import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -73,18 +72,19 @@ import org.openide.windows.OutputWriter;
  * @author Vladimir Voskresensky
  */
 public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
+
     private static final boolean NEED_TO_TRACE_UNRESOLVED_INCLUDE = getBoolean("cnd.modelimpl.trace.failed.include", false); // NOI18N
     private final static boolean TRACE_INCLUDES = Boolean.getBoolean("cnd.trace.includes"); // NOI18N
-    
+
     /** Creates a new instance of CsmIncludeHyperlinkProvider */
     public CsmIncludeHyperlinkProvider() {
     }
-    
-    protected boolean isValidToken(Token<CppTokenId> token) {
+
+    protected boolean isValidToken(TokenItem<CppTokenId> token) {
         return isSupportedToken(token);
     }
-    
-    public static boolean isSupportedToken(Token<CppTokenId> token) {
+
+    public static boolean isSupportedToken(TokenItem<CppTokenId> token) {
         if (token != null) {
             switch (token.id()) {
                 case PREPROCESSOR_INCLUDE:
@@ -96,11 +96,11 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }
         return false;
     }
-    
+
     protected void performAction(final Document originalDoc, final JTextComponent target, final int offset) {
         goToInclude(originalDoc, target, offset);
     }
-    
+
     public boolean goToInclude(Document doc, JTextComponent target, int offset) {
         if (!preJump(doc, target, offset, "opening-include-element")) { //NOI18N
             return false;
@@ -133,48 +133,48 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
 
     private static boolean getBoolean(String name, boolean result) {
         String text = System.getProperty(name);
-        if( text != null ) {
+        if (text != null) {
             result = Boolean.parseBoolean(text);
         }
         return result;
-    } 
+    }
 
     private static final class IncludeTarget implements CsmOffsetable {
+
         private CsmInclude include;
-        
+
         public IncludeTarget(CsmInclude include) {
             this.include = include;
         }
-        
+
         public CsmFile getContainingFile() {
             return include.getIncludeFile();
         }
-        
+
         public int getStartOffset() {
             // start of the file
             return DUMMY_POSITION.getOffset();
         }
-        
+
         public int getEndOffset() {
             // DUMMY of the file
             return DUMMY_POSITION.getOffset();
         }
-        
+
         public CsmOffsetable.Position getStartPosition() {
             return DUMMY_POSITION;
         }
-        
+
         public CsmOffsetable.Position getEndPosition() {
             return DUMMY_POSITION;
         }
-        
+
         public CharSequence getText() {
             return include.getIncludeName();
         }
-        
     }
-    
     private static final CsmOffsetable.Position DUMMY_POSITION = new CsmOffsetable.Position() {
+
         public int getOffset() {
             return -1;
         }
@@ -187,8 +187,8 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             return -1;
         }
     };
-    
-    protected String getTooltipText(Document doc, Token token, int offset) {
+
+    protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset) {
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, true);
         CsmInclude target = null;
         if (csmFile != null) {
@@ -224,7 +224,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 out.println(buf.toString().replaceAll("<br>", "\n"));   // NOI18N             
                 out.flush();
             }
-            tooltip = buf.toString();           
+            tooltip = buf.toString();
         }
         return tooltip == null ? null : tooltip.toString();
     }
@@ -247,16 +247,17 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             }
         }
     }
-    
+
     private String i18n(String key) {
         return NbBundle.getMessage(CsmIncludeHyperlinkProvider.class, key);
     }
-    
+
     private String i18n(String key, Object param1, Object param2) {
         return NbBundle.getMessage(CsmIncludeHyperlinkProvider.class, key, param1, param2);
     }
 
     private static final class RefLink implements OutputListener {
+
         private final CsmUID<? extends CsmObject> uid;
 
         public RefLink(CsmInclude incl) {
@@ -280,5 +281,4 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         public void outputLineCleared(OutputEvent ev) {
         }
     }
-
 }

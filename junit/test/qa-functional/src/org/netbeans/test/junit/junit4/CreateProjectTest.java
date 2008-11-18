@@ -16,6 +16,7 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
@@ -56,6 +57,7 @@ public class CreateProjectTest extends ExtJellyTestCaseForJunit4 {
         newOp.next();
         new JTextFieldOperator(newOp, 0).typeText(TEST_PROJECT_NAME);
         newOp.finish();
+        new EventTool().waitNoEvent(5000);
 
         // select source packages node
         ProjectsTabOperator pto = new ProjectsTabOperator();

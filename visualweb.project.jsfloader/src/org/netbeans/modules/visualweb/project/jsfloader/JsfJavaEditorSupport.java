@@ -130,7 +130,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
     private static final int ELEMENT_INDEX_JSP      = 1;
     private static final int ELEMENT_INDEX_JAVA     = 2;
 
-    private static final String ICON_PATH_JSF_JSP = "org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject.gif"; // NOI18N
+    private static final String ICON_PATH_JSF_JSP = "org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject.png"; // NOI18N
 
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.visualweb.project.jsfloader.JsfJavaEditorSupport");
     
@@ -782,7 +782,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         
         private void initialize() {
             DataObject jsfJavaDataObject = ((JsfJavaEditorSupport)cloneableEditorSupport()).getDataObject();
-            if(jsfJavaDataObject != null) {
+            if(jsfJavaDataObject != null && jsfJavaDataObject.isValid() /* #152694 */) {
                 setActivatedNodes(new Node[] {jsfJavaDataObject.getNodeDelegate()});
             }
             

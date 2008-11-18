@@ -16,6 +16,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.groovy.support.spi.GroovyOptionsSubpanel.class)
 public final class GrailsRuntimePanel extends javax.swing.JPanel implements GroovyOptionsSubpanel {
 
     private final GrailsSettings settings;

@@ -55,12 +55,27 @@ public class MethodData {
     private final List<MethodParameter> parameters;
     
     private int requestID;
+    
+    private boolean isValidReturnType;
+    private List<MethodParameter> myInvalidParameters;
+    private String  myFQNReturnType;
 
     public MethodData( String parentClassName, String name, ClassData returnType, List<MethodParameter> parameters ) {
         this.name = name;
         this.parentClassName = parentClassName;
         this.returnType = returnType;
         this.parameters = parameters;
+        isValidReturnType = true;
+    }
+    
+    public MethodData( String parentClassName, String name, String returnType, 
+            List<MethodParameter> parameters , boolean validReturnType ,
+            List<MethodParameter> invalidParameters ) 
+    {
+        this( parentClassName , name , null , parameters );
+        isValidReturnType = validReturnType;
+        myInvalidParameters = invalidParameters;
+        myFQNReturnType = returnType;
     }
 
     public String getName() {
@@ -74,9 +89,20 @@ public class MethodData {
     public ClassData getReturnType() {
         return returnType;
     }
+    
+    public boolean isValidReturnType(){
+        return isValidReturnType;
+    }
 
     public List<MethodParameter> getParameters() {
         return Collections.unmodifiableList( parameters );
+    }
+    
+    public List<MethodParameter> getInvalidParameters() {
+        if ( myInvalidParameters == null ){
+            return Collections.EMPTY_LIST;
+        }
+        return Collections.unmodifiableList( myInvalidParameters );
     }
     
     public void setRequestID( int requestID ) {
@@ -87,22 +113,99 @@ public class MethodData {
         return requestID;
     }
     
+    public String getReturnTypeAsText(){
+        if ( myFQNReturnType == null ){
+            return getReturnType() == null ? null : getReturnType().
+                    getFullyQualifiedName();
+        }
+        else {
+            return myFQNReturnType;
+        }
+    }
+    
+    public boolean equalsFQN( MethodData method ) {
+        if (!method.getParentClassName().equals(parentClassName)) {
+            return false;
+        }
+        if (!method.getName().equals(name)) {
+            return false;
+        }
+        if ( returnType == null || method.getReturnType()==null ){
+            return getReturnTypeAsText().equals( method.getReturnTypeAsText() );
+        }
+        else {
+            if (!method.getReturnType().equals( returnType )) {
+                return false;
+            }
+        }
+        if (method.getParameters().size() != parameters.size()) {
+            return false;
+        }
+        int i=0;
+        for (MethodParameter parameter : parameters) {
+            if (!method.getParameters().get( i ).equalsFQN( parameter)) {
+                return false;
+            }
+            i++;
+        }
+        return true;
+    }
+    
     @Override
-    public boolean equals( Object o ) {
-        if(!( o instanceof MethodData )) return false;
+    public boolean equals( Object o ){
+        if(!( o instanceof MethodData )) {
+            return false;
+        }
         MethodData md = (MethodData) o;
-        if (!md.getParentClassName().equals(parentClassName)) return false;
-        if (!md.getName().equals(name)) return false;
-        if (!md.getReturnType().equals( returnType )) return false;
-        if (md.getParameters().size() != parameters.size()) return false;
+        if (!md.getParentClassName().equals(parentClassName)) {
+            return false;
+        }
+        if (!md.getName().equals(name)) {
+            return false;
+        }
+        if (!md.getReturnType().equals( returnType )) {
+            return false;
+        }
+        if (md.getParameters().size() != parameters.size()) {
+            return false;
+        }
         for (int i = 0; i < parameters.size(); i++ ) {
-            if (!md.getParameters().get( i ).equals( parameters.get( i ))) return false;
+            if (!md.getParameters().get( i ).equals( parameters.get( i ))) {
+                return false;
+            }
         }
         return true;
     }
 
     @Override
     public int hashCode() {
-        return parentClassName.hashCode() + name.hashCode() + returnType.hashCode() + parameters.hashCode();
+        if ( returnType != null ){
+            if ( myFQNReturnType == null ){
+                return parentClassName.hashCode() + 7*name.hashCode() + 
+                    13*returnType.hashCode() + 17* paramsHashCode();
+            }
+            else {
+                return parentClassName.hashCode() + 7*name.hashCode() + 
+                13*returnType.hashCode() + 17* paramsHashCode() +
+                    31*myFQNReturnType.hashCode();
+            }
+        }
+        else {
+            return parentClassName.hashCode() + 7*name.hashCode() 
+                + 13*paramsHashCode();
+        }
+    }
+    
+    private int paramsHashCode(){
+        if ( parameters == null ){
+            return 0;
+        }
+        else {
+            int result =0;
+            for (MethodParameter param : parameters) {
+                result = 31*result +param.hashCode();
+            }
+            return result;
+        }
     }
 }

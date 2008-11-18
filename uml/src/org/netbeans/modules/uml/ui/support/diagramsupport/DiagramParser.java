@@ -90,7 +90,7 @@ public class DiagramParser implements IDiagramParser
                     diagInfo.setDateModified(fo.lastModified());
                 }
                 else {
-                    System.err.println(" Corrupted diagram file. Cannot open the diagram."+filename);
+//                    System.err.println(" Corrupted diagram file. Cannot open the diagram."+filename);
                 }
             } catch (XMLStreamException ex) {
                 Exceptions.printStackTrace(ex);
@@ -281,7 +281,7 @@ public class DiagramParser implements IDiagramParser
                     readXML();                    
                 }
                 else {
-                    System.err.println(" Corrupted diagram file. Cannot open the diagram."+filename);
+//                    System.err.println(" Corrupted diagram file. Cannot open the diagram."+filename);
                 }
             } catch (XMLStreamException ex) {
                 Exceptions.printStackTrace(ex);

@@ -56,6 +56,7 @@ import org.netbeans.modules.php.model.refs.ReferenceResolver;
  * @author ads
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.model.refs.ReferenceResolver.class)
 public class ClassReferenceResolver implements ReferenceResolver {
     
     private static final String SELF_KEYWORD = "self";

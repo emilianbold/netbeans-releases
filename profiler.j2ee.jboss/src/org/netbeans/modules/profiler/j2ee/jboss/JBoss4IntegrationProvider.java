@@ -49,6 +49,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Bachorik
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
 public class JBoss4IntegrationProvider extends AbstractJBossIntegrationProvider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 

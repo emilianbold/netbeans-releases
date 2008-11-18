@@ -14,13 +14,11 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.KeyStroke;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.swing.BorderFactory;
 import javax.swing.SwingUtilities;
@@ -35,7 +33,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.modules.java.navigation.ClassMemberFilters;
 import org.netbeans.modules.java.navigation.ElementNode;
-import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.FilterSubmenuAction;
 import org.netbeans.modules.java.navigation.actions.SortActionSupport.SortByNameAction;
@@ -317,6 +314,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         
         public MyBeanTreeView() {
             new ToolTipManagerEx( this );
+            setUseSubstringInQuickSearch(true);
         }
         
         public boolean getScrollOnExpand() {

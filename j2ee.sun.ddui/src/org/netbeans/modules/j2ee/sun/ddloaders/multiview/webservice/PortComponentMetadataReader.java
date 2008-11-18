@@ -71,7 +71,11 @@ public class PortComponentMetadataReader extends CommonBeanReader {
     
     public PortComponentMetadataReader(final String parentName) {
         super(DDBinding.PROP_PORTCOMPONENT);
-        this.parentName = parentName;
+        if(parentName != null && parentName.startsWith("WSServlet_")) {
+            this.parentName = parentName.substring(10);
+        } else {
+            this.parentName = parentName;
+        }
     }
     
     /** For normalizing data structures

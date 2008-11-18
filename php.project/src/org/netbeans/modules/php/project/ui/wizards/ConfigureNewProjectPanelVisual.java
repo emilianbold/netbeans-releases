@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
 
 class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
 
-    private static final long serialVersionUID = 51987432745375479L;
+    private static final long serialVersionUID = 5558962745375479L;
 
     private final LocalServerController localServerComponent;
 
@@ -233,6 +233,11 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
     public void setProjectName(String projectName) {
         projectNameTextField.setText(projectName);
         projectNameTextField.selectAll();
+    }
+
+    @Override
+    public String getSourcesFolder() {
+        return localServerComponent.getLocalServer().getSrcRoot();
     }
 
     public LocalServer getSourcesLocation() {

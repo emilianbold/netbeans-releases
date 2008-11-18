@@ -47,7 +47,6 @@ import org.netbeans.modules.uml.core.eventframework.IEventDispatchController;
 import org.netbeans.modules.uml.core.eventframework.IEventDispatcher;
 import org.netbeans.modules.uml.core.generativeframework.ITemplateManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
-//import com.embarcadero.describe.foundation.IConfigManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.IFacilityManager;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageManager;

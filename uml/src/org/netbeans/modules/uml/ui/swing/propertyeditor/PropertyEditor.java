@@ -1523,17 +1523,6 @@ public class PropertyEditor extends JPanel implements IPropertyEditor, ActionLis
 				{
 					modelElement = (IElement)pElement;
 				} 
-//				if((propDef.getID() != null) && (propDef.getID().length() > 0))
-//				{
-//					try {
-//						Class clazz = Class.forName(propDef.getID());
-//						Class[] params = null;//{com.embarcadero.com.Dispatch.class};
-//						Constructor constructor = clazz.getConstructor(params);      
-//	         
-//						Object[] paramInstances = {pElement};
-//						modelElement = (IElement)constructor.newInstance(paramInstances);
-//					} catch (Exception e) {}
-//				}
 
 				// add this to the property editor's property definitions
 				propDefs.add(propDef);
@@ -6273,133 +6262,9 @@ public class PropertyEditor extends JPanel implements IPropertyEditor, ActionLis
 //			if (count == 0)
 			{
             	onNodeExpanding(row);
-//				IPropertyElement pEle = getElementAtGridRow(row);
-//				if (pEle != null)
-//				{
-//					IPropertyDefinition pDef = pEle.getPropertyDefinition();
-//					if (pDef != null)
-//					{
-//						long mult = pDef.getMultiplicity();
-//						if (mult > 1)
-//						{
-//							IPropertyDefinition def = pDef.getSubDefinition(0);
-//							//This element might not have built yet, so build it
-//							String getMeth = pDef.getGetMethod();
-//							Object pDisp = pEle.getElement();
-//							//onNodeExpanding(row);
-//							if (getMeth != null && getMeth.length() > 0)
-//							{
-//								Class clazz = pDisp.getClass();
-//								if (Dispatch.isType(pDisp, IElement.GUID))
-//								{
-//									try
-//									{
-//										Class[] params = {com.embarcadero.com.Dispatch.class};
-//										Constructor constructor = clazz.getConstructor(params);      
-//										Object[] paramInstances = {pDisp};
-//										Object curE = (IElement)constructor.newInstance(paramInstances);
-//										//curE = (IElement) new IElementProxy((Dispatch)pDisp);
-//										clazz = curE.getClass();//Class.forName("com.embarcadero.describe.foundation.IElement");//curE.getClass();
-//										
-//										java.lang.reflect.Method method = clazz.getMethod(getMeth, null);
-//										Object obj = method.invoke(curE, null);
-//										if (obj != null)
-//										{
-//											//if this returned object has a getCount method, then this is a 
-//											//collection object and I want to build property element for each of
-//											//these collection objects.
-//
-//											//The obj I have got here is a Proxy, need to
-//											//create a Dispatch object out of it.
-//											Class[] dispParams = {com.embarcadero.com.Dispatch.class};
-//											constructor = obj.getClass().getConstructor(dispParams);      
-//     
-//											Object[] paramCollectionInstances = {obj};
-//											obj = constructor.newInstance(paramCollectionInstances);
-//											
-//											Method countMethod = obj.getClass().getMethod("getCount", null);
-//											if (countMethod != null)
-//											{
-//												Object countResult = countMethod.invoke(obj, null);
-//												if (countResult != null && countResult instanceof Integer)
-//												{
-//													 int counter = ((Integer)countResult).intValue();
-//													 if(counter > 0)
-//													 {
-//													 	//Now I want to get the item method so that I can invoke 
-//													 	//it on the collections object.
-//													 	Class[] parms = new Class[1];
-//													 	parms[0] = int.class;
-//													 	Method itemMethod = obj.getClass().getMethod("item", parms);
-//													 	if (itemMethod != null)
-//													 	{
-//													 		for (int i=0; i<counter; i++)
-//													 		{
-//													 			Object[] itemCount = new Object[1];
-//													 			itemCount[0] = new Integer(i);
-//																Object itemResult = itemMethod.invoke(obj, itemCount);
-//																
-//																if (itemResult != null)
-//																{
-//																	m_PropEleMgr.setCreateSubs(true);
-//																	IPropertyElement newPropEle = m_PropEleMgr.buildTopPropertyElement(def);
-//																	if (newPropEle != null)
-//																	{
-//																	  //at this point the property definition may not be built yet, so build it.
-//																	  IPropertyDefinition newDef = getPropertyDefinition(newPropEle);
-//																	  if (newDef != null)
-//																	  {
-//																		 // now temporarily store the fake new model element on this new property
-//																		 // element so that the filter will work
-//																		 newPropEle.setElement(itemResult);
-//																		 newPropEle = m_PropEleMgr.buildElement(itemResult, newDef, null);
-//		
-//																		 // now add this new one to the collection
-//																		 pEle.addSubElement(newPropEle);
-//		
-//																		 // now that we have built the property element structure
-//																		 // check the definition filter to see if any of the elements need to
-//																		 // change
-//																		 filterPropertyElement(newPropEle);
-//																	  }
-//																	}
-//
-//																	if (newPropEle != null)
-//																	{
-//																		//JDefaultMutableTreeNode newNode = new JDefaultMutableTreeNode(newPropEle);
-//																		JDefaultMutableTreeNode newNode = null;
-//                                      
-//																		// now expand and set up the node that will be added
-//																		newNode = addSubElementToTable(node, def, newPropEle, false);
-//		
-//																		//Now go through the sub elements of pEle and add those to the tree
-//																		//buildSubElementsThatNeedToDisplay(newPropEle, newNode);
-//																	}
-//																}
-//													 		}
-//													 	}
-//													 }
-//												}
-//											}
-//										}
-//									}
-//									catch (Exception e)
-//									{
-//										// TODO Auto-generated catch block
-//										e.printStackTrace();
-//									}
-//								}
-//							}
-//						}
-//					}
-//				}
 			}
          	m_Model.expand(row, true);
 			node.setExpanded(true);
-			
-			//m_Tree.getTree().expandPath(selPath);
-         
-         	//refresh();
 		}
 	}
 	

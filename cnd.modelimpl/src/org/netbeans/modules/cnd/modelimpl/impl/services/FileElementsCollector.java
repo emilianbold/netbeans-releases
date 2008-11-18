@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 
 /**
@@ -77,11 +76,11 @@ public class FileElementsCollector {
     private int destOffset;
     private final CsmProject onlyInProject;
 
-    private final ProjectBase project;
+//    private final ProjectBase project;
 
     public FileElementsCollector(CsmFile file, int offset, CsmProject onlyInProject) {
         this.destFile = file;
-        this.project = (ProjectBase) file.getProject();
+//        this.project = (ProjectBase) file.getProject();
         this.destOffset = offset;
         this.startOffset = 0;
         this.onlyInProject = onlyInProject;

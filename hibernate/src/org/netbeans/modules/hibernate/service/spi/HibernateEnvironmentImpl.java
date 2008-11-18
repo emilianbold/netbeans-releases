@@ -39,6 +39,7 @@
 package org.netbeans.modules.hibernate.service.spi;
 
 import java.net.MalformedURLException;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.hibernate.service.*;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import java.io.IOException;
@@ -238,6 +239,18 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
             Exceptions.printStackTrace(e);
         }
         return null;
+    }
+
+    /**
+     * Connects to the DB using supplied HibernateConfigurations and gets the list of
+     * all table names. This method should be called from event thread.
+     *
+     * @param configuration Hibernate Configurations.
+     * @return array list of strings of table names.
+     */
+    public List<String> getAllDatabaseTablesOnEventThread(FileObject configurationFO)
+        throws DataObjectNotFoundException, DatabaseException, SQLException{
+        return HibernateUtil.getAllDatabaseTablesOnEventThread(configurationFO);
     }
 
     /**
@@ -514,9 +527,9 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
 
         } catch (UnsupportedOperationException e) {
             // PCPM is not defined for this project. May be freeform project ?
-            logger.info("DB Driver registration not possible : " + project);            
+            logger.info("DB Driver registration not possible : " + project);
             registeredDBDriver = false;
-        }catch (Exception e) {
+        } catch (Exception e) {
             registeredDBDriver = false;
             logger.log(Level.INFO, "Problem in registering db driver.", e);
         }

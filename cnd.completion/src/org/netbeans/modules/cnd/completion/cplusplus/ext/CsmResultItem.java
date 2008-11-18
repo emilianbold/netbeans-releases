@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
 import java.util.Iterator;
@@ -74,12 +72,10 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -104,55 +100,51 @@ import org.netbeans.spi.editor.completion.CompletionTask;
  * @author  Vladimir Voskresensky
  * after JCResultItem
  */
-
-public abstract class CsmResultItem
-        implements CompletionQuery.ResultItem, CompletionQuery.ResultItemAssociatedObject, CompletionItem {
+public abstract class CsmResultItem implements CompletionItem {
 
     private static boolean enableInstantSubstitution = true;
-    
     protected int selectionStartOffset = -1;
     protected int selectionEndOffset = -1;
-
     protected int substituteOffset = -1;
-    
     CsmObject associatedObject;
     private static final Color KEYWORD_COLOR = Color.gray;
     private static final Color TYPE_COLOR = Color.black;
     private int priority;
-    
-    protected CsmResultItem(CsmObject associatedObject, int priority){
+
+    protected CsmResultItem(CsmObject associatedObject, int priority) {
         this.associatedObject = associatedObject;
         this.priority = priority;
     }
 
     public abstract String getItemText();
-    
-    public Object getAssociatedObject(){
+
+    public Object getAssociatedObject() {
         return associatedObject;
     }
-    
+
     protected static Color getTypeColor(CsmType type) {
         return type.isBuiltInBased(false) ? KEYWORD_COLOR : TYPE_COLOR;
     }
-    
+
     public void setSubstituteOffset(int substituteOffset) {
         this.substituteOffset = substituteOffset;
     }
-    
+
     public boolean substituteCommonText(JTextComponent c, int offset, int len, int subLen) {
         // [PENDING] not enough info in parameters...
         // commonText
         // substituteExp
         return false;
     }
-    
+
     public boolean substituteText(final JTextComponent c, final int offset, final int len, final boolean shift) {
-        final BaseDocument doc = (BaseDocument)c.getDocument();
+        final BaseDocument doc = (BaseDocument) c.getDocument();
         final String text = getReplaceText();
-        final boolean res[] = new boolean[] {true};
+        final boolean res[] = new boolean[]{true};
         if (text != null) {
             // Update the text
             doc.runAtomic(new Runnable() {
+
                 public void run() {
                     try {
                         CharSequence textToReplace = DocumentUtilities.getText(doc, offset, len);
@@ -173,14 +165,16 @@ public abstract class CsmResultItem
                 }
             });
         }
-        
+
         return res[0];
     }
-    
+
     public java.awt.Component getPaintComponent(javax.swing.JList list, boolean isSelected, boolean cellHasFocus) {
         Component ret;
         ret = getPaintComponent(isSelected);
-        if (ret==null) return null;
+        if (ret == null) {
+            return null;
+        }
         if (isSelected) {
             ret.setBackground(list.getSelectionBackground());
             ret.setForeground(list.getSelectionForeground());
@@ -192,11 +186,10 @@ public abstract class CsmResultItem
         ret.getAccessibleContext().setAccessibleDescription(getItemText());
         return ret;
     }
-    
-    protected abstract Component getPaintComponent(boolean isSelected);
-    
-    // CompletionItem implementation
 
+    protected abstract Component getPaintComponent(boolean isSelected);
+
+    // CompletionItem implementation
     public int getPreferredWidth(Graphics g, Font defaultFont) {
         Component renderComponent = getPaintComponent(false);
         renderComponent.setFont(defaultFont);
@@ -205,20 +198,20 @@ public abstract class CsmResultItem
     }
 
     public void render(Graphics g, Font defaultFont, Color defaultColor,
-    Color backgroundColor, int width, int height, boolean selected) {
+            Color backgroundColor, int width, int height, boolean selected) {
         Component renderComponent = getPaintComponent(selected);
         renderComponent.setFont(defaultFont);
         renderComponent.setForeground(defaultColor);
         renderComponent.setBackground(backgroundColor);
         renderComponent.setBounds(0, 0, width, height);
-        ((CsmPaintComponent)renderComponent).paintComponent(g);
+        ((CsmPaintComponent) renderComponent).paintComponent(g);
     }
 
     protected static String getTypeName(CsmType typ) {
 //        return typ.format(false);
         return typ.getText().toString();
     }
-    
+
     /**
      * Used for testing only
      * @return a string representation of the object.
@@ -227,15 +220,13 @@ public abstract class CsmResultItem
     public String toString() {
         Component comp = getPaintComponent(false);
         return comp != null ? comp.toString() : ""; //NOI18N
-    }    
+    }
 
     protected int convertCsmModifiers(CsmObject obj) {
         return CsmUtilities.getModifiers(obj);
     }
-    
-    public static final String COMPLETION_SUBSTITUTE_TEXT= "completion-substitute-text"; //NOI18N
-
-    static String toAdd;
+    public static final String COMPLETION_SUBSTITUTE_TEXT = "completion-substitute-text"; //NOI18N
+    private String toAdd;
 
     public void processKeyEvent(KeyEvent evt) {
         if (evt.getID() == KeyEvent.KEY_TYPED) {
@@ -260,7 +251,7 @@ public abstract class CsmResultItem
                     completion.hideDocumentation();
                     break;
                 case '.':
-                    if (defaultAction((JTextComponent)evt.getSource(), Character.toString(evt.getKeyChar()))) {
+                    if (defaultAction((JTextComponent) evt.getSource(), Character.toString(evt.getKeyChar()))) {
                         evt.consume();
                         break;
                     }
@@ -271,7 +262,7 @@ public abstract class CsmResultItem
     public CharSequence getSortText() {
         return getItemText();
     }
-    
+
     public CharSequence getInsertPrefix() {
         return getItemText();
     }
@@ -281,15 +272,15 @@ public abstract class CsmResultItem
 //        return new AsyncCompletionTask(new JavaCompletionProvider.DocQuery(this),
 //            org.netbeans.editor.Registry.getMostActiveComponent());
     }
-    
+
     public CompletionTask createToolTipTask() {
         return null;
     }
-    
+
     public static void setEnableInstantSubstitution(boolean enable) {
         CsmResultItem.enableInstantSubstitution = enable;
     }
-    
+
     public boolean instantSubstitution(JTextComponent c) {
         if (CsmResultItem.enableInstantSubstitution) {
             Completion completion = Completion.get();
@@ -309,13 +300,12 @@ public abstract class CsmResultItem
         defaultAction(component, "");
     }
 
-
     boolean defaultAction(JTextComponent component, String addText) {
         int substOffset = substituteOffset;
         if (substOffset == -1) {
             substOffset = component.getCaret().getDot();
         }
-        CsmResultItem.toAdd = addText;
+        toAdd = addText;
         if (substituteText(component, substOffset, component.getCaret().getDot() - substOffset, false)) {
             CsmIncludeResolver inclResolver = CsmIncludeResolver.getDefault();
             BaseDocument doc = (BaseDocument) component.getDocument();
@@ -337,7 +327,7 @@ public abstract class CsmResultItem
         }
 
     }
-    
+
     // Checks that include directive have not been already included
     // It needs in case if some files have not been parsed yet
     private boolean isAlreadyIncluded(JTextComponent component, String include) {
@@ -346,24 +336,24 @@ public abstract class CsmResultItem
         ts.moveStart();
         while (ts.moveNext()) {
             if (ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
-                if(isIncludesEqual(include, ts.token().text().toString())) {
+                if (isIncludesEqual(include, ts.token().text().toString())) {
                     return true;
                 }
             }
         }
         return false;
     }
-    
+
     // Compares include directives dy file names
     private boolean isIncludesEqual(String inc1, String inc2) {
         inc1 = normalizeInclude(inc1);
         inc2 = normalizeInclude(inc2);
         return (inc1.equals(inc2));
     }
-    
+
     // Normailizes include directive string
     private String normalizeInclude(String inc) {
-        inc.toLowerCase();
+        inc = inc.toLowerCase();
         inc = inc.replaceAll("[\\s\n]+", " "); // NOI18N
         inc = inc.replaceAll("[<>\"]", "\""); // NOI18N
         inc = inc.trim();
@@ -378,27 +368,33 @@ public abstract class CsmResultItem
         if (!ts.moveNext()) {
             return false;
         }
-        Token lastToken = ts.token();
+        CppTokenId lastID = ts.token().id();
         while (ts.offset() < substituteOffset) {
-            if (!ts.token().id().equals(CppTokenId.BLOCK_COMMENT) &&
-                    !ts.token().id().equals(CppTokenId.DOXYGEN_COMMENT) &&
-                    !ts.token().id().equals(CppTokenId.NEW_LINE) &&
-                    !ts.token().id().equals(CppTokenId.LINE_COMMENT) &&
-                    !ts.token().id().equals(CppTokenId.WHITESPACE)) {
-                lastToken = ts.token();
+            switch (ts.token().id()) {
+                case BLOCK_COMMENT:
+                case DOXYGEN_COMMENT:
+                case NEW_LINE:
+                case LINE_COMMENT:
+                case WHITESPACE:
+                    // skip
+                    break;
+                default:
+                    lastID = ts.token().id();
+                    break;
             }
             if (!ts.moveNext()) {
                 return false;
             }
         }
-        if (lastToken.id().equals(CppTokenId.CLASS) ||
-                lastToken.id().equals(CppTokenId.STRUCT) ||
-                lastToken.id().equals(CppTokenId.UNION)) {
-            return true;
+        switch (lastID) {
+            case CLASS:
+            case STRUCT:
+            case UNION:
+                return true;
         }
         return false;
     }
-    
+
     // Inserts include derctive into document
     private void insertInclude(final JTextComponent component, final CsmFile currentFile, final String include, final boolean isSystem) {
         final BaseDocument doc = (BaseDocument) component.getDocument();
@@ -508,83 +504,84 @@ public abstract class CsmResultItem
         }
         return offset;
     }
-    
+
     protected String getReplaceText() {
         return getItemText();
     }
-    
+
     public int getSortPriority() {
         return this.priority;
-    }        
-        
+    }
+
     public static class FileLocalVariableResultItem extends VariableResultItem {
-        
-        public FileLocalVariableResultItem(CsmVariable fld, int priotity){
+
+        public FileLocalVariableResultItem(CsmVariable fld, int priotity) {
             super(fld, priotity);
         }
-        
-        protected CsmPaintComponent.FieldPaintComponent createPaintComponent(){
+
+        protected CsmPaintComponent.FieldPaintComponent createPaintComponent() {
             return new CsmPaintComponent.FileLocalVariablePaintComponent();
         }
-    }   
-    
+    }
+
     public static class GlobalVariableResultItem extends VariableResultItem {
-        
-        public GlobalVariableResultItem(CsmVariable fld, int priotity){
+
+        public GlobalVariableResultItem(CsmVariable fld, int priotity) {
             super(fld, priotity);
         }
-        
-        protected CsmPaintComponent.FieldPaintComponent createPaintComponent(){
+
+        protected CsmPaintComponent.FieldPaintComponent createPaintComponent() {
             return new CsmPaintComponent.GlobalVariablePaintComponent();
-        }       
-    }    
-    
+        }
+    }
+
     public static class LocalVariableResultItem extends VariableResultItem {
-        
-        public LocalVariableResultItem(CsmVariable fld, int priotity){
+
+        public LocalVariableResultItem(CsmVariable fld, int priotity) {
             super(fld, priotity);
         }
-        
-        protected CsmPaintComponent.FieldPaintComponent createPaintComponent(){
+
+        protected CsmPaintComponent.FieldPaintComponent createPaintComponent() {
             return new CsmPaintComponent.LocalVariablePaintComponent();
         }
-    }  
-    
+    }
+
     public static class FieldResultItem extends VariableResultItem {
-        
+
         public FieldResultItem(CsmField fld, int priotity) {
             super(fld, priotity);
         }
-        
-        protected CsmPaintComponent.FieldPaintComponent createPaintComponent(){
+
+        protected CsmPaintComponent.FieldPaintComponent createPaintComponent() {
             return new CsmPaintComponent.FieldPaintComponent();
         }
     }
-    
+
     public static class MacroResultItem extends CsmResultItem {
+
         private String macName;
         private List params;
         private static CsmPaintComponent.MacroPaintComponent macroPaintComp = null;
-        
+
         public MacroResultItem(CsmMacro mac, int priotity) {
             super(mac, priotity);
             this.macName = mac.getName().toString();
             this.params = mac.getParameters();
         }
 
-        private String getName(){
+        private String getName() {
             return macName;
         }
-        
-        private List getParams(){
+
+        private List getParams() {
             return params;
         }
 
         public String getItemText() {
             return getName();
         }
-        
-        protected CsmPaintComponent.MacroPaintComponent createPaintComponent(){
+
+        protected CsmPaintComponent.MacroPaintComponent createPaintComponent() {
             return new CsmPaintComponent.MacroPaintComponent();
         }
 
@@ -592,32 +589,33 @@ public abstract class CsmResultItem
             if (macroPaintComp == null) {
                 macroPaintComp = createPaintComponent();
             }
-            CsmMacro mac = (CsmMacro)getAssociatedObject();
+            CsmMacro mac = (CsmMacro) getAssociatedObject();
             macroPaintComp.setName(getName());
             macroPaintComp.setParams(getParams());
             macroPaintComp.setSelected(isSelected);
             return macroPaintComp;
         }
     }
-  
+
     public static class TemplateParameterResultItem extends CsmResultItem {
+
         private String parName;
         private static CsmPaintComponent.TemplateParameterPaintComponent parPaintComp = null;
-        
+
         public TemplateParameterResultItem(CsmTemplateParameter par, int priotity) {
             super(par, priotity);
             this.parName = par.getName().toString();
         }
 
-        private String getName(){
+        private String getName() {
             return parName;
         }
-        
+
         public String getItemText() {
             return getName();
         }
-        
-        protected CsmPaintComponent.TemplateParameterPaintComponent createPaintComponent(){
+
+        protected CsmPaintComponent.TemplateParameterPaintComponent createPaintComponent() {
             return new CsmPaintComponent.TemplateParameterPaintComponent();
         }
 
@@ -630,25 +628,26 @@ public abstract class CsmResultItem
             return parPaintComp;
         }
     }
-    
+
     public static class LabelResultItem extends CsmResultItem {
+
         private String parName;
         private static CsmPaintComponent.LabelPaintComponent parPaintComp = null;
-        
+
         public LabelResultItem(CsmLabel par, int priotity) {
             super(par, priotity);
             this.parName = par.getLabel().toString();
         }
 
-        private String getName(){
+        private String getName() {
             return parName;
         }
-        
+
         public String getItemText() {
             return getName();
         }
-        
-        protected CsmPaintComponent.LabelPaintComponent createPaintComponent(){
+
+        protected CsmPaintComponent.LabelPaintComponent createPaintComponent() {
             return new CsmPaintComponent.LabelPaintComponent();
         }
 
@@ -663,18 +662,17 @@ public abstract class CsmResultItem
     }
 
     public abstract static class VariableResultItem extends CsmResultItem {
-        
+
         private String typeName;
         private Color typeColor;
         private String fldName;
         private int modifiers;
         private boolean isDeprecated;
-        
         private static CsmPaintComponent.FieldPaintComponent fieldComponent = null;
         private static CsmPaintComponent.FieldPaintComponent globVarComponent = null;
         private static CsmPaintComponent.FieldPaintComponent localVarComponent = null;
         private static CsmPaintComponent.FieldPaintComponent fileLocalVarComponent = null;
-        
+
         public VariableResultItem(CsmVariable fld, int priotity) {
             super(fld, priotity);
             this.fldName = fld.getName().toString();
@@ -682,17 +680,17 @@ public abstract class CsmResultItem
             this.typeName = getTypeName(fld.getType());
             this.typeColor = getTypeColor(fld.getType());
         }
-        
+
         public String getItemText() {
             return fldName;
         }
-        
+
         abstract protected CsmPaintComponent.FieldPaintComponent createPaintComponent();
-        
+
         public java.awt.Component getPaintComponent(boolean isSelected) {
             CsmPaintComponent.FieldPaintComponent comp = null;
             assert (CsmKindUtilities.isCsmObject(getAssociatedObject())) : "must be csm object"; //NOI18N
-            CsmObject var = (CsmObject)getAssociatedObject();
+            CsmObject var = (CsmObject) getAssociatedObject();
             if (CsmKindUtilities.isField(var)) {
                 if (fieldComponent == null) {
                     fieldComponent = createPaintComponent();
@@ -707,43 +705,45 @@ public abstract class CsmResultItem
                 if (fileLocalVarComponent == null) {
                     fileLocalVarComponent = createPaintComponent();
                 }
-                comp = fileLocalVarComponent;    
+                comp = fileLocalVarComponent;
             } else {
-                assert (CsmKindUtilities.isLocalVariable(var)) : 
-                    "support only global var, local var, file local var and class fields"; //NOI18N
+                assert (CsmKindUtilities.isLocalVariable(var)) :
+                        "support only global var, local var, file local var and class fields"; //NOI18N
                 if (localVarComponent == null) {
                     localVarComponent = createPaintComponent();
                 }
-                comp = localVarComponent;                
+                comp = localVarComponent;
             }
             comp.setTypeName(typeName);
             comp.setName(fldName);
             comp.setTypeColor(typeColor);
             comp.setModifiers(modifiers);
             comp.setSelected(isSelected);
-            
+
             return comp;
         }
     }
-    
+
     public static class FileLocalFunctionResultItem extends MethodResultItem {
+
         public FileLocalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration) {
             super(mtd, substituteExp, priotity, isDeclaration);
         }
-        
+
         @Override
-        protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent(){
+        protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent() {
             return new CsmPaintComponent.FileLocalFunctionPaintComponent();
         }
     }
-    
+
     public static class GlobalFunctionResultItem extends MethodResultItem {
+
         public GlobalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration) {
             super(mtd, substituteExp, priotity, isDeclaration);
         }
-        
+
         @Override
-        protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent(){
+        protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent() {
             return new CsmPaintComponent.GlobalFunctionPaintComponent();
         }
 
@@ -761,7 +761,7 @@ public abstract class CsmResultItem
             }
             return false;
         }
-        
+
         private boolean isAfterShiftOperator(JTextComponent c) {
             TokenSequence<CppTokenId> ts;
             ts = CndLexerUtilities.getCppTokenSequence(c, 0);
@@ -800,56 +800,55 @@ public abstract class CsmResultItem
     }
 
     public static class MethodResultItem extends ConstructorResultItem {
-        
+
         private static CsmPaintComponent.MethodPaintComponent mtdComponent = null;
         private static CsmPaintComponent.MethodPaintComponent globFunComponent = null;
         private String typeName;
         private Color typeColor;
-        
-        
-        public MethodResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration){
+
+        public MethodResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration) {
             super(mtd, substituteExp, priotity, isDeclaration);
             typeName = CsmResultItem.getTypeName(mtd.getReturnType());
             typeColor = CsmResultItem.getTypeColor(mtd.getReturnType());
         }
-        
+
         public String getTypeName() {
             return typeName;
         }
-        
+
         public void setTypeName(String typeName) {
             this.typeName = typeName;
         }
-        
+
         public Color getTypeColor() {
             return typeColor;
         }
-        
+
         public void setTypeColor(Color typeColor) {
             this.typeColor = typeColor;
         }
-        
+
         @Override
-        protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent(){
+        protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent() {
             return new CsmPaintComponent.MethodPaintComponent();
         }
-        
+
         @Override
         public Component getPaintComponent(boolean isSelected) {
             CsmPaintComponent.MethodPaintComponent comp = null;
             assert (CsmKindUtilities.isCsmObject(getAssociatedObject())) : "must be csm object"; //NOI18N
-            CsmObject mtd = (CsmObject)getAssociatedObject();
+            CsmObject mtd = (CsmObject) getAssociatedObject();
             if (CsmKindUtilities.isMethod(mtd)) {
                 if (mtdComponent == null) {
-                    mtdComponent = (CsmPaintComponent.MethodPaintComponent)createPaintComponent();
+                    mtdComponent = (CsmPaintComponent.MethodPaintComponent) createPaintComponent();
                 }
                 comp = mtdComponent;
             } else {
                 assert (CsmKindUtilities.isGlobalFunction(mtd)) : "support only global fun and class methods"; //NOI18N
                 if (globFunComponent == null) {
-                    globFunComponent = (CsmPaintComponent.MethodPaintComponent)createPaintComponent();
+                    globFunComponent = (CsmPaintComponent.MethodPaintComponent) createPaintComponent();
                 }
-                comp = globFunComponent;                
+                comp = globFunComponent;
             }
 
             comp.setName(getName());
@@ -862,19 +861,20 @@ public abstract class CsmResultItem
             return comp;
         }
     }
-    
+
     public static class ConstructorResultItem extends CsmResultItem {
-        
+
         private CsmFunction ctr;
         private CsmCompletionExpression substituteExp;
         private boolean isDeclaration;
-        private List params = new ArrayList();
+        private List<ParamStr> params = new ArrayList<ParamStr>();
         private List excs = new ArrayList();
         private int modifiers;
         private static CsmPaintComponent.ConstructorPaintComponent ctrComponent = null;
         private int activeParameterIndex = -1;
         private int varArgIndex = -1;
         private final String mtdName;
+
         public ConstructorResultItem(CsmFunction ctr, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration) {
             super(ctr, priority);
             this.ctr = ctr;
@@ -882,46 +882,46 @@ public abstract class CsmResultItem
             this.isDeclaration = isDeclaration;
             this.modifiers = convertCsmModifiers(ctr);
             if (CsmKindUtilities.isTemplate(ctr)) {
-                mtdName = ((CsmTemplate)ctr).getDisplayName().toString();
+                mtdName = ((CsmTemplate) ctr).getDisplayName().toString();
             } else {
                 mtdName = ctr.getName().toString();
             }
             int i = 0;
-            for (Object prm : ctr.getParameters() ) {
-                if (prm == null){
+            for (Object prm : ctr.getParameters()) {
+                if (prm == null) {
                     continue;
                 }
-                CsmType type = ((CsmParameter)prm).getType();
+                CsmType type = ((CsmParameter) prm).getType();
                 if (type == null) {
                     // only var args parameters could have null types
-                    assert (((CsmParameter)prm).isVarArgs());
-                    params.add(new ParamStr("", "" , ((CsmParameter)prm).getName().toString(), true, KEYWORD_COLOR)); //NOI18N
+                    assert (((CsmParameter) prm).isVarArgs());
+                    params.add(new ParamStr("", "", ((CsmParameter) prm).getName().toString(), true, KEYWORD_COLOR)); //NOI18N
                     varArgIndex = i;
-                 } else {
+                } else {
                     // XXX may be need full name as the first param
                     // FIXUP: too expensive to call getClassifier here!
                     String strFullName = type.getText().toString();// type.getClassifier().getName();
-                    params.add(new ParamStr(strFullName, type.getText().toString(), ((CsmParameter)prm).getName().toString(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
+                    params.add(new ParamStr(strFullName, type.getText().toString(), ((CsmParameter) prm).getName().toString(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
                 }
                 i++;
-            }           
-            // TODO
+            }
+        // TODO
 //            CsmClass excepts[] = ctr.getExceptions();
 //            for (int i=0; i<excepts.length; i++) {
 //                CsmClass ex = (CsmClass) excepts[i];
 //                excs.add(new ExcStr(ex.getName(), getTypeColor(ex)));
 //            }
-            
+
         }
-        
+
         public CsmCompletionExpression getExpression() {
             return this.substituteExp;
         }
-        
+
         int getActiveParameterIndex() {
             return activeParameterIndex;
         }
-        
+
         /**
          * If set to value different than -1 it marks that
          * this component renders an outer enclosing constructor/method
@@ -930,25 +930,25 @@ public abstract class CsmResultItem
          */
         void setActiveParameterIndex(int activeParamIndex) {
             this.activeParameterIndex = activeParamIndex;
-        }        
-        
-        public int getModifiers(){
+        }
+
+        public int getModifiers() {
             return modifiers;
         }
-        
-        public String getName(){
+
+        public String getName() {
             // TODO review the output
             return mtdName;
         }
-        
-        public List getParams(){
+
+        public List getParams() {
             return params;
         }
-        
-        public List getExceptions(){
+
+        public List getExceptions() {
             return excs;
         }
-        
+
         public int getCurrentParamIndex() {
             int idx = 0;
             if (substituteExp != null && substituteExp.getExpID() == CsmCompletionExpression.METHOD_OPEN) {
@@ -959,12 +959,12 @@ public abstract class CsmResultItem
             }
             return idx;
         }
-        
-        public List createParamsList() {
-            List ret = new ArrayList();
+
+        public List<String> createParamsList() {
+            List<String> ret = new ArrayList<String>();
             for (Iterator it = getParams().iterator(); it.hasNext();) {
                 StringBuffer sb = new StringBuffer();
-                ParamStr ps = (ParamStr)it.next();
+                ParamStr ps = (ParamStr) it.next();
                 sb.append(ps.getSimpleTypeName());
                 if (ps.isVarArg()) {
                     sb.append("..."); // NOI18N
@@ -982,12 +982,13 @@ public abstract class CsmResultItem
             }
             return ret;
         }
-        
+
         @Override
         public boolean substituteText(final JTextComponent c, final int offset, final int origLen, final boolean shift) {
-            final boolean res[] = new boolean[] { true };
+            final boolean res[] = new boolean[]{true};
             final AtomicBoolean showTooltip = new AtomicBoolean();
             final BaseDocument doc = (BaseDocument) c.getDocument();
+            final CsmResultItem thisItem = this;
             doc.runAtomic(new Runnable() {
 
                 public void run() {
@@ -1022,7 +1023,7 @@ public abstract class CsmResultItem
                                 if (activeParamIndex != -1) { // Active parameter being shown
                                     boolean substed = false;
                                     if (activeParamIndex < parmsCnt) {
-                                        String paramName = ((ParamStr) params.get(activeParamIndex)).getName();
+                                        String paramName = (params.get(activeParamIndex)).getName();
                                         if (paramName != null) {
                                             try {
                                                 // Fill in the parameter's name
@@ -1044,7 +1045,7 @@ public abstract class CsmResultItem
                                 } catch (BadLocationException e) {
                                 }
 
-                                boolean isVarArg = parmsCnt > 0 ? ((ParamStr) params.get(parmsCnt - 1)).isVarArg() : false;
+                                boolean isVarArg = parmsCnt > 0 ? (params.get(parmsCnt - 1)).isVarArg() : false;
                                 if (ind < parmsCnt || isVarArg) {
                                     text = addSpace ? " " : ""; // NOI18N
                                 }
@@ -1061,7 +1062,7 @@ public abstract class CsmResultItem
                                 Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
                                 addClosingParen = prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
                             }
-                            
+
                             if (addParams) {
                                 addParams = !isFunctionAsPointer(c, text);
                             }
@@ -1076,7 +1077,7 @@ public abstract class CsmResultItem
                                         } // NOI18N
                                         len = fnwpos + 1 - offset;
                                         text += paramsText;
-                                        toAdd = null; // do not add '.', ',', ';'
+                                        thisItem.toAdd = null; // do not add '.', ',', ';'
                                     }
                                 } catch (BadLocationException e) {
                                 }
@@ -1096,7 +1097,7 @@ public abstract class CsmResultItem
                                     }
                                     if (isDeclaration || addClosingParen) {
                                         text += ")";  // NOI18N
-                                        if (isDeclaration && CsmKindUtilities.isMethod(ctr) && ((CsmMethod)ctr).isConst()) {
+                                        if (isDeclaration && CsmKindUtilities.isMethod(ctr) && ((CsmMethod) ctr).isConst()) {
                                             // Fix for IZ#143117: Method autocompletion does not add 'const' keyword
                                             text += " const"; // NOI18N
                                         }
@@ -1120,9 +1121,9 @@ public abstract class CsmResultItem
                     }
 
                     if (text != null) {
-                        if (toAdd != null && !toAdd.equals("\n") && !"(".equals(toAdd)) // NOI18N
+                        if (thisItem.toAdd != null && !thisItem.toAdd.equals("\n") && !"(".equals(thisItem.toAdd)) // NOI18N
                         {
-                            text += toAdd;
+                            text += thisItem.toAdd;
                         }
                         // Update the text
                         try {
@@ -1138,7 +1139,7 @@ public abstract class CsmResultItem
                             } else if (selectionStartOffset >= 0) {
                                 c.select(offset + selectionStartOffset,
                                         offset + selectionEndOffset);
-                            } else if ("(".equals(toAdd)) { // NOI18N
+                            } else if ("(".equals(thisItem.toAdd)) { // NOI18N
                                 int index = text.lastIndexOf(')');
                                 if (index > -1) {
                                     c.setCaretPosition(offset + index);
@@ -1161,21 +1162,21 @@ public abstract class CsmResultItem
             }
             return res[0];
         }
-        
+
         // Checks is it function call or usage of function as a pointer
         protected boolean isFunctionAsPointer(JTextComponent c, String funName) {
             return false;
         }
-      
+
         public String getItemText() {
             // TODO review the output
             return ctr.getName().toString();
         }
-        
-        protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent(){
+
+        protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent() {
             return new CsmPaintComponent.ConstructorPaintComponent();
         }
-        
+
         public Component getPaintComponent(boolean isSelected) {
             if (ctrComponent == null) {
                 ctrComponent = createPaintComponent();
@@ -1187,30 +1188,28 @@ public abstract class CsmResultItem
             ctrComponent.setSelected(isSelected);
             return ctrComponent;
         }
-        
-        
     }
-    
-    public static class NamespaceAliasResultItem extends CsmResultItem{
-        
+
+    public static class NamespaceAliasResultItem extends CsmResultItem {
+
         private CsmNamespaceAlias alias;
         private String aliasName;
         private static CsmPaintComponent.NamespaceAliasPaintComponent aliasComponent;
-        
-        public NamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath, int priotity){
+
+        public NamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath, int priotity) {
             super(alias, priotity);
             this.alias = alias;
             this.aliasName = alias.getAlias().toString();
-        }        
-        
+        }
+
         public String getItemText() {
             return alias.getAlias().toString();
         }
-        
-        protected CsmPaintComponent.NamespaceAliasPaintComponent createPaintComponent(){
+
+        protected CsmPaintComponent.NamespaceAliasPaintComponent createPaintComponent() {
             return new CsmPaintComponent.NamespaceAliasPaintComponent();
         }
-        
+
         public Component getPaintComponent(boolean isSelected) {
             if (aliasComponent == null) {
                 aliasComponent = createPaintComponent();
@@ -1219,32 +1218,30 @@ public abstract class CsmResultItem
             aliasComponent.setAliasName(aliasName);
             return aliasComponent;
         }
-        
     }
-    
-    public static class NamespaceResultItem extends CsmResultItem{
-        
+
+    public static class NamespaceResultItem extends CsmResultItem {
+
         private boolean displayFullNamespacePath;
         private CsmNamespace pkg;
         private String pkgName;
         private static CsmPaintComponent.NamespacePaintComponent pkgComponent;
-        
-        public NamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath, int priotity){
+
+        public NamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath, int priotity) {
             super(pkg, priotity);
             this.pkg = pkg;
             this.displayFullNamespacePath = displayFullNamespacePath;
             this.pkgName = pkg.getName().toString();
         }
-        
-        
+
         public String getItemText() {
             return displayFullNamespacePath ? pkg.getQualifiedName().toString() : pkg.getName().toString();
         }
-        
-        protected CsmPaintComponent.NamespacePaintComponent createPaintComponent(){
+
+        protected CsmPaintComponent.NamespacePaintComponent createPaintComponent() {
             return new CsmPaintComponent.NamespacePaintComponent();
         }
-        
+
         public Component getPaintComponent(boolean isSelected) {
             if (pkgComponent == null) {
                 pkgComponent = createPaintComponent();
@@ -1254,188 +1251,173 @@ public abstract class CsmResultItem
             pkgComponent.setDisplayFullNamespacePath(displayFullNamespacePath);
             return pkgComponent;
         }
-        
     }
-    
-    public static class EnumResultItem extends CsmResultItem{
-        
+
+    public static class EnumResultItem extends CsmResultItem {
+
         private CsmEnum enm;
         private boolean isInterface;
         private int classDisplayOffset;
         private boolean isDeprecated;
         private boolean displayFQN;
-        
         private static CsmPaintComponent.EnumPaintComponent enumComponent = null;
-        
-        public EnumResultItem(CsmEnum enm, boolean displayFQN, int priotity){
+
+        public EnumResultItem(CsmEnum enm, boolean displayFQN, int priotity) {
             this(enm, 0, displayFQN, priotity);
         }
-        
-        public EnumResultItem(CsmEnum enm, int classDisplayOffset, boolean displayFQN, int priotity){
+
+        public EnumResultItem(CsmEnum enm, int classDisplayOffset, boolean displayFQN, int priotity) {
             super(enm, priotity);
             this.enm = enm;
             this.classDisplayOffset = classDisplayOffset;
             this.displayFQN = displayFQN;
         }
-        
-        
-        protected String getName(){
+
+        protected String getName() {
             return enm.getName().toString();
         }
-        
+
         @Override
-        protected String getReplaceText(){
+        protected String getReplaceText() {
             String text = getItemText();
-            if (classDisplayOffset > 0
-                    && classDisplayOffset < text.length()
-                    ) { // Only the last name for inner classes
+            if (classDisplayOffset > 0 && classDisplayOffset < text.length()) { // Only the last name for inner classes
                 text = text.substring(classDisplayOffset);
             }
             return text;
         }
-        
+
         public String getItemText() {
             return displayFQN ? enm.getQualifiedName().toString() : enm.getName().toString();
         }
-        
-        protected CsmPaintComponent.EnumPaintComponent createPaintComponent(){
+
+        protected CsmPaintComponent.EnumPaintComponent createPaintComponent() {
             return new CsmPaintComponent.EnumPaintComponent();
         }
-        
+
         public Component getPaintComponent(boolean isSelected) {
-            if (enumComponent == null){
+            if (enumComponent == null) {
                 enumComponent = createPaintComponent();
             }
             enumComponent.setSelected(isSelected);
             enumComponent.setFormatEnumName(getName());
             return enumComponent;
         }
-        
     }
-    
+
     public static class EnumeratorResultItem extends CsmResultItem {
-        
+
         private CsmEnumerator enmtr;
         private int enumDisplayOffset;
         private boolean isDeprecated;
         private boolean displayFQN;
-        
         private static CsmPaintComponent.EnumeratorPaintComponent enumtrComponent = null;
-        
-        public EnumeratorResultItem(CsmEnumerator enmtr, boolean displayFQN, int priotity){
+
+        public EnumeratorResultItem(CsmEnumerator enmtr, boolean displayFQN, int priotity) {
             this(enmtr, 0, displayFQN, priotity);
         }
-        
-        public EnumeratorResultItem(CsmEnumerator enmtr, int enumDisplayOffset, boolean displayFQN, int priotity){
+
+        public EnumeratorResultItem(CsmEnumerator enmtr, int enumDisplayOffset, boolean displayFQN, int priotity) {
             super(enmtr, priotity);
             this.enmtr = enmtr;
             this.enumDisplayOffset = enumDisplayOffset;
             this.displayFQN = displayFQN;
         }
-        
-        
-        protected String getName(){
+
+        protected String getName() {
             return enmtr.getName().toString();
         }
-        
+
         @Override
-        protected String getReplaceText(){
+        protected String getReplaceText() {
             String text = getItemText();
-            if (enumDisplayOffset > 0
-                    && enumDisplayOffset < text.length()
-                    ) { // Only the last name for inner classes
+            if (enumDisplayOffset > 0 && enumDisplayOffset < text.length()) { // Only the last name for inner classes
                 text = text.substring(enumDisplayOffset);
             }
             return text;
         }
-        
+
         public String getItemText() {
             // TODO: do we need name of enum?
             return (displayFQN ? enmtr.getEnumeration().getQualifiedName() + CsmCompletion.SCOPE : "") + enmtr.getName(); //NOI18N
         }
-        
-        protected CsmPaintComponent.EnumeratorPaintComponent createPaintComponent(){
+
+        protected CsmPaintComponent.EnumeratorPaintComponent createPaintComponent() {
             return new CsmPaintComponent.EnumeratorPaintComponent();
         }
-        
+
         public Component getPaintComponent(boolean isSelected) {
-            if (enumtrComponent == null){
+            if (enumtrComponent == null) {
                 enumtrComponent = createPaintComponent();
             }
             enumtrComponent.setSelected(isSelected);
             enumtrComponent.setFormatEnumeratorName(getName());
             return enumtrComponent;
         }
-        
-    }    
-    
-    public static class ClassResultItem extends CsmResultItem{
-        
+    }
+
+    public static class ClassResultItem extends CsmResultItem {
+
         private CsmClass cls;
         private CsmDeclaration.Kind kind;
         private boolean isInterface;
         private int classDisplayOffset;
         private boolean isDeprecated;
         private boolean displayFQN;
-        
         private static CsmPaintComponent.ClassPaintComponent clsComponent = null;
         private static CsmPaintComponent.StructPaintComponent structComponent = null;
         private static CsmPaintComponent.UnionPaintComponent unionComponent = null;
-        
-        public ClassResultItem(CsmClass cls, boolean displayFQN, int priotity){
+
+        public ClassResultItem(CsmClass cls, boolean displayFQN, int priotity) {
             this(cls, 0, displayFQN, priotity);
         }
-        
-        public ClassResultItem(CsmClass cls, int classDisplayOffset, boolean displayFQN, int priotity){
+
+        public ClassResultItem(CsmClass cls, int classDisplayOffset, boolean displayFQN, int priotity) {
             super(cls, priotity);
             this.cls = cls;
             this.kind = cls.getKind();
             this.classDisplayOffset = classDisplayOffset;
             this.displayFQN = displayFQN;
         }
-        
-        
-        protected String getName(){
-            return CsmKindUtilities.isTemplate(cls) ? ((CsmTemplate)cls).getDisplayName().toString() : cls.getName().toString();
+
+        protected String getName() {
+            return CsmKindUtilities.isTemplate(cls) ? ((CsmTemplate) cls).getDisplayName().toString() : cls.getName().toString();
         }
-        
+
         @Override
-        protected String getReplaceText(){
+        protected String getReplaceText() {
             String text = cls.getName().toString();
-            if (classDisplayOffset > 0
-                    && classDisplayOffset < text.length()
-                    ) { // Only the last name for inner classes
+            if (classDisplayOffset > 0 && classDisplayOffset < text.length()) { // Only the last name for inner classes
                 text = text.substring(classDisplayOffset);
             }
             return text;
         }
-        
+
         public String getItemText() {
             return displayFQN ? cls.getQualifiedName().toString() : getName();
         }
-        
-        protected CsmPaintComponent.StructPaintComponent createStructPaintComponent(){
+
+        protected CsmPaintComponent.StructPaintComponent createStructPaintComponent() {
             return new CsmPaintComponent.StructPaintComponent();
         }
-        
-        protected CsmPaintComponent.UnionPaintComponent createUnionPaintComponent(){
+
+        protected CsmPaintComponent.UnionPaintComponent createUnionPaintComponent() {
             return new CsmPaintComponent.UnionPaintComponent();
         }
-        
-        protected CsmPaintComponent.ClassPaintComponent createClassPaintComponent(){
+
+        protected CsmPaintComponent.ClassPaintComponent createClassPaintComponent() {
             return new CsmPaintComponent.ClassPaintComponent();
         }
-        
+
         public Component getPaintComponent(boolean isSelected) {
-            if (kind == CsmDeclaration.Kind.STRUCT){
-                if (structComponent == null){
+            if (kind == CsmDeclaration.Kind.STRUCT) {
+                if (structComponent == null) {
                     structComponent = createStructPaintComponent();
                 }
                 structComponent.setSelected(isSelected);
                 structComponent.setFormatClassName(getName());
                 return structComponent;
-            }else if (kind == CsmDeclaration.Kind.UNION) {
-                if (unionComponent == null){
+            } else if (kind == CsmDeclaration.Kind.UNION) {
+                if (unionComponent == null) {
                     unionComponent = createUnionPaintComponent();
                 }
                 unionComponent.setSelected(isSelected);
@@ -1443,7 +1425,7 @@ public abstract class CsmResultItem
                 return unionComponent;
             } else {
                 assert (kind == CsmDeclaration.Kind.CLASS) : "must be class kind";
-                if (clsComponent == null){
+                if (clsComponent == null) {
                     clsComponent = createClassPaintComponent();
                 }
                 clsComponent.setSelected(isSelected);
@@ -1451,25 +1433,23 @@ public abstract class CsmResultItem
                 return clsComponent;
             }
         }
-        
     }
-    
-    public static class ForwardClassResultItem extends CsmResultItem{
-        
+
+    public static class ForwardClassResultItem extends CsmResultItem {
+
         private CsmClassForwardDeclaration cls;
         private CsmDeclaration.Kind kind;
         private int classDisplayOffset;
         private boolean displayFQN;
-        
         private static CsmPaintComponent.ClassPaintComponent clsComponent = null;
         private static CsmPaintComponent.StructPaintComponent structComponent = null;
         private static CsmPaintComponent.UnionPaintComponent unionComponent = null;
-        
-        public ForwardClassResultItem(CsmClassForwardDeclaration cls, boolean displayFQN, int priotity){
+
+        public ForwardClassResultItem(CsmClassForwardDeclaration cls, boolean displayFQN, int priotity) {
             this(cls, 0, displayFQN, priotity);
         }
-        
-        public ForwardClassResultItem(CsmClassForwardDeclaration cls, int classDisplayOffset, boolean displayFQN, int priotity){
+
+        public ForwardClassResultItem(CsmClassForwardDeclaration cls, int classDisplayOffset, boolean displayFQN, int priotity) {
             super(cls, priotity);
             this.cls = cls;
             CsmClass c = cls.getCsmClass();
@@ -1481,49 +1461,46 @@ public abstract class CsmResultItem
             this.classDisplayOffset = classDisplayOffset;
             this.displayFQN = displayFQN;
         }
-        
-        
-        protected String getName(){
-            return cls.getName().toString(); 
+
+        protected String getName() {
+            return cls.getName().toString();
         }
-        
+
         @Override
-        protected String getReplaceText(){
+        protected String getReplaceText() {
             String text = getItemText();
-            if (classDisplayOffset > 0
-                    && classDisplayOffset < text.length()
-                    ) { // Only the last name for inner classes
+            if (classDisplayOffset > 0 && classDisplayOffset < text.length()) { // Only the last name for inner classes
                 text = text.substring(classDisplayOffset);
             }
             return text;
         }
-        
+
         public String getItemText() {
             return displayFQN ? cls.getQualifiedName().toString() : getName();
         }
-        
-        protected CsmPaintComponent.StructPaintComponent createStructPaintComponent(){
+
+        protected CsmPaintComponent.StructPaintComponent createStructPaintComponent() {
             return new CsmPaintComponent.StructPaintComponent();
         }
-        
-        protected CsmPaintComponent.UnionPaintComponent createUnionPaintComponent(){
+
+        protected CsmPaintComponent.UnionPaintComponent createUnionPaintComponent() {
             return new CsmPaintComponent.UnionPaintComponent();
         }
-        
-        protected CsmPaintComponent.ClassPaintComponent createClassPaintComponent(){
+
+        protected CsmPaintComponent.ClassPaintComponent createClassPaintComponent() {
             return new CsmPaintComponent.ClassPaintComponent();
         }
-        
+
         public Component getPaintComponent(boolean isSelected) {
-            if (kind == CsmDeclaration.Kind.STRUCT){
-                if (structComponent == null){
+            if (kind == CsmDeclaration.Kind.STRUCT) {
+                if (structComponent == null) {
                     structComponent = createStructPaintComponent();
                 }
                 structComponent.setSelected(isSelected);
                 structComponent.setFormatClassName(getName());
                 return structComponent;
-            }else if (kind == CsmDeclaration.Kind.UNION) {
-                if (unionComponent == null){
+            } else if (kind == CsmDeclaration.Kind.UNION) {
+                if (unionComponent == null) {
                     unionComponent = createUnionPaintComponent();
                 }
                 unionComponent.setSelected(isSelected);
@@ -1531,7 +1508,7 @@ public abstract class CsmResultItem
                 return unionComponent;
             } else {
                 assert (kind == CsmDeclaration.Kind.CLASS) : "must be class kind";
-                if (clsComponent == null){
+                if (clsComponent == null) {
                     clsComponent = createClassPaintComponent();
                 }
                 clsComponent.setSelected(isSelected);
@@ -1539,62 +1516,56 @@ public abstract class CsmResultItem
                 return clsComponent;
             }
         }
-        
     }
-    
+
     public static class TypedefResultItem extends CsmResultItem {
-        
+
         private CsmTypedef def;
         private int defDisplayOffset;
         private boolean isDeprecated;
         private boolean displayFQN;
-        
         private static CsmPaintComponent.TypedefPaintComponent defComponent = null;
-        
-        public TypedefResultItem(CsmTypedef def, boolean displayFQN, int priotity){
+
+        public TypedefResultItem(CsmTypedef def, boolean displayFQN, int priotity) {
             this(def, 0, displayFQN, priotity);
         }
-        
-        public TypedefResultItem(CsmTypedef def, int defDisplayOffset, boolean displayFQN, int priotity){
+
+        public TypedefResultItem(CsmTypedef def, int defDisplayOffset, boolean displayFQN, int priotity) {
             super(def, priotity);
             this.def = def;
             this.defDisplayOffset = defDisplayOffset;
             this.displayFQN = displayFQN;
         }
-        
-        
-        protected String getName(){
+
+        protected String getName() {
             return def.getName().toString();
         }
-        
+
         @Override
-        protected String getReplaceText(){
+        protected String getReplaceText() {
             String text = getItemText();
-            if (defDisplayOffset > 0
-                    && defDisplayOffset < text.length()
-                    ) { // Only the last name for inner classes
+            if (defDisplayOffset > 0 && defDisplayOffset < text.length()) { // Only the last name for inner classes
                 text = text.substring(defDisplayOffset);
             }
             return text;
         }
-        
+
         public String getItemText() {
             return displayFQN ? def.getQualifiedName().toString() : def.getName().toString();
-        }     
-        
-        protected CsmPaintComponent.TypedefPaintComponent createTypedefPaintComponent(){
+        }
+
+        protected CsmPaintComponent.TypedefPaintComponent createTypedefPaintComponent() {
             return new CsmPaintComponent.TypedefPaintComponent();
         }
-        
+
         public Component getPaintComponent(boolean isSelected) {
-            if (defComponent == null){
+            if (defComponent == null) {
                 defComponent = createTypedefPaintComponent();
             }
             defComponent.setSelected(isSelected);
             defComponent.setFormatTypedefName(getName());
             return defComponent;
         }
-        
     }
 
     public static class StringResultItem extends CsmResultItem {
@@ -1619,17 +1590,16 @@ public abstract class CsmResultItem
             stringComponent.setString(str);
             return stringComponent;
         }
-        
+
         @Override
-        public Object getAssociatedObject(){
+        public Object getAssociatedObject() {
             return str;
-        }     
-        
+        }
+
         protected CsmPaintComponent.StringPaintComponent createStringPaintComponent() {
             return new CsmPaintComponent.StringPaintComponent();
         }
     }
-    
 //    static class ParamStr {
 //        private String type, simpleType, prm;
 //        private Color typeColor;
@@ -1656,7 +1626,6 @@ public abstract class CsmResultItem
 //            return typeColor;
 //        }
 //    }
-    
 //    static class ExcStr {
 //        private String name;
 //        private Color typeColor;
@@ -1673,5 +1642,4 @@ public abstract class CsmResultItem
 //            return typeColor;
 //        }
 //    }
-    
 }

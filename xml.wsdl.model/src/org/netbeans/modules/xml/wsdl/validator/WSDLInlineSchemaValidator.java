@@ -55,6 +55,7 @@ import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public class WSDLInlineSchemaValidator extends XsdBasedValidator {
     
     @SuppressWarnings("unchecked")

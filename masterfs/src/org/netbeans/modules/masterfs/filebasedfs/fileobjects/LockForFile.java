@@ -50,6 +50,8 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.openide.filesystems.FileAlreadyLockedException;
@@ -67,6 +69,7 @@ public class LockForFile extends FileLock {
             new ConcurrentHashMap<String, Namesakes>();
     private static final String PREFIX = ".LCK";
     private static final String SUFFIX = "~";
+    private static final Logger LOGGER = Logger.getLogger(LockForFile.class.getName());
     private File file;
     private File lock;
     private boolean valid = false;
@@ -74,6 +77,7 @@ public class LockForFile extends FileLock {
     static {
         Runtime.getRuntime().addShutdownHook(new Thread() {
 
+            @Override
             public void run() {
                 hardUnlockAll();
             }
@@ -105,7 +109,11 @@ public class LockForFile extends FileLock {
         }
         if (namesakes.putInstance(file, result) == null) {
             FileAlreadyLockedException alreadyLockedException = new FileAlreadyLockedException(file.getAbsolutePath());
-            alreadyLockedException.initCause(namesakes.getInstance(file).lockedBy);
+            LockForFile previousLock = namesakes.getInstance(file);
+            // #151576 - check for null although it should not happen
+            if (previousLock != null) {
+                alreadyLockedException.initCause(previousLock.lockedBy);
+            }
             throw alreadyLockedException;
         }
         result.valid = true;
@@ -169,10 +177,10 @@ public class LockForFile extends FileLock {
         if (isHardLocked()) {
             throw new FileAlreadyLockedException(file.getAbsolutePath());
         }
-        File lock = getLock();
-        lock.getParentFile().mkdirs();
-        lock.createNewFile();
-        OutputStream os = new FileOutputStream(lock);
+        File hardLock = getLock();
+        hardLock.getParentFile().mkdirs();
+        hardLock.createNewFile();
+        OutputStream os = new FileOutputStream(hardLock);
         try {
             os.write(getFile().getAbsolutePath().getBytes());
             return true;
@@ -183,8 +191,7 @@ public class LockForFile extends FileLock {
 
     /*not private for tests*/
     boolean hardUnlock() {
-        File lock = getLock();
-        return lock.delete();
+        return getLock().delete();
     }
 
     private static synchronized boolean hardUnlockAll() {
@@ -249,7 +256,7 @@ public class LockForFile extends FileLock {
         try {
             file = file.getCanonicalFile();
         } catch (IOException iex) {
-            Exceptions.printStackTrace(iex);
+            LOGGER.log(Level.INFO, "[" + file + "] " + iex.getLocalizedMessage(), iex);
         }
 
         final File parentFile = file.getParentFile();

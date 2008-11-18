@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.project.ui.actions;
 
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -59,7 +61,7 @@ import org.openide.windows.InputOutput;
  * Download files from remote connection.
  * @author Tomas Mysik
  */
-public class DownloadCommand extends FtpCommand implements Displayable {
+public class DownloadCommand extends RemoteCommand implements Displayable {
     public static final String ID = "download"; // NOI18N
     public static final String DISPLAY_NAME = NbBundle.getMessage(DownloadCommand.class, "LBL_DownloadCommand");
 
@@ -83,12 +85,12 @@ public class DownloadCommand extends FtpCommand implements Displayable {
 
     private void invokeActionImpl(Lookup context) throws IllegalArgumentException {
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
-        assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
+        assert selectedFiles.length > 0 : "At least one node must be selected for Download action";
 
         FileObject[] sources = Utils.getSourceObjects(getProject());
 
-        InputOutput ftpLog = getFtpLog(getRemoteConfiguration().getDisplayName());
-        RemoteClient remoteClient = getRemoteClient(ftpLog);
+        InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
+        RemoteClient remoteClient = getRemoteClient(remoteLog);
         String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_DownloadingFiles", getProject().getName());
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         TransferInfo transferInfo = null;
@@ -120,7 +122,7 @@ public class DownloadCommand extends FtpCommand implements Displayable {
                 processRemoteException(ex);
             }
             if (transferInfo != null) {
-                processTransferInfo(transferInfo, ftpLog);
+                processTransferInfo(transferInfo, remoteLog);
             }
             progressHandle.finish();
         }

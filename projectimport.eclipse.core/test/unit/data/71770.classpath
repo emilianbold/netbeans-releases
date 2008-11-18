@@ -8,8 +8,8 @@
         </attributes>
     </classpathentry>
     <classpathentry kind="lib" path="C:/MyProjects/JavaAPI/wsdl4j.jar"/>
-    <classpathentry kind="lib" path="C:/MyProjects/JavaAPI/activation.jar"/>
-    <classpathentry kind="lib" path="C:/MyProjects/JavaAPI/axis.jar"/>
+    <classpathentry kind="lib" path="/MyProjects/JavaAPI/activation.jar"/>
+    <classpathentry kind="lib" path="JavaAPI/axis.jar"/>
     <classpathentry kind="lib" path="C:/MyProjects/JavaAPI/commons-codec.jar"/>
     <classpathentry kind="lib" path="C:/MyProjects/JavaAPI/commons-collections-3.1.jar"/>
     <classpathentry kind="lib" path="C:/MyProjects/JavaAPI/commons-configuration-1.0.jar"/>

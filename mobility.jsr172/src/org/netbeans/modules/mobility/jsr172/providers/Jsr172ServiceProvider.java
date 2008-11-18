@@ -60,6 +60,7 @@ import org.openide.util.Lookup;
  *
  * @author suchys
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.end2end.E2EServiceProvider.class, position=30)
 public class Jsr172ServiceProvider implements E2EServiceProvider {
         
     public String getServiceType() {

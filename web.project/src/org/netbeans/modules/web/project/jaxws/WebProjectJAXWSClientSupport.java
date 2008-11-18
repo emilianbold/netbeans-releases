@@ -110,20 +110,21 @@ public class WebProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*im
     
     /** return root folder for xml artifacts
      */
+    @Override
     protected FileObject getXmlArtifactsRoot() {
         FileObject confDir = project.getWebModule().getConfDir();
         return confDir == null ? super.getXmlArtifactsRoot():confDir;
     }
 
+    @Override
     public String addServiceClient(String clientName, String wsdlUrl, String packageName, boolean isJsr109) {
 
         String finalClientName = super.addServiceClient(clientName, wsdlUrl, packageName, isJsr109);
         
         // copy resources to WEB-INF/wsdl/client/${clientName}
-        // this will be done only for local wsdl files
         JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
         Client client = jaxWsModel.findClientByName(finalClientName);
-        if (client!=null && client.getWsdlUrl().startsWith("file:")) //NOI18N
+        if (client!=null)
             try {
                 FileObject wsdlFolder = getWsdlFolderForClient(finalClientName);
                 FileObject xmlResorcesFo = getLocalWsdlFolderForClient(finalClientName,false);

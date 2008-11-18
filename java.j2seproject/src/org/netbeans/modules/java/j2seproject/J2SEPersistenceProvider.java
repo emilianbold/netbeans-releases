@@ -67,7 +67,7 @@ import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesProvider;
 import org.netbeans.modules.j2ee.persistence.spi.support.EntityMappingsMetadataModelHelper;
 import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper;
-import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -121,7 +121,7 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
     public PersistenceScope findPersistenceScope(FileObject fo) {
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
-            J2SEPersistenceProvider provider = (J2SEPersistenceProvider)project.getLookup().lookup(J2SEPersistenceProvider.class);
+            J2SEPersistenceProvider provider = project.getLookup().lookup(J2SEPersistenceProvider.class);
             return provider.getPersistenceScope();
         }
         return null;
@@ -130,7 +130,7 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
     public EntityClassScope findEntityClassScope(FileObject fo) {
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
-            J2SEPersistenceProvider provider = (J2SEPersistenceProvider)project.getLookup().lookup(J2SEPersistenceProvider.class);
+            J2SEPersistenceProvider provider = project.getLookup().lookup(J2SEPersistenceProvider.class);
             return provider.getEntityClassScope();
         }
         return null;

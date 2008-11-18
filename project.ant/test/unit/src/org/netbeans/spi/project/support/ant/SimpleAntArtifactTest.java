@@ -51,7 +51,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 
 /**
  * Test functionality of SimpleAntArtifact.
@@ -71,9 +71,7 @@ public class SimpleAntArtifactTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
-        TestUtil.setLookup(new Object[] {
-            AntBasedTestUtil.testAntBasedProjectType(),
-        });
+        MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType());
         pm = ProjectManager.getDefault();
         sisterprojdir = FileUtil.createFolder(scratch, "proj2");
         sisterh = ProjectGenerator.createProject(sisterprojdir, "test");
@@ -88,7 +86,6 @@ public class SimpleAntArtifactTest extends NbTestCase {
         sisterprojdir = null;
         sisterh = null;
         pm = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
     

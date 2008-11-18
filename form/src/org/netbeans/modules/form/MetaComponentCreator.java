@@ -128,7 +128,13 @@ public class MetaComponentCreator {
         if (compClass == null)
             return null; // class loading failed
 
-        return createAndAddComponent(compClass, targetComp, constraints, exactTargetMatch);
+        RADComponent metacomp = createAndAddComponent(compClass, targetComp, constraints, exactTargetMatch);
+        String typeParams = classSource.getTypeParameters();
+        if (typeParams != null) {
+            metacomp.setAuxValue(JavaCodeGenerator.AUX_TYPE_PARAMETERS, typeParams);
+            JavaCodeGenerator.setupComponentFromAuxValues(metacomp);
+        }
+        return metacomp;
     }
 
     /** Creates a copy of a metacomponent and adds it to FormModel. The new
@@ -209,7 +215,7 @@ public class MetaComponentCreator {
     // addPrecreatedComponent methods gets called. If adding is canceled for
     // whatever reason, releasePrecreatedComponent is called.
 
-    public RADVisualComponent precreateVisualComponent(ClassSource classSource) {
+    public RADVisualComponent precreateVisualComponent(final ClassSource classSource) {
         final Class compClass = prepareClass(classSource);
 
         // no preview component if this is a window, applet, or not visual
@@ -230,6 +236,11 @@ public class MetaComponentCreator {
                 new Mutex.ExceptionAction() {
                     public Object run() throws Exception {
                         preMetaComp = createVisualComponent(compClass);
+                        String typeParams = classSource.getTypeParameters();
+                        if (typeParams != null) {
+                            preMetaComp.setAuxValue(JavaCodeGenerator.AUX_TYPE_PARAMETERS, typeParams);
+                            JavaCodeGenerator.setupComponentFromAuxValues(preMetaComp);
+                        }
                         return preMetaComp;
                     }
                 }

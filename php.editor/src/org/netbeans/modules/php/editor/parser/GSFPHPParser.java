@@ -81,10 +81,11 @@ public class GSFPHPParser implements Parser {
             Properties languageProperties = PhpLanguageOptions.getProperties(file.getFileObject());
             shortTags = languageProperties.areShortTagsEnabled();
             aspTags = languageProperties.areAspTagsEnabled();
+            int end = 0;
             try {
                 CharSequence buffer = reader.read(file);
                 String source = asString(buffer);
-                
+                end = source.length();
                 int caretOffset = reader.getCaretOffset(file);
                 if (caretOffset != -1 && request.translatedSource != null) {
                     caretOffset = request.translatedSource.getAstOffset(caretOffset);
@@ -95,6 +96,11 @@ public class GSFPHPParser implements Parser {
             } catch (Exception exception) {
                 listener.exception(exception);
                 LOGGER.fine ("Exception during parsing: " + exception);
+                ASTError error = new ASTError(0, end);
+                List<Statement> statements = new ArrayList<Statement>();
+                statements.add(error);
+                Program emptyProgram = new Program(0, end, statements, Collections.<Comment>emptyList());
+                result = new PHPParseResult(this, file, emptyProgram, false);
             }
             ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
             listener.finished(doneEvent);
@@ -417,7 +423,7 @@ public class GSFPHPParser implements Parser {
         try {
             token = scanner.next_token();
             while (token.sym != ASTPHP5Symbols.EOF && end == -1) {
-                if (token.sym == ASTPHP5Symbols.T_CURLY_OPEN && token.left < index) {
+                if (token.sym == ASTPHP5Symbols.T_CURLY_OPEN && token.left <= index) {
                     start = token.right;
                 }
                 if (token.sym == ASTPHP5Symbols.T_CURLY_CLOSE && token.left >= index ) {
@@ -429,7 +435,7 @@ public class GSFPHPParser implements Parser {
         catch (IOException exception) {
             LOGGER.log(Level.INFO, "Exception during removing block", exception);   //NOI18N
         }
-        if (start < end) {
+        if (start > -1 && start < end) {
             context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end-start) + source.substring(end);
             context.sanitizedRange = new OffsetRange(start, end);
             return true;

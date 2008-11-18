@@ -64,11 +64,11 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -81,9 +81,9 @@ import org.openide.filesystems.FileObject;
 public class RestWrapperForSoapGenerator {
 
     private FileObject targetFile;
-    private WSService service;
-    private WSPort port;
-    private WSOperation operation;
+    private WsdlService service;
+    private WsdlPort port;
+    private WsdlOperation operation;
     private Project project;
     private Map<String, Class> primitiveTypes;
     public static final Modifier[] PUBLIC = new Modifier[]{Modifier.PUBLIC};
@@ -130,8 +130,8 @@ public class RestWrapperForSoapGenerator {
     static final String CLOSE_IF_PORT = "\n'}'\n";//NOI18N
     private String wsdlUrl;
 
-    public RestWrapperForSoapGenerator(WSService service, WSPort port,
-            WSOperation operation, Project project, FileObject targetFile, String wsdlUrl) {
+    public RestWrapperForSoapGenerator(WsdlService service, WsdlPort port,
+            WsdlOperation operation, Project project, FileObject targetFile, String wsdlUrl) {
         this.service = service;
         this.port = port;
         this.operation = operation;
@@ -175,9 +175,9 @@ public class RestWrapperForSoapGenerator {
         JavaSourceHelper.addImports(copy, new String[]{"javax.xml.namespace.QName"});
     }
 
-    public List<WSParameter> getOutputParameters() {
-        ArrayList<WSParameter> params = new ArrayList<WSParameter>();
-        for (WSParameter p : operation.getParameters()) {
+    public List<WsdlParameter> getOutputParameters() {
+        ArrayList<WsdlParameter> params = new ArrayList<WsdlParameter>();
+        for (WsdlParameter p : operation.getParameters()) {
             if (p.isHolder()) {
                 params.add(p);
             }
@@ -197,8 +197,8 @@ public class RestWrapperForSoapGenerator {
         Modifier[] modifiers = PUBLIC;
         String retType = returnType;
         if (retType.equals("void")) {  //if return type is void, find out if there are Holder paramters
-            List<WSParameter> parms = getOutputParameters();
-            for (WSParameter parm : parms) {
+            List<WsdlParameter> parms = getOutputParameters();
+            for (WsdlParameter parm : parms) {
                 if (parm.isHolder()) {//TODO pick the first one right now. 
                     //Should let user pick if there are multiple OUT parameters.
 
@@ -216,7 +216,7 @@ public class RestWrapperForSoapGenerator {
             retType = wrapInJaxbElement(retType);
         }
 
-        List<WSParameter> queryParams = operation.getParameters();
+        List<WsdlParameter> queryParams = operation.getParameters();
         String[] parameters = getHttpParamNames(queryParams);
         String[] paramTypes = getHttpParamTypes(queryParams);
         String[][] paramAnnotations = getHttpParamAnnotations(paramTypes);
@@ -243,9 +243,9 @@ public class RestWrapperForSoapGenerator {
 
     }
 
-    private String[] getHttpParamTypes(List<WSParameter> queryParams) {
+    private String[] getHttpParamTypes(List<WsdlParameter> queryParams) {
         List<String> types = new ArrayList<String>();
-        for (WSParameter queryParam : queryParams) {
+        for (WsdlParameter queryParam : queryParams) {
             String paramTypeName = queryParam.getTypeName();
             if (!queryParam.isHolder()) {
                 if (this.getPrimitiveType(paramTypeName) == null) {
@@ -259,9 +259,9 @@ public class RestWrapperForSoapGenerator {
         return types.toArray(new String[types.size()]);
     }
 
-    private String[] getHttpParamNames(List<WSParameter> queryParams) {
+    private String[] getHttpParamNames(List<WsdlParameter> queryParams) {
         List<String> names = new ArrayList<String>();
-        for (WSParameter queryParam : queryParams) {
+        for (WsdlParameter queryParam : queryParams) {
             if (!queryParam.isHolder()) {
                 names.add(queryParam.getName());
             }
@@ -352,7 +352,7 @@ public class RestWrapperForSoapGenerator {
     public Class[] getInputParameterTypes() {
         ArrayList<Class> types = new ArrayList<Class>();
 
-        for (WSParameter p : operation.getParameters()) {
+        for (WsdlParameter p : operation.getParameters()) {
             if (!p.isHolder()) {
                 int repeatCount = 0;
                 Class type = null;
@@ -388,13 +388,13 @@ public class RestWrapperForSoapGenerator {
         return types.toArray(new Class[types.size()]);
     }
 
-    private Object[][] getHttpParamAnnotationAttrs(List<WSParameter> queryParams, String[] typeNames) {
+    private Object[][] getHttpParamAnnotationAttrs(List<WsdlParameter> queryParams, String[] typeNames) {
         ArrayList<Object[]> attrs = new ArrayList<Object[]>();
 
         Object[] annotationAttrs = null;
 
         if (!hasComplexTypes(typeNames)) {
-            for (WSParameter param : queryParams) {
+            for (WsdlParameter param : queryParams) {
                 Class type = getType(project, param.getTypeName());
                 Object defaultValue = this.generateDefaultValue(type);
                 if (generateDefaultValue(type) != null) {
@@ -453,7 +453,7 @@ public class RestWrapperForSoapGenerator {
 
     }
 
-    private String getReturnStatement(WSOperation operation) {
+    private String getReturnStatement(WsdlOperation operation) {
         String statement = "return result";
         String returnTypeName = operation.getReturnTypeName();
         Class c = getPrimitiveType(returnTypeName);
@@ -472,7 +472,7 @@ public class RestWrapperForSoapGenerator {
         return methodBody;
     }
 
-    public String getWSInvocationCode(FileObject target, WSService service, WSPort port, WSOperation operation) {
+    public String getWSInvocationCode(FileObject target, WsdlService service, WsdlPort port, WsdlOperation operation) {
 
 
         String serviceFieldName = "service"; //NOI18N
@@ -481,12 +481,12 @@ public class RestWrapperForSoapGenerator {
         String portJavaName = port.getJavaName();
         String portGetterMethod = port.getPortGetter();
         String serviceJavaName = service.getJavaName();
-        List<WSParameter> arguments = operation.getParameters();
+        List<WsdlParameter> arguments = operation.getParameters();
         String returnTypeName = operation.getReturnTypeName();
         StringBuffer argumentBuffer = new StringBuffer();
 
         int i = 0;
-        for (WSParameter argument : arguments) {
+        for (WsdlParameter argument : arguments) {
             String argumentTypeName = argument.getTypeName();
             String argumentName = argument.getName();
             if (getPrimitiveType(argumentTypeName) == null) {
@@ -512,7 +512,7 @@ public class RestWrapperForSoapGenerator {
     }
 
     public String getJavaInvocationWithReturnBody(
-            WSOperation operation, String portJavaName,
+            WsdlOperation operation, String portJavaName,
             String portGetterMethod, String returnTypeName,
             String operationJavaName, String serviceFName,
             String argumentDeclarationPart) {

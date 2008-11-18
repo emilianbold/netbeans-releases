@@ -61,8 +61,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JPanel;
 
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 
 /**
  *
@@ -124,6 +122,7 @@ public abstract class CsmPaintComponent extends JPanel {
         return isSelected;
     }
     
+    @Override
     public void paintComponent(Graphics g) {
         // clear background
         g.setColor(getBackground());
@@ -165,6 +164,7 @@ public abstract class CsmPaintComponent extends JPanel {
      * returns string representation of paint item
      * IMPORTANT: have to be in sync with draw() method
      */   
+    @Override
     abstract public String toString();
     
     protected void setIcon(Icon icon){
@@ -302,6 +302,7 @@ public abstract class CsmPaintComponent extends JPanel {
         fontMetrics.stringWidth(s);
     }
     
+    @Override
     public void setFont(Font font) {
         super.setFont(font);
         
@@ -323,11 +324,7 @@ public abstract class CsmPaintComponent extends JPanel {
         return drawFont;
     }
     
-    protected Color getTypeColor(String s) {
-        return (CsmUtilities.isPrimitiveClassName(s))
-        ? KEYWORD_COLOR : TYPE_COLOR;
-    }
-    
+    @Override
     public Dimension getPreferredSize() {
         draw(null);
         Insets i = getInsets();
@@ -369,7 +366,7 @@ public abstract class CsmPaintComponent extends JPanel {
         }
         
         public PostfixString(String text, int fontStyle) {
-            this(text, CsmPaintComponent.this.POSTFIX_COLOR, fontStyle);            
+            this(text, CsmPaintComponent.POSTFIX_COLOR, fontStyle);            
         }
         
         void Draw(Graphics g) {            
@@ -596,6 +593,7 @@ public abstract class CsmPaintComponent extends JPanel {
         
         private Color STRUCT_COLOR = Color.red.darker().darker();
         
+        @Override
         protected Color getColor(){
             return STRUCT_COLOR;
         }
@@ -609,6 +607,7 @@ public abstract class CsmPaintComponent extends JPanel {
         
         private Color UNION_COLOR = Color.red.darker();
         
+        @Override
         protected Color getColor(){
             return UNION_COLOR;
         }
@@ -634,6 +633,7 @@ public abstract class CsmPaintComponent extends JPanel {
             return FIELD_COLOR;
         }
         
+        @Override
         public void setName(String fldName){
             this.fldName= fldName;
         }
@@ -707,10 +707,12 @@ public abstract class CsmPaintComponent extends JPanel {
             this.modifiers |= CsmUtilities.LOCAL_MEMBER_BIT | this.modifiers;
         }
         
+        @Override
         public Color getNameColor() {
             return VARIABLE_COLOR;
         }
 
+        @Override
         public void setModifiers(int modifiers) {
             super.setModifiers(modifiers | CsmUtilities.LOCAL_MEMBER_BIT);
         }
@@ -723,6 +725,7 @@ public abstract class CsmPaintComponent extends JPanel {
             super();
         }
         
+        @Override
         public Color getNameColor() {
             return VARIABLE_COLOR;
         }
@@ -735,6 +738,7 @@ public abstract class CsmPaintComponent extends JPanel {
             super();
         }
         
+        @Override
         public Color getNameColor() {
             return VARIABLE_COLOR;
         }
@@ -750,10 +754,12 @@ public abstract class CsmPaintComponent extends JPanel {
             super();
         }
 
+        @Override
         public String getName(){
             return name;
         }
         
+        @Override
         public void setName(String name){
             this.name = name;
         }
@@ -828,10 +834,12 @@ public abstract class CsmPaintComponent extends JPanel {
             super();
         }
 
+        @Override
         public String getName(){
             return name;
         }
         
+        @Override
         public void setName(String name){
             this.name = name;
         }
@@ -873,10 +881,12 @@ public abstract class CsmPaintComponent extends JPanel {
             super();
         }
 
+        @Override
         public String getName(){
             return name;
         }
         
+        @Override
         public void setName(String name){
             this.name = name;
         }
@@ -925,10 +935,12 @@ public abstract class CsmPaintComponent extends JPanel {
             return modifiers;
         }
         
+        @Override
         public String getName(){
             return name;
         }
         
+        @Override
         public void setName(String name){
             this.name = name;
         }
@@ -958,8 +970,8 @@ public abstract class CsmPaintComponent extends JPanel {
             //drawType
             drawString(g, prm.getSimpleTypeName(), prm.getTypeColor(), null, strike);
             
-            String name = prm.getName();
-            if (name != null && name.length() > 0) {
+            String parmName = prm.getName();
+            if (parmName != null && parmName.length() > 0) {
                 drawString(g, " ", strike); // NOI18N
                 drawString(g, prm.getName(), PARAMETER_NAME_COLOR, null, strike);
             }
@@ -1025,8 +1037,8 @@ public abstract class CsmPaintComponent extends JPanel {
             //type
             buf.append(prm.getSimpleTypeName());
             //name
-            String name = prm.getName();
-            if (name != null && name.length() > 0) {
+            String parmName = prm.getName();
+            if (parmName != null && parmName.length() > 0) {
                 buf.append(' '); // NOI18N
                 buf.append(prm.getName());
             }
@@ -1099,6 +1111,7 @@ public abstract class CsmPaintComponent extends JPanel {
             this.drawTypeAsPrefix = asPrefix;
         }
         
+        @Override
         protected void draw(Graphics g){
             // IMPORTANT:
             // when updated => have to update toString!
@@ -1126,6 +1139,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * returns string representation of paint item
          * IMPORTANT: have to be in sync with draw() method
          */
+        @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
             if (drawTypeAsPrefix) {
@@ -1155,6 +1169,7 @@ public abstract class CsmPaintComponent extends JPanel {
             super();
         }
         
+        @Override
         public Color getNameColor() {
             return FUN_COLOR;
         }
@@ -1167,6 +1182,7 @@ public abstract class CsmPaintComponent extends JPanel {
             super();
         }
         
+        @Override
         public Color getNameColor() {
             return FUN_COLOR;
         }
@@ -1205,6 +1221,7 @@ public abstract class CsmPaintComponent extends JPanel {
             }
         }
         
+        @Override
         public void setFont(Font font) {
             super.setFont(font);
             if (comp != null)

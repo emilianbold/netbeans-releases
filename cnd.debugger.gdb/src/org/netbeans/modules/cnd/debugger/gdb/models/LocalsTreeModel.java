@@ -45,8 +45,9 @@ import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.List;
 import java.util.Set;
-import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -69,13 +70,13 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
         
     private GdbDebugger debugger;
     private Listener listener;
-    private Vector listeners = new Vector();
-    private Set expandedNodes = new WeakSet();
-    private Set collapsedNodes = new WeakSet();
-    private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    private final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
+    private Set<Object> expandedNodes = new WeakSet<Object>();
+    private Set<Object> collapsedNodes = new WeakSet<Object>();
+    private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
         
     public LocalsTreeModel(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
         if (debugger != null) {
             debugger.addPropertyChangeListener(GdbDebugger.PROP_LOCALS_REFRESH, this);
         }
@@ -125,8 +126,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
             if (callStackFrame == null) {
                 return 1;
             } else {
-                LocalVariable[] lv = callStackFrame.getLocalVariables();
-                return lv.length;
+                return callStackFrame.getLocalVariables().length;
             }
         } else if (node instanceof AbstractVariable) { // ThisVariable & FieldVariable
                 AbstractVariable abstractVariable = (AbstractVariable) node;
@@ -178,7 +178,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
     
     public void removeModelListener(ModelListener l) {
         listeners.remove(l);
-        if (listeners.size() == 0) {
+        if (listeners.isEmpty()) {
             listener.destroy();
             listener = null;
         }
@@ -186,18 +186,14 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
     
     void fireTreeChanged() {
         log.fine("LTM.fireTreeChanged:");
-        Vector v = (Vector) listeners.clone();
-        int i, k = v.size();
-        for (i = 0; i < k; i++) {
-            ((ModelListener) v.get(i)).modelChanged(new ModelEvent.TreeChanged(this));
+        for (ModelListener l : listeners) {
+            l.modelChanged(new ModelEvent.TreeChanged(this));
         }
     }
     
     private void fireTableValueChangedChanged(Object node, String propertyName) {
-        Vector v = (Vector) listeners.clone();
-        int i, k = v.size();
-        for (i = 0; i < k; i++) {
-            ((ModelListener) v.get(i)).modelChanged(new ModelEvent.TableValueChanged(this, node, propertyName));
+        for (ModelListener l : listeners) {
+            l.modelChanged(new ModelEvent.TableValueChanged(this, node, propertyName));
         }
     }
     
@@ -206,7 +202,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
     
     private Object[] getLocalVariables(int from, int to) {
         synchronized (debugger.LOCK) {
-            CallStackFrame callStackFrame = (CallStackFrame) debugger.getCurrentCallStackFrame();
+            CallStackFrame callStackFrame = debugger.getCurrentCallStackFrame();
             if (callStackFrame == null) {
                 return new String [] {"No current thread"}; // NOI18N
             }
@@ -223,12 +219,12 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
     
     private static class Listener implements PropertyChangeListener {
         
-        private GdbDebugger debugger;
-        private WeakReference model;
+        private final GdbDebugger debugger;
+        private final WeakReference<LocalsTreeModel> model;
         
         public Listener(LocalsTreeModel tm, GdbDebugger debugger) {
             this.debugger = debugger;
-            model = new WeakReference(tm);
+            model = new WeakReference<LocalsTreeModel>(tm);
             debugger.addPropertyChangeListener(this);
         }
         
@@ -242,7 +238,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
         }
         
         private LocalsTreeModel getModel() {
-            LocalsTreeModel tm = (LocalsTreeModel) model.get();
+            LocalsTreeModel tm = model.get();
             if (tm == null) {
                 destroy();
             }
@@ -256,7 +252,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
         public void propertyChange(PropertyChangeEvent e) {
             if ((e.getPropertyName().equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME) ||
                     e.getPropertyName().equals(GdbDebugger.PROP_CURRENT_THREAD)) &&
-                    (debugger.getState().equals(GdbDebugger.STATE_STOPPED))) {
+                    (debugger.getState() == GdbDebugger.State.STOPPED)) {
                 // IF state has been changed to STOPPED or
                 // IF current call stack frame has been changed & state is stopped
                 log.fine("LTM.propertyChange: Change for " + e.getPropertyName());
@@ -271,13 +267,13 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
                 }
                 task = RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        if (debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+                        if (debugger.getState() == GdbDebugger.State.STOPPED) {
                             ltm.fireTreeChanged();
                         }
                     }
                 }, 500);
             } else if ((e.getPropertyName().equals(GdbDebugger.PROP_STATE)) &&
-                    !(debugger.getState().equals(GdbDebugger.STATE_STOPPED)) && task != null) {
+                    !(debugger.getState() == GdbDebugger.State.STOPPED) && task != null) {
                 // debugger has been resumed
                 // =>> cancel task
                 task.cancel();

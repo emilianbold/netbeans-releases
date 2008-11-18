@@ -45,7 +45,7 @@ import javax.swing.text.Document;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
 
-import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
+import org.netbeans.modules.cnd.editor.deprecated.fortran.options.FortranCodeStyle;
 
 /**
  * Syntax analyzes for Fortran source files.
@@ -107,7 +107,7 @@ public class FSyntax extends Syntax {
      *  otherwise it returns null
      */
     protected boolean isLineBeyondLimit() {
-        if ( (offset - lastNL > FSettingsDefaults.maximumTextWidth)  &&
+        if ( (offset - lastNL > FSettingsFactory.MAXIMUM_TEXT_WIDTH)  &&
         (lastNL >= 0) &&
         (state != IN_LINE_COMMENT) ) {
             state = IN_LINE_COMMENT;

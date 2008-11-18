@@ -22,6 +22,10 @@ public interface Operation {
     
     public String getName();
     
+    public String getJavaName();
+    
+    public void setJavaName(String name);
+    
     public void setOutput( Output output );
     
     public Output getOutput();

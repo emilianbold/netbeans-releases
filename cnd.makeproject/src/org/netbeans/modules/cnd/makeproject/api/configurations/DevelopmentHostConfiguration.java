@@ -102,9 +102,10 @@ public class DevelopmentHostConfiguration {
     public void setValue(final String v, boolean firePC) {
         for (int i = 0; i < names.length; i++) {
             if (v.equals(names[i])) {
+                String oname = names[value];
                 value = i;
                 if (firePC) {
-                    pcs.firePropertyChange(PROP_DEV_HOST, null, this);
+                    pcs.firePropertyChange(PROP_DEV_HOST, oname, this);
                 }
                 return;
             }

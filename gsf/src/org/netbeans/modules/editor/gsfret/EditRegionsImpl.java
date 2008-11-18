@@ -46,6 +46,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsf.api.EditRegions.class)
 public class EditRegionsImpl extends EditRegions {
 
     public void edit(final FileObject fo, final Set<OffsetRange> regions, final int caretOffset) throws BadLocationException {

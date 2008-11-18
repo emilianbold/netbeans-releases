@@ -48,12 +48,13 @@ import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.modules.debugger.actions.RunToCursorAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -125,25 +126,7 @@ public class LocalVariablesTest extends JellyTestCase {
     public void setUp() throws IOException {
         openDataProjects(Utilities.testProjectName);
         new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
-        System.out.println("########  " + getName() + "  #######");
-        int temp;
-        if ("testLocalVariablesExtended".equals(getName())) {
-            temp = 76;
-        } else if ( ("testLocalVariablesValues".equals(getName())) ||
-                    ("testLocalVariablesSubExpressions".equals(getName())) ) {
-            temp = 104;
-        } else {
-            temp = 52;
-        }
-        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-        new OpenAction().performAPI(beanNode);
-        EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
-        Utilities.setCaret(eo, temp);
-        new RunToCursorAction().perform();
-        Utilities.getDebugToolbar().waitComponentVisible(true);
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:"+Integer.toString(temp)+"."); //NOI18N
-        new EventTool().waitNoEvent(1000);
-        expandNodes();
+        System.out.println("########  " + getName() + "  #######");        
     }
     
     /**
@@ -175,6 +158,32 @@ public class LocalVariablesTest extends JellyTestCase {
      */
     public void testLocalVariablesThisNode() throws Throwable {
         try {
+            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
+            new EventTool().waitNoEvent(500);
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
+            Utilities.toggleBreakpoint(eo, 52);
+            new EventTool().waitNoEvent(500);
+            try {
+                Utilities.startDebugger();
+            } catch (Throwable th) {
+                new DebugProjectAction().perform(projectNode);
+            }
+            try {
+                Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
+            } catch (TimeoutExpiredException e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
+            expandNodes();
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
             checkTreeTableLine(jTableOperator, 2, "Vpublic", "String", "\"Public Variable\"");
             checkTreeTableLine(jTableOperator, 3, "Vprotected", "String", "\"Protected Variable\"");
@@ -191,6 +200,22 @@ public class LocalVariablesTest extends JellyTestCase {
      */
     public void testLocalVariablesStaticNode() throws Throwable {
         try {
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
+            new EventTool().waitNoEvent(500);
+            Utilities.toggleBreakpoint(eo, 52);
+            new EventTool().waitNoEvent(500);
+            Utilities.startDebugger();
+            try {
+                Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
+            } catch (TimeoutExpiredException e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
+            expandNodes();
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
             checkTreeTableLine(jTableOperator, 10, "Spublic", "String", "\"Public Variable\"");
             checkTreeTableLine(jTableOperator, 11, "Sprotected", "String", "\"Protected Variable\"");
@@ -207,6 +232,22 @@ public class LocalVariablesTest extends JellyTestCase {
      */
     public void testLocalVariablesStaticInherited() throws Throwable {
         try {
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
+            new EventTool().waitNoEvent(500);
+            Utilities.toggleBreakpoint(eo, 52);
+            new EventTool().waitNoEvent(500);
+            Utilities.startDebugger();
+            try {
+                Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
+            } catch (TimeoutExpiredException e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
+            expandNodes();
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
             checkTreeTableLine(jTableOperator, 15, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
             checkTreeTableLine(jTableOperator, 16, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
@@ -222,7 +263,22 @@ public class LocalVariablesTest extends JellyTestCase {
      *
      */
     public void testLocalVariablesInheritedNode() throws Throwable {
-        try {
+        try {Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
+            new EventTool().waitNoEvent(500);
+            Utilities.toggleBreakpoint(eo, 52);
+            new EventTool().waitNoEvent(500);
+            Utilities.startDebugger();
+            try {
+                Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
+            } catch (TimeoutExpiredException e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:52.")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
+            expandNodes();
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
             checkTreeTableLine(jTableOperator, 20, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
             checkTreeTableLine(jTableOperator, 21, "inheritedVprotected", "String", "\"Inherited Protected Variable\"");
@@ -239,6 +295,22 @@ public class LocalVariablesTest extends JellyTestCase {
      */
     public void testLocalVariablesExtended() throws Throwable {
         try {
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
+            new EventTool().waitNoEvent(500);
+            Utilities.toggleBreakpoint(eo, 76);
+            new EventTool().waitNoEvent(500);
+            Utilities.startDebugger();
+            try {
+                Utilities.waitStatusText("Thread main stopped at MemoryView.java:76.");
+            } catch (TimeoutExpiredException e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:76.")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
+            expandNodes();
             Utilities.showDebuggerView(Utilities.localVarsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
             TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
@@ -309,13 +381,20 @@ public class LocalVariablesTest extends JellyTestCase {
         try {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            Utilities.setCaret(eo, 104);
+            EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
             new EventTool().waitNoEvent(500);
-            new RunToCursorAction().performMenu();
+            Utilities.toggleBreakpoint(eo, 104);
             new EventTool().waitNoEvent(500);
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
-            
+            Utilities.startDebugger();
+            try {
+                Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
+            } catch (TimeoutExpiredException e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104.")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
+            expandNodes();
             Utilities.showDebuggerView(Utilities.localVarsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
             try {
@@ -344,23 +423,33 @@ public class LocalVariablesTest extends JellyTestCase {
      */
     public void testLocalVariablesSubExpressions() throws Throwable {
         try {
-
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            Utilities.setCaret(eo, 104);
+            EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
             new EventTool().waitNoEvent(500);
-            new RunToCursorAction().performMenu();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            Utilities.toggleBreakpoint(eo, 104);
             new EventTool().waitNoEvent(500);
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            Utilities.startDebugger();
+            try {
+                Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
+            } catch (TimeoutExpiredException e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104.")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
+            expandNodes();
             new EventTool().waitNoEvent(500);
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            Utilities.getStepOverExpressionAction().performShortcut();
             new EventTool().waitNoEvent(500);
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            Utilities.getStepOverExpressionAction().performShortcut();
             new EventTool().waitNoEvent(500);
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            Utilities.getStepOverExpressionAction().performShortcut();
+            new EventTool().waitNoEvent(500);
+            Utilities.getStepOverExpressionAction().performShortcut();
+            new EventTool().waitNoEvent(500);
+            Utilities.getStepOverExpressionAction().performShortcut();
+            new EventTool().waitNoEvent(500);
             
             // TODO: Enable after fix of issue 132886 
             //new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();

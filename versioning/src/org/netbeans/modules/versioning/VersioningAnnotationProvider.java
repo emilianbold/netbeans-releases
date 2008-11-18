@@ -67,6 +67,7 @@ import org.openide.util.RequestProcessor;
  * 
  * @author Maros Sandor
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.masterfs.providers.AnnotationProvider.class)
 public class VersioningAnnotationProvider extends AnnotationProvider {
     
     static VersioningAnnotationProvider instance;

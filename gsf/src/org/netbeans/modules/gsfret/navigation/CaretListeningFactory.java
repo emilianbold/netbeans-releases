@@ -48,6 +48,7 @@ import org.netbeans.napi.gsfret.source.Source.Priority;
 import org.netbeans.napi.gsfret.source.support.CaretAwareSourceTaskFactory;
 import org.openide.filesystems.FileObject;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.napi.gsfret.source.SourceTaskFactory.class)
 public class CaretListeningFactory extends CaretAwareSourceTaskFactory {
     
     public CaretListeningFactory() {

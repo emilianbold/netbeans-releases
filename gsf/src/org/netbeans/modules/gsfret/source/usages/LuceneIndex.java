@@ -404,7 +404,12 @@ class LuceneIndex extends Index {
 
     private synchronized IndexReader getReader () throws IOException {
         if (this.reader == null) {            
-            this.reader = IndexReader.open(this.directory);
+            //Issue #149757 - logging
+            try {
+                this.reader = IndexReader.open(this.directory);
+            } catch (IOException ioe) {
+                throw annotateException (ioe);
+            }
         }        
         return this.reader;
     }
@@ -414,8 +419,30 @@ class LuceneIndex extends Index {
             this.reader.close();
             this.reader = null;
         }
-        IndexWriter writer = new IndexWriter (this.directory,new KeywordAnalyzer(), create);
-        return writer;
+        //Issue #149757 - logging
+        try {
+            IndexWriter writer = new IndexWriter (this.directory,new KeywordAnalyzer(), create);
+            return writer;
+        } catch (IOException ioe) {
+            throw annotateException (ioe);
+        }
+    }
+    
+    
+    private IOException annotateException (final IOException ioe) {
+        String message;
+        File[] children = refCacheRoot.listFiles();
+        if (children == null) {
+            message = "Non existing index folder";
+        }
+        else {
+            StringBuilder b = new StringBuilder();
+            for (File c : children) {
+                b.append(c.getName() +" f: " + c.isFile() + " r: " + c.canRead() + " w: " + c.canWrite()+"\n");  //NOI18N
+            }
+            message = b.toString();
+        }
+        return Exceptions.attachMessage(ioe, message);
     }
     
     private static File getReferencesCacheFolder (final File cacheRoot) throws IOException {

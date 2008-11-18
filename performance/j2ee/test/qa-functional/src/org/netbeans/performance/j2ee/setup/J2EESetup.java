@@ -42,31 +42,15 @@
 package org.netbeans.performance.j2ee.setup;
 
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-
 import org.netbeans.jellytools.JellyTestCase;
-
-import org.netbeans.modules.project.ui.test.ProjectSupport;
-
 import java.io.IOException;
-import java.io.File;
-
+import org.openide.util.Exceptions;
 
 public class J2EESetup extends JellyTestCase {
-    
-    private String workdir;
-    
-    public static final String suiteName="UI Responsiveness J2EE Setup";    
     
 
     public J2EESetup(java.lang.String testName) {
         super(testName);
-        workdir = System.getProperty("nbjunit.workdir");
-        try {
-            workdir = new File(workdir + "/../../../../../../../nbextra/data/j2eeApps").getCanonicalPath();
-        } catch (IOException ex) {
-            System.err.println("Exception: "+ex);
-        }
-
     }
     
     public void testCloseWelcome() {
@@ -81,58 +65,70 @@ public class J2EESetup extends JellyTestCase {
         CommonUtilities.closeMemoryToolbar();
     }
 
-        public void testAddAppServer() {
-        
+    public void testAddAppServer() {
         CommonUtilities.addApplicationServer();
     }
+
+    public void testInstallPlugin() {
+        CommonUtilities.installPlugin("JAX-RPC Web Services");
+    }
                
-
-    public void testOpenTestApplication() {
-
-        String projectsDir = workdir + File.separator+ "TestApplication";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
+    public void testOpenTestApplications() {
+        try {
+            this.openDataProjects("TestApplication");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public void testOpenTestApplication_ejb() {
 
-        String projectsDir = workdir + File.separator+"TestApplication/TestApplication-ejb";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
+        try {
+            this.openDataProjects("TestApplication/TestApplication-ejb");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
     }
 
     public void testOpenTestApplication_war() {
       
-        String projectsDir = workdir +File.separator+ "TestApplication/TestApplication-war";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
-    }
+        try {
+            this.openDataProjects("TestApplication/TestApplication-war");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
 
+    }
+    
     public void testOpenDeployTest() {
 
-        String projectsDir = workdir + File.separator+"DeployTest";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);        
-        CommonUtilities.waitProjectTasksFinished();
+        try {
+            this.openDataProjects("DeployTest");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
     }
 
     public void testOpenDeployTest_ejb() {
 
-        String projectsDir = workdir + File.separator+"DeployTest/DeployTest-ejb";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);        
-        CommonUtilities.waitProjectTasksFinished();
+        try {
+            this.openDataProjects("DeployTest/DeployTest-ejb");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
     }
 
     public void testOpenDeployTest_war() {
 
-        String projectsDir = workdir + File.separator+"DeployTest/DeployTest-war";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);        
-        CommonUtilities.waitProjectTasksFinished();
+        try {
+            this.openDataProjects("DeployTest/DeployTest-war");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
     }
 
     public void testCloseTaskWindow() {

@@ -966,6 +966,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     }
 
     // copied from openide/awt/HtmlLabelUI
+    @SuppressWarnings("unchecked") // need to use reflective access, no idea of type
     private static Map getHints () {
         if (hintsMap == null) {
             hintsMap = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N

@@ -117,21 +117,25 @@ public final class TimesCollectorPeer {
             
             if (fo instanceof FileObject) {
                 ((FileObject)fo).addFileChangeListener(new FileChangeAdapter() {
+                    @Override
                     public void fileDeleted(FileEvent ev) {
-                        for (Reference<Object> r : files) {
-                            if (r.get() == fo) {
-                                files.remove(r);
-                                break;
-                            }
-                        }
-                        fo2Key2Desc.remove(fo);
-                        pcs.firePropertyChange("fos", null, null);
+                        fileDeletedSync(ev, (FileObject)fo);
                     }
                 });
             }
         }
-        
-         return result;
+        return result;
+    }
+
+    synchronized final void fileDeletedSync(FileEvent ev, FileObject fo) {
+        for (Reference<Object> r : files) {
+            if (r.get() == fo) {
+                files.remove(r);
+                break;
+            }
+        }
+        fo2Key2Desc.remove(fo);
+        pcs.firePropertyChange("fos", null, null);
     }
     
     public Description getDescription(Object fo, String key) {
@@ -202,6 +206,7 @@ public final class TimesCollectorPeer {
             iw.addChangeListener( this );
         }
 
+        @Override
         public long getTime( ) {
             return iw.size();
         }
@@ -223,20 +228,26 @@ public final class TimesCollectorPeer {
         }
         
     }
-    
+
+    final void cleanFiles(CleanableWeakReference cwr) {
+        synchronized (this) {
+            files.remove(cwr);
+        }
+        pcs.firePropertyChange("fos", null, null);
+    }
+
+    private static final RequestProcessor CLEANER = new RequestProcessor("CleanableWeakReference"); // NOI18N
     private class CleanableWeakReference<T> extends WeakReference<T> implements Runnable {
-        
         public CleanableWeakReference(T o) {
             super(o, Utilities.activeReferenceQueue());
         }
 
         public void run() {
-            files.remove(this);
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    pcs.firePropertyChange("fos", null, null);
-                }
-            });
+            if (!CLEANER.isRequestProcessorThread()) {
+                CLEANER.post(this);
+                return;
+            }
+            cleanFiles(this);
         }
         
     }

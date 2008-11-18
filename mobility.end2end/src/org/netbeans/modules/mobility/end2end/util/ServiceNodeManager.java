@@ -42,6 +42,7 @@
 package org.netbeans.modules.mobility.end2end.util;
 
 import java.beans.PropertyChangeEvent;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import javax.swing.event.ChangeEvent;
@@ -62,9 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -97,6 +96,14 @@ public class ServiceNodeManager {
     static final String METHOD_ICON = "org/netbeans/spi/java/project/support/ui/packageBadge.gif"; //NIOI18N
     public final static String NODE_VALIDITY_ATTRIBUTE = "isValid"; //NOI18N
     public final static String NODE_SELECTION_ATTRIBUTE = "isSelected"; //NOI18N
+    
+    static final String INVALID_TYPE_OPERATION="TXT_InvalidTypeOperation"; //NOI18N
+    static final String INVALID_TYPES_OPERATION="TXT_InvalidTypesOperation"; //NOI18N
+    static final String INVALID_RETURN_TYPE="TXT_InvalidReturnType";//NOI18N
+    static final String INVALID_PARAMETER_TYPE = "TXT_InvalidParameterType";//NOI18N
+    static final String INVALID_PARAMETER_TYPES = "TXT_InvalidParameterTypes";//NOI18N
+    static final String HTML_WRAP = "HTML_Notification";//NOI18N
+    
     private static final WeakHashMap<MethodCheckedTreeBeanView, ProjectChildren> oldNodes = 
         new WeakHashMap<MethodCheckedTreeBeanView, ProjectChildren>();
 
@@ -124,7 +131,6 @@ public class ServiceNodeManager {
 
         private final Configuration cfg;
         private final MethodCheckedTreeBeanView tree;
-        private final Sources s;
         private ClassDataRegistry activeProfileRegistry, allRegistry;
         private ChangeListener ref1;
         private final HashMap<Object, Object> hookedListeners = new HashMap(); // FileObject or SourceGroup -> listener
@@ -134,17 +140,26 @@ public class ServiceNodeManager {
         public ProjectChildren(Configuration cfg, MethodCheckedTreeBeanView tree) {
             this.cfg = cfg;
             this.tree = tree;
-            this.s = ProjectUtils.getSources(Util.getServerProject(cfg));
-            run();
         }
 
+        private Sources getSources() {
+            return ProjectUtils.getSources(Util.getServerProject(cfg));
+        }
+
+        private volatile boolean running = false;
+        @Override
         protected void addNotify() {
-            ref1 = WeakListeners.change(this, s);
-            s.addChangeListener(ref1);
+            if (!running) {
+                run();
+            }
+            Sources sources = getSources();
+            ref1 = WeakListeners.change(this, sources);
+            sources.addChangeListener(ref1);
         }
 
+        @Override
         protected synchronized void removeNotify() {
-            s.removeChangeListener(ref1);
+            getSources().removeChangeListener(ref1);
             synchronized (hookedListeners) {
                 removeListeners();
             }
@@ -159,43 +174,52 @@ public class ServiceNodeManager {
             }
             hookedListeners.clear();
         }
+
+        private void enqueue() {
+            if (!running) {
+                refreshTask.schedule(200);
+            }
+        }
         
         public void propertyChange(PropertyChangeEvent evt) {
-            refreshTask.schedule(200);
+            enqueue();
         }
 
         public void stateChanged(ChangeEvent e) {
-            refreshTask.schedule(200);
+            enqueue();
         }
         public void fileFolderCreated(FileEvent fe) {
-            refreshTask.schedule(200);
+            enqueue();
         }
 
         public void fileDataCreated(FileEvent fe) {
-            refreshTask.schedule(200);
+            enqueue();
         }
 
         public void fileChanged(FileEvent fe) {
-            refreshTask.schedule(200);
+            enqueue();
         }
 
         public void fileDeleted(FileEvent fe) {
-            refreshTask.schedule(200);
+            enqueue();
         }
 
         public void fileRenamed(FileRenameEvent fe) {
-            refreshTask.schedule(200);
+            enqueue();
         }
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
             
         public void run() {
-            SourceGroup[] groups = s.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA );
+            running = true;
+            try {
+            Sources sources = getSources();
+            SourceGroup[] groups = sources.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA );
             // Add all paths to the ClasspathInfo structure
             List<ClasspathInfo> classpaths = new ArrayList();
             HashMap<Object, Object> newHooks = new HashMap();
-            for (SourceGroup sg : s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            for (SourceGroup sg : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
                 if (!sg.getName().equals("${test.src.dir}")) {
                     classpaths.add(ClasspathInfo.create(sg.getRootFolder())); //NOI18N
                     synchronized (hookedListeners) {
@@ -246,6 +270,9 @@ public class ServiceNodeManager {
             setKeys(packages);
             for (Node n : getNodes()) ((PackageChildren)n.getChildren()).notifyChange();
             tree.updateTreeNodeStates(null);
+            } finally {
+                running = false;
+            }
         }
         
         private void addFCListener(FileObject fo, HashMap<Object, Object> newHooks) {
@@ -277,7 +304,18 @@ public class ServiceNodeManager {
                 this.packageName = packageName;
                 notifyChange();
             }
-            
+
+            @Override
+            protected void addNotify() {
+                super.addNotify();
+                notifyChange();
+            }
+
+            @Override
+            protected void removeNotify() {
+                setKeys (Collections.EMPTY_LIST);
+            }
+
             public void notifyChange() {
                 ClassData cd[] = allRegistry.getBaseClassesForPackage(packageName).toArray(new ClassData[0]);
                 Arrays.sort(cd, new Comparator<ClassData>() {
@@ -324,7 +362,16 @@ public class ServiceNodeManager {
             public ClassChildren(ClassData classData) {
                 this.classData = classData;
                 this.fqn = classData.getFullyQualifiedName();
+            }
+
+            @Override
+            protected void addNotify() {
                 notifyChange();
+            }
+
+            @Override
+            protected void removeNotify() {
+                setKeys (Collections.EMPTY_SET);
             }
             
             public void notifyChange() {
@@ -349,7 +396,34 @@ public class ServiceNodeManager {
                 n.setDisplayName(nodeText.toString());
                 n.setIconBaseWithExtension(METHOD_ICON);
                 ClassData cd = activeProfileRegistry.getClassData(methodData.getParentClassName());
-                n.setValue(NODE_VALIDITY_ATTRIBUTE, cd != null && cd.getMethods().contains(methodData));
+                boolean isValid = cd != null && cd.getMethods().contains(methodData);
+                n.setValue(NODE_VALIDITY_ATTRIBUTE, isValid );
+                if ( cd!= null && !isValid ){
+                    List<MethodData> methods = cd.getInvalidMethods();
+                    for( MethodData method : methods ){
+                        if ( method.equalsFQN( methodData ) &&
+                                method.getReturnTypeAsText()!= null &&
+                                method.getReturnTypeAsText().equals(
+                                        methodData.getReturnTypeAsText()))
+                        {
+                            StringBuilder builder = new StringBuilder();
+                            List<MethodParameter> params = method.getInvalidParameters();
+                            for (MethodParameter param : params) {
+                                builder.append( param.getTypeAsString() );
+                                builder.append(", ");
+                            }
+                            String invalidParams = null;
+                            if ( builder.length() != 0 ){
+                                invalidParams = builder.substring( 0, 
+                                        builder.length()-2 );
+                            }
+                            setErrorMessage( n, method.isValidReturnType() ? null:
+                                    method.getReturnTypeAsText(),
+                                    invalidParams );
+                            break;
+                        }
+                    }
+                }
                 StringBuffer sb = new StringBuffer(methodData.getParentClassName());
                 sb.append('.').append(methodData.getName());
                 for (MethodParameter mp : methodData.getParameters()) {
@@ -357,6 +431,39 @@ public class ServiceNodeManager {
                 }
                 n.setValue(NODE_SELECTION_ATTRIBUTE, selectionSource.contains(sb.toString()) ? MultiStateCheckBox.State.SELECTED : MultiStateCheckBox.State.UNSELECTED);
                 return new Node[] {n};
+            }
+            
+            private void setErrorMessage( Node node , String returnType , 
+                    String paramList )
+            {
+                StringBuilder builder = new StringBuilder(
+                        NbBundle.getMessage(ServiceNodeManager.class,
+                                INVALID_TYPE_OPERATION));
+                builder.append(" ");
+                if ( returnType != null ){
+                    String retTypeMsg = MessageFormat.format( 
+                            NbBundle.getMessage(ServiceNodeManager.class,
+                            INVALID_RETURN_TYPE), returnType );
+                    builder.append( retTypeMsg );
+                }
+                if ( paramList != null ){
+                    if ( returnType != null ){
+                        builder.append( ", " );
+                    }
+                    if ( paramList.contains(",")){
+                        builder.append( NbBundle.getMessage(
+                                ServiceNodeManager.class, INVALID_PARAMETER_TYPES));
+                    }
+                    else {
+                        builder.append( NbBundle.getMessage(
+                                ServiceNodeManager.class, INVALID_PARAMETER_TYPE));
+                    }
+                    builder.append( " " );
+                    builder.append( paramList );
+                }
+                String toolTip = MessageFormat.format(NbBundle.getMessage(
+                        ServiceNodeManager.class,HTML_WRAP) , builder.toString() );
+                node.setShortDescription( toolTip );
             }
         }
 

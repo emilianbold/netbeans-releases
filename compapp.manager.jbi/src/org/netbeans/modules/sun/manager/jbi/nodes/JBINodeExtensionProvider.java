@@ -52,6 +52,7 @@ import org.openide.nodes.Node;
  *
  * @author jqian
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.sun.api.SimpleNodeExtensionProvider.class)
 public class JBINodeExtensionProvider implements SimpleNodeExtensionProvider {
 
     /**

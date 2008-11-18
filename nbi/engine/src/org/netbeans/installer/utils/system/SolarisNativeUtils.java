@@ -36,6 +36,7 @@
 
 package org.netbeans.installer.utils.system;
 
+import java.io.IOException;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.Platform;
 /**
@@ -87,6 +88,6 @@ public class SolarisNativeUtils extends UnixNativeUtils {
         final String osArch = System.getProperty("os.arch");
         return osArch.contains("sparc") ? 
             Platform.SOLARIS_SPARC : 
-            Platform.SOLARIS_X86;        
+            Platform.SOLARIS_X86;
     }
 }

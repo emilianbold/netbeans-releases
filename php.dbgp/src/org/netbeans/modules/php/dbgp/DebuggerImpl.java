@@ -57,6 +57,7 @@ import org.openide.util.RequestProcessor;
  * @author Radek Matous
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.project.spi.XDebugStarter.class)
 public class DebuggerImpl implements XDebugStarter {
     static String ID = "netbeans-PHP-DBGP-DebugInfo";// NOI18N
     static String SESSION_ID = "netbeans-PHP-DBGP-Session";// NOI18N

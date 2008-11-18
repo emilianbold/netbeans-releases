@@ -42,12 +42,10 @@
 package org.netbeans.modules.java.project;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
@@ -63,6 +61,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Ant logger which handles Java- and Java-project-specific UI.
@@ -71,6 +70,7 @@ import org.openide.filesystems.FileUtil;
  * @author Jesse Glick
  * @see "#42525"
  */
+@ServiceProvider(service=AntLogger.class, position=50)
 public final class JavaAntLogger extends AntLogger {
     
     // XXX handle Unicode elements as well
@@ -164,22 +164,27 @@ public final class JavaAntLogger extends AntLogger {
     /** Default constructor for lookup. */
     public JavaAntLogger() {}
     
+    @Override
     public boolean interestedInSession(AntSession session) {
         return true;
     }
     
+    @Override
     public boolean interestedInAllScripts(AntSession session) {
         return true;
     }
     
+    @Override
     public String[] interestedInTargets(AntSession session) {
         return AntLogger.ALL_TARGETS;
     }
     
+    @Override
     public String[] interestedInTasks(AntSession session) {
         return TASKS_OF_INTEREST;
     }
     
+    @Override
     public int[] interestedInLogLevels(AntSession session) {
         // XXX could exclude those in [INFO..ERR] greater than session.verbosity
         return LEVELS_OF_INTEREST;
@@ -194,6 +199,7 @@ public final class JavaAntLogger extends AntLogger {
         return data;
     }
     
+    @Override
     public void messageLogged(AntEvent event) {
         AntSession session = event.getSession();
         int messageLevel = event.getLogLevel();
@@ -211,9 +217,7 @@ public final class JavaAntLogger extends AntLogger {
             int lineNumber = Integer.parseInt(m.group(3));
             // Check to see if the class is listed in our per-task sourcepath.
             // XXX could also look for -Xbootclasspath etc., but probably less important
-            Iterator it = getCurrentSourceRootsForClasspath(data).iterator();
-            while (it.hasNext()) {
-                FileObject root = (FileObject)it.next();
+            for (FileObject root : getCurrentSourceRootsForClasspath(data)) {
                 // XXX this is apparently pretty expensive; try to use java.io.File instead
                 FileObject source = root.getFileObject(resource);
                 if (source != null) {
@@ -289,9 +293,9 @@ public final class JavaAntLogger extends AntLogger {
      * Finds source roots corresponding to the apparently active classpath
      * (as reported by logging from Ant when it runs the Java launcher with -cp).
      */
-    private static Collection/*<FileObject>*/ getCurrentSourceRootsForClasspath(SessionData data) {
+    private static Collection<FileObject> getCurrentSourceRootsForClasspath(SessionData data) {
         if (data.classpath == null) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
         if (data.classpathSourceRoots == null) {
             data.classpathSourceRoots = new LinkedHashSet<FileObject>();

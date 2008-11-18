@@ -56,14 +56,7 @@ public final class APTBuilder {
     }
 
     public static APTFile buildAPT(String path, TokenStream ts) {
-        return new APTBuilderImpl(true).buildAPT(path, ts);
-    }
-    
-    /**
-     * NOT YET SUPPORTED
-     */
-    public static APTFile buildAPTLight(String path, TokenStream ts) {
-        return new APTBuilderImpl(false).buildAPT(path, ts);
+        return new APTBuilderImpl().buildAPT(path, ts);
     }
     
     public static APT buildAPTLight(APT apt) {

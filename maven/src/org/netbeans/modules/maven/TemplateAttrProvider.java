@@ -39,12 +39,16 @@
 
 package org.netbeans.modules.maven;
 
+import java.nio.charset.Charset;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.maven.model.License;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
@@ -63,6 +67,7 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
     }
     
     public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
+        Map<String, String> values = new HashMap<String, String>();
         String license = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_LICENSE, true); //NOI18N
         if (license == null) {
             // try to match the project's license URL and the mavenLicenseURL attribute of license template
@@ -82,8 +87,30 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
             }
         }
         if (license != null) {
-            return Collections.singletonMap("project", Collections.singletonMap("license", license)); // NOI18N
+            values.put("license", license); // NOI18N
         }
-        return null;
+
+        FileEncodingQueryImplementation enc = project.getLookup().lookup(FileEncodingQueryImplementation.class);
+        Charset charset = enc.getEncoding(target.getPrimaryFile());
+        String encoding = (charset != null) ? charset.name() : null;
+        if (encoding != null) {
+            values.put("encoding", encoding); // NOI18N
+        }
+
+        ProjectInformation pi = project.getLookup().lookup(ProjectInformation.class);
+        String pdname = pi.getDisplayName();
+        String pname = pi.getName();
+        if (pdname != null) {
+            values.put("displayName", pdname); // NOI18N
+        }
+        if (pname != null) {
+            values.put("name", pname); // NOI18N
+        }
+
+        if (values.size() > 0) {
+            return Collections.singletonMap("project", values); // NOI18N
+        } else {
+            return null;
+        }
     }
 }

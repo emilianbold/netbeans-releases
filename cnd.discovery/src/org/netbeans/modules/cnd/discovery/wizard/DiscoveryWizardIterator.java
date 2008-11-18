@@ -47,6 +47,8 @@ import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
 import org.openide.WizardDescriptor;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -57,6 +59,7 @@ public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIt
     private WizardDescriptor.Panel[] panels ;
     private WizardDescriptor.Panel[] simple ;
     private int index = 0;
+    private boolean doClean = true;
     /** Creates a new instance of DiscoveryWizardIterator */
     public DiscoveryWizardIterator(WizardDescriptor.Panel[] panels, WizardDescriptor.Panel[] simple) {
         this.panels = panels;
@@ -64,11 +67,26 @@ public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIt
     }
     
     public Set instantiate() throws IOException {
-        if (wizard.isSimpleMode()){
-            new DiscoveryExtension().canApply(wizard);
-        }
-        DiscoveryProjectGenerator generator = new DiscoveryProjectGenerator(wizard);
-        return generator.makeProject();
+        doClean = false;
+        RequestProcessor.getDefault().post(new Runnable(){
+            public void run() {
+                if (wizard.isSimpleMode()){
+                    new DiscoveryExtension().canApply(wizard);
+                }
+                DiscoveryProjectGenerator generator;
+                try {
+                    generator = new DiscoveryProjectGenerator(wizard);
+                    generator.makeProject();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                wizard.clean();
+                wizard = null;
+                panels = null;
+                simple = null;
+            }
+        });
+        return null;
     }
     
     public void initialize(WizardDescriptor wizard) {
@@ -76,11 +94,13 @@ public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIt
     }
     
     public void uninitialize(WizardDescriptor wizard) {
-        DiscoveryWizardDescriptor wiz = (DiscoveryWizardDescriptor)wizard;
-        wiz.clean();
-        wizard = null;
-        panels = null;
-        simple = null;
+        if (doClean) {
+            DiscoveryWizardDescriptor wiz = (DiscoveryWizardDescriptor)wizard;
+            wiz.clean();
+            this.wizard = null;
+            panels = null;
+            simple = null;
+        }
     }
     
     public WizardDescriptor.Panel current() {

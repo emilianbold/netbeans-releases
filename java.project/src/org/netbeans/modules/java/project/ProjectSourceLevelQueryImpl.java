@@ -50,6 +50,7 @@ import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
  * lookup and delegates question to it.
  * @author David Konecny
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceLevelQueryImplementation.class, position=100)
 public class ProjectSourceLevelQueryImpl implements SourceLevelQueryImplementation {
 
     /** Default constructor for lookup. */

@@ -1,6 +1,42 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.websvc.rest.wizard.fromdb;
 
@@ -76,9 +112,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
     private static final String PROP_CMP = "wizard-is-cmp"; //NOI18N
-
     private static final String PROP_HELPER = "wizard-helper"; //NOI18N
-
     private static final Lookup.Result<PersistenceGeneratorProvider> PERSISTENCE_PROVIDERS =
             Lookup.getDefault().lookupResult(PersistenceGeneratorProvider.class);
     private RelatedCMPHelper helper;
@@ -93,7 +127,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
         helper = new RelatedCMPHelper(project, configFilesFolder, generator);
         wizard.putProperty(PROP_HELPER, helper);
         wizard.putProperty(PROP_CMP, new Boolean(false));
-        
+
         // Moved to getPanels()
         //String wizardBundleKey = "Templates/Persistence/RelatedCMP"; // NOI18N
         //wizard.putProperty("NewFileWizard_Title", NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey)); // NOI18N
@@ -220,7 +254,6 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
             helper.buildBeans();
 
-            FileObject pkg = getFolderForPackage(helper.getLocation(), helper.getPackageName());
             generator.generateBeans(progressPanel, helper, dbschemaFile, handle);
 
             Set<FileObject> files = generator.createdObjects();
@@ -232,10 +265,31 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             PersistenceUnit pu = new PersistenceHelper(project).getPersistenceUnit();
 
             RestUtils.ensureRestDevelopmentReady(project);
-            FileObject targetFolder = Templates.getTargetFolder(wizard);
-            String targetPackage = SourceGroupSupport.packageForFolder(targetFolder);
-            String resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
-            String converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
+            FileObject targetFolder = (FileObject) wizard.getProperty(WizardProperties.TARGET_SRC_ROOT);
+            String targetPackage = null;
+            String resourcePackage = null;
+            String converterPackage = null;
+
+            if (targetFolder != null) {
+                targetPackage = SourceGroupSupport.packageForFolder(targetFolder);
+                resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
+                converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
+            } else {
+                targetFolder = Templates.getTargetFolder(wizard);
+                SourceGroup targetSourceGroup = null;
+                targetPackage = "";
+                if (targetFolder != null) {
+                    SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
+                    targetSourceGroup = SourceGroupSupport.findSourceGroupForFile(sourceGroups, targetFolder);
+                    if (targetSourceGroup != null) {
+                        targetPackage = SourceGroupSupport.getPackageForFolder(targetSourceGroup, targetFolder);
+                    }
+                }
+
+                targetPackage = (targetPackage.length() == 0) ? "" : targetPackage + ".";
+                resourcePackage = targetPackage + EntityResourcesGenerator.RESOURCE_FOLDER;
+                converterPackage = targetPackage + EntityResourcesGenerator.CONVERTER_FOLDER;
+            }
 
             final EntityResourcesGenerator gen = EntityResourcesGeneratorFactory.newInstance(project);
             gen.initialize(model, project, targetFolder, targetPackage, resourcePackage, converterPackage, pu);
@@ -275,7 +329,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
      */
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
-            
+
             String wizardBundleKey = "Templates/Persistence/RelatedCMP"; // NOI18N
             String wizardTitle = NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey); // NOI18N
             panels = new WizardDescriptor.Panel[]{

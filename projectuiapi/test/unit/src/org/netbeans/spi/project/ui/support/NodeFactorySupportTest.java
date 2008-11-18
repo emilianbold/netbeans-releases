@@ -82,7 +82,7 @@ public class NodeFactorySupportTest extends TestCase {
         NodeFactory fact2 = new TestNodeFactory(node2);
         NodeFactory fact3 = new TestNodeFactory(node3);
         NodeFactory fact4 = new TestNodeFactory(node4);
-        List col = new ArrayList();
+        List<NodeFactory> col = new ArrayList<NodeFactory>();
         col.add(fact1);
         col.add(fact2);
         ic.set(col, null);

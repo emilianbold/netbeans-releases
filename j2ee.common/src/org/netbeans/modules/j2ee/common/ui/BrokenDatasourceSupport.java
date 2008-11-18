@@ -200,7 +200,7 @@ public class BrokenDatasourceSupport {
         }
         
         int nextIndex = 0;
-        if ((jdbcResourceUrl != null) && (dsInfoUrl != null)){
+        if (dsInfoUrl != null) {
             char[] jdbcResourceUrlChars = jdbcResourceUrl.toCharArray();
             char[] dsInfoUrlChars = dsInfoUrl.toCharArray();
             if (dsInfoUrlChars.length == jdbcResourceUrlChars.length) {

@@ -840,6 +840,8 @@ jnlp.platform.codebase - can point to a shared repository which can be generated
   this property. Sample values with prebuilt binaries (good for testing):
 http://www.netbeans.org/download/5_0/jnlp/
 http://www.netbeans.org/download/6_0/jnlp/
+http://bits.netbeans.org/6.1/jnlp/
+http://bits.netbeans.org/6.5/jnlp/
 http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/build/jnlp/
 
 jnlp.indirect.jars [since 6.0] - optional pattern of JARs in the cluster to load

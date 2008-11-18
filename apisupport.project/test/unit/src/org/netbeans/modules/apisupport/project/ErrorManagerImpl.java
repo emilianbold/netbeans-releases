@@ -52,6 +52,7 @@ import org.openide.ErrorManager;
  * NbTestCase logging error manager.
  * @author Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.ErrorManager.class)
 public class ErrorManagerImpl extends ErrorManager {
 
     static NbTestCase running;

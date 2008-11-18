@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.apache.lucene.index.IndexReader;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.IndexDocument;
@@ -267,15 +268,15 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
     // For the symbol dumper only
     public org.apache.lucene.index.IndexReader getDumpIndexReader() throws IOException {
-        if (index instanceof LuceneIndex) {
-            try {
-                return ((LuceneIndex)index).getDumpIndexReader();
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
+        updateDirty();
+        final IndexReader[] readerHolder = new IndexReader[1];
+        ClassIndexManager.readLock(new ClassIndexManager.ExceptionAction<Void> () {
+            public Void run () throws IOException {
+                readerHolder[0] = ((LuceneIndex)index).getDumpIndexReader();
+                return null;
             }
-        }
-        
-        return null;
+        });
+        return readerHolder[0];
     }
 
     @Override

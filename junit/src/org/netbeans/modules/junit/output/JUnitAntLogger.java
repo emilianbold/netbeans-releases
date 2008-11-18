@@ -63,6 +63,7 @@ import org.openide.ErrorManager;
  * @see  Report
  * @author  Marian Petras
  */
+@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class)
 public final class JUnitAntLogger extends AntLogger {
     
     /** levels of interest for logging (info, warning, error, ...) */

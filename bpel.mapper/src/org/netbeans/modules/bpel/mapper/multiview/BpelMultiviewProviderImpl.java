@@ -27,6 +27,7 @@ import org.netbeans.modules.bpel.core.multiview.spi.BpelMultiviewProvider;
  * @author Vitaly Bychkov
  * @version 1.0
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.core.multiview.spi.BpelMultiviewProvider.class)
 public class BpelMultiviewProviderImpl implements BpelMultiviewProvider {
 
     public MultiViewDescription createMultiview(BPELDataObject dataObject) {

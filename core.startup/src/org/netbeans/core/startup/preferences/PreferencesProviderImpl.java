@@ -48,6 +48,7 @@ import org.netbeans.modules.openide.util.PreferencesProvider;
 /**
  * @author Radek Matous
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.openide.util.PreferencesProvider.class)
 public class PreferencesProviderImpl implements PreferencesProvider {
     /** Creates a new instance of PreferencesProviderImpl */
     public PreferencesProviderImpl() {

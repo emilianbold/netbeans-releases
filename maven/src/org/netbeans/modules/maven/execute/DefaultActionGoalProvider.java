@@ -47,6 +47,7 @@ import java.io.InputStream;
  * user configured or overriden by a more specialized provider.
  * @author mkleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=666)
 public class DefaultActionGoalProvider extends AbstractMavenActionsProvider {
     /** Creates a new instance of DefaultActionProvider */
     public DefaultActionGoalProvider() {

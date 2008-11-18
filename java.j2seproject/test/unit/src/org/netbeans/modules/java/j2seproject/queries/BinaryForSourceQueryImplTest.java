@@ -52,7 +52,6 @@ import org.netbeans.api.project.TestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
 
 /**
  * Tests for BinaryForSourceQueryImpl
@@ -81,7 +80,6 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
         scratch = null;
         projdir = null;
         pm = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
     
@@ -110,7 +108,6 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
         result = BinaryForSourceQuery.findBinaryRoots(sources.getURL());        
         assertEquals("Project build folder must have source folder", 1, result.getRoots().length);
         assertEquals("Project build folder must have source folder",buildClasses.getURL(),result.getRoots()[0]);        
-        assertEquals(BinaryForSourceQueryImpl.R.class, result.getClass());
         BinaryForSourceQuery.Result result2 = BinaryForSourceQuery.findBinaryRoots(sources.getURL());
         assertTrue (result == result2);
     }               

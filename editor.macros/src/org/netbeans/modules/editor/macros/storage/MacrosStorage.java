@@ -68,6 +68,7 @@ import org.xml.sax.SAXException;
  *
  * @author Vita Stejskal
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.settings.storage.spi.StorageDescription.class)
 public final class MacrosStorage implements StorageDescription<String, MacroDescription> {
 
     private static final Logger LOG = Logger.getLogger(MacrosStorage.class.getName());

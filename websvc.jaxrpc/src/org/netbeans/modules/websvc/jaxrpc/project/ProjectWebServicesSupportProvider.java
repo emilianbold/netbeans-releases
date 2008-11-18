@@ -47,6 +47,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportProvider;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.webservices.WebServicesSupportProvider.class)
 public class ProjectWebServicesSupportProvider implements WebServicesSupportProvider {
 
     public ProjectWebServicesSupportProvider() {

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.project.connections;
 
+import org.netbeans.modules.php.project.connections.TransferFile;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;

@@ -44,37 +44,42 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import org.openide.nodes.PropertySupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 
-public class BooleanNodeProp extends PropertySupport {
+public class BooleanNodeProp extends PropertySupport<Boolean> {
     private BooleanConfiguration booleanConfiguration;
 
     public BooleanNodeProp(BooleanConfiguration booleanConfiguration, boolean canWrite, String name1, String name2, String name3) {
         super(name1, Boolean.class, name2, name3, true, canWrite);
         this.booleanConfiguration = booleanConfiguration;
     }
-    
+
+    @Override
     public String getHtmlDisplayName() {
-        if (booleanConfiguration.getModified())
+        if (booleanConfiguration.getModified()) {
             return "<b>" + getDisplayName(); // NOI18N
-        else
+        } else {
             return null;
+        }
     }
-    
-    public Object getValue() {
-        return new Boolean(booleanConfiguration.getValue());
+
+    public Boolean getValue() {
+        return Boolean.valueOf(booleanConfiguration.getValue());
     }
-    
-    public void setValue(Object v) {
-        booleanConfiguration.setValue(((Boolean)v).booleanValue());
+
+    public void setValue(Boolean v) {
+        booleanConfiguration.setValue(v.booleanValue());
     }
-    
+
+    @Override
     public void restoreDefaultValue() {
         booleanConfiguration.reset();
     }
-    
+
+    @Override
     public boolean supportsDefaultValue() {
         return true;
     }
-    
+
+    @Override
     public boolean isDefaultValue() {
         return !booleanConfiguration.getModified();
     }

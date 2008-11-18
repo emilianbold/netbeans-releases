@@ -68,6 +68,7 @@ public abstract class ConfigurableProjectPanel extends JPanel implements Project
     // abstract methods
     public abstract String getProjectName();
     public abstract void setProjectName(String projectName);
+    public abstract String getSourcesFolder();
     public abstract LocalServer getSourcesLocation();
     public abstract void selectSourcesLocation(LocalServer localServer);
     public abstract MutableComboBoxModel getLocalServerModel();

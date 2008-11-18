@@ -97,10 +97,10 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
@@ -989,7 +989,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             if (path == null) {
                 // ??? - #103711: null cannot be returned because the icon 
                 // must be annotated; general package icon is returned instead
-                return Utilities.loadImage("org/netbeans/spi/java/project/support/ui/package.gif"); // NOI18N
+                return ImageUtilities.loadImage("org/netbeans/spi/java/project/support/ui/package.gif"); // NOI18N
             }
             return PackageDisplayUtils.getIcon(folder, path.replace('/', '.'), isLeaf() );
         }
@@ -1132,7 +1132,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         }
     }
     
-    final class NoFoldersDataFilter implements ChangeListener, ChangeableDataFilter {
+    final class NoFoldersDataFilter implements ChangeListener, ChangeableDataFilter, DataFilter.FileBased {
         
         private final ChangeSupport cs = new ChangeSupport(this);
         
@@ -1141,8 +1141,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         }
                 
         public boolean acceptDataObject(DataObject obj) {                
-            FileObject fo = obj.getPrimaryFile();                
-            return  fo.isValid() && VisibilityQuery.getDefault().isVisible(fo) && !(obj instanceof DataFolder) && group.contains(fo);
+            return acceptFileObject(obj.getPrimaryFile());
         }
         
         public void stateChanged( ChangeEvent e) {            
@@ -1155,6 +1154,10 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                         
         public void removeChangeListener( ChangeListener listener ) {
             cs.removeChangeListener(listener);
+        }
+
+        public boolean acceptFileObject(FileObject fo) {
+            return  fo.isValid() && VisibilityQuery.getDefault().isVisible(fo) && fo.isData() && group.contains(fo);
         }
         
     }

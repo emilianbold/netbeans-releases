@@ -43,12 +43,14 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class RubyUtils {
+    
+    public static final String RUBY_MIME_TYPE = RubyInstallation.RUBY_MIME_TYPE; // NOI18N
 
     private RubyUtils() {
     }
 
     public static boolean isRubyFile(FileObject f) {
-        return RubyMimeResolver.RUBY_MIME_TYPE.equals(f.getMIMEType());
+        return RubyInstallation.RUBY_MIME_TYPE.equals(f.getMIMEType());
     }
     
     public static boolean isMarkabyFile(FileObject fileObject) {

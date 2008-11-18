@@ -69,6 +69,7 @@ import org.w3c.dom.NodeList;
 /**
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory.class, position=1000)
 public class J2SEProjectFactory implements ProjectTypeUpdater {
 
     private static final String JAVA_NATURE = "org.eclipse.jdt.core.javanature"; // NOI18N

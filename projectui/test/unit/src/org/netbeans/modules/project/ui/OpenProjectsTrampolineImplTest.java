@@ -50,9 +50,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 public class OpenProjectsTrampolineImplTest extends NbTestCase {
     
@@ -78,7 +79,7 @@ public class OpenProjectsTrampolineImplTest extends NbTestCase {
 //        badproject = scratch.createFolder("bad");
 //        badproject.createFolder("testproject").createData("broken");
 //        mysteryproject = scratch.createFolder("mystery");
-        TestUtil.setLookup(Lookups.singleton(TestUtil.testProjectFactory()));
+        MockLookup.setLookup(Lookups.singleton(TestUtil.testProjectFactory()));
         pm = ProjectManager.getDefault();
         OpenProjectList.waitProjectsFullyOpen();
     }
@@ -89,10 +90,10 @@ public class OpenProjectsTrampolineImplTest extends NbTestCase {
 //        badproject = null;
 //        mysteryproject = null;
         pm = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
-    
+
+    @RandomlyFails
     public void testOpenProjects() throws Exception {
     
         OpenProjectsTrampolineImpl trampoline = new OpenProjectsTrampolineImpl();

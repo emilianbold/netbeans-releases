@@ -46,19 +46,11 @@ import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
-class MakeSharableWizardPanel1 implements WizardDescriptor.Panel {
+class MakeSharableWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor> {
 
-    /**
-     * The visual component that displays this panel. If you need to access the
-     * component from this class, just use getComponent().
-     */
     private MakeSharableVisualPanel1 component;
     private ChangeSupport support = new ChangeSupport(this);
 
-    // Get the visual component for the panel. In this template, the component
-    // is kept separate. This can be more efficient: if the wizard is created
-    // but never displayed, or not all panels are displayed, it is better to
-    // create only those which really need to be visible.
     public Component getComponent() {
         if (component == null) {
             component = new MakeSharableVisualPanel1(support);
@@ -71,13 +63,7 @@ class MakeSharableWizardPanel1 implements WizardDescriptor.Panel {
     }
 
     public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
         return component.isValidPanel();
-    // If it depends on some condition (form filled out...), then:
-    // return someCondition();
-    // and when this condition changes (last form field filled in...) then:
-    // fireChangeEvent();
-    // and uncomment the complicated stuff below.
     }
 
     public final void addChangeListener(ChangeListener l) {
@@ -87,17 +73,11 @@ class MakeSharableWizardPanel1 implements WizardDescriptor.Panel {
         support.removeChangeListener(l);
     }
 
-    // You can use a settings object to keep track of state. Normally the
-    // settings object will be the WizardDescriptor, so you can use
-    // WizardDescriptor.getProperty & putProperty to store information entered
-    // by the user.
-    public void readSettings(Object settings) {
-        WizardDescriptor wiz = (WizardDescriptor) settings;
+    public void readSettings(WizardDescriptor wiz) {
         component.readSettings(wiz);
     }
 
-    public void storeSettings(Object settings) {
-        WizardDescriptor wiz = (WizardDescriptor) settings;
+    public void storeSettings(WizardDescriptor wiz) {
         component.storeSettings(wiz);
     }
 }

@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.railsprojects;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseActionProvider;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -67,7 +68,7 @@ public class RailsFileLocator extends RubyFileLocator {
             return files;
         }
         for (FileObject root : roots) {
-            files = RailsActionProvider.findSelectedFiles(getContext(), root,
+            files = RubyBaseActionProvider.findSelectedFiles(getContext(), root,
                     RhtmlTokenId.MIME_TYPE, true);
             if (files != null) {
                 return files;

@@ -53,6 +53,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.classpath.ClassPathProvider.class, position=150)
 public class PlatformClassPathProvider implements ClassPathProvider {
 
 

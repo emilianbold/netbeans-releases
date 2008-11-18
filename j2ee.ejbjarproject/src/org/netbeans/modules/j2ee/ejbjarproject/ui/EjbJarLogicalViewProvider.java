@@ -74,7 +74,6 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -86,14 +85,19 @@ import org.openide.util.lookup.Lookups;
 
 
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.LogicalViewProvider2;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
@@ -105,7 +109,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  * Support for creating logical views.
  * @author Petr Hrebejk
  */
-public class EjbJarLogicalViewProvider implements LogicalViewProvider {
+public class EjbJarLogicalViewProvider implements LogicalViewProvider2 {
     private static final RequestProcessor BROKEN_LINKS_RP = new RequestProcessor("EjbJarLogicalViewProvider.BROKEN_LINKS_RP"); // NOI18N
     
     private final EjbJarProject project;
@@ -204,7 +208,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
     private static final String[] BREAKABLE_PROPERTIES = new String[] {
         ProjectProperties.JAVAC_CLASSPATH,
         EjbJarProjectProperties.DEBUG_CLASSPATH,
-        ProjectProperties.RUN_TEST_CLASSPATH, 
+        ProjectProperties.RUN_TEST_CLASSPATH,
         EjbJarProjectProperties.DEBUG_TEST_CLASSPATH, 
         ProjectProperties.JAVAC_TEST_CLASSPATH,
     };
@@ -226,6 +230,26 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         return result;
     }        
 
+    private boolean isDeployOnSaveSupportedAndDisabled() {
+        boolean deployOnSaveEnabled = Boolean.valueOf(project.evaluator().getProperty(
+                EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE));
+        if (deployOnSaveEnabled) {
+            return false;
+        }
+
+        boolean deployOnSaveSupported = false;
+        try {
+            String instanceId = project.evaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
+            if (instanceId != null) {
+                deployOnSaveSupported = Deployment.getDefault().getServerInstance(instanceId)
+                        .isDeployOnSaveSupported();
+            }
+        } catch (InstanceRemovedException ex) {
+            // false
+        }
+        return deployOnSaveSupported;
+    }
+    
     /** Filter node containin additional features for the J2SE physical
      */
     private final class WebLogicalViewRootNode extends AbstractNode {
@@ -233,7 +257,8 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         private Action brokenLinksAction;
         private BrokenServerAction brokenServerAction;
         private boolean broken;
-        
+        private boolean deployOnSaveDisabled;
+
         public WebLogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Nodes"), // NOI18N
                     createLookup(project));
@@ -248,6 +273,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                            project.getLookup().lookup(J2eeModuleProvider.class);
             moduleProvider.addInstanceListener((InstanceListener)WeakListeners.create(
                         InstanceListener.class, brokenServerAction, moduleProvider));
+            deployOnSaveDisabled = isDeployOnSaveSupportedAndDisabled();
         }
         
         @Override
@@ -256,19 +282,29 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             return NbBundle.getMessage(EjbJarLogicalViewProvider.class, "HINT_project_root_node", prjDirDispName); // NO18N
         }
 
+        @Override
         public Image getIcon(int type) {
-            Image original = super.getIcon( type );                
-            return broken || brokenServerAction.isEnabled() 
-                    ? ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
-                    : original;
+            Image original = super.getIcon( type );
+            if (broken || brokenServerAction.isEnabled()) {
+                return ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0);
+            } else if (deployOnSaveDisabled) {
+                return DeployOnSaveUtils.badgeDisabledDeployOnSave(original);
+            } else {
+                return original;
+            }
         }
 
+        @Override
         public Image getOpenedIcon(int type) {
-            Image original = super.getOpenedIcon(type);                
-            return broken || brokenServerAction.isEnabled() 
-                    ? ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
-                    : original;
-        }            
+            Image original = super.getOpenedIcon(type);
+            if (broken || brokenServerAction.isEnabled()) {
+                return ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0);
+            } else if (deployOnSaveDisabled) {
+                return DeployOnSaveUtils.badgeDisabledDeployOnSave(original);
+            } else {
+                return original;
+            }
+        }
 
         public String getHtmlDisplayName() {
             String dispName = super.getDisplayName();
@@ -301,6 +337,13 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         
         // Private methods -------------------------------------------------    
 
+        private void setDeployOnSaveDisabled (boolean value) {
+            this.deployOnSaveDisabled = value;
+            fireIconChange();
+            fireOpenedIconChange();
+            fireDisplayNameChange(null, null);
+        }
+        
         private Action[] getAdditionalActions() {
 
             ResourceBundle bundle = NbBundle.getBundle(EjbJarLogicalViewProvider.class);
@@ -323,6 +366,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction( EjbProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null )); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null )); // NOI18N
             actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.openSubprojectsAction());
@@ -396,6 +440,11 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                     fireOpenedIconChange();
                     fireDisplayNameChange(null, null);
                 }
+                old = WebLogicalViewRootNode.this.deployOnSaveDisabled;
+                boolean dosDisabled = isDeployOnSaveSupportedAndDisabled();
+                if (old != dosDisabled) {
+                    setDeployOnSaveDisabled(dosDisabled);
+                }                
             }
             
             public void refsMayChanged() {
@@ -429,7 +478,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             public void actionPerformed(ActionEvent e) {
                 String j2eeSpec = project.evaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM);
                 if (j2eeSpec == null) {
-                    j2eeSpec = ProjectProperties.JAVA_EE_5; // NOI18N
+                    j2eeSpec = J2EEProjectProperties.JAVA_EE_5; // NOI18N
                     Logger.getLogger(EjbJarLogicalViewProvider.class.getName()).warning(
                             "project ["+project.getProjectDirectory()+"] is missing "+EjbJarProjectProperties.J2EE_PLATFORM+". " + // NOI18N
                             "default value will be used instead: "+j2eeSpec); // NOI18N

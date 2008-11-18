@@ -74,6 +74,8 @@ import org.openide.util.io.NbMarshalledObject;
 * @deprecated Obsoleted by lookup and new settings system.
 */
 @SuppressWarnings({"deprecation","unchecked"})
+@Deprecated
+@org.openide.util.lookup.ServiceProvider(service=org.openide.ServiceType.Registry.class)
 public final class Services extends ServiceType.Registry implements LookupListener {
     /** serial */
     static final long serialVersionUID =-7558069607307508327L;

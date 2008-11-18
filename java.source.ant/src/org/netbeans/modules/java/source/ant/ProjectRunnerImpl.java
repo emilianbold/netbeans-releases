@@ -62,10 +62,13 @@ import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.spi.java.project.runner.JavaRunnerImplementation;
+import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -73,6 +76,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
+import org.openide.windows.InputOutput;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -89,7 +93,8 @@ import static org.netbeans.api.java.project.runner.JavaRunner.*;
  *
  * @author Jan Lahoda
  */
-public class ProjectRunnerImpl implements JavaRunnerImplementation{
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.project.runner.JavaRunnerImplementation.class)
+public class ProjectRunnerImpl implements JavaRunnerImplementation {
 
     private static final Logger LOG = Logger.getLogger(ProjectRunnerImpl.class.getName());
     
@@ -98,8 +103,12 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation{
     }
 
     public ExecutorTask execute(String command, Map<String, ?> properties) throws IOException {
+        if (QUICK_CLEAN.equals(command)) {
+            return clean(properties);
+        }
+        
         String[] projectName = new String[1];
-        Properties antProps = computeProperties(properties, projectName);
+        Properties antProps = computeProperties(command, properties, projectName);
         
         FileObject script = buildScript(command);
         AntProjectCookie apc = new FakeAntProjectCookie(AntScriptUtils.antProjectCookieFor(script), projectName[0]);
@@ -111,7 +120,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation{
         return AntTargetExecutor.createTargetExecutor(execenv).execute(apc, null);
     }
 
-    static Properties computeProperties(Map<String, ?> properties, String[] projectNameOut) {
+    static Properties computeProperties(String command, Map<String, ?> properties, String[] projectNameOut) {
         properties = new HashMap<String, Object>(properties);
         FileObject toRun = getValue(properties, PROP_EXECUTE_FILE, FileObject.class);
         String workDir = getValue(properties, PROP_WORK_DIR, String.class);
@@ -172,12 +181,12 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation{
         LOG.log(Level.FINE, "execute classpath={0}", exec);
         String cp = exec.toString(ClassPath.PathConversionMode.FAIL);
         Properties antProps = new Properties();
-        antProps.setProperty("classpath", cp);
-        antProps.setProperty("classname", className);
-        antProps.setProperty("platform.java", javaTool);
-        antProps.setProperty("work.dir", workDir);
-        antProps.setProperty("run.jvmargs", toOneLine(runJVMArgs));
-        antProps.setProperty("application.args", toOneLine(args));
+        setProperty(antProps, "classpath", cp);
+        setProperty(antProps, "classname", className);
+        setProperty(antProps, "platform.java", javaTool);
+        setProperty(antProps, "work.dir", workDir);
+        setProperty(antProps, "run.jvmargs", toOneLine(runJVMArgs));
+        setProperty(antProps, "application.args", toOneLine(args));
 
         for (Entry<String, ?> e : properties.entrySet()) {
             if (e.getValue() instanceof String) {
@@ -190,6 +199,55 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation{
         return antProps;
     }
 
+    private static ExecutorTask clean(Map<String, ?> properties) {
+        properties = new HashMap<String, Object>(properties);
+        String projectName = getValue(properties, PROP_PROJECT_NAME, String.class);
+        FileObject toRun = getValue(properties, PROP_EXECUTE_FILE, FileObject.class);
+        ClassPath exec = getValue(properties, PROP_EXECUTE_CLASSPATH, ClassPath.class);
+
+        if (exec == null) {
+            Parameters.notNull("toRun", toRun);
+            exec = ClassPath.getClassPath(toRun, ClassPath.EXECUTE);
+        }
+
+        if (projectName == null) {
+            Project project = getValue(properties, "project", Project.class);
+            if (project != null) {
+                projectName = ProjectUtils.getInformation(project).getDisplayName();
+            }
+            if (projectName == null && toRun != null) {
+                project = FileOwnerQuery.getOwner(toRun);
+                if (project != null) {
+                    //NOI18N
+                    projectName = ProjectUtils.getInformation(project).getDisplayName();
+                }
+            }
+            if (projectName == null) {
+                projectName = "";
+            }
+        }
+        
+        LOG.log(Level.FINE, "execute classpath={0}", exec);
+
+        final ClassPath execFin = exec;
+
+        return ExecutionEngine.getDefault().execute(projectName, new Runnable() {
+            public void run() {
+                try {
+                    doClean(execFin);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }, InputOutput.NULL);
+    }
+
+    private static void setProperty(Properties antProps, String property, String value) {
+        if (value != null) {
+            antProps.setProperty(property, value);
+        }
+    }
+
     private static <T> T getValue(Map<String, ?> properties, String name, Class<T> type) {
         Object v = properties.remove(name);
 
@@ -197,6 +255,10 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation{
             FileObject f = (FileObject) v;
             File file = FileUtil.toFile(f);
 
+            if (file == null) {
+                return null;
+            }
+            
             v = file.getAbsolutePath();
         }
 
@@ -321,6 +383,25 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation{
                     out.close();
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+
+    private static void doClean(ClassPath exec) throws IOException {
+        for (ClassPath.Entry entry : exec.entries()) {
+            SourceForBinaryQuery.Result2 r = SourceForBinaryQuery.findSourceRoots2(entry.getURL());
+
+            if (r.preferSources() && r.getRoots().length > 0) {
+                for (FileObject source : r.getRoots()) {
+                    File sourceFile = FileUtil.toFile(source);
+
+                    if (sourceFile == null) {
+                        LOG.log(Level.WARNING, "Source URL: {0} cannot be translated to file, skipped", source.getURL().toExternalForm());
+                        continue;
+                    }
+
+                    BuildArtifactMapperImpl.clean(sourceFile.toURI().toURL());
                 }
             }
         }

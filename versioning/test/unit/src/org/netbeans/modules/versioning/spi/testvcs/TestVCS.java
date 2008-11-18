@@ -51,6 +51,7 @@ import java.io.File;
  * 
  * @author Maros Sandor
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
 public class TestVCS extends VersioningSystem {
 
     private static TestVCS instance;

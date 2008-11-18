@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.RootNode;
 import org.jruby.nb.parser.RubyParserResult;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserFile;
@@ -68,7 +69,7 @@ public class RubyParseResult extends ParserResult {
 
     public RubyParseResult(RubyParser parser, ParserFile file, AstTreeNode ast, Node root,
         RootNode realRoot, RubyParserResult jrubyResult) {
-        super(parser, file, RubyMimeResolver.RUBY_MIME_TYPE);
+        super(parser, file, RubyInstallation.RUBY_MIME_TYPE);
         this.ast = ast;
         this.root = root;
         this.realRoot = realRoot;

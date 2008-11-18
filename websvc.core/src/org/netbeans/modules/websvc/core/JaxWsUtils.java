@@ -90,6 +90,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
@@ -123,8 +125,6 @@ import javax.xml.namespace.QName;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -418,16 +418,16 @@ public class JaxWsUtils {
                         modifiedClass = genUtils.addAnnotation(modifiedClass, StatelessAnnotation);
                     }
 
-                    List<WSOperation> operations = port.getOperations();
-                    for (WSOperation operation : operations) {
+                    List<WsdlOperation> operations = port.getOperations();
+                    for (WsdlOperation operation : operations) {
 
                         // return type
                         String returnType = operation.getReturnTypeName();
 
                         // create parameters
-                        List<WSParameter> parameters = operation.getParameters();
+                        List<WsdlParameter> parameters = operation.getParameters();
                         List<VariableTree> params = new ArrayList<VariableTree>();
-                        for (WSParameter parameter : parameters) {
+                        for (WsdlParameter parameter : parameters) {
                             // create parameter:
                             // final ObjectOutput arg0
                             params.add(make.Variable(

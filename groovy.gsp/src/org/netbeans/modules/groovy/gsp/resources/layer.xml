@@ -2,7 +2,7 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Loaders">
-        <folder name="application">
+        <folder name="text">
             <folder name="x-gsp">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/gsp/resources/GspFile16x16.png"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/groovy/gsp/resources/GspFile16x16.png"/>
@@ -82,14 +82,14 @@
     </folder>
 
     <folder name="Editors">
-        <folder name="application">
+        <folder name="text">
             <folder name="x-gsp">
                 <file name="org-netbeans-modules-groovy-gsp-GspIndentTaskFactory.instance"/>
                 <file name="org-netbeans-modules-groovy-gsp-EmbeddedSectionsHighlighting$Factory.instance"/>
                 <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
 
                 <file name="language.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId.language"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.gsp.lexer.GspTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 
@@ -200,7 +200,7 @@
 
     <folder name="Navigator">
         <folder name="Panels">
-            <folder name="application">
+            <folder name="text">
                 <folder name="x-gsp">
                     <file name="org-netbeans-modules-languages-features-LanguagesNavigator.instance"/>
                 </folder>
@@ -210,20 +210,20 @@
     
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
-            <folder name="application">
+            <folder name="text">
                 <file name="x-gsp" url="GspExample"/>
             </folder>
         </folder>
     </folder>
     <folder name="GsfPlugins">
-        <folder name="application">
+        <folder name="text">
             <folder name="x-gsp">
                 <attr name="useCustomEditorKit" boolvalue="true"/>
                 <file name="language.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.gsp.GspLanguage"/>
                 </file>
                 <file name="structure.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.StructureAnalyzer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.api.StructureAnalyzer"/>
                 </file>
             </folder>
         </folder>

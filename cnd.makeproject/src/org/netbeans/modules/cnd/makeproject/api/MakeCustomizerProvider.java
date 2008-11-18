@@ -38,21 +38,21 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Vector;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.WeakHashMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
@@ -74,29 +74,26 @@ import org.openide.util.RequestProcessor;
 /** Customization of Make project
  */
 public class MakeCustomizerProvider implements CustomizerProvider {
-    
-    private final Project project; 
-    
+
+    private final Project project;
     // Option indexes
     private static final int OPTION_OK = 0;
     private static final int OPTION_CANCEL = 1;
     private static final int OPTION_APPLY = 2;
-    
     // Option command names
     private static final String COMMAND_OK = "OK";          // NOI18N
     private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
     private static final String COMMAND_APPLY = "APPLY";  // NOI18N
-    
     private DialogDescriptor dialogDescriptor;
-    private Map customizerPerProject = new WeakHashMap (); // Is is weak needed here?
+    private Map customizerPerProject = new WeakHashMap(); // Is is weak needed here?
     private ConfigurationDescriptorProvider projectDescriptorProvider;
     private final Set<ActionListener> actionListenerList = new HashSet<ActionListener>();
-    
+
     public MakeCustomizerProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.project = project;
         this.projectDescriptorProvider = projectDescriptorProvider;
     }
-            
+
     public void showCustomizer() {
         showCustomizer(null, null, null);
     }
@@ -104,7 +101,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     public void showCustomizer(Item item) {
         showCustomizer(null, item, null);
     }
-    
+
     public void showCustomizer(Folder folder) {
         showCustomizer(null, null, folder);
     }
@@ -112,28 +109,33 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     public void showCustomizer(String preselectedNodeName) {
         showCustomizer(preselectedNodeName, null, null);
     }
-    
+
     public void showCustomizer(final String preselectedNodeName, final Item item, final Folder folder) {
+        if (!projectDescriptorProvider.gotDescriptor()) {
+            //TODO: show warning dialog
+            return;
+        }
         RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+
             public void run() {
                 showCustomizerWorker(preselectedNodeName, item, folder);
             }
-        });     
+        });
     }
-    
+
     private void showCustomizerWorker(String preselectedNodeName, Item item, Folder folder) {
-        
-        if (customizerPerProject.containsKey (project)) {
-            Dialog dlg = (Dialog)customizerPerProject.get (project);
-            
+
+        if (customizerPerProject.containsKey(project)) {
+            Dialog dlg = (Dialog) customizerPerProject.get(project);
+
             // check if the project is being customized
-            if (dlg.isShowing ()) {
+            if (dlg.isShowing()) {
                 // make it showed
                 dlg.setVisible(true);
-                return ;
+                return;
             }
         }
-        
+
         if (folder != null) {
             // Make sure all FolderConfigurations are created (they are lazyly created)
             Configuration[] configurations = projectDescriptorProvider.getConfigurationDescriptor().getConfs().getConfs();
@@ -141,107 +143,103 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 folder.getFolderConfiguration(configurations[i]);
             }
         }
-        
+
         // Make sure all languages are update
-        ((MakeConfigurationDescriptor)projectDescriptorProvider.getConfigurationDescriptor()).refreshRequiredLanguages();
+        ((MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor()).refreshRequiredLanguages();
 
         // Create options
-        JButton options[] = new JButton[] { 
-            new JButton( NbBundle.getMessage( MakeCustomizerProvider.class, "LBL_Customizer_Ok_Option") ), // NOI18N
-            new JButton( NbBundle.getMessage( MakeCustomizerProvider.class, "LBL_Customizer_Cancel_Option" ) ) , // NOI18N
-            new JButton( NbBundle.getMessage( MakeCustomizerProvider.class, "LBL_Customizer_Apply_Option" ) ) , // NOI18N
+        JButton options[] = new JButton[]{
+            new JButton(NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_Customizer_Ok_Option")), // NOI18N
+            new JButton(NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_Customizer_Cancel_Option")), // NOI18N
+            new JButton(NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_Customizer_Apply_Option")), // NOI18N
         };
 
         // Set commands
-        options[ OPTION_OK ].setActionCommand( COMMAND_OK );
-        options[ OPTION_OK ].getAccessibleContext ().setAccessibleDescription ( NbBundle.getMessage( MakeCustomizerProvider.class, "ACSD_Customizer_Ok_Option") ); // NOI18N
-        options[ OPTION_CANCEL ].setActionCommand( COMMAND_CANCEL );
-        options[ OPTION_CANCEL ].getAccessibleContext ().setAccessibleDescription ( NbBundle.getMessage( MakeCustomizerProvider.class, "ACSD_Customizer_Cancel_Option") ); // NOI18N
-        options[ OPTION_APPLY ].setActionCommand( COMMAND_APPLY );
-        options[ OPTION_APPLY ].getAccessibleContext ().setAccessibleDescription ( NbBundle.getMessage( MakeCustomizerProvider.class, "ACSD_Customizer_Apply_Option") ); // NOI18N
+        options[OPTION_OK].setActionCommand(COMMAND_OK);
+        options[OPTION_OK].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizerProvider.class, "ACSD_Customizer_Ok_Option")); // NOI18N
+        options[OPTION_CANCEL].setActionCommand(COMMAND_CANCEL);
+        options[OPTION_CANCEL].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizerProvider.class, "ACSD_Customizer_Cancel_Option")); // NOI18N
+        options[OPTION_APPLY].setActionCommand(COMMAND_APPLY);
+        options[OPTION_APPLY].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizerProvider.class, "ACSD_Customizer_Apply_Option")); // NOI18N
 
         //A11Y
-        options[ OPTION_OK].getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(MakeCustomizerProvider.class,"AD_MakeCustomizerProviderOk")); // NOI18N
-        options[ OPTION_CANCEL].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizerProvider.class,"AD_MakeCustomizerProviderCancel")); // NOI18N
-        options[ OPTION_APPLY].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizerProvider.class,"AD_MakeCustomizerProviderApply")); // NOI18N
+        options[OPTION_OK].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizerProvider.class, "AD_MakeCustomizerProviderOk")); // NOI18N
+        options[OPTION_CANCEL].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizerProvider.class, "AD_MakeCustomizerProviderCancel")); // NOI18N
+        options[OPTION_APPLY].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MakeCustomizerProvider.class, "AD_MakeCustomizerProviderApply")); // NOI18N
 
-	// Mnemonics
-        options[ OPTION_APPLY ].setMnemonic(NbBundle.getMessage(MakeCustomizerProvider.class, "MNE_Customizer_Apply_Option").charAt(0)); // NOI18N
+        // Mnemonics
+        options[OPTION_APPLY].setMnemonic(NbBundle.getMessage(MakeCustomizerProvider.class, "MNE_Customizer_Apply_Option").charAt(0)); // NOI18N
 
         // RegisterListener
-	ConfigurationDescriptor clonedProjectdescriptor = projectDescriptorProvider.getConfigurationDescriptor().cloneProjectDescriptor();
-	Vector controls = new Vector();
-	controls.add(options[OPTION_OK]);
+        ConfigurationDescriptor clonedProjectdescriptor = projectDescriptorProvider.getConfigurationDescriptor().cloneProjectDescriptor();
+        ArrayList<JComponent> controls = new ArrayList<JComponent>();
+        controls.add(options[OPTION_OK]);
         MakeCustomizer innerPane = new MakeCustomizer(project, preselectedNodeName, clonedProjectdescriptor, item, folder, controls);
-        ActionListener optionsListener = new OptionListener( project, projectDescriptorProvider.getConfigurationDescriptor(), clonedProjectdescriptor, innerPane, folder, item);
-        options[ OPTION_OK ].addActionListener( optionsListener );
-        options[ OPTION_CANCEL ].addActionListener( optionsListener );
-        options[ OPTION_APPLY ].addActionListener( optionsListener );
-        
+        ActionListener optionsListener = new OptionListener(project, projectDescriptorProvider.getConfigurationDescriptor(), clonedProjectdescriptor, innerPane, folder, item);
+        options[OPTION_OK].addActionListener(optionsListener);
+        options[OPTION_CANCEL].addActionListener(optionsListener);
+        options[OPTION_APPLY].addActionListener(optionsListener);
+
         String dialogTitle = null;
         if (item != null) {
             dialogTitle = MessageFormat.format(
                     NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_File_Customizer_Title"),
-                    new Object[] {item.getFile().getName()}); // NOI18N 
-        }
-        else if (folder != null) {
+                    new Object[]{item.getFile().getName()}); // NOI18N 
+        } else if (folder != null) {
             dialogTitle = MessageFormat.format(
                     NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_Folder_Customizer_Title"),
-                    new Object[] {folder.getName()}); // NOI18N 
-        }
-        else {
+                    new Object[]{folder.getName()}); // NOI18N 
+        } else {
             dialogTitle = MessageFormat.format(
                     NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_Project_Customizer_Title"),
-                    new Object[] {ProjectUtils.getInformation(project).getDisplayName()}); // NOI18N 
+                    new Object[]{ProjectUtils.getInformation(project).getDisplayName()}); // NOI18N 
         }
 
-        dialogDescriptor = new DialogDescriptor( 
-            innerPane, // innerPane
-            dialogTitle,
-            true,                                  // modal
-            options,                                // options
-            options[OPTION_OK],                     // initial value
-            DialogDescriptor.BOTTOM_ALIGN,          // options align
-            null,                                   // helpCtx
-            null );                                 // listener 
-            
-        dialogDescriptor.setClosingOptions( new Object[] { options[ OPTION_OK ], options[ OPTION_CANCEL ] } );
-        innerPane.setDialogDescriptor(dialogDescriptor);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
+        dialogDescriptor = new DialogDescriptor(
+                innerPane, // innerPane
+                dialogTitle,
+                true, // modal
+                options, // options
+                options[OPTION_OK], // initial value
+                DialogDescriptor.BOTTOM_ALIGN, // options align
+                null, // helpCtx
+                null);                                 // listener
 
-        customizerPerProject.put (project, dialog);
+        dialogDescriptor.setClosingOptions(new Object[]{options[OPTION_OK], options[OPTION_CANCEL]});
+        innerPane.setDialogDescriptor(dialogDescriptor);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+
+        customizerPerProject.put(project, dialog);
         dialog.setVisible(true);
         clonedProjectdescriptor.closed();
-    }    
-    
+    }
 
-    
     /** Listens to the actions on the Customizer's option buttons */
     private class OptionListener implements ActionListener {
-    
+
         private Project project;
-	private ConfigurationDescriptor projectDescriptor;
-	private ConfigurationDescriptor clonedProjectdescriptor;
-	private MakeCustomizer makeCustomizer;
+        private ConfigurationDescriptor projectDescriptor;
+        private ConfigurationDescriptor clonedProjectdescriptor;
+        private MakeCustomizer makeCustomizer;
         private Folder folder;
         private Item item;
-        
-        OptionListener( Project project, ConfigurationDescriptor projectDescriptor, ConfigurationDescriptor clonedProjectdescriptor, MakeCustomizer makeCustomizer, Folder folder, Item item) {
+
+        OptionListener(Project project, ConfigurationDescriptor projectDescriptor, ConfigurationDescriptor clonedProjectdescriptor, MakeCustomizer makeCustomizer, Folder folder, Item item) {
             this.project = project;
-	    this.projectDescriptor = projectDescriptor;
-	    this.clonedProjectdescriptor = clonedProjectdescriptor;
-	    this.makeCustomizer = makeCustomizer;
+            this.projectDescriptor = projectDescriptor;
+            this.clonedProjectdescriptor = clonedProjectdescriptor;
+            this.makeCustomizer = makeCustomizer;
             this.folder = folder;
             this.item = item;
         }
-        
-        public void actionPerformed( ActionEvent e ) {
+
+        public void actionPerformed(ActionEvent e) {
             String command = e.getActionCommand();
-            
+
             if (command.equals(COMMAND_OK) || command.equals(COMMAND_APPLY)) {
                 int previousVersion = projectDescriptor.getVersion();
                 int currentVersion = CommonConfigurationXMLCodec.CURRENT_VERSION;
-                if (previousVersion < currentVersion) {                                           
+                if (previousVersion < currentVersion) {
                     String txt = getString("UPGRADE_TXT");
                     NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("UPGRADE_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
                     if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
@@ -249,53 +247,53 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                     }
                     projectDescriptor.setVersion(currentVersion);
                 }
-                
-		//projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);
-                makeCustomizer.save();
-		projectDescriptor.assign(clonedProjectdescriptor);
-		projectDescriptor.setModified();
-                projectDescriptor.save(); // IZ 133606
-                ((MakeConfigurationDescriptor)projectDescriptor).checkForChangedItems(project, folder, item);
 
-		((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();// FIXUP: should be moved into ProjectDescriptorHelper...
-                
+                //projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);
+                makeCustomizer.save();
+                projectDescriptor.assign(clonedProjectdescriptor);
+                projectDescriptor.setModified();
+                projectDescriptor.save(); // IZ 133606
+                ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
+
+                ((MakeSources) ProjectUtils.getSources(project)).descriptorChanged();// FIXUP: should be moved into ProjectDescriptorHelper...
+
                 fireActionEvent(e);
-                
+
             }
             if (command.equals(COMMAND_APPLY)) {
-		makeCustomizer.refresh();
-	    }
-            if (command.equals(COMMAND_OK) || command.equals(COMMAND_CANCEL))
+                makeCustomizer.refresh();
+            }
+            if (command.equals(COMMAND_OK) || command.equals(COMMAND_CANCEL)) {
                 actionListenerList.clear();
-        }        
+            }
+        }
     }
-    
+
     public void addActionListener(ActionListener cl) {
         synchronized (actionListenerList) {
             actionListenerList.add(cl);
         }
     }
-    
+
     public void removeActionListener(ActionListener cl) {
         synchronized (actionListenerList) {
             actionListenerList.remove(cl);
         }
     }
-    
+
     public void fireActionEvent(ActionEvent e) {
         Iterator it;
-        
+
         synchronized (actionListenerList) {
-            it = new HashSet(actionListenerList).iterator();
+            it = new HashSet<ActionListener>(actionListenerList).iterator();
         }
         while (it.hasNext()) {
-            ((ActionListener)it.next()).actionPerformed(e);
+            ((ActionListener) it.next()).actionPerformed(e);
         }
     }
-    
-    
     /** Look up i18n strings here */
     private static ResourceBundle bundle;
+
     private static String getString(String s) {
         if (bundle == null) {
             bundle = NbBundle.getBundle(MakeCustomizerProvider.class);

@@ -67,7 +67,10 @@ final class BuildInfo {
 
     static LogRecord logBuildInfoRec(){
         LogRecord rec = new LogRecord(Level.CONFIG, BUILD_INFO_FILE);
-        rec.setParameters(logBuildInfo().toArray());
+        List<String> buildInfo = logBuildInfo();
+        if (buildInfo != null){
+            rec.setParameters(buildInfo.toArray());
+        }
         return rec;
     }
     /** Gets build informations

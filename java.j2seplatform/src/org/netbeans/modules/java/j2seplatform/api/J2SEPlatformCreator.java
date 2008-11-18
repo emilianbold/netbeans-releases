@@ -79,7 +79,7 @@ public class J2SEPlatformCreator {
                 "Services/Platforms/org-netbeans-api-java-Platform"); // NOI18N
         assert platformsFolder != null;
         DataObject dobj = PlatformConvertor.create(plat, DataFolder.findFolder(platformsFolder), antName);
-        return dobj.getNodeDelegate().getLookup().lookup(JavaPlatform.class);
+        return dobj.getLookup().lookup(JavaPlatform.class);
     }
 
     private static String createPlatformDisplayName(JavaPlatform plat) {

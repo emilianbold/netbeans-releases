@@ -73,6 +73,7 @@ import org.openide.util.WeakSet;
  * Finds a project by searching the directory tree.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.FileOwnerQueryImplementation.class, position=100)
 public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImplementation {
     
     /** Do nothing */

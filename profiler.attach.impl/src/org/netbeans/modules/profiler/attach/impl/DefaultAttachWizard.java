@@ -51,6 +51,7 @@ import org.openide.WizardDescriptor;
  *
  * @author Jaroslav Bachorik
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.AttachWizard.class)
 public class DefaultAttachWizard extends AttachWizard {
     private static AttachWizardImpl impl = null;
 

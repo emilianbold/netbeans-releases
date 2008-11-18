@@ -98,7 +98,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.autoupdate.pluginimporter</friend>
+                <package>org.netbeans.modules.autoupdate.ui.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

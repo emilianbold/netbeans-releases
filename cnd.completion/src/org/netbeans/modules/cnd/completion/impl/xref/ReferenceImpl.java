@@ -38,10 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.completion.impl.xref;
 
-import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -54,26 +54,27 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
  * @author Vladimir Voskresensky
  */
 public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
-    private final Token token;
+
+    private final TokenItem<CppTokenId> token;
     private CsmObject target = null;
     private CsmObject owner = null;
-    private boolean findDone  = false;
+    private boolean findDone = false;
     private final int offset;
     private CsmReferenceKind kind;
     private FileReferencesContext fileReferencesContext;
-    
-    public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token, CsmReferenceKind kind) {
+
+    public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, TokenItem<CppTokenId> token, CsmReferenceKind kind) {
         super(doc, file, offset);
         this.token = token;
         this.offset = offset;
         // could be null or known kind like CsmReferenceKind.DIRECT_USAGE or CsmReferenceKind.AFTER_DEREFERENCE_USAGE
-        this.kind = kind; 
+        this.kind = kind;
     }
 
     public CsmObject getReferencedObject() {
         if (!findDone && isValid()) {
             target = ReferencesSupport.instance().findReferencedObject(super.getContainingFile(), super.getDocument(),
-                                       this.offset, token, fileReferencesContext);
+                    this.offset, token, fileReferencesContext);
             findDone = true;
         }
         return target;
@@ -97,27 +98,28 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
             return TextCache.getString(cs);
         }
     }
-    
+
     @Override
+    @SuppressWarnings("deprecation")
     public String toString() {
         return "'" + org.netbeans.editor.EditorDebug.debugString(getText().toString()) // NOI18N
-               + "', tokenID=" + this.token.id().toString().toLowerCase() // NOI18N
-               + ", offset=" + this.offset + " [" + super.getStartPosition() + "-" + super.getEndPosition() + "]"; // NOI18N
-    }    
-    
+                + "', tokenID=" + this.token.id().toString().toLowerCase() // NOI18N
+                + ", offset=" + this.offset + " [" + super.getStartPosition() + "-" + super.getEndPosition() + "]"; // NOI18N
+    }
+
     /*package*/ final void setTarget(CsmObject target) {
         this.target = target;
     }
-    
+
     /*package*/ final CsmObject getTarget() {
         return this.target;
     }
-    
+
     /*package*/ final int getOffset() {
         return this.offset;
     }
-    
-    /*package*/ final Token getToken() {
+
+    /*package*/ final TokenItem<CppTokenId> getToken() {
         return this.token;
     }
 
@@ -132,6 +134,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
         }
         return this.kind;
     }
+
     void setFileReferencesContext(FileReferencesContext fileReferencesContext) {
         this.fileReferencesContext = fileReferencesContext;
     }

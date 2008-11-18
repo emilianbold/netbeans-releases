@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  */
 public class ZipPackager implements PackagerDescriptor {
 
-    public static String PACKAGER_NAME = "Zip"; // NOI18N
+    public static final String PACKAGER_NAME = "Zip"; // NOI18N
 
     public String getName() {
         return PACKAGER_NAME;

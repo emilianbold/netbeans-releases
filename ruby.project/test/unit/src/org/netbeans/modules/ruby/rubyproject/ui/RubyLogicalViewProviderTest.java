@@ -56,14 +56,13 @@ public class RubyLogicalViewProviderTest extends RubyProjectTestBase {
     }
 
     public void testFindPath() throws Exception {
-        // XXX
-//        registerLayer();
-//        RubyProject project = createTestProject("rubyprj", "README");
-//        LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
-//        assertNotNull("have a LogicalViewProvider", lvp);
-//        Node root = new FilterNode(lvp.createLogicalView());
-//        assertNotNull("found Rakefile", find(lvp, root, project, "Rakefile"));
-//        assertNotNull("found README", find(lvp, root, project, "README"));
+        registerLayer();
+        RubyProject project = createTestProject("rubyprj", "README");
+        LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
+        assertNotNull("have a LogicalViewProvider", lvp);
+        Node root = new FilterNode(lvp.createLogicalView());
+        assertNotNull("found Rakefile", find(lvp, root, project, "Rakefile"));
+        assertNotNull("found README", find(lvp, root, project, "README"));
     }
     
     private Node find(LogicalViewProvider lvp, Node root, Project project, String path) throws Exception {

@@ -55,6 +55,7 @@ import org.openide.filesystems.Repository;
  *
  * @author Anton Chechel
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.palette.PaletteProvider.class)
 public class MidpNbPaletteProvider implements PaletteProvider {
 
     public static final String CATEGORY_SVG = "svg"; // NOI18N

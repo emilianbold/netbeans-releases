@@ -86,7 +86,7 @@ made subject to such option by the copyright holder.
 <mapID target="new_db_save_password" url="csh_newconnectdb.html" />
 
 <!-- create table dialog box csh -->
-<!-- <mapID target="" url="create-table-db.html" />  -->
+<mapID target="org.netbeans.modules.db.explorer.actions.CreateTableAction" url="create-table-db.html" />
 
 <!-- MySQL topics -->
 

@@ -61,6 +61,7 @@ import org.openide.util.Lookup;
  *
  * @author Alexander Simon
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.class)
 public class DiscoveryExtension implements IteratorExtension {
     
     /** Creates a new instance of DiscoveryExtension */

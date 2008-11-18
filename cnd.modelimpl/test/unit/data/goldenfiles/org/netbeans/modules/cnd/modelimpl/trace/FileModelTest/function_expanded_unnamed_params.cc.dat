@@ -2,7 +2,7 @@
 State of macro map:
 Own Map:
 MACROS (sorted 1):
-<U>#define '["__P",<204>,line=1,col=9],offset=8,file=null[["x",<204>,line=1,col=13],offset=12,file=null]'='["x",<204>,line=1,col=16],offset=15,file=null'
+<U>#define '["__P",<205>,line=1,col=9],offset=8,file=null[["x",<205>,line=1,col=13],offset=12,file=null]'='["x",<205>,line=1,col=16],offset=15,file=null'
 System Map:
 MACROS (sorted 0):
 
@@ -20,7 +20,7 @@ FUNCTION get_unit [2:1/17-2:65/81] FunctionImpl SCOPE: $Global$
          [2:31/47-2:64/80]  TYPE: *char TEXT=char*  [2:31/47-2:64/80]  INIT: null  SCOPE: get_unit 
          [2:31/47-2:64/80]  TYPE: int TEXT=int  [2:31/47-2:64/80]  INIT: null  SCOPE: get_unit 
          [2:31/47-2:64/80]  TYPE: *$unresolved$::ipf_stack_t TEXT=ipf_stack_t*  [2:31/47-2:64/80]  INIT: null  SCOPE: get_unit 
-    RETURNS int TEXT=int  [1:1/0-1:1/0]
+    RETURNS *$unresolved$::ifnet TEXT=ifnet*  [2:8/24-2:14/30]
 FUNCTION get_variable [3:1/82-3:55/136] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE get_variable(char*,char**,int)
@@ -29,7 +29,7 @@ FUNCTION get_variable [3:1/82-3:55/136] FunctionImpl SCOPE: $Global$
          [3:27/108-3:54/135]  TYPE: *char TEXT=char*  [3:27/108-3:54/135]  INIT: null  SCOPE: get_variable 
          [3:27/108-3:54/135]  TYPE: **char TEXT=char**  [3:27/108-3:54/135]  INIT: null  SCOPE: get_variable 
          [3:27/108-3:54/135]  TYPE: int TEXT=int  [3:27/108-3:54/135]  INIT: null  SCOPE: get_variable 
-    RETURNS *char TEXT=char*  [3:1/82-3:14/95]
+    RETURNS *char TEXT=char*  [3:8/89-3:14/95]
 
 ========== Dumping model of PROJECT DummyProject
 FUNCTION get_unit [2:1/17-2:65/81] FunctionImpl SCOPE: $Global$ 
@@ -40,7 +40,7 @@ FUNCTION get_unit [2:1/17-2:65/81] FunctionImpl SCOPE: $Global$
          [2:31/47-2:64/80]  TYPE: *char TEXT=char*  [2:31/47-2:64/80]  INIT: null  SCOPE: get_unit 
          [2:31/47-2:64/80]  TYPE: int TEXT=int  [2:31/47-2:64/80]  INIT: null  SCOPE: get_unit 
          [2:31/47-2:64/80]  TYPE: *$unresolved$::ipf_stack_t TEXT=ipf_stack_t*  [2:31/47-2:64/80]  INIT: null  SCOPE: get_unit 
-    RETURNS int TEXT=int  [1:1/0-1:1/0]
+    RETURNS *$unresolved$::ifnet TEXT=ifnet*  [2:8/24-2:14/30]
 FUNCTION get_variable [3:1/82-3:55/136] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE get_variable(char*,char**,int)
@@ -49,5 +49,5 @@ FUNCTION get_variable [3:1/82-3:55/136] FunctionImpl SCOPE: $Global$
          [3:27/108-3:54/135]  TYPE: *char TEXT=char*  [3:27/108-3:54/135]  INIT: null  SCOPE: get_variable 
          [3:27/108-3:54/135]  TYPE: **char TEXT=char**  [3:27/108-3:54/135]  INIT: null  SCOPE: get_variable 
          [3:27/108-3:54/135]  TYPE: int TEXT=int  [3:27/108-3:54/135]  INIT: null  SCOPE: get_variable 
-    RETURNS *char TEXT=char*  [3:1/82-3:14/95]
+    RETURNS *char TEXT=char*  [3:8/89-3:14/95]
 

@@ -434,6 +434,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
         // JVM properties
         builder.append(" -Djruby.home=");
         builder.append(ServerUtilities.quote(platform.getHome().getAbsolutePath()));
+        builder.append(" -Djruby.runtime.max=1");
 
         String grizzlyVMParams = System.getProperty("grizzly.jruby.vm.params");
         if(grizzlyVMParams != null) {

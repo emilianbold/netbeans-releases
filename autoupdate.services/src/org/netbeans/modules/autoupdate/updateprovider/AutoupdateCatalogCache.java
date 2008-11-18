@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -151,8 +151,12 @@ public class AutoupdateCatalogCache {
         NetworkAccess.NetworkListener nwl = new NetworkAccess.NetworkListener () {
 
             public void streamOpened (InputStream stream) {
-                err.log (Level.FINE, "Successfully read URI " + sourceUrl);
-                doCopy (sourceUrl, stream, cache, temp);
+                err.log (Level.FINE, "Successfully started reading URI " + sourceUrl);
+                try {
+                    doCopy (sourceUrl, stream, cache, temp);
+                } catch (IOException ex) {
+                    storeException (ex);
+                }
             }
 
             public void accessCanceled () {
@@ -197,7 +201,7 @@ public class AutoupdateCatalogCache {
         return storedException;
     }
     
-    private void doCopy (URL sourceUrl, InputStream is, File cache, File temp) {
+    private void doCopy (URL sourceUrl, InputStream is, File cache, File temp) throws IOException {
         
         OutputStream os = null;
         int read = 0;
@@ -206,28 +210,32 @@ public class AutoupdateCatalogCache {
             os = new BufferedOutputStream(new FileOutputStream (temp));
             while ((read = is.read ()) != -1) {
                 os.write (read);
-            }   
+            }
+            is.close ();
+            os.flush ();
+            os.close ();
+            synchronized (this) {
+                if (cache.exists () && ! cache.delete ()) {
+                    err.log (Level.INFO, "Cannot delete cache " + cache);
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException ie) {
+                        assert false : ie;
+                    }
+                    cache.delete();
+                }
+            }
+            if (! temp.renameTo (cache)) {
+                err.log (Level.INFO, "Cannot rename temp " + temp + " to cache " + cache);
+            }
         } catch (IOException ioe) {
             err.log (Level.INFO, "Writing content of URL " + sourceUrl + " failed.", ioe);
+            throw ioe;
         } finally {
             try {
                 if (is != null) is.close ();
                 if (os != null) os.flush ();
                 if (os != null) os.close ();
-                synchronized (this) {
-                    if (cache.exists () && ! cache.delete ()) {
-                        err.log (Level.INFO, "Cannot delete cache " + cache);
-                        try {
-                            Thread.sleep(200);
-                        } catch (InterruptedException ie) {
-                            assert false : ie;
-                        }
-                        cache.delete();
-                    }
-                    if (! temp.renameTo (cache)) {
-                        err.log (Level.INFO, "Cannot rename temp " + temp + " to cache " + cache);
-                    }
-                }                    
             } catch (IOException ioe) {
                 err.log (Level.INFO, "Closing streams failed.", ioe);
             }

@@ -50,6 +50,7 @@ import java.io.LineNumberReader;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.io.BufferedOutputStream;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Properties;
@@ -1027,7 +1028,8 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     private synchronized boolean checkJSR172Compliant( final File wsdlFile ) {
         try {
             WSDL2Java.Configuration config = new WSDL2Java.Configuration();
-            config.setWSDLFileName( wsdlFile.toURL().toString());
+            config.setWSDLFileName( wsdlFile.toURI().toURL().toString());
+            config.setOriginalWSDLUrl( wsdlFile.toURI().toURL() );
             WSDL2Java wsdl2java = WSDL2JavaFactory.getWSDL2Java( config );
             
             List<WSDL2Java.ValidationResult> validationResults = wsdl2java.validate();
@@ -1051,6 +1053,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             
             WSDL2Java.Configuration config = new WSDL2Java.Configuration();
             config.setWSDLFileName( tempWSDL.toURL().toString());
+            config.setOriginalWSDLUrl( new URL(getDownloadUrl()) );
             WSDL2Java wsdl2java = WSDL2JavaFactory.getWSDL2Java( config );
             
             List<WSDL2Java.ValidationResult> validationResults = wsdl2java.validate();

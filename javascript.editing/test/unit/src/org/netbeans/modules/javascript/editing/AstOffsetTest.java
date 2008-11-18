@@ -191,6 +191,30 @@ public class AstOffsetTest extends JsTestBase {
         checkOffsets("testfiles/functions.js");
     }
 
+    public void testEmbeddedCode1() throws Exception {
+        checkOffsets("testfiles/generated_identifiers.js");
+    }
+
+    public void testEmbeddedCode2() throws Exception {
+        checkOffsets("testfiles/lbracketlist.js");
+    }
+
+    public void testEmbeddedCode3() throws Exception {
+        checkOffsets("testfiles/embedding/issue136495.erb.js");
+    }
+
+    public void testEmbeddedCode4() throws Exception {
+        checkOffsets("testfiles/issue120499.js");
+    }
+
+    public void testEmbeddedCode6() throws Exception {
+        checkOffsets("testfiles/issue148423.js");
+    }
+
+    public void testEmbeddedCode5() throws Exception {
+        checkOffsets("testfiles/issue149019.js");
+    }
+
 //    public void testDestructuringAssignment() throws Exception {
 //        // http://developer.mozilla.org/en/docs/New_in_JavaScript_1.7#Destructuring_assignment
 //        checkOffsets("testfiles/destructuring_assignment.js");

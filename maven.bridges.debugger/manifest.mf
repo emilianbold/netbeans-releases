@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.maven.bridges.debugger/1
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/maven/bridges/debugger/Bundle.properties
-OpenIDE-Module-Public-Packages: org.netbeans.modules.maven.bridges.debugger.*
-AutoUpdate-Show-In-Client: false
-OpenIDE-Module-Specification-Version: 1.0
-

@@ -51,17 +51,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.event.ChangeListener;
-
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
-
 import org.xml.sax.*;
 import org.openide.util.NbBundle;
-
 import org.netbeans.modules.j2ee.ddloaders.web.event.*;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
@@ -76,12 +73,10 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.ddloaders.catalog.EnterpriseCatalog;
-
 import org.netbeans.modules.j2ee.ddloaders.web.multiview.*;
 import org.netbeans.modules.j2ee.ddloaders.multiview.DDMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
@@ -119,7 +114,6 @@ public class DDDataObject extends  DDMultiViewDataObject
     private Vector updates;
 
     private transient RequestProcessor.Task updateTask;
-    private transient FileObjectObserver fileListener;
 
     public DDDataObject (FileObject pf, DDDataLoader loader) throws DataObjectExistsException {
         super (pf, loader);
@@ -133,8 +127,6 @@ public class DDDataObject extends  DDMultiViewDataObject
         getCookieSet().add(checkCookie);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         getCookieSet().add(validateCookie);
-
-        fileListener = new FileObjectObserver(fo);
 
         Project project = FileOwnerQuery.getOwner (getPrimaryFile ());
         if (project != null) {
@@ -203,6 +195,7 @@ public class DDDataObject extends  DDMultiViewDataObject
         return webApp;
     }
 
+    @Override
     protected org.openide.nodes.Node createNodeDelegate () {
         return new DDDataNode(this);
     }
@@ -225,8 +218,6 @@ public class DDDataObject extends  DDMultiViewDataObject
         ServletMapping[] maps = new ServletMapping[newMappings.size()];
         newMappings.toArray(maps);
         webApp.setServletMapping(maps);
-        //setNodeDirty(true);
-        //modelUpdatedFromUI();
     }
 
     protected void parseDocument() throws IOException {
@@ -320,18 +311,19 @@ public class DDDataObject extends  DDMultiViewDataObject
             newSM.setServletName (name);
             newSM.setUrlPattern (urlPattern);
             wappTo.addServletMapping (newSM);
-
-            //setNodeDirty (true);
-            //modelUpdatedFromUI();
-        } catch (ClassNotFoundException ex) {}
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger("DDDataObject").log(Level.FINE, "ignored exception", ex);
+        }
     }
 
+    @Override
     protected DataObject handleCopy(DataFolder f) throws IOException {
         DataObject dObj = super.handleCopy(f);
         try { dObj.setValid(false); }catch(java.beans.PropertyVetoException e){}
         return dObj;
     }
 
+    @Override
     protected void dispose () {
         // no more changes in DD
         synchronized (this) {
@@ -347,9 +339,6 @@ public class DDDataObject extends  DDMultiViewDataObject
      * @return Value of property documentDTD or <CODE>null</CODE> if documentDTD cannot be obtained.
      */
     public String getDocumentDTD () {
-        if (documentDTD == null) {
-            WebApp wa = getWebApp ();
-        }
         return documentDTD;
     }
 
@@ -632,6 +621,7 @@ public class DDDataObject extends  DDMultiViewDataObject
     }
 
     private OperationListener operationListener = new OperationAdapter() {
+        @Override
         public void operationDelete(OperationEvent ev) {
             FileObject fo = ev.getObject().getPrimaryFile();
             String resourceName = getPackageName (fo);
@@ -677,6 +667,7 @@ public class DDDataObject extends  DDMultiViewDataObject
         refreshSourceFolders ();
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(HELP_ID_PREFIX_OVERVIEW+"overviewNode"); //NOI18N
     }
@@ -688,47 +679,6 @@ public class DDDataObject extends  DDMultiViewDataObject
         return (webApp!=null && ((org.netbeans.modules.j2ee.dd.impl.web.WebAppProxy)webApp).getOriginal()!=null);
     }
 
-    /** WeakListener for accepting external changes to web.xml
-    */
-    private class FileObjectObserver implements FileChangeListener {
-        FileObjectObserver (FileObject fo) {
-            fo.addFileChangeListener((FileChangeListener)org.openide.util.WeakListeners.create(
-                                        FileChangeListener.class, this, fo));
-        }
-
-        public void fileAttributeChanged(FileAttributeEvent fileAttributeEvent) {
-        }
-
-        public void fileChanged(FileEvent fileEvent) {
-            /*
-           WebAppProxy webApp = (WebAppProxy) DDDataObject.this.getWebApp();
-           boolean needRewriting = true;
-           if (webApp!= null && webApp.isWriting()) { // change from outside
-               webApp.setWriting(false);
-               needRewriting=false;
-           }
-           if (isSavingDocument()) {// document is being saved
-               setSavingDocument(false);
-               needRewriting=false;
-           }
-           if (needRewriting) getEditorSupport().restartTimer();
-            */
-        }
-
-        public void fileDataCreated(FileEvent fileEvent) {
-        }
-
-        public void fileDeleted(FileEvent fileEvent) {
-        }
-
-        public void fileFolderCreated(FileEvent fileEvent) {
-        }
-
-        public void fileRenamed(FileRenameEvent fileRenameEvent) {
-        }
-    }
-
-
     public static final String DD_MULTIVIEW_PREFIX = "dd_multiview"; // NOI18N
     public static final String MULTIVIEW_OVERVIEW = "Overview"; // NOI18N
     public static final String MULTIVIEW_SERVLETS = "Servlets"; // NOI18N
@@ -736,8 +686,6 @@ public class DDDataObject extends  DDMultiViewDataObject
     public static final String MULTIVIEW_PAGES = "Pages"; // NOI18N
     public static final String MULTIVIEW_REFERENCES = "References"; // NOI18N
     public static final String MULTIVIEW_SECURITY = "Security"; //NOI18N
-
-    private ServletsMultiViewElement servletMVElement;
 
     protected DesignMultiViewDesc[] getMultiViewDesc() {
         return new DesignMultiViewDesc[] {
@@ -747,7 +695,6 @@ public class DDDataObject extends  DDMultiViewDataObject
             new DDView(this,MULTIVIEW_PAGES),
             new DDView(this,MULTIVIEW_REFERENCES),
             new DDView(this, MULTIVIEW_SECURITY)
-            //new DDView(this,"Security")
         };
     }
 
@@ -780,6 +727,7 @@ public class DDDataObject extends  DDMultiViewDataObject
             return null; 
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             if (name.equals(MULTIVIEW_OVERVIEW)) {
                 return new HelpCtx(HELP_ID_PREFIX_OVERVIEW+"overviewNode"); //NOI18N
@@ -803,6 +751,7 @@ public class DDDataObject extends  DDMultiViewDataObject
             return DD_MULTIVIEW_PREFIX+name;
         }
 
+        @Override
         public String getDisplayName() {
             return NbBundle.getMessage(DDDataObject.class,"TTL_"+name);
         }
@@ -811,6 +760,7 @@ public class DDDataObject extends  DDMultiViewDataObject
     /** Enable to focus specific object in Multiview Editor
      *  The default implementation opens the XML View
      */
+    @Override
     public void showElement(Object element) {
         Object target=null;
         if (element instanceof Servlet) {
@@ -849,6 +799,7 @@ public class DDDataObject extends  DDMultiViewDataObject
     /** 
      * Do not allow to remove web.xml except for version 2.5.
      */
+    @Override
     public boolean isDeleteAllowed() {
         return WebApp.VERSION_2_5.equals(getWebApp().getVersion());
     }

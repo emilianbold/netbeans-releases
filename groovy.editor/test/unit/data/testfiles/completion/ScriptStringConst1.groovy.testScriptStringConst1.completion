@@ -2,4 +2,5 @@ Code completion result for source line:
 " ddd ".toS|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
+METHOD     toShort()                                  Short
 METHOD     toString()                                 String

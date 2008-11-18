@@ -55,8 +55,14 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.BadLocationException;
 
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.cnd.api.lexer.Filter;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.editor.*;
 
+import org.netbeans.modules.cnd.editor.deprecated.fortran.options.FortranCodeStyle;
 import org.netbeans.modules.editor.*;
 import org.netbeans.modules.cnd.utils.MIMENames;
 
@@ -65,6 +71,8 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 */
 
 public class FKit extends NbEditorKit {
+
+    private InputAttributes lexerAttrs = null;
 
     @Override
     public String getContentType() {
@@ -82,6 +90,34 @@ public class FKit extends NbEditorKit {
         // Force '\n' as write line separator // !!! move to initDocument()
         doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);
         return doc; 
+    }
+
+    /** Initialize document by adding the draw-layers for example. */
+    @Override
+    protected void initDocument(BaseDocument doc) {
+        super.initDocument(doc);
+        doc.putProperty(InputAttributes.class, getLexerAttributes(doc));
+        doc.putProperty(Language.class, getLanguage());
+    }
+
+    protected Language<FortranTokenId> getLanguage() {
+        return FortranTokenId.languageFortran();
+    }
+
+    protected final synchronized InputAttributes getLexerAttributes(BaseDocument doc) {
+        // for now use shared attributes for all documents to save memory
+        // in future we can make attributes per document based on used compiler info
+        if (lexerAttrs == null) {
+            lexerAttrs = new InputAttributes();
+            lexerAttrs.setValue(getLanguage(), CndLexerUtilities.LEXER_FILTER, getFilter(), true);
+            lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH, FSettingsFactory.MAXIMUM_TEXT_WIDTH, true);
+        }
+        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_FREE_FORMAT, FortranCodeStyle.get(doc).isFreeFormatFortran(), true);
+        return lexerAttrs;
+    }
+
+    protected Filter<FortranTokenId> getFilter() {
+        return CndLexerUtilities.getFortranFilter();
     }
 
     /** Create new instance of syntax coloring scanner

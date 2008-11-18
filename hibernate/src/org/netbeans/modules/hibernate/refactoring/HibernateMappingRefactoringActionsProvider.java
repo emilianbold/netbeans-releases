@@ -58,6 +58,7 @@ import org.openide.util.datatransfer.PasteType;
  * 
  * @author Dongmei Cao
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class)
 public class HibernateMappingRefactoringActionsProvider extends ActionsImplementationProvider {
 
     @Override

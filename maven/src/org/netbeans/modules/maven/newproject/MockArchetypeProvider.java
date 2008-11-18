@@ -49,6 +49,7 @@ import java.util.List;
  * when the user never used any archetypes before..
  * @author mkleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.api.archetype.ArchetypeProvider.class)
 public class MockArchetypeProvider implements ArchetypeProvider {
     
     /** Creates a new instance of MockArchetypeProvider */

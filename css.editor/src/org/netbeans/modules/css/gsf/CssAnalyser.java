@@ -85,7 +85,7 @@ public class CssAnalyser {
                         String propertyName = propertyNode.image().trim();
                         //check for vendor specific properies - ignore them
                         Property property = model.getProperty(propertyName);
-                        if (!isVendorSpecificProperty(propertyName) && property == null) {
+                        if (!CssEmbeddingModelUtils.containsGeneratedCode(propertyName) && !isVendorSpecificProperty(propertyName) && property == null) {
                             //unknown property - report
                             Error error =
                                     new DefaultError(UNKNOWN_PROPERTY,

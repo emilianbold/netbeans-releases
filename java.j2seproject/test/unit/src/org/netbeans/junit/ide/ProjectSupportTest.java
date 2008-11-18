@@ -86,6 +86,7 @@ public class ProjectSupportTest extends NbTestCase {
     }
     
     /** Test closeProject method. */
+    @SuppressWarnings("deprecation")
     public void testCloseProject() {
         assertTrue("Should return true if succeeded.", ProjectSupport.closeProject(PROJECT_NAME));
         Project[] projects = OpenProjectList.getDefault().getOpenProjects();
@@ -94,6 +95,7 @@ public class ProjectSupportTest extends NbTestCase {
     }
     
     /** Test openProject method. */
+    @SuppressWarnings("deprecation")
     public void testOpenProject() throws Exception {
         Project project = (Project)ProjectSupport.openProject(new File(projectParentDir, PROJECT_NAME));
         Project[] projects = OpenProjectList.getDefault().getOpenProjects();

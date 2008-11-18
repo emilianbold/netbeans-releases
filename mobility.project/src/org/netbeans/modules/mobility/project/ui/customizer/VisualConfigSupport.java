@@ -207,7 +207,7 @@ public final class VisualConfigSupport {
         final DialogDescriptor dd = new DialogDescriptor(p, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_AddConfiguration"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
         ncp.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent arg0) {
-                boolean valid = ncp.isValid();
+                boolean valid = ncp.valid();
                 dd.setValid(valid);
                 ep.setErrorMessage(valid ? null : NbBundle.getMessage(ConfigurationsSelectionPanel.class, "ERR_CfgSelPanel_NameCollision"));//NOI18N
             }

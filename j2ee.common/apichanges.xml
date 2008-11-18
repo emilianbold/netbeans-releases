@@ -103,6 +103,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
     
+        <change id="migrate-code-to-java-api-common">
+            <api name="j2ee-utilities"/>
+            <summary>Migrate all Java related code to java.api.common module.</summary>
+            <version major="1" minor="36"/>
+            <date day="28" month="10" year="2008"/>
+            <author login="dkonecny"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" deletion="yes"/>
+            <description>
+                <p>
+                    Most of Java specific code was moved to java.api.common module.
+                </p>
+            </description>
+            <issue number="150357"/>
+        </change>
+
         <change id="copylibs-library-upgrade">
             <api name="j2ee-utilities"/>
             <summary>Helper method makeSureProjectHasCopyLibsLibrary was added.</summary>
@@ -115,7 +130,7 @@ is the proper place.
                     Helper method makeSureProjectHasCopyLibsLibrary was added.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2ee.common.project.classpath" name="ClassPathSupport"/>
+            <class package="org.netbeans.modules.j2ee.common" name="SharabilityUtility"/>
             <issue number="146736"/>
         </change>
         

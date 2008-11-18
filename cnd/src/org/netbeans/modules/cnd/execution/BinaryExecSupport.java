@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.execution;
 
 import java.io.IOException;
@@ -52,21 +51,22 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
 /** Support for execution of a class file. Looks for the class with
-* the same base name as the primary file, locates a main method
-* in it, and starts it.
-*
-*/
+ * the same base name as the primary file, locates a main method
+ * in it, and starts it.
+ *
+ */
 public final class BinaryExecSupport extends ExecutionSupport {
+
     private static final String PROP_RUN_DIRECTORY = "rundirectory"; // NOI18N
-    private PropertySupport rundirectoryProperty = null;
-  
+
     /** new BinaryExecSupport */
     public BinaryExecSupport(Entry entry) {
-	super(entry);
+        super(entry);
     }
-  
-    public void addProperties (Sheet.Set set) {
-	set.put(createRunDirectoryProperty());
+
+    @Override
+    public void addProperties(Sheet.Set set) {
+        set.put(createRunDirectoryProperty());
     }
 
     /**
@@ -74,28 +74,35 @@ public final class BinaryExecSupport extends ExecutionSupport {
      *
      *  @return The run directory property
      */
-    private PropertySupport createRunDirectoryProperty() {
+    private PropertySupport<String> createRunDirectoryProperty() {
 
-	return new PropertySupport.ReadWrite(PROP_RUN_DIRECTORY, String.class,
-		    getString("PROP_RUN_DIRECTORY"), // NOI18N
-		    getString("HINT_RUN_DIRECTORY")) { // NOI18N
+        return new PropertySupport.ReadWrite<String>(PROP_RUN_DIRECTORY, String.class,
+                getString("PROP_RUN_DIRECTORY"), // NOI18N
+                getString("HINT_RUN_DIRECTORY")) { // NOI18N
 
-	    public Object getValue() {
-		return getRunDirectory();
-	    }
-	    public void setValue(Object val) {
-		setRunDirectory((String) val);
-	    }
-	    public boolean supportsDefaultValue() {
-		return true;
-	    }
-	    public void restoreDefaultValue() {
-		setValue(null);
-	    }
-	    public boolean canWrite() {
-		return getEntry().getFile().getParent().canWrite();
-	    }
-	};
+            public String getValue() {
+                return getRunDirectory();
+            }
+
+            public void setValue(String val) {
+                setRunDirectory(val);
+            }
+
+            @Override
+            public boolean supportsDefaultValue() {
+                return true;
+            }
+
+            @Override
+            public void restoreDefaultValue() {
+                setValue(null);
+            }
+
+            @Override
+            public boolean canWrite() {
+                return getEntry().getFile().getParent().canWrite();
+            }
+        };
     }
 
     /**
@@ -104,14 +111,14 @@ public final class BinaryExecSupport extends ExecutionSupport {
      *  @return the run directory
      */
     public String getRunDirectory() {
-	String dir = (String) getEntry().getFile().getAttribute(PROP_RUN_DIRECTORY);
+        String dir = (String) getEntry().getFile().getAttribute(PROP_RUN_DIRECTORY);
 
-	if (dir == null) {
-	    dir = "."; // NOI18N
-	    setRunDirectory(dir);
-	}
+        if (dir == null) {
+            dir = "."; // NOI18N
+            setRunDirectory(dir);
+        }
 
-	return dir;
+        return dir;
     }
 
     /**
@@ -120,24 +127,23 @@ public final class BinaryExecSupport extends ExecutionSupport {
      *  @param target the run directory
      */
     public void setRunDirectory(String dir) {
-	try {
-	    getEntry().getFile().setAttribute(PROP_RUN_DIRECTORY, dir);
-	} catch (IOException ex) {
-	    String msg = MessageFormat.format("INTERNAL ERROR: Cannot set run directory", // NOI18N
-		    new Object[] { FileUtil.toFile(getEntry().getFile()).getPath() });
+        try {
+            getEntry().getFile().setAttribute(PROP_RUN_DIRECTORY, dir);
+        } catch (IOException ex) {
+            String msg = MessageFormat.format("INTERNAL ERROR: Cannot set run directory", // NOI18N
+                    new Object[]{FileUtil.toFile(getEntry().getFile()).getPath()});
 
-	    if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
-		ex.printStackTrace();
-	    }
-	}
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
+                ex.printStackTrace();
+            }
+        }
     }
-
     private ResourceBundle bundle = null;
-    private String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(BinaryExecSupport.class);
-	}
-	return bundle.getString(s);
-    }
 
+    private String getString(String s) {
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(BinaryExecSupport.class);
+        }
+        return bundle.getString(s);
+    }
 }

@@ -121,8 +121,7 @@ import org.netbeans.spi.print.PrintProvider;
  * How does <code>Print</code> action from the main menu decide what to print?<p>
  *
  * At first, the manager searches for {@link PrintProvider} in the
- * {@linkplain TopComponent#getLookup lookup} of the
- * {@linkplain TopComponent.Registry#getActivated active top component}.
+ * {@linkplain TopComponent#getLookup lookup} of the active top component.
  * If a print provider is found, it is used by the print manager for print preview.<p>
  *
  * Otherwise, it tries to obtain {@linkplain #PRINT_PRINTABLE printable} components

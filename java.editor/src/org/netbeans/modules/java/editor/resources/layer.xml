@@ -204,18 +204,19 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="1430"/>
                     </file>
 
+                    <file name="generate-code">
+                        <attr name="position" intvalue="1480"/>
+                    </file>
+
+                    <file name="fix-imports">
+                        <attr name="position" intvalue="1520"/>
+                    </file>
+
                     <file name="format">
                         <attr name="position" intvalue="1580"/>
                     </file>                    
                                                             
 
-                    <file name="fix-imports">
-                        <attr name="position" intvalue="1520"/>
-                    </file>
-                    <file name="generate-code">
-                        <attr name="position" intvalue="1480"/>
-                    </file>
-                    
                     <file name="SeparatorBeforeCut.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1960"/>
@@ -337,6 +338,18 @@ made subject to such option by the copyright holder.
                         <file name="JavaMarkOccurences.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                             <attr name="instanceCreate" newvalue="org.netbeans.modules.java.editor.options.MarkOccurencesOptionsPanelController"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="CodeCompletion">
+                <attr name="position" intvalue="0"/>
+                <folder name="text">
+                    <folder name="x-java">
+                        <file name="JavaSpecific.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.editor.options.CodeCompletionPanel.getCustomizerFactory"/>
+                            <attr name="position" intvalue="100"/>
                         </file>
                     </folder>
                 </folder>

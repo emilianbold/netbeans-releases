@@ -350,7 +350,7 @@ class LineTranslations {
         }
     }
     
-    private class BreakpointLineUpdater implements PropertyChangeListener {
+    private static class BreakpointLineUpdater implements PropertyChangeListener {
         
         private LineBreakpoint lb;
         private DataObject dataObject;

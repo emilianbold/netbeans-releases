@@ -19,10 +19,12 @@
 
 package org.netbeans.microedition.svg;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
 import org.netbeans.microedition.svg.input.InputHandler;
+import org.netbeans.microedition.svg.input.PointerListener;
 import org.netbeans.microedition.svg.meta.ChildrenAcceptor;
 import org.netbeans.microedition.svg.meta.MetaData;
 import org.netbeans.microedition.svg.meta.ChildrenAcceptor.Visitor;
@@ -30,6 +32,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGRect;
 
 /**
  *
@@ -61,6 +64,7 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
     protected final SVGForm             form;
     protected final SVGLocatableElement wrapperElement;
     protected       Vector              actionListeners;
+    private         Vector              myPointerListeners;
 
     private boolean isFocusable      = true;
 
@@ -84,7 +88,9 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
     }
     
     public void requestFocus() {
-        form.requestFocus(this);
+        if ( isFocusable() ){
+            form.requestFocus(this);
+        }
     }
 
     public void focusGained() {
@@ -103,6 +109,50 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
     
     public synchronized void setFocusable( boolean focusable ){
         isFocusable = focusable;
+    }
+    
+    public SVGRectangle getBounds(){
+        SVGLocatableElement element = getElement();
+        if ( element == null ){
+            return null;
+        }
+        SVGRect rect = element.getScreenBBox();
+        if ( rect == null ){
+            return null;
+        }
+        return new SVGRectangle( rect );
+    }
+    
+    public synchronized void addPointerListener( PointerListener listener){
+        if ( myPointerListeners == null ){
+            myPointerListeners = new Vector(1);
+        }
+        myPointerListeners.addElement( listener );
+    }
+    
+    public synchronized void removePointerListener( PointerListener listener){
+        if ( myPointerListeners != null ){
+            myPointerListeners.removeElement( listener );
+            if ( myPointerListeners.isEmpty() ){
+                myPointerListeners = null;
+            }
+        }
+    }
+    
+    public synchronized PointerListener[] getPointerListeners(){
+        if ( myPointerListeners == null ){
+            return new PointerListener[0];
+        }
+        else {
+            PointerListener[] result = new PointerListener[ myPointerListeners.size()];
+            Enumeration en = myPointerListeners.elements();
+            int i=0;
+            while ( en.hasMoreElements() ){
+                result[ i ] = (PointerListener)en.nextElement();
+                i++;
+            }
+            return result;
+        }
     }
     
     public synchronized void addActionListener(SVGActionListener listener) {

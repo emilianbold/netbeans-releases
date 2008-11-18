@@ -51,7 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.RubyExecution;
@@ -102,12 +102,12 @@ public class RailsProjectGenerator {
         RailsDatabaseConfiguration railsDb = data.getDatabase();
         // Run Rails to generate the appliation skeleton
         if (data.isCreate()) {
-            final String rails = platform.getGemManager().getRails();
+            final String rails = platform.getRails();
             final File railsF = new File(rails);
             final FileObject railsFO = FileUtil.toFileObject(railsF);
             boolean runThroughRuby = railsFO != null ? RubyUtils.isRubyFile(railsFO) : false;
 
-            ExecutionDescriptor desc = null;
+            RubyExecutionDescriptor desc = null;
             String displayName = NbBundle.getMessage(RailsProjectGenerator.class, "GenerateRails");
 
             String railsDbArg = railsDb.railsGenerationParam() == null ? null : "--database=" + railsDb.railsGenerationParam();
@@ -125,10 +125,10 @@ public class RailsProjectGenerator {
             }
             String[] args = argList.toArray(new String[argList.size()]);
             if (runThroughRuby) {
-                desc = new ExecutionDescriptor(platform, displayName, pwd, rails);
+                desc = new RubyExecutionDescriptor(platform, displayName, pwd, rails);
                 desc.additionalArgs(args);
             } else {
-                desc = new ExecutionDescriptor(platform, displayName, pwd, data.getName());
+                desc = new RubyExecutionDescriptor(platform, displayName, pwd, data.getName());
                 desc.additionalArgs(args);
                 desc.cmd(railsF);
             }
@@ -182,13 +182,18 @@ public class RailsProjectGenerator {
                 platform.getInfo().getKind(),
                 platform.getInfo().getPlatformVersion(),
                 platform.getInfo().getGemVersion(),
-                data.getServerInstanceId(),
+                getServerIdForLogging(data.getServerInstanceId(), platform),
                 data.getDatabase().getDisplayName(),
                 railsVersion);
 
         return h;
     }
 
+    // see #150975
+    private static String getServerIdForLogging(String serverURI, RubyPlatform platform) {
+        RubyInstance serverInstance = ServerRegistry.getDefault().getServer(serverURI, platform);
+        return serverInstance != null ? serverInstance.getDisplayName() : "";
+    }
 
     private static void runWarblePluginize(RubyPlatform platform, Project project) {
         String warble = platform.findExecutable("warble"); //NOI18N
@@ -198,7 +203,7 @@ public class RailsProjectGenerator {
             LOGGER.warning("Could not find warble executable, platform: " + platform);
             return;
         }
-        ExecutionDescriptor desc = new ExecutionDescriptor(platform,
+        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform,
                 NbBundle.getMessage(RailsProjectGenerator.class, "WarblePluginize"),
                 FileUtil.toFile(project.getProjectDirectory()),
                 new File(warble).getAbsolutePath());

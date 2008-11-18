@@ -27,6 +27,7 @@ import org.netbeans.modules.bpel.model.impl.events.BuildEvent;
  *
  * This service set flag for element that means element was built via builder.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.InnerEventDispatcher.class)
 public class MarkBuilderElement extends InnerEventDispatcherAdapter {
 
     public static final String CLASS_MARK_NAME = MarkBuilderElementKey.class

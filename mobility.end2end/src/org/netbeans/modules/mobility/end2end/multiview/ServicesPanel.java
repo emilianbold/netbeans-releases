@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,6 +45,7 @@
  * Created on July 25, 2005, 10:28 AM
  */
 package org.netbeans.modules.mobility.end2end.multiview;
+import java.text.MessageFormat;
 import java.util.HashSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.end2end.E2EDataObject;
@@ -89,6 +90,9 @@ import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
  * @author  Michal Skvor, Bohemius
  */
 public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.Provider, PropertyChangeListener {
+    
+    private final String INVALID_OPERATION  = "TXT_InvalidOperation";//NOI18N
+    private final String INVALID_OPERATION_NULL_PARAM = "TXT_InvalidOperationNoParam";//NOI18N
     
     private final javax.swing.JLabel servicesLabel;
     private final MethodCheckedTreeBeanView checkedTreeView;
@@ -272,17 +276,39 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                         for( Node operationNode : portNode.getChildren().getNodes()) {
                             WSOperation wsdlOperation = operationNode.getLookup().lookup( WSOperation.class );
                             boolean operationValid = false;
-                            StringBuffer operationId = new StringBuffer();
+                            StringBuilder operationId = new StringBuilder();
+                            StringBuilder parameters = new StringBuilder();
                             if (wsdlOperation != null) {
                                 operationId.append(wsdlOperation.getJavaName());
                                 for (WSParameter par : wsdlOperation.getParameters()) {
                                     String pt = par.getTypeName();
                                     int i = pt.indexOf('<'); //cutting off any generics from the ID
                                     operationId.append(',').append(i > 0 ? pt.substring(0, i) : pt);
+                                    parameters.append( i > 0 ? pt.substring(0, i) : pt );
+                                    parameters.append(", ");
                                 }
                                 operationValid = methodIDs.contains(operationId.toString());
                             }
                             operationNode.setValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, operationValid);
+                            if ( !operationValid ){
+                                String message;
+                                if ( parameters.length() >0 ){
+                                    message = NbBundle.getMessage( ServicesPanel.class , 
+                                            INVALID_OPERATION);
+                                    String params = message.substring( 0 , 
+                                            message.length() - 2);
+                                    operationNode.setShortDescription(
+                                            MessageFormat.format( message , 
+                                                    wsdlOperation.getName(), params));
+                                }
+                                else {
+                                    message = NbBundle.getMessage( ServicesPanel.class , 
+                                            INVALID_OPERATION_NULL_PARAM);
+                                    operationNode.setShortDescription(
+                                            MessageFormat.format( message , 
+                                                    wsdlOperation.getName()));
+                                }
+                            }
                             if (operationValid && cd != null) operationNode.setValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE, selectedIDs.contains(cd.getFullyQualifiedName()+'.'+operationId.toString()) ? MultiStateCheckBox.State.SELECTED : MultiStateCheckBox.State.UNSELECTED);
                             portValid = portValid || operationValid;
                         }
@@ -400,7 +426,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                             final OperationData md = new OperationData( operationName );
                             md.setMethodName( wsdlOp.getJavaName());
                             md.setReturnType( wsdlOp.getReturnTypeName());
-                            List<WSParameter> wsdlParams = wsdlOp.getParameters();
+                            List<? extends WSParameter> wsdlParams = wsdlOp.getParameters();
                             List<TypeData> params = new ArrayList<TypeData>();
                             for( WSParameter param : wsdlParams ) {
                                 params.add( new TypeData( param.getName(), param.getTypeName()));

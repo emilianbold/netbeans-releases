@@ -380,6 +380,7 @@ tokens {
 	protected static final StorageClass scSTATIC = new StorageClass("scSTATIC");
 	protected static final StorageClass scEXTERN = new StorageClass("scEXTERN");
 	protected static final StorageClass scMUTABLE = new StorageClass("scMUTABLE");
+	protected static final StorageClass scTHREAD = new StorageClass("scTHREAD");
 
 	public static class DeclSpecifier extends Enum { public DeclSpecifier(String id) { super(id); } }
 
@@ -640,14 +641,7 @@ tokens {
 	//protected int getOffset() { /*TODO: implement*/ throw new NotImplementedException(); }
 	//protected int getLine()	{ /*TODO: implement*/ throw new NotImplementedException(); }
 
-	protected void printf(String pattern, int i) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf(String pattern, Object o) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf(String pattern, int i, Object o) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf(String pattern, int i, Object o1, Object o2) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf(String pattern, int i1, int i2, boolean b1, Object o) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf(String pattern, int i1, int i2) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf (String pattern, int i1, Object o1, int i2, Object o2) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf (String pattern, int i1, int i2, int i3, String s) { /*TODO: implement*/ throw new NotImplementedException(); }
+	protected void printf(String pattern, Object... params) { /*TODO: implement*/ throw new NotImplementedException(); }
 
 	protected void balanceBraces(int left, int right) throws RecognitionException, TokenStreamException { throw new NotImplementedException(); };
 
@@ -983,12 +977,12 @@ external_declaration {String s; K_and_R = false; boolean definition;}
                         { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
         |
 		// Function definition with return value
-		((LITERAL___extension__)? declaration_specifiers[false, false] function_declarator[true, false] LCURLY)=> 
+		((LITERAL___extension__)? (options {greedy=true;} :function_attribute_specification!)? declaration_specifiers[false, false] function_declarator[true, false] LCURLY)=>
 		{if (statementTrace>=1) 
 			printf("external_declaration_8[%d]: Function definition\n",
 				LT(1).getLine());
 		}
-		(LITERAL___extension__!)? function_definition
+		(LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? function_definition
 		{ #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
 	|
 		// FIXUP: Function definition without return value
@@ -1565,7 +1559,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 		)*
 		(	
                         (options {greedy=true;} :type_attribute_specification)?
-                        ts = type_specifier[ds, noTypeId] 
+                        ts = type_specifier[ds, noTypeId]
                         // support for "A const*";
                         // need to catch postfix_cv_qualifier
                         (postfix_cv_qualifier)? 
@@ -1594,11 +1588,12 @@ typeof_param :
         ;
 
 storage_class_specifier returns [CPPParser.StorageClass sc = scInvalid]
-	:	LITERAL_auto		{sc = scAUTO;}
-	|	LITERAL_register	{sc = scREGISTER;}
-	|	LITERAL_static	{sc = scSTATIC;}
-	|	LITERAL_extern	{sc = scEXTERN;}        
-	|	LITERAL_mutable	{sc = scMUTABLE;}                     
+    :   LITERAL_auto        {sc = scAUTO;}
+    |   LITERAL_register    {sc = scREGISTER;}
+    |   LITERAL_static      {sc = scSTATIC;}
+    |   LITERAL_extern      {sc = scEXTERN;}
+    |   LITERAL_mutable     {sc = scMUTABLE;}
+    |   LITERAL___thread    {sc = scTHREAD;}
 	;
 
 cv_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid] // aka cv_qualifier
@@ -1617,21 +1612,7 @@ simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInv
 			qualified_type {ts=tsTYPEID;}	
 			{ #simple_type_specifier = #([CSM_TYPE_COMPOUND, "CSM_TYPE_COMPOUND"], #simple_type_specifier); }
 		|	
-			(	LITERAL_char		{ts |= tsCHAR;}
-			|	LITERAL_wchar_t	{ts |= tsWCHAR_T;}  
-			|	LITERAL_bool	{ts |= tsBOOL;}
-			|	LITERAL_short	{ts |= tsSHORT;}
-			|	LITERAL_int		{ts |= tsINT;}
-			|	literal_int64	{ts |= tsLONG;}
-			|	LITERAL___w64		{ts |= tsLONG;}
-			|	LITERAL_long		{ts |= tsLONG;}
-			|	literal_signed	{ts |= tsSIGNED;}
-			|	literal_unsigned	{ts |= tsUNSIGNED;}
-			|	LITERAL_float		{ts |= tsFLOAT;}
-			|	LITERAL_double	{ts |= tsDOUBLE;}
-			|	LITERAL_void		{ts |= tsVOID;}
-                        |       literal_complex         {ts |= tsCOMPLEX;}
-			)+
+                        ts = builtin_cv_type_specifier[ts]
 			{ #simple_type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #simple_type_specifier); }
 		|
                         {!noTypeId}?
@@ -1644,6 +1625,32 @@ simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInv
                         { #simple_type_specifier = #([CSM_TYPE_COMPOUND, "CSM_TYPE_COMPOUND"], #simple_type_specifier); }
 		)
 	;
+
+builtin_cv_type_specifier[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old_ts]
+{TypeQualifier tq;}
+    :
+        (ts = builtin_type[ts])+
+        ((cv_qualifier builtin_type[ts]) => 
+        tq = cv_qualifier ts = builtin_cv_type_specifier[ts])?
+    ;
+
+builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old_ts]
+    :
+	  LITERAL_char          {ts |= tsCHAR;}
+        | LITERAL_wchar_t       {ts |= tsWCHAR_T;}  
+        | LITERAL_bool          {ts |= tsBOOL;}
+        | LITERAL_short         {ts |= tsSHORT;}
+        | LITERAL_int           {ts |= tsINT;}
+        | literal_int64         {ts |= tsLONG;}
+        | LITERAL___w64         {ts |= tsLONG;}
+        | LITERAL_long          {ts |= tsLONG;}
+        | literal_signed        {ts |= tsSIGNED;}
+        | literal_unsigned      {ts |= tsUNSIGNED;}
+        | LITERAL_float         {ts |= tsFLOAT;}
+        | LITERAL_double        {ts |= tsDOUBLE;}
+        | LITERAL_void          {ts |= tsVOID;}
+        | literal_complex       {ts |= tsCOMPLEX;}
+    ;
 
 qualified_type
 	{String s;}
@@ -1773,6 +1780,7 @@ init_declarator
 	:	declarator 
 		(	
 			ASSIGNEQUAL 
+                        ((LPAREN ID RPAREN LCURLY) => (LPAREN ID RPAREN))?
 			initializer
 		|	
 			LPAREN expression_list RPAREN
@@ -1780,10 +1788,28 @@ init_declarator
 	;
 
 initializer
-   :  assignment_expression
-   |  LCURLY RCURLY
-   |  LCURLY initializer (COMMA initializer)* (COMMA)? (EOF!|RCURLY)
-   ;
+    :  
+        lazy_expression[false, false]
+	(options {greedy=true;}:	
+            ( ASSIGNEQUAL
+            | TIMESEQUAL
+            | DIVIDEEQUAL
+            | MINUSEQUAL
+            | PLUSEQUAL
+            | MODEQUAL
+            | SHIFTLEFTEQUAL
+            | SHIFTRIGHTEQUAL
+            | BITWISEANDEQUAL
+            | BITWISEXOREQUAL
+            | BITWISEOREQUAL
+            )            
+            initializer
+        )?
+    |   
+        LCURLY RCURLY
+    |   
+        LCURLY initializer (COMMA initializer)* (COMMA)? (EOF!|RCURLY)
+    ;
 
 
 // so far this one is used in predicates only
@@ -2523,7 +2549,7 @@ assigned_type_name
 	{/*TypeSpecifier*/int ts;
          TypeQualifier tq;}
 	:
-            (tq=cv_qualifier)? (LITERAL_typename)?
+            (options {greedy=true;}: tq=cv_qualifier)? (LITERAL_typename)?
             ts = simple_type_specifier[false] (postfix_cv_qualifier)?
             abstract_declarator
 	;
@@ -2906,7 +2932,7 @@ expression
 assignment_expression
 	:	
         lazy_expression[false, false]
-		(options {warnWhenFollowAmbig = false;}:	
+		(options {greedy=true;}:	
             ( ASSIGNEQUAL
             | TIMESEQUAL
             | DIVIDEEQUAL
@@ -2966,7 +2992,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LESSTHAN
             |   LESSTHANOREQUALTO
             |   GREATERTHANOREQUALTO
-            |   QUESTIONMARK expression COLON assignment_expression
+            |   QUESTIONMARK (expression)? COLON assignment_expression
             |   SHIFTLEFT 
             |   SHIFTRIGHT
             |   PLUS 
@@ -3203,7 +3229,7 @@ protected
 postfix_cv_qualifier
         :
             ((literal_volatile|literal_const) 
-                (options {warnWhenFollowAmbig = false;}:ptr:unnamed_ptr_operator
+                (options {greedy=true;}:unnamed_ptr_operator
                  { #postfix_cv_qualifier=#(#[CSM_PTR_OPERATOR,"CSM_PTR_OPERATOR"], #postfix_cv_qualifier);}
                 )*
             )+

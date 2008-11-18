@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,13 +23,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.search;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.ComboBoxModel;
+import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import static javax.swing.event.ListDataEvent.CONTENTS_CHANGED;
 
 /**
  * Unmodifiable {@code ComboBoxModel} built on a {@link java.util.List}
@@ -45,6 +49,9 @@ final class ListComboBoxModel implements ComboBoxModel {
     private final int maxIndex;
     private final boolean reverseOrder;
     private Object selectedItem;
+    private Collection<ListDataListener> listeners;
+    private ListDataEvent event
+                          = new ListDataEvent(this, CONTENTS_CHANGED, -1, -1);
 
     public ListComboBoxModel(List<? extends Object> elements) {
         this(elements, false);
@@ -66,7 +73,11 @@ final class ListComboBoxModel implements ComboBoxModel {
     }
 
     public void setSelectedItem(Object item) {
-        this.selectedItem = item;
+        if ((selectedItem != null) && !selectedItem.equals(item)
+                || (selectedItem == null) && (item != null)) {
+            this.selectedItem = item;
+            fireSelectionChange();
+        }
     }
 
     public Object getSelectedItem() {
@@ -83,17 +94,28 @@ final class ListComboBoxModel implements ComboBoxModel {
     }
 
     public void addListDataListener(ListDataListener l) {
-        /*
-         * Does nothing as the data listeners would never be notified
-         * of any change.
-         */
+        if (listeners == null) {
+            listeners = new ArrayList<ListDataListener>(3);
+            event = new ListDataEvent(this, CONTENTS_CHANGED, -1, -1);
+        }
+        listeners.add(l);
     }
 
     public void removeListDataListener(ListDataListener l) {
-        /*
-         * Does nothing as the data listeners would never be notified
-         * of any change.
-         */
+        if ((listeners != null) && listeners.remove(l) && listeners.isEmpty()) {
+            listeners = null;
+            event = null;
+        }
+    }
+
+    private void fireSelectionChange() {
+        if (listeners == null) {
+            return;
+        }
+
+        for (ListDataListener l : listeners) {
+            l.contentsChanged(event);
+        }
     }
 
 }

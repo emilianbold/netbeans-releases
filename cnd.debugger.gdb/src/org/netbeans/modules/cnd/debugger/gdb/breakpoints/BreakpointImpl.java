@@ -66,7 +66,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     protected final GdbDebugger debugger;
     private final GdbBreakpoint breakpoint;
     private String state = BPSTATE_UNVALIDATED;
-    private String err = null;
+    protected String err = null;
     private int breakpointNumber = -1;
     private boolean runWhenValidated = false;
 
@@ -82,6 +82,20 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         
         String number = (map != null) ? map.get("number") : null; // NOI18N
         if (number != null) {
+            String fullname = map.get("fullname"); // NOI18N
+            if (fullname != null) {
+                // We set a valid breakpoint, but its not in the exact source file we meant it to
+                // be. This can happen when a source path has embedded spaces and we shorten the
+                // path to a possiby non-unique relative path and another project has a similar
+                // relative path. See IZ #151761.
+                String path = getBreakpoint().getPath();
+                if (!path.equals(fullname)) {
+                    debugger.getGdbProxy().break_delete(number);
+                    breakpoint.setInvalid(err);
+                    setState(BPSTATE_VALIDATION_FAILED);
+                    return;
+                }
+            }
             breakpointNumber = Integer.parseInt(number);
             setState(BPSTATE_VALIDATED);
             if (!breakpoint.isEnabled()) {
@@ -105,9 +119,18 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             breakpoint.setValid();
             debugger.getBreakpointList().put(breakpointNumber, this);
         } else {
-            breakpoint.setInvalid(err);
-            setState(BPSTATE_VALIDATION_FAILED);
+	    if (alternateSourceRootAvailable()) {
+		setState(BPSTATE_UNVALIDATED);
+		setRequests();
+	    } else {
+		breakpoint.setInvalid(err);
+		setState(BPSTATE_VALIDATION_FAILED);
+	    }
         }
+    }
+
+    protected boolean alternateSourceRootAvailable() {
+	return false;
     }
 
     public void addError(String err) {
@@ -154,7 +177,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 
     protected void setRequests() {
         String st = getState();
-        if (debugger.getState().equals(GdbDebugger.STATE_RUNNING) && !st.equals(BPSTATE_REVALIDATE)) {
+        if (debugger.getState() == GdbDebugger.State.RUNNING && !st.equals(BPSTATE_REVALIDATE)) {
             debugger.setSilentStop();
             setRunWhenValidated(true);
         }
@@ -163,11 +186,15 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 requestDelete();
             }
             setState(BPSTATE_VALIDATION_PENDING);
-            int token = debugger.getGdbProxy().break_insert(getBreakpoint().getSuspend(),
-                    getBreakpoint().isTemporary(),
-                    getBreakpointCommand(),
-                    getBreakpoint().getThreadID());
-            debugger.addPendingBreakpoint(token, this);
+	    String bpcmd = getBreakpointCommand();
+	    if (bpcmd != null) {
+		int token = debugger.getGdbProxy().break_insert(getBreakpoint().getSuspend(),
+			getBreakpoint().isTemporary(), bpcmd, getBreakpoint().getThreadID());
+		debugger.addPendingBreakpoint(token, this);
+	    } else {
+		breakpoint.setInvalid(err);
+		setState(BPSTATE_VALIDATION_FAILED);
+	    }
 	} else {
             if (breakpointNumber > 0) { // bnum < 0 for breakpoints from other projects...
                 if (st.equals(BPSTATE_DELETION_PENDING)) {
@@ -208,7 +235,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
      * Called from set () and propertyChanged.
      */
     final void update() {
-        if (!debugger.getState().equals(GdbDebugger.STATE_NONE)) {
+        if (debugger.getState() != GdbDebugger.State.NONE) {
             setRequests();
         }
     }

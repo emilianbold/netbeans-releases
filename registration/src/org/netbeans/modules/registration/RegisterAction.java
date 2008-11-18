@@ -105,7 +105,7 @@ public class RegisterAction extends CallableSystemAction implements ActionListen
     }
 
     public void performAction () {
-        NbConnection.updateStatus(StatusData.STATUS_REGISTERED,NbInstaller.PRODUCT_ID);
+        NbConnection.updateStatus(StatusData.STATUS_REGISTERED);
     }
     
     public void showDialog () {
@@ -128,7 +128,7 @@ public class RegisterAction extends CallableSystemAction implements ActionListen
                 dlg.dispose();
             }
         }
-        NbConnection.updateStatus(cmd,NbInstaller.PRODUCT_ID);
+        NbConnection.updateStatus(cmd);
     }
     
     @Override

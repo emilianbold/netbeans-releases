@@ -60,6 +60,8 @@ public class StandAlone {
         logger.setLevel(Level.SEVERE);
         logger = Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory"); // NOI18N
         logger.setLevel(Level.SEVERE);
+        logger = Logger.getLogger("org.netbeans.ui.metrics.cnd"); // NOI18N
+        logger.setLevel(Level.SEVERE);
 
         Map<String,String> res = processArguments(args);
         if (KnownProject.getDefault().canCreate(res)){

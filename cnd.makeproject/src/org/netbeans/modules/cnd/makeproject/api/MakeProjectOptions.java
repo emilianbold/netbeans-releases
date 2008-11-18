@@ -49,56 +49,79 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 public class MakeProjectOptions {
 
     /**
-     * @deprecated 
+     * @Deprecated
      */
     public static void setDefaultMakeCommand(String defaultMakeCommand) {
         //CppSettings.getDefault().setMakeName(defaultMakeCommand);
     }
 
     /**
-     * @deprecated 
+     * @Deprecated
      */
     public static String getDefaultMakeCommand() {
         return null; //CppSettings.getDefault().getMakeName();
     }
     
     /**
-     * Choose either Sun or GNU compiler sets. Unfortunately, we no longer guarantee either
-     * exists. In CND 5.5, you had a Sun and GNU compiler set regardless of whether you had
-     * compilers to make either set usable. In CND 5.5.1, a compiler set is defined for every
-     * directory which has executables recognized as compilers.
+     * @Deprecated
      */
     public static void setDefaultCompilerSet(String name) {
-        CompilerSet cs = CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSet(name);
-        if (cs != null) {
-            CppSettings.getDefault().setCompilerSetName(cs.getName());
-//            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
-        } else {
-            cs = CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSet(0); // use 0th as default
+        // Set the default name in global setting
+        CppSettings.getDefault().setCompilerSetName(name);
+        // Also set the default compiler set in the localhost set. Remote sets will look at the setting in CppSettings.
+        CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST);
+        CompilerSet compilerSet = compilerSetManager.getCompilerSet(name);
+        if (compilerSet != null) {
+            compilerSetManager.setDefault(compilerSet);
         }
+//        CompilerSet cs = CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSet(name);
+//        if (cs != null) {
+//            CppSettings.getDefault().setCompilerSetName(cs.getName());
+////            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
+//        } else {
+//            cs = CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSet(0); // use 0th as default
+//        }
     }
 
+    /**
+     * @Deprecated
+     */
     public static void setDefaultMakeOptions(String defaultMakeOptions) {
         MakeOptions.setDefaultMakeOptions(defaultMakeOptions);
     }
 
+    /**
+     * @Deprecated
+     */
     public static String getDefaultMakeOptions() {
         return MakeOptions.getDefaultMakeOptions();
     }
 
-    
+
+    /**
+     * @Deprecated
+     */
     public static void setDefaultPlatform(int platform) {
         MakeOptions.getInstance().setPlatform(platform);
     }
-    
+
+    /**
+     * @Deprecated
+     */
     public static int getDefaultPlatform() {
         return MakeOptions.getInstance().getPlatform();
     }
-    
+
+    /**
+     * @Deprecated
+     */
     public static void setFortranSupport(boolean fortran) {
         CppSettings.getDefault().setFortranEnabled(fortran);
     }
-    
+
+    /**
+     * @Deprecated
+     */
     public static boolean getFortranSupport() {
         return CppSettings.getDefault().isFortranEnabled();
     }

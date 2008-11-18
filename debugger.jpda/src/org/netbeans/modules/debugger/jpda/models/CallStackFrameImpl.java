@@ -350,6 +350,8 @@ public class CallStackFrameImpl implements CallStackFrame {
             return arguments;
         } catch (InvalidStackFrameException e) {
             return new LocalVariable[0];
+        } catch (VMDisconnectedException e) {
+            return new LocalVariable[0];
         }
     }
     
@@ -508,6 +510,8 @@ public class CallStackFrameImpl implements CallStackFrame {
         } catch (InvalidStackFrameException ex) {
             valid = false;
             return null;
+        } catch (VMDisconnectedException e) {
+            return null;
         }
         if (thisR == null) return null;
         return new ThisVariable (debugger, thisR, "");
@@ -631,6 +635,8 @@ public class CallStackFrameImpl implements CallStackFrame {
         try {
             threadMonitors = getThread().getOwnedMonitorsAndFrames();
         } catch (InvalidStackFrameException itsex) {
+            threadMonitors = Collections.emptyList();
+        } catch (VMDisconnectedException e) {
             threadMonitors = Collections.emptyList();
         }
         if (threadMonitors.size() == 0) {

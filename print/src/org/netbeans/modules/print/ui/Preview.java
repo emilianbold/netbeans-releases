@@ -112,7 +112,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     }
 
     public void print(PrintProvider[] providers, boolean withPreview) {
-        assert providers != null : "Print providers can not be null"; // NOI18N
+        assert providers != null : "Print providers cannot be null"; // NOI18N
         assert providers.length > 0 : "Must be at least one provider"; // NOI18N
 //out();
 //out("Do action");
@@ -812,7 +812,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     private int getPaperNumber(String text) {
         String value = text.trim();
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
@@ -820,9 +820,9 @@ public final class Preview extends Dialog implements Percent.Listener {
             if (!isDigit(c)) {
                 break;
             }
-            buffer.append(c);
+            builder.append(c);
         }
-        return getInt(buffer.toString());
+        return getInt(builder.toString());
     }
 
     // ----------------------------------------------------------

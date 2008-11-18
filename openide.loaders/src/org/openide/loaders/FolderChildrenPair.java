@@ -51,8 +51,8 @@ import org.openide.filesystems.FileObject;
  */
 final class FolderChildrenPair extends Object {
 
-    public FileObject primaryFile;
-    public int seq;
+    public final FileObject primaryFile;
+    public final int seq;
 
     FolderChildrenPair(FileObject primaryFile) {
         super();

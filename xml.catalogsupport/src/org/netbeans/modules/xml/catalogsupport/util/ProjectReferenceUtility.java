@@ -137,12 +137,18 @@ public class ProjectReferenceUtility {
         String refProjectName = PropertyUtils.getUsablePropertyName(
                 pInfo.getName()).replace('.', '_');
         try {
-            CatalogWriteModel cwm = CatalogWriteModelFactory.getInstance().
-                    getCatalogWriteModelForProject(projectDirectory);
-            for(CatalogEntry ce:cwm.getCatalogEntries()) {
+            CatalogWriteModel cwm = CatalogWriteModelFactory.getInstance().getCatalogWriteModelForProject(projectDirectory);
+
+            for(CatalogEntry ce : cwm.getCatalogEntries()) {
+                if (ce == null) {
+                    continue;
+                }
+                if (ce.getTarget() == null) {
+                    continue;
+                }
                 URI uri = new URI(ce.getTarget());
-                if(catalogSupport.isProjectProtocol(uri) &&
-                        refProjectName.equals(uri.getSchemeSpecificPart())) {
+
+                if( catalogSupport.isProjectProtocol(uri) && refProjectName.equals(uri.getSchemeSpecificPart())) {
                     return true;
                 }
             }

@@ -69,7 +69,7 @@ public class SyntaxSupportProviderTest extends BaseTestCase {
         //System.out.println("createSyntaxSupport");
         
         BaseDocument doc = null;
-        SyntaxSupportProvider instance = (SyntaxSupportProvider) Lookup.getDefault().lookup(SyntaxSupportProvider.class);
+        SyntaxSupportProvider instance = Lookup.getDefault().lookup(SyntaxSupportProvider.class);
         assertNotNull("Provider is not found", instance);
     }
     

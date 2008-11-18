@@ -108,7 +108,7 @@ public class AllItems extends UMLMultiTestSuite {
     
      private static String[][] paths=
      {
-         {"UML","Automatically Hide Modeling Window","Delete File when Deleting Artifacts","Show Aliases","Prompt to Save Project","Prompt to Save Diagram","Don't Show Filter Warning Dialog"},
+         {"UML","Automatically Hide Modeling Window","Show Aliases","Prompt to Save Project","Prompt to Save Diagram","Don't Show Filter Warning Dialog"},
          {"UML|Design Center"},
          {"UML|Design Center|Design Pattern Catalog","Overwrite Existing Participants"},
          {"UML|Diagrams","Ask Before Layout","Automatically Size Elements","Display Compartment Titles","Display Edit Control Tooltips","Display Empty Lists","Reconnect to Presentation Boundary","Resize with Show Aliases Mode","Show Stereotype Icons"},

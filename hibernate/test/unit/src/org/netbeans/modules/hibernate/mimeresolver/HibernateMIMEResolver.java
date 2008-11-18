@@ -49,6 +49,7 @@ import org.openide.filesystems.MIMEResolver;
  *
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.MIMEResolver.class)
 public class HibernateMIMEResolver extends MIMEResolver{
     
     @Override

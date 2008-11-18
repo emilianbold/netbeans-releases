@@ -57,6 +57,11 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class FindInFilesActionTest extends JellyTestCase {
     
+    public static final String[] tests = new String[] {
+        "testPerformPopup", 
+                "testPerformMenu", "testPerformAPI"
+    };
+    
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -73,8 +78,7 @@ public class FindInFilesActionTest extends JellyTestCase {
         suite.addTest(new FindInFilesActionTest("testPerformAPI"));
         return suite;
          */
-        return (NbTestSuite) createModuleTest(FindInFilesActionTest.class, "testPerformPopup", 
-                "testPerformMenu", "testPerformAPI");
+        return (NbTestSuite) createModuleTest(FindInFilesActionTest.class, tests);
     }
     
     /** Use for internal test execution inside IDE

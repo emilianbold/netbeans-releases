@@ -89,7 +89,10 @@ public class AccidentalAssignmentRule extends PHPRule implements PHPRuleWithPref
 
     @Override
     public void visit(DoStatement node) {
-        check(node.getCondition());
+        if (inclWhile){
+            check(node.getCondition());
+        }
+        
         super.visit(node);
     }
 

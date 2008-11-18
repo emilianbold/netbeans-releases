@@ -33,9 +33,8 @@ import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Utilities;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,21 +73,23 @@ public final class InsertSemicolonAction extends BaseAction {
             public void run() {
                 Caret caret = target.getCaret();
                 int dotpos = caret.getDot();
-                Formatter formatter = doc.getFormatter();
-                formatter.indentLock();
                 try {
                     int eoloffset = Utilities.getRowEnd(target, dotpos);
                     String insertString = "" + what;
                     doc.insertString(eoloffset, insertString, null); //NOI18N
                     if (withNewline) {
-                        int eolDot = Utilities.getRowEnd(target, caret.getDot());
-                        int newDotPos = formatter.indentNewLine(doc, eolDot);
-                        caret.setDot(newDotPos);
+                        Indent indent = Indent.get(doc);
+                        indent.lock();
+                        try {
+                            int eolDot = Utilities.getRowEnd(target, caret.getDot());
+                            doc.insertString(eolDot, "\n", null); // NOI18N
+                            caret.setDot(eolDot+1);
+                            indent.reindent(eolDot+1);
+                        } finally {
+                            indent.unlock();
+                        }
                     }
                 } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally {
-                    formatter.indentUnlock();
                 }
             }
         }

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.api.model;
 
 import java.util.Collection;
@@ -55,83 +54,85 @@ public final class CsmModelAccessor {
     // singleton instance of model
     private static CsmModel model;
     private static CsmModel dummy;
-    
-   
-    private static CsmModelStateListener stateListener  = new CsmModelStateListener() {
+    private static CsmModelStateListener stateListener = new CsmModelStateListener() {
+
         public void modelStateChanged(CsmModelState newState, CsmModelState oldState) {
-            if( newState == CsmModelState.OFF ) {
-		CsmListeners.getDefault().removeModelStateListener(stateListener);
+            if (newState == CsmModelState.OFF) {
+                CsmListeners.getDefault().removeModelStateListener(stateListener);
                 model = null;
             }
         }
     };
-    
+
     public static CsmModelState getModelState() {
-	CsmModel aModel = model;
-	return (aModel == null) ? CsmModelState.OFF : aModel.getState();
+        CsmModel aModel = model;
+        return (aModel == null) ? CsmModelState.OFF : aModel.getState();
     }
-    
+
     private static class ModelStub implements CsmModel {
-	
-	public Collection<CsmProject> projects() {
-	    return Collections.<CsmProject>emptyList();
-	}
-	
-	public CsmProject getProject(Object id) {
-	    return null;
-	}
-	
-	public CsmFile findFile(CharSequence absPath) {
-	    return null;
-	}
-        
+
+        public Collection<CsmProject> projects() {
+            return Collections.<CsmProject>emptyList();
+        }
+
+        public CsmProject getProject(Object id) {
+            return null;
+        }
+
+        public CsmFile findFile(CharSequence absPath) {
+            return null;
+        }
+
         public CsmModelState getState() {
             return CsmModelState.OFF;
         }
 
-	public Cancellable enqueue(Runnable task) { return cancellableStub; }
+        public Cancellable enqueue(Runnable task) {
+            return cancellableStub;
+        }
 
-	public Cancellable enqueue(Runnable task, CharSequence name) { return cancellableStub; }
-	
+        public Cancellable enqueue(Runnable task, CharSequence name) {
+            return cancellableStub;
+        }
     }
-
     private static final Cancellable cancellableStub = new Cancellable() {
+
         public boolean cancel() {
             return true;
         }
     };
+
     /** Creates a new instance of CsmModelAccessor */
     private CsmModelAccessor() {
     }
-
     private static final boolean TRACE_GET_MODEL = Boolean.getBoolean("trace.get.model");
 
     /**
      * Gets CsmModel using Lookup
      */
     public static CsmModel getModel() {
-	if( TRACE_GET_MODEL ) {
-	    Thread.dumpStack();
-	}
-        if( model == null ) {
-            synchronized(CsmModel.class ) {
-                if( model == null ) {
-                    model = (CsmModel) Lookup.getDefault().lookup(CsmModel.class);
-		    if( model == null ) {
-			return getStub();
-		    } else {
-			CsmListeners.getDefault().addModelStateListener(stateListener);
-		    }
+        if (TRACE_GET_MODEL) {
+            Thread.dumpStack();
+        }
+        if (model == null) {
+            synchronized (CsmModel.class) {
+                if (model == null) {
+                    model = Lookup.getDefault().lookup(CsmModel.class);
+                    if (model == null) {
+                        return getStub();
+                    } else {
+                        CsmListeners.getDefault().addModelStateListener(stateListener);
+                    }
                 }
             }
         }
         return model;
-    }    
+    }
 
     private static CsmModel getStub() {
-	if( dummy == null ) {
-	    dummy = new ModelStub();
-	}
-	return dummy;
+        if (dummy == null) {
+            dummy = new ModelStub();
+        }
+        return dummy;
     }
 }

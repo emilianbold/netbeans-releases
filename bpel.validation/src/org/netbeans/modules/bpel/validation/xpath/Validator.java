@@ -87,6 +87,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2008.02.08
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public final class Validator extends BpelValidator implements ValidationVisitor {
 
   public Set<ResultItem> getResultItems() {

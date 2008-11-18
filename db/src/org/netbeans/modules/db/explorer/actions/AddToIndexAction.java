@@ -42,29 +42,34 @@
 package org.netbeans.modules.db.explorer.actions;
 
 import java.sql.ResultSet;
-import java.text.MessageFormat;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DbUtilities;
 
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 
-import org.netbeans.lib.ddl.impl.CreateIndex;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
-import org.netbeans.lib.ddl.impl.DropIndex;
 import org.netbeans.lib.ddl.impl.Specification;
 
-import org.netbeans.modules.db.explorer.dlg.ColumnItem;
 import org.netbeans.modules.db.explorer.dlg.LabeledComboDialog;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 public class AddToIndexAction extends DatabaseAction {
     static final long serialVersionUID =-1416260930649261633L;
+    private static final Logger LOGGER = Logger.getLogger(AddToIndexAction.class.getName());
     
     protected boolean enable(Node[] activatedNodes) {
         return (activatedNodes != null && activatedNodes.length == 1);
@@ -78,77 +83,98 @@ public class AddToIndexAction extends DatabaseAction {
             return;
 
         try {
-            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-            DatabaseNodeInfo nfo = info.getParent(nodename);
+            final DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+            final DatabaseNodeInfo nfo = info.getParent(nodename);
 
-            String tablename = (String)nfo.get(DatabaseNode.TABLE);
+            final String tablename = (String)nfo.get(DatabaseNode.TABLE);
 
-            Specification spec = (Specification)nfo.getSpecification();
-            DriverSpecification drvSpec = info.getDriverSpecification();
-            String index = (String)nfo.get(DatabaseNode.INDEX);
+            final Specification spec = (Specification)nfo.getSpecification();
+            final DriverSpecification drvSpec = info.getDriverSpecification();
+            final String index = (String)nfo.get(DatabaseNode.INDEX);
 
             // List columns used in current index (do not show)
-            HashSet ixrm = new HashSet();
+            final HashSet ixrm = new HashSet();
 
-            drvSpec.getIndexInfo(tablename, false, true);
-            ResultSet rs = drvSpec.getResultSet();
-            HashMap rset = new HashMap();
-            boolean isUQ = false;
-            String ixname;
-            while (rs.next()) {
-                rset = drvSpec.getRow();
-                ixname = (String) rset.get(new Integer(6));
-
-                if (!index.equals(ixname))
-                    continue;
-
-                String colname = (String) rset.get(new Integer(9));
-                ixrm.add(colname);
-
-                String val = (String) rset.get(new Integer(4));
-                if (val.equals("1"))
-                    isUQ = false;
-                else
-                    isUQ = !(Boolean.valueOf(val).booleanValue());
-                
-                rset.clear();                
-            }
-            rs.close();
-
-            // List columns not present in current index
-            Vector cols = new Vector(5);
-
-            drvSpec.getColumns(tablename, "%");
-            rs = drvSpec.getResultSet();
-            while (rs.next()) {
-                rset = drvSpec.getRow();
-                String colname = (String) rset.get(new Integer(4));               
-                if (!ixrm.contains(colname))
-                    cols.add(colname);
-                rset.clear();
-            }
-            rs.close();
-            if (cols.size() == 0)
-                throw new Exception(bundle().getString("EXC_NoUsableColumnInPlace")); // NOI18N
-
-            // Create and execute command
-
-            LabeledComboDialog dlg = new LabeledComboDialog(bundle().getString("AddToIndexTitle"), bundle().getString("AddToIndexLabel"), cols); // NOI18N
-            String selectedCol;
-            if (dlg.run()) {
-                AddToIndexDDL ddl = new AddToIndexDDL(spec, 
-                        (String)info.get(DatabaseNodeInfo.SCHEMA),
-                        tablename);
-
-                selectedCol = (String)dlg.getSelectedItem();
-                ixrm.add(selectedCol);
-                ddl.execute(index, isUQ, ixrm);
-            }
-            
-            info.refreshChildren();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        doAddToIndex(drvSpec, tablename, index, ixrm, spec, info);
+                    } catch (Exception exc) {
+                        LOGGER.log(Level.INFO, exc.getMessage(), exc);
+                        String message = NbBundle.getMessage(AddToIndexAction.class, "MSG_UnableToAddColumn", exc.getMessage());
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                    }
+                }
+            });
 
         } catch(Exception exc) {
+            LOGGER.log(Level.INFO, exc.getMessage(), exc);
             DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
         }
+    }
+
+    private void doAddToIndex(DriverSpecification drvSpec, String tablename, String index, HashSet ixrm, Specification spec, DatabaseNodeInfo info) throws DatabaseException, SQLException, Exception {
+        if (SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException("This method can not be called from the event dispatch thread");
+        }
+        drvSpec.getIndexInfo(tablename, false, true);
+        ResultSet rs = drvSpec.getResultSet();
+        HashMap rset = new HashMap();
+        boolean isUQ = false;
+        String ixname;
+        while (rs.next()) {
+            rset = drvSpec.getRow();
+            ixname = (String) rset.get(new Integer(6));
+            if (!index.equals(ixname)) {
+                continue;
+            }
+            String colname = (String) rset.get(new Integer(9));
+            ixrm.add(colname);
+            String val = (String) rset.get(new Integer(4));
+            if (val.equals("1")) {
+                isUQ = false;
+            } else {
+                isUQ = !(Boolean.valueOf(val).booleanValue());
+            }
+            rset.clear();
+        }
+        rs.close();
+        // List columns not present in current index
+        Vector cols = new Vector(5);
+        getColumns(drvSpec, tablename, rs, rset, ixrm, cols);
+        if (cols.size() == 0) {
+            throw new Exception(bundle().getString("EXC_NoUsableColumnInPlace")); // NOI18N
+        }
+        
+        // Create and execute command
+        final LabeledComboDialog dlg = new LabeledComboDialog(bundle().getString("AddToIndexTitle"), bundle().getString("AddToIndexLabel"), cols); // NOI18N
+        Boolean success = Mutex.EVENT.readAccess(new ExceptionAction<Boolean>() {
+            public Boolean run() throws Exception {
+                return new Boolean(dlg.run());
+            }
+        });
+
+        String selectedCol;
+        if (success) {
+            AddToIndexDDL ddl = new AddToIndexDDL(spec, (String) info.get(DatabaseNodeInfo.SCHEMA), tablename);
+            selectedCol = (String) dlg.getSelectedItem();
+            ixrm.add(selectedCol);
+            ddl.execute(index, isUQ, ixrm);
+        }
+        info.refreshChildren();
+    }
+
+    private void getColumns(DriverSpecification drvSpec, String tablename, ResultSet rs, HashMap rset, HashSet ixrm, Vector cols) throws SQLException {
+        drvSpec.getColumns(tablename, "%");
+        rs = drvSpec.getResultSet();
+        while (rs.next()) {
+            rset = drvSpec.getRow();
+            String colname = (String) rset.get(new Integer(4));
+            if (!ixrm.contains(colname)) {
+                cols.add(colname);
+            }
+            rset.clear();
+        }
+        rs.close();
     }
 }

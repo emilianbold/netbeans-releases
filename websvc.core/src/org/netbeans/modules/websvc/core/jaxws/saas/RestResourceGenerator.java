@@ -54,6 +54,7 @@ import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -70,9 +71,6 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
@@ -192,8 +190,8 @@ public class RestResourceGenerator {
                             String mes = NbBundle.getMessage(RestResourceGenerator.class, "MSG_GENERATING_RESOURCE_FILE");
                             reportProgress(mes);
                             targetSource = JavaSourceHelper.createJavaSource(RESOURCE_TEMPLATE, folder, packageName, port.getName());
-                            List<WSOperation> operations = port.getOperations();
-                            for (WSOperation operation : operations) {
+                            List<WsdlOperation> operations = port.getOperations();
+                            for (WsdlOperation operation : operations) {
                                 try {
                                     new RestWrapperForSoapGenerator(service, port, operation, project, targetSource.getFileObjects().iterator().next(), wsdlURL.toString()).generate();
                                 } catch (IOException ex) {
@@ -261,7 +259,7 @@ public class RestResourceGenerator {
         return pName;
     }
 
-    private void initializeClient(final WSService service, final WSPort port, final String wsdlUrl, JavaSource targetSource)
+    private void initializeClient(final WsdlService service, final WsdlPort port, final String wsdlUrl, JavaSource targetSource)
             throws IOException {
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
 
@@ -294,7 +292,7 @@ public class RestResourceGenerator {
         targetSource.runModificationTask(task).commit();
     }
 
-    private String generateGetPort(WSService service, WSPort port) {
+    private String generateGetPort(WsdlService service, WsdlPort port) {
         String getPort = "";
         String serviceVar = "service";  //NOI18N
         String serviceJavaName = service.getJavaName();

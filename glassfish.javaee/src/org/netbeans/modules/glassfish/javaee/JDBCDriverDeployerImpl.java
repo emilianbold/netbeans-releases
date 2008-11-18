@@ -102,7 +102,7 @@ public class JDBCDriverDeployerImpl implements JDBCDriverDeployer {
     }
 
     private File[] getDriverLocations(){
-        String installLoc = commonSupport.getInstanceProperties().get(GlassfishModule.INSTALL_FOLDER_ATTR);
+        String installLoc = commonSupport.getInstanceProperties().get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
         File installLib = new File (installLoc + File.separator + "lib"); //NOI18N
         File[] locs = {driverLoc, installLib};
         return locs;

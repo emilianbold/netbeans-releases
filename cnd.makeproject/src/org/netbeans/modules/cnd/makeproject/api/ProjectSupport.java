@@ -80,17 +80,17 @@ public class ProjectSupport {
     }
 
     public static void executeCustomAction(Project project, CustomProjectActionHandler customProjectActionHandler) {
-        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
         if (pdp == null)
             return;
         MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
         MakeConfiguration conf = (MakeConfiguration)projectDescriptor.getConfs().getActive();
 
-        MakeActionProvider ap = (MakeActionProvider)project.getLookup().lookup(MakeActionProvider.class );
+        MakeActionProvider ap = project.getLookup().lookup(MakeActionProvider.class );
         if (ap == null)
             return;
 
-        ProjectInformation info = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class );
+        ProjectInformation info = project.getLookup().lookup(ProjectInformation.class );
         String projectName = info.getDisplayName();
 
         ap.invokeCustomAction(projectName, projectDescriptor, conf, customProjectActionHandler);

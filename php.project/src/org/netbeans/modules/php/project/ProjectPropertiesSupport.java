@@ -44,6 +44,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAs
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import java.io.File;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -141,72 +142,64 @@ public final class ProjectPropertiesSupport {
     }
 
     /** validates the active config and return <code>true</code> if it's OK */
-    public static boolean isActiveConfigValid(PhpProject project, boolean showCustomizer) {
-        boolean valid = validateActiveConfig(project);
+    public static boolean isActiveConfigValid(PhpProject project, boolean indexFileNeeded, boolean showCustomizer) {
+        boolean valid = validateActiveConfig(project, indexFileNeeded);
         if (!valid && showCustomizer) {
             project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
         }
         return valid;
     }
 
-    private static boolean validateActiveConfig(PhpProject project) {
-        RunAsType runAs = getRunAs(project);
-        if (runAs == null) {
+    private static boolean validateActiveConfig(PhpProject project, boolean indexFileNeeded) {
+        String indexFile = getIndexFile(project);
+        if (indexFileNeeded && (indexFile == null || indexFile.trim().length() == 0)) {
             return false;
         }
-        boolean valid = true;
-        String indexFile = getIndexFile(project);
+        RunAsType runAs = getRunAs(project);
         switch (runAs) {
             case LOCAL:
                 if (RunAsValidator.validateWebFields(getUrl(project), FileUtil.toFile(getWebRootDirectory(project)),
-                        indexFile, getArguments(project)) != null) {
-                    valid = false;
-                } else if (indexFile == null) {
-                    valid = false;
+                        null, getArguments(project)) != null) {
+                    return false;
                 }
                 break;
             case REMOTE:
+                String remoteConnection = getRemoteConnection(project);
                 if (RunAsValidator.validateWebFields(getUrl(project), FileUtil.toFile(getWebRootDirectory(project)),
-                        getIndexFile(project), getArguments(project)) != null) {
-                    valid = false;
-                } else if (indexFile == null) {
-                    valid = false;
-                } else if (getRemoteConnection(project) == null) {
-                    // XXX non-existing configuration is not handled (hardly can be)
-                    valid = false;
+                        null, getArguments(project)) != null) {
+                    return false;
+                } else if (remoteConnection == null || RemoteConnections.get().remoteConfigurationForName(remoteConnection) == null) {
+                    return false;
                 } else if (RunAsValidator.validateUploadDirectory(getRemoteDirectory(project), true) != null) {
-                    valid = false;
+                    return false;
                 }
                 break;
             case SCRIPT:
                 if (RunAsValidator.validateScriptFields(getPhpInterpreter(project).getInterpreter(),
-                        FileUtil.toFile(getSourcesDirectory(project)), getIndexFile(project), getArguments(project)) != null) {
-                    valid = false;
-                } else if (indexFile == null) {
-                    valid = false;
+                        FileUtil.toFile(getSourcesDirectory(project)), null, getArguments(project)) != null) {
+                    return false;
                 }
                 break;
             default:
-                assert false : "Invalid run configuration type: " + runAs;
+                assert false : "Unknown run configuration type: " + runAs;
         }
-        return valid;
+        return true;
     }
 
     /**
-     * @return run as type or <code>null</code>.
+     * @return run as type, {@link RunAsType#LOCAL} is the default.
      */
     public static PhpProjectProperties.RunAsType getRunAs(PhpProject project) {
         PhpProjectProperties.RunAsType runAsType = null;
         String runAs = project.getEvaluator().getProperty(PhpProjectProperties.RUN_AS);
-        if (runAs == null) {
-            return null;
+        if (runAs != null) {
+            try {
+                runAsType = PhpProjectProperties.RunAsType.valueOf(runAs);
+            } catch (IllegalArgumentException iae) {
+                // ignored
+            }
         }
-        try {
-            runAsType = PhpProjectProperties.RunAsType.valueOf(runAs);
-        } catch (IllegalArgumentException iae) {
-            // ignored
-        }
-        return runAsType;
+        return runAsType != null ? runAsType : PhpProjectProperties.RunAsType.LOCAL;
     }
 
     /**

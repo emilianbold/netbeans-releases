@@ -65,6 +65,7 @@ import org.openide.util.ChangeSupport;
 /**
  * Implementation of Javadoc query for the library.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class, position=150)
 public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryImplementation {
     
     private final Map<URL,URL> normalizedURLCache = new HashMap<URL, URL>();

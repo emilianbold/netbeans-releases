@@ -479,7 +479,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         final FileObject projdirFO = scratch.createFolder("projectwithconfigs");
         J2SEProjectGenerator.createProject(FileUtil.toFile(projdirFO), "projectwithconfigs", null, null, null);
         final J2SEProject proj = (J2SEProject) ProjectManager.getDefault().findProject(projdirFO);
-        final ProjectConfigurationProvider pcp = proj.getLookup().lookup(ProjectConfigurationProvider.class);
+        final ProjectConfigurationProvider<?> pcp = proj.getLookup().lookup(ProjectConfigurationProvider.class);
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
             @SuppressWarnings("unchecked") // due to ProjectConfiguration type
             public Void run() throws Exception {
@@ -501,9 +501,11 @@ public class J2SEActionProviderTest extends NbTestCase {
         
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void> () {
             public Void run () throws Exception {
-                List<ProjectConfiguration> configs = new ArrayList<ProjectConfiguration>(pcp.getConfigurations());
-                pcp.setActiveConfiguration(configs.get(1));
+                setConfig1(pcp);
                 return null;
+            }
+            <T extends ProjectConfiguration> void setConfig1(ProjectConfigurationProvider<T> pcp) throws Exception {
+                pcp.setActiveConfiguration(new ArrayList<T>(pcp.getConfigurations()).get(1));
             }
         });        
         
@@ -557,9 +559,9 @@ public class J2SEActionProviderTest extends NbTestCase {
         boolean enabled;
 
         //First test actions when COS disabled
-        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.put(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE, cos ? "false":"true");
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);       
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        ep.put(J2SEProjectProperties.COMPILE_ON_SAVE, cos ? "true" : "false");
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
         context = Lookups.fixed(someSource1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);

@@ -42,15 +42,19 @@
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.Image;
+import java.io.CharConversionException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.xml.XMLUtil;
 
 /**
  *
@@ -58,18 +62,27 @@ import org.openide.util.actions.SystemAction;
  */
 final class TestMethodNode extends AbstractNode {
 
+    /**
+     * Specifies whether the failure message should be inlined in the test method node.
+     * See #149315.
+     */
+    private static final boolean INLINE_RESULTS =
+            Boolean.valueOf(System.getProperty("ruby.testrunner.inline_result", "true")); // NOI18N
+
     /** */
     private final Report.Testcase testcase;
+    private final Project project;
 
     /**
      * Creates a new instance of TestcaseNode
      */
-    TestMethodNode(final Report.Testcase testcase) {
+    TestMethodNode(final Report.Testcase testcase, Project project) {
         super(testcase.trouble != null
               ? new TestMethodNodeChildren(testcase)
               : Children.LEAF);
 
         this.testcase = testcase;
+        this.project = project;
 
         setDisplayName();
         setIconBaseWithExtension(
@@ -119,12 +132,32 @@ final class TestMethodNode extends AbstractNode {
         buf.append("&nbsp;&nbsp;");                                     //NOI18N
         buf.append("<font color='#");                                   //NOI18N
         buf.append(status.getHtmlDisplayColor() + "'>"); //NOI18N
-        buf.append(testcase.timeMillis < 0
-                   ? NbBundle.getMessage(getClass(),
-                                         DisplayNameMapper.getNoTimeKey(status))
-                   : NbBundle.getMessage(getClass(),
-                                         DisplayNameMapper.getTimeKey(status),
-                                         new Float(testcase.timeMillis/1000f)));
+
+        String cause = null;
+        if (INLINE_RESULTS && testcase.trouble != null && testcase.trouble.stackTrace != null &&
+                testcase.trouble.stackTrace.length > 0) {
+            try {
+                cause = XMLUtil.toElementContent(testcase.trouble.stackTrace[0]);
+            } catch (CharConversionException ex) {
+                // We're messing with user testoutput - always risky. Don't complain
+                // here, simply fall back to the old behavior of the test runner -
+                // don't include the message
+                cause = null;
+            }
+        }
+
+        if (cause != null) {
+            buf.append(NbBundle.getMessage(getClass(),
+                    DisplayNameMapper.getCauseKey(status), cause));
+        } else {
+            buf.append(testcase.timeMillis < 0
+                    ? NbBundle.getMessage(getClass(),
+                    DisplayNameMapper.getNoTimeKey(status))
+                    : NbBundle.getMessage(getClass(),
+                    DisplayNameMapper.getTimeKey(status),
+                    new Float(testcase.timeMillis / 1000f)));
+        }
+
         buf.append("</font>");                                          //NOI18N
         return buf.toString();
     }
@@ -133,40 +166,42 @@ final class TestMethodNode extends AbstractNode {
      */
     @Override
     public Action getPreferredAction() {
-        return new JumpAction(this, getTestCaseLineFromStackTrace());
+        // the location to jump from the node
+        String testLocation = getTestLocation(testcase, project);
+        String stackTrace = testcase.getTestCaseLineFromStackTrace();
+        String jumpToLocation = stackTrace != null
+                ? stackTrace
+                : testLocation;
+
+        return jumpToLocation == null
+                ? new JumpToTestAction(testcase, project, NbBundle.getMessage(TestMethodNode.class, "LBL_GoToSource"), false)
+                : new JumpToCallStackAction(this, jumpToLocation);
     }
     
-    /**
-     * Gets the line from the stack trace representing the last line in the test class. 
-     * If that can't be resolved
-     * then returns the second line of the stack trace (the
-     * first line represents the error message) or <code>null</code> if there 
-     * was no (usable) stack trace attached.
-     * 
-     * @return
-     */
-    private String getTestCaseLineFromStackTrace() {
-        if (testcase.trouble == null) {
+    static String getTestLocation(Report.Testcase testcase, Project project) {
+        if (testcase.getLocation() == null) {
             return null;
         }
-        String[] stacktrace = testcase.trouble.stackTrace;
-        if (stacktrace == null || stacktrace.length <= 1) {
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (platform != null && platform.isJRuby()) {
+            // XXX: return no location for JRuby -- ExampleMethods#implementation_backtrace
+            // behaves differently for MRI and JRuby, on JRuby the test file itself is not present
             return null;
         }
-        if (stacktrace.length > 2) {
-            String underscoreName = RubyUtils.camelToUnderlinedName(testcase.className);
-            for (int i = 0; i < stacktrace.length; i++) {
-                if (stacktrace[i].contains(underscoreName) && stacktrace[i].contains(testcase.name)) {
-                    return stacktrace[i];
-                }
-            }
-        }
-        return stacktrace[1];
-        
+        return testcase.getLocation();
     }
     
-    public SystemAction[] getActions(boolean context) {
-        return new SystemAction[0];
+    @Override
+    public Action[] getActions(boolean context) {
+        if (context) {
+            return new Action[0];
+        }
+        Action[] actions = new Action[3];
+        actions[0] = getPreferredAction();
+        actions[1] = new RunTestMethodAction(testcase, project, NbBundle.getMessage(TestMethodNode.class, "LBL_RerunTest"), false);
+        actions[2] = new RunTestMethodAction(testcase, project, NbBundle.getMessage(TestMethodNode.class, "LBL_DebugTest"), true);
+//        actions[1] = new JumpToTestMethodAction(testcase, project);
+        return actions;
     }
     
     @Override
@@ -193,6 +228,7 @@ final class TestMethodNode extends AbstractNode {
 
         private static final Map< Status,String> NO_TIME_KEYS = initNoTimeKeys();
         private static final Map< Status,String> TIME_KEYS = initTimeKeys();
+        private static final Map< Status,String> CAUSE_KEYS = initCauseKeys();
 
         private static Map< Status,String> initNoTimeKeys() {
             Map< Status,String> result = new HashMap< Status,String>(4);
@@ -211,6 +247,19 @@ final class TestMethodNode extends AbstractNode {
             result.put(Status.PENDING, "MSG_TestMethodPending_HTML_time"); //NOI18N
             return result;
         }
+
+        private static Map< Status,String> initCauseKeys() {
+            Map< Status,String> result = new HashMap< Status,String>(4);
+            result.put(Status.PASSED, "MSG_TestMethodPassed_HTML_cause"); //NOI18N
+            result.put(Status.ERROR, "MSG_TestMethodError_HTML_cause"); //NOI18N
+            result.put(Status.FAILED, "MSG_TestMethodFailed_HTML_cause"); //NOI18N
+            result.put(Status.PENDING, "MSG_TestMethodPending_HTML_cause"); //NOI18N
+            return result;
+        }
+
+        static String getCauseKey(Status status) {
+            return CAUSE_KEYS.get(status);
+        }
         
         static String getNoTimeKey(Status status) {
             return NO_TIME_KEYS.get(status);
@@ -219,6 +268,5 @@ final class TestMethodNode extends AbstractNode {
         static String getTimeKey(Status status) {
             return TIME_KEYS.get(status);
         }
-
     }
 }

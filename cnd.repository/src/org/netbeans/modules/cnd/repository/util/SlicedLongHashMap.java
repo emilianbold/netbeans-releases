@@ -54,12 +54,13 @@ public class SlicedLongHashMap<K> {
     private final LongHashMap<K>[] instances;
     private int sliceNumber;
 
+    @SuppressWarnings("unchecked")
     public SlicedLongHashMap(int sliceNumber, int sliceCapacity) {
-	this.sliceNumber = sliceNumber;
-	instances = new LongHashMap[sliceNumber];
-	for (int i = 0; i < sliceNumber; i++) {
-	    instances[i] = new LongHashMap<K>(sliceCapacity);
-	}
+        this.sliceNumber = sliceNumber;
+        instances = new LongHashMap[sliceNumber];
+        for (int i = 0; i < sliceNumber; i++) {
+            instances[i] = new LongHashMap<K>(sliceCapacity);
+        }
     }
 
     private LongHashMap<K> getDelegate(K key) {

@@ -43,6 +43,7 @@ package org.netbeans.core.output2;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
+import org.openide.util.Parameters;
 
 /**
  * A synchronized LIFO map that can contain duplicate keys, and can be
@@ -99,6 +100,7 @@ class PairMap {
     }
     
     public synchronized void add (String key, NbIO value) {
+        Parameters.notNull("key", key);
         if (last == keys.length -1) {
             growArrays();
         }

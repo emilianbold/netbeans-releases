@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -66,6 +67,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -86,6 +88,7 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
     private WebModuleProviderImpl provider;
     private MetadataModel<WebAppMetadata> webAppMetadataModel;
     private MetadataModel<WebAppMetadata> webAppAnnMetadataModel;
+    private MetadataModel<WebservicesMetadata> webservicesMetadataModel;
     
     private String url = ""; //NOI18N
 
@@ -432,10 +435,10 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
             @SuppressWarnings("unchecked") // NOI18N
             MetadataModel<T> model = (MetadataModel<T>)getAnnotationMetadataModel();
             return model;
-//        } else if (type == WebservicesMetadata.class) {
-//            @SuppressWarnings("unchecked") // NOI18N
-//            MetadataModel<T> model = (MetadataModel<T>)getWebservicesMetadataModel();
-//            return model;
+        } else if (type == WebservicesMetadata.class) {
+            @SuppressWarnings("unchecked") // NOI18N
+            MetadataModel<T> model = (MetadataModel<T>)getWebservicesMetadataModel();
+            return model;
         }
         return null;
     }
@@ -454,6 +457,22 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
             webAppMetadataModel = WebAppMetadataModelFactory.createMetadataModel(metadataUnit, true);
         }
         return webAppMetadataModel;
+    }
+    
+    private synchronized MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
+        if (webservicesMetadataModel == null) {
+            FileObject ddFO = getDeploymentDescriptor();
+            File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
+            ProjectSourcesClassPathProvider cpProvider = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
+            MetadataUnit metadataUnit = MetadataUnit.create(
+                cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
+                cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                // XXX: add listening on deplymentDescriptor
+                ddFile);
+            webservicesMetadataModel = WebservicesMetadataModelFactory.createMetadataModel(metadataUnit);
+        }
+        return webservicesMetadataModel;
     }
     
     /**

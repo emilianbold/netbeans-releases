@@ -48,6 +48,7 @@ import org.openide.awt.StatusLineElementProvider;
  *
  * @author  Jiri Rechtacek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.awt.StatusLineElementProvider.class)
 public final class ExceptionVisualizerProvider implements StatusLineElementProvider {
     public Component getStatusLineElement () {
         return NotifyExcPanel.getNotificationVisualizer ();

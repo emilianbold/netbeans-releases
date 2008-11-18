@@ -65,8 +65,8 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
     /** Creates new form MarkOccurencesPanel */
     public MarkOccurencesPanel( MarkOccurencesOptionsPanelController controller ) {
         initComponents();
-        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
-            setOpaque( false );
+//        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+//            setOpaque( false );
         fillBoxes();
         addListeners();
         load( controller );

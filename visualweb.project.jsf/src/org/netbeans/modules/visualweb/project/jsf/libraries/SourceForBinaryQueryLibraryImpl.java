@@ -69,6 +69,7 @@ import org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLi
  * Finds the locations of sources for various libraries.
  * @author Po-Ting Wu
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class)
 public class SourceForBinaryQueryLibraryImpl implements SourceForBinaryQueryImplementation {
 
     private final Map/*<URL,SourceForBinaryQuery.Result>*/ cache = new HashMap();

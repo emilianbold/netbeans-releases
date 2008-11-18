@@ -183,7 +183,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
 
 
     public String getAntName () {
-        return (String) this.properties.get (PLAT_PROP_ANT_NAME);
+        return this.properties.get(PLAT_PROP_ANT_NAME);
     }
 
     public void setAntName (String antName) {
@@ -208,7 +208,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
             if (cp != null)
                 return cp;
             String pathSpec = getSystemProperties().get(SYSPROP_BOOT_CLASSPATH);
-            String extPathSpec = Util.getExtensions((String)getSystemProperties().get(SYSPROP_JAVA_EXT_PATH));
+            String extPathSpec = Util.getExtensions(getSystemProperties().get(SYSPROP_JAVA_EXT_PATH));
             if (extPathSpec != null) {
                 pathSpec = pathSpec + File.pathSeparator + extPathSpec;
             }

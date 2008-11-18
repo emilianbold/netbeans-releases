@@ -79,6 +79,7 @@ import static org.openide.util.NbBundle.getMessage;
  *
  * @author Jan Lahoda
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.masterfs.providers.AnnotationProvider.class, position=100)
 public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusListener*/ {
 
     private static final String ERROR_BADGE_URL = "org/netbeans/modules/java/source/resources/icons/error-badge.gif";

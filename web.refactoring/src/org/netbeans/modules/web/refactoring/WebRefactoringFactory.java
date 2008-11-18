@@ -69,6 +69,7 @@ import org.openide.util.Exceptions;
  *
  * @author Erno Mononen
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class WebRefactoringFactory implements RefactoringPluginFactory{
     
     private static final Logger LOGGER = Logger.getLogger(WebRefactoringFactory.class.getName());

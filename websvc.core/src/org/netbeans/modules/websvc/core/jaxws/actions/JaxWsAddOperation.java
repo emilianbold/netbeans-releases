@@ -43,7 +43,7 @@ package org.netbeans.modules.websvc.core.jaxws.actions;
 
 import org.netbeans.modules.websvc.core._RetoucheUtil;
 import org.netbeans.modules.websvc.core.AddWsOperationHelper;
-import org.netbeans.modules.websvc.core.AddOperationCookie;
+import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -91,7 +91,7 @@ public class JaxWsAddOperation implements AddOperationCookie {
         });
     }
     
-    public boolean isEnabledInEditor(FileObject implClass) {
+    public boolean isEnabled(FileObject implClass) {
         return isJaxWsImplementationClass() && !isFromWSDL() && !isProvider();
     }
     

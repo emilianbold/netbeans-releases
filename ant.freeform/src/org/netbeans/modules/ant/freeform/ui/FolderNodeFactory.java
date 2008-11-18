@@ -75,6 +75,7 @@ import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
+import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -88,7 +89,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
@@ -260,20 +260,19 @@ public class FolderNodeFactory implements NodeFactory {
     }
     
     
-    static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
+    private static final class GroupDataFilter implements ChangeListener, ChangeableDataFilter, DataFilter.FileBased {
         
         private final ChangeSupport cs = new ChangeSupport(this);
         private final FileObject root;
         private final PathMatcher matcher;
         
-        public VisibilityQueryDataFilter(FileObject root, String includes, String excludes) {
+        public GroupDataFilter(FileObject root, String includes, String excludes) {
             this.root = root;
             matcher = new PathMatcher(includes, excludes, FileUtil.toFile(root));
             VisibilityQuery.getDefault().addChangeListener( this );
         }
                 
-        public boolean acceptDataObject(DataObject obj) {                
-            FileObject fo = obj.getPrimaryFile();                
+        public boolean acceptFileObject(FileObject fo) {
             String path = FileUtil.getRelativePath(root, fo);
             assert path != null : fo + " not in " + root;  //NOI18N
             if (fo.isFolder()) {
@@ -296,6 +295,10 @@ public class FolderNodeFactory implements NodeFactory {
         public void removeChangeListener( ChangeListener listener ) {
             cs.removeChangeListener(listener);
         }
+
+        public boolean acceptDataObject(DataObject d) {
+            return acceptFileObject(d.getPrimaryFile());
+        }
         
     }
     
@@ -312,7 +315,7 @@ public class FolderNodeFactory implements NodeFactory {
         }
         
         public ViewItemNode(DataFolder folder, String includes, String excludes, String name, String displayName) {
-            super(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter(folder.getPrimaryFile(), includes, excludes)));
+            super(folder.getNodeDelegate(), folder.createNodeChildren(new GroupDataFilter(folder.getPrimaryFile(), includes, excludes)));
             this.name = name;
             this.displayName = displayName;
         }

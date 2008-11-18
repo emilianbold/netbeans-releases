@@ -117,7 +117,7 @@ public abstract class APTBaseMacroMap {
             } while (defNode.accept(next)); 
             // special check for macros without values, we must set it to be 1
             List<Token> body = defNode.getBody();
-            if (body == APTUtils.EMPTY_STREAM) {
+            if (body.isEmpty()) {
                 body = APTUtils.DEF_MACRO_BODY;
             }
             defineImpl(defNode.getName(), defNode.getParams(), body);

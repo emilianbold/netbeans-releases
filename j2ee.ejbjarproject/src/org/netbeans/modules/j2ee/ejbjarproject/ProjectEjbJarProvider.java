@@ -41,14 +41,17 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject;
 
+import java.io.IOException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 public class ProjectEjbJarProvider implements EjbJarProvider, EjbJarsInProject/*, ProjectPropertiesSupport*/ {
     
@@ -71,10 +74,9 @@ public class ProjectEjbJarProvider implements EjbJarProvider, EjbJarsInProject/*
     }
 
     public void disableSunCmpMappingExclusion() {
-        EjbJarProject ejbProject = project;
-        PropertyHelper ph = ejbProject.getPropertyHelper();
-        
-        String metaInfExcludes = ph.getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.META_INF_EXCLUDES);
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+        String metaInfExcludes = project.evaluator().getProperty(EjbJarProjectProperties.META_INF_EXCLUDES);
         if (metaInfExcludes == null) {
             return;
         }
@@ -90,7 +92,15 @@ public class ProjectEjbJarProvider implements EjbJarProvider, EjbJarsInProject/*
                 newMetaInfExcludes.append(" "); // NOI18N
             }
         }
-        ph.saveProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.META_INF_EXCLUDES, newMetaInfExcludes.toString());
+        project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).
+                put(EjbJarProjectProperties.META_INF_EXCLUDES, newMetaInfExcludes.toString());
+        try {
+            ProjectManager.getDefault().saveProject(project);
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        }
+            }
+        });
     }
     
 }

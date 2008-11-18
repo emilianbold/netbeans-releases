@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.ruby;
 
+import org.netbeans.modules.gsf.TestSourceModelFactory;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -132,7 +133,7 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
             String text = RubyTestBase.read(fileObject);
             BaseDocument doc = RubyTestBase.createDocument(text);
             GsfTestCompilationInfo testInfo = new GsfTestCompilationInfo(this, fileObject, doc, text);
-            ParserResult result = testInfo.getEmbeddedResult(RubyMimeResolver.RUBY_MIME_TYPE, 0);
+            ParserResult result = testInfo.getEmbeddedResult(RubyInstallation.RUBY_MIME_TYPE, 0);
 
             return result;
         } catch (Exception ex) {
@@ -164,7 +165,7 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
         for (FileObject child : parent.getChildren()) {
             if (child.isFolder()) {
                 addRubyFiles(list, child);
-            } else if (child.getMIMEType().equals(RubyMimeResolver.RUBY_MIME_TYPE)) {
+            } else if (child.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
                 list.add(child);
             }
         }

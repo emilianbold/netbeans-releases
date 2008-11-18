@@ -42,11 +42,6 @@
 package org.netbeans.modules.cnd.debugger.gdb.utils;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CoderResult;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -339,7 +334,7 @@ public class GdbUtils {
             next = (i + 1) < chars.length ? chars[i + 1] : 0;
             if (ch == '\\' && last != '\\' && next != '\\') {
                 char[] charVal = {chars[++i], chars[++i], chars[++i]};
-                ch = (char) Integer.valueOf(String.valueOf(charVal), 8).intValue();
+                ch = (char) Integer.parseInt(String.valueOf(charVal), 8);
             }
             _bytes.add((byte) ch);
             last = chars[i];
@@ -357,7 +352,7 @@ public class GdbUtils {
         return string;
     }
     
-    public static String utfToGdb(String string) {
+    /*public static String utfToGdb(String string) {
         String lang = System.getenv("LANG") + System.getenv("LC_ALL"); // NOI18N
         
         if (lang != null && (lang.contains("UTF-8") || lang.contains("UTF8"))) { // NOI18N
@@ -373,7 +368,7 @@ public class GdbUtils {
             }
         }
         return string;
-    }
+    }*/
     
     public static boolean isMultiByte(String file) {
         char[] ch = file.toCharArray();
@@ -412,14 +407,14 @@ public class GdbUtils {
      */
     public static List<String> createListOfValues(String info) {
         List<String> list = new ArrayList<String>();
-        int start = info.indexOf("{"); // NOI18N
+        int start = info.indexOf('{'); // NOI18N
         while (start != -1) {
             int end = findMatchingCurly(info, start);
             if (end == -1) {
                 break;
             }
             list.add(info.substring(start+1, end));
-            start = info.indexOf("{", end); // NOI18N
+            start = info.indexOf('{', end); // NOI18N
         }
         return list;
     }

@@ -47,11 +47,13 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.FilterPropertyProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -72,6 +74,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -93,6 +96,7 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     private final Lookup lookup;
     protected final UpdateHelper updateHelper;
     private final String projectConfigurationNamespace;
+    private CopyOnWriteArrayList<PlatformChangeListener> platformCLs;
 
     protected RubyBaseProject(final RakeProjectHelper helper, final String projectConfigurationNamespace) {
         this.helper = helper;
@@ -105,6 +109,7 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
                 UpdateHelper.createDefaultNotifier(), projectConfigurationNamespace);
         lookup = createLookup(aux, helper.createAuxiliaryProperties(), new Info(), new ProjectOpenedHookImpl());
         helper.addRakeProjectListener(this);
+        platformCLs = new CopyOnWriteArrayList<PlatformChangeListener>();
     }
 
     protected abstract Icon getIcon();
@@ -115,7 +120,16 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     protected abstract void registerClassPath();
     
     protected abstract void unregisterClassPath();
- 
+
+    /**
+     * Helper method delegating to {@link RubyPlatform#platformFor(Project)}.
+     * 
+     * @return platform for this project; might be <tt>null</tt>
+     */
+    public RubyPlatform getPlatform() {
+        return RubyPlatform.platformFor(this);
+    }
+
     private PropertyEvaluator createEvaluator() {
         // It is currently safe to not use the UpdateHelper for PropertyEvaluator; UH.getProperties() delegates to APH
         // Adapted from APH.getStandardPropertyEvaluator (delegates to ProjectProperties):
@@ -179,6 +193,31 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
         return helper.getProjectDirectory();
     }
 
+    /**
+     * Set the given platform as active for this project and stores in in the
+     * project's metadata. Automatically requires ProjectManager's mutex write
+     * access.
+     * 
+     * @param platform platform to be used
+     * @throws java.io.IOException when platform cannot be stored
+     */
+    public void changeAndStorePlatform(final RubyPlatform platform) throws IOException {
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
+                    EditableProperties props = helper.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    SharedRubyProjectProperties.storePlatform(props, platform);
+                    helper.putProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH, props); // #47609
+                    // and save the project
+                    ProjectManager.getDefault().saveProject(RubyBaseProject.this);
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            ErrorManager.getDefault().notify((IOException) e.getException());
+        }
+    }
+
     public void configurationXmlChanged(RakeProjectEvent ev) {
         if (ev.getPath().equals(RakeProjectHelper.PROJECT_XML_PATH)) {
             // Could be various kinds of changes, but name & displayName might have changed.
@@ -189,7 +228,11 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     }
 
     public void propertiesChanged(RakeProjectEvent ev) {
-        // currently ignored (probably better to listen to evaluator() if you need to)
+        // XXX platform *might be* changed. Likely cache platform in the field.
+        // Now it is always read through evaluator. Cf. #getPlatform()
+        for (PlatformChangeListener platformCL : platformCLs) {
+            platformCL.platformChanged();
+        }
     }
 
     // Currently unused (but see #47230):
@@ -218,6 +261,14 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
             }
         });
     }
+
+    public void addPlatformChangeListener(final PlatformChangeListener platformChangeListener) {
+        platformCLs.add(platformChangeListener);
+    }
+
+    public void removePlatformChangeListener(final PlatformChangeListener platformChangeListener) {
+        platformCLs.remove(platformChangeListener);
+    }
     
     /** Mainly for unit tests. */
     protected void open() {
@@ -235,7 +286,7 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     }
 
     private void updateRakeTasks() {
-        if (hasRakeFile() && RubyPlatform.hasValidRake(this, false)) {
+        if (hasRakeFile() && getPlatform().hasValidRake(false)) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     RakeSupport.refreshTasks(RubyBaseProject.this);

@@ -91,7 +91,7 @@ public class ExternalTerminal implements PropertyChangeListener {
             }
         }
         
-        Process proc = pb.start();
+        pb.start();
         
         final BufferedReader fromTerm = new BufferedReader(new FileReader(gdbHelperLog.getAbsolutePath()));
         new RequestProcessor("TermReader").post(new Runnable() { // NOI18N
@@ -187,7 +187,7 @@ public class ExternalTerminal implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent ev) {
         if (ev.getPropertyName().equals(GdbDebugger.PROP_STATE)) {
             Object state = ev.getNewValue();
-            if (state == GdbDebugger.STATE_NONE) {
+            if (state == GdbDebugger.State.NONE) {
                 gdbHelperScript.delete();
                 gdbHelperLog.delete();
             }

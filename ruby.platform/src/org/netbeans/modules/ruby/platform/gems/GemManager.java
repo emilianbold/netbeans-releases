@@ -67,7 +67,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -125,10 +124,7 @@ public final class GemManager {
     /** Share over invocations of the dialog since these are ESPECIALLY slow to compute */
     private List<Gem> remote;
 
-    private String gemTool;
     private String gemHomeUrl;
-    private String rake;
-    private String rails;
 
     private final RubyPlatform platform;
 
@@ -140,43 +136,6 @@ public final class GemManager {
         this.platform = platform;
         this.runnerLocalLock = new ReentrantLock(true);
         this.runnerRemoteLock = new ReentrantLock(true);
-    }
-
-    private String getGemMissingMessage() {
-        if (Utilities.isMac() && "/usr/bin/ruby".equals(platform.getInterpreter())) { // NOI18N
-            String version = System.getProperty("os.version"); // NOI18N
-            if (version == null || version.startsWith("10.4")) { // Only a problem on Tiger // NOI18N
-                return NbBundle.getMessage(GemManager.class, "GemMissingMac");
-            }
-        }
-        return NbBundle.getMessage(GemManager.class, "GemMissing");
-    }
-
-    /**
-     * Return null if there are no problems running gem. Otherwise return
-     * an error message which describes the problem.
-     */
-    public String getGemProblem() {
-        String gem = getGemTool();
-
-        if (gem == null) {
-            return getGemMissingMessage();
-        }
-
-        String gemHomePath = getGemHome();
-        if (gemHomePath == null) {
-            // edge case, misconfiguration? gem tool is installed but repository is not found
-            return NbBundle.getMessage(GemManager.class, "CannotFindGemRepository");
-        }
-
-        File gemHome = new File(gemHomePath);
-
-        if (!gemHome.exists()) {
-            // Is this possible? (Installing gems, but no gems installed yet
-            return null;
-        }
-
-        return null;
     }
 
     String getRubyGemsVersion() {
@@ -200,7 +159,7 @@ public final class GemManager {
             String gksu = Util.findOnPath("gksu"); // NOI18N
             if (gksu == null) {
                 NotifyDescriptor nd = new NotifyDescriptor.Message(
-                        NbBundle.getMessage(GemManager.class, "GemNotWritable", getGemHome()),
+                        NbBundle.getMessage(GemManager.class, "GemManager.GemNotWritable", getGemHome()),
                         NotifyDescriptor.Message.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notifyLater(nd);
                 return false;
@@ -458,7 +417,17 @@ public final class GemManager {
                     // Add each of */lib/
                     File[] specFiles = specDir.listFiles();
                     if (specFiles != null) {
-                        localGems.putAll(GemFilesParser.getGemInfos(specFiles));
+                        Map<String, List<GemInfo>> namesToInfos = GemFilesParser.getGemInfos(specFiles);
+                        for (Map.Entry<String, List<GemInfo>> nameToInfos : namesToInfos.entrySet()) {
+                            String name = nameToInfos.getKey();
+                            List<GemInfo> newInfos = nameToInfos.getValue();
+                            List<GemInfo> currentInfos = localGems.get(name);
+                            if (currentInfos != null) {
+                                currentInfos.addAll(newInfos);
+                            }  else {
+                                localGems.put(name, newInfos);
+                            }
+                        }
                     }
                 } else {
                     LOGGER.finer("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
@@ -563,22 +532,6 @@ public final class GemManager {
         return remote != null ? remote : Collections.<Gem>emptyList();
     }
 
-    public boolean haveGemTool() {
-        return getGemTool() != null;
-    }
-
-    /** Returns false if check fails. True in success case. */
-    private boolean checkGemProblem() {
-        String gemProblem = getGemProblem();
-        if (gemProblem != null) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(gemProblem,
-                    NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notifyLater(nd);
-            return false;
-        }
-        return true;
-    }
-
     boolean needsLocalReload() {
         return local == null;
     }
@@ -602,7 +555,7 @@ public final class GemManager {
      */
     public void reloadIfNeeded(final List<? super String> errors) {
         assert !EventQueue.isDispatchThread() : "do not call from EDT!";
-        if (!checkGemProblem()) {
+        if (!platform.checkAndReportRubyGemsProblems()) {
             return;
         }
         Collection<? super String> c = errors;
@@ -613,7 +566,7 @@ public final class GemManager {
     }
 
     List<String> reloadLocalIfNeeded() {
-        if (!checkGemProblem()) {
+        if (!platform.checkAndReportRubyGemsProblems()) {
             return Collections.emptyList();
         }
         List<String> errors = new ArrayList<String>();
@@ -636,7 +589,7 @@ public final class GemManager {
     }
 
     List<String> reloadRemoteIfNeeded() {
-        if (!checkGemProblem()) {
+        if (!platform.checkAndReportRubyGemsProblems()) {
             return Collections.emptyList();
         }
         List<String> errors = new ArrayList<String>();
@@ -818,103 +771,10 @@ public final class GemManager {
     }
 
     /**
-     * Return path to the <em>gem</em> tool if it does exist.
-     *
-     * @return path to the <em>gem</em> tool; might be <tt>null</tt> if not
-     *         found.
-     */
-    public String getGemTool() {
-        if (!platform.hasRubyGemsInstalled()) {
-            return null;
-        }
-        if (gemTool == null) {
-            String bin = platform.getBinDir();
-            if (bin != null) {
-                gemTool = bin + File.separator + "gem"; // NOI18N
-                if (!new File(gemTool).isFile()) {
-                    gemTool = null;
-                }
-            }
-        }
-        if (gemTool == null) {
-            gemTool = Util.findOnPath("gem"); // NOI18N
-        }
-        return gemTool;
-    }
-
-    public String getRake() {
-        if (rake == null) {
-            rake = platform.findExecutable("rake"); // NOI18N
-
-            if (rake != null && !(new File(rake).exists()) && getLatestVersion("rake") != null) { // NOI18N
-                // On Windows, rake does funny things - you may only get a rake.bat
-                InstalledFileLocator locator = InstalledFileLocator.getDefault();
-                File f =
-                        locator.locate("modules/org-netbeans-modules-ruby-project.jar", // NOI18N
-                        null, false); // NOI18N
-
-                if (f == null) {
-                    throw new RuntimeException("Can't find cluster"); // NOI18N
-                }
-
-                f = new File(f.getParentFile().getParentFile().getAbsolutePath() + File.separator +
-                        "rake"); // NOI18N
-
-                try {
-                    rake = f.getCanonicalPath();
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-            }
-        }
-
-        return rake;
-    }
-
-    public boolean isValidRake(boolean warn) {
-        String rakePath = getRake();
-        boolean valid = (rakePath != null) && new File(rakePath).exists();
-        possiblyNotifyUser(warn, valid, "rake"); // NOI18N
-        return valid;
-    }
-
-    public String getRails() {
-        if (rails == null) {
-            rails = platform.findExecutable("rails"); // NOI18N
-        }
-        return rails;
-    }
-
-    public boolean isValidRails(boolean warn) {
-        String railsPath = getRails();
-        boolean valid = (railsPath != null) && new File(railsPath).exists();
-        possiblyNotifyUser(warn, valid, "rails"); // NOI18N
-        return valid;
-    }
-
-    public String getAutoTest() {
-        return platform.findExecutable("autotest"); // NOI18N
-    }
-
-    public boolean isValidAutoTest(boolean warn) {
-        String autoTest = getAutoTest();
-        boolean valid = (autoTest != null) && new File(autoTest).exists();
-        possiblyNotifyUser(warn, valid, "autotest"); // NOI18N
-        return valid;
-    }
-
-    private void possiblyNotifyUser(boolean warn, boolean valid, String cmd) {
-        if (warn && !valid) {
-            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", cmd, platform.getLabel());
-            NotifyDescriptor nd =
-                    new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-        }
-    }
-
-    /** Return other load path URLs (than the gem ones returned by {@link #getGemUrls} to add for the platform
-     * such as the basic ruby 1.8 libraries, the site_ruby libraries, and the stub libraries for
-     * the core/builtin classes.
+     * Return other load path URLs (than the gem ones returned by {@link
+     * #getGemUrls} to add for the platform such as the basic ruby 1.8
+     * libraries, the site_ruby libraries, and the stub libraries for the
+     * core/builtin classes.
      *
      * @return a set of URLs
      */

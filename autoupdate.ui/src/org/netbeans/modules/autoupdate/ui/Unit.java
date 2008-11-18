@@ -313,20 +313,38 @@ public abstract class Unit {
                 assert installEl != null : "Installed UpdateUnit " + unit + " has Installed UpdateElement.";
             }
             this.backupEl = unit.getBackup ();
-            this.isUninstallAllowed = isOperationAllowed (this.updateUnit, installEl, Containers.forUninstall ());
+            OperationContainer<OperationSupport> container = null;
+            if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
+                container = Containers.forCustomUninstall ();
+            } else {
+                container = Containers.forUninstall ();
+            }
+            this.isUninstallAllowed = isOperationAllowed (this.updateUnit, installEl, container);
             initState();
         }
         
         public boolean isMarked () {
-            return Containers.forUninstall ().contains (installEl);
+            OperationContainer container = null;
+            if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
+                container = Containers.forCustomUninstall ();
+            } else {
+                container = Containers.forUninstall ();
+            }
+            return container.contains (installEl);
         }
         
         public void setMarked (boolean marked) {
             assert marked != isMarked ();
-            if (marked) {
-                Containers.forUninstall ().add (updateUnit, installEl);
+            OperationContainer container = null;
+            if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
+                container = Containers.forCustomUninstall ();
             } else {
-                Containers.forUninstall ().remove (installEl);
+                container = Containers.forUninstall ();
+            }
+            if (marked) {
+                container.add (updateUnit, installEl);
+            } else {
+                container.remove (installEl);
             }
         }
         

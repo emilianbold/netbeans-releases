@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,15 +31,13 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.makeproject.api;
 
-import org.netbeans.modules.cnd.makeproject.packaging.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -48,93 +46,105 @@ import java.util.List;
 import java.util.Set;
 import org.openide.util.Lookup;
 
-public class PackagerManager  {
-    private static List<PackagerDescriptor> list = null;
-    
-    private static PackagerManager instance;
-    
+public class PackagerManager {
+
+    private static final PackagerManager instance = new PackagerManager();
+
+
+    static {
+        instance.addRegisteredPackagers();
+    }
+    private final List<PackagerDescriptor> list = new ArrayList<PackagerDescriptor>();
+
     public static PackagerManager getDefault() {
-        if (instance == null) {
-            instance = new PackagerManager();
-            list = new ArrayList<PackagerDescriptor>();
-            instance.addRegisteredPackagers();
-        }
         return instance;
     }
-    
+
+    private PackagerManager() {
+    }
+
     /*
      * Installed via services
      */
     private void addRegisteredPackagers() {
         Set<PackagerDescriptorProvider> set = getPackagerDescriptorProviders();
         for (PackagerDescriptorProvider packagerDescriptorProvider : set) {
-            List<PackagerDescriptor> list = packagerDescriptorProvider.getPackagerDescriptorProviderList();
-            for (PackagerDescriptor packagerDescriptor : list) {
+            List<PackagerDescriptor> aList = packagerDescriptorProvider.getPackagerDescriptorProviderList();
+            for (PackagerDescriptor packagerDescriptor : aList) {
                 addPackagingDescriptor(packagerDescriptor);
             }
         }
     }
-    
+
     public void addPackagingDescriptor(PackagerDescriptor packagingDescriptor) {
-        PackagerDescriptor packagerDescriptor = getPackager(packagingDescriptor.getName());
-        if (packagerDescriptor != null) {
-            return; // Already there...
+        synchronized (list) {
+            PackagerDescriptor packagerDescriptor = getPackager(packagingDescriptor.getName());
+            if (packagerDescriptor != null) {
+                return; // Already there...
+            }
+            list.add(packagingDescriptor);
         }
-        list.add(packagingDescriptor);
     }
-    
+
     public List<PackagerDescriptor> getPackagerList() {
-        return list;
+        synchronized (list) {
+            return new ArrayList<PackagerDescriptor>(list);
+        }
     }
-    
+
     public PackagerDescriptor getPackager(String name) {
-        for (PackagerDescriptor packagerDescriptor : list) {
-            if (packagerDescriptor.getName().equals(name))
+        for (PackagerDescriptor packagerDescriptor : getPackagerList()) {
+            if (packagerDescriptor.getName().equals(name)) {
                 return packagerDescriptor;
+            }
         }
         return null;
     }
-    
+
     public int getNameIndex(String name) {
         int index = 0;
-        for (PackagerDescriptor packagerDescriptor : list) {
-            if (packagerDescriptor.getName().equals(name))
+        for (PackagerDescriptor packagerDescriptor : getPackagerList()) {
+            if (packagerDescriptor.getName().equals(name)) {
                 return index;
+            }
             index++;
         }
         return 0;
     }
-    
+
     public String[] getDisplayNames() {
-        String[] ret = new String[list.size()];
+        List<PackagerDescriptor> aList = getPackagerList();
+        String[] ret = new String[aList.size()];
         int i = 0;
-        for (PackagerDescriptor packagerDescriptor : list) {
+        for (PackagerDescriptor packagerDescriptor : aList) {
             ret[i++] = packagerDescriptor.getDisplayName();
         }
         return ret;
     }
-    
+
     public String getDisplayName(String name) {
-        for (PackagerDescriptor packagerDescriptor : list) {
-            if (packagerDescriptor.getName().equals(name))
+        for (PackagerDescriptor packagerDescriptor : getPackagerList()) {
+            if (packagerDescriptor.getName().equals(name)) {
                 return packagerDescriptor.getDisplayName();
+            }
         }
         return null;
     }
-    
+
     public String getName(String displayName) {
-        for (PackagerDescriptor packagerDescriptor : list) {
-            if (packagerDescriptor.getDisplayName().equals(displayName))
+        for (PackagerDescriptor packagerDescriptor : getPackagerList()) {
+            if (packagerDescriptor.getDisplayName().equals(displayName)) {
                 return packagerDescriptor.getName();
+            }
         }
         return null;
     }
-    
+
     /*
      * Get list of packager providers registered via services
      */
     private static Set<PackagerDescriptorProvider> getPackagerDescriptorProviders() {
-        HashSet providers = new HashSet();
+        HashSet<PackagerDescriptorProvider> providers = new HashSet<PackagerDescriptorProvider>();
         Lookup.Template template = new Lookup.Template(PackagerDescriptorProvider.class);
         Lookup.Result result = Lookup.getDefault().lookup(template);
         Collection collection = result.allInstances();
@@ -142,7 +152,7 @@ public class PackagerManager  {
         while (iterator.hasNext()) {
             Object caop = iterator.next();
             if (caop instanceof PackagerDescriptorProvider) {
-                providers.add(caop);
+                providers.add((PackagerDescriptorProvider) caop);
             }
         }
         return providers;

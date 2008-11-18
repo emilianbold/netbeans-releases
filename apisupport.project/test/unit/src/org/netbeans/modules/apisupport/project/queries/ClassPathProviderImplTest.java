@@ -42,40 +42,32 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Properties;
+import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import org.junit.Test;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.TestBase;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.filesystems.FileStateInvalidException;
 
 // XXX test GPR usage
 
@@ -164,9 +156,9 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     private static final Set<String> TESTLIBS = new HashSet<String>(Arrays.asList(
-        "junit.jar", "org-netbeans-modules-nbjunit.jar", "org-netbeans-insane.jar"));
+        "junit.jar", "org-netbeans-modules-nbjunit.jar", "org-netbeans-insane.jar", "org-netbeans-libs-junit.jar"));
     
-    private Set<String> urlsOfCp4Tests(ClassPath cp) {
+    private Set<String> urlsOfCp4Tests(ClassPath cp) throws Exception {
         Set<String> s = new TreeSet<String>();
         for (ClassPath.Entry entry : cp.entries()) {
             String url = entry.getURL().toExternalForm();
@@ -178,6 +170,7 @@ public class ClassPathProviderImplTest extends TestBase {
             if (TESTLIBS.contains(simplifiedJarName)) {
                 s.add(simplifiedJarName);
             } else {
+                // XXX String relativeJarName = url.replace(getWorkDir().toURL().toExternalForm(), "");
                 s.add(url);
             }
         }
@@ -379,6 +372,226 @@ public class ClassPathProviderImplTest extends TestBase {
         // XXX test BOOT
     }
      */
+
+    private SuiteProject testSuite;
+    private NbModuleProject modA;
+    private NbModuleProject modB;
+    private NbModuleProject modC;
+    private NbModuleProject modT;
+
+    @Test
+    public void testSimpleRuntimeTestDependency() throws Exception {
+        generateTestingSuite();
+        NbModuleProject modD = generateTestingSuiteComponent("d", "",
+                "<test-dependency>\n" +
+                "<code-name-base>a</code-name-base>\n" +
+//                "<recursive/>\n" +
+//                "<compile-dependency/>\n" +
+//                "<test/>\n" +
+                "</test-dependency>\n");
+
+        ClassPathProvider cpp = modD.getLookup().lookup(ClassPathProvider.class);
+        ClassPath cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.COMPILE);
+        Set<String> expectedRoots = new TreeSet<String>();
+        expectedRoots.addAll(TESTLIBS);
+        expectedRoots.add(urlForJar(modD.getModuleJarLocation().getPath()));
+        assertEquals("correct TEST COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
+
+        cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.EXECUTE);
+        expectedRoots = new TreeSet<String>();
+        expectedRoots.addAll(TESTLIBS);
+        expectedRoots.add(urlForJar(modD.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(modA.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(modD.getTestClassesDirectory("unit").getPath()));
+        assertEquals("correct TEST EXECUTE classpath", expectedRoots, urlsOfCp4Tests(cp));
+    }
+
+    @Test
+    public void testSimpleCompileTestDependency() throws Exception {
+        generateTestingSuite();
+        NbModuleProject modD = generateTestingSuiteComponent("d", "",
+                "<test-dependency>\n" +
+                "<code-name-base>a</code-name-base>\n" +
+//                "<recursive/>\n" +
+                "<compile-dependency/>\n" +
+//                "<test/>\n" +
+                "</test-dependency>\n");
+
+        ClassPathProvider cpp = modD.getLookup().lookup(ClassPathProvider.class);
+        ClassPath cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.COMPILE);
+        Set<String> expectedRoots = new TreeSet<String>();
+        expectedRoots.addAll(TESTLIBS);
+        expectedRoots.add(urlForJar(modD.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(modA.getModuleJarLocation().getPath()));
+        assertEquals("correct TEST COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
+
+        cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.EXECUTE);
+        expectedRoots.add(urlForJar(modD.getTestClassesDirectory("unit").getPath()));
+        assertEquals("correct TEST EXECUTE classpath", expectedRoots, urlsOfCp4Tests(cp));
+    }
+
+    @Test
+    public void testRecursiveRuntimeTestDependency() throws Exception {
+        generateTestingSuite();
+        NbModuleProject modD = generateTestingSuiteComponent("d", "",
+                "<test-dependency>\n" +
+                "<code-name-base>a</code-name-base>\n" +
+                "<recursive/>\n" +
+//                "<compile-dependency/>\n" +
+//                "<test/>\n" +
+                "</test-dependency>\n");
+
+        ClassPathProvider cpp = modD.getLookup().lookup(ClassPathProvider.class);
+        ClassPath cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.COMPILE);
+        Set<String> expectedRoots = new TreeSet<String>();
+        expectedRoots.addAll(TESTLIBS);
+        expectedRoots.add(urlForJar(modD.getModuleJarLocation().getPath()));
+        assertEquals("correct TEST COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
+
+        cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.EXECUTE);
+        expectedRoots = new TreeSet<String>();
+        expectedRoots.addAll(TESTLIBS);
+        expectedRoots.add(urlForJar(modD.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(modA.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(modB.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(modC.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(modD.getTestClassesDirectory("unit").getPath()));
+        assertEquals("correct TEST EXECUTE classpath", expectedRoots, urlsOfCp4Tests(cp));
+    }
+
+    @Test
+    public void testRecursiveCompileTestDependency() throws Exception {
+        generateTestingSuite();
+        NbModuleProject modD = generateTestingSuiteComponent("d", "",
+                "<test-dependency>\n" +
+                "<code-name-base>a</code-name-base>\n" +
+                "<recursive/>\n" +
+                "<compile-dependency/>\n" +
+//                "<test/>\n" +
+                "</test-dependency>\n");
+
+        ClassPathProvider cpp = modD.getLookup().lookup(ClassPathProvider.class);
+        ClassPath cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.COMPILE);
+        Set<String> expectedRoots = new TreeSet<String>();
+        expectedRoots.addAll(TESTLIBS);
+        expectedRoots.add(urlForJar(modD.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(modA.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(modB.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(modC.getModuleJarLocation().getPath()));
+        assertEquals("correct TEST COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
+
+        cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.EXECUTE);
+        expectedRoots.add(urlForJar(modD.getTestClassesDirectory("unit").getPath()));
+        assertEquals("correct TEST EXECUTE classpath", expectedRoots, urlsOfCp4Tests(cp));
+    }
+
+    @Test
+    public void testRecursiveCompileTestDependencyWithTests() throws Exception {
+        generateTestingSuite();
+        NbModuleProject modD = generateTestingSuiteComponent("d", "",
+                "<test-dependency>\n" +
+                "<code-name-base>a</code-name-base>\n" +
+                "<recursive/>\n" +
+                "<compile-dependency/>\n" +
+                "<test/>\n" +
+                "</test-dependency>\n");
+
+        ClassPathProvider cpp = modD.getLookup().lookup(ClassPathProvider.class);
+        ClassPath cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.COMPILE);
+        Set<String> expectedRoots = new TreeSet<String>();
+        expectedRoots.addAll(TESTLIBS);
+        expectedRoots.add(urlForJar(modD.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(modA.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(modB.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(modC.getModuleJarLocation().getPath()));
+        // path to compiled tests is a bit tricky, evaluator won't tell us path to testdist dir
+        File clusterPath = modA.getModuleJarLocation().getParentFile().getParentFile();
+        String cluster = clusterPath.getName();
+        File testDistJar = new File(clusterPath.getParentFile(), "/testdist/unit/" + cluster + "/org-example-a/tests.jar");
+        expectedRoots.add(urlForJar(testDistJar.getPath()));
+        assertEquals("correct TEST COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
+
+        cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.EXECUTE);
+        expectedRoots.add(urlForJar(modD.getTestClassesDirectory("unit").getPath()));
+        assertEquals("correct TEST EXECUTE classpath", expectedRoots, urlsOfCp4Tests(cp));
+    }
+
+    /**
+     * Creates testing suite with following modules dependency structure:
+     * <pre>
+     * org.example.a --(R)--> org.example.b --(R,UT-C)--> org.example.c
+     *                              |
+     *                          (UT-CRT)
+     *                              |
+     *                              V
+     *                        org.example.t
+     * </pre>
+     * See harness README for details and expected CP (unit test deps are added 
+     * to this structure to check that we're NOT returning them.
+     *
+     * @return Generated suite project (also stored in #testSuite)
+     * @throws java.lang.Exception
+     */
+    private SuiteProject generateTestingSuite() throws Exception {
+        // TestModuleDependencyTest#generateTestingProject() may also be useful
+        testSuite = generateSuite("testSuite1");
+        modC = generateSuiteComponent(testSuite, "c");
+        modT = generateSuiteComponent(testSuite, "t");
+        modB = generateTestingSuiteComponent("b",
+                "<dependency>\n" +
+                "<code-name-base>c</code-name-base>" +
+                "<build-prerequisite/>\n<run-dependency/>\n" +
+                "</dependency>",
+                "<test-dependency>\n" +
+                "<code-name-base>c</code-name-base>\n" +
+                "<compile-dependency/>\n" +
+                "</test-dependency>\n" +
+                "<test-dependency>\n" +
+                "<code-name-base>t</code-name-base>\n" +
+                "<recursive/>\n" +
+                "<compile-dependency/>\n" +
+                "<test/>\n" +
+                "</test-dependency>\n");
+        modA = generateTestingSuiteComponent("a",
+                "<dependency>\n" +
+                "<code-name-base>b</code-name-base>" +
+                "<build-prerequisite/>\n<run-dependency/>\n" +
+                "</dependency>",
+                "");
+        return testSuite;
+    }
+
+    private static final Pattern CNB_REGEX = Pattern.compile("(<code-name-base>)([^.<]+)(</code-name-base>)");
+    private static final String CNB_REPL = "$1org.example.$2$3";
+
+    private NbModuleProject generateTestingSuiteComponent(String prjName, String depsXMLFragment, String testDepsXMLFragment) throws Exception {
+        FileObject prjFO = generateSuiteComponentDirectory(testSuite, testSuite.getProjectDirectoryFile(), prjName);
+        depsXMLFragment = CNB_REGEX.matcher(depsXMLFragment).replaceAll(CNB_REPL);
+        testDepsXMLFragment = CNB_REGEX.matcher(testDepsXMLFragment).replaceAll(CNB_REPL);
+
+        FileObject projectXMLFO = prjFO.getFileObject("nbproject/project.xml");
+        String xml =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<project xmlns=\"http://www.netbeans.org/ns/project/1\">\n" +
+                "<type>org.netbeans.modules.apisupport.project</type>\n" +
+                "<configuration>\n" +
+                "<data xmlns=\"http://www.netbeans.org/ns/nb-module-project/3\">\n" +
+                "<code-name-base>org.example." + prjName + "</code-name-base>\n" +
+                "<suite-component/>\n" +
+                "<module-dependencies>\n" + depsXMLFragment + "</module-dependencies>\n" +
+                "<test-dependencies>\n" +
+                "<test-type>\n" +
+                "<name>unit</name>\n" +
+                testDepsXMLFragment +
+                "</test-type>\n" +
+                "</test-dependencies>\n" +
+                "<public-packages/>\n" +
+                "</data>\n" +
+                "</configuration>\n" +
+                "</project>\n";
+        TestBase.dump(projectXMLFO, xml);
+        return (NbModuleProject) ProjectManager.getDefault().findProject(prjFO);
+    }
 
 //    XXX: failing test, fix or delete
 //    public void testUnitTestClasspathsExternalModules() throws Exception {

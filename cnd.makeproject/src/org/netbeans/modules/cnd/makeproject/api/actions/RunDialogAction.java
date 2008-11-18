@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.loaders.CoreElfObject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
@@ -82,7 +83,7 @@ public class RunDialogAction extends NodeAction {
     protected void performAction (final Node[] activatedNodes) {
 	String path = null;
 	if (activatedNodes != null && activatedNodes.length == 1) {
-	    DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+	    DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
 	    if (dataObject != null && dataObject instanceof ExeObject) {
 		Node node = dataObject.getNodeDelegate();
 		path = FileUtil.toFile(dataObject.getPrimaryFile()).getPath();
@@ -92,11 +93,14 @@ public class RunDialogAction extends NodeAction {
     }
 
     protected boolean enable(Node[] activatedNodes) {
-	if (activatedNodes == null || activatedNodes.length != 1)
+	if (activatedNodes == null || activatedNodes.length != 1) {
 	    return false;
-	DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
-	if (!(dataObject instanceof ExeObject))
+        }
+	DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
+        // disabled for core files, see issue 136696
+	if (!(dataObject instanceof ExeObject) || dataObject instanceof CoreElfObject) {
 	    return false;
+        }
 	return true;
     }
 

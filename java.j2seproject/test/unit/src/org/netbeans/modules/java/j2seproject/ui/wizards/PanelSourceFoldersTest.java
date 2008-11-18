@@ -43,6 +43,7 @@ package org.netbeans.modules.java.j2seproject.ui.wizards;
 
 import java.io.File;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.api.common.project.ui.wizards.FolderList;
 
 
 /**

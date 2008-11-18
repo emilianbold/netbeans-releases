@@ -58,8 +58,11 @@ import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.spi.autoupdate.CustomInstaller;
+import org.netbeans.spi.autoupdate.CustomUninstaller;
 import org.openide.LifecycleManager;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.MutexException;
 
 /**
  * @author Jiri Rechtacek, Radek Matous
@@ -73,6 +76,7 @@ public abstract class OperationSupportImpl {
     private static final OperationSupportImpl FOR_UNINSTALL = new ForUninstall();
     private static final OperationSupportImpl FOR_DIRECT_UNINSTALL = new ForDirectUninstall();
     private static final OperationSupportImpl FOR_CUSTOM_INSTALL = new ForCustomInstall ();
+    private static final OperationSupportImpl FOR_CUSTOM_UNINSTALL = new ForCustomUninstall ();
     
     private static final Logger LOGGER = Logger.getLogger ("org.netbeans.modules.autoupdate.services.OperationSupportImpl");
     
@@ -100,6 +104,9 @@ public abstract class OperationSupportImpl {
     public static OperationSupportImpl forCustomInstall () {
         return FOR_CUSTOM_INSTALL;
     }
+    public static OperationSupportImpl forCustomUninstall () {
+        return FOR_CUSTOM_UNINSTALL;
+    }
     
     public abstract Boolean doOperation(ProgressHandle progress/*or null*/, OperationContainer<?> container) throws OperationException;
     public abstract void doCancel () throws OperationException;
@@ -125,7 +132,7 @@ public abstract class OperationSupportImpl {
                     UpdateElementImpl impl = Trampoline.API.impl (operationInfo.getUpdateElement ());
                     moduleInfos.addAll (impl.getModuleInfos ());
                 }
-                Set<Module> modules = new HashSet<Module>();
+                final Set<Module> modules = new HashSet<Module>();
                 for (ModuleInfo info : moduleInfos) {
                     Module m = Utilities.toModule (info);
                     if (Utilities.canEnable (m)) {
@@ -137,7 +144,20 @@ public abstract class OperationSupportImpl {
                     }
                 }
                 assert mm != null;
-                enable(mm, modules);
+                final ModuleManager fmm = mm;
+                try {
+                    fmm.mutex ().writeAccess (new ExceptionAction<Boolean> () {
+                        public Boolean run () throws Exception {
+                            return enable(fmm, modules);
+                        }
+                    });
+                } catch (MutexException ex) {
+                    Exception x = ex.getException ();
+                    assert x instanceof OperationException : x + " is instanceof OperationException";
+                    if (x instanceof OperationException) {
+                        throw (OperationException) x;
+                    }
+                }
             } finally {
                 if (progress != null) {
                     progress.finish();
@@ -266,7 +286,7 @@ public abstract class OperationSupportImpl {
                     UpdateElementImpl impl = Trampoline.API.impl (operationInfo.getUpdateElement ());
                     moduleInfos.addAll (impl.getModuleInfos ());
                 }
-                Set<Module> modules = new HashSet<Module>();
+                final Set<Module> modules = new HashSet<Module>();
                 for (ModuleInfo info : moduleInfos) {
                     Module m = Utilities.toModule (info);
                     if (Utilities.canDisable (m)) {
@@ -278,7 +298,20 @@ public abstract class OperationSupportImpl {
                     }
                 }
                 assert mm != null;
-                mm.disable(modules);
+                final ModuleManager fmm = mm;
+                try {
+                    fmm.mutex ().writeAccess (new ExceptionAction<Boolean> () {
+                        public Boolean run () throws Exception {
+                            return disable(fmm, modules);
+                        }
+                    });
+                } catch (MutexException ex) {
+                    Exception x = ex.getException ();
+                    assert x instanceof OperationException : x + " is instanceof OperationException";
+                    if (x instanceof OperationException) {
+                        throw (OperationException) x;
+                    }
+                }
             } finally {
                 if (progress != null) {
                     progress.finish();
@@ -288,6 +321,17 @@ public abstract class OperationSupportImpl {
             return false;
         }
         
+        private static boolean disable (ModuleManager mm, Set<Module> toRun) throws OperationException {
+            boolean retval = false;
+            try {
+                mm.disable (toRun);
+                retval = true;
+            } catch(IllegalArgumentException ilae) {
+                throw new OperationException(OperationException.ERROR_TYPE.ENABLE, ilae);
+            }
+            return retval;
+        }
+
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
         }
@@ -333,6 +377,9 @@ public abstract class OperationSupportImpl {
                                 affectedModules.add (moduleImpl.getUpdateElement ());
                             }
                         }
+                        break;
+                    case CUSTOM_HANDLED_COMPONENT :
+
                         break;
                     default:
                         assert false : "Not supported for impl " + updateElementImpl;
@@ -506,8 +553,9 @@ public abstract class OperationSupportImpl {
     private static class ForCustomInstall extends OperationSupportImpl {
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
+            boolean success = false;
             try {
-                
+
                 List<? extends OperationInfo> infos = container.listAll ();
                 List<NativeComponentUpdateElementImpl> customElements = new ArrayList<NativeComponentUpdateElementImpl> ();
                 for (OperationInfo operationInfo : infos) {
@@ -516,7 +564,6 @@ public abstract class OperationSupportImpl {
                     customElements.add ((NativeComponentUpdateElementImpl) impl);
                 }
                 assert customElements != null : "Some elements with custom installer found.";
-                boolean success = false;
                 for (NativeComponentUpdateElementImpl impl : customElements) {
                     CustomInstaller installer = impl.getInstallInfo ().getCustomInstaller ();
                     assert installer != null : "CustomInstaller must found for " + impl.getUpdateElement ();
@@ -535,10 +582,9 @@ public abstract class OperationSupportImpl {
                     progress.finish ();
                 }
             }
-            
-            // XXX
-            return false;
-            
+
+            return success;
+
         }
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
@@ -551,6 +597,56 @@ public abstract class OperationSupportImpl {
         public void doRestartLater (Restarter restarter) {
             throw new UnsupportedOperationException ("Not supported yet.");
         }
-        
+
+    }
+
+    private static class ForCustomUninstall extends OperationSupportImpl {
+        public synchronized Boolean doOperation(ProgressHandle progress,
+                OperationContainer<?> container) throws OperationException {
+            boolean success = false;
+            try {
+
+                List<? extends OperationInfo> infos = container.listAll ();
+                List<NativeComponentUpdateElementImpl> customElements = new ArrayList<NativeComponentUpdateElementImpl> ();
+                for (OperationInfo operationInfo : infos) {
+                    UpdateElementImpl impl = Trampoline.API.impl (operationInfo.getUpdateElement ());
+                    assert impl instanceof NativeComponentUpdateElementImpl : "Impl of " + operationInfo.getUpdateElement () + " instanceof NativeComponentUpdateElementImpl.";
+                    customElements.add ((NativeComponentUpdateElementImpl) impl);
+                }
+                assert customElements != null : "Some elements with custom installer found.";
+                for (NativeComponentUpdateElementImpl impl : customElements) {
+                    CustomUninstaller uninstaller = impl.getNativeItem ().getUpdateItemDeploymentImpl ().getCustomUninstaller ();
+                    assert uninstaller != null : "CustomInstaller must found for " + impl.getUpdateElement ();
+                    success = uninstaller.uninstall (impl.getCodeName (),
+                            impl.getSpecificationVersion () == null ? null : impl.getSpecificationVersion ().toString (),
+                            progress);
+                    if (success) {
+                        UpdateUnitImpl unitImpl = Trampoline.API.impl (impl.getUpdateUnit ());
+                        unitImpl.setAsUninstalled ();
+                    } else {
+                        throw new OperationException (OperationException.ERROR_TYPE.UNINSTALL, impl.getDisplayName ());
+                    }
+                }
+            } finally {
+                if (progress != null) {
+                    progress.finish ();
+                }
+            }
+
+            return success;
+
+        }
+        public void doCancel () throws OperationException {
+            assert false : "Not supported yet";
+        }
+
+        public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
+            throw new UnsupportedOperationException ("Not supported yet.");
+        }
+
+        public void doRestartLater (Restarter restarter) {
+            throw new UnsupportedOperationException ("Not supported yet.");
+        }
+
     }
 }

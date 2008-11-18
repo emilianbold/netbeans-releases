@@ -41,6 +41,7 @@
 
 package org.netbeans.core;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,16 +55,19 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Set;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Mutex;
+import org.openide.util.lookup.ServiceProvider;
 
 /** Implementation of standard key - action mappings.
 *
 * @author Dafe Simonek
 */
+@ServiceProvider(service=Keymap.class)
 public final class NbKeymap extends Observable implements Keymap, Comparator<KeyStroke> {
     /** Name of this keymap */
     String name;
@@ -84,7 +88,7 @@ public final class NbKeymap extends Observable implements Keymap, Comparator<Key
     }
 
     public static KeyStroke[] getContext() {
-        return (KeyStroke[]) context.toArray(new KeyStroke[context.size()]);
+        return context.toArray(new KeyStroke[context.size()]);
     }
     
     public static void shiftContext(KeyStroke stroke) {
@@ -364,6 +368,7 @@ public final class NbKeymap extends Observable implements Keymap, Comparator<Key
 
     /** Returns string representation - can be looong.
     */
+    @Override
     public String toString() {
         return "Keymap[" + name + "]" + bindings; // NOI18N
     }
@@ -437,7 +442,7 @@ public final class NbKeymap extends Observable implements Keymap, Comparator<Key
     
     }
     
-    public static class KeymapAction extends javax.swing.AbstractAction {
+    public static class KeymapAction extends AbstractAction {
         private Keymap keymap;
         private KeyStroke stroke;
 	
@@ -450,7 +455,7 @@ public final class NbKeymap extends Observable implements Keymap, Comparator<Key
             return keymap;
         }
         
-        public void actionPerformed(java.awt.event.ActionEvent e) {
+        public void actionPerformed(ActionEvent e) {
             if (stroke == null) { // NO_ACTION -> reset
                 resetContext();
             } else {

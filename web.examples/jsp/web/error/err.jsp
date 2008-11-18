@@ -32,7 +32,7 @@
 		  if (name.equalsIgnoreCase("acura")) {
 	%>
 
-	<H1> Yes!!! <a href="http://www.acura.com">Acura</a> is my favorite car.
+    <H1> Yes!!! <a href="http://www.acura.com">Acura</a> is my favorite car.</H1>
 
 	<% 
 		  }

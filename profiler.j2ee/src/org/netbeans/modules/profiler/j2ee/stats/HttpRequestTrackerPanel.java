@@ -66,6 +66,7 @@ import javax.swing.JPanel;
  *
  * @author Jaroslav Bachorik
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.ui.stats.ProjectAwareStatisticalModule.class)
 public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 

@@ -34,6 +34,7 @@ import javax.swing.tree.TreeModel;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.java.JavaTestCase;
@@ -74,6 +75,7 @@ public class MembersViewTest extends JavaTestCase{
         EditorOperator editor = new EditorOperator("SuperClass");
         editor.setCaretPosition(24,13);
         editor.pressKey(KeyEvent.VK_F12, KeyEvent.CTRL_DOWN_MASK);
+        new EventTool().waitNoEvent(1000);
         MembersOperator m = new MembersOperator();
         JTreeOperator jto = m.treeJTree();
         TreeModel model = jto.getModel();

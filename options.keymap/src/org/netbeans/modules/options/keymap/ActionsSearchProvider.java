@@ -90,11 +90,11 @@ public class ActionsSearchProvider implements SearchProvider {
             for (Entry<String, Set<ShortcutAction>> entry : m.getActions().entrySet()) {
                 for (ShortcutAction sa : entry.getValue()) {
                     // check action and obtain only meaningful ones
-                    Object[] actAndEvent = getActionInfo(sa, curKeymap.get(sa));
-                    if (actAndEvent == null) {
+                    Object[] actInfo = getActionInfo(sa, curKeymap.get(sa));
+                    if (actInfo == null) {
                         continue;
                     }
-                    if (!doEvaluation(sa.getDisplayName(), request, actAndEvent, response, possibleResults)) {
+                    if (!doEvaluation(sa.getDisplayName(), request, actInfo, response, possibleResults)) {
                         return;
                     }
                 }
@@ -110,39 +110,37 @@ public class ActionsSearchProvider implements SearchProvider {
                 if (action == null) {
                     continue;
                 }
-                Object[] actAndEvent = new Object[] {
-                    action, createActionEvent(action), null, null
-                };
+                Object[] actInfo = new Object[] { action, null, null };
                 Object name = action.getValue(Action.NAME);
                 if (!(name instanceof String)) {
                     // skip action without proper name
                     continue;
                 }
-                if (!doEvaluation((String)name, request, actAndEvent, response, possibleResults)) {
+                if (!doEvaluation((String)name, request, actInfo, response, possibleResults)) {
                     return;
                 }
             }
         }
 
         // add results stored above, actions that contain typed text, but not as prefix
-        for (Object[] actAndEvent : possibleResults) {
-            if (!addAction(actAndEvent, response)) {
+        for (Object[] actInfo : possibleResults) {
+            if (!addAction(actInfo, response)) {
                 return;
             }
         }
     }
     
 
-    private boolean addAction(Object[] actAndEvent, SearchResponse response) {
+    private boolean addAction(Object[] actInfo, SearchResponse response) {
         KeyStroke stroke = null;
         // obtaining shortcut, first try Keymaps
-        Set<String> shortcuts = (Set<String>)actAndEvent[3];
+        Set<String> shortcuts = (Set<String>)actInfo[2];
         if (shortcuts != null && shortcuts.size() > 0) {
             String shortcut = shortcuts.iterator().next();
             stroke = Utilities.stringToKey(shortcut);
         }
         // try accelerator key property if Keymaps returned no shortcut
-        Action action = (Action) actAndEvent[0];
+        Action action = (Action) actInfo[0];
         if (stroke == null) {
             Object shortcut = action.getValue(Action.ACCELERATOR_KEY);
             if (shortcut instanceof KeyStroke) {
@@ -158,7 +156,7 @@ public class ActionsSearchProvider implements SearchProvider {
         }*/
         
         String displayName = null;
-        ShortcutAction sa= (ShortcutAction)actAndEvent[2];
+        ShortcutAction sa= (ShortcutAction)actInfo[1];
         if (sa != null) {
             displayName = sa.getDisplayName();
         } else {
@@ -168,19 +166,19 @@ public class ActionsSearchProvider implements SearchProvider {
             }
         }
         
-        return response.addResult(new ActionResult(action, (ActionEvent) actAndEvent[1]),
-                displayName, null, Collections.singletonList(stroke));
+        return response.addResult(new ActionResult(action), displayName, null,
+                Collections.singletonList(stroke));
     }
 
     private boolean doEvaluation(String name, SearchRequest request,
-            Object[] actAndEvent, SearchResponse response, List<Object[]> possibleResults) {
+            Object[] actInfo, SearchResponse response, List<Object[]> possibleResults) {
         int index = name.toLowerCase().indexOf(request.getText().toLowerCase());
         if (index == 0) {
-            return addAction(actAndEvent, response);
+            return addAction(actInfo, response);
         } else if (index != -1) {
             // typed text is contained in action name, but not as prefix,
             // store such actions if there are not enough "prefix" actions
-            possibleResults.add(actAndEvent);
+            possibleResults.add(actInfo);
         }
         return true;
     }
@@ -199,8 +197,7 @@ public class ActionsSearchProvider implements SearchProvider {
                 return null;
             }
             
-            return new Object[] {action, createActionEvent(action),
-                                    sa, shortcuts};
+            return new Object[] {action, sa, shortcuts};
             
         } catch (Throwable thr) {
             if (thr instanceof ThreadDeath) {
@@ -216,7 +213,7 @@ public class ActionsSearchProvider implements SearchProvider {
     }
     
     
-    private ActionEvent createActionEvent (Action action) {
+    private static ActionEvent createActionEvent (Action action) {
         Object evSource = null;
         int evId = ActionEvent.ACTION_PERFORMED;
 
@@ -266,18 +263,16 @@ public class ActionsSearchProvider implements SearchProvider {
     
     private static class ActionResult implements Runnable {
         private Action command;
-        private ActionEvent event;
 
-        public ActionResult(Action command, ActionEvent event) {
+        public ActionResult(Action command) {
             this.command = command;
-            this.event = event;
         }
         
         public void run() {
             // be careful, some actions throws assertions etc, because they
             // are not written to be invoked directly
             try {
-                command.actionPerformed(event);
+                command.actionPerformed(createActionEvent(command));
             } catch (Throwable thr) {
                 if (thr instanceof ThreadDeath) {
                     throw (ThreadDeath)thr;

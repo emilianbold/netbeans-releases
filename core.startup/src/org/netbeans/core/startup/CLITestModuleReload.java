@@ -46,11 +46,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import org.netbeans.CLIHandler;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Handles the --reload command-line option.
  * @author Jesse Glick
  */
+@ServiceProvider(service=CLIHandler.class, /* XXX hot fix for #152992 */ position=0)
 public final class CLITestModuleReload extends CLIHandler {
 
     public CLITestModuleReload() {

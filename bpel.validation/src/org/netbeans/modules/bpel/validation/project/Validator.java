@@ -66,6 +66,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2007.05.03
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.compapp.projects.jbi.api.ProjectValidator.class)
 public class Validator implements ProjectValidator {
 
   // # 100036    

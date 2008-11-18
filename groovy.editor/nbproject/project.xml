@@ -339,15 +339,15 @@
                 <package>org.codehaus.groovy.ast.expr</package>
                 <package>org.codehaus.groovy.ast.stmt</package>
                 <package>org.codehaus.groovy.control</package>
-                <package>org.netbeans.modules.groovy.editor</package>
-                <package>org.netbeans.modules.groovy.editor.completion</package>
-                <package>org.netbeans.modules.groovy.editor.elements</package>
-                <package>org.netbeans.modules.groovy.editor.lexer</package>
-                <package>org.netbeans.modules.groovy.editor.parser</package>
+                <package>org.netbeans.modules.groovy.editor.api</package>
+                <package>org.netbeans.modules.groovy.editor.api.completion</package>
+                <package>org.netbeans.modules.groovy.editor.api.elements</package>
+                <package>org.netbeans.modules.groovy.editor.api.lexer</package>
+                <package>org.netbeans.modules.groovy.editor.api.parser</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/groovy-all.jar</runtime-relative-path>
-                <binary-origin>external/groovy-all-1.5.6.jar</binary-origin>
+                <binary-origin>external/groovy-all-1.5.7.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

@@ -40,7 +40,9 @@
  */
 package org.netbeans.modules.php.dbgp;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -67,6 +69,7 @@ import org.netbeans.modules.php.dbgp.packets.DbgpResponse;
 import org.netbeans.modules.php.dbgp.packets.InitMessage;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -164,10 +167,10 @@ public class DebugSession implements Runnable {
     public DbgpResponse sendSynchronCommand(DbgpCommand command) {
         Thread sessionThread = getSessionThread();
         if (sessionThread == null) return null;
-        if (sessionThread != Thread.currentThread()) {
-            throw new IllegalStateException("Method incorrect usage. " +
-                    "It should be called in handler thread only");  // NOI18N
-
+        Thread currentThread = Thread.currentThread();
+        if (sessionThread != currentThread) {
+            assert sessionThread != null;
+            printing146558(currentThread);
         }
         try {
             command.send(getSocket().getOutputStream());
@@ -181,6 +184,27 @@ public class DebugSession implements Runnable {
             log(e);
         }
         return null;
+    }
+
+    private void printing146558(Thread currentThread) {
+        Level level = Level.FINE;
+        assert (level = Level.WARNING) != null;
+        IllegalStateException illegalStateException = new IllegalStateException(
+                "Method incorrect usage. It should be called in handler thread only. " + //NOI18N
+                "Called from thread: " + currentThread.getName() // NOI18N
+                );
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            illegalStateException.printStackTrace(new PrintStream(bos));
+            Logger.getLogger(DebugSession.class.getName()).log(level,
+                    bos.toString());
+        } finally {
+            try {
+                bos.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     public String getTransactionId() {

@@ -278,6 +278,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
                 if(tname1 == null || tname2 == null) return 0;
                 return tname1.compareTo(tname2);
             }
+            @Override
             public boolean equals(Object o) {
                 return o.equals(this);
             }
@@ -299,14 +300,11 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
         return null;
     }
     
+    @Override
     protected SyntaxSupport createSyntaxSupport(Class syntaxSupportClass) {
-        //        if (syntaxSupportClass.isAssignableFrom(JspJavaSyntaxSupport.class)) {
-        //            return new JspJavaSyntaxSupport(getDocument(), this);
-        //        }
         SyntaxSupport support = super.createSyntaxSupport(syntaxSupportClass);
         if (support != null)
             return support;
-        //System.out.println("JspSyntaxSupport- createSyntaxSupport - " + NbEditorUtilities.getMimeType(getDocument()) );
         
         EditorKit kit;
         // try the content language support
@@ -348,6 +346,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
     /** This method decides what kind of completion (html, java, jsp-tag, ...) should be opened
      * or whether the completion window should be closed if it is opened.
      */
+    @Override
     public int checkCompletion(JTextComponent target, String typedText, boolean visible ) {
         
         char first = typedText.charAt(0); //get typed char
@@ -361,8 +360,6 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
         if (item == null) return COMPLETION_HIDE;
         
         TokenContextPath tcp = item.getTokenContextPath();
-        
-        //System.out.println("typed '" + first + "' ;token = " + item);
         
         if(tcp.contains(HTMLTokenContext.contextPath)) {
             //we are in content language
@@ -1141,6 +1138,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
         return rValue;
     }
     
+    @Override
     public String toString() {
         return printJspCompletionInfo();
     }
@@ -1224,34 +1222,24 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
             return null;
         
         // forward to the offset where our token definitely is
-        //System.out.println("looking for item at offset " + offset);
-        //System.out.println("backitem " + backItem);
         TokenItem item;
         while (true) {
             item = backItem.getNext();
             //System.out.println("looking at item " + item);
             if (item == null) {
                 item = backItem;
-                //System.out.println("break1");
                 break;
             }
             if (item.getOffset() > offset) {
                 item = backItem;
-                //System.out.println("break2");
                 break;
             }
             backItem = item;
-            //System.out.println("backitem2 " + backItem);
         }
         
-        //System.out.println("REAL Token at offset " + offset + " is " + item );
         TokenItem adjustedItem = (item.getOffset() == offset) ?
             item.getPrevious() : item;
-        //System.out.println("ADJUSTED Token at offset " + offset + " is " + adjustedItem );
         
-        TokenID id = (adjustedItem == null) ?
-            item.getTokenID() : adjustedItem.getTokenID();
-        //System.out.println("TokenID (adjusted) at offset " + offset + " is " + id );
         return adjustedItem;
     }
     
@@ -1274,7 +1262,6 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
                 id == JspDirectiveTokenContext.ERROR ||
                 id == JspDirectiveTokenContext.TEXT
                 ) {
-            //System.out.println("uninteresting JspTag token");
             return null;
         }
         
@@ -1294,7 +1281,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
             }
             
             if ((getTokenEnd(item) == offset) && isScriptEndToken(item)) {
-                TokenItem nextItem = item.getNext();
+                item.getNext();
                 if (!isTagDirToken(item))
                     return getContentChain(item, offset);
             }
@@ -1375,7 +1362,6 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
             while (true);
         }
         
-        //System.out.println("muddy waters");
         return null;
     }
     
@@ -1889,6 +1875,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
      * Customized finder recognizes also '<' and '>' as bracket chars. It is set to be used
      * in findMatchingBlock.
      */
+    @Override
     protected ExtSyntaxSupport.BracketFinder getMatchingBracketFinder(char bracketChar) {
         if (useCustomBracketFinder) {
             JspSyntaxSupport.BracketFinder bf = new JspSyntaxSupport.BracketFinder(bracketChar);
@@ -1908,6 +1895,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
      *  of the block in the document. Null is returned if there's
      *  no matching block.
      */
+    @Override
     public int[] findMatchingBlock(int offset, boolean simpleSearch)
             throws BadLocationException {
         
@@ -2149,6 +2137,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
      * searching for matching bracket. It usually includes comments
      * and character and string constants. Returns empty array by default.
      */
+    @Override
     protected TokenID[] getBracketSkipTokens() {
         return JSP_BRACKET_SKIP_TOKENS;
     }
@@ -2158,7 +2147,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
         if(ts == null) {
             //HTML language is not top level one
             ts = hi.tokenSequence();
-            int diff = ts.move(offset);
+            ts.move(offset);
             if(!ts.moveNext() && !ts.movePrevious()) {
                 return null; //no token found
             } else {
@@ -2182,6 +2171,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
          * the bracket character. If so assign the matchChar
          * and moveCount variables.
          */
+        @Override
         protected boolean updateStatus() {
             if (super.updateStatus())
                 return true;

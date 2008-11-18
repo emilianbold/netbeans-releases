@@ -58,6 +58,7 @@ import java.util.ArrayList;
 /**
  * @author David Kaspar
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.PresenterDeserializer.class)
 public class MidpSetterPresenterDeserializer extends PresenterDeserializer {
 
     public static final String SETTER_NODE = "MidpSetter"; // NOI18N

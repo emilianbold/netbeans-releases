@@ -63,13 +63,13 @@ import org.openide.util.RequestProcessor;
  * @author Gordon Prieur (copied from Jan Jancura's and Martin Entlicher's JPDA implementation)
  */
 public class CallStackTreeModel implements TreeModel {
-    private GdbDebugger     debugger;
-    private final Collection listeners = new HashSet();
+    private final GdbDebugger     debugger;
+    private final Collection<ModelListener> listeners = new HashSet<ModelListener>();
     private Listener            listener;
     
    
     public CallStackTreeModel(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
     /** 
@@ -78,8 +78,7 @@ public class CallStackTreeModel implements TreeModel {
      */
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent.equals(ROOT)) {
-            CallStackFrame[] sfs = debugger.getCallStackFrames(from, to);
-	    return sfs;
+	    return getCallStackFrames(from, to);
         } else {
 	    throw new UnknownTypeException(parent);
 	}
@@ -140,7 +139,7 @@ public class CallStackTreeModel implements TreeModel {
     public void removeModelListener(ModelListener l) {
         synchronized (listeners) {
             listeners.remove (l);
-            if (listeners.size() == 0) {
+            if (listeners.isEmpty()) {
                 listener.destroy();
                 listener = null;
             }
@@ -157,6 +156,27 @@ public class CallStackTreeModel implements TreeModel {
             ((ModelListener) ls[i]).modelChanged(ev);
         }
     }
+
+    /**
+     * Returns call stack for this debugger.
+     *
+     * @param from Starting frame
+     * @param to Ending frame (one beyond what we want)
+     * @return call stack
+     */
+    private CallStackFrame[] getCallStackFrames(int from, int to) {
+        int cnt = to - from;
+
+        if ((from + cnt) <= debugger.getStackDepth()) {
+            CallStackFrame[] frames = new CallStackFrame[cnt];
+            for (int i = 0; i < cnt; i++) {
+                frames[i] = debugger.getCallStack().get(from + i);
+            }
+            return frames;
+        } else {
+            return new CallStackFrame[0];
+        }
+    }
     
     
     /**
@@ -164,17 +184,17 @@ public class CallStackTreeModel implements TreeModel {
      */
     private static class Listener implements PropertyChangeListener {
         
-        private GdbDebugger debugger;
-        private WeakReference model;
+        private final GdbDebugger debugger;
+        private final WeakReference<CallStackTreeModel> model;
         
         public Listener(CallStackTreeModel tm, GdbDebugger debugger) {
             this.debugger = debugger;
-            model = new WeakReference(tm);
+            model = new WeakReference<CallStackTreeModel>(tm);
             debugger.addPropertyChangeListener(this);
         }
         
         private CallStackTreeModel getModel() {
-            CallStackTreeModel tm = (CallStackTreeModel) model.get();
+            CallStackTreeModel tm = model.get();
             if (tm == null) {
                 destroy();
             }
@@ -197,7 +217,7 @@ public class CallStackTreeModel implements TreeModel {
         // check also whether the current thread was resumed/suspended
         // the call stack needs to be refreshed after invokeMethod() which resumes the thread
         public synchronized void propertyChange(PropertyChangeEvent e) {
-            if (e.getPropertyName().equals(GdbDebugger.PROP_STATE) && debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+            if (e.getPropertyName().equals(GdbDebugger.PROP_STATE) && debugger.getState() == GdbDebugger.State.STOPPED) {
                 synchronized (this) {
                     if (task == null) {
                         task = RequestProcessor.getDefault().create(new Refresher());
@@ -209,7 +229,7 @@ public class CallStackTreeModel implements TreeModel {
         
         private class Refresher extends Object implements Runnable {
             public void run() {
-                if (debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+                if (debugger.getState() == GdbDebugger.State.STOPPED) {
                     CallStackTreeModel tm = getModel();
                     if (tm != null) {
                         tm.fireTreeChanged();

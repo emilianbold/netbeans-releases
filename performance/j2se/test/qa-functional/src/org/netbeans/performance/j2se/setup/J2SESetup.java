@@ -41,11 +41,9 @@
 package org.netbeans.performance.j2se.setup;
 
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.jellytools.JellyTestCase;
-
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import org.openide.util.Exceptions;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
@@ -55,85 +53,50 @@ import java.io.IOException;
  */
 public class J2SESetup extends JellyTestCase {
 
-	private String workdir;
-
-        public static final String suiteName="UI Responsiveness J2SE Setup";
-        
-
     public J2SESetup(java.lang.String testName) {
         super(testName);
-        workdir = System.getProperty("nbjunit.workdir");
-        try {
-            workdir = new File(workdir + "/../../../../../../../nbextra/data/").getCanonicalPath();
-        } catch (IOException ex) {
-            System.err.println("Exception: "+ex);
-        }
-
     }
 
     public void testCloseWelcome() {
         CommonUtilities.closeWelcome();
     }
 
-    public void testCloseAllDocuments() {
-        CommonUtilities.closeAllDocuments();
-    }
-
     public void testCloseMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();
     }
-    
-    public void testAddAppServer() {
-        CommonUtilities.addApplicationServer();
-    }
 
-   public void testAddTomcatServer() {
+    public void testAddTomcatServer() {
         CommonUtilities.addTomcatServer();
     }
 
-    public void testOpenProject() {
-
-        String projectsDir = workdir + File.separator+ "jEdit41";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
-    }
-
-   
     public void testOpenDataProject() {
 
-        String projectsDir = workdir + File.separator+"PerformanceTestData";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
-    }
-
-    public void testOpenWebProject() {
-      
-        String projectsDir = workdir +File.separator+ "PerformanceTestWebApplication";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
+        try {
+            this.openDataProjects("PerformanceTestData");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public void testOpenFoldersProject() {
 
-        String projectsDir = workdir + File.separator+"PerformanceTestFoldersData";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);        
-        CommonUtilities.waitProjectTasksFinished();
+        try {
+            this.openDataProjects("PerformanceTestFoldersData");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public void testOpenNBProject() {
 
-        String projectsDir = workdir + File.separator+"SystemProperties";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);        
-        CommonUtilities.waitProjectTasksFinished();
+        try {
+            this.openDataProjects("SystemProperties");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
-    
+
     public void testCloseTaskWindow() {
         CommonUtilities.closeTaskWindow();
-    }    
-  
+    }
 }

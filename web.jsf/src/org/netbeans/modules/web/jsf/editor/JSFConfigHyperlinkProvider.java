@@ -50,9 +50,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
@@ -217,7 +219,17 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
                             Elements elements = cc.getElements();
                             TypeElement element = elements.getTypeElement(fqn.trim());
                             if (element != null) {
-                                if (!UiUtils.open(cpi, element)){
+                                ElementHandle el = ElementHandle.create(element);
+                                FileObject fo = SourceUtils.getFile(el, cpi);
+
+                                // Not a regular Java data object (may be a multi-view data object), open it first
+                                DataObject od = DataObject.find(fo);
+                                if (!"org.netbeans.modules.java.JavaDataObject".equals(od.getClass().getName())) { // NOI18N
+                                    OpenCookie oc = od.getCookie(org.openide.cookies.OpenCookie.class);
+                                    oc.open();
+                                }
+
+                                if (!ElementOpen.open(fo, el)) {
                                     String key = "goto_source_not_found"; // NOI18N
                                     String msg = NbBundle.getBundle(JSFConfigHyperlinkProvider.class).getString(key);
                                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { fqn } ));

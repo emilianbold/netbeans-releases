@@ -51,6 +51,7 @@
 package org.netbeans.test.cvsmodule;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import javax.swing.table.TableModel;
 import junit.framework.Test;
@@ -149,7 +150,12 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         tmp.deleteOnExit();
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
         cvss.stop();
-        in.close();
+        try {
+            Thread.sleep(1000);
+            in.close();
+        } catch (IOException e) {
+            //
+        }
         moduleCheck.setModule("ForImport");
         moduleCheck.setLocalFolder(work.getAbsolutePath()); // NOI18N
         //Pseudo CVS server for finishing check out wizard
@@ -163,7 +169,12 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Checking out finished");
         cvss.stop();
-        in.close();
+        try {
+            Thread.sleep(1000);
+            in.close();
+        } catch (IOException e) {
+            //
+        }
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();

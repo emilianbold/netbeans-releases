@@ -74,6 +74,15 @@ made subject to such option by the copyright holder.
                 <attr name="keywordsCategory" stringvalue="Editor/Formating"/>
                 <attr name="position" intvalue="200"/>
             </file>
+            <file name="CodeCompletion.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
+                <attr name="controller" newvalue="org.netbeans.modules.options.editor.completion.CodeCompletionOptionsPanelController"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.completion.Bundle#CTL_CodeCompletion_DisplayName"/>
+                <attr name="toolTip" bundlevalue="org.netbeans.modules.options.editor.completion.Bundle#CTL_CodeCompletion_ToolTip"/>
+                <attr name="keywords" bundlevalue="org.netbeans.modules.options.editor.completion.Bundle#KW_CodeCompletion"/>
+                <attr name="keywordsCategory" stringvalue="Editor/CodeCompletion"/>
+                <attr name="position" intvalue="250"/>
+            </file>
             <file name="Hints.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
                 <attr name="controller" methodvalue="org.netbeans.modules.options.editor.FolderBasedController.create"/>

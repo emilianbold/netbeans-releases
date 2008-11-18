@@ -50,6 +50,7 @@ import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditorFactory;
  *
  * @author Jim Davidson
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.db.spi.sql.visualeditor.VisualSQLEditorProvider.class)
 public class VisualSQLEditorProviderImpl implements VisualSQLEditorProvider {
     
     public void openVisualSQLEditor(DatabaseConnection dbconn, String sql) {

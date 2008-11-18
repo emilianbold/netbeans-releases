@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.schema.completion.util.CatalogModelProvider.class)
 public class TestCatalogModelProvider extends CatalogModelProvider {
     
     private TestCatalogModel catalogModel;
