@@ -70,6 +70,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 import org.openide.xml.EntityCatalog;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -91,8 +92,7 @@ public class LibrariesStorageTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(new Object[] {
-            new TestEntityCatalog()});
+        MockLookup.setInstances(new TestEntityCatalog());
         this.registerLibraryTypeProvider();
         this.storageFolder = TestUtil.makeScratchDir(this);
         this.createLibraryDefinition(this.storageFolder,"Library1");

@@ -231,5 +231,13 @@
             </file>
         </folder>
     </folder>
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="ruby-mime-resolver.xml" url="ruby-mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.Bundle"/>
+                <attr name="position" intvalue="95000"/>
+            </file>
+        </folder>
+    </folder>
     
 </filesystem>

@@ -272,7 +272,7 @@ public final class FolderList extends javax.swing.JPanel {
         Project p;
         if ((p = FileOwnerQuery.getOwner(file.toURI()))!=null 
             && !file.getAbsolutePath().startsWith(projectFolder.getAbsolutePath()+File.separatorChar)) {
-            final Sources sources = (Sources) p.getLookup().lookup(Sources.class);
+            final Sources sources = p.getLookup().lookup(Sources.class);
             if (sources == null) {
                 return false;
             }

@@ -89,6 +89,7 @@ public class ProjectSupport {
     }
     
     /** Waits until metadata scanning is finished. */
+    @SuppressWarnings("deprecation")
     public static void waitScanFinished() {
         try {
             SourceUtils.waitScanFinished();

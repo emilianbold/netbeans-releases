@@ -41,25 +41,24 @@
 
 package org.netbeans.api.java.platform;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author Tomas Zezula, Jesse Glick
@@ -72,11 +71,11 @@ public class JavaPlatformManagerTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(Lookups.fixed(new Object[] {new TestJavaPlatformProvider()}));
+        MockLookup.setInstances(new TestJavaPlatformProvider());
     }
 
     public void testGetDefaultPlatform() {
-        TestUtil.setLookup(new Object[0]); // make sure we are using pure defaults
+        MockLookup.setInstances(); // make sure we are using pure defaults
         JavaPlatformManager manager = JavaPlatformManager.getDefault ();
         assertNotNull (manager);
         JavaPlatform p = manager.getDefaultPlatform();
@@ -275,12 +274,12 @@ public class JavaPlatformManagerTest extends NbTestCase {
             return Collections.emptyList();
         }
 
-        public Map getProperties() {
-            return Collections.EMPTY_MAP;
+        public Map<String,String> getProperties() {
+            return Collections.emptyMap();
         }
 
         public ClassPath getSourceFolders() {
-            return ClassPathSupport.createClassPath(Collections.EMPTY_LIST);
+            return ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList());
         }
 
         public Specification getSpecification() {
@@ -303,26 +302,26 @@ public class JavaPlatformManagerTest extends NbTestCase {
 
     public static class TestJavaPlatformProvider implements JavaPlatformProvider {
 
-        private ArrayList listeners = new ArrayList ();
-        private List platforms = new ArrayList ();
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private List<JavaPlatform> platforms = new ArrayList<JavaPlatform>();
 
 
         static TestJavaPlatformProvider getDefault () {
-            return (TestJavaPlatformProvider) Lookup.getDefault ().lookup (TestJavaPlatformProvider.class);
+            return Lookup.getDefault().lookup(TestJavaPlatformProvider.class);
         }
 
         public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
             assertNotNull (listener);
-            this.listeners.add (listener);
+            pcs.addPropertyChangeListener(listener);
         }
 
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             assertNotNull (listener);
-            this.listeners.remove (listener);
+            pcs.removePropertyChangeListener(listener);
         }
 
         public JavaPlatform[] getInstalledPlatforms() {
-            return (JavaPlatform[]) this.platforms.toArray (new JavaPlatform[platforms.size()]);
+            return this.platforms.toArray(new JavaPlatform[platforms.size()]);
         }
 
         void addPlatform (JavaPlatform platform) {
@@ -336,19 +335,12 @@ public class JavaPlatformManagerTest extends NbTestCase {
         }
 
         private void firePropertyChange () {
-            Iterator it;
-            synchronized (this) {
-                it = ((Collection)this.listeners.clone()).iterator();
-            }
-            PropertyChangeEvent event = new PropertyChangeEvent (this, PROP_INSTALLED_PLATFORMS, null, null);
-            while (it.hasNext()) {
-                ((PropertyChangeListener)it.next()).propertyChange(event);
-            }
+            pcs.firePropertyChange(PROP_INSTALLED_PLATFORMS, null, null);
         }
 
         public JavaPlatform getDefaultPlatform() {
             if (platforms.size()>0)
-                return (JavaPlatform) platforms.get(0);
+                return platforms.get(0);
             else
                 return null;
         }

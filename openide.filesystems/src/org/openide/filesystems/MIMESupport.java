@@ -662,21 +662,21 @@ final class MIMESupport extends Object {
 
        private boolean ensureBufferLength(int newLen) throws IOException {
            if (!eof && newLen > len) {
-                byte[] tmpBuffer = new byte[len + newLen];
+                byte[] tmpBuffer = new byte[newLen];
                 if (len > 0) {
                     System.arraycopy(buffer, 0, tmpBuffer, 0, len);
                 }
-                int readLen = inputStream.read(tmpBuffer, len, newLen);
+                int readLen = inputStream.read(tmpBuffer, len, newLen - len);
                 if ((readLen > 0)) {
                     buffer = tmpBuffer;
-                    len += readLen;                                    
+                    len += readLen;
                 } else {
                     eof = true;
                 }
            }
            return len >= newLen;
         }
-        
+
         @Override
         public int read(byte[] b, int off, int blen) throws IOException {
             ensureBufferLength(pos + blen);
@@ -688,7 +688,7 @@ final class MIMESupport extends Object {
             }
             return retval;
         }
-        
+
 
         public int read() throws IOException {
             int retval = -1;
@@ -699,7 +699,7 @@ final class MIMESupport extends Object {
             }
             return retval;
         }
-        
+
         void cacheToStart() {
             pos = 0;
             eof = false;

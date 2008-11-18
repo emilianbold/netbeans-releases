@@ -80,7 +80,7 @@ import org.netbeans.modules.java.j2seplatform.wizard.J2SEWizardIterator;
  *
  * @author Svata Dedic
  */
-public class PlatformConvertor implements Environment.Provider, InstanceCookie.Of, PropertyChangeListener, Runnable, InstanceContent.Convertor {
+public class PlatformConvertor implements Environment.Provider, InstanceCookie.Of, PropertyChangeListener, Runnable, InstanceContent.Convertor<Class<Node>,Node> {
 
     private static final String CLASSIC = "classic";        //NOI18N
     private static final String MODERN = "modern";          //NOI18N
@@ -245,32 +245,30 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         }
     }
     
-    public Object convert(Object obj) {
-        if (obj == Node.class) {
-            try {
-                J2SEPlatformImpl p = (J2SEPlatformImpl) instanceCreate();
-                return new J2SEPlatformNode (p,this.holder);
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            } catch (ClassNotFoundException ex) {
-                ErrorManager.getDefault().notify(ex);
-            } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
+    public Node convert(Class<Node> key) {
+        try {
+            J2SEPlatformImpl p = (J2SEPlatformImpl) instanceCreate();
+            return new J2SEPlatformNode (p,this.holder);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        } catch (ClassNotFoundException ex) {
+            ErrorManager.getDefault().notify(ex);
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
         }
         return null;
     }
     
-    public String displayName(Object obj) {
-        return ((Class)obj).getName();
+    public String displayName(Class<Node> key) {
+        return key.getName();
     }
     
-    public String id(Object obj) {
-        return obj.toString();
+    public String id(Class<Node> key) {
+        return key.getName();
     }
     
-    public Class type(Object obj) {
-        return (Class)obj;
+    public Class<Node> type(Class<Node> key) {
+        return key;
     }
     
     public static DataObject create(final JavaPlatform plat, final DataFolder f, final String idName) throws IOException {
@@ -543,7 +541,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 assert this.instance instanceof DefaultPlatformImpl;
                 DefaultPlatformImpl dp = (DefaultPlatformImpl) this.instance;
                 List<ClassPath.Entry> sfEntries = dp.getSourceFolders().entries();
-                List<URL> defaultSf = DefaultPlatformImpl.getSources (FileUtil.normalizeFile(new File((String)dp.getSystemProperties().get("jdk.home"))));   //NOI18N
+                List<URL> defaultSf = DefaultPlatformImpl.getSources(FileUtil.normalizeFile(new File(dp.getSystemProperties().get("jdk.home")))); // NOI18N
                 if (defaultSf == null || sfEntries.size() != defaultSf.size()) {
                     return true;
                 }
@@ -566,7 +564,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 assert this.instance instanceof DefaultPlatformImpl;
                 DefaultPlatformImpl dp = (DefaultPlatformImpl) this.instance;
                 List jdf = dp.getJavadocFolders();
-                List defaultJdf = DefaultPlatformImpl.getJavadoc (FileUtil.normalizeFile(new File((String)dp.getSystemProperties().get("jdk.home"))));  //NOI18N
+                List defaultJdf = DefaultPlatformImpl.getJavadoc(FileUtil.normalizeFile(new File(dp.getSystemProperties().get("jdk.home")))); // NOI18N
                 return defaultJdf == null || !jdf.equals (defaultJdf);
             }
             return true;

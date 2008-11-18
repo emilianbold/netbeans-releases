@@ -1701,6 +1701,7 @@ org.netbeans.modules.debugger.jpda.ui.EditorContextBridge
 org.netbeans.modules.debugger.jpda.ui.JPDAAttachType
 org.netbeans.modules.debugger.jpda.ui.actions.EvaluateAction
 org.netbeans.modules.debugger.jpda.ui.actions.EvaluateAction$EnableListener
+org.netbeans.modules.debugger.jpda.ui.actions.SetCurrentThreadFromHistoryAction
 org.netbeans.modules.debugger.jpda.ui.actions.ToggleBreakpointActionProvider
 org.netbeans.modules.debugger.jpda.ui.actions.ToggleMethodFieldBreakpointAction
 org.netbeans.modules.debugger.jpda.ui.debugging.ThreadsHistoryAction
@@ -2031,6 +2032,7 @@ org.netbeans.modules.java.j2seproject.J2SEPersistenceProvider
 org.netbeans.modules.java.j2seproject.J2SEPersistenceProvider$ScopeImpl
 org.netbeans.modules.java.j2seproject.J2SEProject
 org.netbeans.modules.java.j2seproject.J2SEProject$AntArtifactProviderImpl
+org.netbeans.modules.java.j2seproject.J2SEProject$CoSAwareFileBuiltQueryImpl
 org.netbeans.modules.java.j2seproject.J2SEProject$ConfigPropertyProvider
 org.netbeans.modules.java.j2seproject.J2SEProject$Info
 org.netbeans.modules.java.j2seproject.J2SEProject$J2SEExtenderImplementation
@@ -2435,6 +2437,7 @@ org.netbeans.modules.project.ui.PhysicalView$PathFinder
 org.netbeans.modules.project.ui.PhysicalView$VisibilityQueryDataFilter
 org.netbeans.modules.project.ui.ProjectTab
 org.netbeans.modules.project.ui.ProjectTab$DelegatingAction
+org.netbeans.modules.project.ui.ProjectTab$LabelPopupDisplayer
 org.netbeans.modules.project.ui.ProjectTab$ProjectTreeView
 org.netbeans.modules.project.ui.ProjectUiModule
 org.netbeans.modules.project.ui.ProjectsRootNode
