@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -620,9 +621,9 @@ public class MakefileWizard implements TemplateWizard.Iterator {
          * Remove any unused targets. A target is unused if its index > 0 and
          * the first target is a simple target.
          */
-        ArrayList tlist = getMakefileData().getTargetList();
+        List<TargetData> tlist = getMakefileData().getTargetList();
         if (tlist.size() > 1) {
-            TargetData target = (TargetData) tlist.get(1);
+            TargetData target = tlist.get(1);
 
             if (!target.isComplex()) {
                 for (int i = tlist.size() - 1; i > 0; i--) {
@@ -898,9 +899,9 @@ public class MakefileWizard implements TemplateWizard.Iterator {
                 // Add known targets to node
                 // Add "all", "clean", and user defined targets...
                 mes.addMakeTargets("all");	// NOI18N
-                ArrayList tlist = getMakefileData().getTargetList();
+                List<TargetData> tlist = getMakefileData().getTargetList();
                 for (int i = 0; i < tlist.size(); i++) {
-                    TargetData t = (TargetData) tlist.get(i);
+                    TargetData t = tlist.get(i);
                     switch (t.getTargetType()) {
                         case TargetData.SIMPLE_EXECUTABLE:
                         case TargetData.SIMPLE_ARCHIVE:
@@ -944,7 +945,7 @@ public class MakefileWizard implements TemplateWizard.Iterator {
                 ArrayList<String> targets = new ArrayList<String>();
                 ArrayList<String> executables = new ArrayList<String>();
                 for (int i = 0; i < tlist.size(); i++) {
-                    TargetData t = (TargetData) tlist.get(i);
+                    TargetData t = tlist.get(i);
                     String outputDirectory = t.getOutputDirectory();
                     if (outputDirectory == null || outputDirectory.length() == 0) {
                         outputDirectory = "."; // NOI18N
@@ -981,8 +982,8 @@ public class MakefileWizard implements TemplateWizard.Iterator {
                         fullMakefilePath,
                         getMakefileData().getBaseDirectory(),
                         MakeSettings.getDefault().getDefaultMakeCommand(),
-                            targets.toArray(new String[targets.size()]),
-                            executables.toArray(new String[executables.size()]));
+                        targets.toArray(new String[targets.size()]),
+                        executables.toArray(new String[executables.size()]));
                 fireMakefileWizardEvent(wizardEvent);
             }
         }

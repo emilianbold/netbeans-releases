@@ -1,4 +1,4 @@
-#! /bin/%<%EXTENSION%>%
+#!/bin/%<%EXTENSION%>%
 # 
 # File:   %<%NAME%>%.%<%EXTENSION%>%
 # Author: %<%USER%>%

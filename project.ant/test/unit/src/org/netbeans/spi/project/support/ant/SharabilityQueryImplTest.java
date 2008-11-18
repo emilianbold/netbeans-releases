@@ -49,6 +49,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  * Test functionality of SharabilityQueryImpl.
@@ -68,9 +69,7 @@ public class SharabilityQueryImplTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        TestUtil.setLookup(new Object[] {
-            AntBasedTestUtil.testAntBasedProjectType(),
-        });
+        MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType());
         FileObject scratch = TestUtil.makeScratchDir(this);
         scratchF = FileUtil.toFile(scratch);
         FileObject projdir = scratch.createFolder("projdir");

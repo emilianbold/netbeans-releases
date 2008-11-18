@@ -218,13 +218,19 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
      * node is always teh faces config file.
      */
     public void setDefaultActivatedNode() {
+        FileObject facesConfigFO = context.getFacesConfigFile();
+        if (!facesConfigFO.isValid()) {
+            // XXX #148551 File is invalid, probably deleted already.
+            setActivatedNodes(new Node[0]);
+            return;
+        }
         try {
-            Node node = new DefaultDataNode(DataObject.find(context.getFacesConfigFile()));
+            Node node = new DefaultDataNode(DataObject.find(facesConfigFO));
             setActivatedNodes(new Node[]{node});
         } catch (DataObjectNotFoundException donfe) {
             Exceptions.printStackTrace(donfe);
             /* Trying to track down #112243 */
-            LOG.fine("WARNING: Unable to find the following DataObject: " + context.getFacesConfigFile());
+            LOG.fine("WARNING: Unable to find the following DataObject: " + facesConfigFO);
             setActivatedNodes(new Node[]{});
         }
     }

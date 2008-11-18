@@ -80,6 +80,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.NbPreferences;
 
 /**
@@ -187,7 +188,7 @@ public final class SharableLibrariesUtils {
     private static void execute(final WizardDescriptor wizardDescriptor, final AntProjectHelper helper, final ProgressHandle handle) {
         
         final String loc = (String) wizardDescriptor.getProperty(PROP_LOCATION);
-        final List<Action> actions = (List<Action>) wizardDescriptor.getProperty(PROP_ACTIONS);
+        final List<Action> actions = NbCollections.checkedListByCopy((List) wizardDescriptor.getProperty(PROP_ACTIONS), Action.class, true);
         assert loc != null;
         handle.start(Math.max(1, actions.size() + 1));
         try {
@@ -202,12 +203,10 @@ public final class SharableLibrariesUtils {
             }
 
             try {
-                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-
-                    public Object run() throws IOException {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public Void run() throws IOException {
                         try {
                             helper.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-
                                 public void run() throws IOException {
                                     helper.setLibrariesLocation(loc);
                                     int count = 1;
@@ -241,6 +240,7 @@ public final class SharableLibrariesUtils {
         private WizardDescriptor desc;
 
         private CopyIterator(AntProjectHelper helper) {
+            super(getPanels());
             this.helper = helper;
             
         }
@@ -262,24 +262,19 @@ public final class SharableLibrariesUtils {
             this.desc = wizard;
         }
         
-        public WizardDescriptor.Panel<WizardDescriptor>[] initializePanels() {
-            return getPanels();
-        }
-        
     }
 
     /**
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
      */
-    private static WizardDescriptor.Panel[] getPanels() {
-        WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[]{
-            new MakeSharableWizardPanel1(),
-            new MakeSharableWizardPanel2()
-        };
-        String[] steps = new String[panels.length];
-        for (int i = 0; i < panels.length; i++) {
-            Component c = panels[i].getComponent();
+    private static List<WizardDescriptor.Panel<WizardDescriptor>> getPanels() {
+        List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+        panels.add(new MakeSharableWizardPanel1());
+        panels.add(new MakeSharableWizardPanel2());
+        String[] steps = new String[panels.size()];
+        for (int i = 0; i < panels.size(); i++) {
+            Component c = panels.get(i).getComponent();
             // Default step name to component name of panel. Mainly useful
             // for getting the name of the target chooser to appear in the
             // list of steps.
@@ -287,7 +282,7 @@ public final class SharableLibrariesUtils {
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Sets step number of a component
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
                 // Sets steps names for a panel
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                 // Turn on subtitle creation on each step

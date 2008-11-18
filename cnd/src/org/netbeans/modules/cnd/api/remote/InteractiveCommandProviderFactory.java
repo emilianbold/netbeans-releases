@@ -90,8 +90,8 @@ public abstract class InteractiveCommandProviderFactory {
         public boolean run(List<String> commandAndArgs, String workingDirectory, Map<String, String> env) {
             ProcessBuilder pb = new ProcessBuilder(commandAndArgs);
             Map<String, String> pbenv = pb.environment();
-            for (String key : env.keySet()) {
-                pbenv.put(key, env.get(key));
+            for (Map.Entry<String, String> entry : env.entrySet()) {
+                pbenv.put(entry.getKey(), entry.getValue());
             }
             pb.directory(new File(workingDirectory));
             pb.redirectErrorStream(true);
