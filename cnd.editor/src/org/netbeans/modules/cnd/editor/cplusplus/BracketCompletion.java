@@ -715,7 +715,7 @@ public class BracketCompletion {
      */
     static boolean posWithinQuotes(BaseDocument doc, int dotPos, char quote, CppTokenId[] tokenIDs) {
         TokenSequence<CppTokenId> cppTS = cppTokenSequence(doc, dotPos, true);
-        if (matchIDs(cppTS.token().id(), tokenIDs)) {
+        if (cppTS != null && matchIDs(cppTS.token().id(), tokenIDs)) {
             return (dotPos - cppTS.offset() == 1 || DocumentUtilities.getText(doc).charAt(dotPos - 1) != quote);
         }
         return false;
