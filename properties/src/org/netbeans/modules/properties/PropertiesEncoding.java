@@ -360,8 +360,6 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             final int oldPos = outBufPos;
             final int cInt = (int) c;
             
-            int index;
-            
             if ((c == '\r') || (c == '\n') || (c == '\t') || (c == '\f')) {
                 /*
                  * Do not translate Space, Tab and FF characters
