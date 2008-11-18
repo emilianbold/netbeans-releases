@@ -60,10 +60,11 @@ public class MeasureJ2EEDialogsTest {
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Dialogs suite");
         System.setProperty("suitename", MeasureJ2EEDialogsTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness J2EE Dialogs suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(InvokeEJBAction.class)
-        .addTest(InvokeWSAction.class)
-        .addTest(SelectJ2EEModuleDialog.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(InvokeEJBActionTest.class)
+        .addTest(InvokeWSActionTest.class)
+        .addTest(SelectJ2EEModuleDialogTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;

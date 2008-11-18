@@ -792,6 +792,9 @@ protected static int repeat = 4
 
         String suite_fqn="org.netbeans.performance.unknown";
         suite_fqn=System.getProperty("suitename");
+        suiteName="Unknown Test Suite";
+        suiteName=System.getProperty("suite");
+
 
         if (numberOfFails > NUMBER_OF_FAILS_THRESHOLD || firstTimeUsageFail) {
             CommonUtilities.xmlTestResults(this.getWorkDirPath(), suiteName, performanceDataName, this.getClass().getCanonicalName(), suite_fqn, "ms", "failed", expectedTime ,measuredValues, repeat);

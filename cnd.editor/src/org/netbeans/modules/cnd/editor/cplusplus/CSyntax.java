@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 /** Syntax analyzes forCC source files */
 @Deprecated
+@SuppressWarnings("deprecation")
 public class CSyntax extends CCSyntax {
 
     /** Creates a new instance of CSyntax */

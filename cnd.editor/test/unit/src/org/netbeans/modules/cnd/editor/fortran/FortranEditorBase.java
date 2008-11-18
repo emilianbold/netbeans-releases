@@ -43,16 +43,16 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import org.netbeans.modules.cnd.editor.fortran.indent.FortranHotCharIndent;
 import org.netbeans.modules.cnd.editor.fortran.indent.FortranIndentTask;
-import org.netbeans.modules.cnd.editor.fortran.indent.FortranReformatter;
+import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
-import org.netbeans.modules.cnd.test.FormatterBaseDocumentUnitTestCase;
+import org.netbeans.modules.cnd.test.base.BaseDocumentUnitTestCase;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author Alexander Simon
  */
-public class FortranEditorBase extends FormatterBaseDocumentUnitTestCase {
+public class FortranEditorBase extends BaseDocumentUnitTestCase {
 
     public FortranEditorBase(String testMethodName) {
         super(testMethodName);

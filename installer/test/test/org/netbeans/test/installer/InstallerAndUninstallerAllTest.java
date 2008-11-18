@@ -24,32 +24,18 @@
 package org.netbeans.test.installer;
 
 import java.util.logging.Logger;
-import junit.framework.TestCase;
 
 /**
  *
  * @author Mikhail Vaysman
  */
-public class InstallerAndUninstallerAllTest extends TestCase {
-
-    public InstallerAndUninstallerAllTest() {
-        super("Installer test");
-    }
-
-//    public static Test suite() {
-//        TestSuite suite = new NbTestSuite(InstallerAndUninstallerAllTest.class);
-//       TestSuite suite = new TestSuite("Installer All Packs bundle test");
-//
-//        suite.addTest(TestSuite.create(InstallerAndUninstallerAllTest.class, ".*", ".*"));
-//
-//        return suite;
-//    }
+public class InstallerAndUninstallerAllTest{
 
     @org.junit.Test
     public void testInstaller() {
         TestData data = new TestData(Logger.getLogger("global"));
 
-        Utils.phaseOne(this, data, "all");
+        Utils.phaseOne(data, "all");
 
         //select apache
         Utils.stepChooseComponet("Apache Tomcat");

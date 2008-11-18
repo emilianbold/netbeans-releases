@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
@@ -264,7 +263,7 @@ public final class PlatformInfo {
         if (RemoteUtils.isLocalhost(hkey)) {
             return file.listFiles();
         } else {
-            CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
+            CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
             if (provider.run(hkey, "ls -A1", null) == 0) { //NOI18N
                 String files = provider.getOutput();
                 if (files != null) {
@@ -293,7 +292,7 @@ public final class PlatformInfo {
         if (RemoteUtils.isLocalhost(hkey)) {
             return file.isDirectory();
         } else {
-            CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
+            CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
             return provider.run(hkey, "test -d \"" + file.getPath() + "\"", null) == 0; //NOI18N
         }
     }
@@ -303,7 +302,7 @@ public final class PlatformInfo {
         if (RemoteUtils.isLocalhost(hkey)) {
             return file.isFile();
         } else {
-            CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
+            CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
             return provider.run(hkey, "test -f \"" + file.getPath() + "\"", null) == 0; //NOI18N
         }
     }
@@ -313,7 +312,7 @@ public final class PlatformInfo {
         if (RemoteUtils.isLocalhost(hkey)) {
             return file.canRead();
         } else {
-            CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
+            CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
             return provider.run(hkey, "test -r \"" + file.getPath() + "\"", null) == 0; //NOI18N
         }
 

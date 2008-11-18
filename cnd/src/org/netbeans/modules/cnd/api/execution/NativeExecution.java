@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.api.execution;
 
 import java.io.File;
@@ -56,11 +55,11 @@ import org.openide.util.Lookup;
  * @author gordonp
  */
 public abstract class NativeExecution extends ExecutionSupport implements NativeExecutionProvider {
+
     protected static final Logger log = Logger.getLogger("cnd.execution.logger"); // NOI18N
     private static NativeExecution instance;
-    
     protected String host;
-    
+
     /**
      * Since NativeExecution is abstract, we can't instantiate it. So we instantiate
      * a SimpleNativeExecution instead, who's whole purpose is to provide the implementation
@@ -76,8 +75,7 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
 
     public NativeExecution getNativeExecution() {
         if (host != null && !host.equals(CompilerSetManager.LOCALHOST)) {
-            NativeExecutionProvider provider = (NativeExecutionProvider)
-                Lookup.getDefault().lookup(NativeExecutionProvider.class);
+            NativeExecutionProvider provider = Lookup.getDefault().lookup(NativeExecutionProvider.class);
 
             if (provider != null) {
                 provider.setHost(host);
@@ -86,15 +84,15 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
         }
         return new LocalNativeExecution();
     }
-    
+
     protected NativeExecution() {
         super(null);
     }
-    
+
     public void setHost(String host) {
         this.host = host;
     }
-    
+
     /**
      * Execute an executable, a makefile, or a script
      * @param runDir absolute path to directory from where the command should be executed
@@ -114,7 +112,7 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
             PrintWriter out,
             Reader in,
             boolean unbuffer) throws IOException, InterruptedException;
-    
+
     public abstract void stop();
 
     /**
@@ -122,7 +120,7 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
      * call the getNativeExecution() method.
      */
     private static class SimpleNativeExecution extends NativeExecution {
-        
+
         @Override
         public int executeCommand(File runDirFile, String executable, String arguments, String[] envp, PrintWriter out, Reader in, boolean unbuffer) throws IOException, InterruptedException {
             throw new UnsupportedOperationException("Not supported."); // NOI18N

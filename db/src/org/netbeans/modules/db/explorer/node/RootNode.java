@@ -68,6 +68,7 @@ public class RootNode extends BaseNode {
             NodeDataLookup lookup = new NodeDataLookup();
             lookup.add(ConnectionList.getDefault());
             instance = new RootNode(lookup);
+            instance.setup();
         }
         
         return instance;

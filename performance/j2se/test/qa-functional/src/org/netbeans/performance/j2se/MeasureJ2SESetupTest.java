@@ -38,9 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.j2se;
 
 import org.netbeans.performance.j2se.setup.J2SESetup;
+
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -52,7 +54,6 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class MeasureJ2SESetupTest {
 
-    
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2SE Setup suite");
         System.setProperty("suitename", MeasureJ2SESetupTest.class.getCanonicalName());
