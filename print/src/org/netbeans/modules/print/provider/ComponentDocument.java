@@ -396,4 +396,3 @@ final class ComponentDocument extends JComponent {
     private boolean myLineNumbers;
     private List<ComponentLine> myLines;
 }
-

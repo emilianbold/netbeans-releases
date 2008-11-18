@@ -565,7 +565,7 @@ public final class CndLexerUtilities {
             FortranTokenId.KW_EXIT,
             FortranTokenId.KW_EXTERNAL,
             FortranTokenId.KW_FLUSH,
-            FortranTokenId.KW_FILE,
+//            FortranTokenId.KW_FILE,
             FortranTokenId.KW_FORALL,
             FortranTokenId.KW_FORMAT,
             FortranTokenId.KW_FUNCTION,

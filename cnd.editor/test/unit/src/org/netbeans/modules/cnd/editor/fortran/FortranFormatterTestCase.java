@@ -123,12 +123,12 @@ public class FortranFormatterTestCase extends FortranEditorBase {
     public void testEleIfFormat() {
         setLoadDocumentText(
                 "subroutine  p\n"+
-                "  if (i .eq. 6) then\n"+
+                "  if (i .eq. 6) then \n"+
                 "  i =5\n"+
                 "  elseif (i.eq.9) then \n"+
                 "  i=8\n"+
                 "  else\n"+
-                "  i=8\n"+
+                "  i=18\n"+
                 "  endif\n"+
                 " end  subroutine\n"
                 );
@@ -138,8 +138,10 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "subroutine p\n"+
                 "    if (i .eq. 6) then\n"+
                 "        i = 5\n"+
-                "    else\n"+
+                "    elseif (i .eq. 9) then\n"+
                 "        i = 8\n"+
+                "    else\n"+
+                "        i = 18\n"+
                 "    endif\n"+
                 "end subroutine\n"
                 );

@@ -459,6 +459,9 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                         case '=':
                             state = INIT;
                             return token(FortranTokenId.OP_LT_EQ);
+                        case '>':
+                            state = INIT;
+                            return token(FortranTokenId.OP_LT_GT);
                         default:
                             state = INIT;
                             backup(1);
