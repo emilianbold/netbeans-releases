@@ -65,7 +65,7 @@ import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyFormatter;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
-import org.netbeans.modules.ruby.RubyMimeResolver;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.DialogDescriptor;
@@ -165,7 +165,7 @@ class IntroduceFix implements PreviewableFix {
     
     private EditList createEdits(String name) throws Exception {
         String guessedName = AstUtilities.guessName(info, lexRange, astRange);
-        RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
+        RubyIndex index = RubyIndex.get(info.getIndex(RubyUtils.RUBY_MIME_TYPE), info.getFileObject());
         AstPath startPath = new AstPath(AstUtilities.getRoot(info), astRange.getStart());
         List<OffsetRange> duplicates = null;
 

@@ -43,6 +43,8 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class RubyUtils {
+    
+    public static final String RUBY_MIME_TYPE = RubyInstallation.RUBY_MIME_TYPE; // NOI18N
 
     private RubyUtils() {
     }
