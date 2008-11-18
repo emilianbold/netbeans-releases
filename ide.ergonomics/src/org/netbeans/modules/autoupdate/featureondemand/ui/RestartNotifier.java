@@ -46,6 +46,7 @@ import java.awt.Component;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.openide.awt.StatusLineElementProvider;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -72,7 +73,9 @@ public final class RestartNotifier implements StatusLineElementProvider {
      */
     private static Component getUpdatesVisualizer () {
         if (null == flasher) {
-            ImageIcon img1 = new ImageIcon (Utilities.loadImage ("org/netbeans/modules/autoupdate/featureondemand/resources/restart.png", false)); // NOI18N
+            Icon img1 = ImageUtilities.image2Icon(
+                ImageUtilities.loadImage ("org/netbeans/modules/autoupdate/featureondemand/resources/restart.png", false) // NOI18N
+            );
             assert img1 != null : "Icon cannot be null.";
             flasher = new RestartIcon (img1);
         }

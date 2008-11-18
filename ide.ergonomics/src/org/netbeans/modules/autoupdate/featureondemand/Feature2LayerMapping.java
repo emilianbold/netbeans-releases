@@ -39,13 +39,15 @@
 
 package org.netbeans.modules.autoupdate.featureondemand;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.autoupdate.featureondemand.api.FeatureInfo;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -84,12 +86,30 @@ public class Feature2LayerMapping {
         }
         return null;
     }
-    
+
     private static Lookup featureTypesLookup;
     static synchronized Lookup featureTypesLookup() {
         if (featureTypesLookup != null) {
             return featureTypesLookup;
         }
-        return featureTypesLookup = Lookups.forPath("FeaturesOnDemand"); // NOI18N
+
+        String clusters = System.getProperty("netbeans.dirs");
+        if (clusters == null) {
+            featureTypesLookup = Lookup.EMPTY;
+        } else {
+            InstanceContent ic = new InstanceContent();
+            AbstractLookup l = new AbstractLookup(ic);
+            for (String c : clusters.split(File.pathSeparator)) {
+                int last = c.lastIndexOf(File.separatorChar);
+                String clusterName = c.substring(last + 1);
+                String name = "/org/netbeans/modules/ide/ergonomics/" + clusterName + ".xml";
+                URL layer = Feature2LayerMapping.class.getResource(name);
+                if (layer != null) {
+                    ic.add(FeatureInfo.create(clusterName, layer, null));
+                }
+            }
+            featureTypesLookup = l;
+        }
+        return featureTypesLookup;
     }
 }
