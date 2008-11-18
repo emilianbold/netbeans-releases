@@ -43,9 +43,9 @@ import java.util.logging.*;
 import java.util.concurrent.ExecutionException;
 import javax.lang.model.element.Element;
 import org.netbeans.junit.NbPerformanceTest;
-import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 
 import java.io.*;
 import javax.lang.model.element.PackageElement;
@@ -132,11 +132,12 @@ public class FindUsagesPerfTest extends RefPerfTestCase {
                     try {
                         long prepare = handler.get("refactoring.prepare");
                         NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
-                        d.name = "refactoring.prepare";
+                        d.name = "refactoring.prepare"+" ("+element.resolveElement(controller).getSimpleName()+", usages:"+elems.size()+")";
                         d.value = prepare;
                         d.unit = "ms";
                         d.runOrder = 0;
                         sb.append("Prepare phase: ").append(prepare).append(" ms.\n");
+                        CommonUtilities.processUnitTestsResults(FindUsagesPerfTest.class.getCanonicalName(), d);
                     } catch (Exception ex) {
                         sb.append("Cannot collect usages: ").append(ex.getCause());
                     }
