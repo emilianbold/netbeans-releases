@@ -47,13 +47,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.editor.AnnotationType;
-import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.XMLDataObject;
+import org.openide.util.Exceptions;
 import org.xml.sax.AttributeList;
 import org.xml.sax.HandlerBase;
 import org.xml.sax.InputSource;
@@ -175,7 +176,7 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
                 at.putProp(AnnotationType.PROP_FILE, xmlDataObject);
                 annotationType = at;
             } catch (Exception e) { 
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
 
         }
@@ -294,7 +295,7 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
                         try {
                             priority = Integer.parseInt(priorityString);
                         } catch (NumberFormatException e) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                            Logger.getLogger("global").log(Level.INFO,null, e);
                         }
                     }
                     
