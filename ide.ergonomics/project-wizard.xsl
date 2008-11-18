@@ -12,6 +12,12 @@
             <xsl:apply-templates mode="project-wizard"/>
         </xsl:element>
     </xsl:template>
+    <xsl:template match="folder" mode="project-wizard">
+        <xsl:element name="folder">
+            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+            <xsl:apply-templates mode="project-wizard"/>
+        </xsl:element>
+    </xsl:template>
     <xsl:template match="attr[@name='instantiatingIterator']" mode="project-wizard">
         <xsl:element name="attr">
             <xsl:attribute name="name">instantiatingIterator</xsl:attribute>

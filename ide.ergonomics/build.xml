@@ -15,11 +15,10 @@
         <mkdir dir="${release.dir}/config/Modules"/>
         <subant genericantfile="build.xml" target="-process-one-cluster">
             <property name="xmldir" value="${release.dir}/config/Modules"/>
-            <property name="proxytmp" location="build/proxies"/>
-            <property name="proxyxslt" location="project-wizard.xsl"/>
-            <property name="proxydir" location="build/classes/org/netbeans/modules/ide/ergonomics"/>
+            <property name="ergonomicsdir" location="${basedir}"/>
             <dirset dir="${netbeans.dest.dir}">
                 <include name="*"/>
+                <exclude name="harness*"/>
                 <exclude name="ide1*"/>
                 <exclude name="platform*"/>
                 <exclude name="nb*.*"/>
@@ -47,23 +46,39 @@
             <mapper type="flatten"/>
         </pathconvert>
 
+        <property name="proxytmp" value="${ergonomicsdir}/build/proxies/${cluster.name}"/>
+        <property name="proxydir" value="${ergonomicsdir}/build/classes/org/netbeans/modules/ide/ergonomics/"/>
         <mkdir dir="${proxytmp}"/>
         <copy todir="${proxytmp}">
             <resources refid="layers"/>
         </copy>
 
-        <xslt destdir="${proxytmp}/out" style="${proxyxslt}" useimplicitfileset="false" extension="fragment">
-            <fileset dir="${proxytmp}">
-                <include name="*.xml"/>
-            </fileset>
-        </xslt>
 
+        <xslt
+            basedir="${proxytmp}"
+            destdir="${proxytmp}/out" style="${ergonomicsdir}/project-wizard.xsl"
+            useimplicitfileset="true" extension=".fragment"
+        />
+
+        <mkdir dir="${proxydir}"/>
         <concat destfile="${proxydir}/${cluster.name}.xml">
+            <header>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd"&gt;
+&lt;filesystem&gt;
+    &lt;folder name="Templates"&gt;
+        &lt;folder name="Project"&gt;
+            </header>
             <filterchain>
                 <ignoreblank byline="true"/>
             </filterchain>
             <fileset dir="${proxytmp}/out">
             </fileset>
+            <footer>
+        &lt;/folder&gt;
+    &lt;/folder&gt;
+&lt;/filesystem&gt;
+            </footer>
         </concat>
     </target>
     <target name="-disable-one-cluster" depends="init-tasks">
