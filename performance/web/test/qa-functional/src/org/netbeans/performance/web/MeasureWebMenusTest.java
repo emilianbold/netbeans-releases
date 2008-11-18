@@ -53,15 +53,15 @@ import org.netbeans.performance.web.menus.*;
  */
 public class MeasureWebMenusTest {
     
-    
     public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Menus suite");
         System.setProperty("suitename", MeasureWebMenusTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness Web Menus suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebProjectsViewPopupMenu.class)
-        .addTest(WebRuntimeViewPopupMenu.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebProjectsNodesViewPopupMenuTest.class)
+        .addTest(WebRuntimeViewPopupMenuTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
         
         return suite;

@@ -551,6 +551,31 @@ public class MakeActionProvider implements ActionProvider {
                             }
                             runProfile.getEnvironment().putenv("DYLD_LIBRARY_PATH", path.toString()); // NOI18N
                         }
+                    } else if (Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_SOLARIS_INTEL ||
+                            Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_SOLARIS_SPARC ||
+                            Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_LINUX) {
+                        // Add paths from -L option
+                        StringBuffer path = new StringBuffer();
+                        List list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
+                        Iterator iter = list.iterator();
+                        while (iter.hasNext()) {
+                            String location = FilePathAdaptor.naturalize((String)iter.next());
+                            if (path.length() > 0) {
+                                path.append(":"); // NOI18N
+                            }
+                            path.append(location);
+                        }
+                        if (path.length() > 0) {
+                            runProfile = conf.getProfile().cloneProfile();
+                            String extPath = runProfile.getEnvironment().getenv("LD_LIBRARY_PATH"); // NOI18N
+                            if (extPath == null) {
+                                extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("LD_LIBRARY_PATH"); // NOI18N
+                            }
+                            if (extPath != null) {
+                                path.append(":" + extPath); // NOI18N
+                            }
+                            runProfile.getEnvironment().putenv("LD_LIBRARY_PATH", path.toString()); // NOI18N
+                        }
                         // Make sure DISPLAY variable has been set
                         if (HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set

@@ -72,7 +72,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -369,23 +368,29 @@ public abstract class CsmResultItem implements CompletionItem {
         if (!ts.moveNext()) {
             return false;
         }
-        Token lastToken = ts.token();
+        CppTokenId lastID = ts.token().id();
         while (ts.offset() < substituteOffset) {
-            if (!ts.token().id().equals(CppTokenId.BLOCK_COMMENT) &&
-                    !ts.token().id().equals(CppTokenId.DOXYGEN_COMMENT) &&
-                    !ts.token().id().equals(CppTokenId.NEW_LINE) &&
-                    !ts.token().id().equals(CppTokenId.LINE_COMMENT) &&
-                    !ts.token().id().equals(CppTokenId.WHITESPACE)) {
-                lastToken = ts.token();
+            switch (ts.token().id()) {
+                case BLOCK_COMMENT:
+                case DOXYGEN_COMMENT:
+                case NEW_LINE:
+                case LINE_COMMENT:
+                case WHITESPACE:
+                    // skip
+                    break;
+                default:
+                    lastID = ts.token().id();
+                    break;
             }
             if (!ts.moveNext()) {
                 return false;
             }
         }
-        if (lastToken.id().equals(CppTokenId.CLASS) ||
-                lastToken.id().equals(CppTokenId.STRUCT) ||
-                lastToken.id().equals(CppTokenId.UNION)) {
-            return true;
+        switch (lastID) {
+            case CLASS:
+            case STRUCT:
+            case UNION:
+                return true;
         }
         return false;
     }
