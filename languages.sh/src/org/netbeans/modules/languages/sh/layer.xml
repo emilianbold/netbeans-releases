@@ -79,4 +79,12 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="shell-mime-resolver.xml" url="shell-mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.sh.Bundle"/>
+                <attr name="position" intvalue="90000"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

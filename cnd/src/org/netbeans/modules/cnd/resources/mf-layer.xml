@@ -276,10 +276,10 @@ made subject to such option by the copyright holder.
                 <attr name="instanceOf" stringvalue="org.openide.filesystems.MIMEResolver"/>
                 <attr name="position" intvalue="460"/>
             </file>  
-            <file name="org-netbeans-modules-cnd-loaders-CndSniffyMIMEResolver.instance">
-                <attr name="instanceOf" stringvalue="org.openide.filesystems.MIMEResolver"/>
+            <file name="cnd-mime-resolver-content-based.xml" url="mime-resolver-content-based.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="position" intvalue="470"/>
-            </file> 
+            </file>
             <file name="cnd-hex-based-mime-resolver.xml" url="mime-resolver-hex-based.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>

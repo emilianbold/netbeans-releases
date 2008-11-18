@@ -48,7 +48,7 @@ public class RubyUtils {
     }
 
     public static boolean isRubyFile(FileObject f) {
-        return RubyMimeResolver.RUBY_MIME_TYPE.equals(f.getMIMEType());
+        return RubyInstallation.RUBY_MIME_TYPE.equals(f.getMIMEType());
     }
     
     public static boolean isMarkabyFile(FileObject fileObject) {
