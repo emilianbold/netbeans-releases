@@ -48,7 +48,9 @@ import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
 import org.netbeans.editor.TokenContext;
 
-/** Default settings values for C and C++ */
+/** Default settings values for C and C++ 
+ *  registered in cpp-preferences.xml and cpp-preferences.xml
+ */
 public class CCSettingsDefaults {
 
     public static Acceptor getDefaultAbbrevResetAcceptor() {

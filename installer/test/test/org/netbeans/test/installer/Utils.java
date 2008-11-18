@@ -271,7 +271,7 @@ public class Utils {
         return OK;
     }
 
-    public static void phaseOnePOne(TestCase thiz, TestData data, String installerType) {
+    public static void phaseOnePOne(TestData data, String installerType) {
         try {
             String wd = System.getenv("WORKSPACE");
             TestCase.assertNotNull(wd);
@@ -389,8 +389,8 @@ public class Utils {
         new JButtonOperator(new JFrameOperator(MAIN_FRAME_TITLE), FINISH_BUTTON_LABEL).push();
     }
 
-    public static void phaseOne(TestCase thiz, TestData data, String installerType) {
-        phaseOnePOne(thiz, data, installerType);
+    public static void phaseOne(TestData data, String installerType) {
+        phaseOnePOne(data, installerType);
         data.setInstallerURL(constructURL(data));
         phaseOnePTwo(data);
     }

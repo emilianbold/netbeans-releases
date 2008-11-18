@@ -43,32 +43,16 @@ package org.netbeans.performance.web.setup;
 
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.BuildProjectAction;
 import org.netbeans.jellytools.JellyTestCase;
 
-import org.netbeans.modules.project.ui.test.ProjectSupport;
-
-import java.io.File;
 import java.io.IOException;
+import org.openide.util.Exceptions;
 
 public class WebSetup extends JellyTestCase {
     
-	private String workdir;
-        
-    public static final String suiteName="UI Responsiveness Web Setup suite";    
-        
 
     public WebSetup(String testName) {
         super(testName);
-        workdir = System.getProperty("nbjunit.workdir");
-        try {
-            workdir = new File(workdir + "/../../../../../../../nbextra/data/").getCanonicalPath();
-        } catch (IOException ex) {
-            System.err.println("Exception: "+ex);
-        }
-
     }
 
     public void testCloseWelcome() {
@@ -83,37 +67,33 @@ public class WebSetup extends JellyTestCase {
         CommonUtilities.closeMemoryToolbar();
     }
 
-        public void testAddTomcatServer() {
+    public void testAddTomcatServer() {
         
         CommonUtilities.addTomcatServer();
     }
 
     public void testOpenWebProject() {
 
-        String projectsDir = workdir + File.separator+ "TestWebProject";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
-        buildProject("TestWebProject");
+        try {
+            this.openDataProjects("TestWebProject");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        CommonUtilities.buildProject("TestWebProject");
     }
-    
-
+  
     public void testOpenWebFoldersProject() {
 
-        String projectsDir = workdir + File.separator+ "PerformanceTestFolderWebApp";
-        Object prj=ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
-        buildProject("PerformanceTestFolderWebApp");
+        try {
+            this.openDataProjects("PerformanceTestFolderWebApp");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        CommonUtilities.buildProject("PerformanceTestFolderWebApp");
     }
         
     public void testCloseTaskWindow() {
         CommonUtilities.closeTaskWindow();
     }
     
-    private void buildProject(String name) {
-        new BuildProjectAction().perform(new ProjectsTabOperator().
-            getProjectRootNode(name));
-        MainWindowOperator.getDefault().waitStatusText("Finished building");
-    }
 }

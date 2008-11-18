@@ -88,7 +88,7 @@ public class CoreElfObject extends ExeObject {
     super.getCookie.
      */
     @Override
-    public Node.Cookie getCookie(Class c) {
+    public <T extends Node.Cookie> T getCookie(Class<T> c) {
         if (c.isAssignableFrom(ExecCookie.class)) {
             return null;
         } else {
