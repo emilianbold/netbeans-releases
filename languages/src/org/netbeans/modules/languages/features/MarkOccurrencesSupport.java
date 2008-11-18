@@ -27,13 +27,10 @@
  */
 package org.netbeans.modules.languages.features;
 
-import org.netbeans.api.languages.database.DatabaseContext;
-import org.netbeans.api.languages.database.DatabaseUsage;
-import org.netbeans.api.languages.database.DatabaseDefinition;
-import org.netbeans.api.languages.database.DatabaseItem;
 import java.awt.Color;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -48,15 +45,23 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
+import org.netbeans.api.languages.ParserResult;
+import org.netbeans.api.languages.database.DatabaseContext;
+import org.netbeans.api.languages.database.DatabaseUsage;
+import org.netbeans.api.languages.database.DatabaseDefinition;
+import org.netbeans.api.languages.database.DatabaseItem;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.Highlighting;
 import org.netbeans.api.languages.Highlighting.Highlight;
-import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.modules.languages.features.AnnotationManager.LanguagesAnnotation;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.util.RequestProcessor;
 
 
@@ -85,18 +90,26 @@ public class MarkOccurrencesSupport implements CaretListener {
         }
         parsingTask = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                refresh (e.getDot ());
+                Source source = Source.create (editor.getDocument ());
+                if (source != null) {
+                    try {
+                        ParserManager.parse (Collections.<Source>singleton (source), new UserTask () {
+                            @Override
+                            public void run (ResultIterator resultIterator) throws ParseException {
+                                ParserResult parserResult = (ParserResult) resultIterator.getParserResult ();
+                                refresh (e.getDot (), parserResult);
+                            }
+                        });
+                    } catch (ParseException ex) {
+                        ex.printStackTrace ();
+                    }
+                }
             }
         }, 1000);
     }
     
-    private void refresh (int offset) {
-        ParserManagerImpl parserManager = ParserManagerImpl.getImpl (editor.getDocument ());
-        if (parserManager.getState () == State.PARSING) {
-            return;
-        }
-        ASTNode node = parserManager.getAST ();
-        DatabaseContext root = DatabaseManager.getRoot (node);
+    private void refresh (int offset, ParserResult parserResult) {
+        DatabaseContext root = parserResult.getSemanticStructure ();
         if (root == null) {
             // I keep getting NPEs on the next line while editing RHTML
             // files - please check
@@ -107,7 +120,7 @@ public class MarkOccurrencesSupport implements CaretListener {
             item = root.getDatabaseItem (offset - 1);
         if (item == null) return;
         removeHighlights ();
-        addHighlights (getUsages (item, node));
+        addHighlights (getUsages (item, parserResult.getRootNode ()));
     }
     
     private void addHighlights (final List<ASTItem> ussages) {
