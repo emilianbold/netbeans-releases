@@ -41,6 +41,7 @@ package org.netbeans.modules.maven;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -119,37 +120,48 @@ public class ModInstall extends ModuleInstall implements ErrorHandler, EntityRes
 
         projectsListener = new OpenProjectsListener();
         OpenProjects.getDefault().addPropertyChangeListener(projectsListener);
-        final int freq = RepositoryPreferences.getInstance().getIndexUpdateFrequency();
-        //#138102
-        RequestProcessor.getDefault().post(new Runnable() {
+        //only check for the updates of index, if the indexing was already used.
+        if (existsDefaultIndexLocation()) {
+            final int freq = RepositoryPreferences.getInstance().getIndexUpdateFrequency();
+            //#138102
+            RequestProcessor.getDefault().post(new Runnable() {
 
-            public void run() {
-                List<RepositoryInfo> ris = RepositoryPreferences.getInstance().getRepositoryInfos();
-                for (final RepositoryInfo ri : ris) {
-                    //check this repo can be indexed
-                    if (!ri.isRemoteDownloadable() && !ri.isLocal()) {
-                        continue;
-                    }
-                    if (freq != RepositoryPreferences.FREQ_NEVER) {
-                        boolean run = false;
-                        if (freq == RepositoryPreferences.FREQ_STARTUP) {
-                            LOGGER.finer("Index At Startup :" + ri.getId());//NOI18N
-                            run = true;
-                        } else if (freq == RepositoryPreferences.FREQ_ONCE_DAY && checkDiff(ri.getId(), 86400000L)) {
-                            LOGGER.finer("Index Once a Day :" + ri.getId());//NOI18N
-                            run = true;
-                        } else if (freq == RepositoryPreferences.FREQ_ONCE_WEEK && checkDiff(ri.getId(), 604800000L)) {
-                            LOGGER.finer("Index once a Week :" + ri.getId());//NOI18N
-                            run = true;
+                public void run() {
+                    List<RepositoryInfo> ris = RepositoryPreferences.getInstance().getRepositoryInfos();
+                    for (final RepositoryInfo ri : ris) {
+                        //check this repo can be indexed
+                        if (!ri.isRemoteDownloadable() && !ri.isLocal()) {
+                            continue;
                         }
-                        if (run && ri.isRemoteDownloadable()) {
-                            RepositoryIndexer.indexRepo(ri);
+                        if (freq != RepositoryPreferences.FREQ_NEVER) {
+                            boolean run = false;
+                            if (freq == RepositoryPreferences.FREQ_STARTUP) {
+                                LOGGER.finer("Index At Startup :" + ri.getId());//NOI18N
+                                run = true;
+                            } else if (freq == RepositoryPreferences.FREQ_ONCE_DAY && checkDiff(ri.getId(), 86400000L)) {
+                                LOGGER.finer("Index Once a Day :" + ri.getId());//NOI18N
+                                run = true;
+                            } else if (freq == RepositoryPreferences.FREQ_ONCE_WEEK && checkDiff(ri.getId(), 604800000L)) {
+                                LOGGER.finer("Index once a Week :" + ri.getId());//NOI18N
+                                run = true;
+                            }
+                            if (run && ri.isRemoteDownloadable()) {
+                                RepositoryIndexer.indexRepo(ri);
+                            }
                         }
                     }
                 }
-            }
-        }, MILIS_IN_MIN * 2);
+            }, MILIS_IN_MIN * 2);
+        }
     }
+
+    private boolean existsDefaultIndexLocation() {
+        String userdir = System.getProperty("netbeans.user"); //NOI18N
+        assert userdir != null;
+        File cacheDir = new File(new File(new File(userdir, "var"), "cache"), "mavenindex");//NOI18N
+        return cacheDir.exists() && cacheDir.isDirectory();
+    }
+
 
     private boolean checkDiff(String repoid, long amount) {
         Date date = RepositoryPreferences.getInstance().getLastIndexUpdate(repoid);
