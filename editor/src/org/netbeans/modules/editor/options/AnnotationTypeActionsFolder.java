@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.editor.options;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.loaders.FolderInstance;
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.DataFolder;
@@ -88,7 +90,7 @@ public class AnnotationTypeActionsFolder extends FolderInstance{
                 return true;
             }
         } catch (org.openide.loaders.DataObjectNotFoundException ex) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO,null, ex);
             return false;
         }
         return false;
