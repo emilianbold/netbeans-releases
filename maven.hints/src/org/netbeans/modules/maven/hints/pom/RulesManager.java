@@ -41,37 +41,24 @@
 
 package org.netbeans.modules.maven.hints.pom;
 
-import com.sun.source.tree.Tree;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Queue;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
-import org.netbeans.modules.java.hints.spi.ErrorRule;
-import org.netbeans.modules.java.hints.spi.Rule;
-import org.netbeans.modules.java.hints.spi.TreeRule;
-import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
+import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixBase;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
-import org.openide.util.RequestProcessor;
 
 /** Manages rules read from the system filesystem.
  *
@@ -100,15 +87,15 @@ public class RulesManager  {
         hintsTreeModel = new DefaultTreeModel( rootNode );
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         FileObject folder = fs.getRoot().getFileObject(RULES_FOLDER);
-        List<Pair<POMErrorFixProvider,FileObject>> rules = readRules(folder);
+        List<Pair<POMErrorFixBase,FileObject>> rules = readRules(folder);
         categorizeTreeRules( rules, folder, rootNode );
         return hintsTreeModel;
     }
 
 
     /** Read rules from system filesystem */
-    private static List<Pair<POMErrorFixProvider, FileObject>> readRules( FileObject folder ) {
-        List<Pair<POMErrorFixProvider,FileObject>> rules = new LinkedList<Pair<POMErrorFixProvider,FileObject>>();
+    private static List<Pair<POMErrorFixBase, FileObject>> readRules( FileObject folder ) {
+        List<Pair<POMErrorFixBase,FileObject>> rules = new LinkedList<Pair<POMErrorFixBase,FileObject>>();
         
         if (folder == null) {
             return rules;
@@ -133,26 +120,26 @@ public class RulesManager  {
             String name = o.getNameExt().toLowerCase();
 
             if ( o.canRead() ) {
-                POMErrorFixProvider r = null;
+                POMErrorFixBase r = null;
                 if ( name.endsWith( INSTANCE_EXT ) ) {
                     r = instantiateRule(o);
                 }
                 if ( r != null ) {
-                    rules.add( new Pair<POMErrorFixProvider,FileObject>( r, o ) );
+                    rules.add( new Pair<POMErrorFixBase,FileObject>( r, o ) );
                 }
             }
         }
         return rules;
     }
 
-    private static void categorizeTreeRules( List<Pair<POMErrorFixProvider,FileObject>> rules,
+    private static void categorizeTreeRules( List<Pair<POMErrorFixBase,FileObject>> rules,
                                              FileObject rootFolder,
                                              DefaultMutableTreeNode rootNode ) {
         Map<FileObject,DefaultMutableTreeNode> dir2node = new HashMap<FileObject, DefaultMutableTreeNode>();
         dir2node.put(rootFolder, rootNode);
 
-        for( Pair<POMErrorFixProvider,FileObject> pair : rules ) {
-            POMErrorFixProvider rule = pair.getA();
+        for( Pair<POMErrorFixBase,FileObject> pair : rules ) {
+            POMErrorFixBase rule = pair.getA();
             FileObject fo = pair.getB();
 
                 Object nonGuiObject = fo.getAttribute(NON_GUI);
@@ -179,14 +166,14 @@ public class RulesManager  {
     }
 
 
-    private static POMErrorFixProvider instantiateRule( FileObject fileObject ) {
+    private static POMErrorFixBase instantiateRule( FileObject fileObject ) {
         try {
             DataObject dobj = DataObject.find(fileObject);
             InstanceCookie ic = dobj.getCookie( InstanceCookie.class );
             Object instance = ic.instanceCreate();
             
-            if (instance instanceof POMErrorFixProvider) {
-                return (POMErrorFixProvider) instance;
+            if (instance instanceof POMErrorFixBase) {
+                return (POMErrorFixBase) instance;
             } else {
                 return null;
             }

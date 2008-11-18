@@ -53,7 +53,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
+import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixBase;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -280,8 +280,8 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
             if (logic!=null)
                 renderer.setSelected( logic.isSelected((DefaultMutableTreeNode)value));
         }
-        else if ( data instanceof POMErrorFixProvider ) {
-            POMErrorFixProvider rule = (POMErrorFixProvider)data;
+        else if ( data instanceof POMErrorFixBase ) {
+            POMErrorFixBase rule = (POMErrorFixBase)data;
             renderer.setText( rule.getConfiguration().getDisplayName() );
             
             Preferences node = logic.getCurrentPrefernces(rule);

@@ -36,12 +36,9 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.maven.hints.pom.spi;
 
 import java.util.List;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -50,9 +47,8 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  *
  * @author mkleint
  */
-public interface POMErrorFixProvider extends POMErrorFixBase {
+public interface SelectionPOMFixProvider extends POMErrorFixBase {
 
-    List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj);
-
-
+    List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj,
+            int selectionStart, int selectionEnd);
 }

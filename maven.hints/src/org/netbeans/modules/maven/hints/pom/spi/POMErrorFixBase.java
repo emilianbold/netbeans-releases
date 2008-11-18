@@ -39,20 +39,29 @@
 
 package org.netbeans.modules.maven.hints.pom.spi;
 
-import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
  *
  * @author mkleint
  */
-public interface POMErrorFixProvider extends POMErrorFixBase {
+public interface POMErrorFixBase {
+    
+    /** Gets the UI description for this rule. It is fine to return null
+     * to get the default behavior. Notice that the Preferences node is a copy
+     * of the node returned from {link:Configuration.getPreferences()}. This is in oder to permit
+     * canceling changes done in the options dialog.<BR>
+     * It is fine to return null.
+     * @param node Preferences node the customizer should work on.
+     * @return Component which will be shown in the options dialog.
+     */
+    JComponent getCustomizer(Preferences preferences);
 
-    List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj);
-
+    /**
+     * configuration for the error/hint
+     * @return
+     */
+    Configuration getConfiguration();
 
 }

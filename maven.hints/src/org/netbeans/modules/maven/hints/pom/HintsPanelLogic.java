@@ -73,7 +73,7 @@ import org.netbeans.modules.maven.hints.pom.spi.Configuration;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
-import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
+import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixBase;
 
 
 /** Contains all important listeners and logic of the Hints Panel.
@@ -82,7 +82,7 @@ import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
  */
 class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListener, ChangeListener, ActionListener {
 
-    private Map<POMErrorFixProvider, ModifiedPreferences> changes;
+    private Map<POMErrorFixBase, ModifiedPreferences> changes;
     
     private static Map<Configuration.HintSeverity, Integer> severity2index;
     
@@ -108,7 +108,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     private JEditorPane descriptionTextArea;
     
     HintsPanelLogic() {
-        changes = new HashMap<POMErrorFixProvider, ModifiedPreferences>();
+        changes = new HashMap<POMErrorFixBase, ModifiedPreferences>();
     }
     
     void connect( JTree errorTree, JComboBox severityComboBox, 
@@ -145,7 +145,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     }
     
     synchronized void applyChanges() {
-        for (POMErrorFixProvider hint : changes.keySet()) {
+        for (POMErrorFixBase hint : changes.keySet()) {
             ModifiedPreferences mn = changes.get(hint);
             mn.store(hint.getConfiguration().getPreferences());
         }
@@ -157,12 +157,12 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         return !changes.isEmpty();
     }
     
-    synchronized Preferences getCurrentPrefernces( POMErrorFixProvider hint ) {
+    synchronized Preferences getCurrentPrefernces( POMErrorFixBase hint ) {
         Preferences node = changes.get(hint);
         return node == null ? hint.getConfiguration().getPreferences() : node;
     }
     
-    synchronized Preferences getPreferences4Modification( POMErrorFixProvider hint ) {
+    synchronized Preferences getPreferences4Modification( POMErrorFixBase hint ) {
         Preferences node = changes.get(hint);        
         if ( node == null ) {
             node = new ModifiedPreferences( hint.getConfiguration().getPreferences() );
@@ -188,8 +188,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         for( int i = 0; i < node.getChildCount(); i++ ) {
             DefaultMutableTreeNode ch = (DefaultMutableTreeNode) node.getChildAt(i);
             Object o = ch.getUserObject();
-            if ( o instanceof POMErrorFixProvider ) {
-                POMErrorFixProvider hint = (POMErrorFixProvider)o;
+            if ( o instanceof POMErrorFixBase ) {
+                POMErrorFixBase hint = (POMErrorFixBase)o;
                 if ( hint.getConfiguration().isEnabled(getCurrentPrefernces(hint)) ) {
                     return true;
                 }
@@ -247,8 +247,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     public void valueChanged(TreeSelectionEvent ex) {            
         Object o = getUserObject(errorTree.getSelectionPath());
         
-        if ( o instanceof POMErrorFixProvider ) {
-            POMErrorFixProvider hint = (POMErrorFixProvider) o;
+        if ( o instanceof POMErrorFixBase ) {
+            POMErrorFixBase hint = (POMErrorFixBase) o;
             
             // Enable components
             componentsSetEnabled(true);
@@ -298,8 +298,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         
         Object o = getUserObject(errorTree.getSelectionPath());
         
-        if ( o instanceof POMErrorFixProvider ) {
-            POMErrorFixProvider hint = (POMErrorFixProvider) o;
+        if ( o instanceof POMErrorFixBase ) {
+            POMErrorFixBase hint = (POMErrorFixBase) o;
             Preferences p = getPreferences4Modification(hint);
             
             if(hint.getConfiguration().getSeverity(p) != null && severityComboBox.equals( e.getSource() ) )
@@ -340,8 +340,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
 
 
-        if ( o instanceof POMErrorFixProvider ) {
-            POMErrorFixProvider hint = (POMErrorFixProvider)o;
+        if ( o instanceof POMErrorFixBase ) {
+            POMErrorFixBase hint = (POMErrorFixBase)o;
             boolean value = !hint.getConfiguration().isEnabled(getCurrentPrefernces(hint));
             Preferences mn = getPreferences4Modification(hint);
             hint.getConfiguration().setEnabled(mn, value);
@@ -354,8 +354,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             for( int i = 0; i < node.getChildCount(); i++ ) {
                 DefaultMutableTreeNode ch = (DefaultMutableTreeNode) node.getChildAt(i);                
                 Object cho = ch.getUserObject();
-                if ( cho instanceof POMErrorFixProvider ) {
-                    POMErrorFixProvider hint = (POMErrorFixProvider)cho;
+                if ( cho instanceof POMErrorFixBase ) {
+                    POMErrorFixBase hint = (POMErrorFixBase)cho;
                     boolean cv = hint.getConfiguration().isEnabled(getCurrentPrefernces(hint));
                     if ( cv != value ) {                    
                         Preferences mn = getPreferences4Modification(hint);
