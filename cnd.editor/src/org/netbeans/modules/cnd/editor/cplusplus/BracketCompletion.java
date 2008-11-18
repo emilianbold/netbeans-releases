@@ -45,6 +45,7 @@ import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.Language;
@@ -251,7 +252,7 @@ public class BracketCompletion {
         }
     }
 
-    /*package*/ static TokenSequence<CppTokenId> cppTokenSequence(BaseDocument doc, int offset, boolean backwardBias) {
+    /*package*/ static TokenSequence<CppTokenId> cppTokenSequence(Document doc, int offset, boolean backwardBias) {
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(offset, backwardBias);
         // Go from inner to outer TSes
