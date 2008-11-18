@@ -48,15 +48,15 @@
 
         <property name="proxytmp" value="${ergonomicsdir}/build/proxies/${cluster.name}"/>
         <property name="proxydir" value="${ergonomicsdir}/build/classes/org/netbeans/modules/ide/ergonomics/"/>
-        <mkdir dir="${proxytmp}"/>
-        <copy todir="${proxytmp}">
+        <mkdir dir="${proxytmp}/layers"/>
+        <copy todir="${proxytmp}/layers">
             <resources refid="layers"/>
         </copy>
 
 
         <xslt
-            basedir="${proxytmp}"
-            destdir="${proxytmp}/out" style="${ergonomicsdir}/project-wizard.xsl"
+            basedir="${proxytmp}/layers/"
+            destdir="${proxytmp}/extracted/" style="${ergonomicsdir}/project-wizard.xsl"
             useimplicitfileset="true" extension=".fragment"
         />
 
@@ -72,7 +72,7 @@
             <filterchain>
                 <ignoreblank byline="true"/>
             </filterchain>
-            <fileset dir="${proxytmp}/out">
+            <fileset dir="${proxytmp}/extracted">
             </fileset>
             <footer>
         &lt;/folder&gt;
