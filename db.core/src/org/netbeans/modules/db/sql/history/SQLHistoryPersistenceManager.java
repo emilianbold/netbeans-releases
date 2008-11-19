@@ -482,7 +482,7 @@ public class SQLHistoryPersistenceManager {
                          // # 152486; Date stored is not parsable, so reset the date to the current timestamp
                          Calendar calendar = Calendar.getInstance();
                          date = calendar.getTime();
-                         LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
+                         LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex); 
                     }
                 } else {
                     Calendar calendar = Calendar.getInstance();
