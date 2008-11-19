@@ -61,24 +61,24 @@ import org.openide.loaders.DataObject;
  */
 public class AnnotationsHolder implements PropertyChangeListener {
     
-    private static final Map<FileObject, AnnotationsHolder> file2Annotations = new HashMap<FileObject, AnnotationsHolder>();
+    private static final Map<DataObject, AnnotationsHolder> file2Annotations = new HashMap<DataObject, AnnotationsHolder>();
     
     public static synchronized AnnotationsHolder get(FileObject file) {
-        AnnotationsHolder a = file2Annotations.get(file);
-        
-        if (a != null) {
-            return a;
-        }
-        
         try {
             DataObject od = DataObject.find(file);
-            EditorCookie.Observable ec = od.getCookie(EditorCookie.Observable.class);
+            AnnotationsHolder a = file2Annotations.get(od);
+
+            if (a != null) {
+                return a;
+            }
+
+            EditorCookie.Observable ec = od.getLookup().lookup(EditorCookie.Observable.class);
             
             if (ec == null) {
                 return null;
             }
             
-            file2Annotations.put(file, a = new AnnotationsHolder(file, ec));
+            file2Annotations.put(od, a = new AnnotationsHolder(od, ec));
             
             return a;
         } catch (IOException ex) {
@@ -88,10 +88,10 @@ public class AnnotationsHolder implements PropertyChangeListener {
         }
     }
     
-    private final FileObject file;
+    private final DataObject file;
     private final EditorCookie.Observable ec;
     
-    private AnnotationsHolder(FileObject file, EditorCookie.Observable ec) {
+    private AnnotationsHolder(DataObject file, EditorCookie.Observable ec) {
         this.file = file;
         this.ec   = ec;
         this.annotations = new ArrayList<IsOverriddenAnnotation>();
@@ -104,7 +104,7 @@ public class AnnotationsHolder implements PropertyChangeListener {
             }
         });
         
-        Logger.getLogger("TIMER").log(Level.FINE, "Overridden AnnotationsHolder", new Object[] {file, this}); //NOI18N
+        Logger.getLogger("TIMER").log(Level.FINE, "Overridden AnnotationsHolder", new Object[] {file.getPrimaryFile(), this}); //NOI18N
      }
     
     public void propertyChange(PropertyChangeEvent evt) {
