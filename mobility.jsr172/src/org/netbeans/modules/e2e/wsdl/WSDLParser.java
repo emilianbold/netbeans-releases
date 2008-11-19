@@ -350,7 +350,7 @@ public class WSDLParser extends DefaultHandler {
                          * Fix for IZ#153030 - JSR172: WSDL Validation failed if it contains imported wsdl with relative path
                          */
                         URI u = myOriginalWsdlUri.toURI();
-                        URI sl = u.resolve( location );
+                        URI sl = u.normalize().resolve( location );
                         WSDLParser parser = new WSDLParser( sl.toURL() );
                         Definition d = parser.parse( sl.toString() );
                         

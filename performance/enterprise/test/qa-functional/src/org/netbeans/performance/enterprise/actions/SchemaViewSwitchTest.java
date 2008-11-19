@@ -42,6 +42,7 @@
 
 package org.netbeans.performance.enterprise.actions;
 
+import org.netbeans.performance.enterprise.XMLSchemaComponentOperator;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
@@ -58,9 +59,10 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-
+import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  *
  * @author mkhramov@netbeans.org
@@ -88,6 +90,14 @@ public class SchemaViewSwitchTest extends PerformanceTestCase  {
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=2000;                
     }    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EnterpriseSetup.class)
+             .addTest(SchemaViewSwitchTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
 
     @Override
     public void initialize(){
@@ -165,15 +175,7 @@ public class SchemaViewSwitchTest extends PerformanceTestCase  {
         
         new CloseAllDocumentsAction().performAPI();        
 
-        ProjectSupport.closeProject(testProjectName);
+//        ProjectSupport.closeProject(testProjectName);
     }
-    
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(SchemaViewSwitchTest.class)
-            .addTest("measureTime")
-            .enableModules(".*")
-            .clusters(".*")
-        );    
-    }    
+   
 }

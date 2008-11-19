@@ -68,11 +68,11 @@ public class MeasureEnterpriseActions1Test {
 
                 // TODO: Uncomment once issue 138456 is fixed
                 // .addTest(CreateBPELmodule.class, "measureTime")
-                .addTest(CreateCompositeApplication.class, "measureTime")
-                .addTest(AddNewWSDLDocument.class, "measureTime")
-                .addTest(AddNewXMLSchema.class, "measureTime")
-                .addTest(AddNewXMLDocument.class, "measureTime")
-                .addTest(AddNewBpelProcess.class, "measureTime")
+                .addTest(CreateCompositeApplicationTest.class, "measureTime")
+                .addTest(AddNewWSDLDocumentTest.class, "measureTime")
+                .addTest(AddNewXMLSchemaTest.class, "measureTime")
+                .addTest(AddNewXMLDocumentTest.class, "measureTime")
+                .addTest(AddNewBpelProcessTest.class, "measureTime")
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));    
 
         return suite;

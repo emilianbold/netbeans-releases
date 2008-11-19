@@ -62,12 +62,12 @@ public class MeasureEnterpriseActions3Test {
 
         
         // EPMeasureActions3
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(SchemaNavigatorSchemaView.class)
-                .addTest(SchemaNavigatorSchemaView.class, "measureTime")
-                .addTest(NavigatorSchemaViewMode.class, "measureTime")
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(SchemaNavigatorSchemaViewTest.class)
+                .addTest(SchemaNavigatorSchemaViewTest.class, "measureTime")
+                .addTest(NavigatorSchemaViewModeTest.class, "measureTime")
 //TODO there is an password dialog solve before enable to run again                .addTest(DeployProject.class, "measureTime")
-                .addTest(OpenComplexDiagram.class, "measureTime")
-                .addTest(OpenBPELproject.class, "measureTime")
+                .addTest(OpenComplexDiagramTest.class, "measureTime")
+                .addTest(OpenBPELprojectTest.class, "measureTime")
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));    
         
         return suite;

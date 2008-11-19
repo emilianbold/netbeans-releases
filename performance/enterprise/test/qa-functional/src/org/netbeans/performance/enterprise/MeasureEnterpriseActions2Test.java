@@ -61,14 +61,14 @@ public class MeasureEnterpriseActions2Test {
         System.setProperty("suitename", MeasureEnterpriseActions2Test.class.getCanonicalName());
         
         // EPMeasureActions2
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateSchema.class)
-                .addTest(ValidateSchema.class, "measureTime")
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateSchemaTest.class)
+                .addTest(ValidateSchemaTest.class, "measureTime")
 //TODO it's the same as SwitchSchemaView, isn't it ?        .addTest(SchemaViewSwitchTest.class, "measureTime")
-                .addTest(BuildComplexProject.class, "measureTime")
-                .addTest(SwitchToDesignView.class, "measureTime")
-                .addTest(SwitchToSchemaView.class, "measureTime")
-                .addTest(SchemaNavigatorDesignView.class, "measureTime")
-                .addTest(ApplyDesignPattern.class, "measureTime")
+                .addTest(BuildComplexProjectTest.class, "measureTime")
+                .addTest(SwitchToDesignViewTest.class, "measureTime")
+                .addTest(SwitchToSchemaViewTest.class, "measureTime")
+                .addTest(SchemaNavigatorDesignViewTest.class, "measureTime")
+                .addTest(ApplyDesignPatternTest.class, "measureTime")
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;

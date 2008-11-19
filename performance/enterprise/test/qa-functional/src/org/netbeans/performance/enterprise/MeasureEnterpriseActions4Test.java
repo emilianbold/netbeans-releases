@@ -62,7 +62,7 @@ public class MeasureEnterpriseActions4Test {
 
         
         // EPMeasureActions4
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenSchemaView.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenSchemaViewTest.class)
                 .addTest("testOpenSchemaView").enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;

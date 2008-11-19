@@ -188,7 +188,11 @@ public final class DBMetaDataFactory {
         // get table column information
         ResultSetMetaData rsMeta = rs.getMetaData();
         for (int i = 1; i <= rsMeta.getColumnCount(); i++) {
+            // #153219 - workaround 
             String tableName = rsMeta.getTableName(i);
+            if (tableName == null) {
+                tableName = noTableName;
+            }
             String schemaName = rsMeta.getSchemaName(i);
             String catalogName = rsMeta.getCatalogName(i);
             String key = catalogName + schemaName + tableName;

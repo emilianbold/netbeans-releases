@@ -97,7 +97,7 @@ public class DevelopmentHostCustomizer extends JOptionPane implements VetoableCh
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         if (!dhconf.isOnline()) {
             String hkey = dhconf.getName();
-            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+            ServerList registry = Lookup.getDefault().lookup(ServerList.class);
             assert registry != null;
             final ServerRecord record = registry.get(hkey);
             assert record != null;

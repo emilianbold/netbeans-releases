@@ -50,7 +50,6 @@ public class RakeSupportTest extends RubyProjectTestBase {
     }
 
     public void testGetRakeTask() throws Exception {
-        registerLayer();
         RubyProject project = createTestProject();
         RakeTask task = RakeSupport.getRakeTask(project, "clean");
         assertNotNull("clean task found", task);
