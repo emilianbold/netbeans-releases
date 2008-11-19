@@ -76,6 +76,7 @@ import org.openide.util.lookup.Lookups;
 /**
  * Factory for the nodes in the Rails Project logical view.
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-ruby-railsprojects")
 public final class ProjectRootNodeFactory implements NodeFactory {
 
     public NodeList createNodes(Project p) {

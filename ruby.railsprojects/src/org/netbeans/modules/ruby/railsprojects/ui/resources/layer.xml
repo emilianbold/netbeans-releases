@@ -122,10 +122,6 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         
-        <folder name="Nodes">
-            <file name="org-netbeans-modules-ruby-railsprojects-ui-ProjectRootNodeFactory.instance"/>
-        </folder>
-        
         <folder name="Lookup"/>
             
         </folder>

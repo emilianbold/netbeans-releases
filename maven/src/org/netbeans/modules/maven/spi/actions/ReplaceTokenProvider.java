@@ -37,31 +37,16 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.nodes;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ui.support.NodeFactory;
-import org.netbeans.spi.project.ui.support.NodeFactorySupport;
-import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.nodes.Node;
+package org.netbeans.modules.maven.spi.actions;
+
+import java.util.Map;
+import org.openide.util.Lookup;
 
 /**
- * shows maven project files.
- * @author  Milos Kleint
+ *
+ * @author mkleint
  */
-@NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=700)
-public class ProjectFilesNodeFactory implements NodeFactory {
+public interface ReplaceTokenProvider {
     
-    /** Creates a new instance of ProjectFilesNodeFactory */
-    public ProjectFilesNodeFactory() {
-    }
-    
-    public NodeList createNodes(Project project) {
-        NbMavenProjectImpl prj = project.getLookup().lookup(NbMavenProjectImpl.class);
-        return NodeFactorySupport.fixedNodeList(new Node[] {
-            new ProjectFilesNode(prj)
-        });
-    }
-    
-    
+    Map<String, String> createReplacements(String action, Lookup lookup);
 }

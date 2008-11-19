@@ -49,7 +49,6 @@ import org.netbeans.modules.visualweb.project.jsf.services.DataSourceService;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -60,12 +59,12 @@ import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /** Visual Web framework extra nodes factory.
  *
  * @author Po-Ting Wu
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-web-project",position=900)
 public class JSFNodeFactory implements NodeFactory {
     /** Creates a new instance of JSFNodeFactory */
     public JSFNodeFactory() {
