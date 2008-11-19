@@ -83,7 +83,9 @@
             basedir="${proxytmp}/layers/"
             destdir="${proxytmp}/extracted/" style="${ergonomicsdir}/project-wizard.xsl"
             useimplicitfileset="true" extension=".fragment"
-        />
+        >
+            <param name="cluster.name" expression="${cluster.name}"/>
+        </xslt>
 
         <mkdir dir="${proxydir}"/>
         <concat destfile="${proxydir}/${cluster.name}.xml">
@@ -106,7 +108,19 @@
             </footer>
         </concat>
 
-        <extractlayer/>
+        <extractlayer
+            layer="${proxydir}/${cluster.name}.xml"
+            bundle="${proxydir}/${cluster.name}.properties"
+        >
+           <modules dir=".">
+                <include name="modules/*.jar"/>
+            </modules>
+            <bundlefilter>
+                <linecontains>
+                    <contains value="Templates"/>
+                </linecontains>
+            </bundlefilter>
+         </extractlayer>
     </target>
     <target name="-disable-one-cluster" depends="init-tasks">
         <createmodulexml xmldir="${xmldir}">

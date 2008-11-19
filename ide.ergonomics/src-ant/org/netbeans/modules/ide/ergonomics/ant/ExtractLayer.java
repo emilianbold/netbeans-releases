@@ -38,12 +38,176 @@
  */
 package org.netbeans.modules.ide.ergonomics.ant;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.regex.Pattern;
+import javax.xml.parsers.SAXParserFactory;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Concat;
+import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.FilterChain;
+import org.apache.tools.ant.types.FilterSet;
+import org.apache.tools.ant.types.FilterSet.Filter;
+import org.apache.tools.ant.types.ResourceCollection;
+import org.apache.tools.ant.types.resources.ZipResource;
+import org.apache.tools.ant.util.FlatFileNameMapper;
+import org.apache.tools.zip.ZipEntry;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
-/**
+/** Extracts icons and bundles from layer.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ExtractLayer extends Task {
+public final class ExtractLayer extends Task {
+    private List<FileSet> filesets = new ArrayList<FileSet>();
+    public void addConfiguredModules(FileSet fs) {
+        filesets.add(fs);
+    }
 
+    private File layer;
+    public void setLayer(File f) {
+        layer = f;
+    }
+
+    private File output;
+    public void setDestDir(File f) {
+        output = f;
+    }
+    private File bundle;
+    public void setBundle(File f) {
+        bundle = f;
+    }
+    private FilterChain bundleFilter;
+    public void addConfiguredBundleFilter(FilterChain b) {
+        bundleFilter = b;
+    }
+
+    @Override
+    public void execute() throws BuildException {
+        if (filesets.isEmpty()) {
+            throw new BuildException();
+        }
+        if (layer == null) {
+            throw new BuildException();
+        }
+
+        Pattern match;
+        try {
+            Set<String> regexps = new TreeSet<String>();
+            parse(layer, regexps);
+
+            StringBuilder sb = new StringBuilder();
+            String sep = "";
+            for (String s : regexps) {
+                sb.append(sep);
+                sb.append(s);
+                sep = "|";
+            }
+            match = Pattern.compile(sb.toString());
+        } catch (Exception ex) {
+            throw new BuildException(ex);
+        }
+        ZipArray bundles = new ZipArray();
+
+        for (FileSet fs : filesets) {
+            DirectoryScanner ds = fs.getDirectoryScanner(getProject());
+            File basedir = ds.getBasedir();
+            for (String path : ds.getIncludedFiles()) {
+                File jar = new File(basedir, path);
+                try {
+                    JarFile jf = new JarFile(jar);
+                    try {
+                        Manifest mf = jf.getManifest();
+                        if (mf == null) {
+                            continue;
+                        }
+                        String modname = mf.getMainAttributes().getValue("OpenIDE-Module");
+                        if (modname == null) {
+                            continue;
+                        }
+                        Enumeration<JarEntry> en = jf.entries();
+                        while (en.hasMoreElements()) {
+                            JarEntry je = en.nextElement();
+                            if (match.matcher(je.getName()).matches()) {
+                                ZipEntry zipEntry = new ZipEntry(je);
+                                bundles.add(new ZipResource(jar, "UTF-8", zipEntry));
+                            }
+                        }
+                    } finally {
+                        jf.close();
+                    }
+                } catch (Exception x) {
+                    throw new BuildException("Reading " + jar + ": " + x, x, getLocation());
+                }
+            }
+        }
+
+        Concat concat = new Concat();
+        concat.add(bundles);
+        concat.setDestfile(bundle);
+        if (bundleFilter != null) {
+            concat.addFilterChain(bundleFilter);
+        }
+        concat.execute();
+    }
+
+
+    private void parse(File file, final Set<String> regexp) throws Exception {
+        SAXParserFactory f = SAXParserFactory.newInstance();
+        f.setValidating(false);
+        f.setNamespaceAware(false);
+        f.newSAXParser().parse(file, new DefaultHandler() {
+            String prefix = "";
+            @Override
+            public void startElement(String uri, String localName, String qName,  Attributes attributes) throws SAXException {
+                if (qName.equals("folder")) {
+                    String n = attributes.getValue("name");
+                    prefix += n + "/";
+                } else if (qName.equals("file")) {
+                    String n = attributes.getValue("name");
+                    prefix += n;
+                } else if (qName.equals("attr") && attributes.getValue("name").equals("SystemFileSystem.localizingBundle")) {
+                    String bundlepath = attributes.getValue("stringvalue").replace('.', '/') + ".*properties";
+                    regexp.add(bundlepath);
+//                    String key = prefix.replaceAll("/$", "");
+                } else if (qName.equals("attr") && attributes.getValue("name").equals("SystemFileSystem.localizingIcon")) {
+                    String iconpath = attributes.getValue("stringvalue").replace('.', '/') + ".*properties";
+                    regexp.add(iconpath);
+                }
+            }
+            @Override
+            public void endElement(String uri, String localName, String qName) throws SAXException {
+                if (qName.equals("folder")) {
+                    prefix = prefix.replaceFirst("[^/]+/$", "");
+                } else if (qName.equals("file")) {
+                    prefix = prefix.replaceFirst("[^/]+$", "");
+                }
+            }
+            @Override
+            public InputSource resolveEntity(String pub, String sys) throws IOException, SAXException {
+                return new InputSource(new StringReader(""));
+            }
+        });
+    }
+    private static final class ZipArray extends ArrayList<ZipResource>
+    implements ResourceCollection {
+        public boolean isFilesystemOnly() {
+            return false;
+        }
+    }
 }
