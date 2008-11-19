@@ -48,6 +48,9 @@ import java.awt.Insets;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,7 +65,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -78,7 +80,9 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.JavaProjectGenerator;
+import org.netbeans.modules.java.freeform.JavaProjectGenerator.SourceFolder;
 import org.netbeans.modules.java.freeform.JavaProjectNature;
+import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -103,6 +107,8 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
     private ChangeListener listener;
     private boolean isWizard;
     private ProjectModel model;
+
+    private static final List<String> TEST_FOLDER_PATHS = Arrays.asList("test");
 
     /** Creates new form SourceFoldersPanel */
     public SourceFoldersPanel() {
@@ -863,7 +869,91 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
         updateSourceLevelCombo(model.getSourceLevel());
         updateEncodingCombo();
         updateButtons();
+        updateModel(findPossibleSourceRoots());
         sourceFoldersModel.fireTableDataChanged();
+    }
+
+    /* Adds possible source folders to model either as main java source root
+     * or as test source root (simple heuristics is based on path under the project root)
+     */
+    private void updateModel(List<SourceFolder> srcFolders) {
+        if (srcFolders.isEmpty()) {
+            return;
+        }
+        List<SourceFolder> finalSourceFolders = new ArrayList<SourceFolder>();
+        List<SourceFolder> finalTestFolders = new ArrayList<SourceFolder>();
+        boolean notEmpty = false;
+        for (SourceFolder sf : srcFolders) {
+            boolean contains = false;
+            for (SourceFolder msf : model.getSourceFolders()) {
+                if (msf.location.equals(sf.location)) {
+                    contains = true;
+                    break;
+                }
+            }
+            if (!contains) {
+                boolean testFolder = false;
+                for (String path : TEST_FOLDER_PATHS) {
+                    if (sf.location.indexOf(path) != -1) {
+                        testFolder = true;
+                        break;
+                    }
+                }
+                if (!testFolder) {
+                    finalSourceFolders.add(sf);
+                    notEmpty = true;
+                } else {
+                    finalTestFolders.add(sf);
+                    notEmpty = true;
+                }
+            }
+        }
+        if (notEmpty) {
+            FolderComparator comparator = new FolderComparator();
+            Collections.sort(finalSourceFolders, comparator);
+            Collections.sort(finalTestFolders, comparator);
+            for (SourceFolder sf : finalSourceFolders) {
+                model.addSourceFolder(sf, false);
+            }
+            for (SourceFolder sf : finalTestFolders) {
+                model.addSourceFolder(sf, true);
+            }
+        }
+    }
+
+    private class FolderComparator implements Comparator {
+        public int compare(Object o1, Object o2) throws ClassCastException {
+            if (!(o1 instanceof SourceFolder) || !(o2 instanceof SourceFolder)) {
+                throw new ClassCastException();
+            }
+            return (((SourceFolder) o1).location.compareTo(((SourceFolder) o2).location));
+        }
+    }
+
+    /* Scans first level of folders under project root to find out possible
+     * source roots of java files
+     */
+    private List<SourceFolder> findPossibleSourceRoots() {
+        List<SourceFolder> srcFolders = new ArrayList<SourceFolder>();
+        File baseFolder = model.getBaseFolder();
+        FileObject baseFolderFO = FileUtil.toFileObject(baseFolder);
+        FileObject baseChildrenFO[] = baseFolderFO.getChildren();
+        for (FileObject fo : baseChildrenFO) {
+            if (fo.isFolder()) {
+                FileObject possibleSrcRoot = JavadocAndSourceRootDetection.findSourceRoot(fo);
+                if (possibleSrcRoot != null) {
+                    JavaProjectGenerator.SourceFolder sf = new JavaProjectGenerator.SourceFolder();
+                    File sourceLoc = FileUtil.normalizeFile(FileUtil.toFile(possibleSrcRoot));
+                    sf.location = Util.relativizeLocation(model.getBaseFolder(), model.getNBProjectFolder(), sourceLoc);
+                    sf.type = ProjectModel.TYPE_JAVA;
+                    sf.style = JavaProjectNature.STYLE_PACKAGES;
+                    sf.label = getDefaultLabel(sf.location, false);
+                    sf.encoding = model.getEncoding();
+                    srcFolders.add(sf);
+                }
+            }
+        }
+        return srcFolders;
     }
 
     // XXX: this is copy of FreeformProjectGenerator.getAntScript
