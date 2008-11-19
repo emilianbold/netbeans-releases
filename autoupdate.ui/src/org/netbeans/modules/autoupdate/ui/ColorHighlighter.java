@@ -51,7 +51,7 @@ import javax.swing.text.JTextComponent;
 
 /**
  *
- * @Dmitry Lipin
+ * @author Dmitry Lipin
  */
 
 public class ColorHighlighter {
