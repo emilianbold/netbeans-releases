@@ -50,8 +50,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
-import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.openide.filesystems.FileObject;
 
 
 /**
@@ -110,8 +108,6 @@ public class JsTypeAnalyzer {
     private final Node root;
     /** Node we are looking for;  */
     private Node target;
-    private final BaseDocument doc;
-    private final FileObject fileObject;
     private final JsParseResult info;
     private long startTime;
     
@@ -141,15 +137,13 @@ public class JsTypeAnalyzer {
 
     /** Creates a new instance of JsTypeAnalyzer for a given position.
      * The {@link #analyze} method will do the rest. */
-    public JsTypeAnalyzer(JsParseResult info, JsIndex index, Node root, Node target, int astOffset, int lexOffset, BaseDocument doc, FileObject fileObject) {
+    public JsTypeAnalyzer(JsParseResult info, JsIndex index, Node root, Node target, int astOffset, int lexOffset) {
         this.info = info;
         this.index = index;
         this.root = root;
         this.target = target;
         this.astOffset = astOffset;
         this.lexOffset = lexOffset;
-        this.doc = doc;
-        this.fileObject = fileObject;
     }
     
     /**
@@ -467,7 +461,7 @@ public class JsTypeAnalyzer {
         if (methodNode == null) {
             methodNode = info.getRootNode();
         }
-        JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, index, methodNode, callNode, 0, 0, LexUtilities.getDocument(info, false), info.getSnapshot().getSource().getFileObject());
+        JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, index, methodNode, callNode, 0, 0);
         if (resolveLocals && analyzer.dependsOnLocals()) {
             analyzer.init();
         }
@@ -550,7 +544,7 @@ public class JsTypeAnalyzer {
             startTime = System.currentTimeMillis();
             types = new HashMap<String, String>();
 
-            if (doc != null) {
+            if (info.getSnapshot().getSource().getDocument() != null) {
                 initTypeAssertions();
             }
 
@@ -617,7 +611,7 @@ public class JsTypeAnalyzer {
     private void initTypeAssertions() {
         if (root.getType() == Token.FUNCTION) {
             // Look for parameter hints 
-            TokenSequence<? extends JsCommentTokenId> ts = AstUtilities.getCommentFor(info, doc, (FunctionNode)root);
+            TokenSequence<? extends JsCommentTokenId> ts = AstUtilities.getCommentFor(info, (BaseDocument) info.getSnapshot().getSource().getDocument(), (FunctionNode)root);
             
             if (ts != null) {
                 Map<String, String> typeMap = JsCommentLexer.findFunctionTypes(ts);

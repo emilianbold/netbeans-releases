@@ -44,7 +44,11 @@ package org.netbeans.modules.javascript.editing;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.csl.api.CompilationInfo;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -87,10 +91,23 @@ public class JsCommentFormatterTest extends JsTestBase {
     }
 
     private List<String> getComments() throws Exception {
-        CompilationInfo info = getInfo("testfiles/types2.js");
-        String caretLine = "    insertBeeefore: func^tion(el, values, returnElement){";
-        FunctionAstElement element = ElementUtilitiesTest.getFunctionAstElement(info, caretLine);
-        return ElementUtilities.getComments(info, element);
+        FileObject f = getTestFile("testfiles/types2.js");
+        Source source = Source.create(f);
+
+        final Object [] result = new Object [] { null };
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                String caretLine = "    insertBeeefore: func^tion(el, values, returnElement){";
+                JsParseResult jspr = AstUtilities.getParseResult(resultIterator.getParserResult());
+                FunctionAstElement element = ElementUtilitiesTest.getFunctionAstElement(jspr, caretLine);
+                result[0] = ElementUtilities.getComments(jspr, element);
+            }
+        });
+
+        @SuppressWarnings("unchecked")
+        List<String> list = (List<String>) result[0];
+
+        return list;
     }
 
     public void testEmpty() throws Exception {

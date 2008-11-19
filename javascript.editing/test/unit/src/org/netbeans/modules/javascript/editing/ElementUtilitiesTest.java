@@ -42,10 +42,14 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.mozilla.nb.javascript.FunctionNode;
-import org.mozilla.nb.javascript.Node;
-import org.netbeans.modules.csl.api.CompilationInfo;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -61,29 +65,35 @@ public class ElementUtilitiesTest extends JsTestBase {
      * @todo test IndexedFunction
      */
     public void testGetComments() throws Exception {
-        CompilationInfo info = getInfo("testfiles/types2.js");
-        String caretLine = "    insertBeeefore: func^tion(el, values, returnElement){";
-        FunctionAstElement element = getFunctionAstElement(info, caretLine);
-        List<String> comments = ElementUtilities.getComments(info, element);
-        
-        List<String> expected = Arrays.asList(
-                "Applies bla bla bla bla",
-                "foo foo bar bar",
-                "@param {Mixed} el The bla bla bla",
-                "@param {Object/Array} values The bla bla bloo (i.e. {0}) or an",
-                "object (i.e. {foo: 'bar'})",
-                "@param {Boolean} returnElement (optional) true to return a Axt.Element (defaults to blii)",
-                "@return {HTMLElement/Axt.Element} The new node or Alement",
-                "@private",
-                "@constructor",
-                "@deprecated"
-                );
+        FileObject f = getTestFile("testfiles/types2.js");
+        Source source = Source.create(f);
 
-        assertEquals(expected, comments);
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                JsParseResult jspr = AstUtilities.getParseResult(resultIterator.getParserResult());
+                String caretLine = "    insertBeeefore: func^tion(el, values, returnElement){";
+                FunctionAstElement element = getFunctionAstElement(jspr, caretLine);
+                List<String> comments = ElementUtilities.getComments(jspr, element);
+
+                List<String> expected = Arrays.asList(
+                        "Applies bla bla bla bla",
+                        "foo foo bar bar",
+                        "@param {Mixed} el The bla bla bla",
+                        "@param {Object/Array} values The bla bla bloo (i.e. {0}) or an",
+                        "object (i.e. {foo: 'bar'})",
+                        "@param {Boolean} returnElement (optional) true to return a Axt.Element (defaults to blii)",
+                        "@return {HTMLElement/Axt.Element} The new node or Alement",
+                        "@private",
+                        "@constructor",
+                        "@deprecated"
+                        );
+
+                assertEquals(expected, comments);
+            }
+        });
     }
 
-    public static FunctionAstElement getFunctionAstElement(CompilationInfo info, String caretLine) throws Exception {
-        Node root = AstUtilities.getRoot(info);
+    public static FunctionAstElement getFunctionAstElement(JsParseResult info, String caretLine) throws Exception {
         String text = AstUtilities.getParseResult(info).getSource();
         
         int caretOffset = -1;
@@ -97,7 +107,7 @@ public class ElementUtilitiesTest extends JsTestBase {
             caretOffset = lineOffset + caretDelta;
         }
         
-        FunctionNode functionNode = AstUtilities.findMethodAtOffset(root, caretOffset);
+        FunctionNode functionNode = AstUtilities.findMethodAtOffset(info.getRootNode(), caretOffset);
         return (FunctionAstElement) AstElement.getElement(info, functionNode);
     }
     

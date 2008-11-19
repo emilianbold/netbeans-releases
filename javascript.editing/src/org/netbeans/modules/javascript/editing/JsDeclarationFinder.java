@@ -580,7 +580,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
                 if (element instanceof IndexedElement) {
                     FileObject fo = element.getFileObject();
                     if (fo != null) {
-                        int astOffset = ((IndexedElement)element).getNodeOffset();
+                        int astOffset = element.getNodeOffset();
                         int lexOffset = LexUtilities.getLexerOffset(infoRet[0], astOffset);
                         if (lexOffset == -1) {
                             lexOffset = 0;
