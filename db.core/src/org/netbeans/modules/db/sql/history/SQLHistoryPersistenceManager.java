@@ -52,7 +52,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import java.util.logging.Level;
@@ -483,6 +482,7 @@ public class SQLHistoryPersistenceManager {
                          // # 152486; Date stored is not parsable, so reset the date to the current timestamp
                          Calendar calendar = Calendar.getInstance();
                          date = calendar.getTime();
+                         LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
                     }
                 } else {
                     Calendar calendar = Calendar.getInstance();
