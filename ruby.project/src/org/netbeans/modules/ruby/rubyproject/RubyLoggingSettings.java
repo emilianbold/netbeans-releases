@@ -63,12 +63,12 @@ final class RubyLoggingSettings {
         return NbPreferences.forModule(RubyLoggingSettings.class);
     }
 
-    void setOriginalLoggingLevel(Logger logger, Level level) {
+    void setLoggingLevel(Logger logger, Level level) {
         int levelValue = level != null ? level.intValue() : -1;
         getPreferences().putInt(logger.getName(), levelValue);
     }
 
-    Level getOriginalLoggingLevel(Logger logger) {
+    Level getLoggingLevel(Logger logger) {
         int levelValue = getPreferences().getInt(logger.getName(), -1);
         if (levelValue != -1) {
             return Level.parse(String.valueOf(levelValue));

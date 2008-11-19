@@ -40,8 +40,8 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -54,5 +54,5 @@ import org.openide.util.Lookup;
 public interface ScriptDescProvider {
     RubyExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target,
             String displayName, final Lookup context, final boolean debug,
-            OutputRecognizer[] extraRecognizers);
+            LineConvertor... extraConvertors);
 }

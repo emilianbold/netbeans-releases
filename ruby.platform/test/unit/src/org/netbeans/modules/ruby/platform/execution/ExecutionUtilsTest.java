@@ -40,53 +40,68 @@
  */
 package org.netbeans.modules.ruby.platform.execution;
 
+import java.util.concurrent.Future;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.RubyTestBase;
-import org.netbeans.modules.ruby.platform.RubyExecution;
-import org.openide.util.Task;
+import org.netbeans.api.ruby.platform.TestUtil;
+import org.openide.util.Utilities;
 
-public final class ExecutionServiceTest extends RubyTestBase {
+public class ExecutionUtilsTest extends RubyTestBase {
 
-    public ExecutionServiceTest(String testName) {
+    public ExecutionUtilsTest(String testName) {
         super(testName);
     }
 
-    public void testIsAppropriateName() {
-        assertTrue(ExecutionService.isAppropriateName("tester.rb", "tester.rb"));
-        assertTrue(ExecutionService.isAppropriateName("tester.rb", "tester.rb #3"));
-        assertFalse(ExecutionService.isAppropriateName("tester.rb", "tester.rb (debug)"));
-        assertTrue(ExecutionService.isAppropriateName("tester.rb (debug)", "tester.rb (debug)"));
-        assertTrue(ExecutionService.isAppropriateName("tester.rb (debug)", "tester.rb (debug) #4"));
-        assertFalse(ExecutionService.isAppropriateName("tester.rb", "test.rb"));
-        assertFalse(ExecutionService.isAppropriateName("test.rb", "tester.rb"));
-        assertFalse(ExecutionService.isAppropriateName("Migration", "tester.rb"));
-        assertFalse(ExecutionService.isAppropriateName("Migration", "Migration #1 #2"));
+    public void testComputeJRubyClassPath() {
+        String[] expectedJars = {
+            "bsf.jar",
+            "jruby.jar",
+            "profile.jar",};
+        Arrays.sort(expectedJars);
+        File jrubyLib = new File(TestUtil.getXTestJRubyHome(), "lib");
+        String cp = ExecutionUtils.computeJRubyClassPath(null, jrubyLib);
+        String finalCP;
+        if (Utilities.isWindows()) {
+            assertTrue(cp.startsWith("\""));
+            assertTrue(cp.endsWith("\""));
+            finalCP = cp.substring(1, cp.length() - 1);
+        } else {
+            finalCP = cp;
+        }
+        String[] jars = finalCP.split(File.pathSeparator);
+        // assertEquals(Arrays.asList(expectedJars), Arrays.asList(jars));
+        assertEquals(expectedJars.length, jars.length);
+        Arrays.sort(jars);
+        for (int i = 0; i < jars.length; i++) {
+            assertTrue(jars[i] + " ends with " + expectedJars[i], jars[i].endsWith(expectedJars[i]));
+        }
     }
 
-    public void testAdditionalEnvironment() throws IOException {
+    public void testAdditionalEnvironment() throws Exception {
         RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         RubyExecutionDescriptor descriptor = new RubyExecutionDescriptor(platform);
 
         descriptor.cmd(platform.getInterpreterFile());
         String gemPath = getWorkDirPath() + File.separator + "fake-repo";
-        descriptor.addAdditionalEnv(Collections.singletonMap("GEM_PATH", gemPath));
-        
+        descriptor.addAdditionalEnv(Collections.<String, String>singletonMap("GEM_PATH", gemPath));
+
         List<String> argList = new ArrayList<String>();
-        argList.addAll(RubyExecution.getRubyArgs(platform));
         argList.add("-e");
         File file = new File(getWorkDir(), "gp.txt");
         argList.add("File.open('" + file.getAbsolutePath() + "', 'w'){|f|f.printf ENV['GEM_PATH']}");
         descriptor.additionalArgs(argList.toArray(new String[argList.size()]));
-        ExecutionService es = new ExecutionService(descriptor);
-        Task task = es.run();
-        task.waitFinished();
-        assertTrue(task.isFinished());
+        RubyProcessCreator rpc = new RubyProcessCreator(descriptor);
+        org.netbeans.modules.extexecution.api.ExecutionService service = 
+                org.netbeans.modules.extexecution.api.ExecutionService.newService(rpc, descriptor.toExecutionDescriptor(), null);
+        Future<Integer> execution = service.run();
+        execution.get();
+        assertTrue(execution.isDone());
         assertEquals("right GEM_PATH", gemPath, slurp(file));
     }
 }

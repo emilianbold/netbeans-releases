@@ -46,7 +46,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor.LineConvertorFactory;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
@@ -85,7 +88,13 @@ public class RubyExecutionDescriptor {
     private boolean appendJdkToPath;
     private String encoding;
     private boolean useInterpreter;
-    List<OutputRecognizer> outputRecognizers;
+    private boolean runThroughRuby = true;
+    private final List<LineConvertor> outConvertors = new ArrayList<LineConvertor>();
+    private final List<LineConvertor> errConvertors = new ArrayList<LineConvertor>();
+    private InputProcessorFactory outProcessorFactory;
+    private InputProcessorFactory errProcessorFactory;
+    private boolean addStandardConvertors;
+    private boolean lineBased;
     /**
      * Defines whether rerun should be allowed. <i>Currently needed
      * only because rerunning rake test tasks in the test runner does not
@@ -113,7 +122,6 @@ public class RubyExecutionDescriptor {
         this.displayName = displayName;
         this.pwd = pwd;
         this.script = script;
-        this.outputRecognizers = new ArrayList<OutputRecognizer>();
         this.useInterpreter = true;
         assert (pwd == null) || pwd.isDirectory() : pwd + " is a directory";
         if (platform.hasRubyGemsInstalled()) {
@@ -126,7 +134,7 @@ public class RubyExecutionDescriptor {
             String home = platform.getHome().getAbsolutePath();
             env.put("JRUBY_HOME", home); // NOI18N
             env.put("JRUBY_BASE", home); // NOI18N
-            env.put("JAVA_HOME", RubyExecution.getJavaHome()); // NOI18N
+            env.put("JAVA_HOME", ExecutionUtils.getJavaHome()); // NOI18N
             addAdditionalEnv(env);
         }
     }
@@ -157,12 +165,7 @@ public class RubyExecutionDescriptor {
     }
 
     public RubyExecutionDescriptor addStandardRecognizers() {
-        outputRecognizers.addAll(RubyExecution.getStandardRubyRecognizers());
-        return this;
-    }
-
-    public RubyExecutionDescriptor addOutputRecognizer(OutputRecognizer recognizer) {
-        outputRecognizers.add(recognizer);
+        addStandardConvertors = true;
         return this;
     }
 
@@ -225,6 +228,12 @@ public class RubyExecutionDescriptor {
         return this;
     }
 
+    public RubyExecutionDescriptor runThroughRuby(boolean runThroughRuby) {
+        this.runThroughRuby = runThroughRuby;
+        return this;
+    }
+
+
     /**
      * Builder property which sets whether the JDK should be added to the PATH
      * for the executed process. The default is false. If it is set, it will be
@@ -243,7 +252,7 @@ public class RubyExecutionDescriptor {
         return this;
     }
 
-    String getDisplayName() {
+    public String getDisplayName() {
         return debug ? displayName + " (debug)" : displayName; // NOI18N
     }
 
@@ -251,6 +260,10 @@ public class RubyExecutionDescriptor {
         return platform;
     }
     
+    public boolean isRunThroughRuby() {
+        return runThroughRuby;
+    }
+
     public File getCmd() {
         return cmd;
     }
@@ -369,6 +382,53 @@ public class RubyExecutionDescriptor {
      */
     public void setRerun(boolean rerun) {
         this.rerun = rerun;
+    }
+
+    public RubyExecutionDescriptor addOutConvertor(LineConvertor convertor) {
+        this.outConvertors.add(convertor);
+        return this;
+    }
+
+    public RubyExecutionDescriptor addErrConvertor(LineConvertor convertor) {
+        this.errConvertors.add(convertor);
+        return this;
+    }
+
+    public void setErrProcessorFactory(InputProcessorFactory errProcessorFactory) {
+        this.errProcessorFactory = errProcessorFactory;
+    }
+
+    public void setOutProcessorFactory(InputProcessorFactory outProcessorFactory) {
+        this.outProcessorFactory = outProcessorFactory;
+    }
+
+    public RubyExecutionDescriptor lineBased(boolean lineBased) {
+        this.lineBased = lineBased;
+        return this;
+    }
+    
+    public ExecutionDescriptor toExecutionDescriptor() {
+        return new ExecutionDescriptor()
+            .showProgress(showProgress)
+            .controllable(isRerun())
+            .inputVisible(inputVisible)
+            .frontWindow(frontWindow)
+            .showSuspended(showSuspended)
+            .postExecution(postBuildAction)
+            .errLineBased(lineBased)
+            .outLineBased(lineBased)
+            .outConvertorFactory(lineConvertorFactory(outConvertors))
+            .errConvertorFactory(lineConvertorFactory(errConvertors))
+            .outProcessorFactory(outProcessorFactory)
+            .errProcessorFactory(errProcessorFactory);
+    }
+
+    private LineConvertorFactory lineConvertorFactory(List<LineConvertor> convertors) {
+        LineConvertor[] convertorArray = convertors.toArray(new LineConvertor[convertors.size()]);
+        if (addStandardConvertors) {
+            return RubyLineConvertorFactory.withStandardConvertors(fileLocator, convertorArray);
+        }
+        return RubyLineConvertorFactory.create(fileLocator, convertorArray);
     }
 
 }
