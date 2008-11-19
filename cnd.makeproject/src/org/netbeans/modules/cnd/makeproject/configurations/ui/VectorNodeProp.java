@@ -54,16 +54,16 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
 
-public class VectorNodeProp extends PropertySupport {
+public class VectorNodeProp<E> extends PropertySupport {
 
-    private VectorConfiguration vectorConfiguration;
+    private VectorConfiguration<E> vectorConfiguration;
     private BooleanConfiguration inheritValues;
     private String baseDir;
     private String[] texts;
     boolean addPathPanel;
     private HelpCtx helpCtx;
 
-    public VectorNodeProp(VectorConfiguration vectorConfiguration, BooleanConfiguration inheritValues, String baseDir, String[] texts, boolean addPathPanel, HelpCtx helpCtx) {
+    public VectorNodeProp(VectorConfiguration<E> vectorConfiguration, BooleanConfiguration inheritValues, String baseDir, String[] texts, boolean addPathPanel, HelpCtx helpCtx) {
         super(texts[0], List.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
         this.inheritValues = inheritValues;
@@ -86,6 +86,7 @@ public class VectorNodeProp extends PropertySupport {
         return vectorConfiguration.getValue();
     }
 
+    @SuppressWarnings("unchecked")
     public void setValue(Object v) {
         vectorConfiguration.setValue((List) v);
     }
@@ -107,7 +108,9 @@ public class VectorNodeProp extends PropertySupport {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-        return new DirectoriesEditor((List) ((ArrayList) vectorConfiguration.getValue()).clone());
+        ArrayList<E> clone = new ArrayList<E>();
+        clone.addAll(vectorConfiguration.getValue());
+        return new DirectoriesEditor(clone);
     }
 
     /*
@@ -119,10 +122,10 @@ public class VectorNodeProp extends PropertySupport {
      */
     private class DirectoriesEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
-        private List value;
+        private List<E> value;
         private PropertyEnv env;
 
-        public DirectoriesEditor(List value) {
+        public DirectoriesEditor(List<E> value) {
             this.value = value;
         }
 
@@ -156,7 +159,7 @@ public class VectorNodeProp extends PropertySupport {
             if (inheritValues != null) {
                 text = texts[3];
             }
-            return new DirectoryChooserPanel(baseDir, (String[]) value.toArray(new String[value.size()]), addPathPanel, inheritValues, text, this, env, helpCtx);
+            return new DirectoryChooserPanel(baseDir, value.toArray(new String[value.size()]), addPathPanel, inheritValues, text, this, env, helpCtx);
         }
 
         @Override

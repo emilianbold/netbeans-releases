@@ -127,10 +127,10 @@ public class PackagingNodeProp extends PropertySupport {
                 val = getString("FilesTextZero");
             }
             else if (noFiles == 1) {
-                val = getString("FilesTextOne", "" + noFiles, ((PackagerFileElement)packagingConfiguration.getFiles().getValue().get(0)).getTo()); // NOI18N
+                val = getString("FilesTextOne", "" + noFiles, (packagingConfiguration.getFiles().getValue().get(0)).getTo()); // NOI18N
             }
             else {
-                val = getString("FilesTextMany", "" + noFiles, ((PackagerFileElement)packagingConfiguration.getFiles().getValue().get(0)).getTo() + ", ..."); // NOI18N
+                val = getString("FilesTextMany", "" + noFiles, (packagingConfiguration.getFiles().getValue().get(0)).getTo() + ", ..."); // NOI18N
             }
             return val;
         }
