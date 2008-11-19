@@ -77,6 +77,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
     private final Set<URL>scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());
     private final Set<URL>scannedUnknown = Collections.synchronizedSet(new HashSet<URL>());
     private final PathRegistry regs = PathRegistry.getDefault();
+    private final PathRecognizerRegistry recognizers = PathRecognizerRegistry.getDefault();
     private volatile State state;
     private volatile Task worker;
 
@@ -220,9 +221,21 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
     }
     
     public void fileDataCreated(FileEvent fe) {
+        final FileObject fo = fe.getFile();
+        final URL root = getOwningSourceRoot (fo);
+        if (root != null &&  VisibilityQuery.getDefault().isVisible(fo) && FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null) {
+            final Work w = new SingleFileWork(WorkType.COMPILE,root,fo);
+            getWorker().schedule(w);
+        }
     }
 
     public void fileChanged(FileEvent fe) {
+        final FileObject fo = fe.getFile();
+        final URL root = getOwningSourceRoot (fo);
+        if (root != null &&  VisibilityQuery.getDefault().isVisible(fo) && FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null) {
+            final Work w = new SingleFileWork(WorkType.COMPILE,root,fo);
+            getWorker().schedule(w);
+        }
     }
 
     public void fileDeleted(FileEvent fe) {

@@ -76,8 +76,7 @@ public class PathRegistry {
     private static PathRegistry instance;
     private static final RequestProcessor firer = new RequestProcessor ();
 
-    private final GlobalPathRegistry regs;
-    private final Lookup.Result<? extends PathRecognizer> pathRecognizers;
+    private final GlobalPathRegistry regs;    
 
     private Set<ClassPath> activeCps;
     private Map<URL, SourceForBinaryQuery.Result2> sourceResults;
@@ -98,8 +97,6 @@ public class PathRegistry {
     private  PathRegistry () {
         regs = GlobalPathRegistry.getDefault();
         assert regs != null;
-        pathRecognizers = Lookup.getDefault().lookupResult(PathRecognizer.class);
-        assert pathRecognizers != null;
         this.listener = new Listener ();
         this.timeStamp = -1;
         this.activeCps = Collections.emptySet();
@@ -394,7 +391,7 @@ public class PathRegistry {
         }
         final Set<String> sIds = new HashSet<String>();
         final Set<String> bIds = new HashSet<String>();
-        lookup (sIds, bIds);
+        PathRecognizerRegistry.getDefault().collectIds(sIds, bIds);
         synchronized (this) {
             if (this.sourceIds == null) {
                 this.sourceIds = sIds;
@@ -411,7 +408,7 @@ public class PathRegistry {
         }
         final Set<String> sIds = new HashSet<String>();
         final Set<String> bIds = new HashSet<String>();
-        lookup (sIds, bIds);
+        PathRecognizerRegistry.getDefault().collectIds(sIds, bIds);
         synchronized (this) {
             if (this.binaryIds == null) {
                 this.binaryIds = bIds;
@@ -419,20 +416,7 @@ public class PathRegistry {
             return this.binaryIds;
         }
     }
-
-    private void lookup (final Set<String> sourceIds,
-            final Set<String> binaryIds) {
-        for (PathRecognizer f : pathRecognizers.allInstances()) {
-            Set<String> ids = f.getSourcePathIds();
-            assert ids != null;
-            sourceIds.addAll(ids);
-            ids = f.getBinaryPathIds();
-            assert ids != null;
-            binaryIds.addAll(ids);
-        }
-    }
-
-
+    
     private Set<ClassPath> getSourcePaths () {
         return getPaths(PathKind.SOURCE);
     }
