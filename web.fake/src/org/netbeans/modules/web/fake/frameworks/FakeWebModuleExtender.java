@@ -42,8 +42,11 @@ package org.netbeans.modules.web.fake.frameworks;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
@@ -53,17 +56,27 @@ import org.openide.util.HelpCtx;
  * Provider for fake web module extenders.
  * @author Tomas Mysik
  */
-public class FakeWebModuleExtender extends WebModuleExtender {
+public class FakeWebModuleExtender extends WebModuleExtender implements ChangeListener {
+    private final FakeWebFrameworkProvider.FakeWebFrameworkProviderImpl fakeProvider;
     private final String name;
     private final String codeNameBase;
+    private final WebModule wm;
+    private final ExtenderController controller;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private JComponent component;
+    private volatile WebModuleExtender delegate;
 
-    public FakeWebModuleExtender(final String name, final String codeNameBase) {
+    FakeWebModuleExtender(FakeWebFrameworkProvider.FakeWebFrameworkProviderImpl fakeProvider, final String name, final String codeNameBase,
+            WebModule wm, ExtenderController controller) {
+        assert fakeProvider != null;
         assert name != null;
         assert codeNameBase != null;
 
+        this.fakeProvider = fakeProvider;
         this.name = name;
         this.codeNameBase = codeNameBase;
+        this.wm = wm;
+        this.controller = controller;
     }
 
     @Override
@@ -76,27 +89,67 @@ public class FakeWebModuleExtender extends WebModuleExtender {
         changeSupport.removeChangeListener(listener);
     }
 
+    /**
+     * We have to return the same instance for all the method call, see {@link WebModuleExtender#getComponent()}.
+     * @return
+     */
     @Override
     public JComponent getComponent() {
-        return new FakeWebFrameworkConfigurationPanel(name, codeNameBase);
+        if (component != null) {
+            return component;
+        }
+        component = new FakeWebFrameworkConfigurationPanel(this, name, codeNameBase);
+        return component;
     }
 
     @Override
     public HelpCtx getHelp() {
+        if (getDelegate() != null) {
+            return getDelegate().getHelp();
+        }
         return null;
     }
 
     @Override
     public void update() {
+        if (getDelegate() != null) {
+            getDelegate().update();
+        }
     }
 
     @Override
     public boolean isValid() {
+        if (getDelegate() != null) {
+            return getDelegate().isValid();
+        }
         return false;
     }
 
     @Override
     public Set<FileObject> extend(WebModule webModule) {
+        if (getDelegate() != null) {
+            return getDelegate().extend(webModule);
+        }
         return Collections.<FileObject>emptySet();
+    }
+
+    void setWebFrameworkProvider(WebFrameworkProvider webFrameworkProvider) {
+        fakeProvider.setDelegate(webFrameworkProvider);
+    }
+
+    public WebModuleExtender getDelegate() {
+        if (delegate != null) {
+            return delegate;
+        }
+        WebFrameworkProvider provider = fakeProvider.getDelegate();
+        if (provider != null) {
+            delegate = provider.createWebModuleExtender(wm, controller);
+            delegate.addChangeListener(this);
+        }
+        return delegate;
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        changeSupport.fireChange();
     }
 }

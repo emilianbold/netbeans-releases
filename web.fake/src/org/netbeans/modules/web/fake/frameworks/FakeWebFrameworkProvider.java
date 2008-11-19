@@ -69,27 +69,65 @@ public final class FakeWebFrameworkProvider {
             }
         }
 
-        return new WebFrameworkProvider(name, null) {
+        return new FakeWebFrameworkProviderImpl(name, codeNameBase);
+    }
 
-            @Override
-            public WebModuleExtender createWebModuleExtender(WebModule wm, ExtenderController controller) {
-                return new FakeWebModuleExtender(name, codeNameBase);
-            }
+    static final class FakeWebFrameworkProviderImpl extends WebFrameworkProvider {
+        private final String name;
+        private final String codeNameBase;
+        private volatile WebFrameworkProvider delegate;
 
-            @Override
-            public String getName() {
-                return name;
-            }
+        FakeWebFrameworkProviderImpl(String name, String codeNameBase) {
+            super(name, null);
 
-            @Override
-            public boolean isInWebModule(WebModule wm) {
-                return false;
-            }
+            assert name != null;
+            assert codeNameBase != null;
 
-            @Override
-            public File[] getConfigurationFiles(WebModule wm) {
-                return new File[0];
+            this.name = name;
+            this.codeNameBase = codeNameBase;
+        }
+
+        @Override
+        public WebModuleExtender createWebModuleExtender(WebModule wm, ExtenderController controller) {
+            if (delegate != null) {
+                return delegate.createWebModuleExtender(wm, controller);
             }
-        };
+            return new FakeWebModuleExtender(this, name, codeNameBase, wm, controller);
+        }
+
+        @Override
+        public String getName() {
+            if (delegate != null) {
+                // XXX
+                //assert name.equals(delegate.getName()) : String.format("names must be the same %s vs. %s", name, delegate.getName());
+                return delegate.getName();
+            }
+            return name;
+        }
+
+        @Override
+        public boolean isInWebModule(WebModule wm) {
+            if (delegate != null) {
+                return delegate.isInWebModule(wm);
+            }
+            return false;
+        }
+
+        @Override
+        public File[] getConfigurationFiles(WebModule wm) {
+            if (delegate != null) {
+                return delegate.getConfigurationFiles(wm);
+            }
+            return new File[0];
+        }
+
+        public WebFrameworkProvider getDelegate() {
+            return delegate;
+        }
+
+        public void setDelegate(WebFrameworkProvider delegate) {
+            assert delegate != null;
+            this.delegate = delegate;
+        }
     }
 }

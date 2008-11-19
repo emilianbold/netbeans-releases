@@ -37,38 +37,42 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-/*
- * FakeWebFrameworkConfigurationPanel.java
- *
- * Created on 18.11.2008, 15:16:54
- */
-
 package org.netbeans.modules.web.fake.frameworks;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.web.api.webmodule.WebFrameworks;
+import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
- * Provider for fake web module extenders. Able to download and enable the proper module.
+ * Provider for fake web module extenders. Able to download and enable the proper module
+ * as well as delegate to the proper configuration panel.
  * @author Tomas Mysik
  */
 public class FakeWebFrameworkConfigurationPanel extends JPanel {
     private static final long serialVersionUID = 2793723169621508L;
 
+    private final FakeWebModuleExtender fakeExtender;
     private final String name;
     private final String codeNameBase;
+    private JComponent panel;
 
-    public FakeWebFrameworkConfigurationPanel(final String name, final String codeNameBase) {
+    FakeWebFrameworkConfigurationPanel(FakeWebModuleExtender fakeExtender, final String name, final String codeNameBase) {
+        assert fakeExtender != null;
         assert name != null;
         assert codeNameBase != null;
 
+        this.fakeExtender = fakeExtender;
         this.name = name;
         this.codeNameBase = codeNameBase;
 
@@ -120,9 +124,37 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void downloadButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
-        // TODO add your handling code here:
+        // XXX download, install & enable the real module
+        // real web framework provider
+        WebFrameworkProvider webFrameworkProvider = getWebFrameworkProvider();
+        assert webFrameworkProvider != null : String.format("Web framework provider must be found for %s (%s)", name, codeNameBase);
+        assert !(webFrameworkProvider instanceof FakeWebFrameworkProvider.FakeWebFrameworkProviderImpl) : "Fake web framework provider found";
+        fakeExtender.setWebFrameworkProvider(webFrameworkProvider);
+
+        // real web framework configuration panel
+        WebModuleExtender realExtender = fakeExtender.getDelegate();
+        assert realExtender != null : String.format("Real web module extender must be found for %s (%s)", name, codeNameBase);
+        panel = realExtender.getComponent();
+        removeAll();
+        if (panel != null) {
+            setLayout(new BorderLayout());
+            add(panel, BorderLayout.NORTH);
+        }
+        revalidate();
+        repaint();
+        fakeExtender.stateChanged(null);
     }//GEN-LAST:event_downloadButtonActionPerformed
 
+    private WebFrameworkProvider getWebFrameworkProvider() {
+        for (WebFrameworkProvider provider : WebFrameworks.getFrameworks()) {
+            // XXX how to find out the correct WFP?
+//            if (name.equals(provider.getName())) {
+            if ("Struts 1.2.9".equals(provider.getName())) { // NOI18N
+                return provider;
+            }
+        }
+        return null;
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton downloadButton;
