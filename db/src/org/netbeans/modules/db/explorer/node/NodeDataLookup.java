@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -52,16 +54,16 @@ import org.openide.util.lookup.InstanceContent;
 public class NodeDataLookup extends AbstractLookup {
 
     /** the data instances held in the lookup */
-    private HashSet dataInstances = new HashSet();
+    private final Set dataInstances = Collections.synchronizedSet(new HashSet());
 
     /** the content of the underlying AbstractLookup */
-    private InstanceContent content;
+    private final InstanceContent content;
     
     /**
      * Constructor
      */
     public NodeDataLookup() {
-        this(createContent());
+        this(new InstanceContent());
     }
     
     /**
@@ -75,17 +77,6 @@ public class NodeDataLookup extends AbstractLookup {
         this.content = content;
     }
     
-    /**
-     * This is a static method used by the constructor so that a new
-     * instance of InstanceContent can be created and based to the base class
-     * constructor.
-     * 
-     * @return an InstanceContent
-     */
-    private static InstanceContent createContent() {
-        return new InstanceContent();
-    }
-               
     /**
      * Add an object instance to the lookup
      * 

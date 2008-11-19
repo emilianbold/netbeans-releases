@@ -39,39 +39,60 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.sql.Connection;
+import java.sql.SQLException;
 import org.netbeans.api.db.explorer.node.BaseNode;
-import org.netbeans.api.db.explorer.node.NodeProviderFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Rob Englander
  */
-public class ProcedureListNodeProvider extends ConnectedNodeProvider {
+public abstract class ConnectedNodeProvider  extends NodeProvider {
 
-    // lazy initialization holder class idiom for static fields is used
-    // for retrieving the factory
-    public static NodeProviderFactory getFactory() {
-        return FactoryHolder.FACTORY;
-    }
+    private final DatabaseConnection connection;
 
-    private static class FactoryHolder {
-        static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
-            public ProcedureListNodeProvider createInstance(Lookup lookup) {
-                ProcedureListNodeProvider provider = new ProcedureListNodeProvider(lookup);
-                provider.setup();
-                return provider;
-            }
-        };
-    }
-
-    private ProcedureListNodeProvider(Lookup lookup) {
+    protected ConnectedNodeProvider(Lookup lookup) {
         super(lookup);
-    }
-
-    @Override
-    protected BaseNode createNode(NodeDataLookup lookup) {
-        return ProcedureListNode.create(lookup);
+        connection = getLookup().lookup(DatabaseConnection.class);
     }
     
+    protected abstract BaseNode createNode(NodeDataLookup lookup);
+    
+    protected void setup() {
+        connection.addPropertyChangeListener(
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    updateState();
+                }
+            }
+        );
+
+        updateState();
+    }
+    
+    private void updateState() {
+        Connection conn = connection.getConnection();
+        boolean disconnected = true;
+
+        if (conn != null) {
+            try {
+                disconnected = conn.isClosed();
+            } catch (SQLException e) {
+
+            }
+        }
+
+        if (disconnected) {
+            removeAllNodes();
+        } else {
+            NodeDataLookup lookup = new NodeDataLookup();
+            lookup.add(connection);
+            addNode(createNode(lookup));
+        }
+    }
 }

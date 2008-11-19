@@ -188,7 +188,7 @@ made subject to such option by the copyright holder.
            <file name="org-netbeans-modules-db-explorer-node-RootNode.instance">
              <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.node.RootNode"/>
              <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.RootNode.instance"/>
-               <attr name="position" intvalue="100"/>
+               <attr name="position" intvalue="101"/>
             </file>
             -->
         </folder> <!-- Runtime -->
