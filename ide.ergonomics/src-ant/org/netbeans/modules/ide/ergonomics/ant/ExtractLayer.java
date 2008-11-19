@@ -51,7 +51,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
-import javax.xml.crypto.dsig.Transform;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -63,7 +62,6 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Concat;
 import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.taskdefs.XSLTProcess;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.FilterChain;
 import org.apache.tools.ant.types.ResourceCollection;
@@ -209,7 +207,7 @@ public final class ExtractLayer extends Task {
             t.setParameter("cluster.name", layer.getName().replaceFirst("\\.[^\\.]+$", ""));
 
             StreamSource orig = new StreamSource(layer);
-            StreamResult gen = new StreamResult(new File(output, layer.getName()));
+            StreamResult gen = new StreamResult(new File(output, "layer.xml"));
             t.transform(orig, gen);
         } catch (Exception ex) {
             throw new BuildException(ex);

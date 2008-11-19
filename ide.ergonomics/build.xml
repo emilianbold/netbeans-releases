@@ -81,7 +81,7 @@
         </pathconvert>
 
         <property name="proxytmp" value="${ergonomicsdir}/build/proxies/${cluster.name}"/>
-        <property name="proxydir" value="${ergonomicsdir}/build/classes/org/netbeans/modules/ide/ergonomics/"/>
+        <property name="proxydir" value="${ergonomicsdir}/build/classes/org/netbeans/modules/ide/ergonomics/${cluster.name}"/>
         <mkdir dir="${proxytmp}/layers"/>
         <copy todir="${proxytmp}/layers">
             <resources refid="layers"/>
@@ -119,7 +119,7 @@
         <mkdir dir="${proxydir}"/>
         <extractlayer
             layer="${proxytmp}/${cluster.name}.xml"
-            bundle="${proxydir}/${cluster.name}.properties"
+            bundle="${proxydir}/Bundle.properties"
             destdir="${proxydir}"
         >
            <modules dir=".">
@@ -132,6 +132,8 @@
             </bundlefilter>
          </extractlayer>
     </target>
+
+    
     <target name="-disable-one-cluster" depends="init-tasks">
         <createmodulexml xmldir="${xmldir}">
             <disabled dir=".">

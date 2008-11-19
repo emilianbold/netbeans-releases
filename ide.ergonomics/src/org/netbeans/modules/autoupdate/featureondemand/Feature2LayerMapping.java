@@ -102,7 +102,7 @@ public class Feature2LayerMapping {
             for (String c : clusters.split(File.pathSeparator)) {
                 int last = c.lastIndexOf(File.separatorChar);
                 String clusterName = c.substring(last + 1);
-                String name = "/org/netbeans/modules/ide/ergonomics/" + clusterName + ".xml";
+                String name = "/org/netbeans/modules/ide/ergonomics/" + clusterName + "/layer.xml";
                 URL layer = Feature2LayerMapping.class.getResource(name);
                 if (layer != null) {
                     ic.add(FeatureInfo.create(clusterName, layer, null));

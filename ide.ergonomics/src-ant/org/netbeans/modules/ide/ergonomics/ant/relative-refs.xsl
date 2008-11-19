@@ -33,7 +33,7 @@
     <xsl:template match="attr[@name='SystemFileSystem.localizingBundle']" mode="project-wizard">
         <xsl:element name="attr">
             <xsl:attribute name="name">SystemFileSystem.localizingBundle</xsl:attribute>
-            <xsl:attribute name="stringvalue">org.netbeans.modules.ide.ergonomics.<xsl:value-of select="$cluster.name"/></xsl:attribute>
+            <xsl:attribute name="stringvalue">org.netbeans.modules.ide.ergonomics.<xsl:value-of select="$cluster.name"/>.Bundle</xsl:attribute>
         </xsl:element>
     </xsl:template>
     <xsl:template match="attr[@urlvalue]" mode="project-wizard">
@@ -41,6 +41,8 @@
             <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
             <xsl:attribute name="urlvalue">
                 <xsl:text>nbresloc:/org/netbeans/modules/ide/ergonomics/</xsl:text>
+                <xsl:value-of select="$cluster.name"/>
+                <xsl:text>/</xsl:text>
                 <xsl:call-template name="filename">
                     <xsl:with-param name="text" select="@urlvalue"/>
                 </xsl:call-template>
