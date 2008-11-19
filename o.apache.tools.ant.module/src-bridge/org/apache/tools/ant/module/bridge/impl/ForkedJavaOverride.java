@@ -29,6 +29,7 @@
 package org.apache.tools.ant.module.bridge.impl;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -66,6 +67,16 @@ public class ForkedJavaOverride extends Java {
     @Override
     public void setFork(boolean fork) {
         // #47465: ignore! Does not work to be set to false.
+    }
+
+    // #121512: NbRedirector does not work with custom input
+    public @Override void setInput(File input) {
+        redirector = new Redirector(this);
+        super.setInput(input);
+    }
+    public @Override void setInputString(String inputString) {
+        redirector = new Redirector(this);
+        super.setInputString(inputString);
     }
 
     private class NbRedirector extends Redirector {

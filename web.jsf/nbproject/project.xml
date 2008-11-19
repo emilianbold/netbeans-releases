@@ -492,31 +492,17 @@ made subject to such option by the copyright holder.
                 <!-- Dependencies for a source root with tests: -->
                 <test-type>
                     <name>unit</name>
-                    <!-- A dependency on a module or its tests: -->
                     <test-dependency>
-                        <!-- Identification of module our tests depend upon: -->
-                        <code-name-base>org.netbeans.modules.xml.text</code-name-base>
-                        <!-- Include also transitive module dependencies of that module: -->
-                        <recursive/>
-                        <!-- Always available when running, but to include at compile time also: -->
-                        <compile-dependency/>
-                        <!-- To request the tests of that module as well: -->
-                        <test/>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
+                        <code-name-base>org.netbeans.modules.xml.text</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
+                        <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
                     </test-dependency>
                 </test-type>
                 <test-type>

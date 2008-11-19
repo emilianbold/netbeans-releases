@@ -398,7 +398,7 @@ private class Listener implements ListSelectionListener,  TableModelListener {
     
     private void modelOrSelectionChanged() {
         int rowIndex = table.getSelectedRow();
-        if (rowIndex != -1) {
+        if (rowIndex != -1 && table.getRowCount() > 0) {
             UpdateUnitProvider uup = ((SettingsTableModel)table.getModel()).getUpdateUnitProvider(rowIndex);
             if (uup != null) {
                 StringBuffer sb = new StringBuffer();

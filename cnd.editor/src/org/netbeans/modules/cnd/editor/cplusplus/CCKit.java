@@ -72,6 +72,7 @@ import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.editor.indent.HotCharIndent;
 import org.netbeans.modules.editor.NbEditorKit;
 
@@ -320,10 +321,14 @@ public class CCKit extends NbEditorKit {
             int dotPos = caret.getDot();
             if (BracketCompletion.posWithinString(doc, dotPos)) {
                 try {
-                    doc.insertString(dotPos, "\"\"", null); //NOI18N
-                    dotPos += 1;
-                    caret.setDot(dotPos);
-                    return dotPos;
+                    if ((dotPos >= 1 && DocumentUtilities.getText(doc).charAt(dotPos-1) != '\\')
+                        || (dotPos >= 2 && DocumentUtilities.getText(doc).charAt(dotPos-2) == '\\')) {
+                        // not line continuation
+                        doc.insertString(dotPos, "\"\"", null); //NOI18N
+                        dotPos += 1;
+                        caret.setDot(dotPos);
+                        return dotPos;
+                    }
                 } catch (BadLocationException ex) {
                 }
             } else {

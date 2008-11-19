@@ -265,9 +265,6 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         return ret;
     }
 
-    protected void refreshClassInfo() {
-    }
-
     /** Get the class that belongs to the given position */
     public CsmClass getClass(int pos) {
         return CompletionUtilities.findClassOnPosition(getDocument(), pos);

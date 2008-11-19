@@ -45,10 +45,7 @@ made subject to such option by the copyright holder.
     <import file="../nbbuild/templates/projectized.xml"/>
     
     <target name="-jar-ant">
-        <ant dir="AntTasks" target="jar" inheritall="false">
-            <!-- #124554 - ant.core.lib not visible in sub tasks. -->
-            <property name="ant.core.lib" value="${ant.core.lib}"/>
-        </ant>
+        <ant dir="AntTasks" target="jar" inheritall="false"/>
         <mkdir dir="${cluster}/ant/extra/"/>
         <copy file="AntTasks/dist/org-netbeans-modules-javawebstart-anttasks.jar" todir="${cluster}/ant/extra/"/>
         <mkdir dir="${cluster}/ant/nblib/"/>
