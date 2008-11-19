@@ -5,11 +5,33 @@
 
     <target name="-release.dir" depends="-disable-kits,projectized-common.-release.dir"/>
 
+    <target name="basic-init" depends="-compile-ant,projectized-common.basic-init"/>
+
     <!--
     -
     - Internal implementation
     -
     -->
+    <target name="-compile-ant" depends="projectized-common.basic-init">
+        <mkdir dir="${src-ant.build}"/>
+        <depend srcdir="src-ant" destdir="${src-ant.build}" cache="build/depcache-ant">
+            <classpath>
+                <path path="${src-ant.cp}"/>
+            </classpath>
+        </depend>
+        <javac srcdir="src-ant" destdir="${src-ant.build}"
+            deprecation="${build.compiler.deprecation}"
+            debug="${build.compiler.debug}"
+            source="1.5" target="1.5" includeantruntime="false">
+            <classpath>
+                <path path="${src-ant.cp}"/>
+            </classpath>
+            <compilerarg line="${javac.compilerargs}"/>
+        </javac>
+        <copy todir="${src-ant.build}">
+            <fileset dir="src-ant" excludes="${jar-excludes}"/>
+        </copy>
+    </target>
 
     <target name="-disable-kits" depends="init-tasks">
         <mkdir dir="${release.dir}/config/Modules"/>
@@ -40,6 +62,9 @@
                 <include name="modules/*.jar"/>
             </modules>
         </layerindex>
+        <taskdef name="extractlayer"
+             classname="org.netbeans.modules.ide.ergonomics.ant.ExtractLayer"
+             classpath="${ergonomicsdir}/build/antclasses/"/>
 
         <pathconvert property="cluster.name">
             <path location="."/>
@@ -80,6 +105,8 @@
 &lt;/filesystem&gt;
             </footer>
         </concat>
+
+        <extractlayer/>
     </target>
     <target name="-disable-one-cluster" depends="init-tasks">
         <createmodulexml xmldir="${xmldir}">
