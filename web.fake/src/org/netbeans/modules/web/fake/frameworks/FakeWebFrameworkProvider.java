@@ -98,8 +98,7 @@ public final class FakeWebFrameworkProvider {
         @Override
         public String getName() {
             if (delegate != null) {
-                // XXX
-                //assert name.equals(delegate.getName()) : String.format("names must be the same %s vs. %s", name, delegate.getName());
+                assert name.equals(delegate.getName()) : String.format("names must be the same %s vs. %s", name, delegate.getName());
                 return delegate.getName();
             }
             return name;

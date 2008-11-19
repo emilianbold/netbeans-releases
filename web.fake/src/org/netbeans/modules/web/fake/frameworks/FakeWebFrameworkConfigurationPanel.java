@@ -40,19 +40,30 @@
 package org.netbeans.modules.web.fake.frameworks;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
+import org.netbeans.modules.web.fake.modules.ModulesInstaller;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
+import org.openide.util.TaskListener;
 
 /**
  * Provider for fake web module extenders. Able to download and enable the proper module
@@ -62,6 +73,7 @@ import org.openide.util.NbBundle;
 public class FakeWebFrameworkConfigurationPanel extends JPanel {
     private static final long serialVersionUID = 2793723169621508L;
 
+    final ModulesInstaller.ProgressMonitor progressMonitor = new DownloadProgressMonitor();
     private final FakeWebModuleExtender fakeExtender;
     private final String name;
     private final String codeNameBase;
@@ -93,6 +105,7 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
 
         infoLabel = new JLabel();
         downloadButton = new JButton();
+        progressPanel = new JPanel();
         Mnemonics.setLocalizedText(infoLabel, "dummy");
         Mnemonics.setLocalizedText(downloadButton, NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "FakeWebFrameworkConfigurationPanel.downloadButton.text"));
         downloadButton.addActionListener(new ActionListener() {
@@ -101,6 +114,8 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
             }
         });
 
+        progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.PAGE_AXIS));
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -108,9 +123,10 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(progressPanel, GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
                     .add(infoLabel)
                     .add(downloadButton))
-                .addContainerGap(181, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
@@ -119,19 +135,61 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
                 .add(infoLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(downloadButton)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(18, 18, 18)
+                .add(progressPanel, GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void downloadButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
-        // XXX download, install & enable the real module
-        // real web framework provider
+        downloadButton.setEnabled(false);
+        final boolean[] success = new boolean[1];
+        Task task = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                success[0] = ModulesInstaller.installModules(progressMonitor, codeNameBase);
+            }
+        });
+        task.addTaskListener(new TaskListener() {
+            public void taskFinished(org.openide.util.Task task) {
+                if (success[0]) {
+                    // XXX remove this nasty hack
+                    try {
+                        Thread.sleep(10000);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    setRealWebFrameworkProvider();
+                    setRealWebFrameworkConfigurationPanel();
+                } else {
+                    progressPanel.removeAll();
+                    progressPanel.add(new JLabel(NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "MSG_DownloadFailed")), BorderLayout.NORTH);
+                    progressPanel.revalidate();
+                    progressPanel.repaint();
+                    downloadButton.setEnabled(true);
+                }
+            }
+        });
+        task.schedule(0);
+    }//GEN-LAST:event_downloadButtonActionPerformed
+
+    private void setRealWebFrameworkProvider() {
         WebFrameworkProvider webFrameworkProvider = getWebFrameworkProvider();
         assert webFrameworkProvider != null : String.format("Web framework provider must be found for %s (%s)", name, codeNameBase);
         assert !(webFrameworkProvider instanceof FakeWebFrameworkProvider.FakeWebFrameworkProviderImpl) : "Fake web framework provider found";
         fakeExtender.setWebFrameworkProvider(webFrameworkProvider);
+    }
 
-        // real web framework configuration panel
+    private WebFrameworkProvider getWebFrameworkProvider() {
+        for (WebFrameworkProvider provider : WebFrameworks.getFrameworks()) {
+            // consider comparison of class.getName() instead of names (but see FakeWebFrameworkProvider.getName() first)
+            if (name.equals(provider.getName())) {
+                return provider;
+            }
+        }
+        return null;
+    }
+
+    private void setRealWebFrameworkConfigurationPanel() {
         WebModuleExtender realExtender = fakeExtender.getDelegate();
         assert realExtender != null : String.format("Real web module extender must be found for %s (%s)", name, codeNameBase);
         panel = realExtender.getComponent();
@@ -143,22 +201,41 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
         revalidate();
         repaint();
         fakeExtender.stateChanged(null);
-    }//GEN-LAST:event_downloadButtonActionPerformed
-
-    private WebFrameworkProvider getWebFrameworkProvider() {
-        for (WebFrameworkProvider provider : WebFrameworks.getFrameworks()) {
-            // XXX how to find out the correct WFP?
-//            if (name.equals(provider.getName())) {
-            if ("Struts 1.2.9".equals(provider.getName())) { // NOI18N
-                return provider;
-            }
-        }
-        return null;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton downloadButton;
     private JLabel infoLabel;
+    private JPanel progressPanel;
     // End of variables declaration//GEN-END:variables
 
+    private final class DownloadProgressMonitor implements ModulesInstaller.ProgressMonitor {
+
+        public void onDownload(ProgressHandle progressHandle) {
+            updateProgress(progressHandle);
+        }
+
+        public void onValidate(ProgressHandle progressHandle) {
+            updateProgress(progressHandle);
+        }
+
+        public void onInstall(ProgressHandle progressHandle) {
+            updateProgress(progressHandle);
+        }
+
+        private void updateProgress(final ProgressHandle progressHandle) {
+            final JLabel tmpMainLabel = ProgressHandleFactory.createMainLabelComponent(progressHandle);
+            final JComponent tmpProgressPanel = ProgressHandleFactory.createProgressComponent(progressHandle);
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    progressPanel.removeAll();
+                    progressPanel.add(tmpMainLabel);
+                    progressPanel.add(Box.createRigidArea(new Dimension(0,5)));
+                    progressPanel.add(tmpProgressPanel);
+                    progressPanel.revalidate();
+                    progressPanel.repaint();
+                }
+            });
+        }
+    }
 }
