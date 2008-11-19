@@ -74,7 +74,6 @@ import org.netbeans.mobility.antext.preprocessor.PreprocessorException;
 import org.netbeans.modules.mobility.editor.J2MEKit;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.TextSwitcher;
-import org.netbeans.modules.mobility.snippets.SnippetsPaletteSupport;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.openide.ErrorManager;
@@ -366,55 +365,9 @@ public class J2MEDataObject extends MultiDataObject {
             super.notifyUnmodified();
             ((Environment)this.env).removeSaveCookie();
         }
-        
-        protected @Override CloneableEditor createCloneableEditor() {
-            return new J2MEEditor(this);
-        }
-        
+
         public @Override boolean close(boolean ask) {
             return super.close(ask);
-        }
-        
-    }
-    
-    public static class J2MEEditor extends CloneableEditor {
-        
-        private static final long serialVersionUID = -1;
-        
-        public J2MEEditor() {
-        }
-        
-        public J2MEEditor(J2MEEditorSupport sup) {
-            super(sup);
-            initialize();
-        }
-        
-        void associatePalette(J2MEEditorSupport s) {
-            try {
-                DataObject dataObject = s.getDataObject();
-                if (dataObject instanceof J2MEDataObject) {
-                    PaletteController mController;
-                    mController = SnippetsPaletteSupport.getPaletteController();
-                    Lookup pcl = Lookups.singleton(mController);
-                    Lookup anl = getActivatedNodes()[0].getLookup();
-                    Lookup actionMap = Lookups.singleton(getActionMap());
-                    ProxyLookup l = new ProxyLookup(new Lookup[] { anl, actionMap, pcl });
-                    associateLookup(l);
-                }
-            }catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-        
-        private void initialize() {
-            Node nodes[] = {((DataEditorSupport)cloneableEditorSupport()).getDataObject().getNodeDelegate()};
-            setActivatedNodes(nodes);
-            associatePalette((J2MEEditorSupport)cloneableEditorSupport());
-        }
-        
-        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-            super.readExternal(in);
-            initialize();
         }
         
     }

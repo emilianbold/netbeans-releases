@@ -271,7 +271,7 @@ public class Utils {
         return OK;
     }
 
-    public static void phaseOnePOne(TestCase thiz, TestData data, String installerType) {
+    public static void phaseOnePOne(TestData data, String installerType) {
         try {
             String wd = System.getenv("WORKSPACE");
             TestCase.assertNotNull(wd);
@@ -285,6 +285,7 @@ public class Utils {
         System.setProperty("nbi.dont.use.system.exit", "true");
         System.setProperty("nbi.utils.log.to.console", "false");
         System.setProperty("servicetag.allow.register", "false");
+        System.setProperty("show.uninstallation.survey", "false");
         System.setProperty("user.home", data.getWorkDirCanonicalPath());
         
         if (Boolean.valueOf(System.getProperty("test.use.build.number"))) {
@@ -388,8 +389,8 @@ public class Utils {
         new JButtonOperator(new JFrameOperator(MAIN_FRAME_TITLE), FINISH_BUTTON_LABEL).push();
     }
 
-    public static void phaseOne(TestCase thiz, TestData data, String installerType) {
-        phaseOnePOne(thiz, data, installerType);
+    public static void phaseOne(TestData data, String installerType) {
+        phaseOnePOne(data, installerType);
         data.setInstallerURL(constructURL(data));
         phaseOnePTwo(data);
     }
@@ -425,6 +426,40 @@ public class Utils {
         TestCase.assertFalse("GlassFish3 dir deleted", Utils.dirExist(GF3_DIR_NAME, data).equals(OK));
     }
 
+    public static void phaseFourWOUninstall(TestData data) {
+        //Installation
+        Utils.stepInstall(data);
+
+        //finish
+        Utils.stepFinish();
+
+        Utils.waitSecond(data, 5);
+
+        TestCase.assertEquals("Installer Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
+
+        TestCase.assertEquals("NetBeans dir created", OK, Utils.dirExist(NB_DIR_NAME, data));
+        
+    }
+    
+    public static void phaseFive(TestData data) {
+        TestCase.assertEquals("Extract uninstaller jar", OK, Utils.extractUninstallerJar(data));
+        TestCase.assertEquals("Load engine classes", OK, Utils.loadEngineClasses(data));
+        TestCase.assertEquals("Run uninstaller main class", OK, Utils.runUninstaller(data));
+
+        Utils.stepUninstall(data);
+
+        Utils.stepFinish();
+
+        Utils.waitSecond(data, 5);
+
+        TestCase.assertEquals("Uninstaller Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
+
+        TestCase.assertFalse("NetBeans dir deleted", Utils.dirExist(NB_DIR_NAME, data).equals(OK));
+        TestCase.assertFalse("Tomcat dir deleted", Utils.dirExist(TOMACAT_DIR_NAME, data).equals(OK));
+        TestCase.assertFalse("GlassFish2 dir deleted", Utils.dirExist(GF2_DIR_NAME, data).equals(OK));
+        TestCase.assertFalse("GlassFish3 dir deleted", Utils.dirExist(GF3_DIR_NAME, data).equals(OK));
+    }
+    
     public static void phaseTwo(TestData data) {
         //welcome
         stepWelcome();

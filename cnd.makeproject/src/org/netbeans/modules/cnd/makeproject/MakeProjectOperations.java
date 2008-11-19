@@ -73,9 +73,9 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         }
     }
 
-    public List/*<FileObject>*/ getMetadataFiles() {
+    public List<FileObject> getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
-        List/*<FileObject>*/ files = new ArrayList();
+        List<FileObject> files = new ArrayList<FileObject>();
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         addFile(projectDirectory, "nbproject", files); // NOI18N
         addFile(projectDirectory, ((MakeConfigurationDescriptor) pdp.getConfigurationDescriptor()).getProjectMakefileName(), files); // NOI18N
@@ -83,10 +83,10 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         return files;
     }
 
-    public List/*<FileObject>*/ getDataFiles() {
+    public List<FileObject> getDataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
 
-        List/*<FileObject>*/ files = new ArrayList();
+        List<FileObject> files = new ArrayList<FileObject>();
         FileObject[] children = projectDirectory.getChildren();
         List metadataFiles = getMetadataFiles();
         for (int i = 0; i < children.length; i++) {

@@ -46,7 +46,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
-import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 
 /**
@@ -105,7 +104,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         String path = RemotePathMap.getMapper(key).getRemotePath(dirf.getAbsolutePath());
 
         if (path != null) {
-            dircmd = "cd " + path + "; "; // NOI18N
+            dircmd = "cd \"" + path + "\"; "; // NOI18N
         } else {
             dircmd = "";
         }

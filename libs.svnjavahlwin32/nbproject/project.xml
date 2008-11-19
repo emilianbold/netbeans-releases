@@ -55,10 +55,7 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.libs.svnClientAdapter</friend>
-                <package>org.tigris.subversion.javahl</package>
-            </friend-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

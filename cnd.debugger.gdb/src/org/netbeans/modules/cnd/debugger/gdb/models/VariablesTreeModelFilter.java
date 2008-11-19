@@ -43,9 +43,9 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.security.auth.RefreshFailedException;
 import javax.security.auth.Refreshable;
 import javax.swing.Action;
@@ -78,13 +78,13 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
     
     private ContextProvider  lookupProvider;
     
-    private final Collection modelListeners = new HashSet();
+    private final Collection<ModelListener> modelListeners = new CopyOnWriteArrayList<ModelListener>();
     
     private RequestProcessor evaluationRP = new RequestProcessor();
     
     private RequestProcessor.Task evaluationTask;
-    
-    private LinkedList evaluationQueue = new LinkedList();
+
+    private final LinkedList<Object> evaluationQueue = new LinkedList<Object>();
     
     
     public VariablesTreeModelFilter (ContextProvider lookupProvider) {
@@ -119,11 +119,13 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
             }
         }
     }
-    
+
     private void postEvaluationMonitor(Object o, Runnable whenEvaluated) {
         synchronized (evaluationQueue) {
             if (evaluationQueue.contains(o) &&
-                evaluationQueue.contains(whenEvaluated)) return ;
+                evaluationQueue.contains(whenEvaluated)) {
+                return;
+            }
             if (evaluationTask == null) {
                 evaluationTask = evaluationRP.create(this);
             }
@@ -240,33 +242,25 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         Object node
     ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (node, true, null);
-        if (vf == null) 
+        if (vf == null) {
             return original.isLeaf (node);
+        }
         return vf.isLeaf (original, (Variable) node);
     }
 
     public void addModelListener (ModelListener l) {
-        synchronized (modelListeners) {
-            modelListeners.add(l);
-        }
+        modelListeners.add(l);
     }
 
     public void removeModelListener (ModelListener l) {
-        synchronized (modelListeners) {
-            modelListeners.remove(l);
-        }
+        modelListeners.remove(l);
     }
     
     private void fireModelChange(ModelEvent me) {
-        Object[] listeners;
-        synchronized (modelListeners) {
-            listeners = modelListeners.toArray();
-        }
-        for (int i = 0; i < listeners.length; i++) {
-            ((ModelListener) listeners[i]).modelChanged(me);
+        for (ModelListener listener : modelListeners) {
+            listener.modelChanged(me);
         }
     }
-    
     
     // NodeModelFilter
     
@@ -276,7 +270,9 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         VariablesFilter vf = getFilter (node, true, new Runnable() {
             public void run() {
                 VariablesFilter vf = getFilter (node, false, null);
-                if (vf == null) return ;
+                if (vf == null) {
+                    return;
+                }
                 String filteredDisplayName;
                 try {
                     filteredDisplayName = vf.getDisplayName (original, (Variable) node);
@@ -305,7 +301,9 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         VariablesFilter vf = getFilter (node, true, new Runnable() {
             public void run() {
                 VariablesFilter vf = getFilter (node, false, null);
-                if (vf == null) return ;
+                if (vf == null) {
+                    return;
+                }
                 String filteredIconBase;
                 try {
                     filteredIconBase = vf.getIconBase (original, (Variable) node);
@@ -334,7 +332,9 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         VariablesFilter vf = getFilter (node, true, new Runnable() {
             public void run() {
                 VariablesFilter vf = getFilter (node, false, null);
-                if (vf == null) return ;
+                if (vf == null) {
+                    return;
+                }
                 String filteredShortDescription;
                 try {
                     filteredShortDescription = vf.getShortDescription (original, (Variable) node);
@@ -363,8 +363,9 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         Object node
     ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (node, true, null);
-        if (vf == null) 
+        if (vf == null) {
             return original.getActions (node);
+        }
         return vf.getActions (original, (Variable) node);
     }
     
@@ -404,8 +405,9 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         String columnID
     ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (row, true, null);
-        if (vf == null) 
+        if (vf == null) {
             return original.isReadOnly (row, columnID);
+        }
         return vf.isReadOnly (original, (Variable) row, columnID);
     }
     
@@ -426,8 +428,8 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
     
     // helper methods ..........................................................
     
-    private HashMap typeToFilter;
-    private HashMap ancestorToFilter;
+    private HashMap<String, VariablesFilter> typeToFilter;
+    private HashMap<String, VariablesFilter> ancestorToFilter;
     
     /**
      * @param o The object to get the filter for
@@ -439,8 +441,8 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
      */
     private VariablesFilter getFilter (Object o, boolean checkEvaluated, Runnable whenEvaluated) {
         if (typeToFilter == null) {
-            typeToFilter = new HashMap ();
-            ancestorToFilter = new HashMap ();
+            typeToFilter = new HashMap<String, VariablesFilter>();
+            ancestorToFilter = new HashMap<String, VariablesFilter>();
             List l = lookupProvider.lookup (null, VariablesFilter.class);
             int i, k = l.size ();
             for (i = 0; i < k; i++) {
@@ -458,9 +460,13 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
             }
         }
         
-        if (typeToFilter.isEmpty()) return null; // Optimization for corner case
+        if (typeToFilter.isEmpty()) {
+            return null;
+        } // Optimization for corner case
         
-        if (!(o instanceof Variable)) return null;
+        if (!(o instanceof Variable)) {
+            return null;
+        }
         
         Variable v = (Variable) o;
         
@@ -474,8 +480,10 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         }
         
         String type = v.getType ();
-        VariablesFilter vf = (VariablesFilter) typeToFilter.get (type);
-        if (vf != null) return vf;
+        VariablesFilter vf = typeToFilter.get (type);
+        if (vf != null) {
+            return vf;
+        }
         
         /*NM TEMPORARY COMMENTED OUT
         if (!(o instanceof ObjectVariable)) return null;
@@ -483,7 +491,7 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         ov = ov.getSuper ();
         while (ov != null) {
             type = ov.getType ();
-            vf = (VariablesFilter) ancestorToFilter.get (type);
+            vf = ancestorToFilter.get (type);
             if (vf != null) return vf;
             ov = ov.getSuper ();
         }

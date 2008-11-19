@@ -155,12 +155,10 @@ public class IncludeResolverImplTestCase extends TraceModelTestBase {
             
             List<CsmFile> files = new ArrayList<CsmFile>();
             files.addAll(project.getAllFiles());
-            Collections.sort(files, new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    assertNotNull(o1);
-                    assertNotNull(o2);
-                    CsmFile file1 = (CsmFile) o1;
-                    CsmFile file2 = (CsmFile) o2;
+            Collections.sort(files, new Comparator<CsmFile>() {
+                public int compare(CsmFile file1, CsmFile file2) {
+                    assertNotNull(file1);
+                    assertNotNull(file1);
                     return file1.getAbsolutePath().toString().compareTo(file2.getAbsolutePath().toString());
                 }
             });

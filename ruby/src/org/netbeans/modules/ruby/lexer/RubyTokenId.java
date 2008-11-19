@@ -53,7 +53,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.ruby.RubyMimeResolver;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -159,7 +159,7 @@ public enum RubyTokenId implements TokenId {
     private static final Language<RubyTokenId> language =
         new LanguageHierarchy<RubyTokenId>() {
                 protected String mimeType() {
-                    return RubyMimeResolver.RUBY_MIME_TYPE;
+                    return RubyInstallation.RUBY_MIME_TYPE;
                 }
 
                 protected Collection<RubyTokenId> createTokenIds() {

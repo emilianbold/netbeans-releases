@@ -330,15 +330,15 @@ final class ComponentDocument extends JComponent {
     }
 
     private String getNumber(int number, int length) {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append(number);
+        StringBuilder builder = new StringBuilder();
+        builder.append(number);
 
-        for (int i = buffer.length(); i < length; i++) {
-            buffer.insert(0, " "); // NOI18N
+        for (int i = builder.length(); i < length; i++) {
+            builder.insert(0, " "); // NOI18N
         }
-        buffer.append(" "); // NOI18N
+        builder.append(" "); // NOI18N
 
-        return buffer.toString();
+        return builder.toString();
     }
 
     // ---------------------------------------
@@ -347,7 +347,7 @@ final class ComponentDocument extends JComponent {
         public LineTokenizer(String value) {
             myValue = value;
             myLength = value.length();
-            myBuffer = new StringBuffer();
+            myBuilder = new StringBuilder();
         }
 
         public boolean hasMoreTokens() {
@@ -355,7 +355,7 @@ final class ComponentDocument extends JComponent {
         }
 
         public String nextToken() {
-            myBuffer.setLength(0);
+            myBuilder.setLength(0);
             String separator = "";
             char c;
 
@@ -370,15 +370,15 @@ final class ComponentDocument extends JComponent {
                     }
                     break;
                 }
-                myBuffer.append(c);
+                myBuilder.append(c);
             }
-            return myBuffer.toString();
+            return myBuilder.toString();
         }
 
         private int myPos;
         private int myLength;
         private String myValue;
-        private StringBuffer myBuffer;
+        private StringBuilder myBuilder;
     }
 
     private int[] myCorrection;

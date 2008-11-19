@@ -151,7 +151,7 @@ public class PhysicalView {
         }
                 
         public boolean acceptDataObject(DataObject obj) {
-            return VisibilityQuery.getDefault().isVisible(obj.getPrimaryFile());
+            return acceptFileObject(obj.getPrimaryFile());
         }
         
         public void stateChanged( ChangeEvent e) {            

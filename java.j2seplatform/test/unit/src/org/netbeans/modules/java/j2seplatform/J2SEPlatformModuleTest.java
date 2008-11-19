@@ -49,6 +49,7 @@ import org.netbeans.modules.java.j2seplatform.platformdefinition.JavaPlatformPro
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  * Test that module restore works as expected.
@@ -74,9 +75,7 @@ public class J2SEPlatformModuleTest extends NbTestCase {
         super.setUp();
         this.clearWorkDir();
         System.setProperty("netbeans.user", FileUtil.normalizeFile(getWorkDir()).getPath());
-        TestUtil.setLookup(new Object[] {
-            new JavaPlatformProviderImpl(),
-        });
+        MockLookup.setInstances(new JavaPlatformProviderImpl());
     }
     
     public void testRestored() throws Exception {

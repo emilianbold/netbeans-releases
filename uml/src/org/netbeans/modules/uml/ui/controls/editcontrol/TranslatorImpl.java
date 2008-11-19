@@ -1421,7 +1421,7 @@ public class TranslatorImpl implements ITranslator
             try
             {
                Class clazz = Class.forName(pDef.getID());
-               Class[] params = null;//{com.embarcadero.com.Dispatch.class};
+               Class[] params = null;//
                Constructor constructor = clazz.getConstructor(params);
                
                Object[] paramInstances =

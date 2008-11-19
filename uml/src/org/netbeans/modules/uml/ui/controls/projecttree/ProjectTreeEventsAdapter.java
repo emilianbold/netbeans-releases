@@ -61,7 +61,6 @@ public class ProjectTreeEventsAdapter implements IProjectTreeEventsSink
 {
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeEventsSink#onBeforeEdit(com.embarcadero.describe.gui.axcontrols.axprojecttree.IAxProjectTreeControl, com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeItem, com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeEditVerify, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onBeforeEdit(IProjectTreeControl pParentControl,
                             IProjectTreeItem pItem,
@@ -71,7 +70,6 @@ public class ProjectTreeEventsAdapter implements IProjectTreeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeEventsSink#onAfterEdit(com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeControl, com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeItem, com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeEditVerify, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onAfterEdit(IProjectTreeControl pParentControl,
                            IProjectTreeItem pItem,
@@ -81,7 +79,6 @@ public class ProjectTreeEventsAdapter implements IProjectTreeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeEventsSink#onDoubleClick(com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeControl, com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeItem, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onDoubleClick(IProjectTreeControl pParentControl,
                              IProjectTreeItem    pItem, 
@@ -94,7 +91,6 @@ public class ProjectTreeEventsAdapter implements IProjectTreeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeEventsSink#onSelChanged(com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeControl, com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeItems, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onSelChanged(IProjectTreeControl pParentControl,
 	                         IProjectTreeItem[] pItem,
@@ -103,7 +99,6 @@ public class ProjectTreeEventsAdapter implements IProjectTreeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeEventsSink#onRightButtonDown(com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeControl, com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeItem, com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeHandled, int, int, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onRightButtonDown(IProjectTreeControl pParentControl,
                                  IProjectTreeItem pItem,
@@ -115,7 +110,6 @@ public class ProjectTreeEventsAdapter implements IProjectTreeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeEventsSink#onBeginDrag(com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeControl, com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeItems, com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeDragVerify, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onBeginDrag(IProjectTreeControl pParentControl,
 	                        IProjectTreeItem[] pItem,
@@ -125,7 +119,6 @@ public class ProjectTreeEventsAdapter implements IProjectTreeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeEventsSink#onMoveDrag(com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeControl, com.embarcadero.describe.gui.axcontrols.axprojecttree.IDataObject, com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeDragVerify, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onMoveDrag(IProjectTreeControl    pParentControl,
                           Transferable           pItem,
@@ -135,7 +128,6 @@ public class ProjectTreeEventsAdapter implements IProjectTreeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeEventsSink#onEndDrag(com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeControl, com.embarcadero.describe.gui.axcontrols.axprojecttree.IDataObject, com.embarcadero.describe.gui.axcontrols.axprojecttree.IProjectTreeDragVerify, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onEndDrag(IProjectTreeControl    pParentControl,
                          Transferable           pItem,

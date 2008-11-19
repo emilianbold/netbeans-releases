@@ -38,8 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package  org.netbeans.modules.cnd.makewizard;
+package org.netbeans.modules.cnd.makewizard;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -51,6 +50,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -71,69 +71,50 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
- 
-public class MakefileWizard  implements TemplateWizard.Iterator {
+
+public class MakefileWizard implements TemplateWizard.Iterator {
+
     /** Holds list of event listeners */
-    private static Vector listenerList = null;
-
+    private static Vector<MakefileWizardListener> listenerList = null;
     protected TemplateWizard wd;
-
     /** Current array of panels */
     protected Object[] panels;
-
     /** Store a pointer to the current panel */
     private WizardDescriptor.Panel currentPanel;
-
     /** Array of panels for all types except
      *  MakefileData.COMPLEX_MAKEFILE_TYPE.
      */
     protected Object[] normalPanels;
-
     /** LinkedList of panels for MakefileData.COMPLEX_MAKEFILE_TYPE */
-    protected LinkedList complexPanels;
-
+    protected LinkedList<Object> complexPanels;
     /** Makefile data */
     private MakefileData makefileData;
-
     /** The MakefileWizard */
     private static MakefileWizard makefileWizard;
-
     /** Wizard title */
     private String title;
-
     /** Index into the array */
     private int index;
-
     /** The index into the displayed steps (different than index) */
     private int virtIndex;
-
     /** Index into complexPanels where new panels should be added */
     private int addIdx;
-
     /** The Next button is needed to reset the default button */
     private JButton nextButton;
-
     /** The Finish button is needed to change the label to Last */
     private JButton finishButton;
-
     /** The cancel button */
     private JButton cancelButton;
-
     /** Save the Finish button's original label */
     private String finishLabel;
-
     /** Save the Finish button's original mnemonic too */
     private int finishMnemonic;
-
     /** Are we doing Last updates to keep it enabled? */
     private boolean finishEnabled;
-
     /** Tells if we have output the Compilation Preferences yet */
     private boolean haveCompilerFlags;
-
     /** template wizard property change listener ... */
     private PropertyChangeListener listener = null;
-
     private WizardDescriptor.Panel targetChooserDescriptorPanel;
     private WizardDescriptor.Panel baseDirectoryDescriptorPanel;
     private WizardDescriptor.Panel targetNameDescriptorPanel;
@@ -160,170 +141,161 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
      * until the panel is displayed for the first time.
      */
     public MakefileWizard() {
-	makefileWizard = this;
-	String title = NbBundle.getBundle(MakefileWizard.class).
-		    getString ("LBL_MakefileWizardTitle");	// NOI18N
-	setTitle(title);
-	makefileData = new MakefileData();
+        makefileWizard = this;
+        String aTitle = NbBundle.getBundle(MakefileWizard.class).
+                getString("LBL_MakefileWizardTitle");	// NOI18N
+        setTitle(aTitle);
+        makefileData = new MakefileData();
     }
 
     private void initPanels() {
-	// Panels used in both SIMPLE_* and COMPLEX_* targets
-	targetChooserDescriptorPanel = wd.targetChooser();
-	baseDirectoryDescriptorPanel = new MakefileWizardDescriptorPanel(new BaseDirectoryPanel(this), "base_directory"); // NOI18N
-	targetNameDescriptorPanel = new MakefileWizardDescriptorPanel(new TargetNamePanel(this), "target_name"); // NOI18N
-	makefileSourcesDescriptorPanel = new MakefileWizardDescriptorPanel(new MakefileSourcesPanel(this), "source_files"); // NOI18N
-	//compilerTypeDescriptorPanel = new MakefileWizardDescriptorPanel(new CompilerTypePanel(this));
-	selectPreferencesDescriptorPanel = new MakefileWizardDescriptorPanel(new SelectPreferencesPanel(this), "compiling_preference"); // NOI18N
+        // Panels used in both SIMPLE_* and COMPLEX_* targets
+        targetChooserDescriptorPanel = wd.targetChooser();
+        baseDirectoryDescriptorPanel = new MakefileWizardDescriptorPanel(new BaseDirectoryPanel(this), "base_directory"); // NOI18N
+        targetNameDescriptorPanel = new MakefileWizardDescriptorPanel(new TargetNamePanel(this), "target_name"); // NOI18N
+        makefileSourcesDescriptorPanel = new MakefileWizardDescriptorPanel(new MakefileSourcesPanel(this), "source_files"); // NOI18N
+        //compilerTypeDescriptorPanel = new MakefileWizardDescriptorPanel(new CompilerTypePanel(this));
+        selectPreferencesDescriptorPanel = new MakefileWizardDescriptorPanel(new SelectPreferencesPanel(this), "compiling_preference"); // NOI18N
 
-	// Panels used by just the COMPLEX_* targets
-	createTargetsDescriptorPanel = new MakefileWizardDescriptorPanel(new CreateTargetsPanel(this), "list_of_targets"); // NOI18N
-	platformTypeDescriptorPanel = new MakefileWizardDescriptorPanel(new PlatformTypePanel(this), "type_and_platform"); // NOI18N
-	buildOutputDescriptorPanel = new MakefileWizardDescriptorPanel(new BuildOutputPanel(this), "build_output"); // NOI18N
-	makefileIncludesDescriptorPanel = new MakefileWizardDescriptorPanel(new MakefileIncludesPanel(this), "include_directories"); // NOI18N
-	standardLibsDescriptorPanel = new MakefileWizardDescriptorPanel(new StandardLibsPanel(this), "standard_libraries"); // NOI18N
-	userLibsDescriptorPanel = new MakefileWizardDescriptorPanel(new UserLibsPanel(this), "libraries"); // NOI18N
-	basicFlagsDescriptorPanel = new MakefileWizardDescriptorPanel(new BasicFlagsPanel(this), "basic_options"); // NOI18N
-	compilerPathDescriptorPanel = new MakefileWizardDescriptorPanel(new CompilerPathPanel(this), "compiler_paths"); // NOI18N
-	//makeTargetDescriptorPanel = new MakefileWizardDescriptorPanel(new MakeTargetPanel(this));
-	//customTargetDescriptorPanel = new MakefileWizardDescriptorPanel(new CustomTargetPanel(this));
-	compilerOptionsDescriptorPanel = new MakefileWizardDescriptorPanel(new CompilerOptionsPanel(this), "advanced_options"); // NOI18N
+        // Panels used by just the COMPLEX_* targets
+        createTargetsDescriptorPanel = new MakefileWizardDescriptorPanel(new CreateTargetsPanel(this), "list_of_targets"); // NOI18N
+        platformTypeDescriptorPanel = new MakefileWizardDescriptorPanel(new PlatformTypePanel(this), "type_and_platform"); // NOI18N
+        buildOutputDescriptorPanel = new MakefileWizardDescriptorPanel(new BuildOutputPanel(this), "build_output"); // NOI18N
+        makefileIncludesDescriptorPanel = new MakefileWizardDescriptorPanel(new MakefileIncludesPanel(this), "include_directories"); // NOI18N
+        standardLibsDescriptorPanel = new MakefileWizardDescriptorPanel(new StandardLibsPanel(this), "standard_libraries"); // NOI18N
+        userLibsDescriptorPanel = new MakefileWizardDescriptorPanel(new UserLibsPanel(this), "libraries"); // NOI18N
+        basicFlagsDescriptorPanel = new MakefileWizardDescriptorPanel(new BasicFlagsPanel(this), "basic_options"); // NOI18N
+        compilerPathDescriptorPanel = new MakefileWizardDescriptorPanel(new CompilerPathPanel(this), "compiler_paths"); // NOI18N
+        //makeTargetDescriptorPanel = new MakefileWizardDescriptorPanel(new MakeTargetPanel(this));
+        //customTargetDescriptorPanel = new MakefileWizardDescriptorPanel(new CustomTargetPanel(this));
+        compilerOptionsDescriptorPanel = new MakefileWizardDescriptorPanel(new CompilerOptionsPanel(this), "advanced_options"); // NOI18N
 
-	// The review/summary panel
-	makefileReviewDescriptorPanel = new MakefileWizardDescriptorPanel(new MakefileReviewPanel(this), "review_makefile"); // NOI18N
+        // The review/summary panel
+        makefileReviewDescriptorPanel = new MakefileWizardDescriptorPanel(new MakefileReviewPanel(this), "review_makefile"); // NOI18N
 
-	
-	normalPanels = new WizardDescriptor.Panel[] {
-	    targetChooserDescriptorPanel,
-	    //compilerTypeDescriptorPanel,
-	    platformTypeDescriptorPanel,
-	    targetNameDescriptorPanel,
-	    makefileSourcesDescriptorPanel,
-	    selectPreferencesDescriptorPanel,
-	    makefileReviewDescriptorPanel
-	};
 
-	// Use a LinkedList for complexPanels because we add new panels to the
-	// middle when new targets are added.
-	complexPanels = new LinkedList();
-	complexPanels.addLast(targetChooserDescriptorPanel);
-	complexPanels.addLast(platformTypeDescriptorPanel);
-	complexPanels.addLast(baseDirectoryDescriptorPanel);
-	complexPanels.addLast(createTargetsDescriptorPanel);
-	complexPanels.addLast(makefileReviewDescriptorPanel);
-	
-	panels = complexToArray();
-	currentPanel = targetChooserDescriptorPanel;
+        normalPanels = new WizardDescriptor.Panel[]{
+                    targetChooserDescriptorPanel,
+                    //compilerTypeDescriptorPanel,
+                    platformTypeDescriptorPanel,
+                    targetNameDescriptorPanel,
+                    makefileSourcesDescriptorPanel,
+                    selectPreferencesDescriptorPanel,
+                    makefileReviewDescriptorPanel
+                };
 
-	addIdx = 4;
-	haveCompilerFlags = false;
-	nextButton = null;
-	finishButton = null;
-	cancelButton = null;
-	finishEnabled = false;
+        // Use a LinkedList for complexPanels because we add new panels to the
+        // middle when new targets are added.
+        complexPanels = new LinkedList<Object>();
+        complexPanels.addLast(targetChooserDescriptorPanel);
+        complexPanels.addLast(platformTypeDescriptorPanel);
+        complexPanels.addLast(baseDirectoryDescriptorPanel);
+        complexPanels.addLast(createTargetsDescriptorPanel);
+        complexPanels.addLast(makefileReviewDescriptorPanel);
+
+        panels = complexToArray();
+        currentPanel = targetChooserDescriptorPanel;
+
+        addIdx = 4;
+        haveCompilerFlags = false;
+        nextButton = null;
+        finishButton = null;
+        cancelButton = null;
+        finishEnabled = false;
     }
 
     public TemplateWizard getTemplateWizard() {
-	return wd;
+        return wd;
     }
 
     /** Getter for the data associated with a panel */
     final public MakefileData getMakefileData() {
-	return makefileData;
+        return makefileData;
     }
-
 
     /** Setter for the title string */
     final public void setTitle(String title) {
-	this.title = title;
+        this.title = title;
     }
-
 
     /** Getter for Next button */
     public JButton getNextButton() {
-	return nextButton;
+        return nextButton;
     }
-
 
     /** Getter for Finish button */
     public JButton getFinishButton() {
-	return finishButton;
+        return finishButton;
     }
 
     /** Getter for Cancel button */
     public JButton getCancelButton() {
-	return cancelButton;
+        return cancelButton;
     }
-
 
     /** Getter for Finish label */
     public String getFinishLabel() {
-	return finishLabel;
+        return finishLabel;
     }
-
 
     /** Getter for Finish mnemonic */
     public int getFinishMnemonic() {
-	return finishMnemonic;
+        return finishMnemonic;
     }
-
 
     /** Used to determine the current target's TargetData */
     public int getCurrentTargetKey() {
-	int key = -1;
+        int key = -1;
 
-	if (makefileData.getMakefileType() <
-			MakefileData.COMPLEX_MAKEFILE_TYPE) {
-	    key = 0;
-	} else {
-	    for (int i  = 0; i < panels.length; i++) {
-		if (panels[i] instanceof StepHeader) {
-		    key = ((StepHeader) panels[i]).getKey();
-		}
-		if (i == index) {
-		    break;
-		}
-	    }
-	}
+        if (makefileData.getMakefileType() <
+                MakefileData.COMPLEX_MAKEFILE_TYPE) {
+            key = 0;
+        } else {
+            for (int i = 0; i < panels.length; i++) {
+                if (panels[i] instanceof StepHeader) {
+                    key = ((StepHeader) panels[i]).getKey();
+                }
+                if (i == index) {
+                    break;
+                }
+            }
+        }
 
-	return key;
+        return key;
     }
-	
 
     /** The current panel.
      */
     public WizardDescriptor.Panel current() {
-	return currentPanel;
+        return currentPanel;
     }
-    
 
     /** Current name of the panel */
     public String name() {
-	Object[] args = {
-	    new Integer(index + 1),
-	    new Integer(panels.length)
-	};
-	MessageFormat mf = new MessageFormat 
-		(NbBundle.getBundle(WizardDescriptor.class).getString
-		 ("CTL_ArrayIteratorName"));				// NOI18N
-	
-	return mf.format(args);
+        Object[] args = {
+            Integer.valueOf(index + 1),
+            Integer.valueOf(panels.length)
+        };
+        MessageFormat mf = new MessageFormat(
+                NbBundle.getBundle(WizardDescriptor.class).getString("CTL_ArrayIteratorName"));				// NOI18N
+
+        return mf.format(args);
     }
 
     /** Updates button state */
     public void updateStateHack() {
-	//wd.updateState();
-	// FIXUP: HACK - updateState is now protected in WizardDescriptor. Calling 
-	// FIXUP: setTitleFormat() has the sideeffect of calling updateState, so this works for now....
-	if (wd != null)
-	    wd.setTitleFormat(new MessageFormat("{0}")); // NOI18N
+        //wd.updateState();
+        // FIXUP: HACK - updateState is now protected in WizardDescriptor. Calling
+        // FIXUP: setTitleFormat() has the sideeffect of calling updateState, so this works for now....
+        if (wd != null) {
+            wd.setTitleFormat(new MessageFormat("{0}")); // NOI18N
+        }
     }
 
     /** Updates button state */
     public void updateState() {
-	fireChangeEvent();
+        fireChangeEvent();
     }
-
 
     /**
      *  Create the steps array for setting the Steps area in the wizard. Also,
@@ -332,66 +304,64 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
      *  correctly highlight the current step in the wizard.
      */
     private String[] getSteps() {
-	String[] steps = new String[panels.length + 1];
-	StepHeader hdr = null;
-	int j = 1;
-	int doingTarget = 0;
-	int expand = 0;
-	int virtIndex = 0;
-	
-	// Add templateChooser to 0th position...
-	steps[0] = wd.templateChooser().getComponent().getName();
-	for (int i = 0; i < panels.length; i++) {
-	    if (panels[i] instanceof StepHeader) {
-		if (i < index) {
-		    virtIndex++;
-		}
-		hdr = (StepHeader) panels[i];
-		steps[j++] = hdr.getTitle();
-		doingTarget = hdr.getNum();
-		if (index >= i && index <= (i + hdr.getNum())) {
-		    expand = hdr.getNum();
-		}
-	    } else if (doingTarget-- > 0) {
-		if (expand-- > 0) {
-		    if (i < index) {
-			virtIndex++;
-		    }
-		    steps[j++] = NbBundle.getMessage(getClass(),
-			    "FMT_TARGET_PANEL", "    ",		// NOI18N
-			    ((WizardDescriptor.Panel)panels[i]).getComponent().getName());
-		}
-	    } else {
-		steps[j++] = ((WizardDescriptor.Panel)panels[i]).getComponent().getName();
-		if (i < index) {
-		    virtIndex++;
-		}
-	    }
-	}
+        String[] steps = new String[panels.length + 1];
+        StepHeader hdr = null;
+        int j = 1;
+        int doingTarget = 0;
+        int expand = 0;
+        int aVirtIndex = 0;
 
-	// Now copy the overallocated steps array to nue
-	String[] nue = new String[j];
-	System.arraycopy(steps, 0, nue, 0, j);
-	this.virtIndex = virtIndex;
-	return nue;
+        // Add templateChooser to 0th position...
+        steps[0] = wd.templateChooser().getComponent().getName();
+        for (int i = 0; i < panels.length; i++) {
+            if (panels[i] instanceof StepHeader) {
+                if (i < index) {
+                    aVirtIndex++;
+                }
+                hdr = (StepHeader) panels[i];
+                steps[j++] = hdr.getTitle();
+                doingTarget = hdr.getNum();
+                if (index >= i && index <= (i + hdr.getNum())) {
+                    expand = hdr.getNum();
+                }
+            } else if (doingTarget-- > 0) {
+                if (expand-- > 0) {
+                    if (i < index) {
+                        aVirtIndex++;
+                    }
+                    steps[j++] = NbBundle.getMessage(getClass(),
+                            "FMT_TARGET_PANEL", "    ", // NOI18N
+                            ((WizardDescriptor.Panel) panels[i]).getComponent().getName());
+                }
+            } else {
+                steps[j++] = ((WizardDescriptor.Panel) panels[i]).getComponent().getName();
+                if (i < index) {
+                    aVirtIndex++;
+                }
+            }
+        }
+
+        // Now copy the overallocated steps array to nue
+        String[] nue = new String[j];
+        System.arraycopy(steps, 0, nue, 0, j);
+        this.virtIndex = aVirtIndex;
+        return nue;
     }
-
 
     /**
      *  Set the current Makefile type. This has the side affect of changing the
      *  array of panels wizard uses and the steps shown.
      */
     public void updatePanels(int type) {
-	if (type >= MakefileData.COMPLEX_MAKEFILE_TYPE) {
-	    panels = complexToArray();
-	} else {
-	    panels = normalPanels;
-	}
-	((JPanel)currentPanel.getComponent()).putClientProperty(
-			WizardDescriptor.PROP_CONTENT_DATA, getSteps()); // NOI18N
-	updateState();
+        if (type >= MakefileData.COMPLEX_MAKEFILE_TYPE) {
+            panels = complexToArray();
+        } else {
+            panels = normalPanels;
+        }
+        ((JPanel) currentPanel.getComponent()).putClientProperty(
+                WizardDescriptor.PROP_CONTENT_DATA, getSteps()); // NOI18N
+        updateState();
     }
-
 
     /**
      *  Is there a next panel?
@@ -399,9 +369,8 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
      *  @return true if so
      */
     public boolean hasNext() {
-	return (index) < (panels.length - 1);
+        return (index) < (panels.length - 1);
     }
-    
 
     /**
      *  Is there a previous panel?
@@ -409,10 +378,9 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
      *  @return true if so
      */
     public boolean hasPrevious() {
-	return index > 0;
+        return index > 0;
     }
-    
-    
+
     /**
      *  Moves to the next panel. If the index points to a StepHeader then
      *  skip that and show the next panel.
@@ -420,331 +388,320 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
      *  @exception NoSuchElementException if the panel does not exist
      */
     public synchronized void nextPanel() {
-	if (panels[++index] instanceof StepHeader) {
-	    index++;
-	}
-	currentPanel = (WizardDescriptor.Panel) panels[index];
-	updatePanels(makefileData.getMakefileType());
+        if (panels[++index] instanceof StepHeader) {
+            index++;
+        }
+        currentPanel = (WizardDescriptor.Panel) panels[index];
+        updatePanels(makefileData.getMakefileType());
 
-	((JPanel)currentPanel.getComponent()).putClientProperty(
-			WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,		// NOI18N
-			new Integer(virtIndex));
+        ((JPanel) currentPanel.getComponent()).putClientProperty(
+                WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,
+                Integer.valueOf(virtIndex));
     }
-    
-    
+
     /**
      *  Moves to previous panel.
      *  @exception NoSuchElementException if the panel does not exist
      */
     public synchronized void previousPanel() {
+        if (index == 0) {
+            throw new NoSuchElementException();
+        }
+        if (panels[--index] instanceof StepHeader) {
+            index--;
+        }
+        currentPanel = (WizardDescriptor.Panel) panels[index];
+        updatePanels(makefileData.getMakefileType());
 
-	if (index == 0) {
-	    throw new NoSuchElementException();
-	}
-
-	if (panels[--index] instanceof StepHeader) {
-	    index--;
-	}
-	currentPanel = (WizardDescriptor.Panel) panels[index];
-	updatePanels(makefileData.getMakefileType());
-
-	((JPanel)currentPanel.getComponent()).putClientProperty(
-			WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,		// NOI18N
-			new Integer(virtIndex));
+        ((JPanel) currentPanel.getComponent()).putClientProperty(
+                WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,
+                Integer.valueOf(virtIndex));
     }
-
 
     /**
      *  Convert the LinkedList of complexPanels to an array of
      *  MakefileWizardPanel
      */
     private Object[] complexToArray() {
-	Object[] p = new Object[complexPanels.size()];
+        Object[] p = new Object[complexPanels.size()];
 
-	ListIterator iter = complexPanels.listIterator();
-	for (int i = 0; i < complexPanels.size(); i++) {
-	    p[i] = iter.next();
-	}
+        ListIterator iter = complexPanels.listIterator();
+        for (int i = 0; i < complexPanels.size(); i++) {
+            p[i] = iter.next();
+        }
 
-	return p;
+        return p;
     }
-
 
     /** Does a target with this key exist? */
     public boolean targetExists(int key) {
 
-	for (int i = 0; i < complexPanels.size(); i++) {
-	    Object o = complexPanels.get(i);
-	    if (o instanceof StepHeader && ((StepHeader) o).getKey() == key) {
-		return true;
-	    }
-	}
+        for (int i = 0; i < complexPanels.size(); i++) {
+            Object o = complexPanels.get(i);
+            if (o instanceof StepHeader && ((StepHeader) o).getKey() == key) {
+                return true;
+            }
+        }
 
-	return false;
+        return false;
     }
-
 
     /** Create new panels for a target, based on the target type */
     public int addTarget(int type, String name, int key) {
-	boolean needCompilerFlags = false;
-	int count = 0;
+        boolean needCompilerFlags = false;
+        int count = 0;
 
-	switch (type) {
-	case TargetData.COMPLEX_EXECUTABLE:
-	    needCompilerFlags = true;
-	    count = 6;
-	    complexPanels.add(addIdx++, new TargetHeader(name, type, count - 1, key));
-	    complexPanels.add(addIdx++, buildOutputDescriptorPanel);
-	    complexPanels.add(addIdx++, makefileSourcesDescriptorPanel);
-	    complexPanels.add(addIdx++, makefileIncludesDescriptorPanel);
-	    complexPanels.add(addIdx++, standardLibsDescriptorPanel);
-	    complexPanels.add(addIdx++, userLibsDescriptorPanel);
-	    break;
+        switch (type) {
+            case TargetData.COMPLEX_EXECUTABLE:
+                needCompilerFlags = true;
+                count = 6;
+                complexPanels.add(addIdx++, new TargetHeader(name, type, count - 1, key));
+                complexPanels.add(addIdx++, buildOutputDescriptorPanel);
+                complexPanels.add(addIdx++, makefileSourcesDescriptorPanel);
+                complexPanels.add(addIdx++, makefileIncludesDescriptorPanel);
+                complexPanels.add(addIdx++, standardLibsDescriptorPanel);
+                complexPanels.add(addIdx++, userLibsDescriptorPanel);
+                break;
 
-	case TargetData.COMPLEX_ARCHIVE:
-	    needCompilerFlags = true;
-	    count = 4;
-	    complexPanels.add(addIdx++, new TargetHeader(name, type, count - 1, key));
-	    complexPanels.add(addIdx++, buildOutputDescriptorPanel);
-	    complexPanels.add(addIdx++, makefileSourcesDescriptorPanel);
-	    complexPanels.add(addIdx++, makefileIncludesDescriptorPanel);
-	    break;
+            case TargetData.COMPLEX_ARCHIVE:
+                needCompilerFlags = true;
+                count = 4;
+                complexPanels.add(addIdx++, new TargetHeader(name, type, count - 1, key));
+                complexPanels.add(addIdx++, buildOutputDescriptorPanel);
+                complexPanels.add(addIdx++, makefileSourcesDescriptorPanel);
+                complexPanels.add(addIdx++, makefileIncludesDescriptorPanel);
+                break;
 
-	case TargetData.COMPLEX_SHAREDLIB:
-	    needCompilerFlags = true;
-	    count = 5;
-	    complexPanels.add(addIdx++, new TargetHeader(name, type, count - 1, key));
-	    complexPanels.add(addIdx++, buildOutputDescriptorPanel);
-	    complexPanels.add(addIdx++, makefileSourcesDescriptorPanel);
-	    complexPanels.add(addIdx++, makefileIncludesDescriptorPanel);
-	    complexPanels.add(addIdx++, userLibsDescriptorPanel);
-	    break;
+            case TargetData.COMPLEX_SHAREDLIB:
+                needCompilerFlags = true;
+                count = 5;
+                complexPanels.add(addIdx++, new TargetHeader(name, type, count - 1, key));
+                complexPanels.add(addIdx++, buildOutputDescriptorPanel);
+                complexPanels.add(addIdx++, makefileSourcesDescriptorPanel);
+                complexPanels.add(addIdx++, makefileIncludesDescriptorPanel);
+                complexPanels.add(addIdx++, userLibsDescriptorPanel);
+                break;
 
-	case TargetData.COMPLEX_MAKE_TARGET:
-	    complexPanels.add(addIdx++, new TargetHeader(name, type, 1, key));
-	    //complexPanels.add(addIdx++, makeTargetDescriptorPanel);
-	    complexPanels.add(addIdx++, new MakefileWizardDescriptorPanel(new MakeTargetPanel(this), "recursive_make")); // NOI18N
-	    break;
+            case TargetData.COMPLEX_MAKE_TARGET:
+                complexPanels.add(addIdx++, new TargetHeader(name, type, 1, key));
+                //complexPanels.add(addIdx++, makeTargetDescriptorPanel);
+                complexPanels.add(addIdx++, new MakefileWizardDescriptorPanel(new MakeTargetPanel(this), "recursive_make")); // NOI18N
+                break;
 
-	case TargetData.COMPLEX_CUSTOM_TARGET:
-	    complexPanels.add(addIdx++, new TargetHeader(name, type, 1, key));
-	    //complexPanels.add(addIdx++, customTargetPanel);
-	    complexPanels.add(addIdx++, new MakefileWizardDescriptorPanel(new CustomTargetPanel(this), "custom_make")); // NOI18N
-	    break;
-	}
+            case TargetData.COMPLEX_CUSTOM_TARGET:
+                complexPanels.add(addIdx++, new TargetHeader(name, type, 1, key));
+                //complexPanels.add(addIdx++, customTargetPanel);
+                complexPanels.add(addIdx++, new MakefileWizardDescriptorPanel(new CustomTargetPanel(this), "custom_make")); // NOI18N
+                break;
+        }
 
-	if (needCompilerFlags && !haveCompilerFlags) {
-	    complexPanels.add(addIdx,
-		    new StepHeader(NbBundle.getBundle(getClass()).
-		    getString("FMT_COMP_PREFS"), 3, -1));		// NOI18N
-	    complexPanels.add(addIdx + 1, basicFlagsDescriptorPanel);
-	    complexPanels.add(addIdx + 2, compilerOptionsDescriptorPanel);
-	    complexPanels.add(addIdx + 3, compilerPathDescriptorPanel);
-	    haveCompilerFlags = true;
-	    count += 4;
-	}
+        if (needCompilerFlags && !haveCompilerFlags) {
+            complexPanels.add(addIdx,
+                    new StepHeader(NbBundle.getBundle(getClass()).
+                    getString("FMT_COMP_PREFS"), 3, -1));		// NOI18N
+            complexPanels.add(addIdx + 1, basicFlagsDescriptorPanel);
+            complexPanels.add(addIdx + 2, compilerOptionsDescriptorPanel);
+            complexPanels.add(addIdx + 3, compilerPathDescriptorPanel);
+            haveCompilerFlags = true;
+            count += 4;
+        }
 
-	updatePanels(type);
+        updatePanels(type);
 
-	return count;			    // number of panels added
+        return count;			    // number of panels added
     }
-
 
     /** Delete the panels for the specified target */
     public void deleteTarget(int key) {
-	deleteTarget(key, true);
+        deleteTarget(key, true);
     }
-
 
     /** Delete the panels for the specified target */
     public void deleteTarget(int key, boolean doUpdate) {
-	boolean changed = false;
+        boolean changed = false;
 
-	for (int i = 0; i < complexPanels.size(); i++) {
-	    if (complexPanels.get(i) instanceof TargetHeader) {
-		TargetHeader hdr = (TargetHeader) complexPanels.get(i);
-		if (key == hdr.getKey()) {
-		    for (int j = 0; j <= hdr.getNum(); j++) {
-			complexPanels.remove(i);
-			changed = true;
-		    }
-		    addIdx -= hdr.getNum() + 1;
-		    break;
-		}
-	    }
-	}
+        for (int i = 0; i < complexPanels.size(); i++) {
+            if (complexPanels.get(i) instanceof TargetHeader) {
+                TargetHeader hdr = (TargetHeader) complexPanels.get(i);
+                if (key == hdr.getKey()) {
+                    for (int j = 0; j <= hdr.getNum(); j++) {
+                        complexPanels.remove(i);
+                        changed = true;
+                    }
+                    addIdx -= hdr.getNum() + 1;
+                    break;
+                }
+            }
+        }
 
-	if (changed && doUpdate) {
-	    updatePanels(getMakefileData().getMakefileType());
-	}
+        if (changed && doUpdate) {
+            updatePanels(getMakefileData().getMakefileType());
+        }
     }
-
 
     /** Change the panel name for the specified target */
     public void changeTarget(int key, String name, int type) {
-	boolean changed = false;
+        boolean changed = false;
 
-	for (int i = 0; i < complexPanels.size(); i++) {
-	    if (complexPanels.get(i) instanceof TargetHeader) {
-		TargetHeader hdr = (TargetHeader) complexPanels.get(i);
-		if (key == hdr.getKey()) {
-		    if (type != hdr.getType()) {
-			// Changing type of target - delete old target and create new
-			deleteTarget(key, false);
-			int saveIdx = addIdx;
-			addIdx = i;		// control where target is added
-			int count = addTarget(type, name, key);
-			addIdx = saveIdx + count;
-		    } else {
-			// Just change the name of the target
-			hdr.setName(name);
-			hdr.setTitle(NbBundle.getMessage(getClass(),
-				    "FMT_TARGET_CREATE", name));	// NOI18N
-		    }
-		    changed = true;
-		    break;
-		}
-	    }
-	}
+        for (int i = 0; i < complexPanels.size(); i++) {
+            if (complexPanels.get(i) instanceof TargetHeader) {
+                TargetHeader hdr = (TargetHeader) complexPanels.get(i);
+                if (key == hdr.getKey()) {
+                    if (type != hdr.getType()) {
+                        // Changing type of target - delete old target and create new
+                        deleteTarget(key, false);
+                        int saveIdx = addIdx;
+                        addIdx = i;		// control where target is added
+                        int count = addTarget(type, name, key);
+                        addIdx = saveIdx + count;
+                    } else {
+                        // Just change the name of the target
+                        hdr.setName(name);
+                        hdr.setTitle(NbBundle.getMessage(getClass(),
+                                "FMT_TARGET_CREATE", name));	// NOI18N
+                    }
+                    changed = true;
+                    break;
+                }
+            }
+        }
 
-	if (changed) {
-	    updatePanels(getMakefileData().getMakefileType());
-	}
+        if (changed) {
+            updatePanels(getMakefileData().getMakefileType());
+        }
     }
-
 
     /** Toplevel validation method. Gathers warnings from all panels */
     public ArrayList validateAllData() {
-	ArrayList msgs = new ArrayList();
-	int key = -1;
+        ArrayList<String> msgs = new ArrayList<String>();
+        int key = -1;
 
-	for (int i = 0; i < panels.length; i++) {
-	    if (panels[i] instanceof WizardDescriptor.Panel &&
-	    ((WizardDescriptor.Panel)panels[i]).getComponent() instanceof MakefileWizardPanel) {
-		((MakefileWizardPanel) ((WizardDescriptor.Panel)panels[i]).getComponent()).validateData(msgs, key);
-	    } else if (panels[i] instanceof StepHeader) {
-		key = ((StepHeader) panels[i]).getKey();
-	    }
-	}
+        for (int i = 0; i < panels.length; i++) {
+            if (panels[i] instanceof WizardDescriptor.Panel &&
+                    ((WizardDescriptor.Panel) panels[i]).getComponent() instanceof MakefileWizardPanel) {
+                ((MakefileWizardPanel) ((WizardDescriptor.Panel) panels[i]).getComponent()).validateData(msgs, key);
+            } else if (panels[i] instanceof StepHeader) {
+                key = ((StepHeader) panels[i]).getKey();
+            }
+        }
 
-	return msgs;
+        return msgs;
     }
-    
-    
-    private transient Set listeners = new HashSet(1); // Set<ChangeListener>
+    private final transient Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // Set<ChangeListener>
+
     public final void addChangeListener(ChangeListener l) {
-        synchronized(listeners) {
+        synchronized (listeners) {
             listeners.add(l);
         }
     }
+
     public final void removeChangeListener(ChangeListener l) {
-        synchronized(listeners) {
+        synchronized (listeners) {
             listeners.remove(l);
         }
     }
+
     protected final void fireChangeEvent() {
         Iterator it;
-       
+
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+            ((ChangeListener) it.next()).stateChanged(ev);
         }
     }
 
     // Wizard methods
     public boolean onFinish() {
-	MakefileGenerator gen = new MakefileGenerator(makefileData);
+        MakefileGenerator gen = new MakefileGenerator(makefileData);
 
-	/*
-	 * Remove any unused targets. A target is unused if its index > 0 and
-	 * the first target is a simple target.
-	 */
-	ArrayList tlist = getMakefileData().getTargetList();
-	if (tlist.size() > 1) {
-	    TargetData target = (TargetData) tlist.get(1);
+        /*
+         * Remove any unused targets. A target is unused if its index > 0 and
+         * the first target is a simple target.
+         */
+        List<TargetData> tlist = getMakefileData().getTargetList();
+        if (tlist.size() > 1) {
+            TargetData target = tlist.get(1);
 
-	    if (!target.isComplex()) {
-		for (int i = tlist.size() - 1; i > 0; i--) {
-		    tlist.remove(i);
-		}
-	    }
-	}
-	boolean status = gen.generate();
-	return status;
+            if (!target.isComplex()) {
+                for (int i = tlist.size() - 1; i > 0; i--) {
+                    tlist.remove(i);
+                }
+            }
+        }
+        boolean status = gen.generate();
+        return status;
     }
 
     /**
      *  Returns whether the wizard has been completed and the code should
      *  be generated.
-     */              
+     */
     public void executeWizard() {
-	    listener = new PropertyChangeListener() {
-	    public void propertyChange(PropertyChangeEvent event) {
-		if (index == 0) {
-		    // FIXUP: don't know how to disable finish button on target chooser panel
-		    // FIXUP: this hack will just disable the finish button if on first panel...
-		    finishButton.setEnabled(false);
-		}
-		if (event.getPropertyName().
-				    equals(DialogDescriptor.PROP_VALUE)) {
-		    Object option = event.getNewValue();
-		    if (option == WizardDescriptor.FINISH_OPTION
-				|| option == WizardDescriptor.CANCEL_OPTION) { 
-			boolean done = false;
+        listener = new PropertyChangeListener() {
 
-			if (option == WizardDescriptor.FINISH_OPTION) {
-			    if (hasNext()) {
-				// Go to the Review panel
-				index = panels.length - 2;
-				nextPanel();
-				nextButton.setEnabled(false);
-			    } else {
-				;//done = onFinish();
-			    }
-			    updateStateHack();
-			} else {
-			    ; // nothing. The iterator will call 'instantiate' where the makefile is created
-			}
-		    }
-		}
-	    }
-	};
-       
-	index = 0;
-	currentPanel = (WizardDescriptor.Panel) panels[index];
-	//wd = new MakefileWizardDescriptor(this);
+            public void propertyChange(PropertyChangeEvent event) {
+                if (index == 0) {
+                    // FIXUP: don't know how to disable finish button on target chooser panel
+                    // FIXUP: this hack will just disable the finish button if on first panel...
+                    finishButton.setEnabled(false);
+                }
+                if (event.getPropertyName().
+                        equals(DialogDescriptor.PROP_VALUE)) {
+                    Object option = event.getNewValue();
+                    if (option == WizardDescriptor.FINISH_OPTION || option == WizardDescriptor.CANCEL_OPTION) {
+                        //boolean done = false;
+
+                        if (option == WizardDescriptor.FINISH_OPTION) {
+                            if (hasNext()) {
+                                // Go to the Review panel
+                                index = panels.length - 2;
+                                nextPanel();
+                                nextButton.setEnabled(false);
+                            } else {
+                                //done = onFinish();
+                            }
+                            updateStateHack();
+                        } else {
+                            // nothing. The iterator will call 'instantiate' where the makefile is created
+                        }
+                    }
+                }
+            }
+        };
+
+        index = 0;
+        currentPanel = (WizardDescriptor.Panel) panels[index];
+        //wd = new MakefileWizardDescriptor(this);
 	/*
-	wd.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE,			// NOI18N
-				new Boolean(true));
-	wd.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED,			// NOI18N
-				new Boolean(true));
-	wd.setTitleFormat(new MessageFormat("{0}"));			// NOI18N
-	wd.setTitle(title);
-	*/
-	setupWizardButtons(wd);
-	
-	updatePanels(getMakefileData().getMakefileType()); //FIXUP
-	((JPanel)(currentPanel.getComponent())).
-			putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,		// NOI18N
-			new Integer(0));
-	wd.addPropertyChangeListener(listener);
-	/*
-	dialog = DialogDisplayer.getDefault().createDialog(wd);
-	dialog.show();
-	dialog.dispose();
-	*/
+        wd.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE,			// NOI18N
+        new Boolean(true));
+        wd.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED,			// NOI18N
+        new Boolean(true));
+        wd.setTitleFormat(new MessageFormat("{0}"));			// NOI18N
+        wd.setTitle(title);
+         */
+        setupWizardButtons(wd);
+
+        updatePanels(getMakefileData().getMakefileType()); //FIXUP
+        ((JPanel) (currentPanel.getComponent())).putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 0);
+
+        wd.addPropertyChangeListener(listener);
+    /*
+    dialog = DialogDisplayer.getDefault().createDialog(wd);
+    dialog.show();
+    dialog.dispose();
+     */
     }
 
     public void unexecuteWizard() {
-	if (listener != null) {
-	    wd.removePropertyChangeListener(listener);
-	    listener = null;
-	}
+        if (listener != null) {
+            wd.removePropertyChangeListener(listener);
+            listener = null;
+        }
     }
-
 
     /**
      *  We need to do several things with the buttons. First off, we want to
@@ -756,30 +713,30 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
      *  closing buttons so only the Cancel button does a close.
      */
     private void setupWizardButtons(WizardDescriptor wd) {
-	Object[] options = wd.getOptions();	    // save original buttons
+        Object[] options = wd.getOptions();	    // save original buttons
 
-	wd.setOptions(new Object[] {
-		WizardDescriptor.NEXT_OPTION, WizardDescriptor.FINISH_OPTION, WizardDescriptor.CANCEL_OPTION });
-	Object[] objs = wd.getOptions();
-	if (objs != null && objs.length == 3) {
-	    nextButton = (JButton) objs[0];
+        wd.setOptions(new Object[]{
+                    WizardDescriptor.NEXT_OPTION, WizardDescriptor.FINISH_OPTION, WizardDescriptor.CANCEL_OPTION});
+        Object[] objs = wd.getOptions();
+        if (objs != null && objs.length == 3) {
+            nextButton = (JButton) objs[0];
 
-	    finishButton = (JButton) objs[1];
-	    finishLabel = finishButton.getText();
-	    finishMnemonic = finishButton.getMnemonic();
+            finishButton = (JButton) objs[1];
+            finishLabel = finishButton.getText();
+            finishMnemonic = finishButton.getMnemonic();
 //	    finishButton.setText(NbBundle.getBundle(MakefileWizard.class).
 //			    getString("BTN_Last"));			// NOI18N
 //	    finishButton.setMnemonic(NbBundle.getBundle(MakefileWizard.class).
 //			    getString("MNEM_Last").charAt(0));		// NOI18N
 
-	    cancelButton = (JButton)objs[2];
-	}
-	wd.setOptions(options);			    // restor original buttons
-	setFinishClosingEnabled(false);
+            cancelButton = (JButton) objs[2];
+        }
+        wd.setOptions(options);			    // restor original buttons
+        setFinishClosingEnabled(false);
     }
 
     private void unsetupWizardButtons(WizardDescriptor wd) {
-	setFinishClosingEnabled(true);
+        setFinishClosingEnabled(true);
 //	finishButton.setText(finishLabel);
 //	finishButton.setMnemonic(finishMnemonic);
     }
@@ -789,35 +746,34 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
      * The cancel button always closes the dialog.
      */
     public void setFinishClosingEnabled(boolean b) {
-	if (b)
-	    wd.setClosingOptions(new Object[]{finishButton, cancelButton});
-	else
-	    wd.setClosingOptions(new Object[]{cancelButton});
+        if (b) {
+            wd.setClosingOptions(new Object[]{finishButton, cancelButton});
+        } else {
+            wd.setClosingOptions(new Object[]{cancelButton});
+        }
     }
-    
+
     /**
      *  We need to reenable often because each button press disables the
      *  Finish button.
      */
     public void setFinishEnabled(boolean tf) {
-	//wd.setFinishEnabled(tf); // FIXUP
-	finishButton.setEnabled(tf); // FIXUP ???
+        //wd.setFinishEnabled(tf); // FIXUP
+        finishButton.setEnabled(tf); // FIXUP ???
     }
 
     final public static MakefileWizard getMakefileWizard() {
-	return makefileWizard;
+        return makefileWizard;
     }
 
 
     //
     // The following is the static portion of the class.
     //
-
     public static void showWizard() {
-	makefileWizard = new MakefileWizard();
-	makefileWizard.executeWizard();
+        makefileWizard = new MakefileWizard();
+        makefileWizard.executeWizard();
     }
-
 
     /**
      *  The StepHeader represents a group of panels which are collapsed to a
@@ -826,55 +782,51 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
      */
     private class StepHeader {
 
-	/** The line displayed in the Steps panel */
-	private String	title;
+        /** The line displayed in the Steps panel */
+        private String title;
+        /** The number of panels making up this step */
+        private int num;
+        /** A lookup key to map the StepHeader to a TargetData */
+        private int key;
 
-	/** The number of panels making up this step */
-	private int	num;
+        /** The constructor */
+        public StepHeader(String title, int num, int key) {
 
-	/** A lookup key to map the StepHeader to a TargetData */
-	private int	key;
+            this.title = title;
+            this.num = num;
+            this.key = key;
+        }
 
+        /** Getter for the title */
+        public String getTitle() {
+            return title;
+        }
 
-	/** The constructor */
-	public StepHeader(String title, int num, int key) {
+        /** Setter for the title */
+        protected void setTitle(String title) {
+            this.title = title;
+        }
 
-	    this.title = title;
-	    this.num = num;
-	    this.key = key;
-	}
-    
-	/** Getter for the title */
-	public String getTitle() {
-	    return title;
-	}
+        /** Getter for the num */
+        public int getNum() {
+            return num;
+        }
 
-	/** Setter for the title */
-	protected void setTitle(String title) {
-	    this.title = title;
-	}
-    
-	/** Getter for the num */
-	public int getNum() {
-	    return num;
-	}
+        /** Setter for the num */
+        protected void setNum(int num) {
+            this.num = num;
+        }
 
-	/** Setter for the num */
-	protected void setNum(int num) {
-	    this.num = num;
-	}
+        /** Getter for the key */
+        public int getKey() {
+            return key;
+        }
 
-	/** Getter for the key */
-	public int getKey() {
-	    return key;
-	}
-
-	/** Setter for the key */
-	protected void setKey(int key) {
-	    this.key = key;
-	}
+        /** Setter for the key */
+        protected void setKey(int key) {
+            this.key = key;
+        }
     }
-
 
     /**
      *  The TargetHeader represents a target in the complexPanels list of steps.
@@ -883,255 +835,252 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
      */
     private class TargetHeader extends MakefileWizard.StepHeader {
 
-	/** The name is used to create the title */
-	private String	name;
+        /** The name is used to create the title */
+        private String name;
+        /** The type of the target this header is for */
+        private int type;
 
-	/** The type of the target this header is for */
-	private int type;
+        /** Constructor */
+        public TargetHeader(String name, int type, int num, int key) {
 
+            super(null, num, key);
+            this.name = name;
+            this.type = type;
+            this.setTitle(NbBundle.getMessage(getClass(),
+                    "FMT_TARGET_CREATE", name));			// NOI18N
+        }
 
-	/** Constructor */
-	public TargetHeader(String name, int type, int num, int key) {
+        public String getName() {
+            return name;
+        }
 
-	    super(null, num, key);
-	    this.name = name;
-	    this.type = type;
-	    this.setTitle(NbBundle.getMessage(getClass(),
-			"FMT_TARGET_CREATE", name));			// NOI18N
-	}
-    
-	public String getName() {
-	    return name;
-	}
+        public void setName(String name) {
+            this.name = name;
+        }
 
-	public void setName(String name) {
-	    this.name = name;
-	}
+        public int getType() {
+            return type;
+        }
 
-	public int getType() {
-	    return type;
-	}
-
-	public void setType(int type) {
-	    this.type = type;
-	}
+        public void setType(int type) {
+            this.type = type;
+        }
     }
 
-    public void initialize (TemplateWizard wiz) {
-	wd = wiz;
-	initPanels();
+    public void initialize(TemplateWizard wiz) {
+        wd = wiz;
+        initPanels();
         executeWizard();
     }
-    
-    public void uninitialize (TemplateWizard wiz) {
-	unexecuteWizard();
-	unsetupWizardButtons(wiz);
+
+    public void uninitialize(TemplateWizard wiz) {
+        unexecuteWizard();
+        unsetupWizardButtons(wiz);
         wd = null;
     }
-    
-    public Set instantiate (TemplateWizard wiz) throws IOException {
-        DataFolder targetFolder = wiz.getTargetFolder ();
-        DataObject template = wiz.getTemplate ();
-	String makefileName;
-	int pos = getMakefileData().getMakefileName().lastIndexOf(File.separatorChar);
-	if (pos >= 0)
-	    makefileName = getMakefileData().getMakefileName().substring(pos + 1);
-	else
-	    makefileName = getMakefileData().getMakefileName();
+
+    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
+        DataFolder targetFolder = wiz.getTargetFolder();
+        DataObject template = wiz.getTemplate();
+        String makefileName;
+        int pos = getMakefileData().getMakefileName().lastIndexOf(File.separatorChar);
+        if (pos >= 0) {
+            makefileName = getMakefileData().getMakefileName().substring(pos + 1);
+        } else {
+            makefileName = getMakefileData().getMakefileName();
+        }
 
         DataObject result;
-        result = template.createFromTemplate (targetFolder, makefileName);
+        result = template.createFromTemplate(targetFolder, makefileName);
 
-	if (result != null) {
-	    MakeExecSupport mes = (MakeExecSupport) result.getCookie(MakeExecSupport.class);
-	    if (mes != null) {
-		// Add known targets to node
-		// Add "all", "clean", and user defined targets...
-		mes.addMakeTargets("all");	// NOI18N
-		ArrayList tlist = getMakefileData().getTargetList();
-		for (int i = 0; i < tlist.size(); i++) {
-		    TargetData t = (TargetData) tlist.get(i);
-		    switch (t.getTargetType()) {
-			case TargetData.SIMPLE_EXECUTABLE:
-			case TargetData.SIMPLE_ARCHIVE:
-			case TargetData.SIMPLE_SHAREDLIB:
-			case TargetData.COMPLEX_EXECUTABLE:
-			case TargetData.COMPLEX_ARCHIVE:
-			case TargetData.COMPLEX_SHAREDLIB:
-			    if (t.getOutputDirectory() != null && t.getOutputDirectory().length() > 0)
-				mes.addMakeTargets(t.getOutputDirectory() + "/" + t.getName()); // NOI18N
-			    else
-				mes.addMakeTargets(t.getName()); // NOI18N
-			    break;
-			case TargetData.COMPLEX_MAKE_TARGET: 
-			case TargetData.COMPLEX_CUSTOM_TARGET: 
-			    mes.addMakeTargets(t.getName());
-			    break;
-		    }
-		}
-		mes.addMakeTargets("clean");	// NOI18N
+        if (result != null) {
+            MakeExecSupport mes = result.getCookie(MakeExecSupport.class);
+            if (mes != null) {
+                // Add known targets to node
+                // Add "all", "clean", and user defined targets...
+                mes.addMakeTargets("all");	// NOI18N
+                List<TargetData> tlist = getMakefileData().getTargetList();
+                for (int i = 0; i < tlist.size(); i++) {
+                    TargetData t = tlist.get(i);
+                    switch (t.getTargetType()) {
+                        case TargetData.SIMPLE_EXECUTABLE:
+                        case TargetData.SIMPLE_ARCHIVE:
+                        case TargetData.SIMPLE_SHAREDLIB:
+                        case TargetData.COMPLEX_EXECUTABLE:
+                        case TargetData.COMPLEX_ARCHIVE:
+                        case TargetData.COMPLEX_SHAREDLIB:
+                            if (t.getOutputDirectory() != null && t.getOutputDirectory().length() > 0) {
+                                mes.addMakeTargets(t.getOutputDirectory() + "/" + t.getName()); // NOI18N
+                            } else {
+                                mes.addMakeTargets(t.getName()); // NOI18N
+                            }
+                            break;
+                        case TargetData.COMPLEX_MAKE_TARGET:
+                        case TargetData.COMPLEX_CUSTOM_TARGET:
+                            mes.addMakeTargets(t.getName());
+                            break;
+                    }
+                }
+                mes.addMakeTargets("clean");	// NOI18N
 
-		// Set build (base) directory
-		String makefileDir = getMakefileData().getMakefileDirName();
-		String baseDir = getMakefileData().getBaseDirectory();
-		String buildDirectory;
-		if (makefileDir.equals(baseDir))
-		    buildDirectory = ("."); // NOI18N
-		else
-		    buildDirectory = IpeUtils.getRelativePath(makefileDir, baseDir);
-		mes.setBuildDirectory(buildDirectory);	
+                // Set build (base) directory
+                String makefileDir = getMakefileData().getMakefileDirName();
+                String baseDir = getMakefileData().getBaseDirectory();
+                String buildDirectory;
+                if (makefileDir.equals(baseDir)) {
+                    buildDirectory = ("."); // NOI18N
+                } else {
+                    buildDirectory = IpeUtils.getRelativePath(makefileDir, baseDir);
+                }
+                mes.setBuildDirectory(buildDirectory);
 
-		String fullMakefilePath = result.getPrimaryFile().getFileSystem().getDisplayName() + File.separator + result.getPrimaryFile().getPath();
-		String fullBuildDirectoryPath = buildDirectory;
-		int index = fullMakefilePath.lastIndexOf(File.separatorChar);
-		if (index >= 0) {
-		    fullBuildDirectoryPath = IpeUtils.toAbsolutePath(fullMakefilePath.substring(0, index), fullBuildDirectoryPath);
-		}
+                String fullMakefilePath = result.getPrimaryFile().getFileSystem().getDisplayName() + File.separator + result.getPrimaryFile().getPath();
+                String fullBuildDirectoryPath = buildDirectory;
+                int aIndex = fullMakefilePath.lastIndexOf(File.separatorChar);
+                if (aIndex >= 0) {
+                    fullBuildDirectoryPath = IpeUtils.toAbsolutePath(fullMakefilePath.substring(0, aIndex), fullBuildDirectoryPath);
+                }
 
-		// Send creation event
-		ArrayList targets = new ArrayList();
-		ArrayList executables = new ArrayList();
-		for (int i = 0; i < tlist.size(); i++) {
-		    TargetData t = (TargetData) tlist.get(i);
-		    String outputDirectory = t.getOutputDirectory();
-		    if (outputDirectory == null || outputDirectory.length() == 0)
-			outputDirectory = "."; // NOI18N
-		    switch (t.getTargetType()) {
-			case TargetData.COMPLEX_EXECUTABLE:
-			case TargetData.SIMPLE_EXECUTABLE:
-			    String fullTargetPath = null;
-			    
-			    if (t.getName().charAt(0) == File.separatorChar) {
-				fullTargetPath = t.getName();
-			    }
-			    else if (outputDirectory.charAt(0) == File.separatorChar) {
-				fullTargetPath = outputDirectory + File.separator + t.getName();
-			    }
-			    else {
-				fullTargetPath = fullBuildDirectoryPath + File.separator + outputDirectory + File.separator + t.getName();
-			    }
-			    executables.add(fullTargetPath);
-			    // fall through...
-			case TargetData.SIMPLE_ARCHIVE:
-			case TargetData.SIMPLE_SHAREDLIB:
-			case TargetData.COMPLEX_ARCHIVE:
-			case TargetData.COMPLEX_SHAREDLIB:
-			    targets.add(t.getName());
-			    break;
-			case TargetData.COMPLEX_MAKE_TARGET: 
-			case TargetData.COMPLEX_CUSTOM_TARGET: 
-			    mes.addMakeTargets(t.getName());
-			    break;
-		    }
-		}
-		MakefileWizardEvent wizardEvent = new MakefileWizardEvent(
-		    this,
-		    MakefileWizardEvent.MAKEFILE_NEW,
-		    fullMakefilePath,
-		    getMakefileData().getBaseDirectory(),
-		    MakeSettings.getDefault().getDefaultMakeCommand(),
-		    (String[])targets.toArray(new String[targets.size()]),
-		    (String[])executables.toArray(new String[executables.size()])
-		);
-		fireMakefileWizardEvent(wizardEvent);
-	    }
-	}
+                // Send creation event
+                ArrayList<String> targets = new ArrayList<String>();
+                ArrayList<String> executables = new ArrayList<String>();
+                for (int i = 0; i < tlist.size(); i++) {
+                    TargetData t = tlist.get(i);
+                    String outputDirectory = t.getOutputDirectory();
+                    if (outputDirectory == null || outputDirectory.length() == 0) {
+                        outputDirectory = "."; // NOI18N
+                    }
+                    switch (t.getTargetType()) {
+                        case TargetData.COMPLEX_EXECUTABLE:
+                        case TargetData.SIMPLE_EXECUTABLE:
+                            String fullTargetPath = null;
 
-	boolean done = onFinish();
-	if (done) {
-	    OpenCookie open = (OpenCookie) result.getCookie (OpenCookie.class);
-	    if (open != null) {
-		open.open ();
-	    }
-	}
-	else
-	    System.err.println("errors generating makefile..."); // FIXUP // NOI18N
-        return Collections.singleton (result);
+                            if (t.getName().charAt(0) == File.separatorChar) {
+                                fullTargetPath = t.getName();
+                            } else if (outputDirectory.charAt(0) == File.separatorChar) {
+                                fullTargetPath = outputDirectory + File.separator + t.getName();
+                            } else {
+                                fullTargetPath = fullBuildDirectoryPath + File.separator + outputDirectory + File.separator + t.getName();
+                            }
+                            executables.add(fullTargetPath);
+                        // fall through...
+                        case TargetData.SIMPLE_ARCHIVE:
+                        case TargetData.SIMPLE_SHAREDLIB:
+                        case TargetData.COMPLEX_ARCHIVE:
+                        case TargetData.COMPLEX_SHAREDLIB:
+                            targets.add(t.getName());
+                            break;
+                        case TargetData.COMPLEX_MAKE_TARGET:
+                        case TargetData.COMPLEX_CUSTOM_TARGET:
+                            mes.addMakeTargets(t.getName());
+                            break;
+                    }
+                }
+                MakefileWizardEvent wizardEvent = new MakefileWizardEvent(
+                        this,
+                        MakefileWizardEvent.MAKEFILE_NEW,
+                        fullMakefilePath,
+                        getMakefileData().getBaseDirectory(),
+                        MakeSettings.getDefault().getDefaultMakeCommand(),
+                        targets.toArray(new String[targets.size()]),
+                        executables.toArray(new String[executables.size()]));
+                fireMakefileWizardEvent(wizardEvent);
+            }
+        }
+
+        boolean done = onFinish();
+        if (done) {
+            OpenCookie open = result.getCookie(OpenCookie.class);
+            if (open != null) {
+                open.open();
+            }
+        } else {
+            System.err.println("errors generating makefile..."); // FIXUP // NOI18N
+        }
+        return Collections.<DataObject>singleton(result);
     }
 
     /*
      * Returns relative (to mounted filesystem) path to fileobject fo. Recursive.
      * Same funtionality as folder.getNameExt, which is now deprecated.
-     */ 
+     */
     private String dirPath(FileObject fo, String path) {
-	if (fo.getParent() != null && fo.getParent().getName() != null && fo.getParent().getName().length() > 0) {
-	    path = fo.getParent().getName() + File.separatorChar + path;
-	    return dirPath(fo.getParent(), path);
-	}
-	return path;
+        if (fo.getParent() != null && fo.getParent().getName() != null && fo.getParent().getName().length() > 0) {
+            path = fo.getParent().getName() + File.separatorChar + path;
+            return dirPath(fo.getParent(), path);
+        }
+        return path;
     }
-
 
     /** Set initial data in dialog */
     public void initDirPaths() {
-	// Get dir folder and makefile name from targetChooser panel (default wizard panel)
-	String fullFolderName = null;
-	try {
-	    DataFolder targetFolder = getTemplateWizard().getTargetFolder ();
-	    FileObject fo = targetFolder.getPrimaryFile();
-	    fullFolderName = FileUtil.toFile(fo).getPath();
-	}
-	catch (IOException ioe) {
-	    ; // FIXUP
-	}
-	getMakefileData().setBaseDirectory(fullFolderName);
-	getMakefileData().setMakefileDirName(fullFolderName);
+        // Get dir folder and makefile name from targetChooser panel (default wizard panel)
+        String fullFolderName = null;
+        try {
+            DataFolder targetFolder = getTemplateWizard().getTargetFolder();
+            FileObject fo = targetFolder.getPrimaryFile();
+            fullFolderName = FileUtil.toFile(fo).getPath();
+        } catch (IOException ioe) {
+            // FIXUP
+        }
+        getMakefileData().setBaseDirectory(fullFolderName);
+        getMakefileData().setMakefileDirName(fullFolderName);
     }
 
     private String uniqDefaultName(String dir, String makefileName) {
-	String name = makefileName;
-	File f = new File(dir + File.separator + name);
-	int n = 1;
-	while (f.exists()) {
-	    name = makefileName + "_" + n++; // NOI18N
-	    f = new File(dir + File.separator + name);
-	}
-	return name;
+        String name = makefileName;
+        File f = new File(dir + File.separator + name);
+        int n = 1;
+        while (f.exists()) {
+            name = makefileName + "_" + n++; // NOI18N
+            f = new File(dir + File.separator + name);
+        }
+        return name;
     }
-
 
     /** Update MakefileData if the data was changed */
     public void initMakefileName() {
-	// Create and set makefile name based on name from targetChooser panel and basedirectory
-	MakefileData md = getMakefileData();
-	String makefileName = getTemplateWizard().getTargetName();
-	String dir = IpeUtils.trimSlashes(md.getMakefileDirName());
-	if (makefileName == null)
-	    makefileName = uniqDefaultName(dir, "Makefile"); // NOI18N
-	String fullMakefileName = dir + File.separator + makefileName;
+        // Create and set makefile name based on name from targetChooser panel and basedirectory
+        MakefileData md = getMakefileData();
+        String makefileName = getTemplateWizard().getTargetName();
+        String dir = IpeUtils.trimSlashes(md.getMakefileDirName());
+        if (makefileName == null) {
+            makefileName = uniqDefaultName(dir, "Makefile"); // NOI18N
+        }
+        String fullMakefileName = dir + File.separator + makefileName;
 
-	String useMakefileName = null;
-	if (dir.equals(md.getBaseDirectory()) || ".".equals(dir) || dir.length() == 0) // NOI18N
-	    useMakefileName = makefileName;
-	else
-	    useMakefileName = fullMakefileName;
-	md.setMakefileName(useMakefileName);
+        String useMakefileName = null;
+        if (dir.equals(md.getBaseDirectory()) || ".".equals(dir) || dir.length() == 0) // NOI18N
+        {
+            useMakefileName = makefileName;
+        } else {
+            useMakefileName = fullMakefileName;
+        }
+        md.setMakefileName(useMakefileName);
     }
 
     /** ---------------------------------------------------- */
+    protected static void fireMakefileWizardEvent(MakefileWizardEvent e) {
+        Vector<MakefileWizardListener> listeners = getListenerList();
 
-    protected static void fireMakefileWizardEvent(MakefileWizardEvent e)
-    {
-	Vector listeners = getListenerList();
-
-	for (int i = listeners.size()-1; i >= 0; i--) {
-	    ((MakefileWizardListener)listeners.elementAt(i)).makefileCreated(e);
-	}
+        for (int i = listeners.size() - 1; i >= 0; i--) {
+            (listeners.elementAt(i)).makefileCreated(e);
+        }
     }
 
-    private static Vector getListenerList() {
-	if (listenerList == null) {
-	    listenerList = new Vector(0);
-	}
-	return listenerList;
+    private static Vector<MakefileWizardListener> getListenerList() {
+        if (listenerList == null) {
+            listenerList = new Vector<MakefileWizardListener>(0);
+        }
+        return listenerList;
     }
 
     public static void addMakefileWizardListener(MakefileWizardListener l) {
-	getListenerList().add(l);
+        getListenerList().add(l);
     }
 
     public static void removeMakefileWizardListener(MakefileWizardListener l) {
-	getListenerList().remove(l);
+        getListenerList().remove(l);
     }
 }
 

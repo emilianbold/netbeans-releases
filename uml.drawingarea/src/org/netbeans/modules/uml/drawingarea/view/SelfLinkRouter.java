@@ -126,7 +126,7 @@ public class SelfLinkRouter implements Router
                 Widget targetNode = edgeWidget.getTargetAnchor().getRelatedWidget();
                 Widget sourceNode = edgeWidget.getSourceAnchor().getRelatedWidget();
                 
-                if(targetNode.equals(sourceNode) == true)
+                if(targetNode!=null && targetNode.equals(sourceNode))
                 {
                     // We found a self link.
                     retVal++;

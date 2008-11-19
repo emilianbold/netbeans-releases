@@ -164,13 +164,8 @@ public class FileOwnerQuery {
     
     /**
      * Simplest algorithm for marking external file owners, which just keeps
-     * a transient memory cache of this information.
-     * The external marking is only guaranteed to be good during this VM session
-     * for as long as the external file root is retained in memory as a
-     * <code>FileObject</code>. For this reason, a project which makes such a
-     * marking when it is created is obliged to hold a reference to the external
-     * file root for as long as the project itself is in memory, to ensure that
-     * it continues to work.
+     * a cache of this information.
+     * <strong>The external marking may be persisted across VM sessions, despite the name.</strong>
      */
     public static final int EXTERNAL_ALGORITHM_TRANSIENT = 0;
     

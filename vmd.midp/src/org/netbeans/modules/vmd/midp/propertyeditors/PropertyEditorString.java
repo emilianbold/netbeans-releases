@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -89,6 +90,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     private TypeID parentTypeID;
     private String label;
     private DatabindingElement databindingElement;
+    private boolean databinding;
 
     /**
      * Creates instance of PropertyEditorString.
@@ -114,18 +116,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         this.useTextArea = useTextArea;
         this.label = label;
         this.parentTypeID = parentTypeID;
-        initComponents();
-
-        if (databinding) {
-            LinkedHashMap<PropertyEditorElement, Integer> elements = new LinkedHashMap<PropertyEditorElement, Integer>(2);
-            databindingElement = new DatabindingElement(this);
-            elements.put(this, null);
-            elements.put(databindingElement, new Integer(-1));
-            initElements(elements);
-        } else {
-            initElements(Collections.<PropertyEditorElement>singleton(this));
-        }
-
+        this.databinding = databinding;
     }
 
     /**
@@ -239,14 +230,28 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         }
     }
 
+    @Override
+    public final Component getCustomEditor() {
+        if (customEditor == null) {
+            initComponents();
+            if (databinding) {
+                LinkedHashMap<PropertyEditorElement, Integer> elements = new LinkedHashMap<PropertyEditorElement, Integer>(2);
+                databindingElement = new DatabindingElement(this);
+                elements.put(this, null);
+                elements.put(databindingElement, new Integer(-1));
+                initElements(elements);
+            } else {
+                initElements(Collections.<PropertyEditorElement>singleton(this));
+            }
+        }
+        return super.getCustomEditor();
+    }
+
     private void initComponents() {
         radioButton = new JRadioButton();
-
         Mnemonics.setLocalizedText(radioButton, label);
-
         radioButton.getAccessibleContext().setAccessibleName(radioButton.getText());
         radioButton.getAccessibleContext().setAccessibleDescription(radioButton.getText());
-
         customEditor = new CustomEditor(comment);
     }
 
@@ -355,7 +360,6 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * This method updates state of custom property editor.
      */
     public void updateState(PropertyValue value) {
-
         final DesignComponent c = component.get();
         if (databindingElement != null) {
             databindingElement.updateDesignComponent(c);

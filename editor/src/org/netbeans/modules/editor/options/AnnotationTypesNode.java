@@ -43,6 +43,7 @@ package org.netbeans.modules.editor.options;
 
 import java.awt.Image;
 import java.awt.Toolkit;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
@@ -52,7 +53,6 @@ import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.netbeans.editor.AnnotationType;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.BeanNode;
-import org.openide.nodes.Node;
 import java.util.Iterator;
 import java.beans.IntrospectionException;
 import org.openide.util.NbBundle;
@@ -63,10 +63,6 @@ import java.lang.Boolean;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import org.openide.ErrorManager;
-import org.openide.util.Utilities;
 
 /** Node representing the Annotation Types in Options window.
  *
@@ -203,7 +199,7 @@ public class AnnotationTypesNode extends AbstractNode {
                 try {
                     list.add(new AnnotationTypesSubnode(type));
                 } catch (IntrospectionException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                     continue;
                 }
             }

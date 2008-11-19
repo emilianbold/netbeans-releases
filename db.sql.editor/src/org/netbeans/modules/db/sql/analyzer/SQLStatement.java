@@ -43,10 +43,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
 
 /**
  *
@@ -54,17 +56,27 @@ import java.util.Set;
  */
 public class SQLStatement {
 
+    // This should be renamed to SelectStatement.
+
+    private final SQLStatementKind kind;
     int startOffset, endOffset;
     private final List<List<String>> selectValues;
     private final FromClause fromClause;
     private final List<SQLStatement> subqueries;
+    private final SortedMap<Integer, SelectContext> offset2Context;
 
-    public SQLStatement(int startOffset, int endOffset, List<List<String>> selectValues, FromClause fromClause, List<SQLStatement> subqueries) {
+    SQLStatement(SQLStatementKind kind, int startOffset, int endOffset, List<List<String>> selectValues, FromClause fromClause, List<SQLStatement> subqueries, SortedMap<Integer, SelectContext> offset2Context) {
+        this.kind = kind;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.selectValues = selectValues;
         this.fromClause = fromClause;
         this.subqueries = subqueries;
+        this.offset2Context = offset2Context;
+    }
+
+    public SQLStatementKind getKind() {
+        return kind;
     }
 
     public FromClause getFromClause() {
@@ -107,6 +119,18 @@ public class SQLStatement {
         return subqueries;
     }
 
+    public SelectContext getContextAtOffset(int offset) {
+        SelectContext result = null;
+        for (Entry<Integer, SelectContext> entry : offset2Context.entrySet()) {
+            if (offset >= entry.getKey()) {
+                result = entry.getValue();
+            } else {
+                break;
+            }
+        }
+        return result;
+    }
+
     private void fillStatementPath(int offset, List<SQLStatement> path) {
         if (offset >= startOffset && offset <= endOffset) {
             path.add(this);
@@ -114,5 +138,16 @@ public class SQLStatement {
                 subquery.fillStatementPath(offset, path);
             }
         }
+    }
+
+    public enum SelectContext {
+
+        SELECT,
+        FROM,
+        JOIN_CONDITION,
+        WHERE,
+        GROUP_BY,
+        HAVING,
+        ORDER_BY
     }
 }

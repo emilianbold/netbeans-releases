@@ -541,7 +541,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                             counterPrepareDocument--;
                             if (isStrongSet && canReleaseDoc()) {
                                 isStrongSet = false;
-                                if (CloneableEditorSupport.this.doc != null) {
+                                if ((CloneableEditorSupport.this.doc != null) && !isAlreadyModified()) {
                                     CloneableEditorSupport.this.doc.setStrong(false);
                                 }
                             }
@@ -552,7 +552,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     counterPrepareDocument--;
                     if (isStrongSet && canReleaseDoc()) {
                         isStrongSet = false;
-                        if (this.doc != null) {
+                        if ((this.doc != null) && !isAlreadyModified()) {
                             this.doc.setStrong(false);
                         }
                     }
@@ -600,6 +600,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 // here would be the testability hook for issue 56413
                 // (Deadlock56413Test), but I use the reflection in the test
                 // instead, so the test depends on the above assignment
+            } else {
+                setDoc(docToLoad[0], true);
+                isStrongSet = true;
             }
 
 
@@ -754,15 +757,32 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return redirect.openDocument();
         }
         synchronized (getLock()) {
+            //It is to avoid gc of loaded document while we work with it
+            boolean wasCounterIncremented = false;
             try {
-                counterOpenDocument++;
-                StyledDocument doc = openDocumentCheckIOE();
-                return doc;
+                //For DOCUMENT_NO strong reference is set in prepareDocument
+                if ((documentStatus == DOCUMENT_READY) || (documentStatus == DOCUMENT_LOADING) || (documentStatus == DOCUMENT_RELOADING)) {
+                    counterOpenDocument++;
+                    wasCounterIncremented = true;
+                    if (this.doc != null) {
+                        this.doc.setStrong(true);
+                        isStrongSet = true;
+                    }
+                }
+                try {
+                    counterOpenDocument++;
+                    StyledDocument doc = openDocumentCheckIOE();
+                    return doc;
+                } finally {
+                    counterOpenDocument--;
+                }
             } finally {
-                counterOpenDocument--;
+                if (wasCounterIncremented) {
+                    counterOpenDocument--;
+                }
                 if (isStrongSet && canReleaseDoc()) {
                     isStrongSet = false;
-                    if (this.doc != null) {
+                    if ((this.doc != null) && !isAlreadyModified()) {
                         this.doc.setStrong(false);
                     }
                 }
@@ -851,15 +871,21 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                     try {
                         counterGetDocument++;
-                        StyledDocument doc = openDocumentCheckIOE();
-                        return doc;
-                    } catch (IOException e) {
-                        return null;
+                        if (this.doc != null) {
+                            this.doc.setStrong(true);
+                            isStrongSet = true;
+                        }
+                        try {
+                            StyledDocument doc = openDocumentCheckIOE();
+                            return doc;
+                        } catch (IOException e) {
+                            return null;
+                        }
                     } finally {
                         counterGetDocument--;
                         if (isStrongSet && canReleaseDoc()) {
                             isStrongSet = false;
-                            if (this.doc != null) {
+                            if ((this.doc != null) && !isAlreadyModified()) {
                                 this.doc.setStrong(false);
                             }
                         }
@@ -2405,7 +2431,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         counterOpenAtImpl--;
                         if (isStrongSet && canReleaseDoc()) {
                             isStrongSet = false;
-                            if (CloneableEditorSupport.this.doc != null) {
+                            if ((CloneableEditorSupport.this.doc != null) && !isAlreadyModified()) {
                                 CloneableEditorSupport.this.doc.setStrong(false);
                             }
                         }

@@ -46,6 +46,21 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="DeclarativeMIMEResolvers">
+            <api name="filesystems"/>
+            <summary>Added new elements to MIME resolver DTD</summary>
+            <version major="7" minor="16"/>
+            <date day="18" month="11" year="2008"/>
+            <author login="jskrivanek"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    It is now possible to write declarive MIME resolvers checking
+                    file names (element name) and file content (element pattern).
+                </p>
+            </description>
+            <issue number="142760"/>
+        </change>
         <change id="LayerGeneratingProcessor">
             <api name="filesystems"/>
             <summary>Support for annotation processors generating XML layer fragments</summary>

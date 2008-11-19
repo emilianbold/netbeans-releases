@@ -166,7 +166,9 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 ex.printStackTrace();
                 if (x instanceof java.io.IOException)
                     throw (IOException)x;
-                throw new java.io.IOException(ex.getMessage());
+                IOException ioe = new IOException(ex.getMessage());
+                ioe.initCause(x);
+                throw ioe;
             }
 
             CDCPlatform inst = createPlatform(handler);

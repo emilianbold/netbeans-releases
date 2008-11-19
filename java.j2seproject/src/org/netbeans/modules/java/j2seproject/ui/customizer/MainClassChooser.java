@@ -46,9 +46,11 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import javax.lang.model.element.TypeElement;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
@@ -164,13 +166,12 @@ public class MainClassChooser extends JPanel {
                                     }
                                 });
                             } else {
-                                final ElementHandle<TypeElement>[] arr = possibleMainClasses.toArray(new ElementHandle[possibleMainClasses.size()]);
+                                final List<ElementHandle<TypeElement>> sortedMainClasses = new ArrayList<ElementHandle<TypeElement>>(possibleMainClasses);
                                 // #46861, sort name of classes
-                                Arrays.sort(arr, new MainClassComparator());
+                                Collections.sort(sortedMainClasses, new MainClassComparator());
                                 SwingUtilities.invokeLater(new Runnable() {
-
                                     public void run() {
-                                        jMainClassList.setListData(arr);
+                                        jMainClassList.setListData(sortedMainClasses.toArray());
                                         jMainClassList.setSelectedIndex(0);
                                     }
                                 });
@@ -185,10 +186,10 @@ public class MainClassChooser extends JPanel {
     }
     
     private void initClassesModel (final Collection<ElementHandle<TypeElement>> mainClasses) {
-        final ElementHandle<TypeElement>[] arr = mainClasses.toArray(new ElementHandle[mainClasses.size()]);
-        Arrays.sort (arr, new MainClassComparator());
+        final List<ElementHandle<TypeElement>> sortedMainClasses = new ArrayList<ElementHandle<TypeElement>>(mainClasses);
+        Collections.sort(sortedMainClasses, new MainClassComparator());
         possibleMainClasses = mainClasses;
-        jMainClassList.setListData (arr);
+        jMainClassList.setListData(sortedMainClasses.toArray());
         jMainClassList.setSelectedIndex (0);
     }
     

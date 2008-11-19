@@ -263,7 +263,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         else {
             jLabelErrorMessage.setText( " " ); // NOI18N
         }
-        J2SELogicalViewProvider viewProvider = (J2SELogicalViewProvider) uiProperties.getProject().getLookup().lookup(J2SELogicalViewProvider.class);
+        J2SELogicalViewProvider viewProvider = uiProperties.getProject().getLookup().lookup(J2SELogicalViewProvider.class);
         //Update the state of project's node if needed
         viewProvider.testBroken();
     }

@@ -66,11 +66,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 <folder name="Popup">
                     <file name="generate-preprocessor-popup">
-                        <attr name="position" intvalue="1040"/>
-                    </file>
-                    <file name="SeparatorAfterConfigs.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1080"/>
+                        <attr name="position" intvalue="1540"/>
                     </file>
                 </folder>
                 <folder name="CompletionProviders">

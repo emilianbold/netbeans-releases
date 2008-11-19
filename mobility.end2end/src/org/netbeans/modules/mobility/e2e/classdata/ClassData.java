@@ -69,6 +69,8 @@ public class ClassData {
     private ClassData componentType;
     private List<ClassData> typeParameters = new ArrayList<ClassData>();
     
+    private List<MethodData> myInvalidMethods;
+    
     public static final ClassData java_lang_Object = new ClassData( "java.lang", "Object", false, false );
     
     private ClassData( String packageName, String className, boolean primitive, boolean array ) {
@@ -107,6 +109,14 @@ public class ClassData {
         this.generics = false;
         this.fields = fields;
         this.methods = methods;
+    }
+    
+    public ClassData( String packageName, String className, boolean array, 
+            List<FieldData> fields, List<MethodData> methods, 
+            JavonSerializer serializer , List<MethodData> invalidMethods )
+    {
+        this( packageName, className, array, fields, methods , serializer ); 
+        myInvalidMethods = invalidMethods;
     }
 
     public ClassData( String packageName, String className, boolean array, List<ClassData> typeParams, JavonSerializer serializer ) {
@@ -214,6 +224,12 @@ public class ClassData {
         return Collections.unmodifiableList( methods );
     }
     
+    public List<MethodData> getInvalidMethods() {
+        if ( myInvalidMethods == null ) {
+            return Collections.EMPTY_LIST;
+        }
+        return Collections.unmodifiableList( myInvalidMethods );
+    }
 
     /**
      * Returns all parameter type specified for this class

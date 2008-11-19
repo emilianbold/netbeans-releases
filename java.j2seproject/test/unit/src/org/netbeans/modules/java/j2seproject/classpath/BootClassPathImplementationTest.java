@@ -63,10 +63,9 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 
 /**
- * Tests for {@link BootClassPathImplementation}.
  * @author Tomas Zezula
  */
 public class BootClassPathImplementationTest extends NbTestCase {
@@ -93,18 +92,17 @@ public class BootClassPathImplementationTest extends NbTestCase {
         ClassPath defBCP = ClassPathSupport.createClassPath(new URL[]{defaultPlatformBootRoot.getURL()});
         ClassPath expBCP = ClassPathSupport.createClassPath(new URL[]{explicitPlatformBootRoot.getURL()});
         tp = new TestPlatformProvider (defBCP, expBCP);
-        TestUtil.setLookup(new Object[] {
+        MockLookup.setInstances(
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
             tp
-        });
+        );
     }
 
     protected void tearDown() throws Exception {
         scratch = null;
         projdir = null;
         pm = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
     
@@ -197,7 +195,7 @@ public class BootClassPathImplementationTest extends NbTestCase {
     private static class TestPlatform extends JavaPlatform {
         
         private String systemName;
-        private Map properties;
+        private Map<String,String> properties;
         private ClassPath bootClassPath;
         
         public TestPlatform (String systemName, ClassPath bootCP) {
@@ -226,15 +224,15 @@ public class BootClassPathImplementationTest extends NbTestCase {
             return null;
         }
 
-        public Map getProperties() {
+        public Map<String,String>  getProperties() {
             return this.properties;
         }
 
-        public List getJavadocFolders() {
+        public List<URL> getJavadocFolders() {
             return null;
         }
 
-        public Collection getInstallFolders() {
+        public Collection<FileObject> getInstallFolders() {
             return null;
         }
 

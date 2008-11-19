@@ -210,7 +210,7 @@ public class ProjectCustomizerTest extends NbTestCase {
     
     public static class TestCompositeCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
         public ProjectCustomizer.Category createCategory(Lookup context) {
-            return ProjectCustomizer.Category.create("testCategory", "TestCategory", null, null);
+            return ProjectCustomizer.Category.create("testCategory", "TestCategory", null);
         }
         public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
             return new JButton();

@@ -38,10 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
-import java.awt.event.FocusEvent;
+import java.awt.Component;
 import java.awt.event.ItemEvent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -55,7 +54,6 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusListener;
 import java.awt.event.ItemListener;
 import java.util.Collections;
 import javax.swing.*;
@@ -77,24 +75,12 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     private TypeID parentTypeID;
     private String rbLabel;
 
-   
-
     private PropertyEditorBooleanUC(boolean supportsCustomEditor, TypeID parentTypeID, String rbLabel) {
         super(NbBundle.getMessage(PropertyEditorBooleanUC.class, "LBL_VALUE_BOOLEAN_UCLABEL")); // NOI18N
         this.supportsCustomEditor = supportsCustomEditor;
         this.parentTypeID = parentTypeID;
         this.rbLabel = rbLabel;
 
-        initElements(Collections.<PropertyEditorElement>singleton(this));
-        super.getUserCodeRadioButton().addFocusListener(new FocusListener() {
-
-            public void focusGained(FocusEvent e) {
-                customEditor.checkBox.setSelected(false);
-            }
-            
-            public void focusLost(FocusEvent e) {
-            }
-        });
     }
 
     public static PropertyEditorBooleanUC createInstance() {
@@ -134,21 +120,23 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
                 checkBox.setSelected(value);
             }
             checkBox.addItemListener(new ItemListener() {
+
                 public void itemStateChanged(ItemEvent e) {
                     JCheckBox checkBox = (JCheckBox) inplaceEditor.getComponent();
-                    PropertyValue value = MidpTypes.createBooleanValue(checkBox.isSelected());
-                    PropertyEditorBooleanUC.this.setValue(value);
-                    //PropertyEditorBooleanUC.this.invokeSaveToModel();
+                    boolean currentState = checkBox.isSelected();
+                    PropertyEditorBooleanUC.this.setValue(MidpTypes.createBooleanValue(currentState));
                 }
             });
         } else {
             PropertyValue propertyValue = (PropertyValue) getValue();
             Boolean value = (Boolean) propertyValue.getPrimitiveValue();
             JCheckBox checkBox = (JCheckBox) inplaceEditor.getComponent();
-            if (value == null || value == false) {
+            if (value != null && value == false) {
                 checkBox.setSelected(false);
-            } else {
+            } else if (value != null && value == true) {
                 checkBox.setSelected(true);
+            } else {
+                return super.getInplaceEditor();
             }
         }
         return inplaceEditor;
@@ -176,9 +164,6 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     }
 
     public JComponent getCustomEditorComponent() {
-        if (customEditor == null) {
-            customEditor = new CustomEditor();
-        }
         return customEditor;
     }
 
@@ -186,13 +171,13 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         if (radioButton == null) {
             radioButton = new JRadioButton();
             Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorBooleanUC.class, "LBL_VALUE_BOOLEAN")); // NOI18N
-            
+
             radioButton.getAccessibleContext().setAccessibleName(
-                    NbBundle.getMessage(PropertyEditorBooleanUC.class, 
-                            "ACSN_VALUE_BOOLEAN")); // NOI18N
+                    NbBundle.getMessage(PropertyEditorBooleanUC.class,
+                    "ACSN_VALUE_BOOLEAN")); // NOI18N
             radioButton.getAccessibleContext().setAccessibleDescription(
-                    NbBundle.getMessage(PropertyEditorBooleanUC.class, 
-                            "ACSD_VALUE_BOOLEAN")); // NOI18N
+                    NbBundle.getMessage(PropertyEditorBooleanUC.class,
+                    "ACSD_VALUE_BOOLEAN")); // NOI18N
         }
         return radioButton;
     }
@@ -268,7 +253,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         }
         return super.getDefaultValue();
     }
-    
+
     private boolean isWriteableByParentType() {
         if (component == null || component.get() == null) {
             return false;
@@ -283,7 +268,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
                     parent[0] = _component.getParentComponent();
                 }
             });
-            
+
             if (parent[0] != null && parentTypeID.equals(parent[0].getType())) {
                 return false;
             }
@@ -296,6 +281,30 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         ic.setSelected(selected);
     }
 
+    @Override
+    public Component getCustomEditor() {
+        if (customEditor == null) {
+            customEditor = new CustomEditor();
+            initElements(Collections.<PropertyEditorElement>singleton(this));
+            super.getCustomEditor();
+//            super.getUserCodeRadioButton().addFocusListener(new FocusListener() {
+//
+//                public void focusGained(FocusEvent e) {
+//                    customEditor.checkBox.setSelected(false);
+//                }
+//
+//                public void focusLost(FocusEvent e) {
+//                }
+//            });
+        }
+
+        if (getValue() instanceof PropertyValue) {
+            customEditor.setValue((PropertyValue) getValue());
+        }
+
+        return super.getCustomEditor();
+    }
+
     private class CustomEditor extends JPanel implements ActionListener {
 
         private JCheckBox checkBox;
@@ -305,8 +314,10 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         }
 
         void cleanUp() {
-            checkBox.removeActionListener(this);
-            checkBox = null;
+            if (checkBox != null) {
+                checkBox.removeActionListener(this);
+                checkBox = null;
+            }
             this.removeAll();
         }
 
@@ -315,10 +326,10 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
             checkBox = new JCheckBox();
             if (rbLabel != null) {
                 Mnemonics.setLocalizedText(checkBox, rbLabel);
-                
-                checkBox.getAccessibleContext().setAccessibleName( 
+
+                checkBox.getAccessibleContext().setAccessibleName(
                         checkBox.getText());
-                checkBox.getAccessibleContext().setAccessibleDescription( 
+                checkBox.getAccessibleContext().setAccessibleDescription(
                         checkBox.getText());
             }
             checkBox.addActionListener(this);

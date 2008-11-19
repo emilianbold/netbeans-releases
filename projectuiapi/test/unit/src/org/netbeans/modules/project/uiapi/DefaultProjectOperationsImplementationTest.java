@@ -63,6 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author Jan Lahoda
@@ -89,10 +90,8 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         
         createProject(projdir);
 
-        TestUtil.setLookup(new Object[] {
-            new TestProjectFactory(),
-            new SimpleFileOwnerQueryImplementation(),
-        });
+        MockLookup.setInstances(new TestProjectFactory(),
+            new SimpleFileOwnerQueryImplementation());
         
         prj = ProjectManager.getDefault().findProject(projdir);
         

@@ -49,7 +49,6 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.util.FileUtils;
@@ -124,7 +123,7 @@ public class CopyLibs extends Jar {
                 this.log("Create lib folder " + libFolder.toString() + ".", Project.MSG_VERBOSE);
             }
             assert libFolder.canWrite();            
-            FileUtils utils = FileUtils.newFileUtils();
+            FileUtils utils = FileUtils.getFileUtils();
             this.log("Copy libraries to " + libFolder.toString() + ".");
             for (int i=0; i<filesToCopy.length; i++) {
                 this.log("Copy " + filesToCopy[i].getName() + " to " + libFolder + ".", Project.MSG_VERBOSE);

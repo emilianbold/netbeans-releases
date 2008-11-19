@@ -1066,7 +1066,6 @@ public abstract class ProductProjectTreeModel implements IProjectTreeModel
    protected class CoreProductInitHandler extends CoreProductInitEventsAdapter
    {
       /* (non-Javadoc)
-       * @see com.embarcadero.describe.coreapplication.ICoreProductInitEventsSink#onCoreProductPreQuit(com.embarcadero.describe.coreapplication.ICoreProduct, com.embarcadero.describe.umlsupport.IResultCell)
        */
       public void onCoreProductPreQuit(ICoreProduct arg0, IResultCell arg1)
       {

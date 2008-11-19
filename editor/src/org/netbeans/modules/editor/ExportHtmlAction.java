@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.editor;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -49,7 +52,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.awt.HtmlBrowser;
@@ -185,7 +187,7 @@ public class ExportHtmlAction extends CookieAction {
                                         HtmlBrowser.URLDisplayer.getDefault().showURL(new File(file).toURI().toURL());
                                     }
                                 } catch (MalformedURLException mue) {
-                                        ErrorManager.getDefault().notify (mue);
+                                        Exceptions.printStackTrace (mue);
                                 } catch (IOException ioe) {
                                     NotifyDescriptor nd = new NotifyDescriptor.Message (
                                             NbBundle.getMessage(ExportHtmlAction.class,"ERR_IOError",
@@ -215,7 +217,7 @@ public class ExportHtmlAction extends CookieAction {
             }
         }
         else {
-            ErrorManager.getDefault().log (NbBundle.getMessage(ExportHtmlAction.class,"MSG_DocError"));
+            Logger.getLogger("global").log (Level.FINE,NbBundle.getMessage(ExportHtmlAction.class,"MSG_DocError"));
         }
     }
 

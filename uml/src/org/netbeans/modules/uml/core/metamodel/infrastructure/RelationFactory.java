@@ -180,7 +180,7 @@ public class RelationFactory extends Object implements IRelationFactory
 	}
 
 	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.infrastructure.IRelationFactory#CreatePresentationReference(com.embarcadero.describe.foundation.IElement, org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement)
+	 * @see org.netbeans.modules.uml.core.metamodel.infrastructure.IRelationFactory#CreatePresentationReference(IElement, org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement)
 	 */
 	public IPresentationReference createPresentationReference(
 		IElement referencingElement,
@@ -212,7 +212,6 @@ public class RelationFactory extends Object implements IRelationFactory
 	}
 
 	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.infrastructure.IRelationFactory#createReference(com.embarcadero.describe.foundation.IElement, com.embarcadero.describe.foundation.IElement)
 	 */
 	public IReference createReference(
 		IElement referencingElement,

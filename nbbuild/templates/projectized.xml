@@ -104,6 +104,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                       compilecp="test.qa-functional.compile.cp"
                       compiledep="test.qa-functional.testdep"/>
         </parseprojectxml>
+        <property name="spec.version.base.fatal.warning" value="true"/>
         <condition property="is.regular">
             <not>
                 <or>

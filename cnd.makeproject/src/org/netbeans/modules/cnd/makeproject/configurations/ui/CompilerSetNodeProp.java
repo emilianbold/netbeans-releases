@@ -159,7 +159,7 @@ public class CompilerSetNodeProp extends Node.Property {
             if (configuration.isDevHostOnline()) {
                 list.addAll(configuration.getCompilerSetManager().getCompilerSetNames());
             }
-            return (String[]) list.toArray(new String[list.size()]);
+            return list.toArray(new String[list.size()]);
         }
 
         public void repaint() {

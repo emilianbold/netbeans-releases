@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Random;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -63,6 +64,7 @@ public class FileUtilTest extends NbTestCase {
     /** Test performance of FileUtil.copy(FileObject.getInputStream(), FileObject.getOutputStream())
      * against FileUtil.copy(FileInputStream, FileOutputStream). It should be the same.
      */
+    @RandomlyFails // NB-Core-Build #1738
     public void testCopy136308() throws Exception {
         File file = new File(getWorkDir(), "input");
         FileWriter writer = new FileWriter(file);

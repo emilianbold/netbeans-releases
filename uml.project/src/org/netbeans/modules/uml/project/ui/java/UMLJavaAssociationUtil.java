@@ -192,35 +192,6 @@ public class UMLJavaAssociationUtil {
       return retVal;
    }
 
-	
-	// For a given jmi.javamodel.JavaClass this will determine which 
-	// embarcadero i type it would be associated with
-    /* NB60TBD
-	 public static Class getIType(JavaClass c) {
-		 
-		 // hmm, is this a instanceof or isAssignable from situation?
-		 // TODO review for completeness
-		 
-		 // Generics ...not sure org.netbeans.jmi.javamodel.GenericElement
-		 // is actually a super interface of JavaClass in jmi
-		 
-		 // work from most specific to most generic
-		 if(c instanceof JavaEnum ) {
-			 return IEnumeration.class;
-		 }
-		 else if(c.isInterface() ) {
-			 return IInterface.class;
-		 }
-		 else {
-			 // this will cover both simple class
-			 // and Annotation
-			 // and Generic (i think)
-			 return IClass.class;
-		 }
-		 
-	 }
-    */
-
 //proj=The UML project to search
 //qualifiedName=The fully qualified name of the class.
 //type=The type of model element that you want to be returned IClass.class, IEnumeration.class, etc

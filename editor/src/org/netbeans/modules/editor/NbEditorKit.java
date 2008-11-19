@@ -99,7 +99,6 @@ import org.netbeans.modules.editor.impl.actions.NavigationHistoryBackAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryForwardAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryLastEditAction;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
-import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -261,7 +260,7 @@ public class NbEditorKit extends ExtKit implements Callable {
     
     public @Override String getContentType() {
         if (isInheritorOfNbEditorKit()){
-            ErrorManager.getDefault().log(ErrorManager.WARNING, 
+            Logger.getLogger("global").log(Level.WARNING,
                 "Warning: KitClass "+this.getClass().getName()+" doesn't override the method getContentType."); //NOI18N
         }
         return (contentTypeTable.containsKey(this.getClass().getName())) ? 

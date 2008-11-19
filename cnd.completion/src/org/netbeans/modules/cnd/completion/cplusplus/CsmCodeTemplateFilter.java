@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.completion.cplusplus;
 
 import java.util.List;
-import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;

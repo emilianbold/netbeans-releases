@@ -79,6 +79,7 @@ import org.openide.windows.OutputWriter;
  * Handles hyperlinks and so on.
  * @deprecated this class will be removed from open package, because not used anywhere in cnd cluster
  */
+@Deprecated
 public class OutputWindowOutputStream extends OutputStream {
     
     private OutputWriter writer;
@@ -271,7 +272,7 @@ public class OutputWindowOutputStream extends OutputStream {
             }
             try {
                 DataObject dob = DataObject.find(file);
-                EditorCookie ed = (EditorCookie) dob.getCookie(EditorCookie.class);
+                EditorCookie ed = dob.getCookie(EditorCookie.class);
                 if (ed != null) {
                     if (line1 == -1) {
                         // OK, just open it.
@@ -311,7 +312,7 @@ public class OutputWindowOutputStream extends OutputStream {
             }
             try {
                 DataObject dob = DataObject.find(file);
-                EditorCookie ed = (EditorCookie) dob.getCookie(EditorCookie.class);
+                EditorCookie ed = dob.getCookie(EditorCookie.class);
                 if (ed != null) {
                     if (ed.getDocument() == null) {
                         // The document is not opened, don't bother with it.

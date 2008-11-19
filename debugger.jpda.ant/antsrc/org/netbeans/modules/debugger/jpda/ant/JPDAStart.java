@@ -124,7 +124,7 @@ public class JPDAStart extends Task implements Runnable {
      */
     private String                  name;
     /** Explicit sourcepath of the debugged process. */
-    private Path                    sourcepath = null;
+    private Sourcepath              sourcepath = null;
     /** Explicit classpath of the debugged process. */
     private Path                    classpath = null;
     /** Explicit bootclasspath of the debugged process. */
@@ -186,7 +186,7 @@ public class JPDAStart extends Task implements Runnable {
         bootclasspath = path;
     }
     
-    public void addSourcepath (Path path) {
+    public void addSourcepath (Sourcepath path) {
         if (sourcepath != null)
             throw new BuildException ("Only one sourcepath subelement is supported");
         sourcepath = path;
@@ -502,8 +502,11 @@ public class JPDAStart extends Task implements Runnable {
     static ClassPath createSourcePath (
         Project project, 
         Path classpath,
-        Path sourcepath
+        Sourcepath sourcepath
     ) {
+        if (sourcepath != null && sourcepath.isExclusive()) {
+            return convertToClassPath (project, sourcepath);
+        }
         ClassPath cp = convertToSourcePath (project, classpath);
         ClassPath sp = convertToClassPath (project, sourcepath);
         
@@ -643,6 +646,23 @@ public class JPDAStart extends Task implements Runnable {
 
     
     // innerclasses ............................................................
+
+    public static class Sourcepath extends Path {
+
+        private boolean isExclusive;
+
+        public Sourcepath(Project p) {
+            super(p);
+        }
+
+        public void setExclusive(String exclusive) {
+            isExclusive = "true".equalsIgnoreCase(exclusive);
+        }
+
+        boolean isExclusive() {
+            return isExclusive;
+        }
+    }
     
     private static class Listener extends DebuggerManagerAdapter {
         

@@ -363,6 +363,7 @@ public class ClassDataRegistry {
                 JavonSerializer serializer=findSupportingSerializer( type, this.profileProvider, this, new HashMap<String,ClassData>());
                 // Process methods
                 List<MethodData> methods=new ArrayList<MethodData>(0);
+                List<MethodData> invalidMethods=new ArrayList<MethodData>(0);
                 for ( ExecutableElement e : ElementFilter.methodsIn( clazz.getEnclosedElements() ) ) {
                     if ( e.getModifiers().contains( Modifier.PUBLIC ) ) {
                         boolean validReturnType;
@@ -378,24 +379,43 @@ public class ClassDataRegistry {
                             validReturnType=false;
                         }
                         List<MethodParameter> parameters = new ArrayList<MethodParameter>();
+                        List<MethodParameter> invalidParameters = 
+                            new ArrayList<MethodParameter>();
                         for ( VariableElement var : e.getParameters() ) {
                             typeCache = new HashMap<String, ClassData>();
                             ClassData paramClass = traverseType( var.asType(), typeCache );
                             if ( paramClass != null ) {
                                 typeMap.add( paramClass );
-                                parameters.add( new MethodParameter( var.getSimpleName().toString(), paramClass));
+                                parameters.add( 
+                                        new MethodParameter( 
+                                                var.getSimpleName().toString(), 
+                                                paramClass));
                                 validParameters=true;
                             } else {
                                 validParameters=false;
-                                break;
+                                invalidParameters.add(new MethodParameter( 
+                                        var.getSimpleName().toString(), 
+                                        var.asType().toString()));
                             }
                         }
                         if ( validReturnType && validParameters ) {
-                            methods.add( new MethodData(clazz.getQualifiedName().toString(), e.getSimpleName().toString(),returnClass,parameters));
+                            methods.add( new MethodData(
+                                    clazz.getQualifiedName().toString(), 
+                                        e.getSimpleName().toString(),
+                                            returnClass,parameters));
+                        }
+                        else {
+                            invalidMethods.add( new MethodData(
+                                    clazz.getQualifiedName().toString(), 
+                                        e.getSimpleName().toString(),
+                                        e.getReturnType().toString() ,parameters,
+                                            validReturnType ,invalidParameters));
                         }
                     }
                 }
-                if (methods.size() == 0) return null;
+                if (methods.size() == 0) {
+                    return null;
+                }
                 // Process fields but do not add them to the type map as we do support direct access to fields
                 List<FieldData> fields=new ArrayList<FieldData>(0);
                 for (VariableElement ve: ElementFilter.fieldsIn( clazz.getEnclosedElements())) {
@@ -413,7 +433,9 @@ public class ClassDataRegistry {
                     }
                 }
 
-                ClassData result=new ClassData(packageName, clazz.getSimpleName().toString(), false, fields, methods, serializer);
+                ClassData result=new ClassData(packageName, 
+                        clazz.getSimpleName().toString(), false, fields, methods, 
+                        serializer , invalidMethods );
                 //System.err.print( this.displayClassData( result ) );
                 return result;
             }

@@ -42,6 +42,7 @@
 package org.netbeans.modules.mobility.end2end.util;
 
 import java.beans.PropertyChangeEvent;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import javax.swing.event.ChangeEvent;
@@ -95,6 +96,14 @@ public class ServiceNodeManager {
     static final String METHOD_ICON = "org/netbeans/spi/java/project/support/ui/packageBadge.gif"; //NIOI18N
     public final static String NODE_VALIDITY_ATTRIBUTE = "isValid"; //NOI18N
     public final static String NODE_SELECTION_ATTRIBUTE = "isSelected"; //NOI18N
+    
+    static final String INVALID_TYPE_OPERATION="TXT_InvalidTypeOperation"; //NOI18N
+    static final String INVALID_TYPES_OPERATION="TXT_InvalidTypesOperation"; //NOI18N
+    static final String INVALID_RETURN_TYPE="TXT_InvalidReturnType";//NOI18N
+    static final String INVALID_PARAMETER_TYPE = "TXT_InvalidParameterType";//NOI18N
+    static final String INVALID_PARAMETER_TYPES = "TXT_InvalidParameterTypes";//NOI18N
+    static final String HTML_WRAP = "HTML_Notification";//NOI18N
+    
     private static final WeakHashMap<MethodCheckedTreeBeanView, ProjectChildren> oldNodes = 
         new WeakHashMap<MethodCheckedTreeBeanView, ProjectChildren>();
 
@@ -387,7 +396,34 @@ public class ServiceNodeManager {
                 n.setDisplayName(nodeText.toString());
                 n.setIconBaseWithExtension(METHOD_ICON);
                 ClassData cd = activeProfileRegistry.getClassData(methodData.getParentClassName());
-                n.setValue(NODE_VALIDITY_ATTRIBUTE, cd != null && cd.getMethods().contains(methodData));
+                boolean isValid = cd != null && cd.getMethods().contains(methodData);
+                n.setValue(NODE_VALIDITY_ATTRIBUTE, isValid );
+                if ( cd!= null && !isValid ){
+                    List<MethodData> methods = cd.getInvalidMethods();
+                    for( MethodData method : methods ){
+                        if ( method.equalsFQN( methodData ) &&
+                                method.getReturnTypeAsText()!= null &&
+                                method.getReturnTypeAsText().equals(
+                                        methodData.getReturnTypeAsText()))
+                        {
+                            StringBuilder builder = new StringBuilder();
+                            List<MethodParameter> params = method.getInvalidParameters();
+                            for (MethodParameter param : params) {
+                                builder.append( param.getTypeAsString() );
+                                builder.append(", ");
+                            }
+                            String invalidParams = null;
+                            if ( builder.length() != 0 ){
+                                invalidParams = builder.substring( 0, 
+                                        builder.length()-2 );
+                            }
+                            setErrorMessage( n, method.isValidReturnType() ? null:
+                                    method.getReturnTypeAsText(),
+                                    invalidParams );
+                            break;
+                        }
+                    }
+                }
                 StringBuffer sb = new StringBuffer(methodData.getParentClassName());
                 sb.append('.').append(methodData.getName());
                 for (MethodParameter mp : methodData.getParameters()) {
@@ -395,6 +431,39 @@ public class ServiceNodeManager {
                 }
                 n.setValue(NODE_SELECTION_ATTRIBUTE, selectionSource.contains(sb.toString()) ? MultiStateCheckBox.State.SELECTED : MultiStateCheckBox.State.UNSELECTED);
                 return new Node[] {n};
+            }
+            
+            private void setErrorMessage( Node node , String returnType , 
+                    String paramList )
+            {
+                StringBuilder builder = new StringBuilder(
+                        NbBundle.getMessage(ServiceNodeManager.class,
+                                INVALID_TYPE_OPERATION));
+                builder.append(" ");
+                if ( returnType != null ){
+                    String retTypeMsg = MessageFormat.format( 
+                            NbBundle.getMessage(ServiceNodeManager.class,
+                            INVALID_RETURN_TYPE), returnType );
+                    builder.append( retTypeMsg );
+                }
+                if ( paramList != null ){
+                    if ( returnType != null ){
+                        builder.append( ", " );
+                    }
+                    if ( paramList.contains(",")){
+                        builder.append( NbBundle.getMessage(
+                                ServiceNodeManager.class, INVALID_PARAMETER_TYPES));
+                    }
+                    else {
+                        builder.append( NbBundle.getMessage(
+                                ServiceNodeManager.class, INVALID_PARAMETER_TYPE));
+                    }
+                    builder.append( " " );
+                    builder.append( paramList );
+                }
+                String toolTip = MessageFormat.format(NbBundle.getMessage(
+                        ServiceNodeManager.class,HTML_WRAP) , builder.toString() );
+                node.setShortDescription( toolTip );
             }
         }
 

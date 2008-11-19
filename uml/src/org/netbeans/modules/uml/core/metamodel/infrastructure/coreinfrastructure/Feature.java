@@ -181,6 +181,10 @@ public class Feature extends RedefinableElement implements IFeature
     				featClassifier.removeFeature( feat );
     				destination.addFeature( feat );
                 }
+                catch(Exception ex)
+                {
+                    ex.printStackTrace();
+                }
                 finally
                 {
                     EventBlocker.stopBlocking(status);
@@ -231,6 +235,10 @@ public class Feature extends RedefinableElement implements IFeature
                     IVersionableElement ver = this.duplicate();			   
                     dupFeat = (IFeature) ver;
                     destination.addFeature( dupFeat );
+                }
+                catch(Exception ex)
+                {
+                    ex.printStackTrace();
                 }
                 finally
                 {
