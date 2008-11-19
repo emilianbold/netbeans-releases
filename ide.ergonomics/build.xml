@@ -4,8 +4,8 @@
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="-release.dir" depends="-disable-kits,projectized-common.-release.dir"/>
-
     <target name="basic-init" depends="-compile-ant,projectized-common.basic-init"/>
+    <target name="jar-prep" depends="-generate-proxies,projectized-common.jar-prep"/>
 
     <!--
     -
@@ -33,25 +33,34 @@
         </copy>
     </target>
 
-    <target name="-disable-kits" depends="init-tasks">
-        <mkdir dir="${release.dir}/config/Modules"/>
-        <subant genericantfile="build.xml" target="-process-one-cluster">
-            <property name="xmldir" value="${release.dir}/config/Modules"/>
-            <property name="ergonomicsdir" location="${basedir}"/>
-            <dirset dir="${netbeans.dest.dir}">
-                <include name="*"/>
-                <exclude name="harness*"/>
-                <exclude name="ide1*"/>
-                <exclude name="platform*"/>
-                <exclude name="nb*.*"/>
-                <exclude name="bin"/>
-                <exclude name="etc"/>
-            </dirset>
-        </subant>
+    <target name="-init-clusters" depends="init-tasks">
+        <dirset id="ergonomic.clusters" dir="${netbeans.dest.dir}">
+            <include name="*"/>
+            <exclude name="harness*"/>
+            <exclude name="ide1*"/>
+            <exclude name="platform*"/>
+            <exclude name="nb*.*"/>
+            <exclude name="bin"/>
+            <exclude name="etc"/>
+        </dirset>
     </target>
 
 
-    <target name="-process-one-cluster" depends="-proxy-one-cluster,-disable-one-cluster"/>
+    <target name="-disable-kits" depends="init-tasks,-init-clusters">
+        <mkdir dir="${release.dir}/config/Modules"/>
+        <subant genericantfile="build.xml" target="-disable-one-cluster">
+            <property name="xmldir" value="${release.dir}/config/Modules"/>
+            <property name="ergonomicsdir" location="${basedir}"/>
+            <dirset refid="ergonomic.clusters"/>
+        </subant>
+    </target>
+
+    <target name="-generate-proxies" depends="init-tasks,-init-clusters">
+        <subant genericantfile="build.xml" target="-proxy-one-cluster">
+            <property name="ergonomicsdir" location="${basedir}"/>
+            <dirset refid="ergonomic.clusters"/>
+        </subant>
+    </target>
 
     <target name="-proxy-one-cluster" depends="init-tasks">
         <taskdef name="layerindex"
