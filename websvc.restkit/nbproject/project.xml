@@ -55,7 +55,7 @@
                     <code-name-base>org.netbeans.modules.websvc.rest</code-name-base>
                     <run-dependency>
                         <release-version>0</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.0.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
