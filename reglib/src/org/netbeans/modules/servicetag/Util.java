@@ -281,7 +281,8 @@ class Util {
 	    }
 	    // try the default hard coded path, maybe wow64 registry is missing
             stclient = new File(WIN32_STCLIENT);
-            if (stclient.canExecute()) {
+            // 6.5 uses Java 1.5: canExecute() changed to canRead()
+            if (stclient.canRead()) {
 	        if (isVerbose()) {
                     System.out.println("stclient(default)=" + stclient);
                 }
