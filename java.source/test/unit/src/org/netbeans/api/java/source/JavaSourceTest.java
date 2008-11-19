@@ -183,8 +183,6 @@ public class JavaSourceTest extends NbTestCase {
         File cacheFolder = new File (workDir, "cache"); //NOI18N
         cacheFolder.mkdirs();
         IndexUtil.setCacheFolder(cacheFolder);
-        FileUtil.setMIMEType("java", JavacParser.MIME_TYPE);    //NOI18N
-        MockMimeLookup.setInstances(MimePath.get(JavacParser.MIME_TYPE), new JavacParserFactory());
     }
 
     protected void tearDown() throws Exception {

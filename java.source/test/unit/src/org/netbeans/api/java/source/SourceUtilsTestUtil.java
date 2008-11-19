@@ -68,6 +68,7 @@ import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
@@ -78,6 +79,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
@@ -86,6 +88,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.ServiceProvider;
 import org.xml.sax.SAXException;
 
 /**
@@ -139,8 +142,6 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         DEFAULT_LOOKUP.setLookup(extraLookupContent, SourceUtilsTestUtil.class.getClassLoader());
         
         SourceUtilsTestUtil2.disableLocks();
-        
-        prepareParser();
     }
     
     static {
@@ -153,12 +154,6 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         prepareTest(sourceRoot, buildRoot, cache, new FileObject[0]);
     }
     
-    @SuppressWarnings("deprecation")
-    private static void prepareParser() {
-        FileUtil.setMIMEType("java", JavacParser.MIME_TYPE); //NOI18N
-        MockMimeLookup.setInstances(MimePath.get(JavacParser.MIME_TYPE), new JavacParserFactory());
-    }
-
     public static void prepareTest(FileObject sourceRoot, FileObject buildRoot, FileObject cache, FileObject[] classPathElements) throws Exception {
         if (extraLookupContent == null)
             prepareTest(new String[0], new Object[0]);
@@ -398,6 +393,39 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
             }
         }                
         
+    }
+
+    @ServiceProvider(service=MimeDataProvider.class)
+    public static final class JavacParserProvider implements MimeDataProvider {
+
+        private Lookup javaLookup = Lookups.fixed(new JavacParserFactory());
+
+        public Lookup getLookup(MimePath mimePath) {
+            if (mimePath.getPath().endsWith(JavacParser.MIME_TYPE)) {
+                return javaLookup;
+            }
+
+            return Lookup.EMPTY;
+        }
+        
+    }
+
+    @ServiceProvider(service=MIMEResolver.class)
+    public static final class JavaMimeResolver extends MIMEResolver {
+
+        public JavaMimeResolver() {
+            super(JavacParser.MIME_TYPE);
+        }
+
+        @Override
+        public String findMIMEType(FileObject fo) {
+            if ("java".equals(fo.getExt())) {
+                return JavacParser.MIME_TYPE;
+            }
+
+            return null;
+        }
+
     }
     
 }

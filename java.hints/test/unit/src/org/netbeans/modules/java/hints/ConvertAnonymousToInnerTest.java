@@ -31,8 +31,6 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -40,8 +38,6 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.source.parsing.JavacParser;
-import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -60,14 +56,6 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
         super.setUp();
         
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
-        
-        prepareParser();
-    }
-
-    @SuppressWarnings("deprecation")
-    private static void prepareParser() {
-        FileUtil.setMIMEType("java", JavacParser.MIME_TYPE); //NOI18N
-        MockMimeLookup.setInstances(MimePath.get(JavacParser.MIME_TYPE), new JavacParserFactory());
     }
 
     private static final class FindNewClassTree extends TreePathScanner<TreePath, Void> {
