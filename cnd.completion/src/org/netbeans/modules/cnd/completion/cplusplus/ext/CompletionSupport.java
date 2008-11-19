@@ -111,35 +111,7 @@ public class CompletionSupport {
                 }
             }
         }
-//            if (token != null) {
-//                completionDisabled = !isOffsetInToken(token, INCLUDE_COMPLETION_TOKENS, offset);
-//                if (completionDisabled) {
-//                    // check whether right after #include or #include_next directive
-//                    switch (token.getTokenID().getNumericID()) {
-//                        case CCTokenContext.CPPINCLUDE_ID:
-//                        case CCTokenContext.CPPINCLUDE_NEXT_ID:
-//                            return false; // return completionDisabled = false;
-//                    }
-//                }
-//            }
-//            // check for "#include prefix" (IZ 119931)
-//            if (completionDisabled) {
-//                token = endToken.getPrevious();
-//                if (token != null && token.getTokenID().getNumericID() == CCTokenContext.IDENTIFIER_ID) {
-//                    token = token.getPrevious();
-//                    if (token != null) {
-//                        token = shiftToNonWhiteBwd(token);
-//                        if (token != null) {
-//                            switch (token.getTokenID().getNumericID()) {
-//                                case CCTokenContext.CPPINCLUDE_ID:
-//                                case CCTokenContext.CPPINCLUDE_NEXT_ID:
-//                                    return false; // return completionDisabled = false;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-        return true;
+        return false;
     }  
     
     private TokenSequence<CppTokenId> cppTokenSequence(int offset, boolean needPP, boolean backwardBias) {
