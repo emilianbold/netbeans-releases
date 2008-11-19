@@ -68,8 +68,8 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         }
         int caretOffset = context.caretOffset();
         int lineOffset = context.lineStartOffset(caretOffset);
-        ts = CndLexerUtilities.getCppTokenSequence(doc, lineOffset);
-        if (ts == null || !ts.moveNext()) {
+        ts = CndLexerUtilities.getCppTokenSequence(doc, lineOffset, false, false);
+        if (ts == null) {
             return;
         }
         int indent = indentLine(new TokenItem(ts, true), caretOffset);
@@ -521,8 +521,8 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
             codeStyle = CodeStyle.getDefault(doc);
         }
         int lineOffset = IndentUtils.lineStartOffset(doc, caretOffset);
-        ts = CndLexerUtilities.getCppTokenSequence(doc, lineOffset);
-        if (ts == null || !ts.moveNext()) {
+        ts = CndLexerUtilities.getCppTokenSequence(doc, lineOffset, false, false);
+        if (ts == null) {
             return;
         }
         int indent = indentLine(new TokenItem(ts, true), caretOffset);

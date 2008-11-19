@@ -351,8 +351,7 @@ public class CCKit extends NbEditorKit {
                             lastSepOffset = 0;
                         }
                         if (lastSepOffset != -1 && lastSepOffset < dotPos) {
-                            TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, lBracePos);
-                            cppTokenSequence.move(lBracePos);
+                            TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, lBracePos, false, false);
                             while (cppTokenSequence.movePrevious() && cppTokenSequence.offset() >= lastSepOffset) {
                                 switch (cppTokenSequence.token().id()) {
                                     case CLASS:

@@ -201,7 +201,7 @@ public class CKit extends CCKit {
                                 endPos = startPos = target.getSelectionStart();
                             }
                             // get token inside selection
-                            TokenSequence<CppTokenId> ts = BracketCompletion.cppTokenSequence(doc, startPos, false);
+                            TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, startPos, true, false);
                             if (ts == null) {
                                 return;
                             }
@@ -289,7 +289,7 @@ public class CKit extends CCKit {
                             endPos = startPos = target.getSelectionStart();
                         }
                         // get token inside selection
-                        TokenSequence<CppTokenId> ts = BracketCompletion.cppTokenSequence(doc, startPos, false);
+                        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, startPos, true, false);
                         if (ts == null) {
                             return;
                         }

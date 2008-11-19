@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import java.util.List;
 import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
@@ -48,10 +47,8 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndAbstractTokenProcessor;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
@@ -139,8 +136,8 @@ public class BracketCompletion {
 
     private static void moveSemicolon(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
         int eolPos = Utilities.getRowEnd(doc, dotPos);
-        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, dotPos);
-        if (cppTokenSequence == null || !cppTokenSequence.moveNext()) {
+        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, dotPos, true, false);
+        if (cppTokenSequence == null) {
             return;
         }
         int lastParenPos = dotPos;
@@ -164,8 +161,8 @@ public class BracketCompletion {
     }
 
     private static boolean isForLoopSemicolon(BaseDocument doc, int dotPos) {
-        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, dotPos);
-        if (ts == null || !ts.moveNext() || ts.token().id() != CppTokenId.SEMICOLON) {
+        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, dotPos, true, false);
+        if (ts == null || ts.token().id() != CppTokenId.SEMICOLON) {
             return false;
         }
         int parDepth = 0; // parenthesis depth
@@ -252,21 +249,8 @@ public class BracketCompletion {
         }
     }
 
-    /*package*/ static TokenSequence<CppTokenId> cppTokenSequence(Document doc, int offset, boolean backwardBias) {
-        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(offset, backwardBias);
-        // Go from inner to outer TSes
-        for (int i = tsList.size() - 1; i >= 0; i--) {
-            TokenSequence<?> ts = tsList.get(i);
-            final Language<?> lang = ts.languagePath().innerLanguage();
-            if (lang == CppTokenId.languageC() || lang == CppTokenId.languageCpp() ||
-                    lang == CppTokenId.languagePreproc()) {
-                @SuppressWarnings("unchecked")
-                TokenSequence<CppTokenId> cppInnerTS = (TokenSequence<CppTokenId>) ts;
-                return cppInnerTS;
-            }
-        }
-        return null;
+    private static TokenSequence<CppTokenId> cppTokenSequence(Document doc, int offset, boolean backwardBias) {
+        return CndLexerUtilities.getCppTokenSequence(doc, offset, true, backwardBias);
     }
 
     /**

@@ -36,18 +36,15 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 
 /**
@@ -56,9 +53,9 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
  */
 public class CompletionSupport {
 
-
     final Reference<Document> docRef;
     // not for external instantiation
+
     private CompletionSupport(Document doc) {
         docRef = new WeakReference<Document>(doc);
     }
@@ -66,7 +63,7 @@ public class CompletionSupport {
     public static CompletionSupport get(JTextComponent component) {
         return get(component.getDocument());
     }
-    
+
     public static CompletionSupport get(final Document doc) {
         CompletionSupport support = (CompletionSupport) doc.getProperty(CompletionSupport.class);
         if (support == null) {
@@ -85,69 +82,28 @@ public class CompletionSupport {
         }
         return support;
     }
-    
+
     public boolean isIncludeCompletionEnabled(int offset) {
-        TokenSequence<CppTokenId> ts = cppTokenSequence(offset, false, true);
+        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(getDocument(), offset, false, true);
         if (ts == null) {
             return false;
         }
         if (ts.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
             @SuppressWarnings("unchecked")
             TokenSequence<CppTokenId> embedded = (TokenSequence<CppTokenId>) ts.embedded();
-            if (embedded != null) {
-                embedded.moveStart();
-                embedded.moveNext();
-                // skip the first #
-                if (!embedded.moveNext()) {
-                    return false;
-                }
-                if (shiftToNonWhite(embedded, false)) {
-                    switch (ts.token().id()) {
-                        case PREPROCESSOR_INCLUDE:
-                        case PREPROCESSOR_INCLUDE_NEXT:
-                            // completion enabled after #include(_next) keywords
-                            return (ts.offset() + ts.token().length()) <= offset;
-                    }
+            if (CndTokenUtilities.moveToPreprocKeyword(embedded)) {
+                switch (embedded.token().id()) {
+                    case PREPROCESSOR_INCLUDE:
+                    case PREPROCESSOR_INCLUDE_NEXT:
+                        // completion enabled after #include(_next) keywords
+                        return (embedded.offset() + embedded.token().length()) <= offset;
                 }
             }
         }
         return false;
-    }  
-    
-    private TokenSequence<CppTokenId> cppTokenSequence(int offset, boolean needPP, boolean backwardBias) {
-        Document doc = this.docRef.get();
-        if (doc == null) {
-            return null;
-        }
-        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(offset, backwardBias);
-        // Go from inner to outer TSes
-        for (int i = tsList.size() - 1; i >= 0; i--) {
-            TokenSequence<?> ts = tsList.get(i);
-            final Language<?> lang = ts.languagePath().innerLanguage();
-            if (lang == CppTokenId.languageC() || lang == CppTokenId.languageCpp()
-                 || (needPP && lang == CppTokenId.languagePreproc())) {
-                @SuppressWarnings("unchecked")
-                TokenSequence<CppTokenId> cppInnerTS = (TokenSequence<CppTokenId>) ts;
-                return cppInnerTS;
-            }
-        }
-        return null;
-    }
-
-    private boolean shiftToNonWhite(TokenSequence<CppTokenId> ts, boolean backward) {
-        do {
-            switch (ts.token().id()) {
-                case WHITESPACE:
-                case BLOCK_COMMENT:
-                case ESCAPED_LINE:
-                case ESCAPED_WHITESPACE:
-                    break;
-                default:
-                    return true;
-            }
-        } while (backward ? ts.movePrevious() : ts.moveNext());
-        return false;
     }
     
+    public final Document getDocument() {
+        return this.docRef.get();
+    }
 }

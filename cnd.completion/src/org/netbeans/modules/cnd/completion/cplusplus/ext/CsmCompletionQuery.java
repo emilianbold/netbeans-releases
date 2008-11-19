@@ -651,27 +651,19 @@ abstract public class CsmCompletionQuery {
         if (doc == null) {
             return false;
         }
-        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset);
+        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, false, false);
         if (cppTokenSequence == null) {
             return false;
         }
         boolean inIncludeDirective = false;
-        Token<CppTokenId> token = null;
-        if (cppTokenSequence.move(offset) > 0) {
-            if (cppTokenSequence.moveNext()) {
-                token = cppTokenSequence.token();
-            }
-        } else {
-            if (cppTokenSequence.movePrevious()) {
-                token = cppTokenSequence.token();
-            }
-        }
-        if (token != null && token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
-            TokenSequence<?> embedded = cppTokenSequence.embedded();
-            if (embedded != null && embedded.moveNext() && embedded.moveNext()) {
-                if (embedded.token().id() == CppTokenId.PREPROCESSOR_INCLUDE ||
-                        embedded.token().id() == CppTokenId.PREPROCESSOR_INCLUDE_NEXT) {
-                    inIncludeDirective = true;
+        if (cppTokenSequence.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+            @SuppressWarnings("unchecked")
+            TokenSequence<CppTokenId> embedded = (TokenSequence<CppTokenId>) cppTokenSequence.embedded();
+            if (CndTokenUtilities.moveToPreprocKeyword(embedded)) {
+                switch (embedded.token().id()) {
+                    case PREPROCESSOR_INCLUDE:
+                    case PREPROCESSOR_INCLUDE_NEXT:
+                        inIncludeDirective = true;
                 }
             }
         }
