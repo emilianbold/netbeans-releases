@@ -45,6 +45,7 @@ import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.Language;
@@ -251,7 +252,7 @@ public class BracketCompletion {
         }
     }
 
-    /*package*/ static TokenSequence<CppTokenId> cppTokenSequence(BaseDocument doc, int offset, boolean backwardBias) {
+    /*package*/ static TokenSequence<CppTokenId> cppTokenSequence(Document doc, int offset, boolean backwardBias) {
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(offset, backwardBias);
         // Go from inner to outer TSes
@@ -715,7 +716,7 @@ public class BracketCompletion {
      */
     static boolean posWithinQuotes(BaseDocument doc, int dotPos, char quote, CppTokenId[] tokenIDs) {
         TokenSequence<CppTokenId> cppTS = cppTokenSequence(doc, dotPos, true);
-        if (matchIDs(cppTS.token().id(), tokenIDs)) {
+        if (cppTS != null && matchIDs(cppTS.token().id(), tokenIDs)) {
             return (dotPos - cppTS.offset() == 1 || DocumentUtilities.getText(doc).charAt(dotPos - 1) != quote);
         }
         return false;

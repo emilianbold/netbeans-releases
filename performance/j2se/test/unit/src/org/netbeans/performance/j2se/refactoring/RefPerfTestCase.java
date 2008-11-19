@@ -64,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.Lookups;
 import static org.netbeans.performance.j2se.Utilities.*;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 
 /**
  * 
@@ -103,7 +104,8 @@ public class RefPerfTestCase extends NbTestCase implements NbPerformanceTest {
         RepositoryUpdater.getDefault();
 
         String work = getWorkDirPath();
-        String zipPath = work + "/../../../../../../../../../nbextra/qa/projectized/jEdit41.zip";
+        //String zipPath = work + "/../../../../../../../../../nbextra/qa/projectized/jEdit41.zip";
+        String zipPath=CommonUtilities.jEditProjectOpen();
         File zipFile = FileUtil.normalizeFile(new File(zipPath));
         unzip(zipFile, work);
         projectDir = openProject("jEdit41", getWorkDir());

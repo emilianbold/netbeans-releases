@@ -109,6 +109,9 @@ public class CompilerSetManager {
     private static HashMap<String, CompilerSetManager> managers = new HashMap<String, CompilerSetManager>();
     private final static Object MASTER_LOCK = new Object();
     private static CompilerProvider compilerProvider = null;
+    private static String cygwinBase;
+//    private static String mingwBase;
+    private static String msysBase;
 
     public static final String SunExpress = "SunStudioExpress"; // NOI18N
     public static final String Sun12 = "SunStudio_12"; // NOI18N
@@ -208,6 +211,93 @@ public class CompilerSetManager {
                 managers.put(csm.hkey, csm);
             }
         }
+    }
+
+    /**
+     * Get the Cygwin base directory from Cygwin.xml (toolchain definition, which users the Windows registry) or the user's path
+     */
+    public static String getCygwinBase() {
+        if (cygwinBase == null) {
+            ToolchainManager tcm = ToolchainManager.getInstance();
+            ToolchainDescriptor td = tcm.getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
+            if (td != null) {
+                String cygwinBin = tcm.getBaseFolder(td, PlatformTypes.PLATFORM_WINDOWS);
+                cygwinBase = cygwinBin.substring(0, cygwinBin.length() - 4).replace("\\", "/"); // NOI18N
+            }
+            if (cygwinBase == null) {
+                for (String dir : Path.getPath()) {
+                    dir = dir.toLowerCase().replace("\\", "/"); // NOI18N
+                    if (dir.contains("cygwin")) { // NOI18N
+                        if (dir.toLowerCase().endsWith("/usr/bin")) { // NOI18N
+                            cygwinBase = dir.substring(0, dir.length() - 8);
+                            break;
+                        } else if (dir.toLowerCase().endsWith("/bin")) { // NOI18N
+                            cygwinBase = dir.substring(0, dir.length() - 4);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return cygwinBase;
+    }
+
+// Note: This method is written but commented out because there currently are no users. Its written because
+//       its possible that there will be users someday and if/when that happens, simply uncomment this code.
+//
+//    /**
+//     * Get the MinGW base directory from MinGW.xml (toolchain definition, which users the Windows registry) or the user's path
+//     */
+//    public static String getMinGWBase() {
+//        if (mingwBase == null) {
+//            ToolchainManager tcm = ToolchainManager.getInstance();
+//            ToolchainDescriptor td = tcm.getToolchain("MinGW", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
+//            if (td != null) {
+//                String mingwBin = tcm.getBaseFolder(td, PlatformTypes.PLATFORM_WINDOWS);
+//                mingwBase = mingwBin.substring(0, msysBin.length() - 4).replace("\\", "/"); // NOI18N
+//                String msysBin = tcm.getCommandFolder(td, PlatformTypes.PLATFORM_WINDOWS);
+//                msysBase = msysBin.substring(0, msysBin.length() - 4).replace("\\", "/"); // NOI18N
+//            }
+//            if (mingwBase == null) {
+//                for (String dir : Path.getPath()) {
+//                    dir = dir.toLowerCase().replace("\\", "/"); // NOI18N
+//                    if (dir.contains("mingw")) { // NOI18N
+//                        if (dir.toLowerCase().endsWith("/usr/bin")) { // NOI18N
+//                            mingwBase = dir.substring(0, dir.length() - 8);
+//                            break;
+//                        } else if (dir.toLowerCase().endsWith("/bin")) { // NOI18N
+//                            mingwBase = dir.substring(0, dir.length() - 4);
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return mingwBase;
+//    }
+
+    /**
+     * Get the MSys base directory from MinGW.xml (toolchain definition, which users the Windows registry) or the user's path
+     */
+    public static String getMSysBase() {
+        if (msysBase == null) {
+            ToolchainManager tcm = ToolchainManager.getInstance();
+            ToolchainDescriptor td = tcm.getToolchain("MinGW", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
+            if (td != null) {
+                String msysBin = tcm.getCommandFolder(td, PlatformTypes.PLATFORM_WINDOWS);
+                msysBase = msysBin.substring(0, msysBin.length() - 4).replace("\\", "/"); // NOI18N
+            }
+            if (msysBase == null) {
+                for (String dir : Path.getPath()) {
+                    dir = dir.toLowerCase().replace("\\", "/"); // NOI18N
+                    if (dir.contains("/msys/1.0") && dir.toLowerCase().contains("/bin")) { // NOI18N
+                        msysBase = dir.substring(0, dir.length() - 4);
+                        break;
+                    }
+                }
+            }
+        }
+        return msysBase;
     }
 
     private CompilerSetManager(String key) {
