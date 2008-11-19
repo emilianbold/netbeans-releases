@@ -38,17 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -79,37 +88,41 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         if (doc == null) {
             return null;
         }
-        
+
         OffsetsBag bag = (OffsetsBag) doc.getProperty(MarkOccurrencesHighlighter.class);
-        
+
         if (bag == null) {
             doc.putProperty(MarkOccurrencesHighlighter.class, bag = new OffsetsBag(doc, false));
-            
+
             final OffsetsBag bagFin = bag;
             DocumentListener l = new DocumentListener() {
+
                 public void insertUpdate(DocumentEvent e) {
                     bagFin.removeHighlights(e.getOffset(), e.getOffset(), false);
                 }
+
                 public void removeUpdate(DocumentEvent e) {
                     bagFin.removeHighlights(e.getOffset(), e.getOffset(), false);
                 }
-                public void changedUpdate(DocumentEvent e) {}
+
+                public void changedUpdate(DocumentEvent e) {
+                }
             };
-            
+
             doc.addDocumentListener(l);
         }
 
         return bag;
     }
-    
+
     private CsmFile getCsmFile() {
         DataObject dobj = NbEditorUtilities.getDataObject(getDocument());
         return CsmUtilities.getCsmFile(dobj, false);
     }
-    
+
     private void clean() {
         Document doc = getDocument();
-        if (doc!=null) {
+        if (doc != null) {
             getHighlightsBag(doc).clear();
             OccurrencesMarkProvider.get(doc).setOccurrences(Collections.<Mark>emptySet());
         }
@@ -119,11 +132,10 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         super(doc);
         init(doc);
     }
-
-    public static final Color ES_COLOR = new Color( 175, 172, 102 ); 
-
+    public static final Color ES_COLOR = new Color(175, 172, 102);
     private boolean valid = true;
     // PhaseRunner
+
     public void run(Phase phase) {
         InterrupterImpl interrupter = new InterrupterImpl();
         try {
@@ -133,42 +145,44 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             removeCancelListener(interrupter);
         }
     }
-    
+
     public void runImpl(Phase phase, Interrupter interruptor) {
         if (!SemanticHighlightingOptions.instance().getEnableMarkOccurrences()) {
             clean();
             valid = false;
             return;
         }
-        
-        if (phase == Phase.PARSED || phase == Phase.INIT /*&& getCsmFile().isParsed()*/) {
-            Document doc = getDocument();
-            
+
+        if (phase == Phase.CLEANUP) {
+            clean();
+        } else {
+            BaseDocument doc = getDocument();
+
             if (doc == null) {
                 clean();
                 return;
             }
-            
+
             CsmFile file = getCsmFile();
             FileObject fo = CsmUtilities.getFileObject(file);
-            
+
             if (file == null || fo == null) {
                 // this can happen if MO was triggered right before closing project
                 clean();
                 return;
             }
-            
+
             int lastPosition = CaretAwareCsmFileTaskFactory.getLastPosition(fo);
-            
-            HighlightsSequence hs = getHighlightsBag(doc).getHighlights(0, doc.getLength()-1);
-            while(hs.moveNext()) {
+
+            HighlightsSequence hs = getHighlightsBag(doc).getHighlights(0, doc.getLength() - 1);
+            while (hs.moveNext()) {
                 if (lastPosition >= hs.getStartOffset() && lastPosition <= hs.getEndOffset()) {
                     // cursor is still in the marked area, so previous result is valid
                     return;
                 }
             }
-            
-            Collection<CsmReference> out = getOccurrences(file, lastPosition, interruptor);
+
+            Collection<CsmReference> out = getOccurrences(doc, file, lastPosition, interruptor);
             if (out.isEmpty()) {
                 if (!SemanticHighlightingOptions.instance().getKeepMarks()) {
                     clean();
@@ -185,9 +199,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                 OccurrencesMarkProvider.get(doc).setOccurrences(
                         OccurrencesMarkProvider.createMarks(doc, out, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighter.class, "LBL_ES_TOOLTIP")));
             }
-        } else if (phase == Phase.CLEANUP) {
-            clean();
-        } 
+        }
     }
 
     public boolean isValid() {
@@ -198,29 +210,240 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         return true;
     }
 
-/*    private Collection<CsmReference> getOccurrences() {
-        Collection<CsmReference> out = null;
-        CsmFile file = getCsmFile();
-            FileObject fo = CsmUtilities.getFileObject(file);
-            assert fo != null;
-            out = getOccurrences(file, CaretAwareCsmFileTaskFactory.getLastPosition(fo));
-        }
-        return out;
-    }*/
-    
-    /* package-local */ static Collection<CsmReference> getOccurrences(CsmFile file, int position, Interrupter interrupter) {
+    /* package-local */ static Collection<CsmReference> getOccurrences(AbstractDocument doc, CsmFile file, int position, Interrupter interrupter) {
         Collection<CsmReference> out = Collections.<CsmReference>emptyList();
-        if (file != null && file.isParsed() ) {
+        // check if offset is in preprocessor conditional block
+        if (isPreprocessorConditionalBlock(doc, position)) {
+            return getPreprocReferences(doc, file, position, interrupter);
+        }
+        if (file != null && file.isParsed()) {
             CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, position);
-            if (ref!=null && ref.getReferencedObject()!=null) {
+            if (ref != null && ref.getReferencedObject() != null) {
                 out = CsmReferenceRepository.getDefault().getReferences(ref.getReferencedObject(), file, CsmReferenceKind.ALL, interrupter);
             }
         }
         return out;
     }
-    
+
     @Override
     protected void updateFontColors(FontColorProvider provider) {
         defaultColors = provider.getColor(FontColorProvider.Entity.MARK_OCCURENCES);
+    }
+
+    private static boolean isPreprocessorConditionalBlock(AbstractDocument doc, int offset) {
+        if (doc == null) {
+            return false;
+        }
+        doc.readLock();
+        try {
+            TokenSequence<CppTokenId> ts = cppTokenSequence(doc, offset, false);
+            if (ts != null && ts.language() == CppTokenId.languagePreproc()) {
+                int[] span = getPreprocConditionalOffsets(ts);
+                if (isIn(span, offset)) {
+                    return true;
+                }
+            }
+        } finally {
+            doc.readUnlock();
+        }
+        return false;
+    }
+
+    /**
+     * returns offset pair (#-start, keyword-end), token stream is positioned on keyword token
+     * @param ts
+     * @return
+     */
+    private static int[] getPreprocConditionalOffsets(TokenSequence<CppTokenId> ts) {
+        ts.moveStart();
+        ts.moveNext(); // move to starting #
+        int start = ts.offset();
+        while (ts.moveNext()) {
+            switch (ts.token().id()) {
+                case PREPROCESSOR_START:
+                case WHITESPACE:
+                case BLOCK_COMMENT:
+                case ESCAPED_LINE:
+                case ESCAPED_WHITESPACE:
+                    // skip them
+                    break;
+                case PREPROCESSOR_IF:
+                case PREPROCESSOR_IFDEF:
+                case PREPROCESSOR_IFNDEF:
+                case PREPROCESSOR_ELIF:
+                case PREPROCESSOR_ELSE:
+                case PREPROCESSOR_ENDIF:
+                    // found
+                    int end = ts.offset() + ts.token().length();
+                    return new int[]{start, end};
+                default:
+                    // not found interested directive
+                    return null;
+            }
+        }
+        return null;
+    }
+
+    private static TokenSequence<CppTokenId> cppTokenSequence(Document doc, int offset, boolean backwardBias) {
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(offset, backwardBias);
+        // Go from inner to outer TSes
+        for (int i = tsList.size() - 1; i >= 0; i--) {
+            TokenSequence<?> ts = tsList.get(i);
+            final Language<?> lang = ts.languagePath().innerLanguage();
+            if (lang == CppTokenId.languageC() || lang == CppTokenId.languageCpp() ||
+                    lang == CppTokenId.languagePreproc()) {
+                @SuppressWarnings("unchecked")
+                TokenSequence<CppTokenId> cppInnerTS = (TokenSequence<CppTokenId>) ts;
+                return cppInnerTS;
+            }
+        }
+        return null;
+    }
+
+    private static final class ConditionalBlock {
+
+        private final List<int[]> directivePositions = new ArrayList<int[]>(4);
+        private final List<ConditionalBlock> nested = new ArrayList<ConditionalBlock>(4);
+        private final ConditionalBlock parent;
+
+        public ConditionalBlock(ConditionalBlock parent) {
+            this.parent = parent;
+        }
+
+        public void addDirective(int[] span) {
+            directivePositions.add(span);
+        }
+
+        public ConditionalBlock startNestedBlock(int[] span) {
+            ConditionalBlock nestedBlock = new ConditionalBlock(this);
+            nestedBlock.addDirective(span);
+            nested.add(nestedBlock);
+            return nestedBlock;
+        }
+
+        public ConditionalBlock getParent() {
+            return parent;
+        }
+
+        public List<int[]> getDirectives() {
+            return Collections.unmodifiableList(directivePositions);
+        }
+    }
+
+    private static Collection<CsmReference> getPreprocReferences(AbstractDocument doc, CsmFile file, int searchOffset, Interrupter interrupter) {
+        TokenSequence<CppTokenId> origPreprocTS = cppTokenSequence(doc, searchOffset, false);
+        if (origPreprocTS == null || origPreprocTS.language() != CppTokenId.languagePreproc()) {
+            return null;
+        }
+        doc.readLock();
+        try {
+            TokenHierarchy<AbstractDocument> th = TokenHierarchy.get(doc);
+            List<TokenSequence<?>> ppSequences = th.tokenSequenceList(origPreprocTS.languagePath(), 0, doc.getLength());
+            ConditionalBlock top = new ConditionalBlock(null);
+            ConditionalBlock current = new ConditionalBlock(top);
+            ConditionalBlock offsetContainer = null;
+            for (TokenSequence<?> ts : ppSequences) {
+                if (interrupter != null && interrupter.cancelled()) {
+                    return null;
+                }
+                @SuppressWarnings("unchecked")
+                TokenSequence<CppTokenId> ppTS = (TokenSequence<CppTokenId>) ts;
+                int[] span = getPreprocConditionalOffsets(ppTS);
+                if (span != null) {
+                    switch (ppTS.token().id()) {
+                        case PREPROCESSOR_IF:
+                        case PREPROCESSOR_IFDEF:
+                        case PREPROCESSOR_IFNDEF:
+                            current = current.startNestedBlock(span);
+                            break;
+                        case PREPROCESSOR_ELIF:
+                        case PREPROCESSOR_ELSE:
+                        case PREPROCESSOR_ENDIF:
+                            current.addDirective(span);
+                            break;
+                        default:
+                            assert false : "unexpected token " + ts.token();
+                    }
+                    if (offsetContainer == null && isIn(span, searchOffset)) {
+                        offsetContainer = current;
+                    }
+                    if (ppTS.token().id() == CppTokenId.PREPROCESSOR_ENDIF) {
+                        // finished block, pop previous
+                        current = current.getParent();
+                        if (current == null) {
+                            // unbalanced
+                            return toRefs(offsetContainer);
+                        }
+                    }
+                }
+            }
+            return toRefs(offsetContainer);
+        } finally {
+            doc.readUnlock();
+        }
+    }
+
+    private static boolean isIn(int[] span, int offset) {
+        return span != null && span[0] <= offset && offset <= span[1];
+    }
+
+    private static Collection<CsmReference> toRefs(ConditionalBlock block) {
+        if (block == null || block.getDirectives().isEmpty()) {
+            return Collections.<CsmReference>emptyList();
+        }
+        List<int[]> directives = block.getDirectives();
+        Collection<CsmReference> out = new ArrayList<CsmReference>(directives.size());
+        for (int[] directive : directives) {
+            out.add(new PreprocRef(directive[0], directive[1]));
+        }
+        return out;
+    }
+
+    private static final class PreprocRef implements CsmReference {
+        private final int start;
+        private final int end;
+
+        public PreprocRef(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        public CsmReferenceKind getKind() {
+            throw new UnsupportedOperationException("Must not be called");
+        }
+
+        public CsmObject getReferencedObject() {
+            throw new UnsupportedOperationException("Must not be called");
+        }
+
+        public CsmObject getOwner() {
+            throw new UnsupportedOperationException("Must not be called");
+        }
+
+        public CsmFile getContainingFile() {
+            throw new UnsupportedOperationException("Must not be called");
+        }
+
+        public int getStartOffset() {
+            return start;
+        }
+
+        public int getEndOffset() {
+            return end;
+        }
+
+        public Position getStartPosition() {
+            throw new UnsupportedOperationException("Must not be called");
+        }
+
+        public Position getEndPosition() {
+            throw new UnsupportedOperationException("Must not be called");
+        }
+
+        public CharSequence getText() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
     }
 }
