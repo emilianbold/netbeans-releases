@@ -78,28 +78,32 @@ public final class TranslateAction extends AbstractComposerAction {
     }
     
     public boolean consumeEvent(AWTEvent evt, boolean isOutsideEvent) {
-        if ( !isOutsideEvent)  {
-            if (evt.getID() == MouseEvent.MOUSE_DRAGGED) {
-                MouseEvent me = (MouseEvent)evt;
-                int dx = me.getX() - m_x;
-                int dy = me.getY() - m_y;
-                //System.out.println("Dragging " + dx + "," + dy);
-                
-                float zoomRatio = m_translated.getScreenManager().getZoomRatio();
-                translate(dx / zoomRatio, dy / zoomRatio, false);
-                return false;
-            } else {
-                int [] diffs = TranslateActionFactory.getCoordDiff(evt);
-                
+        if (!isOutsideEvent) {
+            if (evt instanceof MouseEvent) {
+                if (evt.getID() == MouseEvent.MOUSE_DRAGGED) {
+                    MouseEvent me = (MouseEvent) evt;
+                    int dx = me.getX() - m_x;
+                    int dy = me.getY() - m_y;
+                    //System.out.println("Dragging " + dx + "," + dy);
+
+                    float zoomRatio = m_translated.getScreenManager().getZoomRatio();
+                    translate(dx / zoomRatio, dy / zoomRatio, false);
+                } else if (evt.getID() == MouseEvent.MOUSE_RELEASED) {
+                    actionCompleted();
+                    m_translated.commitChanges();
+                }
+            } else { // key event
+                int[] diffs = TranslateActionFactory.getCoordDiff(evt);
+
                 if (diffs != null) {
                     translate(m_x, m_y, true);
                     return true;
                 }
+                actionCompleted();
+                m_translated.commitChanges();
             }
-            
-            actionCompleted();        
+
         }
-        
         return false;
     }
 
@@ -115,6 +119,9 @@ public final class TranslateAction extends AbstractComposerAction {
         if ( m_changed) {
             m_translated.applyTextChanges();
             m_translated.commitChanges();        
+            if (getScreenManager().getShowAllArea()){
+                getScreenManager().refresh();
+            }
         }
         super.actionCompleted();
     }

@@ -44,7 +44,6 @@ package org.netbeans.performance.mobility.setup;
 import java.io.IOException;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
@@ -60,8 +59,8 @@ public class MobilitySetup extends JellyTestCase {
 
     public void openProject(String projectPath) {
         String projectsDir = CommonUtilities.getProjectsDir() + projectPath;
-        Object prj = ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);
+       // Object prj = ProjectSupport.openProject(projectsDir);
+       // assertNotNull(prj);
         CommonUtilities.waitProjectTasksFinished();
     }
     

@@ -64,19 +64,19 @@ public class MeasureMobilityActionsTest  {
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)
                 .addTest(MobilitySetup.class, "cleanTempDir")
 
-                .addTest(CreateMobilityProject.class, "testCreateMobilityProject") // Create Mobile Application
-                .addTest(CreateMobilityProject.class, "testCreateMobilityLibrary") // Create Mobile Class Library
-                .addTest(OpenMIDletEditor.class, "measureTime") // Open a visual MIDlet
+                .addTest(CreateMobilityProjectTest.class, "testCreateMobilityProject") // Create Mobile Application
+                .addTest(CreateMobilityProjectTest.class, "testCreateMobilityLibrary") // Create Mobile Class Library
+                .addTest(OpenMIDletEditorTest.class, "measureTime") // Open a visual MIDlet
 /* Strange results in switch tests, will check it later
                 .addTest(MIDletViewsSwitch.class, "testFlowToDesignSwitch") // Flow To Design Switch
                 .addTest(MIDletViewsSwitch.class, "testDesignToFlowSwitch") // Design To Flow Switch
                 .addTest(MIDletViewsSwitch.class, "testFlowToSourceSwitch") // Flow To Source Switch
                 .addTest(MIDletViewsSwitch.class, "testSourceToFlowSwitch") // Source To Flow Switch
 */
-                .addTest(CreateVisualMIDlet.class, "measureTime") // Create Visual MIDlet
-                .addTest(CreateMIDlet.class, "measureTime") // Create MIDlet
-                .addTest(SwitchConfiguration.class, "measureTime") // Switch Configuration
-                .addTest(OpenMobileProject.class, "measureTime") // Open Mobile CLDC project
+                .addTest(CreateVisualMIDletTest.class, "measureTime") // Create Visual MIDlet
+                .addTest(CreateMIDletTest.class, "measureTime") // Create MIDlet
+                .addTest(SwitchConfigurationTest.class, "measureTime") // Switch Configuration
+                .addTest(OpenMobileProjectTest.class, "measureTime") // Open Mobile CLDC project
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;
