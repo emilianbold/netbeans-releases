@@ -264,8 +264,6 @@ abstract public class CsmCompletionQuery {
             }
 
             if (!errState) {
-                // refresh classes info before querying
-                sup.refreshClassInfo();
 
                 CsmCompletionExpression exp = tp.getResultExp();
                 if (TRACE_COMPLETION) {

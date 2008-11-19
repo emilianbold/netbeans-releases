@@ -62,7 +62,7 @@ public class MeasureEnterpriseActions6Test {
 
         
         // EPMeasureActions6
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(StartAppserver.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(StartAppserverTest.class)
                 .addTest("measureTime").enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;

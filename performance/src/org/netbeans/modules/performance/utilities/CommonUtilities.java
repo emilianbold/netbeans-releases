@@ -54,6 +54,7 @@ import java.text.SimpleDateFormat;
 import javax.swing.tree.TreePath;
 
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.EditorOperator;
@@ -905,16 +906,16 @@ public class CommonUtilities {
     public static void xmlTestResults(String path, String suite, String name, String classname, String sname, String unit, String pass, long threshold, long[] results, int repeat) {
 
         System.out.println();
-        System.out.println("#########  Results for "+name+"   ####");
-        System.out.print("###          [");
+        System.out.println("#####  Results for "+name+"   #####");
+        System.out.print("#####        [");
         for(int i=1;i<=repeat;i++)             
             System.out.print(results[i]+"ms, ");
         System.out.println("]");
-        for (int i=1;i<=name.length()+30;i++)
+        for (int i=1;i<=name.length()+27;i++)
             System.out.print("#");
         System.out.println();
         System.out.println();
-
+/*
         File resLocal=new File(path+File.separator+"performance.xml");
         PrintStream ps=null;
         try {
@@ -931,8 +932,10 @@ public class CommonUtilities {
         {
             ps.close();
         }
-        
-      File resGlobal=new File(path+File.separator+"../../allPerformance.xml");  
+*/
+        path=System.getProperty("nbjunit.workdir");
+      //File resGlobal=new File(path+File.separator+"../../allPerformance.xml");
+        File resGlobal=new File(path+File.separator+"allPerformance.xml");
       FileOutputStream fos=null;
       FileInputStream fis=null;
       if (!resGlobal.exists()) {
@@ -970,7 +973,7 @@ public class CommonUtilities {
             
             fos.write(("      <Test name=\""+name+"\" unit=\""+unit+"\""+" results=\""+pass+"\""+" threshold=\""+threshold+"\""+" classname=\""+classname+"\">\n").getBytes());
             fos.write(("         <PerformanceData runOrder=\"1\" value=\""+results[1]+"\"/>\n").getBytes());
-            for (int i=2;i<=repeat;i++) 
+            for (int i=2;i<=repeat;i++)
                 fos.write(("         <PerformanceData runOrder=\"2\" value=\""+results[i]+"\"/>\n").getBytes());
             fos.write(("      </Test>\n").getBytes());
 
@@ -983,5 +986,10 @@ public class CommonUtilities {
         }
                
     }
-    
+
+    public static void processUnitTestsResults(String className, PerformanceData pd) {
+        long[] result=new long[2];
+        result[1]=pd.value;
+        CommonUtilities.xmlTestResults(System.getProperty("nbjunit.workdir"), "Unit Tests Suite", pd.name, className, className, pd.unit, "passed", 120000 , result, 1);
+    }
 }

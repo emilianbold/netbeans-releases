@@ -38,14 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.enterprise.setup;
 
 import java.io.File;
 import java.io.IOException;
+
+import org.openide.util.Exceptions;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
-import org.netbeans.performance.enterprise.EPUtilities;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
@@ -58,64 +59,70 @@ public class EnterpriseSetup extends JellyTestCase {
     public EnterpriseSetup(java.lang.String testName) {
         super(testName);
     }
-    
-    public void addApplicationServer() {
-        EPUtilities.addApplicationServer();
+
+    public void testCloseMemoryToolbar() {
+        CommonUtilities.closeMemoryToolbar();
     }
 
-    public void addTomcatServer() {
-        EPUtilities.addTomcatServer();
+    public void testCloseWelcome() {
+        CommonUtilities.closeWelcome();
     }
     
-    public void openProject(String projectPath) {
-        String projectsDir = CommonUtilities.getProjectsDir() + projectPath;
-        Object prj = ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
+    public void testAddApplicationServer() {
+        CommonUtilities.addApplicationServer();
+    }
+
+    public void testAddTomcatServer() {
+        CommonUtilities.addTomcatServer();
+    }
+
+    public void testOpenReservationPartnerServicesProject() {
+
+        try {
+            this.openDataProjects("TravelReservationService" + File.separator + "ReservationPartnerServices");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
-    public void openReservationPartnerServicesProject() {
-        openProject("TravelReservationService" + File.separator + "ReservationPartnerServices");
+    public void testOpenTravelReservationServiceProject() {
+
+        try {
+            this.openDataProjects("TravelReservationService" + File.separator + "TravelReservationService");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
-    public void openTravelReservationServiceProject() {
-        openProject("TravelReservationService" + File.separator + "TravelReservationService");
+    public void testOpenTravelReservationServiceApplicationProject() {
+
+        try {
+            this.openDataProjects("TravelReservationService" + File.separator + "TravelReservationServiceApplication");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
-    public void openTravelReservationServiceApplicationProject() {
-        openProject("TravelReservationService" + File.separator + "TravelReservationServiceApplication");
+    public void testOpenSoaTestProject() {
+
+        try {
+            this.openDataProjects("SOATestProject");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
-    public void openSoaTestProject() {
-        openProject("SOATestProject");
-    }
-    
-    public void openBPELTestProject() {
-        openProject("BPELTestProject");
-    }
-    
-    public void openWebProject() {
-        openProject("PerformanceTestWebApplication");
+    public void testOpenBPELTestProject() {
+
+        try {
+            this.openDataProjects("BPELTestProject");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     public void testCloseTaskWindow() {
         CommonUtilities.closeTaskWindow();
-    }
-
-    public void closeMemoryToolbar() {
-        CommonUtilities.closeMemoryToolbar();
-    }
-    
-    public void closeWelcome() {
-        CommonUtilities.closeWelcome();
-    }
-    
-    public void closeAllDocuments() {
-        CommonUtilities.closeAllDocuments();
-    }
-    
-    public void cleanTempDir() throws IOException {
-        CommonUtilities.cleanTempDir();
     }
 
 }

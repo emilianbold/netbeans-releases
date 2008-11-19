@@ -112,10 +112,9 @@ public class DefaultProjectActionHandler implements ActionListener {
             return customActionHandlerProvider;
         }
         // Then try services
-        Lookup.Template template = new Lookup.Template(CustomProjectActionHandlerProvider.class);
-        Lookup.Result result = Lookup.getDefault().lookup(template);
-        Collection collection = result.allInstances();
-        Iterator iterator = collection.iterator();
+        Lookup.Template<CustomProjectActionHandlerProvider> template = new Lookup.Template<CustomProjectActionHandlerProvider>(CustomProjectActionHandlerProvider.class);
+        Lookup.Result<CustomProjectActionHandlerProvider> result = Lookup.getDefault().lookup(template);
+        Iterator iterator = result.allInstances().iterator();
         while (iterator.hasNext()) {
             Object caop = iterator.next();
             if (caop instanceof CustomProjectActionHandlerProvider) {

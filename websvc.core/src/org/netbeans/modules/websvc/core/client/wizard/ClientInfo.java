@@ -995,6 +995,19 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         }
          */
         
+        // check source level
+        boolean isJaxWs = jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS);
+        double requiredVersion = (isJaxWs ? 1.5 : 1.4);
+        String srcLevel = Util.getSourceLevel(project);
+        if (srcLevel != null) {
+            boolean srcLevelOK = Double.parseDouble(srcLevel) >= requiredVersion;
+            if (!srcLevelOK) {
+                System.out.println("required = "+requiredVersion);
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WrongSrcLevel", String.valueOf(requiredVersion)));
+                return false;
+            }
+        }
+        
         if(!checkNonJsr109Valid(wizardDescriptor)){
             return false;
         }
@@ -1312,12 +1325,6 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                     }
                 }
             }
-        } else {
-            String srcLevel = Util.getSourceLevel(project);
-            if (srcLevel != null) {
-                return Double.parseDouble(srcLevel)>=1.4;
-            }
-            return false;
         }
         return true;
     }
