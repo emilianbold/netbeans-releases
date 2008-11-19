@@ -463,7 +463,7 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(COMMANDLINE_TOOL_ELEMENT, "" + cCompilerConfiguration.getTool().getValue()); // NOI18N
         }
         if (cCompilerConfiguration.getIncludeDirectories().getModified()) {
-            writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT, cCompilerConfiguration.getIncludeDirectories().getValueAsArray());
+            writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT, cCompilerConfiguration.getIncludeDirectories().getValue());
         }
         if (cCompilerConfiguration.getStandardsEvolution().getModified()) {
             xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + cCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
@@ -478,7 +478,7 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(COMMAND_LINE_ELEMENT, "" + cCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
         }
         if (cCompilerConfiguration.getPreprocessorConfiguration().getModified()) {
-            writeList(xes, PREPROCESSOR_LIST_ELEMENT, cCompilerConfiguration.getPreprocessorConfiguration().getValueAsArray());
+            writeList(xes, PREPROCESSOR_LIST_ELEMENT, cCompilerConfiguration.getPreprocessorConfiguration().getValue());
         }
         if (cCompilerConfiguration.getInheritPreprocessor().getModified()) {
             xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
@@ -513,7 +513,7 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(COMMANDLINE_TOOL_ELEMENT, "" + ccCompilerConfiguration.getTool().getValue()); // NOI18N
         }
         if (ccCompilerConfiguration.getIncludeDirectories().getModified()) {
-            writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT, ccCompilerConfiguration.getIncludeDirectories().getValueAsArray()); // NOI18N
+            writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT, ccCompilerConfiguration.getIncludeDirectories().getValue()); // NOI18N
         }
         if (ccCompilerConfiguration.getStandardsEvolution().getModified()) {
             xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + ccCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
@@ -528,7 +528,7 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(COMMAND_LINE_ELEMENT, "" + ccCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
         }
         if (ccCompilerConfiguration.getPreprocessorConfiguration().getModified()) {
-            writeList(xes, PREPROCESSOR_LIST_ELEMENT, ccCompilerConfiguration.getPreprocessorConfiguration().getValueAsArray());
+            writeList(xes, PREPROCESSOR_LIST_ELEMENT, ccCompilerConfiguration.getPreprocessorConfiguration().getValue());
         }
         if (ccCompilerConfiguration.getInheritPreprocessor().getModified()) {
             xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
@@ -603,10 +603,10 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(OUTPUT_ELEMENT, linkerConfiguration.getOutput().getValue());
         }
         if (linkerConfiguration.getAdditionalLibs().getModified()) {
-            writeDirectories(xes, LINKER_ADD_LIB_ELEMENT, linkerConfiguration.getAdditionalLibs().getValueAsArray());
+            writeDirectories(xes, LINKER_ADD_LIB_ELEMENT, linkerConfiguration.getAdditionalLibs().getValue());
         }
         if (linkerConfiguration.getDynamicSearch().getModified()) {
-            writeDirectories(xes, LINKER_DYN_SERCH_ELEMENT, linkerConfiguration.getDynamicSearch().getValueAsArray());
+            writeDirectories(xes, LINKER_DYN_SERCH_ELEMENT, linkerConfiguration.getDynamicSearch().getValue());
         }
         if (linkerConfiguration.getStripOption().getModified()) {
             xes.element(STRIP_SYMBOLS_ELEMENT, "" + linkerConfiguration.getStripOption().getValue()); // NOI18N
@@ -769,21 +769,21 @@ public abstract class CommonConfigurationXMLCodec
         xes.elementClose(ARCHIVERTOOL_ELEMENT);
     }
 
-    public static void writeList(XMLEncoderStream xes, String tag, String[] list) {
+    public static void writeList(XMLEncoderStream xes, String tag, List<String> list) {
         writeList(xes, tag, LIST_ELEMENT, list);
     }
 
-    public static void writeDirectories(XMLEncoderStream xes, String tag, String[] directories) {
+    public static void writeDirectories(XMLEncoderStream xes, String tag, List<String> directories) {
         writeList(xes, tag, DIRECTORY_PATH_ELEMENT, directories);
     }
 
-    public static void writeList(XMLEncoderStream xes, String tag, String listTag, String[] directories) {
-        if (directories.length == 0) {
+    public static void writeList(XMLEncoderStream xes, String tag, String listTag, List<String> directories) {
+        if (directories.size() == 0) {
             return;
         }
         xes.elementOpen(tag);
-        for (int i = 0; i < directories.length; i++) {
-            xes.element(listTag, directories[i]);
+        for (String dir : directories) {
+            xes.element(listTag, dir);
         }
         xes.elementClose(tag);
     }

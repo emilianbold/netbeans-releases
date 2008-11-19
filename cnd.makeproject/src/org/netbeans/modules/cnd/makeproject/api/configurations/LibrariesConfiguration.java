@@ -43,14 +43,14 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.util.List;
 import java.util.ArrayList;
 
-public class LibrariesConfiguration extends VectorConfiguration {
+public class LibrariesConfiguration<E> extends VectorConfiguration<E> {
 
     public LibrariesConfiguration() {
         super(null);
     }
 
     public LibraryItem[] getLibraryItemsAsArray() {
-        return (LibraryItem[]) getValue().toArray(new LibraryItem[getValue().size()]);
+        return getValue().toArray(new LibraryItem[getValue().size()]);
     }
 
     public String getOptions(MakeConfiguration conf) {
@@ -67,18 +67,26 @@ public class LibrariesConfiguration extends VectorConfiguration {
     // Clone and Assign
 
     @Override
-    public void assign(VectorConfiguration conf) {
+    public void assign(VectorConfiguration<E> conf) {
         // From VectorConfiguration
         super.assign(conf);
     // From LibrariesConfiguration
     }
 
     @Override
-    public Object clone() {
-        LibrariesConfiguration clone = new LibrariesConfiguration();
-        // From VectorConfiguration
-        clone.setValue((List) ((ArrayList) getValue()).clone());
-        // From LibrariesConfiguration
+    public LibrariesConfiguration<E> cloneConf() {
+        LibrariesConfiguration<E> clone = new LibrariesConfiguration<E>();
+        clone.setValue(new ArrayList<E>(getValue()));
         return clone;
     }
+
+//    @Override
+//    @Deprecated
+//    public Object clone() {
+//        LibrariesConfiguration clone = new LibrariesConfiguration();
+//        // From VectorConfiguration
+//        clone.setValue((List) ((ArrayList) getValue()).clone());
+//        // From LibrariesConfiguration
+//        return clone;
+//    }
 }

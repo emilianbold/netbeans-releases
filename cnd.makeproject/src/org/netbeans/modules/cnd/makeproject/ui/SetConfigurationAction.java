@@ -102,7 +102,7 @@ public class SetConfigurationAction extends AbstractAction implements Presenter.
         subMenu.removeAll();
         ActionListener jmiActionListener = new MenuItemActionListener(); 
         
-	ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+	ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
 	if (pdp == null)
 	    return;
 
