@@ -42,6 +42,7 @@ import org.apache.tools.ant.taskdefs.ExecuteStreamHandler;
 import org.apache.tools.ant.taskdefs.Java;
 import org.apache.tools.ant.taskdefs.LogOutputStream;
 import org.apache.tools.ant.taskdefs.Redirector;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.OutputWriter;
 
@@ -94,26 +95,27 @@ public class ForkedJavaOverride extends Java {
 
         private class NbOutputStreamHandler implements ExecuteStreamHandler {
 
-            private RequestProcessor.Task outTask;
-            private RequestProcessor.Task errTask;
-            //private RequestProcessor.Task inTask;
+            private Thread outTask;
+            private Thread errTask;
 
-            //long init = System.currentTimeMillis();
             NbOutputStreamHandler() {}
 
             public void start() throws IOException {}
 
             public void stop() {
-                /* XXX causes process to hang at end
-                if (inTask != null) {
-                    inTask.waitFinished();
-                }
-                */
                 if (errTask != null) {
-                    errTask.waitFinished();
+                    try {
+                        errTask.join();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
                 if (outTask != null) {
-                    outTask.waitFinished();
+                    try {
+                        outTask.join();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
 
@@ -124,7 +126,9 @@ public class ForkedJavaOverride extends Java {
                     os = AntBridge.delegateOutputStream(false);
                     logLevel = Project.MSG_INFO;
                 }
-                outTask = PROCESSOR.post(new Copier(inputStream, os, logLevel, outEncoding/*, init*/));
+                outTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(inputStream, os, logLevel, outEncoding), 
+                        "Out Thread for " + getProject().getName()); // NOI18N
+                outTask.start();
             }
 
             public void setProcessErrorStream(InputStream inputStream) throws IOException {
@@ -134,7 +138,9 @@ public class ForkedJavaOverride extends Java {
                     os = AntBridge.delegateOutputStream(true);
                     logLevel = Project.MSG_WARN;
                 }
-                errTask = PROCESSOR.post(new Copier(inputStream, os, logLevel, errEncoding/*, init*/));
+                errTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(inputStream, os, logLevel, errEncoding), 
+                        "Err Thread for " + getProject().getName()); // NOI18N
+                errTask.start();
             }
 
             public void setProcessInputStream(OutputStream outputStream) throws IOException {
@@ -142,7 +148,8 @@ public class ForkedJavaOverride extends Java {
                 if (is == null) {
                     is = AntBridge.delegateInputStream();
                 }
-                /*inTask = */PROCESSOR.post(new Copier(is, outputStream, null, null/*, init*/));
+                new Thread(Thread.currentThread().getThreadGroup(), new Copier(is, outputStream, null, null), 
+                        "In Thread for " + getProject().getName()).start(); // NOI18N
             }
 
         }
@@ -153,7 +160,6 @@ public class ForkedJavaOverride extends Java {
 
         private final InputStream in;
         private final OutputStream out;
-        //final long init;
         private final Integer logLevel;
         private final String encoding;
         private final RequestProcessor.Task flusher;
@@ -165,7 +171,6 @@ public class ForkedJavaOverride extends Java {
             this.out = out;
             this.logLevel = logLevel;
             this.encoding = encoding;
-            //this.init = init;
             if (logLevel != null) {
                 flusher = PROCESSOR.create(new Runnable() {
                     public void run() {
