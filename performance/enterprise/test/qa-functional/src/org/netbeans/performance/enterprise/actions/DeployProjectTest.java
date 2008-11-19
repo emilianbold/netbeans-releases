@@ -85,6 +85,10 @@ public class DeployProjectTest extends PerformanceTestCase {
         WAIT_AFTER_OPEN=60000;
     }
 
+    public void testDeployProject() {
+        doMeasurement();
+    }
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EnterpriseSetup.class)
@@ -116,7 +120,7 @@ public class DeployProjectTest extends PerformanceTestCase {
         log("::open");
         
         Node projectNode = new ProjectsTabOperator().getProjectRootNode(project_name);
-        projectNode.performPopupActionNoBlock("Deploy Project"); // NOI18N
+        projectNode.performPopupActionNoBlock("Deploy"); // NOI18N
         new EventTool().waitNoEvent(60000);
         MainWindowOperator.getDefault().waitStatusText("Finished building "+project_name); // NOI18N
         

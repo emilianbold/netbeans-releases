@@ -79,6 +79,10 @@ public class ApplyDesignPatternTest  extends PerformanceTestCase {
         //   WAIT_AFTER_OPEN=4000;
     }
 
+    public void testApplyDesignPattern() {
+        doMeasurement();
+    }
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EnterpriseSetup.class)
@@ -92,9 +96,9 @@ public class ApplyDesignPatternTest  extends PerformanceTestCase {
         log(":: initialize");
         System.gc();
         new EventTool().waitNoEvent(3000);
-        processNode = new EPUtilities().getProcessFilesNode("SOATestProject");
+        processNode = new EPUtilities().getProcessFilesNode("TravelReservationService");
         
-        schemaName = "fields.xsd";
+        schemaName = "OTA_TravelItinerary.xsd";
         schemaNode = new Node(processNode, schemaName);
 
         String open = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");

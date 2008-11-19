@@ -64,7 +64,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class OpenBPELprojectTest extends PerformanceTestCase {
     
-    private static String projectName = "BPELProject_Open";
+    private static String projectName = "BPELTestProject";
     private JButtonOperator openButton;
     
     /**
@@ -86,6 +86,10 @@ public class OpenBPELprojectTest extends PerformanceTestCase {
         super(testName, performanceDataName);
         expectedTime = 10000;
         WAIT_AFTER_OPEN=4000;
+    }
+
+    public void testOpenBPELproject() {
+        doMeasurement();
     }
 
     public static NbTestSuite suite() {

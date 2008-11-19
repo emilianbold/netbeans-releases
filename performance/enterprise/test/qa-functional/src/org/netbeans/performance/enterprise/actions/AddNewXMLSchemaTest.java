@@ -100,6 +100,10 @@ public class AddNewXMLSchemaTest extends PerformanceTestCase {
         index=1;
 //        new CloseAllDocumentsAction().performAPI();
     }
+
+    public void testAddNewXMLSchemaTest() {
+        doMeasurement();
+    }
     
     public void prepare(){
         new EPUtilities().getProcessFilesNode("BPELTestProject").select();

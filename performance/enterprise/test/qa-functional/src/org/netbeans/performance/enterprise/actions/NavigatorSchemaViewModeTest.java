@@ -75,6 +75,10 @@ public class NavigatorSchemaViewModeTest  extends PerformanceTestCase {
         expectedTime = EXPECTED_TIME; 
     }
 
+    public void testNavigatorSchemaViewMode() {
+        doMeasurement();
+    }
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EnterpriseSetup.class)
@@ -88,8 +92,8 @@ public class NavigatorSchemaViewModeTest  extends PerformanceTestCase {
         log(":: initialize");
 //        new CloseAllDocumentsAction().performAPI();
         
-        processNode = new EPUtilities().getProcessFilesNode("SOATestProject");
-        Node doc1 = new Node(processNode,"batch.xsd");
+        processNode = new EPUtilities().getProcessFilesNode("TravelReservationService");
+        Node doc1 = new Node(processNode,"OTA_TravelItinerary_1.xsd");
         doc1.select();
         
         JComboBoxOperator combo = new JComboBoxOperator(new TopComponentOperator("Navigator")); // NOI18N
@@ -102,16 +106,16 @@ public class NavigatorSchemaViewModeTest  extends PerformanceTestCase {
     
     public ComponentOperator open() {
         log(":: open");
-        Node doc = new Node(processNode,"fields.xsd");
+        Node doc = new Node(processNode,"OTA_TravelItinerary.xsd");
         doc.select();
         
-        return new TopComponentOperator("fields.xsd");
+        return new TopComponentOperator("OTA_TravelItinerary.xsd");
     }
     
     @Override
     public void close() {
         log("::close");
-        Node doc1 = new Node(processNode,"batch.xsd");
+        Node doc1 = new Node(processNode,"OTA_TravelItinerary_1.xsd");
         doc1.select();
     }
     

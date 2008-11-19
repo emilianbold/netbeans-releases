@@ -64,7 +64,7 @@ public class SwitchToDesignViewTest  extends PerformanceTestCase {
     
     XMLSchemaComponentOperator schemaComponentOperator;
             
-    private static String testSchemaFileName = "fields.xsd";
+    private static String testSchemaFileName = "OTA_TravelItinerary.xsd";
     
     /** Creates a new instance of SwitchSchemaView */
     public SwitchToDesignViewTest(String testName) {
@@ -76,6 +76,10 @@ public class SwitchToDesignViewTest  extends PerformanceTestCase {
     public SwitchToDesignViewTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
+    }
+
+    public void testSwitchToDesignView() {
+        doMeasurement();
     }
 
     public static NbTestSuite suite() {
@@ -91,7 +95,7 @@ public class SwitchToDesignViewTest  extends PerformanceTestCase {
         log(":: initialize");
         System.gc();
         new EventTool().waitNoEvent(5000);
-        Node doc = new Node(new EPUtilities().getProcessFilesNode("SOATestProject"), testSchemaFileName);
+        Node doc = new Node(new EPUtilities().getProcessFilesNode("TravelReservationService"), testSchemaFileName);
         doc.select();
         new OpenAction().perform(doc);
         schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);

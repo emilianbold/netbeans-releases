@@ -59,12 +59,12 @@ public class MeasureEnterpriseActions6Test {
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Enterprise Actions suite. Part 6");
         System.setProperty("suitename", MeasureEnterpriseActions6Test.class.getCanonicalName());
-
+        System.setProperty("suite", "UI Responsiveness Enterprise Actions suite. Part 6");
         
         // EPMeasureActions6
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(StartAppserverTest.class)
-                .addTest("measureTime").enableModules(".*").clusters(".*").reuseUserDir(true)));
-
+        /*suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(StartAppserverTest.class)
+                .enableModules(".*").clusters(".*").reuseUserDir(true)));
+*/
         return suite;
     }
     
