@@ -37,31 +37,43 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.nodes;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.api.project.Project;
+package org.netbeans.modules.project.uiapi;
+
+import java.util.Set;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.spi.project.ui.support.NodeFactory;
-import org.netbeans.spi.project.ui.support.NodeFactorySupport;
-import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.nodes.Node;
+import org.openide.filesystems.annotations.LayerGeneratingProcessor;
+import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * shows maven project files.
- * @author  Milos Kleint
+ * processor for NodeFactory.Registration annotation.
+ * @author mkleint
  */
-@NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=700)
-public class ProjectFilesNodeFactory implements NodeFactory {
-    
-    /** Creates a new instance of ProjectFilesNodeFactory */
-    public ProjectFilesNodeFactory() {
+@ServiceProvider(service=Processor.class)
+@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedAnnotationTypes("org.netbeans.spi.project.ui.support.NodeFactory.Registration")//NOI18N
+public class NodeFactoryAnnotationProcessor extends LayerGeneratingProcessor {
+
+    @Override
+    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
+        if (roundEnv.processingOver()) {
+            return false;
+        }
+        for (Element e : roundEnv.getElementsAnnotatedWith(NodeFactory.Registration.class)) {
+            NodeFactory.Registration lpr = e.getAnnotation(NodeFactory.Registration.class);
+            for (String type : lpr.projectType()) {
+                layer(e).instanceFile("Projects/" + type + "/Nodes", null, NodeFactory.class). //NOI18N
+                        position(lpr.position()).write();
+            }
+        }
+        return true;
     }
-    
-    public NodeList createNodes(Project project) {
-        NbMavenProjectImpl prj = project.getLookup().lookup(NbMavenProjectImpl.class);
-        return NodeFactorySupport.fixedNodeList(new Node[] {
-            new ProjectFilesNode(prj)
-        });
-    }
-    
-    
+
 }

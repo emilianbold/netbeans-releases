@@ -58,6 +58,7 @@ import org.openide.util.NbBundle;
 /**
  * Displays data directories.
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-apisupport-project", position=150)
 public class TestDataDirsNodeFactory implements NodeFactory {
 
     /** public for layer */

@@ -56,9 +56,9 @@ public class J2EEPrerequisitesChecker implements PrerequisitesChecker {
 
     private List applicableActions = Arrays.asList(new String[] {
         ActionProvider.COMMAND_RUN,
-        ActionProvider.COMMAND_RUN_SINGLE,
+        ActionProvider.COMMAND_RUN_SINGLE + ".deploy",
         ActionProvider.COMMAND_DEBUG,
-        ActionProvider.COMMAND_DEBUG_SINGLE
+        ActionProvider.COMMAND_DEBUG_SINGLE + ".deploy"
     });
     
     /** Creates a new instance of J2EEPrerequisitesChecker */

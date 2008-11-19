@@ -91,6 +91,7 @@ import org.openide.util.datatransfer.PasteType;
  *
  * @author mkleint
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-web-project",position=200)
 public final class DocBaseNodeFactory implements NodeFactory {
     
     /** Creates a new instance of LibrariesNodeFactory */
