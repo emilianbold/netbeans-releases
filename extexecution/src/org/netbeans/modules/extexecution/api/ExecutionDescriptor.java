@@ -58,6 +58,8 @@ import org.openide.windows.InputOutput;
  */
 public final class ExecutionDescriptor {
 
+    // TODO provide constants for common descriptors (are there any?)
+    
     private final Runnable preExecution;
 
     private final Runnable postExecution;
@@ -71,6 +73,10 @@ public final class ExecutionDescriptor {
     private final boolean input;
 
     private final boolean controllable;
+
+    private boolean outLineBased;
+
+    private boolean errLineBased;
 
     private final LineConvertorFactory outConvertorFactory;
 
@@ -102,6 +108,8 @@ public final class ExecutionDescriptor {
         this.front = data.front;
         this.input = data.input;
         this.controllable = data.controllable;
+        this.outLineBased = data.outLineBased;
+        this.errLineBased = data.errLineBased;
         this.outConvertorFactory = data.outConvertorFactory;
         this.errConvertorFactory = data.errConvertorFactory;
         this.outProcessorFactory = data.outProcessorFactory;
@@ -249,6 +257,46 @@ public final class ExecutionDescriptor {
     }
 
     /**
+     * Returns a descriptor with configured flag indicating line based standard
+     * output. When configured value is <code>true</code> the default printing
+     * processor will always <i>wait for the whole line before converting and
+     * printing it</i>.
+     *
+     * @param outLineBased line based flag
+     * @return descriptor with configured flag indicating line based
+     *             standard output
+     * @see #outProcessorFactory(org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory) 
+     */
+    public ExecutionDescriptor outLineBased(boolean outLineBased) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.outLineBased(outLineBased));
+    }
+
+    boolean isOutLineBased() {
+        return outLineBased;
+    }
+
+    /**
+     * Returns a descriptor with configured flag indicating line based standard
+     * error output. When configured value is <code>true</code> the default
+     * printing processor will always <i>wait for the whole line before
+     * converting and printing it</i>.
+     *
+     * @param errLineBased line based flag
+     * @return descriptor with configured flag indicating line based
+     *             standard error output
+     * @see #errProcessorFactory(org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory)
+     */
+    public ExecutionDescriptor errLineBased(boolean errLineBased) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.errLineBased(errLineBased));
+    }
+
+    boolean isErrLineBased() {
+        return errLineBased;
+    }
+
+    /**
      * Returns a descriptor with configured factory for standard output
      * processor. The factory is used by {@link ExecutionService} to create
      * additional processor for standard output.
@@ -256,6 +304,9 @@ public final class ExecutionDescriptor {
      * Note that {@link ExecutionService} automatically uses
      * the printing processor created by
      * {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)}
+     * or
+     * {@link org.netbeans.modules.extexecution.api.input.LineProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)}
+     * (in case {@link #outLineBased(boolean)} is configured to <code>true</code>)
      * if there is no configured factory.
      * <p>
      * The default (not configured) value is <code>null</code>.
@@ -285,6 +336,9 @@ public final class ExecutionDescriptor {
      * Note that {@link ExecutionService} automatically uses
      * the printing processor created by
      * {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)}
+     * or
+     * {@link org.netbeans.modules.extexecution.api.input.LineProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)}
+     * (in case {@link #errLineBased(boolean)} is configured to <code>true</code>)
      * if there is no configured factory.
      * <p>
      * The default (not configured) value is <code>null</code>.
@@ -314,7 +368,7 @@ public final class ExecutionDescriptor {
      * Note that {@link ExecutionService} always uses the printing processor
      * for the standard output. Convertor created by the returned factory will
      * be passed to this default printing processor. See
-     * {@link #getOutProcessorFactory()} too.
+     * {@link #outProcessorFactory()} too.
      * <p>
      * The default (not configured) value is <code>null</code>.
      * <p>
@@ -343,7 +397,7 @@ public final class ExecutionDescriptor {
      * Note that {@link ExecutionService} always uses the printing processor
      * for the standard error output. Convertor created by the returned
      * factory will be passed to this default printing processor. See
-     * {@link #getErrProcessorFactory()} too.
+     * {@link #errProcessorFactory()} too.
      * <p>
      * The default (not configured) value is <code>null</code>.
      * <p>
@@ -533,6 +587,10 @@ public final class ExecutionDescriptor {
 
         private boolean controllable;
 
+        private boolean outLineBased;
+
+        private boolean errLineBased;
+
         private LineConvertorFactory outConvertorFactory;
 
         private LineConvertorFactory errConvertorFactory;
@@ -559,6 +617,8 @@ public final class ExecutionDescriptor {
             this.front = descriptor.front;
             this.input = descriptor.input;
             this.controllable = descriptor.controllable;
+            this.outLineBased = descriptor.outLineBased;
+            this.errLineBased = descriptor.errLineBased;
             this.outConvertorFactory = descriptor.outConvertorFactory;
             this.errConvertorFactory = descriptor.errConvertorFactory;
             this.outProcessorFactory = descriptor.outProcessorFactory;
@@ -595,6 +655,16 @@ public final class ExecutionDescriptor {
 
         public DescriptorData showSuspended(boolean showSuspended) {
             this.suspend = showSuspended;
+            return this;
+        }
+
+        public DescriptorData outLineBased(boolean outLineBased) {
+            this.outLineBased = outLineBased;
+            return this;
+        }
+
+        public DescriptorData errLineBased(boolean errLineBased) {
+            this.errLineBased = errLineBased;
             return this;
         }
 
