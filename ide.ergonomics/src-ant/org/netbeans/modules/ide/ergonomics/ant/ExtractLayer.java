@@ -145,6 +145,8 @@ public final class ExtractLayer extends Task {
         }
         ZipArray bundles = new ZipArray();
         ZipArray icons = new ZipArray();
+        StringBuilder modules = new StringBuilder();
+        String sep = "\n    ";
 
         for (FileSet fs : filesets) {
             DirectoryScanner ds = fs.getDirectoryScanner(getProject());
@@ -162,6 +164,8 @@ public final class ExtractLayer extends Task {
                         if (modname == null) {
                             continue;
                         }
+                        modules.append(sep).append(modname);
+                        sep = ",\\\n    ";
                         Enumeration<JarEntry> en = jf.entries();
                         while (en.hasMoreElements()) {
                             JarEntry je = en.nextElement();
@@ -184,15 +188,22 @@ public final class ExtractLayer extends Task {
         }
 
         Concat concat = new Concat();
+        concat.setProject(getProject());
         concat.add(bundles);
         concat.setDestfile(bundle);
         if (bundleFilter != null) {
             concat.addFilterChain(bundleFilter);
         }
+        Concat.TextElement te = new Concat.TextElement();
+        te.setProject(getProject());
+        te.addText("cnbs=\\" + modules + "\n\n");
+        te.setFiltering(false);
+        concat.addHeader(te);
         concat.execute();
 
 
         Copy copy = new Copy();
+        copy.setProject(getProject());
         copy.add(icons);
         copy.setTodir(output);
         copy.add(new FlatFileNameMapper());

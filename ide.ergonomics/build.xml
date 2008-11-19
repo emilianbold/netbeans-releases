@@ -33,7 +33,7 @@
         </copy>
     </target>
 
-    <target name="-init-clusters" depends="init-tasks">
+    <target name="-init-clusters">
         <dirset id="ergonomic.clusters" dir="${netbeans.dest.dir}">
             <include name="*"/>
             <exclude name="harness*"/>
@@ -46,7 +46,7 @@
     </target>
 
 
-    <target name="-disable-kits" depends="init-tasks,-init-clusters">
+    <target name="-disable-kits" depends="-init-clusters">
         <mkdir dir="${release.dir}/config/Modules"/>
         <subant genericantfile="build.xml" target="-disable-one-cluster">
             <property name="xmldir" value="${release.dir}/config/Modules"/>
@@ -55,14 +55,14 @@
         </subant>
     </target>
 
-    <target name="-generate-proxies" depends="init-tasks,-init-clusters">
+    <target name="-generate-proxies" depends="-init-clusters">
         <subant genericantfile="build.xml" target="-proxy-one-cluster">
             <property name="ergonomicsdir" location="${basedir}"/>
             <dirset refid="ergonomic.clusters"/>
         </subant>
     </target>
 
-    <target name="-proxy-one-cluster" depends="init-tasks">
+    <target name="-proxy-one-cluster" depends="-init-clusters">
         <taskdef name="layerindex"
              classname="org.netbeans.nbbuild.LayerIndex"
              classpath="${nb_all}/nbbuild/nbantext.jar"/>
@@ -134,7 +134,7 @@
     </target>
 
     
-    <target name="-disable-one-cluster" depends="init-tasks">
+    <target name="-disable-one-cluster" depends="-init-clusters">
         <createmodulexml xmldir="${xmldir}">
             <disabled dir=".">
                 <and>
