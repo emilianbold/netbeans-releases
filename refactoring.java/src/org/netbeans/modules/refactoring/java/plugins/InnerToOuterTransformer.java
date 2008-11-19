@@ -280,7 +280,11 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             }
         } else if (isThisReferenceToOuter() && !"class".equals(memberSelect.getIdentifier().toString()) && !current.getModifiers().contains(Modifier.STATIC)) { //NOI18N
             if (refactoring.getReferenceName()!=null) {
-                MemberSelectTree m = make.MemberSelect(make.Identifier(refactoring.getReferenceName()), memberSelect.getIdentifier());
+                // Outer.this -> outer
+                // Outer.field -> outer.field
+                Tree m = "this".equals(memberSelect.getIdentifier().toString()) // NOI18N
+                        ? make.Identifier(refactoring.getReferenceName())
+                        : make.MemberSelect(make.Identifier(refactoring.getReferenceName()), memberSelect.getIdentifier());
                 rewrite(memberSelect, m);
             } else {
                 problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(InnerToOuterTransformer.class, "ERR_InnerToOuter_UseDeclareField", memberSelect));
