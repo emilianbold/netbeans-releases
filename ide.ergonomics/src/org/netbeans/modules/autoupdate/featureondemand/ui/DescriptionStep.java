@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
@@ -80,7 +81,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     private Collection<UpdateElement> forEnable = null;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
     private static FindComponentModules finder = null;
-    private String codeName = null;
+    private Set<String> cnbs = null;
 
     public Component getComponent () {
         if (panel == null) {
@@ -222,9 +223,9 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     }
     
     private FindComponentModules getFinder () {
-        assert codeName != null : "Feature's code name is not null.";
+        assert cnbs != null : "Feature's code name is not null.";
         if (finder == null) {
-            finder = new FindComponentModules (codeName);
+            finder = new FindComponentModules(cnbs.toArray(new String[0]));
         }
         return finder;
     }
@@ -249,7 +250,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         assert o != null && o instanceof FileObject : o + " is not null and instanceof FileObject.";
         FileObject fo = (FileObject) o;
         URL layer = FoDFileSystem.getInstance ().getDelegateFileSystem (fo);
-        codeName = Feature2LayerMapping.getInstance ().getCodeName (layer);
+        cnbs = Feature2LayerMapping.getInstance ().getCodeName (layer);
     }
 
     public void storeSettings (WizardDescriptor settings) {

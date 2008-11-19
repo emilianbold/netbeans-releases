@@ -40,6 +40,8 @@
 package org.netbeans.modules.autoupdate.featureondemand.api;
 
 import java.net.URL;
+import java.util.Collections;
+import java.util.Set;
 import org.netbeans.modules.autoupdate.featureondemand.FeatureInfoAccessor;
 import org.netbeans.modules.autoupdate.featureondemand.FeatureInfoAccessor.Internal;
 import org.openide.filesystems.FileObject;
@@ -53,12 +55,21 @@ public final class FeatureInfo {
     private final String codeName;
     private final URL delegateLayer;
     private final String delegateFilePath;
-    private Internal internal = new Internal(this);
+    private final Internal internal = new Internal(this);
+    private final Set<String> cnbs;
+
+    private FeatureInfo(Set<String> cnbs, URL delegateLayer) {
+        this.cnbs = cnbs;
+        this.delegateLayer = delegateLayer;
+        this.codeName = null;
+        this.delegateFilePath = null;
+    }
     
     private FeatureInfo(String codeName, URL delegateLayer, String delegateFilePath) {
         this.codeName = codeName;
         this.delegateLayer = delegateLayer;
         this.delegateFilePath = delegateFilePath;
+        this.cnbs = null;
     }
     
     /** Creates new <em>Feature On Demand</em> descriptor. Whenever the module
@@ -85,6 +96,10 @@ public final class FeatureInfo {
     public static FeatureInfo create(String codeName, URL delegateLayer, String delegateFilePath) {
         return new FeatureInfo(codeName, delegateLayer, delegateFilePath);
     }
+
+    public static FeatureInfo create(Set<String> cnbs, URL delegateLayer) {
+        return new FeatureInfo(cnbs, delegateLayer);
+    }
     
     static FeatureInfo create(FileObject fo) {
         Object cnb = fo.getAttribute("codeName"); // NOI18N
@@ -96,8 +111,12 @@ public final class FeatureInfo {
     static {
         FeatureInfoAccessor.DEFAULT = new FeatureInfoAccessor() {
             @Override
-            public String getCodeName(FeatureInfo info) {
-                return info.codeName;
+            public Set<String> getCodeName(FeatureInfo info) {
+                if (info.codeName != null) {
+                    return Collections.singleton(info.codeName);
+                } else {
+                    return info.cnbs;
+                }
             }
 
             @Override

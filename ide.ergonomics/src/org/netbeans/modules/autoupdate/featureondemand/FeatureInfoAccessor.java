@@ -42,6 +42,7 @@ package org.netbeans.modules.autoupdate.featureondemand;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.autoupdate.featureondemand.api.FeatureInfo;
 import org.openide.filesystems.XMLFileSystem;
@@ -61,7 +62,7 @@ public abstract class FeatureInfoAccessor {
         DEFAULT = this;
     }
     
-    public abstract String getCodeName(FeatureInfo info);
+    public abstract Set<String> getCodeName(FeatureInfo info);
     public abstract URL getDelegateLayer(FeatureInfo info);
     public abstract String getDelegateFilePath(FeatureInfo info);
     
@@ -97,9 +98,9 @@ public abstract class FeatureInfoAccessor {
         }
 
         boolean isEnabled() {
-            String cnb = DEFAULT.getCodeName(info);
+            Set<String> cnbs = DEFAULT.getCodeName(info);
             for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-                if (cnb.equals(mi.getCodeNameBase())) {
+                if (cnbs.contains(mi.getCodeNameBase())) {
                     return mi.isEnabled();
                 }
             }

@@ -40,11 +40,17 @@
 package org.netbeans.modules.autoupdate.featureondemand;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.modules.autoupdate.featureondemand.api.FeatureInfo;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -74,7 +80,7 @@ public class Feature2LayerMapping {
         return res;
     }
     
-    public String getCodeName (URL layer) {
+    public Set<String>getCodeName (URL layer) {
         if (layer == null) {
             return null;
         }
@@ -102,10 +108,23 @@ public class Feature2LayerMapping {
             for (String c : clusters.split(File.pathSeparator)) {
                 int last = c.lastIndexOf(File.separatorChar);
                 String clusterName = c.substring(last + 1);
-                String name = "/org/netbeans/modules/ide/ergonomics/" + clusterName + "/layer.xml";
-                URL layer = Feature2LayerMapping.class.getResource(name);
-                if (layer != null) {
-                    ic.add(FeatureInfo.create(clusterName, layer, null));
+                String basename = "/org/netbeans/modules/ide/ergonomics/" + clusterName;
+                String layerName = basename + "/layer.xml";
+                String bundleName = basename + "/Bundle.properties";
+                URL layer = Feature2LayerMapping.class.getResource(layerName);
+                URL bundle = Feature2LayerMapping.class.getResource(bundleName);
+                if (layer != null && bundle != null) {
+                    try {
+                        Properties p = new Properties();
+                        p.load(bundle.openStream());
+                        String cnbs = p.getProperty("cnbs");
+                        assert cnbs != null;
+                        TreeSet<String> s = new TreeSet<String>();
+                        s.addAll(Arrays.asList(cnbs.split(",\n ")));
+                        ic.add(FeatureInfo.create(s, layer));
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
             featureTypesLookup = l;

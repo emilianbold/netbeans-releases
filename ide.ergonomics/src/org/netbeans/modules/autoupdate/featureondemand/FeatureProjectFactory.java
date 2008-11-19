@@ -41,6 +41,7 @@ package org.netbeans.modules.autoupdate.featureondemand;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Set;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -85,9 +86,9 @@ public class FeatureProjectFactory implements ProjectFactory {
             if (pfp != null) {
                 FileObject file = projectDirectory.getFileObject(pfp);
                 if (file != null) {
-                    String cnb = FeatureInfoAccessor.DEFAULT.getCodeName(pt2m);
+                    Set<String> cnbs = FeatureInfoAccessor.DEFAULT.getCodeName(pt2m);
                     for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-                        if (!info.getCodeNameBase().equals(cnb)) {
+                        if (!cnbs.contains(info.getCodeNameBase())) {
                             continue;
                         }
                         if (info.isEnabled()) {
@@ -152,8 +153,8 @@ public class FeatureProjectFactory implements ProjectFactory {
         }
         
         public void run () {
-            String codeName = FeatureInfoAccessor.DEFAULT.getCodeName (info);
-            FindComponentModules findModules = new FindComponentModules (codeName);
+            Set<String> cnbs = FeatureInfoAccessor.DEFAULT.getCodeName (info);
+            FindComponentModules findModules = new FindComponentModules(cnbs.toArray(new String[0]));
             findModules.createFindingTask ().waitFinished ();
             Collection<UpdateElement> toInstall = findModules.getModulesForInstall ();
             Collection<UpdateElement> toEnable = findModules.getModulesForEnable ();

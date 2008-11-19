@@ -24,12 +24,6 @@
             <xsl:apply-templates mode="project-wizard"/>
         </xsl:element>
     </xsl:template>
-    <xsl:template match="attr[@name='instantiatingIterator']" mode="project-wizard">
-        <xsl:element name="attr">
-            <xsl:attribute name="name">instantiatingIterator</xsl:attribute>
-            <xsl:attribute name="methodvalue">mine</xsl:attribute>
-        </xsl:element>
-    </xsl:template>
     <xsl:template match="attr[@name='SystemFileSystem.localizingBundle']" mode="project-wizard">
         <xsl:element name="attr">
             <xsl:attribute name="name">SystemFileSystem.localizingBundle</xsl:attribute>

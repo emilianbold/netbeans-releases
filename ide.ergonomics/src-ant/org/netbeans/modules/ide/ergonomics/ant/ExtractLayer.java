@@ -164,7 +164,7 @@ public final class ExtractLayer extends Task {
                         if (modname == null) {
                             continue;
                         }
-                        modules.append(sep).append(modname);
+                        modules.append(sep).append(modname.replaceFirst("/[0-9]+$", ""));
                         sep = ",\\\n    ";
                         Enumeration<JarEntry> en = jf.entries();
                         while (en.hasMoreElements()) {

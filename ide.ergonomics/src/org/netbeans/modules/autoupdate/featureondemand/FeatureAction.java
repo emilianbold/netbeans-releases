@@ -41,6 +41,7 @@ package org.netbeans.modules.autoupdate.featureondemand;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
@@ -88,7 +89,7 @@ public class FeatureAction implements ActionListener, Runnable {
     public void run() {
         assert ! SwingUtilities.isEventDispatchThread () : "Cannot run in EQ!";
         URL url = FoDFileSystem.getInstance().getDelegateFileSystem(fo);
-        String codeName = Feature2LayerMapping.getInstance().getCodeName(url);
-        success = ModulesInstaller.installModules (codeName);
+        Set<String> cnbs = Feature2LayerMapping.getInstance().getCodeName(url);
+        success = ModulesInstaller.installModules(cnbs.toArray(new String[0]));
     }
 }
