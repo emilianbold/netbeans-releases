@@ -37,44 +37,30 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mobility.svgcore.items.form;
+package org.netbeans.modules.mobility.svgcore.items;
 
+import org.netbeans.modules.mobility.svgcore.items.form.*;
 import java.io.IOException;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
-import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 
 /**
  * @author akorostelev
  */
-public abstract class SVGFormElement extends SVGComponentDrop{
-
-    private static final String ID_PATTERN = PATTERN + "COMPONENT_ID" + PATTERN;//NOI18N
-
-    public SVGFormElement(String idPrefix, String snippetPath) {
-        assert idPrefix != null && snippetPath != null 
-                : "id prefix or snippet path == null";//NOI18N
-        myIdPrefix = idPrefix;
-        mySnippetPath = snippetPath;
-    }
+public abstract class SVGBasicShape extends SVGComponentDrop{
 
     /**
-     * is to be used by childs with different Ids generation aproach 
-     * (like radiobutton, which should have 2 unique Ids)
      * @param snippetPath
      */
-    protected SVGFormElement(String snippetPath) {
+    protected SVGBasicShape(String snippetPath) {
         assert snippetPath != null 
                 : "snippet path == null";//NOI18N
-        myIdPrefix = "";
         mySnippetPath = snippetPath;
     }
 
     protected boolean doTransfer() {
-        SVGFileModel model = getSVGDataObject().getModel();
         try {
-            String id = model.createUniqueId(myIdPrefix, false);
-            String snippet = getSnippet(id);
-            model.mergeImage(snippet, false);
+            String snippet = getSnippet();
+            String id = getSVGDataObject().getModel().mergeImage(snippet, false);
             setSelection(id);
             return true;
         } catch (Exception ex) {
@@ -83,16 +69,14 @@ public abstract class SVGFormElement extends SVGComponentDrop{
         return false;
     }
     
-    private String getSnippet(String id) throws IOException{
+    protected String getSnippet() throws IOException{
         String text = getSnippetString();
-        String withId = text.replace(ID_PATTERN, id);
-        return replaceCoordinates(withId);
+        return replaceCoordinates(text);
     }
     
     protected String getSnippetString() throws IOException{
-        return getSnippetString(SVGFormElement.class, mySnippetPath);
+        return getSnippetString(SVGBasicShape.class, mySnippetPath);
     }
   
-    private String myIdPrefix;
     private String mySnippetPath;
 }
