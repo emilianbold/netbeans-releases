@@ -132,7 +132,7 @@ made subject to such option by the copyright holder.
         </properties>
     </action>
     <action>
-        <actionName>run.single</actionName>
+        <actionName>run.single.main</actionName>
         <packagings>
             <packaging>*</packaging>
         </packagings>
@@ -143,10 +143,12 @@ made subject to such option by the copyright holder.
         <properties>
             <exec.args>-classpath %classpath ${packageClassName}</exec.args>
             <exec.executable>java</exec.executable>
+            <exec.classpathScope>${classPathScope}</exec.classpathScope>
         </properties>
     </action>
+
     <action>
-        <actionName>debug.single</actionName>
+        <actionName>debug.single.main</actionName>
         <packagings>
             <packaging>*</packaging>
         </packagings>
@@ -157,10 +159,12 @@ made subject to such option by the copyright holder.
         <properties>
             <exec.args>-Xdebug -Djava.compiler=none -Xnoagent -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath ${packageClassName}</exec.args>
             <exec.executable>java</exec.executable>
+            <exec.classpathScope>${classPathScope}</exec.classpathScope>
             <jpda.listen>true</jpda.listen>
             <jpda.stopclass>${packageClassName}</jpda.stopclass>
         </properties>
     </action>
+
     <action>
         <actionName>debug.test.single</actionName>
         <packagings>
