@@ -62,7 +62,7 @@ public class MeasureEnterpriseActions7Test {
 
         
         // EPMeasureActions7
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenBPELproject.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenBPELprojectTest.class)
                 .addTest("measureTime").enableModules(".*").clusters(".*").reuseUserDir(true))); 
         
         return suite;
