@@ -87,16 +87,9 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * @author Karol Harezlak
  */
-
-/**
- * Use PropertyEditorResourceinit instead.
- *
- * @deprecated
- */
-@Deprecated
-public class PropertyEditorResource extends PropertyEditorUserCode implements PropertyEditorElement {
+public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserCode implements PropertyEditorElement {
 
     private Map<String, DesignComponent> createdComponents;
     private final TypeID componentTypeID;
@@ -109,54 +102,41 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
     private boolean databinding;
     private WeakReference<DesignComponent> component;
 
-    
-    /**
-     * Try to avoid this method becouse it's in most of the cases it creates AWT/Swing component outside of the WTK also it creates components before ther are
-     * actualy need it.
-     *
-     */
-    @Deprecated
-    public static final PropertyEditorResource createInstance(PropertyEditorResourceElement perElement, String newComponentAsText, String noneComponentAsText, String userCodeLabel) {
-        return new PropertyEditorResource(perElement, newComponentAsText, noneComponentAsText, userCodeLabel, false);
-    }
-    
-    // Passing null in the construstor and using createResourceElement() to create part of the Properties panel enables late ini of swing components
-    @Deprecated
     public static final DesignPropertyEditor createFontPropertyEditor() {
-        return new PropertyEditorResource(FontCD.TYPEID, NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_UCLABEL"), false) { //NOI18N
+        return new PropertyEditorResourceLazyInit(FontCD.TYPEID, NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_FONTRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_FONTRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_FONTRESOURCEPE_UCLABEL"), false) {
 
             @Override
-            protected PropertyEditorResourceElement createResourceElement() {
+            protected PropertyEditorResourceElement createElement() {
                 return new FontEditorElement();
             }
         };
     }
-    @Deprecated
+
     public static final DesignPropertyEditor createTickerPropertyEditor() {
-        return new PropertyEditorResource(TickerCD.TYPEID, NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_UCLABEL"), false) { //NOI18N
+        return new PropertyEditorResourceLazyInit( TickerCD.TYPEID, NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_TICKERRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_TICKERRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_TICKERRESOURCEPE_UCLABEL"), false) {
 
             @Override
-            protected PropertyEditorResourceElement createResourceElement() {
+            protected PropertyEditorResourceElement createElement() {
                 return new TickerEditorElement();
             }
         };
     }
-    @Deprecated
+
     public static final DesignPropertyEditor createImagePropertyEditor() {
-        return new PropertyEditorResource(ImageCD.TYPEID, NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_UCLABEL"), false) { //NOI18N
+        return new PropertyEditorResourceLazyInit( ImageCD.TYPEID, NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_UCLABEL"), false) {
 
             @Override
-            protected PropertyEditorResourceElement createResourceElement() {
+            protected PropertyEditorResourceElement createElement() {
                 return new ImageEditorElement();
             }
         };
     }
-    @Deprecated
+
     public static final DesignPropertyEditor createImagePropertyEditorWithDatabinding() {
-        return new PropertyEditorResource(ImageCD.TYPEID, NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_UCLABEL"), true) { //NOI18N
+        return new PropertyEditorResourceLazyInit( ImageCD.TYPEID, NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_IMAGERESOURCEPE_UCLABEL"), true) {
 
             @Override
-            protected PropertyEditorResourceElement createResourceElement() {
+            protected PropertyEditorResourceElement createElement() {
                 return new ImageEditorElement();
             }
         };
@@ -164,16 +144,17 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
 
     /**
      * This method allows to create all Custom Editor UI element at the moment when it is really need it.
-     * In getCustomEditor method. To make this method work you need to also override 
+     * In getCustomEditor method. To make this method work you need to also override createResourceElement which will be created at the
+     * moment when getCustomEditor is called
      *
-     * @param type
-     * @param newComponentAsText
-     * @param noneComponentAsText
-     * @param userCodeLabel
-     * @param databinding
+     * @param type - TypeID of the resource for example: TickerCD.TYPEID, ImageCD.TYPEID
+     * @param newComponentAsText - text represenataion of in inplace editor
+     * @param noneComponentAsText - text representation when value is not set for example <NONE>
+     * @param userCodeLabel - text labe for custom code window
+     * @param databinding - Boolena.TRUE FALSE is databinding is used
      */
-
-    private PropertyEditorResource(TypeID type,
+    public PropertyEditorResourceLazyInit(PropertyEditorResourceElement perElement,
+            TypeID type,
             String newComponentAsText,
             String noneComponentAsText,
             String userCodeLabel,
@@ -195,9 +176,13 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         this.noneComponentAsText = noneComponentAsText;
 
         createdComponents = new HashMap<String, DesignComponent>();
+
+        this.perElement = perElement;
+        perElement.setPropertyEditorMessageAwareness(this);
     }
 
-    private PropertyEditorResource(PropertyEditorResourceElement perElement,
+    public PropertyEditorResourceLazyInit(
+            TypeID type,
             String newComponentAsText,
             String noneComponentAsText,
             String userCodeLabel,
@@ -214,14 +199,15 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
             throw Debug.illegalArgument("Arguments can not be equal"); //NOI18N
         }
 
-        this.componentTypeID = perElement.getTypeID();
+        this.componentTypeID = type;
         this.newComponentAsText = newComponentAsText;
         this.noneComponentAsText = noneComponentAsText;
-        this.perElement = perElement;
-        perElement.setPropertyEditorMessageAwareness(this);
 
         createdComponents = new HashMap<String, DesignComponent>();
+        
     }
+
+    protected abstract PropertyEditorResourceElement createElement();
 
     @Override
     public void cleanUp(DesignComponent component) {
@@ -252,22 +238,22 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
 
     @Override
     public final Component getCustomEditor() {
+        if (perElement == null) {
+            final DesignComponent component_ = component != null ? component.get() :null;
+            perElement = createElement();
+            perElement.setDesignComponent(component_);
+            perElement.setPropertyEditorMessageAwareness(this);
+        }
+        
         if (radioButton == null) {
-            if (perElement == null) {
-                perElement = createResourceElement();
-                if (component != null && component.get() != null) {
-                    perElement.setDesignComponent(component.get());
-                }
-                perElement.setPropertyEditorMessageAwareness(this);
-            }
             radioButton = new JRadioButton();
             rePanel = new ResourceEditorPanel(perElement, noneComponentAsText, radioButton);
             Mnemonics.setLocalizedText(radioButton,
-                    NbBundle.getMessage(PropertyEditorResource.class, "LBL_RB_RESOURCE")); // NOI18N
+                    NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "LBL_RB_RESOURCE")); // NOI18N
             radioButton.getAccessibleContext().setAccessibleName(
-                    NbBundle.getMessage(PropertyEditorResource.class, "ACSN_RB_RESOURCE"));
+                    NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "ACSN_RB_RESOURCE"));
             radioButton.getAccessibleContext().setAccessibleDescription(
-                    NbBundle.getMessage(PropertyEditorResource.class, "ACSD_RB_RESOURCE"));
+                    NbBundle.getMessage(PropertyEditorResourceLazyInit.class, "ACSD_RB_RESOURCE"));
             perElement.addPropertyEditorResourceElementListener(rePanel);
             if (databinding) {
                 Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(2);
@@ -279,15 +265,13 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
                 initElements(Collections.<PropertyEditorElement>singleton(this));
             }
         }
+        Component superCustomEditor = super.getCustomEditor();
         if (getValue() instanceof PropertyValue) {
             updateState((PropertyValue) getValue());
         }
         perElement.getCustomEdiotrNotification();
-        return super.getCustomEditor();
-    }
-
-    protected PropertyEditorResourceElement createResourceElement() {
-        return null;
+        
+        return superCustomEditor;
     }
 
     private Map<String, DesignComponent> getComponentsMap() {
@@ -367,7 +351,7 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
 
                     if (createdComponent != null) {
                         initInstanceNameForComponent(createdComponent);
-                        PropertyEditorResource.this.setValue(PropertyValue.createComponentReference(createdComponent));
+                        PropertyEditorResourceLazyInit.this.setValue(PropertyValue.createComponentReference(createdComponent));
                     }
                 }
             });
@@ -396,6 +380,10 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
 
     // invoke in the write transaction
     private void initInstanceNameForComponent(DesignComponent component) {
+//        //TODO This is extremely incorrect! Because of stupid API in some cases UI of custom editor needs to be create it befor it's time!!
+//        if (perElement == null) {
+//            getCustomEditor();
+//        }
         String nameToBeCreated = perElement.getResourceNameSuggestion();
         PropertyValue instanceName = InstanceNameResolver.createFromSuggested(component, nameToBeCreated);
         component.writeProperty(ClassCD.PROP_INSTANCE_NAME, instanceName);
