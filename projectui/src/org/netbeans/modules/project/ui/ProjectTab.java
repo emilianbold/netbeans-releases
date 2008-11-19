@@ -715,13 +715,23 @@ public class ProjectTab extends TopComponent
             component = comp;
         }
 
+        private void showPopup(int x, int y) {
+            Action actions[] = rootNode.getActions(false);
+            JPopupMenu popup = Utilities.actionsToPopup(actions, component);
+            popup.show(component, x, y);
+        }
+
         @Override
         public void mousePressed(MouseEvent e) {
-            super.mousePressed(e);
             if (e.isPopupTrigger() && id.equals(ID_LOGICAL)) {
-                Action actions[] = rootNode.getActions(false);
-                JPopupMenu popup = Utilities.actionsToPopup(actions, component);
-                popup.show(component, e.getX(), e.getY());
+                showPopup(e.getX(), e.getY());
+            }
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger() && id.equals(ID_LOGICAL)) {
+                showPopup(e.getX(), e.getY());
             }
         }
 
