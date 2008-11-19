@@ -45,8 +45,12 @@ import org.netbeans.modules.mobility.javon.JavonSerializer;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
+import javax.lang.model.element.VariableElement;
 
 /**
  *
@@ -70,6 +74,7 @@ public class ClassData {
     private List<ClassData> typeParameters = new ArrayList<ClassData>();
     
     private List<MethodData> myInvalidMethods;
+    private Map<String,String> myInvalidFields ;
     
     public static final ClassData java_lang_Object = new ClassData( "java.lang", "Object", false, false );
     
@@ -80,6 +85,7 @@ public class ClassData {
         this.array = array;
 
         parent = java_lang_Object;
+        myInvalidFields = new HashMap<String, String>();
     }
 
     public ClassData( ClassData cd) {
@@ -94,6 +100,7 @@ public class ClassData {
         this.fields=cd.getFields();
         this.methods=cd.getMethods();
         this.typeParameters=cd.getParameterTypes();
+        myInvalidFields = new HashMap<String, String>();
     }
 
     public ClassData( String packageName, String className, boolean primitive, boolean array, JavonSerializer serializer ) {
@@ -229,6 +236,17 @@ public class ClassData {
             return Collections.EMPTY_LIST;
         }
         return Collections.unmodifiableList( myInvalidMethods );
+    }
+    
+
+    public void addInvalidField( VariableElement e ) {
+        String name = e.getSimpleName().toString();
+        String type = e.asType().toString();
+        myInvalidFields.put( name , type );
+    }
+    
+    public Map<String,String> getInvaidFields(){
+        return new HashMap<String, String>( myInvalidFields );
     }
 
     /**
