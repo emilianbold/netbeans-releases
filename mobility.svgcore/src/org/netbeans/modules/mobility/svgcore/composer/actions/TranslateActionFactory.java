@@ -128,10 +128,10 @@ public final class TranslateActionFactory extends AbstractComposerActionFactory 
     }
     
     static int [] getCoordDiff(AWTEvent e) {
-        if ( e.getID() == KeyEvent.KEY_PRESSED) {
-            KeyEvent ke = (KeyEvent)e;
-            if ( ke.getModifiers() == 0) {
-                switch( ke.getKeyCode()) {
+        if (e.getID() == KeyEvent.KEY_PRESSED) {
+            KeyEvent ke = (KeyEvent) e;
+            if (ke.getModifiers() == 0) {
+                switch (ke.getKeyCode()) {
                     case KeyEvent.VK_DOWN:
                         return DIFF_DOWN;
                     case KeyEvent.VK_LEFT:
@@ -140,9 +140,8 @@ public final class TranslateActionFactory extends AbstractComposerActionFactory 
                         return DIFF_RIGHT;
                     case KeyEvent.VK_UP:
                         return DIFF_UP;
+                }
             }
-        }  
-            
         }
         return null;
     }
