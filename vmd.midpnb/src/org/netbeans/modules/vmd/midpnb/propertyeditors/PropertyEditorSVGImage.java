@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
+import java.awt.Component;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -69,13 +70,11 @@ import org.openide.util.NbBundle;
 public class PropertyEditorSVGImage extends PropertyEditorUserCode implements PropertyEditorElement, PropertyEditorResourceElementListener {
 
     private JRadioButton radioButton;
-    private SVGImageEditorElement customEditor;
+    private SVGImageEditorElement element;
     private String resourcePath = ""; // NOI18N
 
     private PropertyEditorSVGImage() {
         super(NbBundle.getMessage(PropertyEditorSVGImage.class, "LBL_SVGIMAGE_UCLABEL")); // NOI18N;
-        initComponents();
-        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     public static PropertyEditorSVGImage createInstance() {
@@ -85,9 +84,9 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
     @Override
     public void cleanUp(DesignComponent component) {
         super.cleanUp(component);
-        if (customEditor != null) {
-            customEditor.clean(component);
-            customEditor = null;
+        if (element != null) {
+            element.clean(component);
+            element = null;
         }
         radioButton = null;
     }
@@ -101,9 +100,10 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
         radioButton.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(PropertyEditorSVGImage.class, "ACSD_SVGIMAGE_STR")); // NOI18N;
 
-        customEditor = new SVGImageEditorElement();
-        customEditor.addPropertyEditorResourceElementListener(this);
-        customEditor.setPropertyEditorMessageAwareness(this);
+        element = new SVGImageEditorElement();
+
+        element.addPropertyEditorResourceElementListener(this);
+        element.setPropertyEditorMessageAwareness(this);
     }
 
     @Override
@@ -116,11 +116,11 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
 
     public void updateState(PropertyValue value) {
         if (value == null) {
-            customEditor.setDesignComponentWrapper(null);
+            element.setDesignComponentWrapper(null);
         } else if (component != null && component.get() != null) {
-            customEditor.setDesignComponentWrapper(new DesignComponentWrapper(component.get()));
+            element.setDesignComponentWrapper(new DesignComponentWrapper(component.get()));
         }
-        customEditor.setAllEnabled(true);
+        element.setAllEnabled(true);
     }
 
     public void setTextForPropertyValue(String text) {
@@ -143,7 +143,16 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
     }
 
     public JComponent getCustomEditorComponent() {
-        return customEditor;
+        return element;
+    }
+
+    @Override
+    public Component getCustomEditor() {
+        if (element == null) {
+            initComponents();
+            initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+        return super.getCustomEditor();
     }
 
     public JRadioButton getRadioButton() {

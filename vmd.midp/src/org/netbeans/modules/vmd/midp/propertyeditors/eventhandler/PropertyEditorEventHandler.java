@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.propertyeditors.eventhandler;
 
 import java.awt.Component;
@@ -81,19 +80,13 @@ import org.openide.util.NbBundle;
 public final class PropertyEditorEventHandler extends DesignPropertyEditor {
 
     private static final String DO_NOTHING = NbBundle.getMessage(PropertyEditorEventHandler.class, "LBL_NOTHING_ACTION"); // NOI18N
-    private final CustomEditor customEditor;
+    private CustomEditor customEditor = null;
     private WeakReference<DesignComponent> component;
     private boolean initialized;
 
     @SuppressWarnings(value = "unchecked") // NOI18N
     private PropertyEditorEventHandler() {
-        Collection<PropertyEditorElementFactory> factories = Lookup.getDefault().lookup(new Lookup.Template(PropertyEditorElementFactory.class)).allInstances();
-        Collection<PropertyEditorEventHandlerElement> elements = new ArrayList<PropertyEditorEventHandlerElement>(factories.size());
-        for (PropertyEditorElementFactory factory : factories) {
-            elements.add(factory.createElement());
-        }
-
-        customEditor = new CustomEditor(elements);
+        
     }
 
     public static final PropertyEditorEventHandler createInstance() {
@@ -109,6 +102,15 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
 
     @Override
     public Component getCustomEditor() {
+        if (customEditor == null) {
+            Collection<PropertyEditorElementFactory> factories = Lookup.getDefault().lookup(new Lookup.Template(PropertyEditorElementFactory.class)).allInstances();
+            Collection<PropertyEditorEventHandlerElement> elements = new ArrayList<PropertyEditorEventHandlerElement>(factories.size());
+            for (PropertyEditorElementFactory factory : factories) {
+                elements.add(factory.createElement());
+            }
+
+            customEditor = new CustomEditor(elements);
+        }
         if (initialized) {
             initCustomEditor();
         }
@@ -268,13 +270,13 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
             Mnemonics.setLocalizedText(doNothingRadioButton, NbBundle.getMessage(PropertyEditorEventHandler.class, "LBL_NOTHING")); // NOI18N
             doNothingRadioButton.setSelected(!wasSelected);
             buttonGroup.add(doNothingRadioButton);
-            
-            doNothingRadioButton.getAccessibleContext().setAccessibleName( 
-                    NbBundle.getMessage(PropertyEditorEventHandler.class, 
-                            "ACSN_NOTHING")); // NOI18N
+
+            doNothingRadioButton.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(PropertyEditorEventHandler.class,
+                    "ACSN_NOTHING")); // NOI18N
             doNothingRadioButton.getAccessibleContext().setAccessibleDescription(
-                    NbBundle.getMessage(PropertyEditorEventHandler.class, 
-                            "ACSD_NOTHING")); // NOI18N
+                    NbBundle.getMessage(PropertyEditorEventHandler.class,
+                    "ACSD_NOTHING")); // NOI18N
 
             constraints.insets = new Insets(12, 12, 6, 12);
             constraints.anchor = GridBagConstraints.NORTHWEST;

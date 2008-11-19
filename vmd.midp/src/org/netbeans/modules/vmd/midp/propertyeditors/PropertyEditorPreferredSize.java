@@ -41,6 +41,7 @@
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -77,21 +78,28 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
     private String label;
     private TypeID parentTypeID;
 
-    private PropertyEditorPreferredSize(String label, String ucLabel, TypeID parentTypeID) {
-        super(ucLabel);
-        this.label = label;
-        this.parentTypeID = parentTypeID;
-        initComponents();
-
-        initElements(Collections.<PropertyEditorElement>singleton(this));
-    }
-
     public static PropertyEditorPreferredSize createInstance(String label, String ucLabel) {
         return new PropertyEditorPreferredSize(label, ucLabel, null);
     }
 
     public static PropertyEditorPreferredSize createInstance(String label, String ucLabel, TypeID parentTypeID) {
         return new PropertyEditorPreferredSize(label, ucLabel, parentTypeID);
+    }
+
+    private PropertyEditorPreferredSize(String label, String ucLabel, TypeID parentTypeID) {
+        super(ucLabel);
+        this.label = label;
+        this.parentTypeID = parentTypeID;
+
+    }
+
+    @Override
+    public Component getCustomEditor() {
+        if (customEditor == null) {
+            initComponents();
+            initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+        return super.getCustomEditor();
     }
 
     @Override
@@ -105,14 +113,14 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
         radioButton = null;
         parentTypeID = null;
     }
-    
+
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, label);
-        
-        radioButton.getAccessibleContext().setAccessibleName( radioButton.getText());
-        radioButton.getAccessibleContext().setAccessibleDescription( radioButton.getText());
-        
+
+        radioButton.getAccessibleContext().setAccessibleName(radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription(radioButton.getText());
+
         customEditor = new CustomEditor();
     }
 
@@ -180,7 +188,7 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
                 intValue = Integer.parseInt(text) <= 0 ? 0 : Integer.parseInt(text);
             } catch (NumberFormatException e) {
             }
-            
+
             super.setValue(MidpTypes.createIntegerValue(intValue));
         }
     }
@@ -256,7 +264,7 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
             initComponents();
         }
 
-         void cleanUp() {
+        void cleanUp() {
             if (textField != null && textField.getDocument() != null) {
                 textField.getDocument().removeDocumentListener(this);
             }
@@ -273,23 +281,23 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
             unlockedCheckBox.addActionListener(this);
             unlockedCheckBox.addFocusListener(this);
             Mnemonics.setLocalizedText(unlockedCheckBox, NbBundle.getMessage(PropertyEditorPreferredSize.class, "LBL_PREF_SIZE_UNLOCKED")); // NOI18N
-            
+
             unlockedCheckBox.getAccessibleContext().setAccessibleName(
                     NbBundle.getMessage(PropertyEditorPreferredSize.class,
-                            "ACSN_PREF_SIZE_UNLOCKED"));
+                    "ACSN_PREF_SIZE_UNLOCKED"));
             unlockedCheckBox.getAccessibleContext().setAccessibleDescription(
                     NbBundle.getMessage(PropertyEditorPreferredSize.class,
                     "ACSD_PREF_SIZE_UNLOCKED"));
-            
+
             add(unlockedCheckBox, BorderLayout.NORTH);
 
             textField = new JTextField();
-            
-            textField.getAccessibleContext().setAccessibleName( 
+
+            textField.getAccessibleContext().setAccessibleName(
                     radioButton.getAccessibleContext().getAccessibleName());
-            textField.getAccessibleContext().setAccessibleDescription( 
+            textField.getAccessibleContext().setAccessibleDescription(
                     radioButton.getAccessibleContext().getAccessibleDescription());
-            
+
             textField.getDocument().addDocumentListener(this);
             textField.addFocusListener(this);
             add(textField, BorderLayout.SOUTH);
@@ -370,9 +378,9 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
         }
 
         public void focusGained(FocusEvent e) {
-            if(e.getSource() == textField || e.getSource() == unlockedCheckBox){
-               radioButton.setSelected(true);
-               checkNumberStatus();
+            if (e.getSource() == textField || e.getSource() == unlockedCheckBox) {
+                radioButton.setSelected(true);
+                checkNumberStatus();
             }
             if (e.getSource() == radioButton) {
                 checkNumberStatus();
