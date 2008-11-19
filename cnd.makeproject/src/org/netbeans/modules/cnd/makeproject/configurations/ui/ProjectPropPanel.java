@@ -200,8 +200,8 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
 
     public void actionPerformed(ActionEvent e) {
         if (sourceRootChooser.isChanged()) {
-            Vector list = sourceRootChooser.getListData();
-            makeConfigurationDescriptor.setSourceRootsList(new ArrayList(list));
+            Vector<String> list = sourceRootChooser.getListData();
+            makeConfigurationDescriptor.setSourceRootsList(new ArrayList<String>(list));
         }
         MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
         makeCustomizerProvider.removeActionListener(this);

@@ -425,7 +425,7 @@ public class ProjectCreator {
             BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
             if (compilerConfiguration instanceof CCCCompilerConfiguration) {
                 CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
-                for(String path: cccCompilerConfiguration.getIncludeDirectories().getValueAsArray()){
+                for(String path: cccCompilerConfiguration.getIncludeDirectories().getValue()){
                     paths.add(path);
                 }
             }

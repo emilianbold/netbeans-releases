@@ -136,7 +136,7 @@ public class RPMPackager implements PackagerDescriptor {
 
         private void writePackagingScriptBodyRPM(BufferedWriter bw, MakeConfiguration conf) throws IOException {
             PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
-            List<PackagerFileElement> fileList = (List<PackagerFileElement>) packagingConfiguration.getFiles().getValue();
+            List<PackagerFileElement> fileList = packagingConfiguration.getFiles().getValue();
             String output = packagingConfiguration.getOutputValue();
 
             bw.write("# Copy files and create directories and links\n"); // NOI18N

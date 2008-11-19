@@ -41,10 +41,12 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -75,6 +77,7 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
 
     private final MatcherContext context;
 
+    private boolean preprocConditionKeyword;
     private int originOffset;
     private char originChar;
     private char matchingChar;
@@ -115,6 +118,23 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
                     }
                 }
                 return new int [] { originOffset, originOffset + 1 };
+            } else if (!MatcherContext.isTaskCanceled()) {
+                TokenSequence<CppTokenId> ts = BracketCompletion.cppTokenSequence(context.getDocument(), context.getSearchOffset(), false);
+                if (ts != null && ts.language() == CppTokenId.languagePreproc()) {
+                    Token<CppTokenId> token = ts.token();
+                    switch (token.id()) {
+                        case PREPROCESSOR_IF:
+                        case PREPROCESSOR_IFDEF:
+                        case PREPROCESSOR_IFNDEF:
+                        case PREPROCESSOR_ELIF:
+                        case PREPROCESSOR_ELSE:
+                        case PREPROCESSOR_ENDIF:
+                            // valid token
+                            originOffset = ts.offset();
+                            preprocConditionKeyword = true;
+                            return new int[] { originOffset, originOffset + token.length() };
+                    }
+                }
             }
             return null;
         } finally {
@@ -122,6 +142,119 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
         }
     }
 
+    private static final class ConditionalBlock {
+        private final List<Integer> directivePositions = new ArrayList<Integer>(4);
+        private final List<ConditionalBlock> nested = new ArrayList<ConditionalBlock>(4);
+        private final ConditionalBlock parent;
+
+        public ConditionalBlock(ConditionalBlock parent) {
+            this.parent = parent;
+        }
+        
+        public void addDirective(TokenSequence<CppTokenId> ppTS) {
+            directivePositions.add(ppTS.offset());
+            directivePositions.add(ppTS.offset() + ppTS.token().length());
+        }
+        
+        public ConditionalBlock startNestedBlock(TokenSequence<CppTokenId> ppTS) {
+            ConditionalBlock nestedBlock = new ConditionalBlock(this);
+            nestedBlock.addDirective(ppTS);
+            nested.add(nestedBlock);
+            return nestedBlock;
+        }
+
+        public ConditionalBlock getParent() {
+            return parent;
+        }
+        
+        public int[] toIntArray() {
+            int[] out = new int[directivePositions.size()];
+            for (int index = 0; index < directivePositions.size(); index++) {
+                out[index] = directivePositions.get(index).intValue();
+            }
+            return out;
+        }
+    }
+
+    private int[] findPreprocConditionBlocks() {
+        TokenSequence<CppTokenId> origPreprocTS = BracketCompletion.cppTokenSequence(context.getDocument(), context.getSearchOffset(), false);
+        if (origPreprocTS == null || origPreprocTS.language() != CppTokenId.languagePreproc()) {   
+            return null;
+        }     
+        TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
+        int max = Math.min(context.getDocument().getLength() - 1, context.getSearchOffset() + context.getLimitOffset() - 1);
+        List<TokenSequence<?>> ppSequences = th.tokenSequenceList(origPreprocTS.languagePath(), 0, max);
+        ConditionalBlock file = new ConditionalBlock(null);
+        ConditionalBlock current = new ConditionalBlock(file);
+        ConditionalBlock offsetContainer = null;
+        int searchOffset = context.getSearchOffset();
+        for (TokenSequence<?> ts : ppSequences) {
+            if (MatcherContext.isTaskCanceled()) {
+                return null;
+            }
+            @SuppressWarnings("unchecked")
+            TokenSequence<CppTokenId> ppTS = (TokenSequence<CppTokenId>) ts;
+            if (moveToPreprocConditionalBlockKeyword(ppTS)) {
+                switch (ppTS.token().id()) {
+                    case PREPROCESSOR_IF:
+                    case PREPROCESSOR_IFDEF:
+                    case PREPROCESSOR_IFNDEF:
+                        current = current.startNestedBlock(ppTS);
+                        break;
+                    case PREPROCESSOR_ELIF:
+                    case PREPROCESSOR_ELSE:
+                    case PREPROCESSOR_ENDIF:
+                        current.addDirective(ppTS);
+                        break;
+                    default:
+                        assert false : "unexpected token " + ts.token();
+                }
+                if (offsetContainer == null && isInToken(ppTS, searchOffset)) {
+                    offsetContainer = current;
+                }
+                if (ppTS.token().id() == CppTokenId.PREPROCESSOR_ENDIF) {
+                    current = current.getParent();
+                    if (current == null) {
+                        // unbalanced
+                        return offsetContainer == null ? null : offsetContainer.toIntArray();
+                    }
+                }
+            }
+        }
+        return offsetContainer == null ? null : offsetContainer.toIntArray();
+    }
+
+    private boolean isInToken(TokenSequence<CppTokenId> ppTS, int searchOffset) {
+        return ppTS.offset() <= searchOffset && searchOffset <= ppTS.offset() + ppTS.token().length();
+    }
+
+    private boolean moveToPreprocConditionalBlockKeyword(TokenSequence<CppTokenId> ts) {
+        ts.moveStart();
+        while (ts.moveNext()) {
+            switch (ts.token().id()) {
+                case PREPROCESSOR_START:
+                case WHITESPACE:
+                case BLOCK_COMMENT:
+                case ESCAPED_LINE:
+                case ESCAPED_WHITESPACE:
+                    // skip them
+                    break;
+                case PREPROCESSOR_IF:
+                case PREPROCESSOR_IFDEF:
+                case PREPROCESSOR_IFNDEF:
+                case PREPROCESSOR_ELIF:
+                case PREPROCESSOR_ELSE:
+                case PREPROCESSOR_ENDIF:
+                    // found
+                    return true;
+                default:
+                    // not found interested directive
+                    return false;
+            }
+        }
+        return false;
+    }
+    
     private TokenSequence<?> getTokenSequence(){
         if (sequences.isEmpty()) {
             return null;
@@ -153,6 +286,9 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
     public int[] findMatches() throws InterruptedException, BadLocationException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {
+            if (preprocConditionKeyword) {
+                return findPreprocConditionBlocks();
+            }
             TokenSequence<?> seq = getTokenSequence();
             if (seq == null) {
                 return null;

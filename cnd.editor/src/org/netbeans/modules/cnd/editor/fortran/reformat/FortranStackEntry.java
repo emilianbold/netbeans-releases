@@ -82,7 +82,7 @@ class FortranStackEntry {
             case KW_FUNCTION:
 
             case KW_MAP:
-            case KW_FILE:
+//            case KW_FILE:
 
             case KW_BLOCK:
             case KW_IF:
