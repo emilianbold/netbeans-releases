@@ -269,7 +269,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             }
 
 
-                            off.write( operation.getName() + "(");
+                            off.write( operation.getJavaName() + "(");
                             
                             Input input = operation.getInput();
                             if (input != null){
@@ -967,7 +967,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                 break;
                             }
 
-                            off.write( operation.getName() + "(");
+                            off.write( operation.getJavaName() + "(");
                             
                             Input input = operation.getInput();
                             if (input != null) {

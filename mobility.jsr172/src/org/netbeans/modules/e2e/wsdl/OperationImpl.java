@@ -31,6 +31,7 @@ public class OperationImpl implements Operation {
     private Input input;
     private Map<String, Fault> faults;
     private String documentation;
+    private String myJavaName;
     
     private List<ExtensibilityElement> extensibilityElements;
     
@@ -47,6 +48,17 @@ public class OperationImpl implements Operation {
 
     public String getName() {
         return name;
+    }
+    
+    public String getJavaName() {
+        if ( myJavaName == null ){
+            myJavaName = toJavaName( getName() );
+        }
+        return myJavaName;
+    }
+    
+    public void setJavaName( String name ) {
+        myJavaName = name;
     }
 
     public void setOutput( Output output ) {
@@ -92,4 +104,13 @@ public class OperationImpl implements Operation {
     public String getDocumentation() {
         return documentation;
     }
+    
+    public static String toJavaName( String name ){
+        if( name.length() >1 ){
+            return Character.toLowerCase(name.charAt( 0 ) ) +
+                name.substring( 1 );
+        }
+        return name;
+    }
+
 }

@@ -86,19 +86,19 @@ public class MakeSampleProjectGenerator {
     
     private MakeSampleProjectGenerator() {}
     
-    public static Set createProjectFromTemplate(final FileObject template, File projectLocation, final String name) throws IOException {
+    public static Set<DataObject> createProjectFromTemplate(final FileObject template, File projectLocation, final String name) throws IOException {
         String mainProject = (String)template.getAttribute("mainProjectLocation"); // NOI18N
         String subProjects = (String)template.getAttribute("subProjectLocations"); // NOI18N
         if (mainProject != null) {
             File mainProjectLocation = new File(projectLocation.getPath() + File.separator + mainProject);
             File[] subProjectLocations = null;
             if (subProjects != null) {
-                Vector subProjectsFiles = new Vector();
+                Vector<File> subProjectsFiles = new Vector<File>();
                 StringTokenizer st = new StringTokenizer(subProjects, ","); // NOI18N
                 while (st.hasMoreTokens()) {
                     subProjectsFiles.add(new File(projectLocation.getPath() + File.separator + st.nextToken()));
                 }
-                subProjectLocations = (File[])subProjectsFiles.toArray(new File[subProjectsFiles.size()]);
+                subProjectLocations = subProjectsFiles.toArray(new File[subProjectsFiles.size()]);
             }
             return createProjectFromTemplate(template.getInputStream(), projectLocation, mainProjectLocation, subProjectLocations, name);
         } else {
@@ -106,7 +106,7 @@ public class MakeSampleProjectGenerator {
         }
     }
     
-    public static Set createProjectFromTemplate(final URL template, File projectLocation, final String name) throws IOException {
+    public static Set<DataObject> createProjectFromTemplate(final URL template, File projectLocation, final String name) throws IOException {
         return createProjectFromTemplate(template.openStream(), projectLocation, name);
     }
     
@@ -166,7 +166,7 @@ public class MakeSampleProjectGenerator {
         }
     }
     
-    public static Set createProjectFromTemplate(InputStream inputStream, File projectLocation, final String name) throws IOException {
+    public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, File projectLocation, final String name) throws IOException {
         FileObject prjLoc;
         unzip(inputStream, projectLocation);
         prjLoc = FileUtil.toFileObject(projectLocation);
@@ -178,7 +178,7 @@ public class MakeSampleProjectGenerator {
         return Collections.singleton(DataObject.find(prjLoc));
     }
     
-    private static void addToSet(Vector set, File projectFile) throws IOException {
+    private static void addToSet(Vector<DataObject> set, File projectFile) throws IOException {
         try {
             FileObject prjLoc = null;
             prjLoc = FileUtil.toFileObject(projectFile);
@@ -190,15 +190,15 @@ public class MakeSampleProjectGenerator {
         }
     }
     
-    public static Set createProjectFromTemplate(InputStream inputStream, File projectLocation, File mainProjectLocation, File[] subProjectLocations, String name) throws IOException {
-        Vector set = new Vector();
+    public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, File projectLocation, File mainProjectLocation, File[] subProjectLocations, String name) throws IOException {
+        Vector<DataObject> set = new Vector<DataObject>();
         unzip(inputStream, projectLocation);
         addToSet(set, mainProjectLocation);
         if (subProjectLocations != null) {
             for (int i = 0; i < subProjectLocations.length; i++)
                 addToSet(set, subProjectLocations[i]);
         }
-        return new LinkedHashSet(set);
+        return new LinkedHashSet<DataObject>(set);
     }
     
     private static void changeXmlFileByNameNS(Document doc, String tagNameNS, String tagName, String newText, String regex) throws IOException {

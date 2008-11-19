@@ -70,7 +70,7 @@ public class PropertiesItemAction extends NodeAction {
             Project project = (Project)n.getValue("Project"); // NOI18N
             if (project == null)
                 return; // FIXUP
-            MakeCustomizerProvider cp = (MakeCustomizerProvider)project.getLookup().lookup( MakeCustomizerProvider.class );
+            MakeCustomizerProvider cp = project.getLookup().lookup( MakeCustomizerProvider.class );
             if (cp == null)
                 return; // FIXUP
             cp.showCustomizer(item);

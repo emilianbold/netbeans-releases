@@ -102,9 +102,9 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     private static final String[] LANGUAGE_EXT_OPTIONS = null;
     private IntConfiguration languageExt;
 
-    private VectorConfiguration includeDirectories;
+    private VectorConfiguration<String> includeDirectories;
     private BooleanConfiguration inheritIncludes;
-    private VectorConfiguration preprocessorConfiguration;
+    private VectorConfiguration<String> preprocessorConfiguration;
     private BooleanConfiguration inheritPreprocessor;
 
     // Constructors
@@ -114,9 +114,9 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
 	libraryLevel = new IntConfiguration(master != null ? master.getLibraryLevel() : null, LIBRARY_LEVEL_BINARY, LIBRARY_LEVEL_NAMES, getLibraryLevelOptions());
 	standardsEvolution = new IntConfiguration(master != null ? master.getStandardsEvolution() : null, STANDARDS_DEFAULT, STANDARDS_NAMES, getStandardsEvolutionOptions());
 	languageExt = new IntConfiguration(master != null ? master.getLanguageExt() : null, LANGUAGE_EXT_DEFAULT, LANGUAGE_EXT_NAMES, getLanguageExtOptions());
-	includeDirectories = new VectorConfiguration(master != null ? master.getIncludeDirectories() : null);
+	includeDirectories = new VectorConfiguration<String>(master != null ? master.getIncludeDirectories() : null);
 	inheritIncludes = new BooleanConfiguration(null, true, null, null);
-	preprocessorConfiguration = new VectorConfiguration(master != null ? master.getPreprocessorConfiguration() : null);
+	preprocessorConfiguration = new VectorConfiguration<String>(master != null ? master.getPreprocessorConfiguration() : null);
 	inheritPreprocessor = new BooleanConfiguration(null, true, null, null);
     }
     
@@ -189,11 +189,11 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     }
 
     // Include Directories
-    public VectorConfiguration getIncludeDirectories() {
+    public VectorConfiguration<String> getIncludeDirectories() {
 	return includeDirectories;
     }
 
-    public void setIncludeDirectories(VectorConfiguration includeDirectories) {
+    public void setIncludeDirectories(VectorConfiguration<String> includeDirectories) {
 	this.includeDirectories = includeDirectories;
     }
 
@@ -207,10 +207,10 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     }
 
     // Preprocessor
-    public VectorConfiguration getPreprocessorConfiguration() {
+    public VectorConfiguration<String> getPreprocessorConfiguration() {
 	return preprocessorConfiguration;
     }
-    public void setPreprocessorConfiguration(VectorConfiguration preprocessorConfiguration) {
+    public void setPreprocessorConfiguration(VectorConfiguration<String> preprocessorConfiguration) {
 	this.preprocessorConfiguration = preprocessorConfiguration;
     }
 

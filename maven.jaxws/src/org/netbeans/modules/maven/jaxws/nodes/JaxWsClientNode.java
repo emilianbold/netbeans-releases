@@ -52,7 +52,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
-import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportIml;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
 import org.netbeans.modules.maven.jaxws.WSUtils;
 import org.netbeans.modules.maven.jaxws.actions.JaxWsRefreshAction;
@@ -121,16 +120,26 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                 }
             });
         }
-        if (wsdlFileObject != null) {
-            setName(wsdlFileObject.getName());
-            setDisplayName(wsdlFileObject.getName());
-        }
+//        if (wsdlFileObject != null) {
+//            setName(wsdlFileObject.getName());
+//            setDisplayName(wsdlFileObject.getName());
+//        }
 //        content.add(new EditWSAttributesCookieImpl(this, jaxWsModel));
-        //setValue("wsdl-url",client.getWsdlUrl());
+//        setValue("wsdl-url",client.getWsdlUrl());
     }
     
     public WsdlModel getWsdlModel(){
         return this.getWsdlModeler().getAndWaitForWsdlModel();
+    }
+
+    @Override
+    public String getName() {
+        return wsdlFileObject.getName();
+    }
+    
+    @Override
+    public String getDisplayName() {
+        return wsdlFileObject.getName();
     }
     
     @Override
@@ -284,27 +293,6 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
         }
     }
     
-    /**
-     * refresh service information obtained from wsdl (when wsdl file was changed)
-     */
-//    public void refreshService(boolean downloadWsdl) {
-//        if (downloadWsdl) {
-//            String result = RefreshClientDialog.open(client.getWsdlUrl());
-//            if (RefreshClientDialog.CLOSE.equals(result)) return;
-//            else if (RefreshClientDialog.NO_DOWNLOAD.equals(result)) {
-//                ((JaxWsClientChildren)getChildren()).refreshKeys(false);
-//            } else {
-//                wsdlFileObject= null;
-//                ((JaxWsClientChildren)getChildren()).refreshKeys(true, result);
-//            }
-//        } else {
-//            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-//                    NbBundle.getMessage(JaxWsClientNode.class,
-//                    "HINT_RefreshClient"))); //NOI18N           
-//            ((JaxWsClientChildren)getChildren()).refreshKeys(false);
-//        }
-//    }
-    
 //    private void removeWsdlFolderContents(){
 //        FileObject wsdlFolder = getJAXWSClientSupport().getLocalWsdlFolderForClient(getName(), false);
 //        if(wsdlFolder != null){
@@ -411,7 +399,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
         return null;
     }
     
-    FileObject getLocalWsdl() {
+    private FileObject getLocalWsdl() {
         if (wsdlFileObject==null) {
             FileObject localWsdlocalFolder = jaxWsSupport.getLocalWsdlFolder(false);
             if (localWsdlocalFolder!=null) {
@@ -472,18 +460,18 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                 }
             }
             RefreshClientDialog.Result result = RefreshClientDialog.open(true, wsdlUrl);
-            if (RefreshClientDialog.Result.CLOSE.equals(result)) return;
-            else if (RefreshClientDialog.Result.REFRESH_ONLY.equals(result)) {
+            if (RefreshClientDialog.Result.CLOSE.equals(result)) {
+                return;
+            } else if (RefreshClientDialog.Result.REFRESH_ONLY.equals(result)) {
                 updateNode();               
             } else {
                 // replace local wsdl with downloaded version
-                FileObject localWsdlFolder = jaxWsSupport.getLocalWsdlFolder(false);
-                
-                if (localWsdlFolder != null) {                   
-                    String newWsdlUrl = result.getWsdlUrl(); 
+                FileObject localWsdlFolder = jaxWsSupport.getLocalWsdlFolder(false);                
+                if (localWsdlFolder != null) {
+                    String newWsdlUrl = result.getWsdlUrl();
+                    boolean wsdlUrlChanged = false;
                     if (newWsdlUrl.length() > 0 && !newWsdlUrl.equals(wsdlUrl)) {
-                        wsdlUrl = newWsdlUrl;
-                        client.setWsdlUrl(wsdlUrl);
+                        wsdlUrlChanged = true;
                     }
                     FileObject wsdlFo = null;
                     try {
@@ -508,50 +496,40 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                         DialogDisplayer.getDefault().notify(desc);
                     }
                     if (wsdlFo != null) {
-                        wsdlFileObject = wsdlFo;
                         String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
-                        // TODO: Need to update pom.xml if WSDL URL is changed 
-                        /*
-                        String[] filepaths = PluginPropertyUtils.getPluginPropertyList(project, "org.codehaus.mojo", "jaxws-maven-plugin", "wsdlFiles", "wsdlFile",
-                            "wsimport");
-                        try {
-                            ModelHandle mavenHandle = ModelHandleUtils.createModelHandle(project);
-                            if (mavenHandle != null) {
-                                Plugin jaxWsPlugin = MavenModelUtils.getJaxWSPlugin(mavenHandle);
-                                if (jaxWsPlugin == null) {
-                                    // add jax-ws plugin
-                                    jaxWsPlugin = MavenModelUtils.addJaxWSPlugin(mavenHandle);
-                                }                       
-                                if (jaxWsPlugin != null) {
-                                    // writing wsdlFile to plugin
-                                    MavenModelUtils.addWsdlFile(mavenHandle, jaxWsPlugin, relativePath);
+
+                        if (!relativePath.equals(client.getLocalWsdl())) {
+                            Project project = FileOwnerQuery.getOwner(wsdlFo);
+                            // update wsdl URL property
+                            if (wsdlUrlChanged) {
+                                wsdlUrl = newWsdlUrl;
+                                client.setWsdlUrl(wsdlUrl);
+                                Preferences prefs = ProjectUtils.getPreferences(project, JaxWsService.class,true);
+                                if (prefs != null) {
+                                    prefs.remove(wsdlFileObject.getName());
+                                    prefs.put(wsdlFo.getName(), wsdlUrl);
                                 }
-
-                                Plugin warPlugin = MavenModelUtils.getWarPlugin(mavenHandle);
-
-                                if (warPlugin == null) {
-                                    warPlugin = MavenModelUtils.addWarlugin(mavenHandle);
+                            }
+                            wsdlFileObject = wsdlFo;
+                            // update project's pom.xml
+                            try {
+                                ModelHandle mavenHandle = ModelHandleUtils.createModelHandle(project);
+                                if (mavenHandle != null) {
+                                    MavenModelUtils.renameWsdlFile(mavenHandle, client.getLocalWsdl(), relativePath);
+                                    ModelHandleUtils.writeModelHandle(mavenHandle, project);
                                 }
-
-                                ModelHandleUtils.writeModelHandle(mavenHandle, project);
-                                                  }
-
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
                         }
-                        Preferences prefs = ProjectUtils.getPreferences(project, JaxWsService.class,true);
-                        if (prefs != null) {
-                            prefs.put(wsdlFo.getName(), wsdlUrl);
-                        }
-                        */
-                        updateNode();
-                    }
-                } else {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                            NbBundle.getMessage(JaxWsClientNode.class, "MSG_RefreshClient")));        
+                    } // endif
                     updateNode();
-                }
-            }
+                } // endif
+            } //end if-else
+        } else {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(JaxWsClientNode.class, "MSG_RefreshClient")));        
+            updateNode();
         }
     }
     
