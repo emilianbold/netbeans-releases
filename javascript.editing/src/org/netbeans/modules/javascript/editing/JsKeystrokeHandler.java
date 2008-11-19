@@ -1538,7 +1538,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
 
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         JsParseResult jspr = AstUtilities.getParseResult(info);
-        if (jspr == null) {
+        if (jspr == null || jspr.getRootNode() == null) {
             return Collections.emptyList();
         }
 

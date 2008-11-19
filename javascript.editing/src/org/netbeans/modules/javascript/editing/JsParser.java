@@ -68,8 +68,10 @@ import org.mozilla.nb.javascript.Token;
 import org.netbeans.modules.csl.api.EditHistory;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -794,18 +796,20 @@ public class JsParser extends Parser {
 
         try {
             if (isJson(context)) {
-                root = parser.parseJson(source, context.snapshot.getSource().getFileObject().getNameExt(), lineno);
+                root = parser.parseJson(source, getSourceUri(context.snapshot.getSource()), lineno);
             } else {
-                root = parser.parse(source, context.snapshot.getSource().getFileObject().getNameExt(), lineno);
+                root = parser.parse(source, getSourceUri(context.snapshot.getSource()), lineno);
             }
         } catch (IllegalStateException ise) {
             // See issue #128983 for a way to get the compiler to assert for example
             runtimeException = ise;
+            ise.printStackTrace();
             //throw ise;
         } catch (RuntimeException re) {
             //notifyError(context, message, sourceName, line, lineSource, lineOffset, sanitizing, Severity.WARNING, "", null);
             // XXX TODO - record this somehow
             runtimeException = re;
+            re.printStackTrace();
             //throw re;
         }
         if (root != null) {
@@ -886,11 +890,20 @@ public class JsParser extends Parser {
     }
 
     private boolean isJson(Context context) {
-        return "json".equals(context.snapshot.getSource().getFileObject().getExt()); // NOI18N
+        FileObject f = context.snapshot.getSource().getFileObject();
+        if (f != null) {
+            return "json".equals(f.getExt()); // NOI18N
+        } else {
+            return false;
+        }
     }
     
     private JsParseResult createParseResult(Snapshot file, SchedulerEvent event, Node rootNode) {
-        return new JsParseResult(this, file, event, rootNode);
+        if (rootNode != null) {
+            return new JsParseResult(this, file, event, rootNode);
+        } else {
+            return new JsParseResult(this, file, event, null);
+        }
     }
     
     /**
@@ -1055,5 +1068,14 @@ public class JsParser extends Parser {
 
     private static interface ParseErrorHandler {
         void error(Error error);
+    }
+
+    private static String getSourceUri(Source source) {
+        FileObject f = source.getFileObject();
+        if (f != null) {
+            return f.getNameExt();
+        } else {
+            return "fileless"; //NOI18N
+        }
     }
 }

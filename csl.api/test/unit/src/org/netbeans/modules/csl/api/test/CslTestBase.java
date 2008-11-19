@@ -523,7 +523,7 @@ public abstract class CslTestBase extends NbTestCase {
 
     protected void assertDescriptionMatches(FileObject fileObject, 
             String description, boolean includeTestName, String ext) throws IOException {
-        File goldenFile = getDataFile("testfiles/" + fileObject.getName() + (includeTestName ? ("." + getName()) : "") + ext);
+        File goldenFile = getDataFile("testfiles/" + fileObject.getNameExt() + (includeTestName ? ("." + getName()) : "") + ext);
         if (!goldenFile.exists()) {
             if (!goldenFile.createNewFile()) {
                 NbTestCase.fail("Cannot create file " + goldenFile);
@@ -656,17 +656,17 @@ public abstract class CslTestBase extends NbTestCase {
         return null;
     }
 
-    public FileObject createFileWithText(String text) throws IOException {
-        FileObject workDir = FileUtil.toFileObject(getWorkDir());
-
-        String name = getName() + System.currentTimeMillis();
-        FileObject file = workDir.getFileObject(name);
-        if (file != null) {
-            file.delete();
-        }
-        file = workDir.createData(name);
-        return copyStringToFileObject(file, text);
-    }
+//    public FileObject createFileWithText(String text) throws IOException {
+//        FileObject workDir = FileUtil.toFileObject(getWorkDir());
+//
+//        String name = getName() + System.currentTimeMillis();
+//        FileObject file = workDir.getFileObject(name);
+//        if (file != null) {
+//            file.delete();
+//        }
+//        file = workDir.createData(name);
+//        return copyStringToFileObject(file, text);
+//    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Parser tests
@@ -929,7 +929,6 @@ public abstract class CslTestBase extends NbTestCase {
 
         assertEquals("Only range markers should differ", sourceText, expected);
 
-//        FileObject f = createFileWithText(sourceText);
         Document doc = getDocument(sourceText);
         Source testSource = Source.create(doc);
 
@@ -937,6 +936,7 @@ public abstract class CslTestBase extends NbTestCase {
         final boolean finalUp = up;
         final String finalExpected = expected;
         
+        enforceCaretOffset(testSource, caretPos);
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
@@ -1865,8 +1865,7 @@ public abstract class CslTestBase extends NbTestCase {
             sourceText = sourceText.substring(0, endPos) + sourceText.substring(endPos+END.length());
         }
 
-        FileObject f = createFileWithText(sourceText);
-        Document doc = getDocument(f);
+        Document doc = getDocument(sourceText);
 
         if (endPos == -1) {
             endPos = doc.getLength();

@@ -90,7 +90,7 @@ public class GsfReformatTask implements ReformatTask {
                         Collections.<Source> singleton (source),
                         new UserTask () {
                             public void run (ResultIterator resultIterator) throws ParseException {
-                                ParserResult parserResult = (ParserResult) resultIterator.getParserResult(context.caretOffset ());
+                                ParserResult parserResult = (ParserResult) resultIterator.getParserResult(context.startOffset());
                                 parserResult.toPhase (Phase.PARSED);
                                 f.reformat (context, parserResult);
                             }
