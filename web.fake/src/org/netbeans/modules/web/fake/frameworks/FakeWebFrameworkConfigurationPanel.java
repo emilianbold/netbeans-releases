@@ -56,6 +56,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.fake.modules.ModulesInstaller;
+import org.netbeans.modules.web.fake.modules.ProgressMonitor;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.awt.Mnemonics;
@@ -73,7 +74,7 @@ import org.openide.util.TaskListener;
 public class FakeWebFrameworkConfigurationPanel extends JPanel {
     private static final long serialVersionUID = 2793723169621508L;
 
-    final ModulesInstaller.ProgressMonitor progressMonitor = new DownloadProgressMonitor();
+    final ProgressMonitor progressMonitor = new DownloadProgressMonitor();
     private final FakeWebModuleExtender fakeExtender;
     private final String name;
     private final String codeNameBase;
@@ -90,7 +91,18 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
 
         initComponents();
 
-        infoLabel.setText(NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "LBL_Info", name));
+        String lblMsg = null;
+        String btnMsg = null;
+        if (fakeExtender.isModulePresent()) {
+            lblMsg = NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "LBL_EnableInfo", name);
+            btnMsg = NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "LBL_Enable");
+        } else {
+            lblMsg = NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "LBL_DownloadInfo", name);
+            btnMsg = NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "LBL_Download");
+        }
+
+        infoLabel.setText(lblMsg);
+        downloadButton.setText(btnMsg);
     }
 
     /** This method is called from within the constructor to
@@ -107,7 +119,7 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
         downloadButton = new JButton();
         progressPanel = new JPanel();
         Mnemonics.setLocalizedText(infoLabel, "dummy");
-        Mnemonics.setLocalizedText(downloadButton, NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "FakeWebFrameworkConfigurationPanel.downloadButton.text"));
+        Mnemonics.setLocalizedText(downloadButton, "dummy");
         downloadButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 downloadButtonActionPerformed(evt);
@@ -161,8 +173,14 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
                     setRealWebFrameworkProvider();
                     setRealWebFrameworkConfigurationPanel();
                 } else {
+                    String msg = null;
+                    if (fakeExtender.isModulePresent()) {
+                        msg = NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "MSG_EnableFailed");
+                    } else {
+                        msg = NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "MSG_DownloadFailed");
+                    }
                     progressPanel.removeAll();
-                    progressPanel.add(new JLabel(NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "MSG_DownloadFailed")), BorderLayout.NORTH);
+                    progressPanel.add(new JLabel(msg), BorderLayout.NORTH);
                     progressPanel.revalidate();
                     progressPanel.repaint();
                     downloadButton.setEnabled(true);
@@ -209,7 +227,7 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
     private JPanel progressPanel;
     // End of variables declaration//GEN-END:variables
 
-    private final class DownloadProgressMonitor implements ModulesInstaller.ProgressMonitor {
+    private final class DownloadProgressMonitor implements ProgressMonitor {
 
         public void onDownload(ProgressHandle progressHandle) {
             updateProgress(progressHandle);
@@ -220,6 +238,10 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
         }
 
         public void onInstall(ProgressHandle progressHandle) {
+            updateProgress(progressHandle);
+        }
+
+        public void onEnable(ProgressHandle progressHandle) {
             updateProgress(progressHandle);
         }
 

@@ -149,6 +149,10 @@ public class FakeWebModuleExtender extends WebModuleExtender implements ChangeLi
         return delegate;
     }
 
+    public boolean isModulePresent() {
+        return fakeProvider.isModulePresent();
+    }
+
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
     }

@@ -63,21 +63,26 @@ public final class FakeWebFrameworkProvider {
         assert name != null;
         assert codeNameBase != null;
 
+        boolean modulePresent = false;
         for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             if (codeNameBase.equals(mi.getCodeNameBase())) {
-                return null;
+                if (mi.isEnabled()) {
+                    return null;
+                }
+                modulePresent = true;
             }
         }
 
-        return new FakeWebFrameworkProviderImpl(name, codeNameBase);
+        return new FakeWebFrameworkProviderImpl(name, codeNameBase, modulePresent);
     }
 
     static final class FakeWebFrameworkProviderImpl extends WebFrameworkProvider {
         private final String name;
         private final String codeNameBase;
+        private final boolean modulePresent;
         private volatile WebFrameworkProvider delegate;
 
-        FakeWebFrameworkProviderImpl(String name, String codeNameBase) {
+        FakeWebFrameworkProviderImpl(String name, String codeNameBase, boolean modulePresent) {
             super(name, null);
 
             assert name != null;
@@ -85,6 +90,7 @@ public final class FakeWebFrameworkProvider {
 
             this.name = name;
             this.codeNameBase = codeNameBase;
+            this.modulePresent = modulePresent;
         }
 
         @Override
@@ -127,6 +133,10 @@ public final class FakeWebFrameworkProvider {
         public void setDelegate(WebFrameworkProvider delegate) {
             assert delegate != null;
             this.delegate = delegate;
+        }
+
+        public boolean isModulePresent() {
+            return modulePresent;
         }
     }
 }

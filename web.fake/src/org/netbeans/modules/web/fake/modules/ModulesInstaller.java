@@ -72,7 +72,6 @@ import org.openide.util.RequestProcessor;
  */
 public class ModulesInstaller {
 
-    private static final ProgressMonitor DEV_NULL_PROGRESS_MONITOR = new DevNullProgressMonitor();
     private Collection<UpdateElement> modules4install;
     private RequestProcessor.Task installTask = null;
     private OperationContainer<InstallSupport> installContainer;
@@ -89,7 +88,7 @@ public class ModulesInstaller {
         if (progressMonitor != null) {
             this.progressMonitor = progressMonitor;
         } else {
-            this.progressMonitor = DEV_NULL_PROGRESS_MONITOR;
+            this.progressMonitor = ProgressMonitor.DEV_NULL_PROGRESS_MONITOR;
         }
     }
 
@@ -113,7 +112,7 @@ public class ModulesInstaller {
             findModules.createFindingTask().waitFinished();
             success = findModules.getModulesForInstall ().isEmpty ();
         } else if (toEnable != null && !toEnable.isEmpty()) {
-            ModulesActivator enabler = new ModulesActivator(toEnable);
+            ModulesActivator enabler = new ModulesActivator(toEnable, progressMonitor);
             enabler.getEnableTask ().schedule (100);
             enabler.getEnableTask ().waitFinished();
             success = true;
@@ -264,22 +263,5 @@ public class ModulesInstaller {
 
     private static String getBundle (String key, Object... params) {
         return NbBundle.getMessage (ModulesInstaller.class, key, params);
-    }
-
-    public interface ProgressMonitor {
-        void onDownload(ProgressHandle progressHandle);
-        void onValidate(ProgressHandle progressHandle);
-        void onInstall(ProgressHandle progressHandle);
-    }
-
-    private static final class DevNullProgressMonitor implements ProgressMonitor {
-        public void onDownload(ProgressHandle progressHandle) {
-        }
-
-        public void onValidate(ProgressHandle progressHandle) {
-        }
-
-        public void onInstall(ProgressHandle progressHandle) {
-        }
     }
 }
