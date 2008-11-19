@@ -76,10 +76,29 @@ public final class RubyLineConvertorFactory implements LineConvertorFactory {
     private final boolean stdConvertors;
 
 
+    /**
+     * Creates a new convertor factory.
+     * 
+     * @param locator the locator to use.
+     * @param convertors the convertors to use (if more than one is passed, they will
+     *  be chained in the given order, i.e. the first given convertor will get to handle
+     *  lines first).
+     * @return
+     */
     public static RubyLineConvertorFactory create(FileLocator locator, LineConvertor... convertors) {
         return new RubyLineConvertorFactory(locator, false, convertors);
     }
 
+    /**
+     * Creates a new convertor factory with the standard Ruby line convertors. The
+     * standard convertors will be chained after the given (if any) convertors.
+     *
+     * @param locator the locator to use.
+     * @param convertors the convertors to use (if more than one is passed, they will
+     *  be chained in the given order, i.e. the first given convertor will get to handle
+     *  lines first).
+     * @return
+     */
     public static RubyLineConvertorFactory withStandardConvertors(FileLocator locator, LineConvertor... convertors) {
         return new RubyLineConvertorFactory(locator, true, convertors);
     }
@@ -90,6 +109,12 @@ public final class RubyLineConvertorFactory implements LineConvertorFactory {
         this.stdConvertors = stdConvertors;
     }
 
+    /**
+     * Gets the standard convertors.
+     *
+     * @param locator the locator for the convertors to use.
+     * @return
+     */
     public static List<LineConvertor> getStandardConvertors(FileLocator locator) {
         LineConvertors.FileLocator wrapper = RubyProcessCreator.wrap(locator);
         List<LineConvertor> result = new ArrayList<LineConvertor>(4);
