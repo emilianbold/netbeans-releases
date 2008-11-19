@@ -41,6 +41,9 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParserFactory;
@@ -51,11 +54,20 @@ import org.openide.util.Lookup;
  * @author Tomas Zezula
  */
 public class JavacParserFactory extends ParserFactory {
+
+    /** used by tests to ensure that all instances of parser were GCed */
+    private static final Logger TIMER = Logger.getLogger("TIMER.JavacParser");
     
     @Override
     public JavacParser createParser(final Collection<Snapshot> snapshots) {
         assert snapshots != null;
-        return new JavacParser(snapshots, false);
+        JavacParser parser = new JavacParser(snapshots, false);
+        if (TIMER.isLoggable(Level.FINE)) {
+            LogRecord rec = new LogRecord(Level.FINE, "JavacParser");
+            rec.setParameters(new Object[] { parser });
+            TIMER.log(rec);
+        }
+        return parser;
     }
 
     public JavacParser createPrivateParser (final Snapshot snapshot) {
