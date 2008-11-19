@@ -165,10 +165,16 @@ public final class SVGObjectOutline {
         return getCenter();
     }
     
-    public float[] getScalePivotPoint() {
-        return getCenter();
+    public float[] getScalePivotPoint(float x, float y) {
+        if (isAtScaleSEHandlePoint(x, y) ||
+                isAtScaleEHandlePoint(x, y) || isAtScaleSHandlePoint(x, y))
+        {
+            return m_coords[RESIZE_NW_CORNER_INDEX];
+        } else {
+            return m_coords[RESIZE_SE_CORNER_INDEX];
+        }
     }
-    
+
     public float [] getCenter() {
         checkObject();
         float sx = 0, sy = 0;
