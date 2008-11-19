@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,68 +31,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mobility.svgcore.items.form;
-
-import java.io.IOException;
-import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
-import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
+package org.netbeans.modules.mobility.svgcore.items;
 
 /**
+ *
  * @author akorostelev
  */
-public abstract class SVGFormElement extends SVGComponentDrop{
+public class Circle extends SVGBasicShape {
 
-    private static final String ID_PATTERN = PATTERN + "COMPONENT_ID" + PATTERN;//NOI18N
+    protected static final String CENTER_X_PATTERN
+                                = PATTERN + "COORDINATE_CENTER_X" + PATTERN;    //NOI18N
+    protected static final String CENTER_Y_PATTERN
+                                = PATTERN + "COORDINATE_CENTER_Y" + PATTERN;    //NOI18N
 
-    public SVGFormElement(String idPrefix, String snippetPath) {
-        assert idPrefix != null && snippetPath != null 
-                : "id prefix or snippet path == null";//NOI18N
-        myIdPrefix = idPrefix;
-        mySnippetPath = snippetPath;
-    }
+    private static final String RADIUS_PATTERN = PATTERN + "RADIUS" + PATTERN;  //NOI18N
+    private static final String SNIPPET_PATH = "circle_snippet.xml_template";   //NOI18N
 
-    /**
-     * is to be used by childs with different Ids generation aproach 
-     * (like radiobutton, which should have 2 unique Ids)
-     * @param snippetPath
-     */
-    protected SVGFormElement(String snippetPath) {
-        assert snippetPath != null 
-                : "snippet path == null";//NOI18N
-        myIdPrefix = "";
-        mySnippetPath = snippetPath;
+    private static final int DEFAULT_RADIUS = 50;
+
+    public Circle() {
+        super(SNIPPET_PATH);
     }
 
-    protected boolean doTransfer() {
-        SVGFileModel model = getSVGDataObject().getModel();
-        try {
-            String id = model.createUniqueId(myIdPrefix, false);
-            String snippet = getSnippet(id);
-            model.mergeImage(snippet, false);
-            setSelection(id);
-            return true;
-        } catch (Exception ex) {
-            SceneManager.error("Error during image merge", ex); //NOI18N
-        }
-        return false;
+    protected Circle(String snippetPath) {
+        super(snippetPath);
     }
-    
-    private String getSnippet(String id) throws IOException{
-        String text = getSnippetString();
-        String withId = text.replace(ID_PATTERN, id);
-        return replaceCoordinates(withId);
+
+    @Override
+    protected String replaceCoordinates(String text){
+        float [] point = getDropPoint();
+        float center_x = point[0] + DEFAULT_RADIUS;
+        float center_Y = point[1] + DEFAULT_RADIUS;
+
+        return text.replace(CENTER_X_PATTERN, String.valueOf(center_x))
+                .replace(CENTER_Y_PATTERN, String.valueOf(center_Y))
+                .replace(RADIUS_PATTERN, String.valueOf(DEFAULT_RADIUS));
     }
-    
-    protected String getSnippetString() throws IOException{
-        return getSnippetString(SVGFormElement.class, mySnippetPath);
-    }
-  
-    private String myIdPrefix;
-    private String mySnippetPath;
+
 }
