@@ -261,9 +261,9 @@ public class ActionProviderImpl implements ActionProvider {
             title = NbBundle.getMessage(ActionProviderImpl.class, "TXT_Debug", prj.getMavenProject().getArtifactId());
         } else if (ActionProvider.COMMAND_TEST.equals(action)) {
             title = NbBundle.getMessage(ActionProviderImpl.class, "TXT_Test", prj.getMavenProject().getArtifactId());
-        } else if (ActionProvider.COMMAND_RUN_SINGLE.equals(action)) {
+        } else if (action.startsWith(ActionProvider.COMMAND_RUN_SINGLE)) {
             title = NbBundle.getMessage(ActionProviderImpl.class, "TXT_Run", dobjName);
-        } else if (ActionProvider.COMMAND_DEBUG_SINGLE.equals(action) || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(action)) {
+        } else if (action.startsWith(ActionProvider.COMMAND_DEBUG_SINGLE) || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(action)) {
             title = NbBundle.getMessage(ActionProviderImpl.class, "TXT_Debug", dobjName);
         } else if (ActionProvider.COMMAND_TEST_SINGLE.equals(action)) {
             title = NbBundle.getMessage(ActionProviderImpl.class, "TXT_Test", dobjName);
