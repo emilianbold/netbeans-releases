@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
+import java.awt.Component;
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
@@ -62,14 +64,12 @@ import org.openide.util.NbBundle;
 public class PropertyEditorImage extends PropertyEditorUserCode implements PropertyEditorElement, PropertyEditorResourceElementListener {
 
     private JRadioButton radioButton;
-    private ImageEditorElement customEditor;
+    private ImageEditorElement element;
     private String resourcePath = ""; // NOI18N
+    private WeakReference<DesignComponent> component;
 
     private PropertyEditorImage() {
-        super(NbBundle.getMessage(PropertyEditorImage.class, "LBL_IMAGE_UCLABEL")); // NOI18N;
-        initComponents();
-
-        initElements(Collections.<PropertyEditorElement>singleton(this));
+        super(NbBundle.getMessage(PropertyEditorImage.class, "LBL_IMAGE_UCLABEL")); // NOI18N
     }
 
     public static PropertyEditorImage createInstance() {
@@ -79,18 +79,35 @@ public class PropertyEditorImage extends PropertyEditorUserCode implements Prope
     @Override
     public void cleanUp(DesignComponent component) {
         super.cleanUp(component);
-        if (customEditor != null) {
-            customEditor.clean(component);
-            radioButton = null;
+        if (element != null) {
+            element.clean(component);
+            element = null;
         }
-        customEditor = null;
+        radioButton = null;
     }
 
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorImage.class, "LBL_IMAGE_STR")); // NOI18N;
-        customEditor = new ImageEditorElement();
-        customEditor.addPropertyEditorResourceElementListener(this);
+        element = new ImageEditorElement();
+        element.addPropertyEditorResourceElementListener(this);
+    }
+
+    @Override
+    public Component getCustomEditor() {
+        DesignComponent component_ = null;
+        if (component != null && component.get() != null) {
+            component_ = component.get();
+        }
+        if (element == null) {
+            initComponents();
+            if (component_ != null) {
+                element.init(component_.getDocument());
+            }
+            initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+        element.setDesignComponentWrapper(new DesignComponentWrapper(component_));
+        return super.getCustomEditor();
     }
 
     @Override
@@ -103,11 +120,11 @@ public class PropertyEditorImage extends PropertyEditorUserCode implements Prope
 
     public void updateState(PropertyValue value) {
         if (value == null) {
-            customEditor.setDesignComponentWrapper(null);
+            element.setDesignComponentWrapper(null);
         } else if (component != null && component.get() != null) {
-            customEditor.setDesignComponentWrapper(new DesignComponentWrapper(component.get()));
+            element.setDesignComponentWrapper(new DesignComponentWrapper(component.get()));
         }
-        customEditor.setAllEnabled(true);
+        element.setAllEnabled(true);
     }
 
     public void setTextForPropertyValue(String text) {
@@ -130,7 +147,7 @@ public class PropertyEditorImage extends PropertyEditorUserCode implements Prope
     }
 
     public JComponent getCustomEditorComponent() {
-        return customEditor;
+        return element;
     }
 
     public JRadioButton getRadioButton() {
@@ -160,7 +177,7 @@ public class PropertyEditorImage extends PropertyEditorUserCode implements Prope
 
     @Override
     public void init(DesignComponent component) {
-        customEditor.init(component.getDocument());
+        this.component = new WeakReference<DesignComponent>(component);
         super.init(component);
     }
 }

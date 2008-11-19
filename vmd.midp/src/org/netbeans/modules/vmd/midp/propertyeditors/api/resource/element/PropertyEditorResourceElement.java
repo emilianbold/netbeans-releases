@@ -53,11 +53,6 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditor
  *
  * @author Anton Chechel
  */
-@Deprecated
-/**
- * Use PropertyEditorRE instead
- */
-
 public abstract class PropertyEditorResourceElement extends JPanel {
 
     private List<PropertyEditorResourceElementListener> listeners = new ArrayList<PropertyEditorResourceElementListener>(1);
@@ -144,6 +139,7 @@ public abstract class PropertyEditorResourceElement extends JPanel {
     
     public void getCustomEdiotrNotification() {  
     }
+
     
     /** This method should help to get references to the DesignComponent. User should
      * take care of passing DesignComponent references to this class by overiding and
