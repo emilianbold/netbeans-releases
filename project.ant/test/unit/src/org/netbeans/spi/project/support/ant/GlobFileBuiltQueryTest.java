@@ -48,6 +48,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -161,7 +162,8 @@ public class GlobFileBuiltQueryTest extends NbTestCase {
     private static final long WAIT = 10000;
     /** Maximum amount of time (in milliseconds) to wait for unexpected changes. */
     private static final long QUICK_WAIT = 500;
-    
+
+    @RandomlyFails // NB-Core-Build #1755
     public void testChangeFiring() throws Exception {
         MockChangeListener fooL = new MockChangeListener();
         fooStatus.addChangeListener(fooL);
