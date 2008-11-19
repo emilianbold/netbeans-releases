@@ -48,6 +48,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 
 /**
  * Measure Mobility Project Workflow Memory footprint
@@ -90,12 +91,12 @@ public class MobilityProjectWorkflow extends MemoryFootprintTestCase {
     @Override
     public void initialize() {
         super.initialize();
-        MPFootprintUtilities.closeAllDocuments();
-        MPFootprintUtilities.closeMemoryToolbar();
+        CommonUtilities.closeAllDocuments();
+        CommonUtilities.closeMemoryToolbar();
     }
     
     public ComponentOperator open(){
-        projectName = MPFootprintUtilities.createproject("Java ME", "Mobile Application", true); //NOI18N
+        projectName = CommonUtilities.createproject("Java ME", "Mobile Application", true); //NOI18N
         log("Created project name: "+projectName);
         // get opened editor
         Operator.StringComparator defaultOperator = Operator.getDefaultStringComparator();
@@ -115,7 +116,7 @@ public class MobilityProjectWorkflow extends MemoryFootprintTestCase {
         new JToggleButtonOperator(midletEditor, "Flow").pushNoBlock(); //NOI18N
         new EventTool().waitNoEvent(1500);
         
-        MPFootprintUtilities.buildproject(projectName);
+        CommonUtilities.buildProject(projectName);
         
         return null;
     }
@@ -123,7 +124,7 @@ public class MobilityProjectWorkflow extends MemoryFootprintTestCase {
     @Override
     public void close(){
         log("Deleting project: "+projectName);
-        MPFootprintUtilities.deleteProject(projectName);
+        CommonUtilities.deleteProject(projectName);
         log("Deleted...");
     }
     

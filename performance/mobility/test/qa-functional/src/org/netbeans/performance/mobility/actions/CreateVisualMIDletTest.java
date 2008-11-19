@@ -59,9 +59,10 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-
+import org.netbeans.performance.mobility.setup.MobilitySetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  * Test Create Visual MIDlet
  *
@@ -92,6 +93,18 @@ public class CreateVisualMIDletTest extends PerformanceTestCase {
         super(testName, performanceDataName);
         expectedTime = 10000;
         WAIT_AFTER_OPEN = 1000;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)
+             .addTest(CreateVisualMIDletTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testCreateVisualMIDlet() {
+        doMeasurement();
     }
 
     @Override
@@ -168,15 +181,5 @@ public class CreateVisualMIDletTest extends PerformanceTestCase {
 //         ProjectSupport.closeProject(testProjectName);
     }
 
-    public static Test suite() {
-        prepareForMeasurements();
 
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(CreateVisualMIDletTest.class)
-            .addTest("measureTime")
-            .enableModules(".*")
-            .clusters(".*")
-            .reuseUserDir(true)
-        );
-    }
 }

@@ -47,6 +47,9 @@ import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.mobility.setup.MobilitySetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -68,7 +71,21 @@ public class ProjectPropertiesDialogTest  extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
         targetProject = "MobileApplicationVisualMIDlet";
         TITLE = "MobileApplicationVisualMIDlet";
-    }    
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)
+             .addTest(ProjectPropertiesDialogTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testProjectPropertiesDialog() {
+        doMeasurement();
+    }
+
+
     @Override
     public void initialize() {
         log(":: initialize");

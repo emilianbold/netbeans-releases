@@ -43,7 +43,7 @@ package org.netbeans.performance.mobility.scanclasspath;
 
 import java.util.ArrayList;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.performance.mobility.setup.MobilitySetup;
+//import org.netbeans.performance.mobility.setup.MobilitySetup;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.LoggingScanClasspath;

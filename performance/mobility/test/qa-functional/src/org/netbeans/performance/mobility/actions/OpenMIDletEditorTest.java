@@ -51,7 +51,9 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-
+import org.netbeans.performance.mobility.setup.MobilitySetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  *
  * @author mkhramov@netbeans.org
@@ -89,6 +91,18 @@ public class OpenMIDletEditorTest extends PerformanceTestCase {
         midletName = "VisualMIDletMIDP20.java";
         expectedTime = EXPECTED_TIME;
         WAIT_AFTER_OPEN = 20000;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)
+             .addTest(OpenMIDletEditorTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testOpenMIDletEditor() {
+        doMeasurement();
     }
 
     @Override

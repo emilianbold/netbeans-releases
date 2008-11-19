@@ -54,7 +54,9 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-
+import org.netbeans.performance.mobility.setup.MobilitySetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test Close Project Property
@@ -90,8 +92,18 @@ public class CloseProjectPropertyTest extends PerformanceTestCase {
         WAIT_AFTER_OPEN=4000;
     }
     
-  
-    
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)
+             .addTest(CloseProjectPropertyTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testCloseProjectProperty() {
+        doMeasurement();
+    }
+
     @Override
     public void initialize(){
                 

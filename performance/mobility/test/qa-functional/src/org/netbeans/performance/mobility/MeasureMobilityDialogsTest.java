@@ -58,15 +58,15 @@ public class MeasureMobilityDialogsTest  {
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Mobility Dialogs suite");
         System.setProperty("suitename", MeasureMobilityDialogsTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness Mobility Dialogs suite");
 
         // TODO add some test cases
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilityDeploymentManagerDialogTest.class)
-                .addTest(MobilityDeploymentManagerDialogTest.class, "measureTime")
-                .addTest(NewConfigurationDialogTest.class, "measureTime")
-                .addTest(SecurityManagerDialogTest.class, "measureTime")
-                .addTest(QuickRunDialogTest.class, "measureTime")
-                .addTest(ProjectPropertiesDialogTest.class, "measureTime")
-                .addTest(CloseProjectPropertyTest.class, "measureTime")
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(NewConfigurationDialogTest.class)
+                // needs to be fixed .addTest(MobilityDeploymentManagerDialogTest.class, "measureTime")
+                .addTest(SecurityManagerDialogTest.class)
+                .addTest(QuickRunDialogTest.class)
+                .addTest(ProjectPropertiesDialogTest.class)
+                .addTest(CloseProjectPropertyTest.class)
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;
