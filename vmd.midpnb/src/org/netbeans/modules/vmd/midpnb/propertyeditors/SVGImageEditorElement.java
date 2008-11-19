@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
+import com.sun.perseus.j2d.Path;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -90,7 +91,6 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
     private static final String EXTENSION = "svg"; // NOI18N
     private long componentID;
     private boolean doNotFireEvent;
-    private Project project;
     private String lastDir;
     private SVGImageComponent imageView;
     private DefaultComboBoxModel comboBoxModel;
@@ -100,10 +100,9 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
     private PropertyEditorMessageAwareness messageAwareness;
 
     public void clean(DesignComponent component) {
-        project = null;
         imageView = null;
         comboBoxModel = null;
-        if (paths != null ) {
+        if (paths != null) {
             paths.clear();
             paths = null;
         }
@@ -150,10 +149,6 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
 
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         this.wrapper = wrapper;
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        if (document != null) {
-            project = ProjectUtils.getProject(document);
-        }
 
         if (wrapper == null) {
             // UI stuff
@@ -274,7 +269,9 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         }
         if (selectImage) {
             pathTextComboBox.setSelectedItem(path);
-            updatePreview();
+            if (comboBoxModel != null) {
+                updatePreview();
+            }
         }
         doNotFireEvent = false;
     }
@@ -366,7 +363,18 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         previewPanel.repaint();
     }
 
+    private Project getProject() {
+        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+        Project project = null;
+        if (document != null) {
+            project = ProjectUtils.getProject(document);
+        }
+
+        return project;
+    }
+
     private FileObject getSourceFolder() {
+        Project project = getProject();
         if (project == null) {
             throw Debug.illegalState("Current project is null"); // NOI18N
         }
@@ -457,7 +465,6 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
     @Override
     public void removeNotify() {
         paths.clear();
-        project = null;
         wrapper = null;
         super.removeNotify();
     }
@@ -620,6 +627,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
     }// </editor-fold>//GEN-END:initComponents
 
     private void chooserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooserButtonActionPerformed
+        Project project = getProject();
         JFileChooser chooser = new JFileChooser(lastDir != null ? lastDir : project.getProjectDirectory().getPath());
         chooser.setFileFilter(new ImageFilter());
         int returnVal = chooser.showOpenDialog(this);

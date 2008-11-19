@@ -57,19 +57,19 @@ import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.TableModelCD;
-import org.netbeans.modules.vmd.midpnb.propertyeditors.table.TableModelEditorElement;
 import org.netbeans.modules.vmd.midpnb.screen.display.TableItemDisplayPresenter;
 import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResourceLazyInit;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorResourceLazyInitFactory;
 
 /**
  *
@@ -128,14 +128,12 @@ public class TableItemCD extends ComponentDescriptor {
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_Title"), //NOI18N
                         PropertyEditorString.createTextFieldInstance(NbBundle.getMessage(TableItemCD.class, "LBL_TableItem_Title")), PROP_TITLE) //NOI18N
-                    .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_TableModel"), PropertyEditorResource.createInstance(new TableModelEditorElement(), //NOI18N
-                        NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NEW"), //NOI18N
-                        NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NONE"), //NOI18N
-                        NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_TableModel_UCLABEL")), PROP_MODEL) //NOI18N
+                    .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_TableModel"),
+                        PropertyEditorResourceLazyInitFactory.createTableModelPropertyEditor(), PROP_MODEL) //NOI18N
                     .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_ShowBorders"), PropertyEditorBooleanUC.createInstance(), PROP_BORDERS) //NOI18N   
-                    .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_TitleFont"), PropertyEditorResource.createFontPropertyEditor(), PROP_TITLE_FONT) //NOI18N
-                    .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_HeadersFont"), PropertyEditorResource.createFontPropertyEditor(), PROP_HEADERS_FONT) //NOI18N
-                    .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_ValuesFont"), PropertyEditorResource.createFontPropertyEditor(), PROP_VALUES_FONT); //NOI18N
+                    .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_TitleFont"), PropertyEditorResourceLazyInit.createFontPropertyEditor(), PROP_TITLE_FONT) //NOI18N
+                    .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_HeadersFont"), PropertyEditorResourceLazyInit.createFontPropertyEditor(), PROP_HEADERS_FONT) //NOI18N
+                    .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_ValuesFont"), PropertyEditorResourceLazyInit.createFontPropertyEditor(), PROP_VALUES_FONT); //NOI18N
     }
 
     private Presenter createSetterPresenter () {

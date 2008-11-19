@@ -38,9 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -75,14 +75,11 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
 
     private static final String INDEFINITE_TEXT = NbBundle.getMessage(PropertyEditorGaugeMaxValue.class, "LBL_MAX_VALUE_INDEFINITE_TXT"); // NOI18N
     private static final String INDEFINITE_NUM_TEXT = String.valueOf(GaugeCD.VALUE_INDEFINITE);
-
     private CustomEditor customEditor;
     private JRadioButton radioButton;
 
     private PropertyEditorGaugeMaxValue() {
         super(NbBundle.getMessage(PropertyEditorGaugeMaxValue.class, "LBL_GAUGE_MAX_VALUE_UCLABEL")); // NOI18N
-        initComponents();
-        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     public static final PropertyEditorGaugeMaxValue createInstance() {
@@ -107,6 +104,16 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
 
     public JComponent getCustomEditorComponent() {
         return customEditor;
+    }
+
+    @Override
+    public Component getCustomEditor() {
+        if (customEditor == null) {
+            initComponents();
+            initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+
+        return super.getCustomEditor();
     }
 
     public JRadioButton getRadioButton() {
@@ -217,7 +224,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
             initComponents();
         }
 
-         void cleanUp() {
+        void cleanUp() {
             radioButton.removeActionListener(this);
             textField = null;
             foreverCheckBox = null;
@@ -230,16 +237,16 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
             textField = new JTextField();
             textField.getDocument().addDocumentListener(this);
             textField.addFocusListener(this);
-            textField.setPreferredSize(new Dimension (100, textField.getPreferredSize().height));
-            add(textField, new GridBagConstraints (0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets (0, 0, 0, 0), 0, 0));
+            textField.setPreferredSize(new Dimension(100, textField.getPreferredSize().height));
+            add(textField, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
             foreverCheckBox = new JCheckBox();
             Mnemonics.setLocalizedText(foreverCheckBox, NbBundle.getMessage(PropertyEditorGaugeMaxValue.class, "LBL_MAX_VALUE_INDEFINITE")); // NOI18N
             foreverCheckBox.addActionListener(this);
             foreverCheckBox.addFocusListener(this);
-            add(foreverCheckBox, new GridBagConstraints (1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets (0, 6, 0, 0), 0, 0));
-            
-            add (new JPanel (), new GridBagConstraints (2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets (0, 0, 0, 0), 0, 0));
+            add(foreverCheckBox, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 6, 0, 0), 0, 0));
+
+            add(new JPanel(), new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
         }
 
         public void setText(String text) {
