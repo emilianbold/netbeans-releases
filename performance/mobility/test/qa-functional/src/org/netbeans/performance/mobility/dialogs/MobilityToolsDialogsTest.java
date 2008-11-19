@@ -39,33 +39,70 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.mobility.window;
+package org.netbeans.performance.mobility.dialogs;
 
 import org.netbeans.jellytools.Bundle;
-
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class MobilityDeploymentManagerDialog extends  MobilityToolsDialogs {
+public class MobilityToolsDialogsTest  extends PerformanceTestCase {
+    
+    private NbDialogOperator manager;
+    protected String cmdName, wzdName;
+    private String toolsMenuPath;
+    
     /**
-     * Creates a new instance of MobilityDeploymentManagerDialog
+     * Creates a new instance of MobilityToolsDialogs
      * @param testName the name of the test
-     */
-    public MobilityDeploymentManagerDialog(String testName) {
+     */    
+    public MobilityToolsDialogsTest(String testName) {
         super(testName);
-        cmdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.deployment.Bundle", "Title_DeploymentManager");        
-
+        expectedTime = WINDOW_OPEN;  
     }
-
     /**
-     * Creates a new instance of MobilityDeploymentManagerDialog
+     * Creates a new instance of MobilityToolsDialogs
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public MobilityDeploymentManagerDialog(String testName, String performanceDataName) {
+    public MobilityToolsDialogsTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        cmdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.deployment.Bundle", "Title_DeploymentManager");        
+        expectedTime = WINDOW_OPEN;          
+    }
+    @Override
+    public void initialize() {
+        log(":: initialize");
+        //toolsMenuPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|";
+        toolsMenuPath = Bundle.getStringTrimmed("org.openide.actions.Bundle", "CTL_Tools") + "|";               
+
+        if (wzdName == null) wzdName = cmdName;
+    }    
+    public void prepare() {
+        log(":: prepare");
+    }
+    
+    public ComponentOperator open() {
+        log(":: open");
+        new ActionNoBlock(toolsMenuPath+cmdName,null).performMenu();
+        manager = new NbDialogOperator(wzdName);
+        return null;
+    }
+    
+    @Override
+    public void close() {
+        log(":: close");
+        if (manager != null ) {
+            manager.close();
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        log(":: shutdown");
     }
 }

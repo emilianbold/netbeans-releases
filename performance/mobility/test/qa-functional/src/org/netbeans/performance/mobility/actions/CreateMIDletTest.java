@@ -40,43 +40,48 @@
  */
 package org.netbeans.performance.mobility.actions;
 
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.WizardOperator;
+import junit.framework.Test;
+import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JTextComponentOperator;
+
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
-
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
- * Test Open Mobile project
+ * Test Create MIDlet
  *
  * @author  rashid@netbeans.org
  */
-public class OpenMobileProject extends PerformanceTestCase {
+public class CreateMIDletTest extends PerformanceTestCase {
 
-    private static String projectName = "MobileApplicationVisualMIDlet_Open";
-    private JButtonOperator openButton;
+    private NewFileNameLocationStepOperator location;
+    private static String testProjectName = "MobileApplicationVisualMIDlet";
 
     /**
-     * Creates a new instance of OpenMobileProject
+     * Creates a new instance of CreateVisualMIDlet
      * @param testName the name of the test
      */
-    public OpenMobileProject(String testName) {
+    public CreateMIDletTest(String testName) {
         super(testName);
         expectedTime = 10000;
         WAIT_AFTER_OPEN = 4000;
     }
 
     /**
-     * Creates a new instance of OpenMobileProject
+     * Creates a new instance of CreateMIDlet
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public OpenMobileProject(String testName, String performanceDataName) {
+    public CreateMIDletTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
         WAIT_AFTER_OPEN = 4000;
@@ -84,32 +89,51 @@ public class OpenMobileProject extends PerformanceTestCase {
 
     @Override
     public void initialize() {
+        //ProjectSupport.openProject(CommonUtilities.getProjectsDir() + testProjectName);
+        new CloseAllDocumentsAction().performAPI();
+        
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_EXPLORER_TREE_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_DIFF_SIDEBAR_FILTER);
     }
 
     public void prepare() {
-        new ActionNoBlock("File|Open Project...", null).perform(); //NOI18N
 
-        WizardOperator opd = new WizardOperator("Open Project"); //NOI18N
+        Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
+        pNode.select();
 
-        JTextComponentOperator path = new JTextComponentOperator(opd, 1);
-        openButton = new JButtonOperator(opd, "Open Project"); //NOI18N
+        // Workaround for issue 143497
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
+        NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+        wizard.selectCategory("MIDP"); //NOI18N
+        wizard.selectFileType("MIDlet"); //NOI18N
+        wizard.next();
 
-        String paths = CommonUtilities.getProjectsDir() + projectName;
-        path.setText(paths);
+        new EventTool().waitNoEvent(1000);
+        location = new NewFileNameLocationStepOperator();
+        location.txtObjectName().setText("MIDlet_" + System.currentTimeMillis());
     }
 
     public ComponentOperator open() {
-        openButton.pushNoBlock();
+        location.finish();
         return null;
     }
 
     @Override
-    public void close() {
-        ProjectSupport.closeProject(projectName);
-
+    protected void shutdown() {
+        //ProjectSupport.closeProject(testProjectName);
     }
 
-//    public static void main(java.lang.String[] args) {
-//        junit.textui.TestRunner.run(new OpenMobileProject("measureTime"));
-//    }
+    public static Test suite() {
+        prepareForMeasurements();
+
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(CreateMIDletTest.class)
+            .addTest("measureTime")
+            .enableModules(".*")
+            .clusters(".*")
+            .reuseUserDir(true)
+        );
+    }
 }

@@ -39,11 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.mobility.window;
+package org.netbeans.performance.mobility.dialogs;
 
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.PropertiesAction;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
@@ -51,58 +52,36 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;
  *
  * @author mkhramov@netbeans.org
  */
-public class MobilityToolsDialogs  extends PerformanceTestCase {
+public class ProjectPropertiesDialogTest  extends PerformanceTestCase {
+
+    private Node testNode;
+    private String targetProject, TITLE;
     
-    private NbDialogOperator manager;
-    protected String cmdName, wzdName;
-    private String toolsMenuPath;
-    
-    /**
-     * Creates a new instance of MobilityToolsDialogs
-     * @param testName the name of the test
-     */    
-    public MobilityToolsDialogs(String testName) {
+    public ProjectPropertiesDialogTest(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;  
+        expectedTime = WINDOW_OPEN;
+        targetProject = "MobileApplicationVisualMIDlet";
+        TITLE = "MobileApplicationVisualMIDlet";
     }
-    /**
-     * Creates a new instance of MobilityToolsDialogs
-     * @param testName the name of the test
-     * @param performanceDataName measured values will be saved under this name
-     */
-    public MobilityToolsDialogs(String testName, String performanceDataName) {
+    public ProjectPropertiesDialogTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;          
-    }
+        expectedTime = WINDOW_OPEN;
+        targetProject = "MobileApplicationVisualMIDlet";
+        TITLE = "MobileApplicationVisualMIDlet";
+    }    
     @Override
     public void initialize() {
         log(":: initialize");
-        //toolsMenuPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|";
-        toolsMenuPath = Bundle.getStringTrimmed("org.openide.actions.Bundle", "CTL_Tools") + "|";               
-
-        if (wzdName == null) wzdName = cmdName;
-    }    
+        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(targetProject);        
+    }
     public void prepare() {
         log(":: prepare");
     }
-    
+
     public ComponentOperator open() {
         log(":: open");
-        new ActionNoBlock(toolsMenuPath+cmdName,null).performMenu();
-        manager = new NbDialogOperator(wzdName);
-        return null;
-    }
-    
-    @Override
-    public void close() {
-        log(":: close");
-        if (manager != null ) {
-            manager.close();
-        }
+        new PropertiesAction().performPopup(testNode);
+        return new NbDialogOperator(TITLE);
     }
 
-    @Override
-    public void shutdown() {
-        log(":: shutdown");
-    }
 }

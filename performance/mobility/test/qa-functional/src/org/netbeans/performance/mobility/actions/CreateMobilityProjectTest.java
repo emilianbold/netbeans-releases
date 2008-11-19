@@ -48,14 +48,13 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
  * Test create CreateMobilityProject
  *
  * @author  rashid@netbeans.org, mmirilovic@netbeans.org, mrkam@netbeans.org
  */
-public class CreateMobilityProject extends PerformanceTestCase {
+public class CreateMobilityProjectTest extends PerformanceTestCase {
 
     private NewProjectNameLocationStepOperator wizard_location;
     private String category,  project,  project_name,  project_type;
@@ -65,7 +64,7 @@ public class CreateMobilityProject extends PerformanceTestCase {
      * Creates a new instance of CreateMobilityProject
      * @param testName the name of the test
      */
-    public CreateMobilityProject(String testName) {
+    public CreateMobilityProjectTest(String testName) {
         super(testName);
         expectedTime = 10000;
         WAIT_AFTER_OPEN = 10000;
@@ -76,7 +75,7 @@ public class CreateMobilityProject extends PerformanceTestCase {
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public CreateMobilityProject(String testName, String performanceDataName) {
+    public CreateMobilityProjectTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
         WAIT_AFTER_OPEN = 10000;
@@ -131,7 +130,7 @@ public class CreateMobilityProject extends PerformanceTestCase {
 
     @Override
     public void close() {
-        ProjectSupport.closeProject(project_name);
+//        ProjectSupport.closeProject(project_name);
         new EventTool().waitNoEvent(2000);
     }
 

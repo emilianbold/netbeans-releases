@@ -42,7 +42,7 @@
 package org.netbeans.performance.mobility;
 
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.mobility.window.*;
+import org.netbeans.performance.mobility.dialogs.*;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
@@ -60,13 +60,13 @@ public class MeasureMobilityDialogsTest  {
         System.setProperty("suitename", MeasureMobilityDialogsTest.class.getCanonicalName());
 
         // TODO add some test cases
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilityDeploymentManagerDialog.class)
-                .addTest(MobilityDeploymentManagerDialog.class, "measureTime")
-                .addTest(NewConfigurationDialog.class, "measureTime")
-                .addTest(SecurityManagerDialog.class, "measureTime")
-                .addTest(QuickRunDialog.class, "measureTime")
-                .addTest(ProjectPropertiesDialog.class, "measureTime")
-                .addTest(CloseProjectProperty.class, "measureTime")
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilityDeploymentManagerDialogTest.class)
+                .addTest(MobilityDeploymentManagerDialogTest.class, "measureTime")
+                .addTest(NewConfigurationDialogTest.class, "measureTime")
+                .addTest(SecurityManagerDialogTest.class, "measureTime")
+                .addTest(QuickRunDialogTest.class, "measureTime")
+                .addTest(ProjectPropertiesDialogTest.class, "measureTime")
+                .addTest(CloseProjectPropertyTest.class, "measureTime")
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;

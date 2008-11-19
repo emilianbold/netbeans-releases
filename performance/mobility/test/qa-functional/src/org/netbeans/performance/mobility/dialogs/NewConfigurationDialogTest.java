@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.mobility.window;
+package org.netbeans.performance.mobility.dialogs;
 
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -50,47 +50,51 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 /**
  *
- * @author mkhramov@netbeans.org
+ * @author Administrator
  */
-public class QuickRunDialog extends PerformanceTestCase {
-    
+public class NewConfigurationDialogTest  extends PerformanceTestCase {
+
     private Node testNode;    
     private String targetProject, TITLE;
     
-    public QuickRunDialog(String testName) {
+    public NewConfigurationDialogTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        targetProject = "MobileApplicationVisualMIDlet";
+        targetProject = "MobileApplicationVisualMIDlet";              
+        
     }
-    public QuickRunDialog(String testName, String performanceDataName) {
+    public NewConfigurationDialogTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-        targetProject = "MobileApplicationVisualMIDlet";        
+        targetProject = "MobileApplicationVisualMIDlet";              
     }
     @Override
     public void initialize() {
         log(":: initialize");
-        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(targetProject);         
+        String projectConfNodeName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.mobility.project.ui.Bundle", "LBL_ProjectConfigurations");
+        testNode = new Node(new ProjectsTabOperator().getProjectRootNode(targetProject),projectConfNodeName);
         testNode.select();
+        
     }
-    
     public void prepare() {
         log(":: prepare");
+        testNode.select();
     }
 
     public ComponentOperator open() {
         log(":: open");
-        String cmdName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.mobility.project.ui.Bundle", "LBL_RunWithAction_Name");
+        String cmdName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.mobility.project.ui.customizer.Bundle", "LBL_VCS_AddConfiguration");
+        log(" Invoking '"+cmdName+"' command");
         new ActionNoBlock(null,cmdName).performPopup(testNode);
-        return new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.mobility.project.Bundle", "Title_QuickRun"));        
+        return new NbDialogOperator(cmdName);
     }
+    
     @Override
     public void close() {
         log(":: close");
-        ((NbDialogOperator)testedComponentOperator).close();
+        if(testedComponentOperator != null) {
+            ((NbDialogOperator)testedComponentOperator).close();
+        }
     }
-    @Override
-    public void shutdown() {
-        log(":: shutdown");
-    }
+
 }

@@ -39,39 +39,58 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.mobility.window;
+package org.netbeans.performance.mobility.dialogs;
 
-import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class SecurityManagerDialog  extends MobilityToolsDialogs {
-
-    /**
-     * Creates a new instance of SecurityManagerDialog
-     * @param testName the name of the test
-     */
-    public SecurityManagerDialog(String testName) {
+public class QuickRunDialogTest extends PerformanceTestCase {
+    
+    private Node testNode;    
+    private String targetProject, TITLE;
+    
+    public QuickRunDialogTest(String testName) {
         super(testName);
-        // "Keystores"
-        cmdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.security.Bundle", "NAME_SecurityManagerAction");  
-        // "Keystores manager"        
-        wzdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.security.Bundle", "TITLE_SecurityManager");
+        expectedTime = WINDOW_OPEN;
+        targetProject = "MobileApplicationVisualMIDlet";
     }
-    /**
-     * Creates a new instance of SecurityManagerDialog
-     * @param testName the name of the test
-     * @param performanceDataName measured values will be saved under this nam 
-     */
-    public SecurityManagerDialog(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        // "Keystores"
-        cmdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.security.Bundle", "NAME_SecurityManagerAction");  
-        // "Keystores manager"        
-        wzdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.security.Bundle", "TITLE_SecurityManager");
+    public QuickRunDialogTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+        expectedTime = WINDOW_OPEN;
+        targetProject = "MobileApplicationVisualMIDlet";        
+    }
+    @Override
+    public void initialize() {
+        log(":: initialize");
+        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(targetProject);         
+        testNode.select();
+    }
+    
+    public void prepare() {
+        log(":: prepare");
     }
 
-
+    public ComponentOperator open() {
+        log(":: open");
+        String cmdName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.mobility.project.ui.Bundle", "LBL_RunWithAction_Name");
+        new ActionNoBlock(null,cmdName).performPopup(testNode);
+        return new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.mobility.project.Bundle", "Title_QuickRun"));        
+    }
+    @Override
+    public void close() {
+        log(":: close");
+        ((NbDialogOperator)testedComponentOperator).close();
+    }
+    @Override
+    public void shutdown() {
+        log(":: shutdown");
+    }
 }

@@ -40,42 +40,42 @@
  */
 package org.netbeans.performance.mobility.actions;
 
+import javax.swing.JComponent;
 import org.netbeans.performance.mobility.MPUtilities;
 import org.netbeans.performance.mobility.window.MIDletEditorOperator;
+
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 /**
  *
- * @author mkhramov@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
-public class OpenMIDletEditor extends PerformanceTestCase {
+public class SwitchConfigurationTest extends PerformanceTestCase {
 
     private Node openNode;
-    private String targetProject;
-    private String midletName;
-    private ProjectsTabOperator pto;
-    // Since Loading Document label is shown it is okay to load document for 10 sec
-    public final static long EXPECTED_TIME = 10000;
-    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
+    private ProjectRootNode projectNode;
+    private String targetProject,  midletName;
+    private WizardOperator propertiesWindow;
+    private MIDletEditorOperator editor;
+    private LoggingRepaintManager.RegionFilter filter;
 
     /**
      * Creates a new instance of OpenMIDletEditor
      * @param testName the name of the test
      */
-    public OpenMIDletEditor(String testName) {
+    public SwitchConfigurationTest(String testName) {
         super(testName);
-        targetProject = "MobileApplicationVisualMIDlet";
-        midletName = "VisualMIDletMIDP20.java";
-        expectedTime = EXPECTED_TIME;
-        WAIT_AFTER_OPEN = 20000;
+        expectedTime = WINDOW_OPEN;
     }
 
     /**
@@ -83,81 +83,90 @@ public class OpenMIDletEditor extends PerformanceTestCase {
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public OpenMIDletEditor(String testName, String performanceDataName) {
+    public SwitchConfigurationTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        targetProject = "MobileApplicationVisualMIDlet";
-        midletName = "VisualMIDletMIDP20.java";
-        expectedTime = EXPECTED_TIME;
-        WAIT_AFTER_OPEN = 20000;
+        expectedTime = WINDOW_OPEN;
     }
 
     @Override
     public void initialize() {
         log(":: initialize");
+        targetProject = "MobileApplicationSwitchConfiguration";
+        midletName = "Midlet.java";
         EditorOperator.closeDiscardAll();
-        pto = ProjectsTabOperator.invoke();
     }
 
     public void prepare() {
         log(":: prepare");
-        String documentPath = MPUtilities.SOURCE_PACKAGES + "|" + "allComponents" + "|" + midletName;
-
-        long nodeTimeout = pto.getTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
-        pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
-
-        try {
-            openNode = new Node(pto.getProjectRootNode(targetProject), documentPath);
-        } catch (TimeoutExpiredException ex) {
-            pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", nodeTimeout);
-            throw new Error("Cannot find expected node because of Timeout");
-        }
-        pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", nodeTimeout);
+        String documentPath = MPUtilities.SOURCE_PACKAGES + "|" + "switchit" + "|" + midletName;
+        projectNode = new ProjectsTabOperator().getProjectRootNode(targetProject);
+        openNode = new Node(projectNode, documentPath);
 
         if (this.openNode == null) {
             throw new Error("Cannot find expected node ");
         }
-        openNode.select();
+
+        new OpenAction().perform(openNode);
+        editor = MIDletEditorOperator.findMIDletEditorOperator(midletName);
+
+        projectNode.properties();
+        propertiesWindow = new WizardOperator(targetProject);
+
+        filter = new LoggingRepaintManager.RegionFilter() {
+            boolean done = false;
+
+            public boolean accept(JComponent comp) {
+                if (done) { 
+                    return false;
+                }
+                if (comp.getClass().getName().equals("org.netbeans.modules.editor.errorstripe.AnnotationView")) {
+                    done = true;
+                    return false;
+                }
+                return true;
+            }
+
+            public String getFilterName() {
+                return "Filters out all Regions starting with org.netbeans.modules.editor.errorstripe.AnnotationView";
+            }
+        };
+        repaintManager().addRegionFilter(filter);
     }
 
     public ComponentOperator open() {
         log(":: open");
-        JPopupMenuOperator popup = this.openNode.callPopup();
-        if (popup == null) {
-            throw new Error("Cannot get context menu for node ");
-        }
-        log("   -- after popup invocation --");
-        popup.getTimeouts().setTimeout("JMenuOperator.PushMenuTimeout", 90000);
-        try {
-            popup.pushMenu(OPEN);
-        } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            throw new Error("Cannot push menu item ");
-        }
+        JComboBoxOperator combo = new JComboBoxOperator(propertiesWindow);
+        combo.selectItem(1); // NotDefaultConfiguration
 
+        propertiesWindow.ok();
         return MIDletEditorOperator.findMIDletEditorOperator(midletName);
     }
 
     @Override
     public void close() {
         log(":: close");
-        if (testedComponentOperator != null) {
-            new Thread("Question dialog discarder") {
+        repaintManager().removeRegionFilter(filter);
+        if (projectNode != null) {
+            projectNode.properties();
+            propertiesWindow = new WizardOperator(targetProject);
 
-                @Override
-                public void run() {
-                    try {
-                        new JButtonOperator(new JDialogOperator("Question"), "Discard").push();
-                    } catch (Exception e) {
-                        // There is no need to care about this exception as this dialog is optional 
-                        e.printStackTrace();
-                    }
-                }
-            }.start();
-            ((MIDletEditorOperator) testedComponentOperator).close();
+            // switch back to default config
+            JComboBoxOperator combo = new JComboBoxOperator(propertiesWindow, 0);
+            combo.selectItem(0); //DefaultConfiguration
+
+            propertiesWindow.ok();
         }
     }
 
     @Override
     public void shutdown() {
         log("::shutdown");
+        if (editor != null) {
+            editor.close();
+        }
     }
+
+//    public static void main(java.lang.String[] args) {
+//        junit.textui.TestRunner.run(new SwitchConfiguration("measureTime"));
+//    }
 }

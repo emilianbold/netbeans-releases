@@ -39,49 +39,33 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.mobility.window;
+package org.netbeans.performance.mobility.dialogs;
 
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.PropertiesAction;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.jellytools.Bundle;
+
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class ProjectPropertiesDialog  extends PerformanceTestCase {
-
-    private Node testNode;
-    private String targetProject, TITLE;
-    
-    public ProjectPropertiesDialog(String testName) {
+public class MobilityDeploymentManagerDialogTest extends  MobilityToolsDialogsTest {
+    /**
+     * Creates a new instance of MobilityDeploymentManagerDialog
+     * @param testName the name of the test
+     */
+    public MobilityDeploymentManagerDialogTest(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;
-        targetProject = "MobileApplicationVisualMIDlet";
-        TITLE = "MobileApplicationVisualMIDlet";
+        cmdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.deployment.Bundle", "Title_DeploymentManager");        
+
     }
-    public ProjectPropertiesDialog(String testName, String performanceDataName) {
+
+    /**
+     * Creates a new instance of MobilityDeploymentManagerDialog
+     * @param testName the name of the test
+     * @param performanceDataName measured values will be saved under this name
+     */
+    public MobilityDeploymentManagerDialogTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;
-        targetProject = "MobileApplicationVisualMIDlet";
-        TITLE = "MobileApplicationVisualMIDlet";
-    }    
-    @Override
-    public void initialize() {
-        log(":: initialize");
-        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(targetProject);        
+        cmdName = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.deployment.Bundle", "Title_DeploymentManager");        
     }
-    public void prepare() {
-        log(":: prepare");
-    }
-
-    public ComponentOperator open() {
-        log(":: open");
-        new PropertiesAction().performPopup(testNode);
-        return new NbDialogOperator(TITLE);
-    }
-
 }

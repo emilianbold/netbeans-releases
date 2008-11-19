@@ -38,110 +38,77 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.performance.mobility.actions;
 
-package org.netbeans.performance.mobility.window;
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.WizardOperator;
 
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JTextComponentOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
+
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
-
 
 /**
- * Test Close Project Property
+ * Test Open Mobile project
  *
  * @author  rashid@netbeans.org
  */
-public class CloseProjectProperty extends PerformanceTestCase {
+public class OpenMobileProjectTest extends PerformanceTestCase {
 
-    
-      private NbDialogOperator jdo ;
-      private int index;
-        
-    private static String testProjectName = "MobileApplicationVisualMIDlet";  
-    
+    private static String projectName = "MobileApplicationVisualMIDlet_Open";
+    private JButtonOperator openButton;
+
     /**
-     * Creates a new instance of CloseProjectProperty
+     * Creates a new instance of OpenMobileProject
      * @param testName the name of the test
      */
-    public CloseProjectProperty(String testName) {
+    public OpenMobileProjectTest(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=4000;
+        WAIT_AFTER_OPEN = 4000;
     }
-    
+
     /**
-     * Creates a new instance of CloseProjectProperty
+     * Creates a new instance of OpenMobileProject
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public CloseProjectProperty(String testName, String performanceDataName) {
+    public OpenMobileProjectTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=4000;
-    }
-    
-  
-    
-    @Override
-    public void initialize(){
-                
-        ProjectSupport.openProject(CommonUtilities.getProjectsDir() + testProjectName);
-        new CloseAllDocumentsAction().performAPI();
-       new EventTool().waitNoEvent(1000);
-
-    }
-    
-    public void prepare(){
-  
-        Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
-        pNode.select();
-        pNode.performPopupAction("Properties");
-         
-       jdo = new NbDialogOperator(testProjectName);
-       JTreeOperator cattree = new JTreeOperator(jdo);       
-       Node cNode = new Node(cattree,"Abilities") ;
-       cNode.select();
-        
-       JButtonOperator addButton = new JButtonOperator(jdo,"Add");
-       addButton.pushNoBlock();
-
-       NbDialogOperator add_abil = new NbDialogOperator("Add Ability");
-       JComboBoxOperator abilityCombo = new JComboBoxOperator(add_abil); 
-       abilityCombo.clearText();
-       abilityCombo.typeText("Ability_"+System.currentTimeMillis());
-       JButtonOperator abil_okButton = new JButtonOperator(add_abil,"OK");
-       abil_okButton.push();
-       
-    }
-    
-    public ComponentOperator open(){
- 
-       JButtonOperator okButton = new JButtonOperator(jdo,"OK");
-       okButton.push();
-       return null;
-    }
-    
-    @Override
-    public void close(){
+        WAIT_AFTER_OPEN = 4000;
     }
 
     @Override
-    protected void shutdown() {
-         ProjectSupport.closeProject(testProjectName);
+    public void initialize() {
     }
-    
+
+    public void prepare() {
+        new ActionNoBlock("File|Open Project...", null).perform(); //NOI18N
+
+        WizardOperator opd = new WizardOperator("Open Project"); //NOI18N
+
+        JTextComponentOperator path = new JTextComponentOperator(opd, 1);
+        openButton = new JButtonOperator(opd, "Open Project"); //NOI18N
+
+        String paths = CommonUtilities.getProjectsDir() + projectName;
+        path.setText(paths);
+    }
+
+    public ComponentOperator open() {
+        openButton.pushNoBlock();
+        return null;
+    }
+
+    @Override
+    public void close() {
+//        ProjectSupport.closeProject(projectName);
+
+    }
+
 //    public static void main(java.lang.String[] args) {
-//        junit.textui.TestRunner.run(new CloseProjectProperty("measureTime"));
+//        junit.textui.TestRunner.run(new OpenMobileProject("measureTime"));
 //    }
 }
