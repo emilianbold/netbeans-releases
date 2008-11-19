@@ -58,6 +58,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.CharBuffer;
 import java.util.Arrays;
@@ -159,6 +160,7 @@ import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.csl.hints.infrastructure.HintsSettings;
 import org.netbeans.modules.csl.hints.infrastructure.Pair;
 import org.netbeans.modules.csl.spi.DefaultError;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -371,19 +373,19 @@ public abstract class CslTestBase extends NbTestCase {
         return getDocument(s, mimeType, language);
     }
     
-    public static BaseDocument createDocument(String s) {
-        try {
-            BaseDocument doc = new BaseDocument(null, false);
-            doc.insertString(0, s, null);
-
-            return doc;
-        }
-        catch (Exception ex){
-            fail(ex.toString());
-            return null;
-        }
-    }
-
+//    public static BaseDocument createDocument(String s) {
+//        try {
+//            BaseDocument doc = new BaseDocument(null, false);
+//            doc.insertString(0, s, null);
+//
+//            return doc;
+//        }
+//        catch (Exception ex){
+//            fail(ex.toString());
+//            return null;
+//        }
+//    }
+//
     protected BaseDocument getDocument(String s) {
         String mimeType = getPreferredMimeType();
         assertNotNull("You must implement " + getClass().getName() + ".getPreferredMimeType()", mimeType);
@@ -927,8 +929,9 @@ public abstract class CslTestBase extends NbTestCase {
 
         assertEquals("Only range markers should differ", sourceText, expected);
 
-        FileObject f = createFileWithText(sourceText);
-        Source testSource = Source.create(f);
+//        FileObject f = createFileWithText(sourceText);
+        Document doc = getDocument(sourceText);
+        Source testSource = Source.create(doc);
 
         final String finalSourceText = sourceText;
         final boolean finalUp = up;
@@ -937,7 +940,7 @@ public abstract class CslTestBase extends NbTestCase {
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
-                assertTrue(r instanceof ParserResult);
+                assertTrue("Expecting ParserResult, but got " + r, r instanceof ParserResult);
                 ParserResult pr = (ParserResult) r;
 
                 KeystrokeHandler completer = getKeystrokeHandler();
@@ -1134,6 +1137,11 @@ public abstract class CslTestBase extends NbTestCase {
         FileObject f = getTestFile(relFilePath);
         Source testSource = Source.create(f);
 
+        if (caretLine != null) {
+            int caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(testSource, caretOffset);
+        }
+
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
@@ -1142,11 +1150,6 @@ public abstract class CslTestBase extends NbTestCase {
                 
                 SemanticAnalyzer analyzer = getSemanticAnalyzer();
                 assertNotNull("getSemanticAnalyzer must be implemented", analyzer);
-// XXX: not used ??
-//                int caretOffset = -1;
-//                if (caretLine != null) {
-//                    caretOffset = getCaretOffset(pr.getSnapshot().getText().toString(), caretLine);
-//                }
 
                 analyzer.run(pr);
                 Map<OffsetRange, Set<ColoringAttributes>> highlights = analyzer.getHighlights();
@@ -1155,7 +1158,7 @@ public abstract class CslTestBase extends NbTestCase {
                     highlights = Collections.emptyMap();
                 }
 
-                Document doc = pr.getSnapshot().getSource().getDocument();
+                Document doc = GsfUtilities.getDocument(pr.getSnapshot().getSource().getFileObject(), true);
                 checkNoOverlaps(highlights.keySet(), doc);
 
                 String annotatedSource = annotateSemanticResults(doc, highlights);
@@ -1239,6 +1242,14 @@ public abstract class CslTestBase extends NbTestCase {
         FileObject f = getTestFile(relFilePath);
         Source testSource = Source.create(f);
 
+        final int caretOffset;
+        if (caretLine != null) {
+            caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(testSource, caretOffset);
+        } else {
+            caretOffset = -1;
+        }
+
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
@@ -1248,16 +1259,11 @@ public abstract class CslTestBase extends NbTestCase {
                 InstantRenamer handler = getRenameHandler();
                 assertNotNull("getRenameHandler must be implemented", handler);
 
-                int caretOffset = -1;
-                if (caretLine != null) {
-                    caretOffset = getCaretOffset(pr.getSnapshot().getText().toString(), caretLine);
-                }
-
                 String annotatedSource;
                 String[] desc = new String[1];
                 if (handler.isRenameAllowed(pr, caretOffset, desc)) {
                     Set<OffsetRange> renameRegions = handler.getRenameRegions(pr, caretOffset);
-                    annotatedSource = annotateRenameRegions(pr.getSnapshot().getSource().getDocument(), renameRegions);
+                    annotatedSource = annotateRenameRegions(GsfUtilities.getDocument(pr.getSnapshot().getSource().getFileObject(), true), renameRegions);
                 } else {
                     annotatedSource = "Refactoring not allowed here\n";
                     if (desc[0] != null) {
@@ -2244,6 +2250,14 @@ public abstract class CslTestBase extends NbTestCase {
         FileObject f = getTestFile(file);
         Source testSource = Source.create(f);
 
+        final int caretOffset;
+        if (caretLine != null) {
+            caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(testSource, caretOffset);
+        } else {
+            caretOffset = -1;
+        }
+
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
@@ -2253,12 +2267,7 @@ public abstract class CslTestBase extends NbTestCase {
                 CodeCompletionHandler cc = getCodeCompleter();
                 assertNotNull("getCodeCompleter must be implemented", cc);
 
-                int caretOffset = -1;
-                if (caretLine != null) {
-                    caretOffset = getCaretOffset(pr.getSnapshot().getText().toString(), caretLine);
-                }
-
-                Document doc = pr.getSnapshot().getSource().getDocument();
+                Document doc = GsfUtilities.getDocument(pr.getSnapshot().getSource().getFileObject(), true);
                 boolean upToOffset = type == QueryType.COMPLETION;
                 String prefix = cc.getPrefix(pr, caretOffset, upToOffset);
                 if (prefix == null) {
@@ -2388,6 +2397,14 @@ public abstract class CslTestBase extends NbTestCase {
         FileObject f = getTestFile(file);
         Source testSource = Source.create(f);
 
+        final int caretOffset;
+        if (caretLine != null) {
+            caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(testSource, caretOffset);
+        } else {
+            caretOffset = -1;
+        }
+
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
@@ -2397,12 +2414,7 @@ public abstract class CslTestBase extends NbTestCase {
                 CodeCompletionHandler cc = getCodeCompleter();
                 assertNotNull("getCodeCompleter must be implemented", cc);
                 
-                int caretOffset = -1;
-                if (caretLine != null) {
-                    caretOffset = getCaretOffset(resultIterator.getSnapshot().getText().toString(), caretLine);
-                }
-
-                Document doc = resultIterator.getSnapshot().getSource().getDocument();
+                Document doc = GsfUtilities.getDocument(resultIterator.getSnapshot().getSource().getFileObject(), true);
                 boolean upToOffset = type == QueryType.COMPLETION;
                 String prefix = cc.getPrefix(pr, caretOffset, upToOffset);
                 if (prefix == null) {
@@ -2673,6 +2685,14 @@ public abstract class CslTestBase extends NbTestCase {
         FileObject f = getTestFile(file);
         Source testSource = Source.create(f);
 
+        final int caretOffset;
+        if (caretLine != null) {
+            caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(testSource, caretOffset);
+        } else {
+            caretOffset = -1;
+        }
+
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
@@ -2682,12 +2702,7 @@ public abstract class CslTestBase extends NbTestCase {
                 CodeCompletionHandler cc = getCodeCompleter();
                 assertNotNull("getCodeCompleter must be implemented", cc);
                 
-                int caretOffset = -1;
-                if (caretLine != null) {
-                    caretOffset = getCaretOffset(resultIterator.getSnapshot().getText().toString(), caretLine);
-                }
-
-                Document doc = (BaseDocument)pr.getSnapshot().getSource().getDocument();
+                Document doc = GsfUtilities.getDocument(pr.getSnapshot().getSource().getFileObject(), true);
                 boolean upToOffset = type == QueryType.COMPLETION;
                 String prefix = cc.getPrefix(pr, caretOffset, upToOffset);
                 if (prefix == null) {
@@ -2728,7 +2743,7 @@ public abstract class CslTestBase extends NbTestCase {
                 CodeCompletionHandler completer = getCodeCompleter();
                 assertNotNull("getSemanticAnalyzer must be implemented", completer);
 
-                BaseDocument doc = (BaseDocument) resultIterator.getSnapshot().getSource().getDocument();
+                BaseDocument doc = GsfUtilities.getDocument(resultIterator.getSnapshot().getSource().getFileObject(), true);
                 StringBuilder sb = new StringBuilder();
 
                 int index = 0;
@@ -2794,16 +2809,16 @@ public abstract class CslTestBase extends NbTestCase {
         FileObject f = getTestFile(relFilePath);
         Source testSource = Source.create(f);
 
+        if (caretLine != null) {
+            int caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(testSource, caretOffset);
+        }
+
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
                 ParserResult pr = (ParserResult) r;
-// XXX: not needed ??
-//                int caretOffset = -1;
-//                if (caretLine != null) {
-//                    caretOffset = getCaretOffset(pr.getSnapshot().getText().toString(), caretLine);
-//                }
 
                 List<Object> validNodes = new ArrayList<Object>();
                 List<Object> invalidNodes = new ArrayList<Object>();
@@ -2823,7 +2838,7 @@ public abstract class CslTestBase extends NbTestCase {
             List<Object> invalidNodes, ParserResult info) throws Exception {
         //
         StringBuilder sb = new StringBuilder();
-        BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument();
+        BaseDocument doc = GsfUtilities.getDocument(info.getSnapshot().getSource().getFileObject(), true);
         String text = doc.getText(0, doc.getLength());
 
         final Map<Object,Integer> traversalNumber = new HashMap<Object,Integer>();
@@ -3249,16 +3264,16 @@ public abstract class CslTestBase extends NbTestCase {
         FileObject f = getTestFile(relFilePath);
         Source testSource = Source.create(f);
 
+        if (caretLine != null) {
+            int caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(testSource, caretOffset);
+        }
+
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
                 ParserResult pr = (ParserResult) r;
-// XXX: not needed, umm ??
-//                int caretOffset = -1;
-//                if (caretLine != null) {
-//                    caretOffset = getCaretOffset(pr.getSnapshot().getText().toString(), caretLine);
-//                }
 
                 List<Object> nodes = new ArrayList<Object>();
                 Map<Object,String> types = new HashMap<Object,String>();
@@ -3500,7 +3515,7 @@ public abstract class CslTestBase extends NbTestCase {
         }
         // Test offset handling to make sure we can handle bogus node positions
 
-        Document doc = result.getSnapshot().getSource().getDocument();
+        Document doc = GsfUtilities.getDocument(result.getSnapshot().getSource().getFileObject(), true);
         int docLength = doc.getLength();
         
         // Replace errors with offsets
@@ -3578,6 +3593,14 @@ public abstract class CslTestBase extends NbTestCase {
         }
         Source testSource = Source.create(fileObject);
 
+        final int caretOffset;
+        if (caretLine != null) {
+            caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(testSource, caretOffset);
+        } else {
+            caretOffset = -1;
+        }
+
         final ComputedHints [] result = new ComputedHints[] { null };
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
@@ -3590,7 +3613,7 @@ public abstract class CslTestBase extends NbTestCase {
 
                     // Also: Delete te contents from the document!!!
                     // This ensures that the node offsets will be out of date by the time the rules run
-                    Document doc = pr.getSnapshot().getSource().getDocument();
+                    Document doc = GsfUtilities.getDocument(pr.getSnapshot().getSource().getFileObject(), true);
                     doc.remove(0, doc.getLength());
                 }
 
@@ -3607,11 +3630,6 @@ public abstract class CslTestBase extends NbTestCase {
                 }
 
                 String text = pr.getSnapshot().getText().toString();
-
-                int caretOffset = -1;
-                if (caretLine != null) {
-                    caretOffset = getCaretOffset(text, caretLine);
-                }
 
                 org.netbeans.modules.csl.core.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
                 HintsProvider provider = getHintsProvider();
@@ -3736,7 +3754,7 @@ public abstract class CslTestBase extends NbTestCase {
         List<Hint> result = r.hints;
         int caretOffset = r.caretOffset;
 
-        String annotatedSource = annotateHints((BaseDocument)info.getSnapshot().getSource().getDocument(), result, caretOffset);
+        String annotatedSource = annotateHints(GsfUtilities.getDocument(info.getSnapshot().getSource().getFileObject(), true), result, caretOffset);
 
         if (fileObject != null) {
             assertDescriptionMatches(fileObject, annotatedSource, true, getGoldenFileSuffix() + ".hints");
@@ -3784,7 +3802,7 @@ public abstract class CslTestBase extends NbTestCase {
         HintFix fix = findApplicableFix(r, fixDesc);
         assertNotNull(fix);
 
-        Document doc = info.getSnapshot().getSource().getDocument();
+        Document doc = GsfUtilities.getDocument(info.getSnapshot().getSource().getFileObject(), true);
         if (fix.isInteractive() && fix instanceof PreviewableFix) {
             PreviewableFix preview = (PreviewableFix)fix;
             assertTrue(preview.canPreview());
@@ -3882,15 +3900,15 @@ public abstract class CslTestBase extends NbTestCase {
         FileObject f = getTestFile(relFilePath);
         Source testSource = Source.create(f);
 
+        final int caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
+        enforceCaretOffset(testSource, caretOffset);
+
         final DeclarationLocation [] location = new DeclarationLocation[] { null };
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
                 ParserResult pr = (ParserResult) r;
-
-                String text = pr.getSnapshot().getText().toString();
-                int caretOffset = getCaretOffset(text, caretLine);
 
                 DeclarationFinder finder = getFinder();
                 location[0] = finder.findDeclaration(pr, caretOffset);
@@ -3940,5 +3958,15 @@ public abstract class CslTestBase extends NbTestCase {
 
         assertEquals(file, location.getFileObject() != null ? location.getFileObject().getNameExt() : "<none>");
         assertEquals(offset, location.getOffset());
+    }
+
+    protected final void enforceCaretOffset(Source source, int offset) {
+        try {
+            Method m = GsfUtilities.class.getDeclaredMethod("setLastKnowCaretOffset", Source.class, Integer.TYPE);
+            m.setAccessible(true);
+            m.invoke(null, source, offset);
+        } catch (Exception e) {
+            throw new IllegalStateException("Can't enforce caret offset on " + source, e);
+        }
     }
 }

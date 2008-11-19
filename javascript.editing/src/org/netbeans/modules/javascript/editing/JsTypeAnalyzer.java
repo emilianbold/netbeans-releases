@@ -47,7 +47,6 @@ import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 
@@ -611,7 +610,7 @@ public class JsTypeAnalyzer {
     private void initTypeAssertions() {
         if (root.getType() == Token.FUNCTION) {
             // Look for parameter hints 
-            TokenSequence<? extends JsCommentTokenId> ts = AstUtilities.getCommentFor(info, (BaseDocument) info.getSnapshot().getSource().getDocument(), (FunctionNode)root);
+            TokenSequence<? extends JsCommentTokenId> ts = AstUtilities.getCommentFor(info, (FunctionNode)root);
             
             if (ts != null) {
                 Map<String, String> typeMap = JsCommentLexer.findFunctionTypes(ts);

@@ -45,6 +45,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.SwingUtilities;
@@ -56,7 +58,12 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -540,4 +547,51 @@ public class GsfUtilities {
             return s.substring(0, length-3) + "...";
         }
     }
+
+    /**
+     * Gets the last known offset of the editor caret.
+     *
+     * @param snapshot The snapshot to get the offset for.
+     * @param event The event that can contain offset information. Can be <code>null</code>.
+     *
+     * @return The last know caret offset or -1.
+     */
+    public static int getLastKnownCaretOffset(Snapshot snapshot, SchedulerEvent event) {
+        // Try scheduler event first
+        if (event instanceof CursorMovedSchedulerEvent) {
+            return ((CursorMovedSchedulerEvent) event).getCaretOffset();
+        }
+
+        // Then editor pane, if it exists
+        FileObject file = snapshot.getSource().getFileObject();
+        if (file != null) {
+            EditorCookie ec;
+            try {
+                ec = DataLoadersBridge.getDefault().getCookie(file, EditorCookie.class);
+            } catch (IOException ioe) {
+                // ignore
+                ec = null;
+            }
+            if (ec != null) {
+                JTextComponent [] panes = ec.getOpenedPanes();
+                if (panes != null && panes.length > 0) {
+                    return panes[0].getCaretPosition();
+                }
+            }
+        }
+
+        Integer enforcedCaretOffset = enforcedCaretOffsets.get(snapshot.getSource());
+        if (enforcedCaretOffset != null) {
+            return enforcedCaretOffset;
+        }
+
+        return -1;
+    }
+
+    // this is called from tests
+    /* package */ static void setLastKnowCaretOffset(Source source, int offset) {
+        enforcedCaretOffsets.put(source, offset);
+    }
+
+    private static final Map<Source, Integer> enforcedCaretOffsets = new WeakHashMap<Source, Integer>();
 }

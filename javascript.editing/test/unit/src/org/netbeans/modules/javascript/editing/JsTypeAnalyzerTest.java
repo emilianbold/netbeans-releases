@@ -65,6 +65,14 @@ public class JsTypeAnalyzerTest extends JsTestBase {
         FileObject fo = getTestFile(file);
         Source source = Source.create(fo);
 
+        final int caretOffset;
+        if (caretLine != null) {
+            caretOffset = getCaretOffset(source.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(source, caretOffset);
+        } else {
+            caretOffset = -1;
+        }
+
         final JsTypeAnalyzer [] result = new JsTypeAnalyzer [] { null };
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
@@ -76,11 +84,6 @@ public class JsTypeAnalyzerTest extends JsTestBase {
                 initializeRegistry();
 // XXX: parsingapi
 //                JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
-
-                int caretOffset = -1;
-                if (caretLine != null) {
-                    caretOffset = getCaretOffset(jspr.getSnapshot().getText().toString(), caretLine);
-                }
 
                 AstPath path = new AstPath(root, caretOffset);
                 Node node = path.leaf();

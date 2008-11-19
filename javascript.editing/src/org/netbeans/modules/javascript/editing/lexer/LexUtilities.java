@@ -735,17 +735,12 @@ public class LexUtilities {
      * Get the documentation associated with the given node in the given document.
      * TODO: handle proper block comments
      */
-    public static List<String> gatherDocumentation(JsParseResult info, BaseDocument baseDoc, int nodeOffset) {
+    public static List<String> gatherDocumentation(JsParseResult info, int nodeOffset) {
         LinkedList<String> comments = new LinkedList<String>();
         int elementBegin = nodeOffset;
-        if (info != null && info.getSnapshot().getSource().getDocument() == baseDoc) {
-            elementBegin = LexUtilities.getLexerOffset(info, elementBegin);
-            if (elementBegin == -1) {
-                return null;
-            }
-        }
         
         try {
+            BaseDocument baseDoc = getDocument(info, true);
             if (elementBegin >= baseDoc.getLength()) {
                 return null;
             }

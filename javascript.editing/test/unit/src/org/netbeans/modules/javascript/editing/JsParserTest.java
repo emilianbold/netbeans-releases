@@ -68,13 +68,16 @@ public class JsParserTest extends JsTestBase {
         FileObject f = getTestFile(file);
         Source source = Source.create(f);
 
+        final int caretOffset;
+        if (caretLine != null) {
+            caretOffset = getCaretOffset(source.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(source, caretOffset);
+        } else {
+            caretOffset = -1;
+        }
+
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
-                int caretOffset = -1;
-                if (caretLine != null) {
-                    caretOffset = getCaretOffset(resultIterator.getSnapshot().getText().toString(), caretLine);
-                }
-
                 Parser.Result r = resultIterator.getParserResult();
                 JsParseResult jspr = AstUtilities.getParseResult(r);
                 assertNotNull("Expecting JsParseResult, but got " + r, jspr);
@@ -85,10 +88,13 @@ public class JsParserTest extends JsTestBase {
                 // Ensure that we find the node we're looking for
                 if (nodeType != -1) {
                     OffsetRange range = jspr.getSanitizedRange();
+                    int adjustedOffset;
                     if (range.containsInclusive(caretOffset)) {
-                        caretOffset = range.getStart();
+                        adjustedOffset = range.getStart();
+                    } else {
+                        adjustedOffset = caretOffset;
                     }
-                    AstPath path = new AstPath(root, caretOffset);
+                    AstPath path = new AstPath(root, adjustedOffset);
                     Node closest = path.leaf();
                     assertNotNull(closest);
                     String leafName = closest.getClass().getName();

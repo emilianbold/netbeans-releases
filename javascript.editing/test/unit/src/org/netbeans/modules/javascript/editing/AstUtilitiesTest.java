@@ -46,7 +46,6 @@ import java.util.List;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -115,8 +114,7 @@ public class AstUtilitiesTest extends JsTestBase {
 
                     for (Node node : allNodes) {
                         String type = AstUtilities.getExpressionType(node);
-                        TokenSequence<? extends JsCommentTokenId> ts = AstUtilities.getCommentFor(
-                                jspr, (BaseDocument) jspr.getSnapshot().getSource().getDocument(), node);
+                        TokenSequence<? extends JsCommentTokenId> ts = AstUtilities.getCommentFor(jspr, node);
                         AstUtilities.getFirstChild(node);
                         AstUtilities.getSecondChild(node);
                         AstUtilities.getRange(node);

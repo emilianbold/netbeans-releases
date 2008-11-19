@@ -654,7 +654,7 @@ public class JsParser extends Parser {
             // We've currently tried with no sanitization: try first level
             // of sanitization - removing dots/colons at the edited offset.
             // First try removing the dots or double colons around the failing position
-            if (getCaretOffset(context.snapshot) != -1) {
+            if (context.caretOffset != -1) {
                 return parseBuffer(context, Sanitize.EDITED_DOT);
             }
 
@@ -664,7 +664,7 @@ public class JsParser extends Parser {
             // We've tried editing the caret location - now try editing the error location
             // (Don't bother doing this if errorOffset==caretOffset since that would try the same
             // source as EDITED_DOT which has no better chance of succeeding...)
-            if (context.errorOffset != -1 && context.errorOffset != getCaretOffset(context.snapshot)) {
+            if (context.errorOffset != -1 && context.errorOffset != context.caretOffset) {
                 return parseBuffer(context, Sanitize.ERROR_DOT);
             }
 
@@ -685,7 +685,7 @@ public class JsParser extends Parser {
             // (which could be far from where the error is showing up - but if you're typing
             // say a new "def" statement in a class, this will show up as an error on a mismatched
             // "end" statement rather than here
-            if (getCaretOffset(context.snapshot) != -1) {
+            if (context.caretOffset != -1) {
                 return parseBuffer(context, Sanitize.EDITED_LINE);
             }
 
@@ -990,11 +990,6 @@ public class JsParser extends Parser {
         return null;
     }
 
-    private static int getCaretOffset(Snapshot snapshot) {
-        // XXX: fix this somehow
-        return -1;
-    }
-
     /** Attempts to sanitize the input buffer */
     public static enum Sanitize {
         /** Only parse the current file accurately, don't try heuristics */
@@ -1033,7 +1028,7 @@ public class JsParser extends Parser {
             this.snapshot = snapshot;
             this.event = event;
             this.source = asString(snapshot.getText());
-            this.caretOffset = getCaretOffset(snapshot);
+            this.caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
         }
         
         @Override

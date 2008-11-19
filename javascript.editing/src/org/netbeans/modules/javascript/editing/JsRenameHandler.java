@@ -255,34 +255,31 @@ public class JsRenameHandler implements InstantRenamer {
         if (funcNode == null) {
             return OffsetRange.NONE;
         }
-        BaseDocument doc = LexUtilities.getDocument(info, true);
-        if (doc != null) {
-            TokenSequence<? extends JsCommentTokenId> cts = AstUtilities.getCommentFor(info, doc, funcNode);
-            if (cts != null) {
-                cts.moveStart();
-                while (cts.moveNext()) {
-                    org.netbeans.api.lexer.Token<? extends JsCommentTokenId> token = cts.token();
-                    TokenId cid = token.id();
-                    if (cid == JsCommentTokenId.COMMENT_TAG) {
-                        CharSequence text = token.text();
-                         if (TokenUtilities.textEquals("@param", text)) { // NOI18N
-                            int index = cts.index();
-                            String paramType = JsCommentLexer.nextType(cts);
-                            if (paramType == null) {
-                                cts.moveIndex(index);
-                                cts.moveNext();
+        TokenSequence<? extends JsCommentTokenId> cts = AstUtilities.getCommentFor(info, funcNode);
+        if (cts != null) {
+            cts.moveStart();
+            while (cts.moveNext()) {
+                org.netbeans.api.lexer.Token<? extends JsCommentTokenId> token = cts.token();
+                TokenId cid = token.id();
+                if (cid == JsCommentTokenId.COMMENT_TAG) {
+                    CharSequence text = token.text();
+                     if (TokenUtilities.textEquals("@param", text)) { // NOI18N
+                        int index = cts.index();
+                        String paramType = JsCommentLexer.nextType(cts);
+                        if (paramType == null) {
+                            cts.moveIndex(index);
+                            cts.moveNext();
+                        }
+                        String paramName = JsCommentLexer.nextIdent(cts);
+                        if (paramName != null) {
+                            if (name.equals(paramName)) {
+                                // Figure out the offsets
+                                int start = cts.offset();
+                                return new OffsetRange(start, start+name.length());
                             }
-                            String paramName = JsCommentLexer.nextIdent(cts);
-                            if (paramName != null) {
-                                if (name.equals(paramName)) {
-                                    // Figure out the offsets
-                                    int start = cts.offset();
-                                    return new OffsetRange(start, start+name.length());
-                                }
-                            } else {
-                                cts.moveIndex(index);
-                                cts.moveNext();
-                            }
+                        } else {
+                            cts.moveIndex(index);
+                            cts.moveNext();
                         }
                     }
                 }

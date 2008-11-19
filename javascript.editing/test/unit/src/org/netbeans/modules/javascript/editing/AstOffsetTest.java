@@ -64,7 +64,7 @@ public class AstOffsetTest extends JsTestBase {
     protected String describeNode(ParserResult info, Object obj, boolean includePath) throws Exception {
         Node node = (Node)obj;
         if (includePath) {
-            BaseDocument doc = LexUtilities.getDocument((JsParseResult) info, false);
+            BaseDocument doc = LexUtilities.getDocument((JsParseResult) info, true);
             String s = null;
             while (node != null) {
                 int line = Utilities.getLineOffset(doc, node.getSourceStart());
@@ -98,7 +98,7 @@ public class AstOffsetTest extends JsTestBase {
     private void initialize(Node node, List<Object> validNodes, List<Object> invalidNodes, Map<Object,
             OffsetRange> positions, ParserResult info) throws Exception {
         if (node.getSourceStart() > node.getSourceEnd()) {
-            BaseDocument doc = LexUtilities.getDocument((JsParseResult)info, false);
+            BaseDocument doc = LexUtilities.getDocument((JsParseResult)info, true);
             assertTrue(describeNode(info, node, true) + "; node=" + node.toString() + " at line " + org.netbeans.editor.Utilities.getLineOffset(doc, node.getSourceStart()), false);
         }
         OffsetRange range = new OffsetRange(node.getSourceStart(), node.getSourceEnd());

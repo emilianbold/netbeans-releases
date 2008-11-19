@@ -61,7 +61,7 @@ public class JsParseResult extends ParserResult {
 
     @Override
     protected void invalidate() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // XXX: what exactly should we do here?
     }
 
     private final JsParser parser;

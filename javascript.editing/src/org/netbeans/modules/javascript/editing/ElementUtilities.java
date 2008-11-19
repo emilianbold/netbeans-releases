@@ -124,7 +124,7 @@ public final class ElementUtilities {
         // When I started looking in the document itself, I realized I might as well
         // do all the manipulation on the document, since having the Comment nodes
         // don't particularly help.
-        BaseDocument baseDoc = getBaseDocument(info, element);
+//        BaseDocument baseDoc = getBaseDocument(info, element);
 
         List<String> comments = null;
 
@@ -148,7 +148,7 @@ public final class ElementUtilities {
 //                }
 //            }
 //        } else {
-            comments = LexUtilities.gatherDocumentation(info, baseDoc, node.getSourceStart());
+            comments = LexUtilities.gatherDocumentation(info, node.getSourceStart());
 //        }
 
         if ((comments == null) || (comments.size() == 0)) {

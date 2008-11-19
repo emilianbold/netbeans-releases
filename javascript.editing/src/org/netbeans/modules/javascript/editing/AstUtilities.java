@@ -123,9 +123,10 @@ public final class AstUtilities {
     /** 
      * Return the comment sequence (if any) for the comment prior to the given offset.
      */
-    public static TokenSequence<? extends JsCommentTokenId> getCommentFor(JsParseResult info, BaseDocument doc, Node node) {
+    public static TokenSequence<? extends JsCommentTokenId> getCommentFor(JsParseResult info, Node node) {
         int astOffset = node.getSourceStart();
         int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
+        BaseDocument doc = LexUtilities.getDocument(info, true);
         if (lexOffset == -1 || lexOffset > doc.getLength()) {
             return null;
         }

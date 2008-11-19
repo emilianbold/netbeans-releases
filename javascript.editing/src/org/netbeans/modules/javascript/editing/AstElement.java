@@ -47,13 +47,11 @@ import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
-import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 
 /**
  *
@@ -245,15 +243,12 @@ public class AstElement extends JsElement {
         }
 
         // Look for parameter hints etc.
-        BaseDocument doc = LexUtilities.getDocument(info, true);
-        if (doc != null) {
-            TokenSequence<? extends JsCommentTokenId> ts = AstUtilities.getCommentFor(info, doc, node);
+        TokenSequence<? extends JsCommentTokenId> ts = AstUtilities.getCommentFor(info, node);
 
-            if (ts != null) {
-                Map<String, String> typeMap = JsCommentLexer.findFunctionTypes(ts);
-                if (typeMap != null) {
-                    docProps = typeMap;
-                }
+        if (ts != null) {
+            Map<String, String> typeMap = JsCommentLexer.findFunctionTypes(ts);
+            if (typeMap != null) {
+                docProps = typeMap;
             }
         }
     }
