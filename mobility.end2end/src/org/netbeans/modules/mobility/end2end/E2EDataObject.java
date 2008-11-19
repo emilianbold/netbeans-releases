@@ -98,6 +98,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
+import org.netbeans.api.java.source.SourceUtils;
 
 
 /**
@@ -217,7 +218,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
     }
     
     // FIXME: this method should be rather in GenerateAction
-    public JavonMappingImpl getMapping() throws Exception {
+    public JavonMappingImpl getMapping()  {
 //        //System.err.println(" - GET MAPPING START - ");
 //        // run always
         final Configuration config = getConfiguration();
@@ -342,9 +343,15 @@ public class E2EDataObject extends XmlMultiViewDataObject {
             }
             mapping.setProperty( "instance", className );
             
-//            while( SourceUtils.isScanInProgress()) {}
-            //todo!!!!!
-            Thread.sleep( 5000 );
+            // TODO!!!!!
+            while ( SourceUtils.isScanInProgress() ){
+                try {
+                    Thread.sleep( 100 );
+                }
+                catch (InterruptedException e ){
+                    // just ignore it 
+                }
+            }
             
             registry.updateClassDataTree();
             final org.netbeans.modules.mobility.e2e.classdata.ClassData classData = registry.getClassData( className );
