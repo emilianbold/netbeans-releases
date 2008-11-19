@@ -21,7 +21,7 @@
         </depend>
         <javac srcdir="src-ant" destdir="${src-ant.build}"
             deprecation="${build.compiler.deprecation}"
-            debug="${build.compiler.debug}"
+            debug="true"
             source="1.5" target="1.5" includeantruntime="false">
             <classpath>
                 <path path="${src-ant.cp}"/>
@@ -87,8 +87,7 @@
             <param name="cluster.name" expression="${cluster.name}"/>
         </xslt>
 
-        <mkdir dir="${proxydir}"/>
-        <concat destfile="${proxydir}/${cluster.name}.xml">
+        <concat destfile="${proxytmp}/${cluster.name}.xml">
             <header>
 &lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd"&gt;
@@ -108,9 +107,11 @@
             </footer>
         </concat>
 
+        <mkdir dir="${proxydir}"/>
         <extractlayer
-            layer="${proxydir}/${cluster.name}.xml"
+            layer="${proxytmp}/${cluster.name}.xml"
             bundle="${proxydir}/${cluster.name}.properties"
+            destdir="${proxydir}"
         >
            <modules dir=".">
                 <include name="modules/*.jar"/>

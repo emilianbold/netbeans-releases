@@ -41,6 +41,7 @@ package org.netbeans.modules.ide.ergonomics.ant;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -50,16 +51,21 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
+import javax.xml.crypto.dsig.Transform;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Concat;
 import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.taskdefs.XSLTProcess;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.FilterChain;
-import org.apache.tools.ant.types.FilterSet;
-import org.apache.tools.ant.types.FilterSet.Filter;
 import org.apache.tools.ant.types.ResourceCollection;
 import org.apache.tools.ant.types.resources.ZipResource;
 import org.apache.tools.ant.util.FlatFileNameMapper;
@@ -105,24 +111,42 @@ public final class ExtractLayer extends Task {
         if (layer == null) {
             throw new BuildException();
         }
+        if (output == null) {
+            throw new BuildException();
+        }
 
-        Pattern match;
+        Pattern concatPattern;
+        Pattern copyPattern;
         try {
-            Set<String> regexps = new TreeSet<String>();
-            parse(layer, regexps);
+            Set<String> concatregs = new TreeSet<String>();
+            Set<String> copyregs = new TreeSet<String>();
+            parse(layer, concatregs, copyregs);
+
+            log("Concats: " + concatregs, Project.MSG_VERBOSE);
+            log("Copies : " + copyregs, Project.MSG_VERBOSE);
 
             StringBuilder sb = new StringBuilder();
             String sep = "";
-            for (String s : regexps) {
+            for (String s : concatregs) {
                 sb.append(sep);
                 sb.append(s);
                 sep = "|";
             }
-            match = Pattern.compile(sb.toString());
+            concatPattern = Pattern.compile(sb.toString());
+
+            sb = new StringBuilder();
+            sep = "";
+            for (String s : copyregs) {
+                sb.append(sep);
+                sb.append(s);
+                sep = "|";
+            }
+            copyPattern = Pattern.compile(sb.toString());
         } catch (Exception ex) {
             throw new BuildException(ex);
         }
         ZipArray bundles = new ZipArray();
+        ZipArray icons = new ZipArray();
 
         for (FileSet fs : filesets) {
             DirectoryScanner ds = fs.getDirectoryScanner(getProject());
@@ -143,9 +167,13 @@ public final class ExtractLayer extends Task {
                         Enumeration<JarEntry> en = jf.entries();
                         while (en.hasMoreElements()) {
                             JarEntry je = en.nextElement();
-                            if (match.matcher(je.getName()).matches()) {
+                            if (concatPattern.matcher(je.getName()).matches()) {
                                 ZipEntry zipEntry = new ZipEntry(je);
                                 bundles.add(new ZipResource(jar, "UTF-8", zipEntry));
+                            }
+                            if (copyPattern.matcher(je.getName()).matches()) {
+                                ZipEntry zipEntry = new ZipEntry(je);
+                                icons.add(new ZipResource(jar, "UTF-8", zipEntry));
                             }
                         }
                     } finally {
@@ -164,10 +192,32 @@ public final class ExtractLayer extends Task {
             concat.addFilterChain(bundleFilter);
         }
         concat.execute();
+
+
+        Copy copy = new Copy();
+        copy.add(icons);
+        copy.setTodir(output);
+        copy.add(new FlatFileNameMapper());
+        copy.execute();
+
+        try {
+            URL u = ExtractLayer.class.getResource("relative-refs.xsl");
+            StreamSource xslt = new StreamSource(u.openStream());
+
+            TransformerFactory fack = TransformerFactory.newInstance();
+            Transformer t = fack.newTransformer(xslt);
+            t.setParameter("cluster.name", layer.getName().replaceFirst("\\.[^\\.]+$", ""));
+
+            StreamSource orig = new StreamSource(layer);
+            StreamResult gen = new StreamResult(new File(output, layer.getName()));
+            t.transform(orig, gen);
+        } catch (Exception ex) {
+            throw new BuildException(ex);
+        }
     }
 
 
-    private void parse(File file, final Set<String> regexp) throws Exception {
+    private void parse(final File file, final Set<String> concat, final Set<String> copy) throws Exception {
         SAXParserFactory f = SAXParserFactory.newInstance();
         f.setValidating(false);
         f.setNamespaceAware(false);
@@ -181,13 +231,32 @@ public final class ExtractLayer extends Task {
                 } else if (qName.equals("file")) {
                     String n = attributes.getValue("name");
                     prefix += n;
-                } else if (qName.equals("attr") && attributes.getValue("name").equals("SystemFileSystem.localizingBundle")) {
-                    String bundlepath = attributes.getValue("stringvalue").replace('.', '/') + ".*properties";
-                    regexp.add(bundlepath);
-//                    String key = prefix.replaceAll("/$", "");
-                } else if (qName.equals("attr") && attributes.getValue("name").equals("SystemFileSystem.localizingIcon")) {
-                    String iconpath = attributes.getValue("stringvalue").replace('.', '/') + ".*properties";
-                    regexp.add(iconpath);
+                } else if (qName.equals("attr")) {
+                    String name = attributes.getValue("name");
+                    if (name.equals("SystemFileSystem.localizingBundle")) {
+                        String bundlepath = attributes.getValue("stringvalue").replace('.', '/') + ".*properties";
+                        concat.add(bundlepath);
+    //                    String key = prefix.replaceAll("/$", "");
+                    } else if (attributes.getValue("bundlevalue") != null) {
+                        throw new BuildException("bundlevalue in " + file);
+                    } else {
+                        String urlresource = attributes.getValue("urlvalue");
+                        if (urlresource == null) {
+                            return;
+                        }
+                        final String prfx = "nbresloc:";
+                        if (!urlresource.startsWith(prfx)) {
+                            throw new BuildException("Unknown urlvalue in " + file + " was: " + urlresource);
+                        } else {
+                            urlresource = urlresource.substring(prfx.length());
+                            if (urlresource.startsWith("/")) {
+                                urlresource = urlresource.substring(1);
+                            }
+                        }
+                        urlresource = urlresource.replaceFirst("\\.[^\\.]+$*", ".*");
+
+                        copy.add(urlresource);
+                    }
                 }
             }
             @Override
