@@ -208,27 +208,30 @@ public class MavenModelUtils {
     }
     
     public static void addWsdlResources(POMModel model) {
+        assert model.isIntransaction();
         Build bld = model.getProject().getBuild();
         if (bld == null) {
             return;
         }
-            boolean foundResourceForMetaInf = false;
-            List<Resource> resources = bld.getResources();
-            if (resources != null) {
-                for (Resource resource : resources) {
-                    if ("META-INF".equals(resource.getTargetPath())) { //NOI18N
-                        foundResourceForMetaInf = true;
-                    }
+        boolean foundResourceForMetaInf = false;
+        List<Resource> resources = bld.getResources();
+        if (resources != null) {
+            for (Resource resource : resources) {
+                if ("META-INF".equals(resource.getTargetPath())
+                     && ("src".equals(resource.getDirectory()) || "${basedir}/src".equals(resource.getDirectory()))) { //NOI18N
+                    foundResourceForMetaInf = true;
+                    //TODO shall we chckf or jax-ws-catalog.xml + wsdl includes?
                 }
             }
-            if (!foundResourceForMetaInf) {
-                Resource res = model.getFactory().createResource();
-                res.setTargetPath("META-INF"); //NOI18N
-                res.setDirectory("src"); //NOI18N
-                res.addInclude("jax-ws-catalog.xml"); //NOI18N
-                res.addInclude("wsdl/**"); //NOI18N
-                bld.addResource(res);
-            }
+        }
+        if (!foundResourceForMetaInf) {
+            Resource res = model.getFactory().createResource();
+            res.setTargetPath("META-INF"); //NOI18N
+            res.setDirectory("src"); //NOI18N
+            res.addInclude("jax-ws-catalog.xml"); //NOI18N
+            res.addInclude("wsdl/**"); //NOI18N
+            bld.addResource(res);
+        }
 
     }
     
@@ -244,6 +247,7 @@ public class MavenModelUtils {
     
     public static void addWsdlFile(Plugin plugin, String wsdlPath) {
         POMModel model = plugin.getModel();
+        assert model.isIntransaction();
         Configuration config = plugin.getConfiguration();
         if (config == null) {
             config = model.getFactory().createConfiguration();
@@ -272,6 +276,7 @@ public class MavenModelUtils {
     }
     
     public static void removeWsdlFile(POMModel model, String wsdlPath) {
+        assert model.isIntransaction();
         Build bld = model.getProject().getBuild();
         if (bld == null) {
             return;
@@ -296,6 +301,7 @@ public class MavenModelUtils {
     }
     
     public static void renameWsdlFile(POMModel model, String oldWsdlPath, String newWsdlPath) {
+        assert model.isIntransaction();
         Build bld = model.getProject().getBuild();
         if (bld == null) {
             return;
