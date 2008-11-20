@@ -352,6 +352,7 @@ public class CCKit extends NbEditorKit {
                         }
                         if (lastSepOffset != -1 && lastSepOffset < dotPos) {
                             TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, lBracePos, false, false);
+                            loop:
                             while (cppTokenSequence.movePrevious() && cppTokenSequence.offset() >= lastSepOffset) {
                                 switch (cppTokenSequence.token().id()) {
                                     case CLASS:
@@ -359,7 +360,7 @@ public class CCKit extends NbEditorKit {
                                     case STRUCT:
                                     case ENUM:
                                         insString = "};"; // NOI18N
-                                        break;
+                                        break loop;
                                 }
                             }
                         }
