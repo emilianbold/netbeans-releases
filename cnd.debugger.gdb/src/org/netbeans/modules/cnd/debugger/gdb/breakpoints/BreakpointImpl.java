@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
@@ -69,6 +70,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     protected String err = null;
     private int breakpointNumber = -1;
     private boolean runWhenValidated = false;
+    private Logger log = Logger.getLogger("gdb.logger");
 
     protected BreakpointImpl(GdbBreakpoint breakpoint, GdbDebugger debugger) {
         this.debugger = debugger;
@@ -90,6 +92,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 // relative path. See IZ #151761.
                 String path = getBreakpoint().getPath();
                 if (!path.equals(fullname)) {
+                    log.warning("BreakpointImpl: Breakpoint path validation failed [" + path + "] vs [" + fullname + "]");
                     debugger.getGdbProxy().break_delete(number);
                     breakpoint.setInvalid(err);
                     setState(BPSTATE_VALIDATION_FAILED);
