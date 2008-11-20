@@ -255,29 +255,868 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "    end type point\n"+
                 "END Module DEFINITIONS\n"
                 );
-//nnnnnk fix lexer.
-// First problem is wrong representation of T[35]: "CONTAINS"
-// Second problem is =>
-//This is part of wrong token sequence:
-//T[31]: "::" F(2) DOUBLECOLON[155] FlyT, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@6e4ba6, IHC=10519538
-//T[32]: " " <111,112> WHITESPACE[173] DefT, la=1, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@1289e48, IHC=28295413
-//T[33]: "spin" <112,116> IDENTIFIER[0] DefT, la=1, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@1a517bd, IHC=28943672
-//T[34]: "\n" <116,117> NEW_LINE[174] DefT, IHC=17704280
-//T[35]: "CONTAINS" <117,125> LINE_COMMENT_FIXED[175] DefT, la=1, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@1b5d2b2, IHC=1815387
-//T[36]: "\n" <125,126> NEW_LINE[174] DefT, IHC=10232210
-//T[37]: "procedure" F(9) KW_PROCEDURE[93] FlyT, la=1, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@6030f9, IHC=19878555
-//T[38]: "," F(1) COMMA[153] FlyT, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@1d85e85, IHC=16062310
-//T[39]: " " <136,137> WHITESPACE[173] DefT, la=1, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@258c74, IHC=19419730
-//T[40]: "PASS" <137,141> IDENTIFIER[0] DefT, la=1, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@34a1c8, IHC=23686732
-//T[41]: " " <141,142> WHITESPACE[173] DefT, la=1, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@c84361, IHC=29336323
-//T[42]: "::" F(2) DOUBLECOLON[155] FlyT, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@6743e2, IHC=10519538
-//T[43]: " " <144,145> WHITESPACE[173] DefT, la=1, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@199ea3c, IHC=31537708
-//T[44]: "LENGTH" <145,151> IDENTIFIER[0] DefT, la=1, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@1b2591c, IHC=33061807
-//T[45]: " " <151,152> WHITESPACE[173] DefT, la=1, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@8034b6, IHC=17087715
-//T[46]: "=" F(1) EQ[151] FlyT, la=1, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@ce0bb, IHC=24528974
-//T[47]: ">" F(1) OP_GT[149] FlyT, la=1, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@84fdbc, IHC=19815572
-//T[48]: " " <154,155> WHITESPACE[173] DefT, la=1, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@bffc3a, IHC=4751287
-//T[49]: "POINT_LENGTH" <155,167> IDENTIFIER[0] DefT, la=1, st=org.netbeans.modules.cnd.lexer.FortranLexer$State@1b8fcdd, IHC=31541880
-//T[50]: "\n" <167,168> NEW_LINE[174] DefT, IHC=31472225
     }
+
+//    public void testModule2Free() {
+//        setLoadDocumentText(
+//                "  module IF\n" +
+//                "  integer*8 procedure\n" +
+//                "  dimension x(10)\n" +
+//                "  contains\n" +
+//                "  real*8 function factorial(procedure)\n" +
+//                "  integer*8 procedure\n" +
+//                "  factorial=1\n" +
+//                "  do i=1,procedure\n" +
+//                "  factorial=factorial*dble(i)\n" +
+//                "  enddo\n" +
+//                "  end function\n" +
+//                "  end module IF\n" +
+//                "  module common\n" +
+//                "  real object(3)\n" +
+//                "  integer coutner\n" +
+//                "  contains\n" +
+//                "  integer*8 recursive function fact(n) result(object)\n" +
+//                "  integer*8 n, k, object\n" +
+//                "  k=n\n" +
+//                "  if(n.eq.0) k=1\n" +
+//                "  if(n.gt.1) k=k*fact(k-1)\n" +
+//                "  object=k\n" +
+//                "  end function fact\n" +
+//                "  end module common\n" +
+//                "  use IF\n" +
+//                "  use common\n" +
+//                "  real*8 module\n" +
+//                "  integer*8 int\n" +
+//                "  int=10\n" +
+//                "  module=+fact(int)+factorial(int)\n" +
+//                "  write(*,*)module\n" +
+//                "  end");
+//        setDefaultsOptions();
+//        reformat();
+//        assertDocumentText("Incorrect module reformat (free form)",
+//                "module IF\n" +
+//                "    integer*8 procedure\n" +
+//                "    dimension x(10)\n" +
+//                "contains\n" +
+//                "    real*8 function factorial(procedure)\n" +
+//                "        integer*8 procedure\n" +
+//                "        factorial = 1\n" +
+//                "        do i = 1, procedure\n" +
+//                "            factorial = factorial * dble(i)\n" +
+//                "        enddo\n" +
+//                "    end function\n" +
+//                "end module IF\n" +
+//                "module common\n" +
+//                "    real object(3)\n" +
+//                "    integer coutner\n" +
+//                "    contains\n" +
+//                "    integer*8 recursive function fact(n) result(object)\n" +
+//                "        integer*8 n, k, object\n" +
+//                "        k = n\n" +
+//                "        if (n .eq. 0) k = 1\n" +
+//                "        if (n .gt. 1) k = k * fact(k - 1)\n" +
+//                "        object = k\n" +
+//                "    end function fact\n" +
+//                "end module common\n" +
+//                "use IF\n" +
+//                "use common\n" +
+//                "real*8 module1\n" +
+//                "integer*8 int\n" +
+//                "int = 10\n" +
+//                "module1 = +fact(int) + factorial(int)\n" +
+//                "write(*, *) module1\n" +
+//                "end");
+//    }
+
+//    public void testModule2Fixed() {
+//        setLoadDocumentText(
+//                "  module IF\n" +
+//                "  integer*8 procedure\n" +
+//                "  dimension x(10)\n" +
+//                "  contains\n" +
+//                "  real*8 function factorial(procedure)\n" +
+//                "  integer*8 procedure\n" +
+//                "  factorial=1\n" +
+//                "  do i=1,procedure\n" +
+//                "  factorial=factorial*dble(i)\n" +
+//                "  enddo\n" +
+//                "  end function\n" +
+//                "  end module IF\n" +
+//                "  module common\n" +
+//                "  real object(3)\n" +
+//                "  integer coutner\n" +
+//                "  contains\n" +
+//                "  integer*8 recursive function fact(n) result(object)\n" +
+//                "  integer*8 n, k, object\n" +
+//                "  k=n\n" +
+//                "  if(n.eq.0) k=1\n" +
+//                "  if(n.gt.1) k=k*fact(k-1)\n" +
+//                "  object=k\n" +
+//                "  end function fact\n" +
+//                "  end module common\n" +
+//                "  use IF\n" +
+//                "  use common\n" +
+//                "  real*8 module\n" +
+//                "  integer*8 int\n" +
+//                "  int=10\n" +
+//                "  module=+fact(int)+factorial(int)\n" +
+//                "  write(*,*)module\n" +
+//                "  end");
+//        setDefaultsOptions();
+//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+//        reformat();
+//        assertDocumentText("Incorrect module reformat (fixed form)",
+//                "module IF\n" +
+//                "    integer*8 procedure\n" +
+//                "    dimension x(10)\n" +
+//                "contains\n" +
+//                "    real*8 function factorial(procedure)\n" +
+//                "        integer*8 procedure\n" +
+//                "        factorial = 1\n" +
+//                "        do i = 1, procedure\n" +
+//                "            factorial = factorial * dble(i)\n" +
+//                "        enddo\n" +
+//                "    end function\n" +
+//                "end module IF\n" +
+//                "module common\n" +
+//                "    real object(3)\n" +
+//                "    integer coutner\n" +
+//                "    contains\n" +
+//                "    integer*8 recursive function fact(n) result(object)\n" +
+//                "        integer*8 n, k, object\n" +
+//                "        k = n\n" +
+//                "        if(n .eq. 0) k = 1\n" +
+//                "            if(n .gt. 1) k = k * fact(k - 1)\n" +
+//                "                object = k\n" +
+//                "    end function fact\n" +
+//                "end module common\n" +
+//                "use IF\n" +
+//                "use common\n" +
+//                "real*8 module1\n" +
+//                "integer*8 int\n" +
+//                "int = 10\n" +
+//                "module1 = +fact(int) + factorial(int)\n" +
+//                "write(*, *) module1\n" +
+//                "end");
+//    }
+
+//    public void testDoFree() {
+//        setLoadDocumentText(
+//                "  PROGRAM TEST\n" +
+//                "  character  i1ad1(25), i1ad2(7,7), i1ad3(4,4,4)\n" +
+//                "  character  i1ad2r(5,5), i1ad3r(5,5,5)\n" +
+//                "  integer    shape2(2), shape3(3)\n" +
+//                "  character  pad(5)\n" +
+//                "  integer    order1(1), order2(2), order3(3)\n" +
+//                "  write(*,*)reshape((/'a','b','c','d','e','f'/), (/2_1,3_1/))\n" +
+//                "  write(*,*)'=1='\n" +
+//                "  write(*,*)reshape((/'a','b','c','d','e','f'/), (/2_2,4_2/),  (/'x','y'/))\n" +
+//                "  write(*,*)'=2='\n" +
+//                "  write(*,*)reshape((/'a','b','c','d','e','f'/), (/2_8,4_8/),  (/'x','y'/),(/2_1,1_1/))\n" +
+//                "  write(*,*)'=3='\n" +
+//                "  write(*,*)reshape((/'a','b','c','d','e','f'/), (/2,3/),  ORDER=(/2,1/))\n" +
+//                "  write(*,*)'=4='\n" +
+//                "  write(*,*)reshape(SHAPE=(/2,3/),SOURCE=(/'a','b','c','d','e','f'/)  ,ORDER=(/2,1/))\n" +
+//                "  write(*,*)'=5='\n" +
+//                "  write(*,*)reshape(ORDER=(/2,1/),PAD=(/0,0/),SHAPE=(/2,4/), SOURCE=(/'a','b','c','d','e','f'/))\n" +
+//                "  write(*,*)'=6='\n" +
+//                "  do i=1,25\n" +
+//                "  i1ad1(i)=CHAR(i+40)\n" +
+//                "  enddo\n" +
+//                "  k=0\n" +
+//                "  do i=1,7\n" +
+//                "  do j=1,7\n" +
+//                "  i1ad2(i,j)=CHAR(k+40)\n" +
+//                "  k=k+1\n" +
+//                "  enddo\n" +
+//                "  enddo\n" +
+//                "  l=0\n" +
+//                "  do i=1,4\n" +
+//                "  do j=1,4\n" +
+//                "  do k=1,4\n" +
+//                "  i1ad3(i,j,k)=CHAR(l+40)\n" +
+//                "  l=l+1\n" +
+//                "  enddo\n" +
+//                "  enddo\n" +
+//                "  enddo\n" +
+//                "  shape2=5\n" +
+//                "  shape3=5\n" +
+//                "  order3(1)=1\n" +
+//                "  order3(2)=2\n" +
+//                "  order3(3)=3\n" +
+//                "  pad='z'\n" +
+//                "  i1ad2r=reshape(i1ad1,shape2,ORDER=(/2,1/))\n" +
+//                "  i1ad3r=reshape(i1ad1,shape3,pad,order3)\n" +
+//                "  do i=1,shape2(2)\n" +
+//                "  write(*,*)(i1ad2r(i,j),j=1,shape2(1))\n" +
+//                "  enddo\n" +
+//                "  write(*,*)'===================='\n" +
+//                "  do i=1,shape3(1)\n" +
+//                "  do j=1,shape3(2)\n" +
+//                "  write(*,*)(i1ad3r(i,j,k),k=1,shape3(3))\n" +
+//                "  enddo\n" +
+//                "  enddo\n" +
+//                "  write(*,*)'===================='\n" +
+//                "  i1ad3r=reshape(i1ad2,shape3,pad)\n" +
+//                "  do i=1,shape3(1)\n" +
+//                "  do j=1,shape3(2)\n" +
+//                "  write(*,*)(i1ad3r(i,j,k),k=1,shape3(3))\n" +
+//                "  enddo\n" +
+//                "  enddo\n" +
+//                "  write(*,*)'======================'\n" +
+//                "  end");
+//        setDefaultsOptions();
+//        reformat();
+//        assertDocumentText("Incorrect do reformat (free form)",
+//                "PROGRAM TEST\n" +
+//                "    character i1ad1(25), i1ad2(7, 7), i1ad3(4, 4, 4)\n" +
+//                "    character i1ad2r(5, 5), i1ad3r(5, 5, 5)\n" +
+//                "    integer shape2(2), shape3(3)\n" +
+//                "    character pad(5)\n" +
+//                "    integer order1(1), order2(2), order3(3)\n" +
+//                "    write(*, *) reshape((/'a', 'b', 'c', 'd', 'e', 'f'/), (/2_1, 3_1/))\n" +
+//                "    write(*, *) '=1='\n" +
+//                "    write(*, *) reshape((/'a', 'b', 'c', 'd', 'e', 'f'/), (/2_2, 4_2/),  (/'x', 'y'/))\n" +
+//                "    write(*, *) '=2='\n" +
+//                "    write(*, *) reshape((/'a', 'b', 'c', 'd', 'e', 'f'/), (/2_8, 4_8/),  (/'x', 'y'/),(/2_1, 1_1/))\n" +
+//                "    write(*, *) '=3='\n" +
+//                "    write(*, *) reshape((/'a', 'b', 'c', 'd', 'e', 'f'/), (/2, 3/), ORDER = (/2, 1/))\n" +
+//                "    write(*, *) '=4='\n" +
+//                "    write(*, *) reshape(SHAPE = (/2, 3/), SOURCE=(/'a', 'b', 'c', 'd', 'e', 'f'/), ORDER=(/2, 1/))\n" +
+//                "    write(*, *) '=5='\n" +
+//                "    write(*, *) reshape(ORDER = (/2, 1/), PAD = (/0, 0/), SHAPE=(/2, 4/), SOURCE = (/'a', 'b', 'c', 'd', 'e', 'f'/))\n" +
+//                "    write(*, *) '=6='\n" +
+//                "    do i = 1, 25\n" +
+//                "        i1ad1(i) = CHAR(i + 40)\n" +
+//                "    enddo\n" +
+//                "    k = 0\n" +
+//                "    do i = 1, 7\n" +
+//                "        do j = 1, 7\n" +
+//                "            i1ad2(i, j) = CHAR(k + 40)\n" +
+//                "            k = k + 1\n" +
+//                "        enddo\n" +
+//                "    enddo\n" +
+//                "    l = 0\n" +
+//                "    do i = 1, 4\n" +
+//                "        do j = 1, 4\n" +
+//                "            do k = 1, 4\n" +
+//                "                i1ad3(i, j, k) = CHAR(l + 40)\n" +
+//                "                l = l + 1\n" +
+//                "            enddo\n" +
+//                "        enddo\n" +
+//                "    enddo\n" +
+//                "    shape2 = 5\n" +
+//                "    shape3 = 5\n" +
+//                "    order3(1) = 1\n" +
+//                "    order3(2) = 2\n" +
+//                "    order3(3) = 3\n" +
+//                "    pad = 'z'\n" +
+//                "    i1ad2r = reshape(i1ad1, shape2, ORDER = (/2, 1/))\n" +
+//                "    i1ad3r = reshape(i1ad1, shape3, pad, order3)\n" +
+//                "    do i = 1, shape2(2)\n" +
+//                "        write(*, *) (i1ad2r(i, j), j = 1, shape2(1))\n" +
+//                "    enddo\n" +
+//                "    write(*, *) '===================='\n" +
+//                "    do i = 1, shape3(1)\n" +
+//                "        do j = 1, shape3(2)\n" +
+//                "            write(*, *) (i1ad3r(i, j, k), k = 1, shape3(3))\n" +
+//                "        enddo\n" +
+//                "    enddo\n" +
+//                "    write(*, *) '===================='\n" +
+//                "    i1ad3r = reshape(i1ad2, shape3, pad)\n" +
+//                "    do i = 1, shape3(1)\n" +
+//                "        do j = 1, shape3(2)\n" +
+//                "            write(*, *) (i1ad3r(i, j, k), k = 1, shape3(3))\n" +
+//                "        enddo\n" +
+//                "    enddo\n" +
+//                "    write(*, *) '======================'\n" +
+//                "end");
+//    }
+
+//    public void testDoFixed() {
+//        setLoadDocumentText(
+//                "  PROGRAM TEST\n" +
+//                "  character  i1ad1(25), i1ad2(7,7), i1ad3(4,4,4)\n" +
+//                "  character  i1ad2r(5,5), i1ad3r(5,5,5)\n" +
+//                "  integer    shape2(2), shape3(3)\n" +
+//                "  character  pad(5)\n" +
+//                "  integer    order1(1), order2(2), order3(3)\n" +
+//                "  write(*,*)reshape((/'a','b','c','d','e','f'/), (/2_1,3_1/))\n" +
+//                "  write(*,*)'=1='\n" +
+//                "  write(*,*)reshape((/'a','b','c','d','e','f'/), (/2_2,4_2/),  (/'x','y'/))\n" +
+//                "  write(*,*)'=2='\n" +
+//                "  write(*,*)reshape((/'a','b','c','d','e','f'/), (/2_8,4_8/),  (/'x','y'/),(/2_1,1_1/))\n" +
+//                "  write(*,*)'=3='\n" +
+//                "  write(*,*)reshape((/'a','b','c','d','e','f'/), (/2,3/),  ORDER=(/2,1/))\n" +
+//                "  write(*,*)'=4='\n" +
+//                "  write(*,*)reshape(SHAPE=(/2,3/),SOURCE=(/'a','b','c','d','e','f'/)  ,ORDER=(/2,1/))\n" +
+//                "  write(*,*)'=5='\n" +
+//                "  write(*,*)reshape(ORDER=(/2,1/),PAD=(/0,0/),SHAPE=(/2,4/), SOURCE=(/'a','b','c','d','e','f'/))\n" +
+//                "  write(*,*)'=6='\n" +
+//                "  do i=1,25\n" +
+//                "  i1ad1(i)=CHAR(i+40)\n" +
+//                "  enddo\n" +
+//                "  k=0\n" +
+//                "  do i=1,7\n" +
+//                "  do j=1,7\n" +
+//                "  i1ad2(i,j)=CHAR(k+40)\n" +
+//                "  k=k+1\n" +
+//                "  enddo\n" +
+//                "  enddo\n" +
+//                "  l=0\n" +
+//                "  do i=1,4\n" +
+//                "  do j=1,4\n" +
+//                "  do k=1,4\n" +
+//                "  i1ad3(i,j,k)=CHAR(l+40)\n" +
+//                "  l=l+1\n" +
+//                "  enddo\n" +
+//                "  enddo\n" +
+//                "  enddo\n" +
+//                "  shape2=5\n" +
+//                "  shape3=5\n" +
+//                "  order3(1)=1\n" +
+//                "  order3(2)=2\n" +
+//                "  order3(3)=3\n" +
+//                "  pad='z'\n" +
+//                "  i1ad2r=reshape(i1ad1,shape2,ORDER=(/2,1/))\n" +
+//                "  i1ad3r=reshape(i1ad1,shape3,pad,order3)\n" +
+//                "  do i=1,shape2(2)\n" +
+//                "  write(*,*)(i1ad2r(i,j),j=1,shape2(1))\n" +
+//                "  enddo\n" +
+//                "  write(*,*)'===================='\n" +
+//                "  do i=1,shape3(1)\n" +
+//                "  do j=1,shape3(2)\n" +
+//                "  write(*,*)(i1ad3r(i,j,k),k=1,shape3(3))\n" +
+//                "  enddo\n" +
+//                "  enddo\n" +
+//                "  write(*,*)'===================='\n" +
+//                "  i1ad3r=reshape(i1ad2,shape3,pad)\n" +
+//                "  do i=1,shape3(1)\n" +
+//                "  do j=1,shape3(2)\n" +
+//                "  write(*,*)(i1ad3r(i,j,k),k=1,shape3(3))\n" +
+//                "  enddo\n" +
+//                "  enddo\n" +
+//                "  write(*,*)'======================'\n" +
+//                "  end");
+//        setDefaultsOptions();
+//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+//        reformat();
+//        assertDocumentText("Incorrect do reformat (fixed form)",
+//                "      PROGRAM TEST\n" +
+//                "          character i1ad1(25), i1ad2(7, 7), i1ad3(4, 4, 4)\n" +
+//                "          character i1ad2r(5, 5), i1ad3r(5, 5, 5)\n" +
+//                "          integer shape2(2), shape3(3)\n" +
+//                "          character  pad(5)\n" +
+//                "          integer order1(1), order2(2), order3(3)\n" +
+//                "          write(*, *) reshape((/'a', 'b', 'c', 'd', 'e', 'f'/), (/2_1, 3_1/))\n" +
+//                "          write(*,*) '=1='\n" +
+//                "          write(*,*) reshape((/'a', 'b', 'c', 'd', 'e', 'f'/), (/2_2, 4_2/),  (/'x', 'y'/))\n" +
+//                "          write(*,*) '=2='\n" +
+//                "          write(*,*) reshape((/'a', 'b', 'c', 'd', 'e', 'f'/), (/2_8, 4_8/),  (/'x', 'y'/),(/2_1, 1_1/))\n" +
+//                "          write(*,*) '=3='\n" +
+//                "          write(*,*) reshape((/'a', 'b', 'c', 'd', 'e', 'f'/), (/2, 3/), ORDER = (/2, 1/))\n" +
+//                "          write(*,*) '=4='\n" +
+//                "          write(*,*) reshape(SHAPE = (/2, 3/), SOURCE=(/'a', 'b', 'c', 'd', 'e', 'f'/), ORDER=(/2, 1/))\n" +
+//                "          write(*,*) '=5='\n" +
+//                "          write(*,*) reshape(ORDER = (/2, 1/), PAD = (/0, 0/), SHAPE=(/2, 4/), SOURCE = (/'a', 'b', 'c', 'd', 'e', 'f'/))\n" +
+//                "          write(*,*) '=6='\n" +
+//                "          do i = 1, 25\n" +
+//                "              i1ad1(i) = CHAR(i + 40)\n" +
+//                "          enddo\n" +
+//                "          k = 0\n" +
+//                "          do i = 1, 7\n" +
+//                "              do j = 1, 7\n" +
+//                "                  i1ad2(i, j) = CHAR(k + 40)\n" +
+//                "                  k = k + 1\n" +
+//                "              enddo\n" +
+//                "          enddo\n" +
+//                "          l = 0\n" +
+//                "          do i = 1, 4\n" +
+//                "              do j = 1, 4\n" +
+//                "                  do k = 1, 4\n" +
+//                "                      i1ad3(i, j, k) = CHAR(l + 40)\n" +
+//                "                      l = l + 1\n" +
+//                "                  enddo\n" +
+//                "              enddo\n" +
+//                "          enddo\n" +
+//                "          shape2 = 5\n" +
+//                "          shape3 = 5\n" +
+//                "          order3(1) = 1\n" +
+//                "          order3(2) = 2\n" +
+//                "          order3(3) = 3\n" +
+//                "          pad = 'z'\n" +
+//                "          i1ad2r = reshape(i1ad1, shape2, ORDER = (/2, 1/))\n" +
+//                "          i1ad3r = reshape(i1ad1, shape3, pad, order3)\n" +
+//                "          do i = 1, shape2(2)\n" +
+//                "              write(*, *) (i1ad2r(i, j), j = 1, shape2(1))\n" +
+//                "          enddo\n" +
+//                "          write(*, *) '===================='\n" +
+//                "          do i = 1, shape3(1)\n" +
+//                "              do j = 1, shape3(2)\n" +
+//                "                  write(*, *) (i1ad3r(i, j, k), k = 1, shape3(3))\n" +
+//                "              enddo\n" +
+//                "          enddo\n" +
+//                "          write(*, *) '===================='\n" +
+//                "          i1ad3r = reshape(i1ad2, shape3, pad)\n" +
+//                "          do i = 1, shape3(1)\n" +
+//                "              do j = 1, shape3(2)\n" +
+//                "                  write(*, *) (i1ad3r(i, j, k), k = 1, shape3(3))\n" +
+//                "              enddo\n" +
+//                "          enddo\n" +
+//                "          write(*, *) '======================'\n" +
+//                "      end");
+//    }
+
+    public void testMapFree() {
+        setLoadDocumentText(
+                "  program\n" +
+                "  structure /explorer1/\n" +
+                "  logical*1:: var\n" +
+                "  integer*4 :: i\n" +
+                "  end structure\n" +
+                "  record /explorer1/ example1\n" +
+                "  structure /explorer2/\n" +
+                "  union\n" +
+                "  map\n" +
+                "  logical*1:: var\n" +
+                "  end map\n" +
+                "  map\n" +
+                "  integer*4 :: j\n" +
+                "  end map\n" +
+                "  end union\n" +
+                "  integer*4 :: i\n" +
+                "  end structure\n" +
+                "  record /explorer2/ example2\n" +
+                "  example1.var=.TRUE.\n" +
+                "  example1.i=1\n" +
+                "  print *, 'Simple structure', loc(example1.i)-loc(example1.var)\n" +
+                "  example2.var=.FALSE.\n" +
+                "  example2.i=1\n" +
+                "  print *, 'Union map - var', loc(example2.i)-loc(example2.var)\n" +
+                "  example2.j=1\n" +
+                "  example2.i=1\n" +
+                "  print *, 'Union map - integer', loc(example2.i)-loc(example2.j)\n" +
+                "  end");
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("Incorrect map reformat (free form)",
+                "program\n" +
+                "    structure /explorer1/\n" +
+                "        logical*1 :: var\n" +
+                "        integer*4 :: i\n" +
+                "    end structure\n" +
+                "    record /explorer1/ example1\n" +
+                "    structure /explorer2/\n" +
+                "        union\n" +
+                "            map\n" +
+                "                logical*1 :: var\n" +
+                "            end map\n" +
+                "            map\n" +
+                "                integer*4 :: j\n" +
+                "            end map\n" +
+                "        end union\n" +
+                "        integer*4 :: i\n" +
+                "    end structure\n" +
+                "    record /explorer2/ example2\n" +
+                "    example1.var = .TRUE.\n" +
+                "    example1.i = 1\n" +
+                "    print *, 'Simple structure', loc(example1.i) - loc(example1.var)\n" +
+                "    example2.var = .FALSE.\n" +
+                "    example2.i = 1\n" +
+                "    print *, 'Union map - var', loc(example2.i) - loc(example2.var)\n" +
+                "    example2.j = 1\n" +
+                "    example2.i = 1\n" +
+                "    print *, 'Union map - integer', loc(example2.i) - loc(example2.j)\n" +
+                "end");
+    }
+
+    public void testMapFixed() {
+        setLoadDocumentText(
+                "  program\n" +
+                "  structure /explorer1/\n" +
+                "  logical*1:: var\n" +
+                "  integer*4 :: i\n" +
+                "  end structure\n" +
+                "  record /explorer1/ example1\n" +
+                "  structure /explorer2/\n" +
+                "  union\n" +
+                "  map\n" +
+                "  logical*1:: var\n" +
+                "  end map\n" +
+                "  map\n" +
+                "  integer*4 :: j\n" +
+                "  end map\n" +
+                "  end union\n" +
+                "  integer*4 :: i\n" +
+                "  end structure\n" +
+                "  record /explorer2/ example2\n" +
+                "  example1.var=.TRUE.\n" +
+                "  example1.i=1\n" +
+                "  print *, 'Simple structure', loc(example1.i)-loc(example1.var)\n" +
+                "  example2.var=.FALSE.\n" +
+                "  example2.i=1\n" +
+                "  print *, 'Union map - var', loc(example2.i)-loc(example2.var)\n" +
+                "  example2.j=1\n" +
+                "  example2.i=1\n" +
+                "  print *, 'Union map - integer', loc(example2.i)-loc(example2.j)\n" +
+                "  end");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        reformat();
+        assertDocumentText("Incorrect map reformat (fixed form)",
+                "      program\n" +
+                "          structure /explorer1/\n" +
+                "              logical*1 :: var\n" +
+                "              integer*4 :: i\n" +
+                "          end structure\n" +
+                "          record /explorer1/ example1\n" +
+                "          structure /explorer2/\n" +
+                "              union\n" +
+                "                  map\n" +
+                "                      logical*1 :: var\n" +
+                "                  end map\n" +
+                "                  map\n" +
+                "                      integer*4 :: j\n" +
+                "                  end map\n" +
+                "              end union\n" +
+                "              integer*4 :: i\n" +
+                "          end structure\n" +
+                "          record /explorer2/ example2\n" +
+                "          example1.var = .TRUE.\n" +
+                "          example1.i = 1\n" +
+                "          print *, 'Simple structure', loc(example1.i) - loc(example1.var)\n" +
+                "          example2.var = .FALSE.\n" +
+                "          example2.i = 1\n" +
+                "          print *, 'Union map - var', loc(example2.i) - loc(example2.var)\n" +
+                "          example2.j = 1\n" +
+                "          example2.i = 1\n" +
+                "          print *, 'Union map - integer', loc(example2.i) - loc(example2.j)\n" +
+                "      end");
+    }
+
+//    public void testPreprocessorFree() {
+//        setLoadDocumentText(
+//                " #include \"file\"\n" +
+//                " #define A\n" +
+//                " #if defined A\n" +
+//                " #undef A\n" +
+//                " print *, \"this block_1 must be NOT in output text\"\n" +
+//                " #elif 1\n" +
+//                " print *, \"this block_2 must be in output text\"\n" +
+//                " print *, \"and this string too\"\n" +
+//                " #else\n" +
+//                " print *, \"this block_3 must be NOT in output text\"\n" +
+//                " #endif\n" +
+//                " if (1 > 0)\n" +
+//                " #if 0\n" +
+//                " print *, \"this block_1 must be NOT in output text\"\n" +
+//                " #elif ( 1 > 5)\n" +
+//                " print *, \"this block_3 must be NOT in output text\"\n" +
+//                " #else\n" +
+//                " print *, \"this block_2 must be in output text\"\n" +
+//                " #endif\n" +
+//                " endif\n" +
+//                " end");
+//        setDefaultsOptions();
+//        reformat();
+//        assertDocumentText("Incorrect preprocessor reformat (free form)",
+//                "#include \"file\"\n" +
+//                "#define A\n" +
+//                "#if defined A\n" +
+//                "#undef A\n" +
+//                "print *, \"this block_1 must be NOT in output text\"\n" +
+//                "#elif 1\n" +
+//                "print *, \"this block_2 must be in output text\"\n" +
+//                "print *, \"and this string too\"\n" +
+//                "#else\n" +
+//                "print *, \"this block_3 must be NOT in output text\"\n" +
+//                "#endif\n" +
+//                "if (1 > 0)\n" +
+//                "#if 0\n" +
+//                "    print *, \"this block_1 must be NOT in output text\"\n" +
+//                "#elif (1 > 5)\n" +
+//                "    print *, \"this block_3 must be NOT in output text\"\n" +
+//                "#else\n" +
+//                "    print *, \"this block_2 must be in output text\"\n" +
+//                "#endif\n" +
+//                "endif\n" +
+//                "end");
+//    }
+//
+//    public void testPreprocessorFixed() {
+//        setLoadDocumentText(
+//                " #include \"file\"\n" +
+//                " #define A\n" +
+//                " #if defined A\n" +
+//                " #undef A\n" +
+//                " print *, \"this block_1 must be NOT in output text\"\n" +
+//                " #elif 1\n" +
+//                " print *, \"this block_2 must be in output text\"\n" +
+//                " print *, \"and this string too\"\n" +
+//                " #else\n" +
+//                " print *, \"this block_3 must be NOT in output text\"\n" +
+//                " #endif\n" +
+//                " if (1 > 0)\n" +
+//                " #if 0\n" +
+//                " print *, \"this block_1 must be NOT in output text\"\n" +
+//                " #elif ( 1 > 5)\n" +
+//                " print *, \"this block_3 must be NOT in output text\"\n" +
+//                " #else\n" +
+//                " print *, \"this block_2 must be in output text\"\n" +
+//                " #endif\n" +
+//                " endif\n" +
+//                " end");
+//        setDefaultsOptions();
+//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+//        reformat();
+//        assertDocumentText("Incorrect preprocessor reformat (fixed form)",
+//                "      #include \"file\"\n" +
+//                "      #define A\n" +
+//                "      #if defined A\n" +
+//                "      #undef A\n" +
+//                "      print *, \"this block_1 must be NOT in output text\"\n" +
+//                "      #elif 1\n" +
+//                "      print *, \"this block_2 must be in output text\"\n" +
+//                "      print *, \"and this string too\"\n" +
+//                "      #else\n" +
+//                "      print *, \"this block_3 must be NOT in output text\"\n" +
+//                "      #endif\n" +
+//                "      if (1 > 0)\n" +
+//                "      #if 0\n" +
+//                "          print *, \"this block_1 must be NOT in output text\"\n" +
+//                "      #elif (1 > 5)\n" +
+//                "          print *, \"this block_3 must be NOT in output text\"\n" +
+//                "      #else\n" +
+//                "          print *, \"this block_2 must be in output text\"\n" +
+//                "      #endif\n" +
+//                "      endif\n" +
+//                "      end");
+//    }
+//
+//    public void testStructureFree() {
+//        setLoadDocumentText(
+//                "program\n" +
+//                "structure /STR1/\n" +
+//                " integer*4 s1\n" +
+//                " structure STR2\n" +
+//                "  character*36 s2\n" +
+//                "  structure STR3\n" +
+//                "   character*36 s3\n" +
+//                "   structure STR4\n" +
+//                "    real*4 s4\n" +
+//                "    structure STR5\n" +
+//                "     real*4 s5\n" +
+//                "     structure STR6\n" +
+//                "      complex*16 s6\n" +
+//                "      structure STR7\n" +
+//                "       unsigned*4 s7\n" +
+//                "       structure STR8\n" +
+//                "        complex*16 s8\n" +
+//                "        structure STR9\n" +
+//                "         integer*8 s9\n" +
+//                "         structure STR10\n" +
+//                "          character*16 s10 /'Hello, World!'/\n" +
+//                "         end structure\n" +
+//                "        end structure\n" +
+//                "       end structure\n" +
+//                "      end structure\n" +
+//                "     end structure\n" +
+//                "    end structure\n" +
+//                "   end structure\n" +
+//                "  end structure\n" +
+//                " end structure\n" +
+//                "end structure\n" +
+//                "structure /OUTSTR/\n" +
+//                "  real*4 zxc\n" +
+//                "  record /STR1/ inex\n" +
+//                "end structure\n" +
+//                "record /STR1/ ex1\n" +
+//                "record /OUTSTR/ example\n" +
+//                "ex1.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9=1\n" +
+//                "ex1.STR2.STR3.STR4.STR5.STR6.STR7.s7=ex1.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9\n" +
+//                "ex1.STR2.s2='1-st text field'\n" +
+//                "ex1.STR2.STR3.s3='Second field'\n" +
+//                "example.zxc=123.45\n" +
+//                "print *,'ex1=',ex1\n" +
+//                "print *,'Printing of initial values of outer structure: '\n" +
+//                "print *,example\n" +
+//                "example.inex.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9=1\n" +
+//                "example.inex.STR2.STR3.STR4.STR5.STR6.STR7.s7=ex1.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9\n" +
+//                "example.inex.STR2.s2='1-st text field of outer structure'\n" +
+//                "example.inex.STR2.STR3.s3='Second field of outer structure'\n" +
+//                "print *,'ex1=',ex1\n" +
+//                "print *,'Printing of result values of outer structure: '\n" +
+//                "print *,example\n" +
+//                "end");
+//        setDefaultsOptions();
+//        reformat();
+//        assertDocumentText("Incorrect structure reformat (free form)",
+//                "program\n" +
+//                "    structure /STR1/\n" +
+//                "        integer*4 s1\n" +
+//                "        structure STR2\n" +
+//                "            character*36 s2\n" +
+//                "            structure STR3\n" +
+//                "                character*36 s3\n" +
+//                "                structure STR4\n" +
+//                "                    real*4 s4\n" +
+//                "                    structure STR5\n" +
+//                "                        real*4 s5\n" +
+//                "                        structure STR6\n" +
+//                "                            complex*16 s6\n" +
+//                "                            structure STR7\n" +
+//                "                                unsigned*4 s7\n" +
+//                "                                structure STR8\n" +
+//                "                                    complex*16 s8\n" +
+//                "                                    structure STR9\n" +
+//                "                                        integer*8 s9\n" +
+//                "                                        structure STR10\n" +
+//                "                                            character*16 s10 /'Hello, World!'/\n" +
+//                "                                        end structure\n" +
+//                "                                    end structure\n" +
+//                "                                end structure\n" +
+//                "                            end structure\n" +
+//                "                        end structure\n" +
+//                "                    end structure\n" +
+//                "                end structure\n" +
+//                "            end structure\n" +
+//                "        end structure\n" +
+//                "    end structure\n" +
+//                "    structure /OUTSTR/\n" +
+//                "        real*4 zxc\n" +
+//                "        record /STR1/ inex\n" +
+//                "    end structure\n" +
+//                "    record /STR1/ ex1\n" +
+//                "    record /OUTSTR/ example\n" +
+//                "    ex1.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9 = 1\n" +
+//                "    ex1.STR2.STR3.STR4.STR5.STR6.STR7.s7 = ex1.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9\n" +
+//                "    ex1.STR2.s2 = '1-st text field'\n" +
+//                "    ex1.STR2.STR3.s3 = 'Second field'\n" +
+//                "    example.zxc = 123.45\n" +
+//                "    print *, 'ex1=',ex1\n" +
+//                "    print *, 'Printing of initial values of outer structure: '\n" +
+//                "    print *, example\n" +
+//                "    example.inex.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9 = 1\n" +
+//                "    example.inex.STR2.STR3.STR4.STR5.STR6.STR7.s7 = ex1.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9\n" +
+//                "    example.inex.STR2.s2 = '1-st text field of outer structure'\n" +
+//                "    example.inex.STR2.STR3.s3 = 'Second field of outer structure'\n" +
+//                "    print *, 'ex1=', ex1\n" +
+//                "    print *, 'Printing of result values of outer structure: '\n" +
+//                "    print *, example\n" +
+//                "end");
+//    }
+//
+//    public void testStructureFixed() {
+//        setLoadDocumentText(
+//                "program\n" +
+//                "structure /STR1/\n" +
+//                " integer*4 s1\n" +
+//                " structure STR2\n" +
+//                "  character*36 s2\n" +
+//                "  structure STR3\n" +
+//                "   character*36 s3\n" +
+//                "   structure STR4\n" +
+//                "    real*4 s4\n" +
+//                "    structure STR5\n" +
+//                "     real*4 s5\n" +
+//                "     structure STR6\n" +
+//                "      complex*16 s6\n" +
+//                "      structure STR7\n" +
+//                "       unsigned*4 s7\n" +
+//                "       structure STR8\n" +
+//                "        complex*16 s8\n" +
+//                "        structure STR9\n" +
+//                "         integer*8 s9\n" +
+//                "         structure STR10\n" +
+//                "          character*16 s10 /'Hello, World!'/\n" +
+//                "         end structure\n" +
+//                "        end structure\n" +
+//                "       end structure\n" +
+//                "      end structure\n" +
+//                "     end structure\n" +
+//                "    end structure\n" +
+//                "   end structure\n" +
+//                "  end structure\n" +
+//                " end structure\n" +
+//                "end structure\n" +
+//                "structure /OUTSTR/\n" +
+//                "   real*4 zxc\n" +
+//                "   record /STR1/ inex\n" +
+//                "end structure\n" +
+//                "record /STR1/ ex1\n" +
+//                "record /OUTSTR/ example\n" +
+//                "ex1.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9=1\n" +
+//                "ex1.STR2.STR3.STR4.STR5.STR6.STR7.s7=ex1.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9\n" +
+//                "ex1.STR2.s2='1-st text field'\n" +
+//                "ex1.STR2.STR3.s3='Second field'\n" +
+//                "example.zxc=123.45\n" +
+//                "print *,'ex1=',ex1\n" +
+//                "print *,'Printing of initial values of outer structure: '\n" +
+//                "print *,example\n" +
+//                "example.inex.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9=1\n" +
+//                "example.inex.STR2.STR3.STR4.STR5.STR6.STR7.s7=ex1.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9\n" +
+//                "example.inex.STR2.s2='1-st text field of outer structure'\n" +
+//                "example.inex.STR2.STR3.s3='Second field of outer structure'\n" +
+//                "print *,'ex1=',ex1\n" +
+//                "print *,'Printing of result values of outer structure: '\n" +
+//                "print *,example\n" +
+//                "end");
+//        setDefaultsOptions();
+//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+//        reformat();
+//        assertDocumentText("Incorrect structure reformat (fixed form)",
+//                "      program\n" +
+//                "          structure /STR1/\n" +
+//                "              integer*4 s1\n" +
+//                "              structure STR2\n" +
+//                "                  character*36 s2\n" +
+//                "                  structure STR3\n" +
+//                "                      character*36 s3\n" +
+//                "                      structure STR4\n" +
+//                "                          real*4 s4\n" +
+//                "                          structure STR5\n" +
+//                "                              real*4 s5\n" +
+//                "                              structure STR6\n" +
+//                "                                  complex*16 s6\n" +
+//                "                                  structure STR7\n" +
+//                "                                      unsigned*4 s7\n" +
+//                "                                      structure STR8\n" +
+//                "                                          complex*16 s8\n" +
+//                "                                          structure STR9\n" +
+//                "                                              integer*8 s9\n" +
+//                "                                              structure STR10\n" +
+//                "                                                  character*16 s10 /'Hello, World!'/\n" +
+//                "                                              end structure\n" +
+//                "                                          end structure\n" +
+//                "                                      end structure\n" +
+//                "                                  end structure\n" +
+//                "                              end structure\n" +
+//                "                          end structure\n" +
+//                "                      end structure\n" +
+//                "                  end structure\n" +
+//                "              end structure\n" +
+//                "          end structure\n" +
+//                "          structure /OUTSTR/\n" +
+//                "              real*4 zxc\n" +
+//                "              record /STR1/ inex\n" +
+//                "          end structure\n" +
+//                "          record /STR1/ ex1\n" +
+//                "          record /OUTSTR/ example\n" +
+//                "          ex1.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9 = 1\n" +
+//                "          ex1.STR2.STR3.STR4.STR5.STR6.STR7.s7 = ex1.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9\n" +
+//                "          ex1.STR2.s2 = '1-st text field'\n" +
+//                "          ex1.STR2.STR3.s3 = 'Second field'\n" +
+//                "          example.zxc = 123.45\n" +
+//                "          print *, 'ex1=',ex1\n" +
+//                "          print *, 'Printing of initial values of outer structure: '\n" +
+//                "          print *, example\n" +
+//                "          example.inex.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9 = 1\n" +
+//                "          example.inex.STR2.STR3.STR4.STR5.STR6.STR7.s7 = ex1.STR2.STR3.STR4.STR5.STR6.STR7.STR8.STR9.s9\n" +
+//                "          example.inex.STR2.s2 = '1-st text field of outer structure'\n" +
+//                "          example.inex.STR2.STR3.s3 = 'Second field of outer structure'\n" +
+//                "          print *, 'ex1=', ex1\n" +
+//                "          print *, 'Printing of result values of outer structure: '\n" +
+//                "          print *, example\n" +
+//                "      end");
+//    }
 }
