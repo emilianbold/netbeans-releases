@@ -39,6 +39,7 @@
             <exclude name="harness*"/>
             <exclude name="ide1*"/>
             <exclude name="platform*"/>
+            <exclude name="ergonomics*"/>
             <exclude name="nb*.*"/>
             <exclude name="bin"/>
             <exclude name="etc"/>
