@@ -365,6 +365,7 @@
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
+                <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.editor</friend>
@@ -392,7 +393,6 @@
                 <package>org.netbeans.modules.cnd.editor.fortran</package>
                 <package>org.netbeans.modules.cnd.editor.makefile</package>
                 <package>org.netbeans.modules.cnd.editor.parser</package>
-                <package>org.netbeans.modules.cnd.editor.shell</package>
                 <package>org.netbeans.modules.cnd.execution</package>
                 <package>org.netbeans.modules.cnd.execution41.org.openide.cookies</package>
                 <package>org.netbeans.modules.cnd.execution41.org.openide.loaders</package>
