@@ -70,7 +70,7 @@ public class SimpleDialogPanel extends JPanel {
     */      
     public SimpleDialogPanel(DialogDescriptor desc) {
         super();
-        initComponents(desc.getLabels(), desc.isTextField(), desc.getSize(), desc.getButtons(), desc.getMnemonics(), desc.getA11yDesc());
+        initComponents(desc.getLabels(), desc.isTextField(), desc.getSize(), desc.getButtons(), desc.getMnemonics(), desc.getA11yDesc(), desc.includesMnemonics);
         String[] initValues = desc.getInitValues();
         if (initValues!=null)
             for (int i=0;i<initValues.length;i++) {
@@ -78,12 +78,18 @@ public class SimpleDialogPanel extends JPanel {
             }
     }
 
-    private void initComponents(String[] labels, boolean[] isTextField, int size, boolean[] customizers, char[] mnem, String[] a11yDesc) {
+    private void initComponents(String[] labels, boolean[] isTextField, int size, boolean[] customizers, char[] mnem, String[] a11yDesc, boolean includesMnemonics) {
         setLayout(new GridBagLayout());
         jLabels = new JLabel [labels.length];
         jTextComponents = new JTextComponent [labels.length];
         for (int i=0;i<labels.length;i++) {
-            jLabels[i] = new JLabel(labels[i]);
+            if (!includesMnemonics) {
+                jLabels[i] = new JLabel(labels[i]);
+            }
+            else {
+                jLabels[i] = new JLabel();
+                org.openide.awt.Mnemonics.setLocalizedText(jLabels[i], labels[i]);
+            }
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = i;
@@ -181,6 +187,13 @@ public class SimpleDialogPanel extends JPanel {
         return jTextComponents;
     }
     
+    /** Returns the dialog labels. For testing purposes mainly.
+     * @return array of labels
+     */
+    JLabel[] getLabels() {
+        return jLabels;
+    }
+
     /** This is the descriptor for the dialog components.
     * Parameters are :<ul>
     * <li>labels = text array for text fields
@@ -200,11 +213,16 @@ public class SimpleDialogPanel extends JPanel {
         char[] mnem;
         String[] a11yDesc;
         int size;
+        boolean includesMnemonics;
         
         /** the constructor for DialogDescriptor object
         * @param labels labels names
         */
         public DialogDescriptor(String[] labels) {
+            this(labels, false);
+        }
+        
+        public DialogDescriptor(String[] labels, boolean includesMnemonics) {
             this.labels=labels;
             size=25;
             adding=true;
@@ -212,6 +230,7 @@ public class SimpleDialogPanel extends JPanel {
             for (int i=0;i<labels.length;i++) {
                 textField[i]=true; // setting textFields to text fields
             }
+            this.includesMnemonics = includesMnemonics;
         }
         
         public String[] getLabels() {
