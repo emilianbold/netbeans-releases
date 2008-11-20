@@ -92,10 +92,10 @@ public class FortranReformatterImpl {
             if (previous != null && previous.id() == PREPROCESSOR_DIRECTIVE && id != PREPROCESSOR_DIRECTIVE){
                 // indent afre preprocessor directive
                 if (doFormat()){
-                    indentNewLine(current);
+                    analyzeLine(previous, current);
                 }
             }
-            if (isFirst) {
+            if (isFirst && current.id() != PREPROCESSOR_DIRECTIVE) {
                 analyzeLine(previous, current);
             }
             isFirst = false;
@@ -107,7 +107,7 @@ public class FortranReformatterImpl {
                 break;
                 case PREPROCESSOR_DIRECTIVE: //(null, "preprocessor"),
                 {
-                    preprocessorFormatter.indentPreprocessor(previous);
+                    preprocessorFormatter.indentPreprocessor(current);
                     break;
                 }
                 case NEW_LINE:
@@ -371,7 +371,7 @@ public class FortranReformatterImpl {
 
     private void analyzeLine(Token<FortranTokenId> previous, Token<FortranTokenId> current) {
         Token<FortranTokenId> next = null;
-        if (previous == null) {
+        if (previous == null || previous.id() == PREPROCESSOR_DIRECTIVE) {
             switch (current.id()) {
                 case LINE_COMMENT_FIXED:
                 case LINE_COMMENT_FREE:
@@ -555,7 +555,7 @@ public class FortranReformatterImpl {
 
     private void newLineFormat(Token<FortranTokenId> previous, Token<FortranTokenId> current, Token<FortranTokenId> firstImportant) {
         boolean fixedLabel = firstImportant != null && firstImportant.id() == NUM_LITERAL_INT && !codeStyle.isFreeFormatFortran();
-        if (previous != null) {
+        if (previous != null && previous.id() != PREPROCESSOR_DIRECTIVE) {
             boolean done = false;
             DiffResult diff = diffs.getDiffs(ts, -1);
             if (diff != null) {

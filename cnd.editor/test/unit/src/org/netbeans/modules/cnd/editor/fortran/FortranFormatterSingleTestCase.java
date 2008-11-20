@@ -48,54 +48,52 @@ public class FortranFormatterSingleTestCase  extends FortranEditorBase {
     public FortranFormatterSingleTestCase(String testMethodName) {
         super(testMethodName);
     }
-    public void testIfFree() {
+    public void testPreprocessorFree() {
         setLoadDocumentText(
-                "  implicit double precision (a-h)\n" +
-                "  implicit doubleprecision (o-z)\n" +
-                "  do i=-1,1\n" +
-                "  if (i.eq.0) then\n" +
-                "  write(*,*)a(i)\n" +
-                "  elseif(i.gt.0) then\n" +
-                "  write(*,*)b(i)\n" +
-                "  else if(i.lt.0) then\n" +
-                "  write(*,*)c(i)\n" +
-                "  endif\n" +
-                "  enddo\n" +
-                "  end\n" +
-                "  real*8 function a(n)\n" +
-                "  a=dble(n+10)\n" +
-                "  return\n" +
-                "  endfunction\n" +
-                "  double precision function b(n)\n" +
-                "  b=dble(n*10)\n" +
-                "  end\n" +
-                "  doubleprecision function c(n)\n" +
-                "  c=dble(n-10)\n" +
-                "  end function");
+                "#include \"file\"\n" +
+                "#define A\n" +
+                "#if defined A\n" +
+                "#undef A\n" +
+                "print *, \"this block_1 must be NOT in output text\"\n" +
+                "#elif 1\n" +
+                "print *, \"this block_2 must be in output text\"\n" +
+                "print *, \"and this string too\"\n" +
+                "#else\n" +
+                "print *, \"this block_3 must be NOT in output text\"\n" +
+                "#endif\n" +
+                "if (1 > 0) then\n" +
+                "#if 0\n" +
+                "    print *, \"this block_1 must be NOT in output text\"\n" +
+                "#elif (1 > 5)\n" +
+                "    print *, \"this block_3 must be NOT in output text\"\n" +
+                "#else\n" +
+                "    print *, \"this block_2 must be in output text\"\n" +
+                "#endif\n" +
+                "endif\n" +
+                "end");
         setDefaultsOptions();
         reformat();
-        assertDocumentText("Incorrect if reformat (free form)",
-                "implicit double precision (a - h)\n" +
-                "implicit doubleprecision (o - z)\n" +
-                "do i = -1, 1\n" +
-                "    if (i .eq. 0) then\n" +
-                "        write(*, *)a(i)\n" +
-                "    elseif (i .gt. 0) then\n" +
-                "        write(*, *)b(i)\n" +
-                "    else if(i .lt. 0) then\n" +
-                "        write(*, *)c(i)\n" +
-                "    endif\n" +
-                "enddo\n" +
-                "end\n" +
-                "real * 8 function a(n)\n" +
-                "    a = dble(n + 10)\n" +
-                "    return\n" +
-                "endfunction\n" +
-                "double precision function b(n)\n" +
-                "    b = dble(n * 10)\n" +
-                "end\n" +
-                "doubleprecision function c(n)\n" +
-                "    c = dble(n - 10)\n" +
-                "end function");
+        assertDocumentText("Incorrect preprocessor reformat (free form)",
+                "#include \"file\"\n" +
+                "#define A\n" +
+                "#if defined A\n" +
+                "#undef A\n" +
+                "print *, \"this block_1 must be NOT in output text\"\n" +
+                "#elif 1\n" +
+                "print *, \"this block_2 must be in output text\"\n" +
+                "print *, \"and this string too\"\n" +
+                "#else\n" +
+                "print *, \"this block_3 must be NOT in output text\"\n" +
+                "#endif\n" +
+                "if (1 > 0) then\n" +
+                "#if 0\n" +
+                "    print *, \"this block_1 must be NOT in output text\"\n" +
+                "#elif (1 > 5)\n" +
+                "    print *, \"this block_3 must be NOT in output text\"\n" +
+                "#else\n" +
+                "    print *, \"this block_2 must be in output text\"\n" +
+                "#endif\n" +
+                "endif\n" +
+                "end");
     }
 }
