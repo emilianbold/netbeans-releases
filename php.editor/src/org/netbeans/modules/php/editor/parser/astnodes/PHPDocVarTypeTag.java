@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,55 +31,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
+import java.util.List;
+
 /**
- * Represent a PHPDoc tag in the php documentation
+ * Represents tags like param, where is defined type of a variable.
  * @author Petr Pisl
  */
-public class PHPDocTag extends ASTNode {
+public class PHPDocVarTypeTag extends PHPDocTypeTag {
 
-    public enum Type {
-        ABSTRACT, ACCESS, AUTHOR,
-        CATEGORY, COPYRIGHT,
-        DEPRECATED, DESC,
-        EXAMPLE, EXCEPTION,
-        FILESOURCE, FINAL,
-        GLOBAL,
-        IGNORE, INTERNAL,
-        LICENSE, LINK,
-        MAGIC, METHOD,
-        NAME,
-        PROPERTY, PROPERTY_READ, PROPERTY_WRITE, PARAM, PACKAGE,
-        RETURN,
-        SEE, SINCE, STATIC, STATICVAR, SUBPACKAGE,
-        THROWS, TODO, TUTORIAL,
-        USES,
-        VAR, VERSION
+    private final PHPDocNode variable;
+
+    public PHPDocVarTypeTag(int start, int end, PHPDocTag.Type kind, String value,
+            List<PHPDocNode> types, PHPDocNode variable) {
+        super(start, end, kind, value, types);
+        this.variable = variable;
     }
 
-    final private Type type;
-    final private String value;
-    
-    public PHPDocTag(int start, int end, PHPDocTag.Type kind, String value) {
-        super(start, end);
-        this.type = kind;
-        this.value = value;
+    public PHPDocNode getVariable() {
+        return variable;
     }
     
-    public PHPDocTag.Type getKind() {
-        return this.type;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

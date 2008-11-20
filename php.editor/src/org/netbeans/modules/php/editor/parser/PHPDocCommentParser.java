@@ -40,11 +40,16 @@ package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocPropertyTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocStaticAccessType;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 
 /**
  *
@@ -53,6 +58,21 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 public class PHPDocCommentParser {
 
     private static Pattern pattern = Pattern.compile("[\r\n][ \\t]*[*]?[ \\t]*");
+    private static final List<PHPDocTag.Type> PHPDocTypeTags = new ArrayList<PHPDocTag.Type>();
+    static {
+        PHPDocTypeTags.add(PHPDocTag.Type.RETURN);
+        PHPDocTypeTags.add(PHPDocTag.Type.THROWS);
+        PHPDocTypeTags.add(PHPDocTag.Type.VAR);
+        PHPDocTypeTags.add(PHPDocTag.Type.SEE);
+    }
+
+    private static final List<PHPDocTag.Type> PHPDocVarTypeTags = new ArrayList<PHPDocTag.Type>();
+    static {
+        PHPDocVarTypeTags.add(PHPDocTag.Type.PARAM);
+//        PHPDocVarTypeTags.add(PHPDocTag.Type.PROPERTY);
+//        PHPDocVarTypeTags.add(PHPDocTag.Type.PROPERTY_READ);
+//        PHPDocVarTypeTags.add(PHPDocTag.Type.PROPERTY_WRITE);
+    }
 
     public PHPDocCommentParser() {
     }
@@ -90,7 +110,7 @@ public class PHPDocCommentParser {
                 if (lastTag == null) { // is it the first tag in the block
                     blockDescription = description.trim();  // save the block description
                 } else { // create last recognized tag
-                    PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.trim());
+                    PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.trim(), comment, startOffset + 3);
                     tags.add(tag);
                 }
                 lastTag = tagType;  // remember the recognized tag
@@ -113,25 +133,26 @@ public class PHPDocCommentParser {
             if (lastTag == null) {
                 blockDescription = description.trim();  
             } else {
-                PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.trim());
+                PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.trim(), comment, startOffset + 3);
                 tags.add(tag);
             }
             line = line.substring(tagType.name().length() + 1).trim();
-            PHPDocTag tag = createTag(startOffset + 3 + index, startOffset + 3 + comment.length(), tagType, line);
+            PHPDocTag tag = createTag(startOffset + 3 + index, startOffset + 3 + comment.length(), tagType, line, comment, startOffset + 3);
             tags.add(tag);
         } else {
             if (lastTag == null) {  // thre is not defined a tag before the last line
                 blockDescription = description + line;
             } else {
                 description = description + line;
-                PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description);
+                PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description, comment, startOffset + 3);
                 tags.add(tag);
             }
         }
         return new PHPDocBlock(startOffset + 3, endOffset, blockDescription, tags);
     }
 
-    private PHPDocTag createTag(int start, int end, PHPDocTag.Type type, String description) {
+    private PHPDocTag createTag(int start, int end, PHPDocTag.Type type, String description, String originalComment, int originalCommentStart) {
+        List<PHPDocNode> docTypes = new ArrayList<PHPDocNode>();
         if (type == PHPDocTag.Type.PROPERTY
                 || type == PHPDocTag.Type.PROPERTY_READ
                 || type == PHPDocTag.Type.PROPERTY_WRITE) {
@@ -144,9 +165,81 @@ public class PHPDocCommentParser {
                 return new PHPDocPropertyTag(start, end, type, name, tokens[0].trim(), description);
             }
         }
+        if (PHPDocTypeTags.contains(type) || PHPDocVarTypeTags.contains(type)) {
+            for (String stype : getTypes(description)) {
+                stype = removeHTMLTags(stype);
+                int startDocNode = findStartOfDocNode(originalComment, originalCommentStart, stype, start);
+                int index = stype.indexOf("::");    //NOI18N
+                PHPDocNode docType;
+                if (index == -1) {
+                    docType = new PHPDocNode(startDocNode, startDocNode + stype.length(), stype);
+                }
+                else {
+                    String className = stype.substring(0, index);
+                    String constantName = stype.substring(index+2,stype.length());
+                    PHPDocNode classNameNode = new PHPDocNode(startDocNode, startDocNode + className.length(), className);
+                    PHPDocNode constantNode = new PHPDocNode(startDocNode + className.length()+2, startDocNode + stype.length(), constantName);
+                    docType = new PHPDocStaticAccessType(startDocNode, startDocNode + stype.length(), stype, classNameNode, constantNode);
+                }
+                docTypes.add(docType);
+            }
+            if (PHPDocVarTypeTags.contains(type)) {
+                String variable = getVaribleName(description);
+                if (variable != null) {
+                    int startOfVariable = findStartOfDocNode(originalComment, originalCommentStart, variable, start);
+                    PHPDocNode varibaleNode = new PHPDocNode(startOfVariable, startOfVariable + variable.length(), variable);
+                    return new PHPDocVarTypeTag(start, end, type, description, docTypes, varibaleNode);
+                }
+            }
+            return new PHPDocTypeTag(start, end, type, description, docTypes);
+        }
         return new PHPDocTag(start, end, type, description);
     }
-    
+
+    private List<String> getTypes(String description) {
+        String[] tokens = description.split("[ ]+"); //NOI18N
+        ArrayList<String> types = new ArrayList<String>();
+        if (tokens.length > 0) {
+            if (tokens[0].indexOf('|') > -1) {
+                String[] ttokens = tokens[0].split("[|]"); //NOI18N
+                for (String ttoken : ttokens) {
+                    types.add(ttoken.trim());
+                }
+            } else {
+                types.add(tokens[0].trim());
+            }
+        }
+
+        return types;
+    }
+
+    private String getVaribleName(String description) {
+        String[] tokens = description.split("[ ]+"); //NOI18N
+        String variable = null;
+        if ((tokens.length > 1) && (tokens[1].charAt(0) == '$')) {
+            variable = tokens[1];
+        }
+        return variable;
+    }
+
+    private String removeHTMLTags(String text) {
+        String value = text;
+        int index = value.indexOf('>');
+        if (index > -1) {
+            value = value.substring(index + 1);
+            index = value.indexOf('<');
+            if (index > -1) {
+                value = value.substring(0, index);
+            }
+        }
+        return value;
+    }
+
+    private int findStartOfDocNode(String originalComment, int originalStart, String what, int from) {
+        int pos = originalComment.indexOf(what, from - originalStart);
+        return originalStart + pos;
+    }
+
     private String removeStarAndTrim(String text) {
         text = text.trim();
         if (text.length() > 0 && text.charAt(0) == '*') {
