@@ -70,7 +70,7 @@ public class TaskEditorElement extends PropertyEditorResourceElement implements 
     }
 
     public TaskEditorElement() {
-        initComponents();
+         initComponents();
     }
 
     public JComponent getJComponent() {
@@ -102,9 +102,13 @@ public class TaskEditorElement extends PropertyEditorResourceElement implements 
         }
 
         // UI stuff
+        if (taskLabel == null) {
+            return;
+        }
         taskLabel.setEnabled(wrapper != null);
         gotoButton.setEnabled(wrapper != null && enableGoTo);
     }
+
 
     /** This method is called from within the constructor to
      * initialize the form.
