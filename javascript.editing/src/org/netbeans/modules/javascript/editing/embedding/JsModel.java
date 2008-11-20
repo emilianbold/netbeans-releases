@@ -137,8 +137,8 @@ public class JsModel {
             StringBuilder buffer = new StringBuilder();
 
             BaseDocument d = (BaseDocument) doc;
+            d.readLock();
             try {
-                d.readLock();
                 TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(doc);
                 TokenSequence tokenSequence = tokenHierarchy.tokenSequence(); //get top level token sequence
                 //TokenSequence<TokenId> tokenSequence = tokenHierarchy.tokenSequence(); //get top level token sequence
