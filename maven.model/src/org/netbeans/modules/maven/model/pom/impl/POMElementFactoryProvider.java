@@ -440,6 +440,14 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Resource context) {
+        if (isElementQName(context.getModel().getPOMQNames().INCLUDES)) {
+            created = new StringListImpl(context.getModel(), element, context.getModel().getPOMQNames().INCLUDE);
+            return;
+        }
+        if (isElementQName(context.getModel().getPOMQNames().EXCLUDES)) {
+            created = new StringListImpl(context.getModel(), element, context.getModel().getPOMQNames().EXCLUDE);
+            return;
+        }
         createExtensibilityElement(context);
     }
 

@@ -163,6 +163,14 @@ public final class POMQNames {
     public final POMQName ARCH;
     public final POMQName FAMILY;
 
+    public final POMQName TARGETPATH;
+    public final POMQName FILTERING;
+    public final POMQName INCLUDES;
+    public final POMQName INCLUDE;
+    public final POMQName EXCLUDES;
+    public final POMQName EXCLUDE;
+
+
     private boolean ns;
 
     public POMQNames(boolean ns) {
@@ -279,6 +287,13 @@ public final class POMQNames {
 
         FAMILY = new POMQName(POMQName.createQName("family",ns), ns); //NOI18N
         ARCH = new POMQName(POMQName.createQName("arch",ns), ns); //NOI18N
+
+        TARGETPATH = new POMQName(POMQName.createQName("targetPath",ns), ns); //NOI18N
+        FILTERING = new POMQName(POMQName.createQName("filtering",ns), ns); //NOI18N
+        INCLUDES = new POMQName(POMQName.createQName("includes",ns), ns); //NOI18N
+        INCLUDE = new POMQName(POMQName.createQName("include",ns), ns); //NOI18N
+        EXCLUDES = new POMQName(POMQName.createQName("excludes",ns), ns); //NOI18N
+        EXCLUDE = new POMQName(POMQName.createQName("exclude",ns), ns); //NOI18N
         //when adding items here, need to add them to the set below as well.
 
     }
@@ -383,7 +398,13 @@ public final class POMQNames {
             EXISTS.getQName(),
             MISSING.getQName(),
             ARCH.getQName(),
-            FAMILY.getQName()
+            FAMILY.getQName(),
+            TARGETPATH.getQName(),
+            FILTERING.getQName(),
+            INCLUDES.getQName(),
+            INCLUDE.getQName(),
+            EXCLUDES.getQName(),
+            EXCLUDE.getQName()
         };
         List<QName> list = Arrays.asList(names);
         return new HashSet<QName>(list);

@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.maven.model.pom;
 
+import java.util.List;
+
 
 /**
  *
@@ -56,5 +58,22 @@ public interface Resource extends POMComponent {
 //            <xs:element name="exclude" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
 //    </xs:all>
 //  </xs:complexType-->
+
+    String getDirectory();
+    void setDirectory(String directory);
+
+    String getTargetPath();
+    void setTargetPath(String path);
+
+    Boolean isFiltering();
+    void setFiltering(Boolean filtering);
+
+    public List<String> getIncludes();
+    public void addInclude(String include);
+    public void removeInclude(String include);
+
+    public List<String> getExcludes();
+    public void addExclude(String exclude);
+    public void removeExclude(String exclude);
 
 }

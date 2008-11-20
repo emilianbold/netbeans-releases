@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.List;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
 import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
@@ -47,6 +48,11 @@ import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
  * @author mkleint
  */
 public class ResourceImpl extends POMComponentImpl implements Resource {
+
+    private static final Class<POMComponent>[] ORDER = new Class[] {
+        POMExtensibilityElement.class,
+        StringListImpl.class, //resources
+    };
 
     public ResourceImpl(POMModel model, Element element) {
         super(model, element);
@@ -61,6 +67,120 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
     // child elements
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public String getDirectory() {
+        return getChildElementText(getModel().getPOMQNames().DIRECTORY.getQName());
+    }
+
+    public void setDirectory(String directory) {
+        setChildElementText(getModel().getPOMQNames().DIRECTORY.getName(), directory,
+                getModel().getPOMQNames().DIRECTORY.getQName());
+    }
+
+    public String getTargetPath() {
+        return getChildElementText(getModel().getPOMQNames().TARGETPATH.getQName());
+    }
+
+    public void setTargetPath(String path) {
+        setChildElementText(getModel().getPOMQNames().TARGETPATH.getName(), path,
+                getModel().getPOMQNames().TARGETPATH.getQName());
+    }
+
+    public Boolean isFiltering() {
+        String str = getChildElementText(getModel().getPOMQNames().FILTERING.getQName());
+        if (str != null) {
+            return Boolean.valueOf(str);
+        }
+        return null;
+    }
+
+    public void setFiltering(Boolean filtering) {
+        setChildElementText(getModel().getPOMQNames().FILTERING.getName(),
+                filtering == null ? null : filtering.toString(),
+                getModel().getPOMQNames().FILTERING.getQName());
+    }
+
+    public List<String> getIncludes() {
+        List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (getModel().getPOMQNames().INCLUDES.getName().equals(list.getPeer().getNodeName())) {
+                return list.getListChildren();
+            }
+        }
+        return null;
+    }
+
+    public void addInclude(String include) {
+        List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (getModel().getPOMQNames().INCLUDES.getName().equals(list.getPeer().getNodeName())) {
+                list.addListChild(include);
+                return;
+            }
+        }
+        setChild(StringListImpl.class,
+                 getModel().getPOMQNames().INCLUDES.getName(),
+                 getModel().getFactory().create(this, getModel().getPOMQNames().INCLUDES.getQName()),
+                 getClassesBefore(ORDER, StringListImpl.class));
+        lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (getModel().getPOMQNames().INCLUDES.getName().equals(list.getPeer().getNodeName())) {
+                list.addListChild(include);
+                return;
+            }
+        }
+    }
+
+    public void removeInclude(String include) {
+        List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (getModel().getPOMQNames().INCLUDES.getName().equals(list.getPeer().getNodeName())) {
+                list.removeListChild(include);
+                return;
+            }
+        }
+    }
+
+    public List<String> getExcludes() {
+        List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (getModel().getPOMQNames().EXCLUDES.getName().equals(list.getPeer().getNodeName())) {
+                return list.getListChildren();
+            }
+        }
+        return null;
+    }
+
+    public void addExclude(String exclude) {
+        List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (getModel().getPOMQNames().EXCLUDES.getName().equals(list.getPeer().getNodeName())) {
+                list.addListChild(exclude);
+                return;
+            }
+        }
+        setChild(StringListImpl.class,
+                 getModel().getPOMQNames().EXCLUDES.getName(),
+                 getModel().getFactory().create(this, getModel().getPOMQNames().EXCLUDES.getQName()),
+                 getClassesBefore(ORDER, StringListImpl.class));
+        lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (getModel().getPOMQNames().EXCLUDES.getName().equals(list.getPeer().getNodeName())) {
+                list.addListChild(exclude);
+                return;
+            }
+        }
+    }
+
+    public void removeExclude(String exclude) {
+        List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (getModel().getPOMQNames().EXCLUDES.getName().equals(list.getPeer().getNodeName())) {
+                list.removeListChild(exclude);
+                return;
+            }
+        }
     }
     
     public static class ResList extends ListImpl<Resource> {
