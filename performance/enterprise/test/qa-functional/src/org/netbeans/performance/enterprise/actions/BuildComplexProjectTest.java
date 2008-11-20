@@ -90,6 +90,10 @@ public class BuildComplexProjectTest extends PerformanceTestCase {
         MY_END_EVENT = ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE;
     }
 
+    public void testBuildComplexProject() {
+        doMeasurement();
+    }
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EnterpriseSetup.class)

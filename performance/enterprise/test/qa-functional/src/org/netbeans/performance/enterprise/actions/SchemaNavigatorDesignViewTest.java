@@ -77,6 +77,10 @@ public class SchemaNavigatorDesignViewTest  extends PerformanceTestCase {
         //   WAIT_AFTER_OPEN=4000;
     }
 
+    public void testSchemaNavigatorDesignView() {
+        doMeasurement();
+    }
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EnterpriseSetup.class)
@@ -90,10 +94,10 @@ public class SchemaNavigatorDesignViewTest  extends PerformanceTestCase {
         log(":: initialize");
         System.gc();
         new EventTool().waitNoEvent(3000);
-        processNode = new EPUtilities().getProcessFilesNode("SOATestProject");
+        processNode = new EPUtilities().getProcessFilesNode("TravelReservationService");
         
-        schemaNode = new Node(processNode, "fields.xsd");
-        tempNode = new Node(processNode, "batch.xsd");        
+        schemaNode = new Node(processNode, "OTA_TravelItinerary.xsd");
+        tempNode = new Node(processNode, "OTA_TravelItinerary_1.xsd");
         
         tempNode.select();
     }

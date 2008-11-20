@@ -78,8 +78,8 @@ public class OpenSchemaViewTest extends PerformanceTestCase {
     private boolean testGC = false;
     private List<WeakReference> refObj = new ArrayList<WeakReference>();
     private List<WeakReference> refDoc = new ArrayList<WeakReference>();
-    private String filename = CommonUtilities.getProjectsDir() 
-            + "SOATestProject" + File.separator + "src";
+    private String filename; //= CommonUtilities.getProjectsDir()
+//            + "SOATestProject" + File.separator + "src";
     
     /** Creates a new instance of OpenSchemaView */
     public OpenSchemaViewTest(String testName) {
@@ -107,17 +107,11 @@ public class OpenSchemaViewTest extends PerformanceTestCase {
     public void testOpenSchemaView(){
         projectName = "TravelReservationService";
         schemaName = "OTA_TravelItinerary";
-        filename += File.separator + schemaName + ".xsd";
+        filename = "OTA_TravelItinerary.xsd";
         doMeasurement();
     }
     
-    public void testOpenComplexSchemaView(){
-        projectName = "SOATestProject";
-        schemaName = "fields";
-        filename += File.separator + schemaName + ".xsd";
-        doMeasurement();
-    }
-
+/*
     public void testGCwithOpenComplexSchemaView(){
         testGC = true;
         testOpenComplexSchemaView();
@@ -132,7 +126,7 @@ public class OpenSchemaViewTest extends PerformanceTestCase {
         }
         log("All Schema documents are GCed");
     }
-    
+ */
     public void prepare() {
         log(":: prepare");
     }

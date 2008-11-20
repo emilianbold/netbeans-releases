@@ -83,6 +83,10 @@ public class ValidateSchemaTest extends PerformanceTestCase {
         WAIT_AFTER_OPEN=4000;
     }
 
+    public void testValidateSchema() {
+        doMeasurement();
+    }
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EnterpriseSetup.class)
@@ -94,7 +98,7 @@ public class ValidateSchemaTest extends PerformanceTestCase {
     @Override
     public void initialize(){
         log(":: initialize");
-        schemaNode = new Node(new EPUtilities().getProcessFilesNode("SOATestProject"),"fields.xsd");
+        schemaNode = new Node(new EPUtilities().getProcessFilesNode("TravelReservationService"),"OTA_TravelItinerary.xsd");
         schemaNode.select();
         new OpenAction().perform(schemaNode);
     }
@@ -117,7 +121,7 @@ public class ValidateSchemaTest extends PerformanceTestCase {
     @Override
     protected void shutdown() {
         log("::shutdown");        
-        new TopComponentOperator("fields.xsd").getFocus(); // workaround issue 120762
+        new TopComponentOperator("OTA_TravelItinerary.xsd").getFocus(); // workaround issue 120762
         new CloseAllDocumentsAction().perform();
     }
 

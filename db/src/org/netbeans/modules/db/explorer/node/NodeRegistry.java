@@ -41,6 +41,7 @@ package org.netbeans.modules.db.explorer.node;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeEvent;
@@ -71,7 +72,7 @@ public class NodeRegistry implements ChangeListener {
     private static final String PATH = "Databases/Explorer/"; //NOI18N
     private static final String NODEPROVIDERS = "/NodeProviders"; //NOI18N
     
-    private final ChangeSupport eventSupport;
+    private final ChangeSupport changeSupport;
     private final List<NodeProvider> providers = new CopyOnWriteArrayList<NodeProvider>();
 
     private Lookup.Result lookupResult;
@@ -90,7 +91,7 @@ public class NodeRegistry implements ChangeListener {
     }
 
     private NodeRegistry() {
-        eventSupport = new ChangeSupport(this);
+        changeSupport = new ChangeSupport(this);
     }
     
     /**
@@ -105,11 +106,11 @@ public class NodeRegistry implements ChangeListener {
         initProviders(dataLookup);
         
         // listen for changes and re-init the providers when the lookup changes
-        lookup.lookupResult(NodeProviderFactory.class).addLookupListener(
+        lookupResult.addLookupListener(
             new LookupListener() {
                 public void resultChanged(LookupEvent ev) {
                     initProviders(dataLookup);
-                    eventSupport.fireChange();
+                    changeSupport.fireChange();
                 }
             }
         );
@@ -131,9 +132,9 @@ public class NodeRegistry implements ChangeListener {
     }
     
     /**
-     * Get the list of nodes from all of the registered providers.
+     * Get the nodes from all of the registered providers.
      * 
-     * @return the list of nodes
+     * @return the nodes
      */
     public Collection<? extends Node> getNodes() {
         List<Node> results = new ArrayList<Node>();
@@ -142,18 +143,18 @@ public class NodeRegistry implements ChangeListener {
             results.addAll(provider.getNodes());
         } 
         
-        return results;
+        return Collections.unmodifiableCollection(results);
     }
     
     public void addChangeListener(ChangeListener listener) {
-        eventSupport.addChangeListener(listener);
+        changeSupport.addChangeListener(listener);
     }
     
     public void removeChangeListener(ChangeListener listener) {
-        eventSupport.removeChangeListener(listener);
+        changeSupport.removeChangeListener(listener);
     }
 
     public void stateChanged(ChangeEvent evt) {
-        eventSupport.fireChange();
+        changeSupport.fireChange();
     }
 }

@@ -301,9 +301,9 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                                 Logger.getLogger(ErrorAnnotator.class.getName()).log(Level.WARNING, "SourceGroup[" + sg.getDisplayName() + "].getRootFolder() returned null");
                                 continue;
                             }
-                            if ((FileUtil.isParentOf(f, sgRoot) || f == sgRoot) && TaskCache.getDefault().isInError(sgRoot, true)) {
-                                recError = true;
-                                nonRecError = false;
+                            if ((FileUtil.isParentOf(f, sgRoot) || f == sgRoot)) {
+                                recError = TaskCache.getDefault().isInError(sgRoot, true);
+                                nonRecError = TaskCache.getDefault().isInError(sgRoot, false);
                                 handled = true;
                                 break;
                             }

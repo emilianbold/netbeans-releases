@@ -279,7 +279,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
             else
                 master = null;
 	}
-	set1.put(new VectorNodeProp(getIncludeDirectories(), getInheritIncludes(), getBaseDir(), new String[] {"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
+	set1.put(new VectorNodeProp<String>(getIncludeDirectories(), getInheritIncludes(), getBaseDir(), new String[] {"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
 	// Preprocessor Macros
 	inheritedValues = new StringBuilder();
         master = (CCCCompilerConfiguration)getMaster();

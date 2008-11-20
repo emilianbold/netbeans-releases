@@ -42,24 +42,32 @@
 package org.netbeans.modules.mobility.e2e.mapping;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.Map.Entry;
+
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.e2e.classdata.ClassData;
+import org.netbeans.modules.mobility.e2e.classdata.FieldData;
+import org.netbeans.modules.mobility.end2end.output.OutputLogger;
+import org.netbeans.modules.mobility.end2end.output.OutputLogger.LogLevel;
 import org.netbeans.modules.mobility.end2end.util.Util;
 import org.netbeans.modules.mobility.javon.JavonMapping;
 import org.netbeans.modules.mobility.javon.JavonMapping.Service;
@@ -92,8 +100,12 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
 
     public boolean generateTarget( ProgressHandle ph, String target ) {
         if( BEANS_OUTPUT.equals( target )) {
+            
             mapping.setProperty( "target", "client" );
-            ph.progress( NbBundle.getMessage( ClientBeanGeneratorTemplate.class, "MSG_Bean_Generation" )); //NOI18N
+            String beanGeneration = NbBundle.getMessage( 
+                    ClientBeanGeneratorTemplate.class, "MSG_Bean_Generation" ); //NOI18N
+            ph.progress( beanGeneration );
+            OutputLogger.getInstance().log( beanGeneration) ;
             Set<Service> services = mapping.getServiceMappings();
             Map<String, ClassData> types = new HashMap<String, ClassData>();
             for( Service service : services ) {
@@ -108,27 +120,63 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
                 JavonSerializer serializer = mapping.getRegistry().getTypeSerializer( type );
                 if( serializer instanceof BeanTypeSerializer ) {
                     try {
-                        BeanTypeSerializer bts = (BeanTypeSerializer) serializer;
+                        //BeanTypeSerializer bts = (BeanTypeSerializer) serializer;
 //                        System.err.println(" - generating type: " + typeName);
 
                         FileObject outputDir = FileUtil.toFileObject( FileUtil.normalizeFile( 
                             new File( mapping.getClientMapping().getOutputDirectory())));                    
                         String packageName = type.getPackage();
-                        StringTokenizer token = new StringTokenizer( packageName, "." ); //NOI18N
-                        FileObject destination = FileUtil.createFolder( outputDir, packageName.replace( '.', '/' )); //NOI18N
-                        FileObject beanFile = destination.getFileObject( type.getName(), "java" ); //NOI18N
+                        //StringTokenizer token = new StringTokenizer( packageName, "." ); //NOI18N
+                        String packageFolder = packageName.replace( '.', '/' );//NOI18N
+                        OutputLogger.getInstance().log( 
+                                MessageFormat.format( NbBundle.getMessage( 
+                                        ClientBeanGeneratorTemplate.class, 
+                                        "MSG_DestinationFolderCreation" ),
+                                        new File( FileUtil.toFile(outputDir) ,
+                                        packageFolder)));//NOI18N
+                        FileObject destination = FileUtil.createFolder( outputDir,
+                                packageFolder);
+                        if ( destination == null ){
+                            OutputLogger.getInstance().log( LogLevel.ERROR,
+                                MessageFormat.format( NbBundle.getMessage(
+                                        ClientBeanGeneratorTemplate.class,
+                                        "MSG_FailFolderCreation" ),
+                                        new File( FileUtil.toFile(outputDir) ,
+                                        packageFolder)));//NOI18N
+                        }
+                        FileObject beanFile = destination.getFileObject( type.getName(), 
+                                "java" ); //NOI18N
                         if( beanFile == null ) {
-                                beanFile = destination.createData( type.getName(), "java" ); //NOI18N
+                            OutputLogger.getInstance().log(
+                                MessageFormat.format( NbBundle.getMessage(
+                                        ClientBeanGeneratorTemplate.class,
+                                        "MSG_BeanFileCreation" ),
+                                        new File( FileUtil.toFile(outputDir) ,
+                                                type.getName())));//NOI18N
+                                beanFile = destination.createData( type.getName(), 
+                                        "java" ); //NOI18N
+                        }
+                        if ( beanFile == null ){
+                            OutputLogger.getInstance().log( LogLevel.ERROR,
+                                MessageFormat.format( NbBundle.getMessage(
+                                        ClientBeanGeneratorTemplate.class,
+                                        "MSG_FailBeanCreation" ),
+                                        new File( FileUtil.toFile(outputDir) ,
+                                                type.getName())));//NOI18N
                         }
                         
                         generateBean( beanFile, type );
                         if ("true".equals(mapping.getProperty( "databinding" )) && beanFile != null){
                             Project p = FileOwnerQuery.getOwner(beanFile);
+                            OutputLogger.getInstance().log( NbBundle.getMessage(
+                                    ClientBeanGeneratorTemplate.class,
+                                    "MSG_RegisterDatabindingLibrary"));//NOI18N
                             Util.registerDataBindingLibrary(p);
                         }
                         //ph.progress( progress );
                     } catch( IOException e ) {
                         ErrorManager.getDefault().notify( e );
+                        OutputLogger.getInstance().log( e );
                     }
                 }
                 progress++;
@@ -147,7 +195,11 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
             ScriptEngine eng = mgr.getEngineByName( "freemarker" ); //NOI18N
             Bindings bind = eng.getContext().getBindings( ScriptContext.ENGINE_SCOPE );
 
-            FileObject template = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject( "Templates/Client/Bean.java" ); //NOI18N
+            FileObject template = Repository.getDefault().getDefaultFileSystem().
+                getRoot().getFileObject( "Templates/Client/Bean.java" ); //NOI18N
+            OutputLogger.getInstance().log(
+                    NbBundle.getMessage(ClientBeanGeneratorTemplate.class,
+                            "MSG_ConfigureBindings"));//NOI18N
             bind.put( "mapping", mapping ); //NOI18N
             bind.put( "registry", mapping.getRegistry()); //NOI18N
             bind.put( "bean", beanType ); //NOI18N
@@ -156,6 +208,18 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
             
             Writer w = null;
             Reader is = null;
+            OutputLogger.getInstance().log(MessageFormat.format(
+                    NbBundle.getMessage(ClientBeanGeneratorTemplate.class,
+                        "MSG_GenerateBean" ),FileUtil.toFile(outputFile)));//NOI18N
+            for( Entry<String, String> entry :beanType.getInvaidFields().entrySet()){
+                String field = entry.getKey();
+                String type = entry.getValue();
+                OutputLogger.getInstance().log( LogLevel.WARNING, 
+                        MessageFormat.format(
+                                NbBundle.getMessage(ClientBeanGeneratorTemplate.class,
+                                    "MSG_InvalidField" ), beanType.getClassName(),
+                                    field , type ));//NOI18N
+            }
             try {
                 w = new StringWriter();
                 is = new InputStreamReader( template.getInputStream());
@@ -165,9 +229,16 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
                 eng.getContext().setAttribute( ScriptEngine.FILENAME, template.getNameExt(), ScriptContext.ENGINE_SCOPE );
 
                 eng.eval( is );
-            } catch( Exception e ) {
-                e.printStackTrace();
-            } finally {
+            }
+            catch (ScriptException e ){
+                OutputLogger.getInstance().log(e);
+                ErrorManager.getDefault().notify( e );
+            }
+            catch ( FileNotFoundException e ){
+                OutputLogger.getInstance().log(e);
+                ErrorManager.getDefault().notify( e );
+            }
+            finally {
                 if( w != null ) {
                     off.write( w.toString());
                     w.close();
@@ -175,8 +246,13 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
                 if( is != null ) is.close();
                 off.close();
             }                  
-        } catch( Exception e ) {                
+        }
+        catch (IOException e ){
+            OutputLogger.getInstance().log(e);
             ErrorManager.getDefault().notify( e );
+            OutputLogger.getInstance().log( MessageFormat.format(
+                    NbBundle.getMessage(ClientBeanGeneratorTemplate.class,
+                    "MSG_FailGenerateBean" ),FileUtil.toFile(outputFile)));
             return false;
         }
         return true;

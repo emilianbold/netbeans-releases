@@ -50,6 +50,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
+import org.netbeans.jellytools.EditorOperator;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
@@ -126,7 +127,11 @@ public class AddNewBpelProcessTest extends PerformanceTestCase {
         location = new NewFileNameLocationStepOperator();
         location.txtObjectName().setText("BPELProcess_"+System.currentTimeMillis());
     }
-    
+
+    public void testAddNewBpelProcess() {
+        doMeasurement();
+    }
+
     public ComponentOperator open(){
         location.finish();
         return null;
@@ -135,14 +140,15 @@ public class AddNewBpelProcessTest extends PerformanceTestCase {
     @Override
     public void close(){
     }
-    
+
+
     /**
      * Check of memory leaks. measureTime testcase should be executed before 
      * this testcase
-     */
+     
     public void testGC() {
         Log.assertInstances("Can't GC BPEL DesignView");        
     }
-
+     */
 
 }

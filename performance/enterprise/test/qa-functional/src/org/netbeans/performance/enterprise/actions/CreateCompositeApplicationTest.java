@@ -72,7 +72,7 @@ public class CreateCompositeApplicationTest extends PerformanceTestCase {
     private String category, project, project_name;
     
     public void testCreateCompositeApplication() {
-        measureTime();
+        doMeasurement();
     }
     
     /**

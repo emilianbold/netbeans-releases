@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  * @author Martin Entlicher
  */
 public class TreeEvaluator {
-    
+
     private Expression2 expression;
     private EvaluationContext evaluationContext;
 
@@ -80,9 +80,9 @@ public class TreeEvaluator {
     private int frameIndex;
     private String currentPackage;
     private Operators operators;
-    
+
     private static final Logger loggerMethod = Logger.getLogger("org.netbeans.modules.debugger.jpda.invokeMethod"); // NOI18N
-    
+
     TreeEvaluator(Expression2 expression, EvaluationContext context) {
         this.expression = expression;
         this.evaluationContext = context;
@@ -155,13 +155,13 @@ public class TreeEvaluator {
     }
 
     public static Value invokeVirtual (
-        ObjectReference objectReference, 
-        Method method, 
-        ThreadReference evaluationThread, 
+        ObjectReference objectReference,
+        Method method,
+        ThreadReference evaluationThread,
         List<Value> args,
         JPDADebuggerImpl debugger
      ) throws InvalidExpressionException {
-        
+
         try {
             if (loggerMethod.isLoggable(Level.FINE)) {
                 loggerMethod.fine("STARTED : "+objectReference+"."+method+" ("+args+") in thread "+evaluationThread);

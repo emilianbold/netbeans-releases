@@ -84,6 +84,10 @@ public class OpenComplexDiagramTest extends PerformanceTestCase {
         WAIT_AFTER_OPEN=4000;
     }
 
+    public void testOpenComplexDiagram() {
+        doMeasurement();
+    }
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EnterpriseSetup.class)
@@ -110,10 +114,11 @@ public class OpenComplexDiagramTest extends PerformanceTestCase {
     /**
      * Check of memory leaks. measureTime testcase should be executed before 
      * this testcase
-     */
+     
     public void testGC() {
         Log.assertInstances("Can't GC BPEL DesignView");        
     }
+     */
 
     public ComponentOperator open() {
         log("::open");
