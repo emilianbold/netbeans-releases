@@ -203,6 +203,11 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         assertTypes("right IfNode type inference", instance.getTypes("var"), "Array", "Hash");
     }
 
+    public void testIfWithFailingInferenceInBranchType() throws Exception {
+        RubyTypeAnalyzer instance = getAnalyzer("testfiles/if_with_failing_inference_in_branch_type.rb", "var.to_^", false);
+        assertTypes("right IfNode type inference", instance.getTypes("var"), "NilClass", null);
+    }
+
     // TODO inference is still not able to do the below
     public void FIXME_testIfElseNestedSimpleType() throws Exception {
         RubyTypeAnalyzer instance1 = getAnalyzer("testfiles/if_else_nested_simple_type.rb", "var.^ifcond1b", false);

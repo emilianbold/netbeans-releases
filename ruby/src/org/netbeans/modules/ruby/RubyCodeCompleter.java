@@ -974,7 +974,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
             // Try just the method call (e.g. across all classes). This is ignoring the 
             // left hand side because we can't resolve it.
-            if ((methods.isEmpty())) {
+            if ((methods.isEmpty()) || types.contains(null)) {
                 methods = index.getMethods(prefix, null, kind);
             }
 

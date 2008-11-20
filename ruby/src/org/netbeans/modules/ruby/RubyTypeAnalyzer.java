@@ -158,13 +158,9 @@ public class RubyTypeAnalyzer {
                 String symbol = ((INameNode) node).getName();
                 String type = expressionType(node, typesForSymbol);
 
-                if (type != null) {
-                    maybePutTypeForSymbol(typesForSymbol, symbol, type, override);
-                } else {
-                    // A more complicated expression of some sort - we're no
-                    // longer sure of the type
-                    typesForSymbol.remove(symbol);
-                }
+                // null element in types set means that we are not able to infer
+                // the expression
+                maybePutTypeForSymbol(typesForSymbol, symbol, type, override);
                 break;
             }
 //        case ITERNODE: {
@@ -361,7 +357,7 @@ public class RubyTypeAnalyzer {
         }
 
         Set<String> types = cachedTypesForSymbol.get(symbol);
-        boolean emptyTypes = types == null || types.isEmpty();
+        boolean emptyTypes = types == null || types.isEmpty() || types.equals(Collections.singleton(null));
 
         // Special cases
         if (emptyTypes) {
@@ -383,7 +379,7 @@ public class RubyTypeAnalyzer {
         // type.
         if (!emptyTypes) {
             for (String type : types) {
-                if (type.startsWith("Array<")) { // NOI18N
+                if (type != null && type.startsWith("Array<")) { // NOI18N
                     return Collections.singleton("Array"); // NOI18N
                 }
             }
