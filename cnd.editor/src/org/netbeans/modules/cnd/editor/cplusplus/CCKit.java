@@ -346,7 +346,7 @@ public class CCKit extends NbEditorKit {
                             return Boolean.FALSE;
                         }
                         int lBracePos = firstNonWhiteBwd.offset();
-                        int lastSepOffset = BracketCompletion.getLastCommandSeparator(doc, lBracePos - 1);
+                        int lastSepOffset = CndTokenUtilities.getLastCommandSeparator(doc, lBracePos - 1);
                         if (lastSepOffset == -1 && lBracePos > 0) {
                             lastSepOffset = 0;
                         }

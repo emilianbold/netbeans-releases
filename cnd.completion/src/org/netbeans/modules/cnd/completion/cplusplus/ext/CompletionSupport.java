@@ -50,8 +50,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -69,9 +67,9 @@ import org.openide.loaders.DataObject;
  *
  * @author Vladimir Voskresensky
  */
-public class CompletionSupport {
+public final class CompletionSupport {
 
-    final Reference<Document> docRef;
+    private final Reference<Document> docRef;
     // not for external instantiation
 
     private CompletionSupport(Document doc) {
@@ -108,7 +106,7 @@ public class CompletionSupport {
     public static boolean isPreprocCompletionEnabled(Document doc, int offset) {
         return isIncludeCompletionEnabled(doc, offset);
     }
-    
+
     public static boolean isIncludeCompletionEnabled(Document doc, int offset) {
         TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
         if (ts == null) {
@@ -129,27 +127,26 @@ public class CompletionSupport {
         return false;
     }
 
+    public final CsmFinder getFinder() {
+        DataObject dobj = NbEditorUtilities.getDataObject(getDocument());
+        assert dobj != null;
+        FileObject fo = dobj.getPrimaryFile();
+        return CsmFinderFactory.getDefault().getFinder(fo);
+    }
     private static final char[] COMMAND_SEPARATOR_CHARS = new char[]{
         ';', '{', '}'
     };
     private int lastSeparatorOffset = -1;
 
-    public final CsmFinder getFinder() {
-        DataObject dobj = NbEditorUtilities.getDataObject(getDocument());
-        assert dobj != null;
-        FileObject fo = dobj.getPrimaryFile();
-        return CsmFinderFactory.getDefault().getFinder(fo);        
-    }
-
-    protected final void setLastSeparatorOffset(int lastSeparatorOffset) {
+    protected void setLastSeparatorOffset(int lastSeparatorOffset) {
         this.lastSeparatorOffset = lastSeparatorOffset;
     }
 
     /** Return the position of the last command separator before
      * the given position.
      */
-    public int getLastCommandSeparator(final int pos) throws BadLocationException {
-       if (pos < 0 || pos > getDocument().getLength()) {
+    protected int getLastCommandSeparator(final int pos) throws BadLocationException {
+        if (pos < 0 || pos > getDocument().getLength()) {
             throw new BadLocationException("position is out of range[" + 0 + "-" + getDocument().getLength() + "]", pos); // NOI18N
         }
         if (pos == 0) {
@@ -158,79 +155,8 @@ public class CompletionSupport {
         if (lastSeparatorOffset >= 0 && lastSeparatorOffset < pos) {
             return lastSeparatorOffset;
         }
-        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(getDocument(), pos, true, true);
-        if (!(getDocument() instanceof BaseDocument)) {
-            return 0;
-        }
-        BaseDocument doc = (BaseDocument) getDocument();
-        int stLine = Utilities.getRowFirstNonWhite(doc, pos);
-        int lastPos = stLine;
-        if (ts == null) {
-            return lastPos;
-        }
-        return lastPos;
-//        TextBatchProcessor tbp = new TextBatchProcessor() {
-//
-//            public int processTextBatch(BaseDocument doc, int startPos, int endPos,
-//                    boolean lastBatch) {
-//                try {
-//                    int[] blks = getCommentBlocks(endPos, startPos);
-//                    FinderFactory.CharArrayBwdFinder cmdFinder = new FinderFactory.CharArrayBwdFinder(COMMAND_SEPARATOR_CHARS);
-//                    int lastSeparatorOffset = findOutsideBlocks(cmdFinder, startPos, endPos, blks);
-//                    if (lastSeparatorOffset < 1) {
-//                        return lastSeparatorOffset;
-//                    }
-//                    CppTokenId separatorID = getCppTokenId(lastSeparatorOffset);
-//                    if (separatorID.getNumericID() == CppTokenId.RBRACE_ID) {
-//                        int matchingBrkPos[] = findMatchingBlock(lastSeparatorOffset, true);
-//                        if (matchingBrkPos != null) {
-//                            int prev = Utilities.getFirstNonWhiteBwd(getDocument(), matchingBrkPos[0]);
-//                            if (prev > -1 && getCppTokenId(prev).getNumericID() == CppTokenId.RBRACKET_ID) {
-//                                return getLastCommandSeparator(prev);
-//                            }
-//                        }
-//                    } else if (separatorID.getCategory() == CppTokenId.CPP) {
-//                        // found preprocessor directive, skip till the end of it
-//                        int separatorLine = Utilities.getLineOffset(getDocument(), lastSeparatorOffset);
-//                        assert (separatorLine <= posLine);
-//                        if (separatorLine != posLine) {
-//                            lastSeparatorOffset = Utilities.getRowEnd(getDocument(), lastSeparatorOffset);
-//                        }
-//                    }
-//                    if (separatorID.getNumericID() != CppTokenId.LBRACE_ID &&
-//                            separatorID.getNumericID() != CppTokenId.RBRACE_ID &&
-//                            separatorID.getNumericID() != CppTokenId.SEMICOLON_ID &&
-//                            separatorID.getCategory() != CppTokenId.CPP) {
-//                        lastSeparatorOffset = processTextBatch(doc, lastSeparatorOffset, 0, lastBatch);
-//                    }
-//                    return lastSeparatorOffset;
-//                } catch (BadLocationException e) {
-//                    e.printStackTrace();
-//                    return -1;
-//                }
-//            }
-//        };
-//        int lastPos = getDocument().processText(tbp, pos, 0);
-//
-//        //ensure we return last command separator from last
-//        //block of C++ tokens from <startPos;endPos> offset interval
-//        //AFAIK this is currently needed only for JSP code completion
-//        TokenItem item = getTokenChain(pos - 1, pos);
-//        //go back throught the token chain and try to find last C++ token
-//        while (item != null) {
-//            int tokenOffset = item.getOffset();
-//            if (lastPos != -1 && tokenOffset < lastPos) {
-//                break; //stop backtracking if we met the lastPos
-//            }            //test token type
-//            if (!item.getTokenContextPath().contains(CppTokenId.contextPath)) {
-//                //return offset of last C++ token - this token isn't already a C++ token so return offset of next token
-//                lastPos = item.getNext() != null ? item.getNext().getOffset() : item.getOffset() + item.getImage().length();
-//                break;
-//            }
-//            item = item.getPrevious();
-//        }
-//
-//        return lastPos;
+        lastSeparatorOffset = CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
+        return lastSeparatorOffset;
     }
 
     /** Get the class from name. The import sections are consulted to find
@@ -426,7 +352,7 @@ public class CompletionSupport {
         }
         return ret;
     }
-    
+
     ////////////////////////////////////////////////
     // overriden functions to resolve expressions
     /////////////////////////////////////////////////
@@ -518,7 +444,7 @@ public class CompletionSupport {
             }
             if (CppTokenId.NUMBER_CATEGORY.equals(ts.token().id().primaryCategory())) {
                 return false;
-            }            
+            }
         }
         return true;
     }
@@ -563,5 +489,5 @@ public class CompletionSupport {
             return t1.equals(t2);
         }
         return false;
-    }    
+    }
 }
