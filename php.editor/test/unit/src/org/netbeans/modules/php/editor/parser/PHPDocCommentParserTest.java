@@ -38,19 +38,19 @@
  */
 package org.netbeans.modules.php.editor.parser;
 
+import java.io.File;
 import java.util.List;
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import junit.framework.TestCase;
+import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author PetrPisl
  */
-public class PHPDocCommentParserTest extends TestCase {
+public class PHPDocCommentParserTest extends GsfTestBase {
 
     public PHPDocCommentParserTest(String testName) {
         super(testName);
@@ -210,5 +210,82 @@ public class PHPDocCommentParserTest extends TestCase {
         assertEquals("int death", tags.get(2).getValue());
         assertEquals(comment.indexOf("@property-write int death") + 3, tags.get(2).getStartOffset());
         assertEquals(comment.indexOf("@property-write int death") + "@property-write int death".length(), tags.get(2).getEndOffset() - 3);
+    }
+
+    public void testReturnType01() throws Exception {
+        String comment = " * Function XYZ.\n" +
+                " * @return string\n";
+        perform(comment, "ReturnType01");
+    }
+
+    public void testReturnType02() throws Exception {
+        String comment = " * Function XYZ.\n" +
+                " * @return string|int test documentation\n";
+        perform(comment, "ReturnType02");
+    }
+
+    public void testReturnType03() throws Exception {
+        String comment = " * Function XYZ.\n" +
+                " * @return TClass::CONSTANT test documentation\n";
+        perform(comment, "ReturnType03");
+    }
+
+    public void testParamReturn01() throws Exception {
+        String comment =
+                "   * Retrieves the entry at a specific index.\n" +
+                "   *\n" +
+                "   * @param int $index An entry index\n" +
+                "   *\n" +
+                "   * @return sfActionStackEntry An action stack entry implementation.\n";
+        perform(comment, "ParamReturn01");
+    }
+
+    public void testExample01() throws Exception {
+        String comment =
+         "* Dispatches to the action defined by the 'action' parameter of the sfRequest object.\n" +
+         "   *\n" +
+         "   * This method try to execute the executeXXX() method of the current object where XXX is the\n" +
+         "   * defined action name.\n" +
+         "   *\n" +
+         "   * @param  sfRequest $request The current sfRequest object\n" +
+         "   *\n" +
+         "   * @return string    A string containing the view name associated with this action\n" +
+         "   *\n" +
+         "   * @throws sfInitializationException\n" +
+         "   *\n" +
+         "   * @see sfAction";
+        perform(comment, "Example01");
+    }
+
+    public void testHTMLWrapper() throws Exception {
+        String comment =
+                "*\n" +
+                "* @throws <b>sfInitializationException</b> If an error occurs while initializing this sfCache instance.";
+        perform(comment, "HTMLWrapper");
+    }
+    
+    public void perform(String comment, String filename) throws Exception {
+        PHPDocCommentParser parser = new PHPDocCommentParser();
+        PHPDocBlock block = parser.parse(0, comment.length(), comment);
+        PrintASTVisitor visitor = new PrintASTVisitor();
+        String result = visitor.printTree(block);
+
+        // try to find golden file
+        String fullClassName = this.getClass().getName();
+        String goldenFileDir = fullClassName.replace('.', '/');
+        String goldenFolder = getDataSourceDir().getAbsolutePath() + "/goldenfiles/" + goldenFileDir + "/";
+        File goldenFile = new File(goldenFolder + filename + ".pass");
+        if (!goldenFile.exists()) {
+            // if doesn't exist, create it
+            FileObject goldenFO = touch(goldenFolder, filename + ".pass");
+            copyStringToFileObject(goldenFO, result);
+        }
+        else {
+            // if exist, compare it.
+            goldenFile = getGoldenFile(filename + ".pass");
+            FileObject resultFO = touch(getWorkDir(), filename + ".result");
+            copyStringToFileObject(resultFO, result);
+            assertFile(FileUtil.toFile(resultFO), goldenFile, getWorkDir());
+        }
     }
 }
