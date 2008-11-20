@@ -96,6 +96,10 @@ public class AddNewWSDLDocumentTest extends PerformanceTestCase {
         return suite;
     }
 
+    public void testAddNewWSDLDocumentTest() {
+        doMeasurement();
+    }
+
     @Override
     public void initialize(){
         index=1;

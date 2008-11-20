@@ -105,7 +105,7 @@ public class CreateBPELmoduleTest extends PerformanceTestCase {
     }
 
     public void testCreateBPELModule() {
-        super.measureTime();
+        doMeasurement();
     }
 
     @Override

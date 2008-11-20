@@ -64,6 +64,7 @@ import javax.swing.text.StyledDocument;
 import javax.swing.JEditorPane;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ErroneousTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.ImportTree;
@@ -89,6 +90,7 @@ import javax.lang.model.util.Elements;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
+import javax.tools.Diagnostic;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -250,6 +252,7 @@ public class EditorContextImpl extends EditorContext {
     ) {
         return annotate(url, lineNumber, annotationType, timeStamp, null);
     }
+    @Override
     public Object annotate (
         String url,
         int lineNumber,
@@ -274,6 +277,7 @@ public class EditorContextImpl extends EditorContext {
         return annotation;
     }
 
+    @Override
     public Object annotate (
         String url,
         int startPosition,
@@ -752,6 +756,7 @@ public class EditorContextImpl extends EditorContext {
      *
      * @return line number or -1
      */
+    @Override
     public int getMethodLineNumber (
         String url,
         final String className,
@@ -858,6 +863,7 @@ public class EditorContextImpl extends EditorContext {
 
     /** @return { "method name", "method signature", "enclosing class name" }
      */
+    @Override
     public String[] getCurrentMethodDeclaration() {
         FileObject fo = contextDispatcher.getCurrentFile();
         if (fo == null) return null;
@@ -937,11 +943,13 @@ public class EditorContextImpl extends EditorContext {
                             }
                         }
 
+                        @Override
                         public String getMessage() {
                             waitScanFinished();
                             return currentMethodPtr[0];
                         }
 
+                        @Override
                         public String getLocalizedMessage() {
                             waitScanFinished();
                             return currentMethodPtr[1];
@@ -1513,7 +1521,7 @@ public class EditorContextImpl extends EditorContext {
     }
 
     private static class ParseExpressionTask<D> implements Task<CompilationController> {
-        
+
         private int line;
         private String expression;
         private D context;
@@ -1537,10 +1545,22 @@ public class EditorContextImpl extends EditorContext {
                 scope = ci.getTreeUtilities().scopeFor(offset);
             }
             SourcePositions[] sourcePtr = new SourcePositions[] { null };
-            tree = ci.getTreeUtilities().parseExpression(
-                    expression,
+            // first, try to parse as a block of statements
+            tree = ci.getTreeUtilities().parseStatement(
+                    "{\n" + expression + "\n}", // NOI18N
                     sourcePtr
             );
+            if (isErroneous(tree)) {
+                Tree asBlockTree = tree;
+                // when block parsing fails, try to parse an expression
+                tree = ci.getTreeUtilities().parseExpression(
+                        expression,
+                        sourcePtr
+                );
+                if (isErroneous(tree)) {
+                    tree = asBlockTree;
+                }
+            }
             if (scope != null) {
                 ci.getTreeUtilities().attributeTree(tree, scope);
             }
@@ -1576,6 +1596,31 @@ public class EditorContextImpl extends EditorContext {
         public Tree getTree() {
             return tree;
         }
+    }
+
+    private static boolean isErroneous(Tree tree) {
+
+        class TreeChecker extends TreePathScanner<Boolean,Void> {
+
+            @Override
+            public Boolean scan(Tree tree, Void p) {
+                if (tree == null) {
+                    return Boolean.FALSE;
+                }
+                if (tree.getKind() == Tree.Kind.ERRONEOUS) {
+                    return Boolean.TRUE;
+                }
+                return tree.accept(this, p);
+            }
+
+            public Boolean visitErrorneous(ErroneousTree tree, Void p) {
+                return Boolean.TRUE;
+            }
+
+        }
+
+        Boolean result = new TreeChecker().scan(tree, null);
+        return result != null && result.booleanValue();
     }
 
     /**
@@ -1820,6 +1865,7 @@ public class EditorContextImpl extends EditorContext {
                             }
                         }
 
+                        @Override
                         public String getMessage() {
                             waitScanFinished();
                             return currentElementPtr[0];

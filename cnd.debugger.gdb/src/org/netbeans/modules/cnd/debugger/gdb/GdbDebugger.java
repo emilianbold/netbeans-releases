@@ -1902,39 +1902,69 @@ public class GdbDebugger implements PropertyChangeListener {
      */
     public static void attach(String pid, ProjectInformation pinfo) throws DebuggerStartException {
         Project project = pinfo.getProject();
-        ConfigurationDescriptorProvider cdp =
-                project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        if (cdp != null) {
-            MakeConfigurationDescriptor mcd =
-                    (MakeConfigurationDescriptor) cdp.getConfigurationDescriptor();
+        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        MakeConfigurationDescriptor mcd = (MakeConfigurationDescriptor) cdp.getConfigurationDescriptor();
+        
+        if (mcd != null) {
             MakeConfiguration conf = (MakeConfiguration) mcd.getConfs().getActive();
-            MakeArtifact ma = new MakeArtifact(mcd, conf);
-            String runDirectory = conf.getProfile().getRunDirectory();
-            String path = IpeUtils.toAbsolutePath(runDirectory, ma.getOutput());
-            if (isExecutableOrSharedLibrary(conf, path)) {
-                ProjectActionEvent pae = new ProjectActionEvent(
-                        project,
-                        DEBUG_ATTACH,
-                        pinfo.getDisplayName(),
-                        path,
-                        conf,
-                        null,
-                        false);
+            String path = getExecutableOrSharedLibrary(mcd, conf);
+
+            if (path != null) {
+                ProjectActionEvent pae = new ProjectActionEvent(project, DEBUG_ATTACH, pinfo.getDisplayName(), path, conf, null, false);
                 DebuggerEngine[] es = DebuggerManager.getDebuggerManager().startDebugging(
                         DebuggerInfo.create(SESSION_PROVIDER_ID, new Object[] { pae, Long.valueOf(pid) }));
                 if (es == null) {
                     throw new DebuggerStartException(new InternalError());
                 }
             } else {
-                final String msg = NbBundle.getMessage(GdbDebugger.class, "ERR_AttachValidationFailure"); // NOI18N
-                SwingUtilities.invokeLater(new Runnable() {
+                MakeArtifact ma = new MakeArtifact(mcd, conf);
+                String buildResult = ma.getOutput();
+                if (buildResult != null && buildResult.length() > 0) {
+                    final String msg = NbBundle.getMessage(GdbDebugger.class, "ERR_AttachValidationFailure"); // NOI18N
+                    SwingUtilities.invokeLater(new Runnable() {
 
-                    public void run() {
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-                    }
-                });
+                        public void run() {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+                        }
+                    });
+                } else {
+                    // We've already displayed an error...
+                }
             }
         }
+    }
+
+    private static String getExecutableOrSharedLibrary(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {
+        MakeArtifact ma = new MakeArtifact(mcd, conf);
+        String buildResult = ma.getOutput();
+
+        if (buildResult == null || buildResult.length() == 0) {
+            buildResult = getBuildResult();
+            if (buildResult == null) {
+                return null;
+            }
+        }
+        if (buildResult.charAt(0) == '/') {
+            if (isExecutableOrSharedLibrary(conf, buildResult)) {
+                return buildResult;
+            } else {
+                return null;
+            }
+        } else {
+            List<String> paths = new ArrayList<String>();
+            paths.add(conf.getBaseDir());
+            paths.addAll(mcd.getSourceRoots());
+
+            for (String dir : paths) {
+                dir = dir.replace("\\", "/");  // NOI18N
+                String path = IpeUtils.toAbsolutePath(dir, buildResult);
+                if (isExecutableOrSharedLibrary(conf, path)) {
+                    return path;
+                }
+            }
+
+        }
+        return null;
     }
 
     /**
@@ -1974,6 +2004,18 @@ public class GdbDebugger implements PropertyChangeListener {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Returning null because there is no MakeProject API allowing me to handle this well. See IZ#153482
+     * for an API change request.
+     *
+     * @return Always currently null
+     */
+    private static String getBuildResult() {
+        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class, "ERR_NoBuildResult"));
+        DialogDisplayer.getDefault().notify(nd);
+        return null;
     }
 
     /**

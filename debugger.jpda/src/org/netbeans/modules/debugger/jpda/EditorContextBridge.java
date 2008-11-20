@@ -41,8 +41,6 @@
 package org.netbeans.modules.debugger.jpda;
 
 import com.sun.jdi.AbsentInformationException;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TreeVisitor;
 import com.sun.source.util.TreePathScanner;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -73,10 +71,10 @@ public class EditorContextBridge {
     public static final String LINE = "line";
 
     private static EditorContext context;
-    
+
     public static EditorContext getContext () {
         if (context == null) {
-            List l = DebuggerManager.getDebuggerManager ().lookup 
+            List l = DebuggerManager.getDebuggerManager ().lookup
                 (null, EditorContext.class);
             context = (EditorContext) l.get (0);
             int i, k = l.size ();
@@ -113,16 +111,16 @@ public class EditorContextBridge {
         }
     }
      */
-    
+
     /**
-     * Parse the expression into AST tree and traverse is via the provided visitor.
+     * Parse the expression into AST tree and traverse it via the provided visitor.
      *
      * @return the visitor value or <code>null</code>.
      */
     public static <R,D> R parseExpression(String expression, String url, final int line,
                                           TreePathScanner<R,D> visitor, D context,
                                           SourcePathProvider sp) {
-        
+
         // TODO: return getContext ().parseExpression ();
         try {
             return (R) getContext ().getClass().getMethod(
@@ -143,10 +141,10 @@ public class EditorContextBridge {
         }
     }
 
-    
+
     // Utility methods .........................................................
 
-    public static String getFileName (LineBreakpoint b) { 
+    public static String getFileName (LineBreakpoint b) {
         try {
             return new File (new URL (b.getURL ()).getFile ()).getName ();
         } catch (MalformedURLException e) {
@@ -195,15 +193,15 @@ public class EditorContextBridge {
     ) {
         int i = className.indexOf ('$');
         if (i > 0) className = className.substring (0, i);
-        String sourceName = className.replace 
+        String sourceName = className.replace
             ('.', '/') + ".java";
         return sourceName;
     }
-    
+
     private static String convertSlash (String original) {
         return original.replace (File.separatorChar, '/');
     }
-    
+
     public static int getCurrentOffset() {
         // TODO: return getContext ().getCurrentOffset();
         try {
@@ -222,14 +220,14 @@ public class EditorContextBridge {
             return 0;
         }
     }
-    
-    
+
+
     // innerclasses ............................................................
-    
+
     private static class CompoundContextProvider extends EditorContext {
 
         private EditorContext cp1, cp2;
-        
+
         CompoundContextProvider (
             EditorContext cp1,
             EditorContext cp2
@@ -247,7 +245,7 @@ public class EditorContextBridge {
             cp1.disposeTimeStamp (timeStamp);
             cp2.disposeTimeStamp (timeStamp);
         }
-        
+
         public void updateTimeStamp (Object timeStamp, String url) {
             cp1.updateTimeStamp (timeStamp, url);
             cp2.updateTimeStamp (timeStamp, url);
@@ -266,21 +264,21 @@ public class EditorContextBridge {
                 return cp2.getCurrentURL ();
             return s;
         }
-        
+
         public String getCurrentFieldName () {
             String s = cp1.getCurrentFieldName ();
             if ( (s == null) || (s.trim ().length () < 1))
                 return cp2.getCurrentFieldName ();
             return s;
         }
-        
+
         public int getCurrentLineNumber () {
             int i = cp1.getCurrentLineNumber ();
             if (i < 1)
                 return cp2.getCurrentLineNumber ();
             return i;
         }
-        
+
         public int getCurrentOffset() {
             Integer i = null;
             try {
@@ -317,28 +315,28 @@ public class EditorContextBridge {
             }
             return i.intValue();
         }
-        
+
         public String getCurrentMethodName () {
             String s = cp1.getCurrentMethodName ();
             if ( (s == null) || (s.trim ().length () < 1))
                 return cp2.getCurrentMethodName ();
             return s;
         }
-        
+
         public String getSelectedIdentifier () {
             String s = cp1.getSelectedIdentifier ();
             if ( (s == null) || (s.trim ().length () < 1))
                 return cp2.getSelectedIdentifier ();
             return s;
         }
-        
+
         public String getSelectedMethodName () {
             String s = cp1.getSelectedMethodName ();
             if ( (s == null) || (s.trim ().length () < 1))
                 return cp2.getSelectedMethodName ();
             return s;
         }
-        
+
         public void removeAnnotation (Object annotation) {
             CompoundAnnotation ca = (CompoundAnnotation) annotation;
             cp1.removeAnnotation (ca.annotation1);
@@ -408,26 +406,26 @@ public class EditorContextBridge {
             return cp1.showSource (sourceName, lineNumber, timeStamp) |
                    cp2.showSource (sourceName, lineNumber, timeStamp);
         }
-    
+
         public int getFieldLineNumber (
-            String url, 
-            String className, 
+            String url,
+            String className,
             String fieldName
         ) {
             int ln = cp1.getFieldLineNumber (url, className, fieldName);
             if (ln != -1) return ln;
             return cp2.getFieldLineNumber (url, className, fieldName);
         }
-    
+
         public String getClassName (
-            String url, 
+            String url,
             int lineNumber
         ) {
             String className = cp1.getClassName (url, lineNumber);
             if (className != null && className.length() > 0) return className;
             return cp2.getClassName (url, lineNumber);
         }
-    
+
         public String[] getImports (String url) {
             String[] r1 = cp1.getImports (url);
             String[] r2 = cp2.getImports (url);
@@ -436,27 +434,27 @@ public class EditorContextBridge {
             System.arraycopy (r2, 0, r, r1.length, r2.length);
             return r;
         }
-        
+
         public void addPropertyChangeListener (PropertyChangeListener l) {
             cp1.addPropertyChangeListener (l);
             cp2.addPropertyChangeListener (l);
         }
-        
+
         public void removePropertyChangeListener (PropertyChangeListener l) {
             cp1.removePropertyChangeListener (l);
             cp2.removePropertyChangeListener (l);
         }
-        
+
         public void addPropertyChangeListener (
-            String propertyName, 
+            String propertyName,
             PropertyChangeListener l
         ) {
             cp1.addPropertyChangeListener (propertyName, l);
             cp2.addPropertyChangeListener (propertyName, l);
         }
-        
+
         public void removePropertyChangeListener (
-            String propertyName, 
+            String propertyName,
             PropertyChangeListener l
         ) {
             cp1.removePropertyChangeListener (propertyName, l);
@@ -469,7 +467,7 @@ public class EditorContextBridge {
             if (operations != null) {
                 return operations;
             } else {
-                return cp2.getOperations(url, lineNumber, bytecodeProvider);                
+                return cp2.getOperations(url, lineNumber, bytecodeProvider);
             }
         }
 
@@ -494,14 +492,14 @@ public class EditorContextBridge {
             }
             return args;
         }
-        
-        
-        
+
+
+
     }
-    
+
     private static class CompoundAnnotation {
         public CompoundAnnotation() {}
-        
+
         Object annotation1;
         Object annotation2;
     }

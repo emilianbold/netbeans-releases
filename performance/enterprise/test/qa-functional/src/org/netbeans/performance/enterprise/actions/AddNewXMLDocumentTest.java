@@ -101,7 +101,11 @@ public class AddNewXMLDocumentTest extends PerformanceTestCase {
         index=1;
 //        new CloseAllDocumentsAction().performAPI();
     }
-    
+
+    public void testAddNewXMLDocumentTest() {
+        doMeasurement();
+    }
+
     public void prepare(){
         new EventTool().waitNoEvent(2500);
         new EPUtilities().getProcessFilesNode("BPELTestProject").select();

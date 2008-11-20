@@ -48,17 +48,17 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 
 public class VectorConfiguration<E> {
 
-    private VectorConfiguration master;
+    private VectorConfiguration<E> master;
     private List<E> value;
     private boolean dirty = false;
 
-    public VectorConfiguration(VectorConfiguration master) {
+    public VectorConfiguration(VectorConfiguration<E> master) {
         this.master = master;
         value = new ArrayList<E>();
         reset();
     }
 
-    public VectorConfiguration getMaster() {
+    public VectorConfiguration<E> getMaster() {
         return master;
     }
 

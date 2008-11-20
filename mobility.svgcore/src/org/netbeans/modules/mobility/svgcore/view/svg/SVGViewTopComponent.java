@@ -1101,11 +1101,13 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         if ( dObj instanceof XMLDataObject) {
             Document doc = ((XMLDataObject) dObj).getDocument();
 
+            // class was specified in editor-palette-item xml
             SVGComponentDrop dropSupport = getAEDClass(doc);
             if (dropSupport != null){
                 return dropSupport.handleTransfer(m_svgDataObject, point);
             } 
             
+            // xml snipped was specified in editor-palette-item xml
             String snippet = getSnippetBody(doc);
             if (snippet != null){
                 return SVGComponentDrop.getDefault(snippet)
