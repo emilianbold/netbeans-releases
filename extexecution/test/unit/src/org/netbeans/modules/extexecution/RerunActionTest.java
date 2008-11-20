@@ -41,7 +41,7 @@ package org.netbeans.modules.extexecution;
 
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor.RerunCondition;
+import org.netbeans.api.extexecution.ExecutionDescriptor.RerunCondition;
 import org.openide.util.ChangeSupport;
 
 /**

@@ -48,19 +48,19 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-overall">
   <p>
    The External Execution module provides the
-   <api group="java" name="ExternalExecutionAPI" type="export" category="devel" url="@TOP@org/netbeans/modules/extexecution/api/package-summary.html"/>
+   <api group="java" name="ExternalExecutionAPI" type="export" category="stable" url="@TOP@org/netbeans/api/extexecution/package-summary.html"/>
    that contains support for execution of external processes in the IDE. It also
    provide support class for the actual creation of the external process.
   </p>
   <p>
    Another exported API
-   <api group="java" name="ExternalExecutionInputAPI" type="export" category="devel" url="@TOP@org/netbeans/modules/extexecution/api/input/package-summary.html"/>
+   <api group="java" name="ExternalExecutionInputAPI" type="export" category="stable" url="@TOP@org/netbeans/api/extexecution/input/package-summary.html"/>
    define interfaces for input processing (character or line based)
    and provides common implementations of these with factory methods.
   </p>
   <p>
    Natural extension to input processing API is printing API
-   <api group="java" name="ExternalExecutionInputPrintingAPI" type="export" category="devel" url="@TOP@org/netbeans/modules/extexecution/api/print/package-summary.html"/>
+   <api group="java" name="ExternalExecutionInputPrintingAPI" type="export" category="stable" url="@TOP@org/netbeans/api/extexecution/print/package-summary.html"/>
    that defines interfaces transforming lines to lines printed to
    <code>org.openide.windows.OutputWriter</code>. API provides common implementations too.
   </p>
@@ -133,10 +133,10 @@ Microsystems, Inc. All Rights Reserved.
    </p>
    <p>
     In order to achieve this client creates the
-    <a href="@TOP@org/netbeans/modules/extexecution/api/ExecutionDescriptor.html">ExecutionDescriptor</a>.
+    <a href="@TOP@org/netbeans/api/extexecution/ExecutionDescriptor.html">ExecutionDescriptor</a>.
     Via this object client configures all the UI behaviour of the subsequent
     execution. As a next step client creates the
-    <a href="@TOP@org/netbeans/modules/extexecution/api/ExecutionService.html">ExecutionService</a>
+    <a href="@TOP@org/netbeans/api/extexecution/ExecutionService.html">ExecutionService</a>
     itself and calls run to execute the job. Run can be called multiple times.
     The output and input streams are presented in output tab. Additional
     processing and printing conversion can be configured in descriptor through
@@ -144,7 +144,7 @@ Microsystems, Inc. All Rights Reserved.
    </p>
    <p>
     The creation of the external process is supported by
-    <a href="@TOP@org/netbeans/modules/extexecution/api/ExternalProcessBuilder.html">ExternalProcessBuilder</a>
+    <a href="@TOP@org/netbeans/api/extexecution/ExternalProcessBuilder.html">ExternalProcessBuilder</a>
     to make things easier.
    </p>
   </usecase>
@@ -155,17 +155,17 @@ Microsystems, Inc. All Rights Reserved.
    </p>
    <p>
     To abstract the source of the data client must implement
-    <a href="@TOP@org/netbeans/modules/extexecution/api/input/InputReader.html">InputReader</a>.
+    <a href="@TOP@org/netbeans/api/extexecution/input/InputReader.html">InputReader</a>.
     To abstract the data processing client must implement
-    <a href="@TOP@org/netbeans/modules/extexecution/api/input/InputProcessor.html">InputProcessor</a> or
-    <a href="@TOP@org/netbeans/modules/extexecution/api/input/LineProcessor.html">LineProcessor</a>.
+    <a href="@TOP@org/netbeans/api/extexecution/input/InputProcessor.html">InputProcessor</a> or
+    <a href="@TOP@org/netbeans/api/extexecution/input/LineProcessor.html">LineProcessor</a>.
     For all three interfaces there are prepared common implementations (and bridge
     from character based to line based processing) at these three factory classes:
    </p>
    <ul>
-    <li><a href="@TOP@org/netbeans/modules/extexecution/api/input/InputReaders.html">InputReaders</a></li>
-    <li><a href="@TOP@org/netbeans/modules/extexecution/api/input/InputProcessors.html">InputProcessors</a></li>
-    <li><a href="@TOP@org/netbeans/modules/extexecution/api/input/LineProcessors.html">LineProcessors</a></li>
+    <li><a href="@TOP@org/netbeans/api/extexecution/input/InputReaders.html">InputReaders</a></li>
+    <li><a href="@TOP@org/netbeans/api/extexecution/input/InputProcessors.html">InputProcessors</a></li>
+    <li><a href="@TOP@org/netbeans/api/extexecution/input/LineProcessors.html">LineProcessors</a></li>
    </ul>
    <p>
     To configure additional functionality specific to <code>org.openide.windows.OutputWriter</code>
@@ -173,8 +173,8 @@ Microsystems, Inc. All Rights Reserved.
    </p>
    <p>
     Once the data source and processing objects are prepared client creates
-    <a href="@TOP@org/netbeans/modules/extexecution/api/input/InputReaderTask.html">InputReaderTask</a>.
-    Factory methods of the <a href="@TOP@org/netbeans/modules/extexecution/api/input/InputReaderTask.html">InputReaderTask</a>
+    <a href="@TOP@org/netbeans/api/extexecution/input/InputReaderTask.html">InputReaderTask</a>.
+    Factory methods of the <a href="@TOP@org/netbeans/api/extexecution/input/InputReaderTask.html">InputReaderTask</a>
     can create either common task exiting on interruption or cancellation
     or draining task which is trying to drain out all available data before exiting.
    </p>
@@ -187,17 +187,17 @@ Microsystems, Inc. All Rights Reserved.
    </p>
    <p>
     The both default printing processors provide factory method accepting
-    <a href="@TOP@org/netbeans/modules/extexecution/api/print/LineConvertor.html">LineConvertor</a>.
+    <a href="@TOP@org/netbeans/api/extexecution/print/LineConvertor.html">LineConvertor</a>.
     Namely
-    <a href="@TOP@org/netbeans/modules/extexecution/api/input/InputProcessors.html#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)">
+    <a href="@TOP@org/netbeans/api/extexecution/input/InputProcessors.html#printing(org.openide.windows.OutputWriter,%20org.netbeans.api.extexecution.print.LineConvertor,%20boolean)">
      InputProcessors.printing(org.openide.windows.OutputWriter out, LineConvertor convertor, boolean resetEnabled)</a>
     and
-    <a href="@TOP@org/netbeans/modules/extexecution/api/input/LineProcessors.html#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)">
+    <a href="@TOP@org/netbeans/api/extexecution/input/LineProcessors.html#printing(org.openide.windows.OutputWriter,%20org.netbeans.api.extexecution.print.LineConvertor,%20boolean)">
      LineProcessors.printing(org.openide.windows.OutputWriter out, LineConvertor convertor, boolean resetEnabled)</a>.
 
     Convertor is then used to convert received lines to printed ones.
     Common convertors (file, http) are provided in factory class
-    <a href="@TOP@org/netbeans/modules/extexecution/api/print/LineConvertors.html">LineConvertors</a>.
+    <a href="@TOP@org/netbeans/api/extexecution/print/LineConvertors.html">LineConvertors</a>.
    </p>
   </usecase>
  </answer>
