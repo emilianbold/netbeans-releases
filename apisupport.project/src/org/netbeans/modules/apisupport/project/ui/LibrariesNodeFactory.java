@@ -55,6 +55,7 @@ import org.openide.nodes.Node;
  *
  * @author mkleint
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-apisupport-project", position=300)
 public class LibrariesNodeFactory implements NodeFactory {
     
     /** Creates a new instance of LibrariesNodeFactory */

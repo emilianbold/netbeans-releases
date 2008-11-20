@@ -48,27 +48,20 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.maven.MavenSourcesImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.execute.ModelRunConfig;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Writer;
-import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 
@@ -79,10 +72,6 @@ import org.openide.util.Lookup;
  */
 public abstract class AbstractMavenActionsProvider implements MavenActionsProvider {
 
-    private static final String WEB_PATH = "webpagePath";//NOI18N
-    private static final String CLASSNAME = "className";//NOI18N
-    private static final String CLASSNAME_EXT = "classNameWithExtension";//NOI18N
-    private static final String PACK_CLASSNAME = "packageClassName";//NOI18N
     protected ActionToGoalMapping originalMappings;
     protected NetbeansBuildActionXpp3Reader reader = new NetbeansBuildActionXpp3Reader();
     private NetbeansBuildActionXpp3Writer writer = new NetbeansBuildActionXpp3Writer();
@@ -125,46 +114,10 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
 
     public final RunConfig createConfigForDefaultAction(String actionName, Project project, Lookup lookup) {
         FileObject[] fos = extractFileObjectsfromLookup(lookup);
-        String relPath = null;
-        SourceGroup group = null;
+        Map<String, String> replaceMap = lookup.lookup(Map.class);
         FileObject fo = null;
-        HashMap<String, String> replaceMap = new HashMap<String, String>();
         if (fos.length > 0) {
             fo = fos[0];
-            Sources srcs = project.getLookup().lookup(Sources.class);
-            SourceGroup[] grp = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            for (int i = 0; i < grp.length; i++) {
-                relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
-                if (relPath != null) {
-                    group = grp[i];
-                    replaceMap.put(CLASSNAME_EXT, fo.getNameExt());
-                    replaceMap.put(CLASSNAME, fo.getName());
-                    String pack = FileUtil.getRelativePath(grp[i].getRootFolder(), fo.getParent());
-                    if (pack != null) { //#141175
-                        replaceMap.put(PACK_CLASSNAME, (pack + (pack.length() > 0 ? "." : "") + fo.getName()).replace('/', '.')); //NOI18N
-                    } else {
-                        replaceMap.put(PACK_CLASSNAME, fo.getName());//NOI18N
-                    }
-                    break;
-                }
-            }
-            if (relPath == null) {
-                replaceMap.put(CLASSNAME_EXT, "");//NOI18N
-                replaceMap.put(CLASSNAME, "");//NOI18N
-                replaceMap.put(PACK_CLASSNAME, "");//NOI18N
-            }
-            grp = srcs.getSourceGroups("doc_root"); //NOI18N J2EE
-            for (int i = 0; i < grp.length; i++) {
-                relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
-                if (relPath != null) {
-                    replaceMap.put(WEB_PATH, relPath);
-                    break;
-                }
-            }
-            if (relPath == null) {
-                replaceMap.put(WEB_PATH, "");//NOI18N
-            }
-
         }
 //        if (group != null && MavenSourcesImpl.NAME_TESTSOURCE.equals(group.getName()) &&
 //                ActionProvider.COMMAND_RUN_SINGLE.equals(actionName)) {
@@ -176,19 +129,9 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
 //            //TODO how to allow running main() in tests?
 //            actionName = ActionProvider.COMMAND_DEBUG_TEST_SINGLE;
 //        }
-        if (group != null && MavenSourcesImpl.NAME_SOURCE.equals(group.getName()) &&
-                (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
-                ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName))) {
-            String withExt = replaceMap.get(CLASSNAME_EXT);
-            if (withExt != null && withExt.endsWith(".java")) {
-                replaceMap.put(CLASSNAME_EXT, withExt.replace(".java", "Test.java"));
-                replaceMap.put(CLASSNAME, replaceMap.get(CLASSNAME) + "Test");
-                replaceMap.put(PACK_CLASSNAME, replaceMap.get(PACK_CLASSNAME) + "Test");
-            }
-        }
         return mapGoalsToAction(project, actionName, replaceMap, fo);
     }
-
+  
     public ActionToGoalMapping getRawMappings() {
         if (originalMappings == null || reloadStream()) {
             InputStream in = getActionDefinitionStream();
@@ -293,7 +236,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
      */
     protected abstract InputStream getActionDefinitionStream();
 
-    private RunConfig mapGoalsToAction(Project project, String actionName, HashMap replaceMap, FileObject selectedFile) {
+    private RunConfig mapGoalsToAction(Project project, String actionName, Map<String, String> replaceMap, FileObject selectedFile) {
         try {
             // TODO need some caching really badly here..
             Reader read = performDynamicSubstitutions(replaceMap, getRawMappingsAsString());

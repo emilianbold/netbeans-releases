@@ -120,20 +120,8 @@ made subject to such option by the copyright holder.
             <folder name="Lookup"/>
 
             <folder name="Nodes">
-                <file name="org-netbeans-modules-j2ee-ejbjarproject-ui-EjbsNodeFactory.instance">
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="org-netbeans-modules-j2ee-ejbjarproject-ui-ConfFilesNodeFactory.instance">
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <file name="org-netbeans-modules-j2ee-ejbjarproject-ui-SetupDirNodeFactory.instance">
-                    <attr name="position" intvalue="300"/>
-                </file>
                 <file name="org-netbeans-modules-java-api-common-project-ui-JavaSourceNodeFactory.instance">
                     <attr name="position" intvalue="400"/>
-                </file>
-                <file name="org-netbeans-modules-j2ee-ejbjarproject-ui-LibrariesNodeFactory.instance">
-                    <attr name="position" intvalue="500"/>
                 </file>
             </folder>
 
