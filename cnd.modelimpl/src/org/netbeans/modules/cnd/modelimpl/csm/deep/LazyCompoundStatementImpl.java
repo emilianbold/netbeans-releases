@@ -63,7 +63,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  */
 public final class LazyCompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
     
-    private SoftReference<List/*<CsmStatement>*/> statements = null;
+    private SoftReference<List<CsmStatement>> statements = null;
     
     public LazyCompoundStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
         super(ast, file, scope);
@@ -92,18 +92,17 @@ public final class LazyCompoundStatementImpl extends StatementBase implements Cs
      *	  and returns this list,
      *    otherwise just returns empty list
      */
-    public List/*<CsmStatement>*/ createStatements() {
-	List list = new ArrayList();
-	if( renderStatements(list) ) {
-	    statements = new SoftReference(list);
-	    return list;
-	}
-	else {
-	    return Collections.EMPTY_LIST;
-	}
+    public List<CsmStatement> createStatements() {
+        List<CsmStatement> list = new ArrayList<CsmStatement>();
+        if (renderStatements(list)) {
+            statements = new SoftReference<List<CsmStatement>>(list);
+            return list;
+        } else {
+            return Collections.emptyList();
+        }
     }
     
-    private boolean renderStatements(List list) {
+    private boolean renderStatements(List<CsmStatement> list) {
         FileImpl file = (FileImpl) getContainingFile();
         TokenStream stream = file.getTokenStream(getStartOffset(), getEndOffset());
         if (stream == null) {
@@ -117,7 +116,7 @@ public final class LazyCompoundStatementImpl extends StatementBase implements Cs
         }
     }
     
-    private void renderStatements(AST ast, List list) {
+    private void renderStatements(AST ast, List<CsmStatement> list) {
         for(ast = (ast == null ? null : ast.getFirstChild()); ast != null; ast = ast.getNextSibling() ) {
             CsmStatement stmt = AstRenderer.renderStatement(ast, getContainingFile(), this);
             if( stmt != null ) {
