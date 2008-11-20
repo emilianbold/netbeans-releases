@@ -93,6 +93,9 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 String path = getBreakpoint().getPath();
                 if (!path.equals(fullname)) {
                     log.warning("BreakpointImpl: Breakpoint path validation failed [" + path + "] vs [" + fullname + "]");
+                    path = path.replace("\\", "/"); // NOI18N - possible fix for 151577 (QA to test)
+                }
+                if (!path.equals(fullname)) {
                     debugger.getGdbProxy().break_delete(number);
                     breakpoint.setInvalid(err);
                     setState(BPSTATE_VALIDATION_FAILED);
