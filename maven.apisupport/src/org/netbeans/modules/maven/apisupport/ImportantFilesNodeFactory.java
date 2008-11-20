@@ -77,6 +77,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author mkleint
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=650)
 public class ImportantFilesNodeFactory implements NodeFactory {
     /** Package private for unit tests. */
     static final String IMPORTANT_FILES_NAME = "important.files"; // NOI18N

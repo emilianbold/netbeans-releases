@@ -39,21 +39,15 @@
 
 package org.netbeans.modules.db.explorer.node;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.sql.Connection;
-import java.sql.SQLException;
 import org.netbeans.api.db.explorer.node.BaseNode;
-import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Rob Englander
  */
-public class TableListNodeProvider extends NodeProvider {
+public class TableListNodeProvider extends ConnectedNodeProvider {
     
     // lazy initialization holder class idiom for static fields is used
     // for retrieving the factory
@@ -64,46 +58,19 @@ public class TableListNodeProvider extends NodeProvider {
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public TableListNodeProvider createInstance(Lookup lookup) {
-                return new TableListNodeProvider(lookup);
+                TableListNodeProvider provider = new TableListNodeProvider(lookup);
+                provider.setup();
+                return provider;
             }
         };
     }
 
-    private DatabaseConnection connection;
-        
-    public TableListNodeProvider(Lookup lookup) {
+    private TableListNodeProvider(Lookup lookup) {
         super(lookup);
-
-        connection = getLookup().lookup(DatabaseConnection.class);
-        connection.addPropertyChangeListener(
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    updateState();
-                }
-            }
-        );
-
-        updateState();
     }
-    
-    private void updateState() {
-        Connection conn = connection.getConnection();
-        boolean disconnected = true;
 
-        if (conn != null) {
-            try {
-                disconnected = conn.isClosed();
-            } catch (SQLException e) {
-
-            }
-        }
-
-        if (disconnected) {
-            removeAllNodes();
-        } else {
-            NodeDataLookup lookup = new NodeDataLookup();
-            lookup.add(connection);
-            addNode(TableListNode.create(lookup));
-        }
+    @Override
+    protected BaseNode createNode(NodeDataLookup lookup) {
+        return TableListNode.create(lookup);
     }
 }

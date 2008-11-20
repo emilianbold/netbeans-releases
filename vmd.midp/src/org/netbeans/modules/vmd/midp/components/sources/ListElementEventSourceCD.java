@@ -72,7 +72,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResourceLazyInit;
 
 /**
  * @author David Kaspar
@@ -108,8 +108,8 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
             .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
             .addProperty (NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_String"), // NOI18N
                 PropertyEditorString.createInstance(NbBundle.getMessage(ListElementEventSourceCD.class, "LBL_ListElementEventSource_String")), PROP_STRING) // NOI18N
-            .addProperty (NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_Image"), PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
-            .addProperty(NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_Font"), PropertyEditorResource.createFontPropertyEditor(), PROP_FONT) // NOI18N
+            .addProperty (NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_Image"), PropertyEditorResourceLazyInit.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
+            .addProperty(NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_Font"), PropertyEditorResourceLazyInit.createFontPropertyEditor(), PROP_FONT) // NOI18N
             .addProperty (NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_Selected"), // NOI18N
                 PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(ListElementEventSourceCD.class, "LBL_ListElementEventSource_Selected")), PROP_SELECTED); // NOI18N
     }

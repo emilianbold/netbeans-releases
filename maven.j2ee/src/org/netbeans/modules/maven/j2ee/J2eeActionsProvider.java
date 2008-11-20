@@ -44,11 +44,7 @@ import java.util.ArrayList;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -59,6 +55,8 @@ import org.openide.util.Lookup;
 public class J2eeActionsProvider extends AbstractMavenActionsProvider {
 
     private ArrayList<String> supported;
+    private static final String ACT_RUN = ActionProvider.COMMAND_RUN_SINGLE + ".deploy";
+    private static final String ACT_DEBUG = ActionProvider.COMMAND_DEBUG_SINGLE + ".deploy";
     /** Creates a new instance of J2eeActionsProvider */
     public J2eeActionsProvider() {
         supported = new ArrayList<String>();
@@ -77,21 +75,10 @@ public class J2eeActionsProvider extends AbstractMavenActionsProvider {
 
     @Override
     public boolean isActionEnable(String action, Project project, Lookup lookup) {
-        if (ActionProvider.COMMAND_RUN_SINGLE.equals(action) || 
-            ActionProvider.COMMAND_DEBUG_SINGLE.equals(action)) {
+        if (ACT_DEBUG.equals(action) ||
+            ACT_RUN.equals(action)) {
             //only enable for doc root fileobjects..
-            FileObject[] fos = extractFileObjectsfromLookup(lookup);
-            if (fos.length > 0) {
-                Sources srcs = project.getLookup().lookup(Sources.class);
-                SourceGroup[] grp = srcs.getSourceGroups("doc_root"); //NOI18N J2EE
-                for (int i = 0; i < grp.length; i++) {
-                    String relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fos[0]);
-                    if (relPath != null) {
-                        return true;
-                    }
-                }
-            }
-            return false;
+            return true;
         } else if (ActionProvider.COMMAND_RUN.equals(action) || 
                    ActionProvider.COMMAND_DEBUG.equals(action)) {
             //performance, don't read the xml file to figure enablement..

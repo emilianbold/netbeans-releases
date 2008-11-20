@@ -70,6 +70,7 @@ import java.io.*;
 import java.util.Enumeration;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -317,7 +318,7 @@ public class Commit extends GeneralPHP
       String sInitialContent,
       boolean bInitialWait,
       String sCodeLocator,
-      boolean bInclass,
+      final boolean bInclass,
       boolean bFormat,
       int iAnnotations
     )
@@ -352,47 +353,43 @@ public class Commit extends GeneralPHP
     Sleep( 1000 );
 
     // Check code completion list
-    try
-    {
-      CompletionInfo completionInfo = GetCompletion( );
-      if( null == completionInfo )
-        fail( "NPE instead of competion info." );
-      // Magic CC number for complete list
-      if(
-          ( bInclass ? COMPLETION_LIST_INCLASS : COMPLETION_LIST_THRESHOLD )
-          > completionInfo.listItems.size( )
-        )
-      {
-        fail( "CC list looks to small, there are only: " + completionInfo.listItems.size( ) + " items in." );
-      }
+    try {
+      SwingUtilities.invokeAndWait(new Runnable() {
+          public void run() {
+              CompletionInfo completionInfo = GetCompletion();
+              if (null == completionInfo) {
+                  fail("NPE instead of competion info.");
+                  // Magic CC number for complete list
 
-      if( !bInclass )
-      {
-        // Check some completions
-        String[] asCompletions =
-        {
-          "$GLOBALS",
-          "LC_MONETARY",
-          "ibase_wait_event",
-          "mysql_error",
-          "openssl_pkcs12_export_to_file",
-          "str_word_count",
-          "ZendAPI_Queue"
-        };
-        CheckCompletionItems( completionInfo.listItself, asCompletions );
-        //jCompl.clickOnItem( "$GLOBALS" );
-        //Sleep( 500 );
-        //CheckResult( eoPHP, "$GLOBALS" );
+              }
+              if ((bInclass ? COMPLETION_LIST_INCLASS : COMPLETION_LIST_THRESHOLD) > completionInfo.listItems.size()) {
+                  fail("CC list looks to small, there are only: " + completionInfo.listItems.size() + " items in.");
+              }
 
-        completionInfo.listItself.hideAll( );
-      }
+              if (!bInclass) {
+                  // Check some completions
+                  String[] asCompletions = {
+                      "$GLOBALS",
+                      "LC_MONETARY",
+                      "ibase_wait_event",
+                      "mysql_error",
+                      "openssl_pkcs12_export_to_file",
+                      "str_word_count",
+                      "ZendAPI_Queue"
+                  };
+                  CheckCompletionItems(completionInfo.listItself, asCompletions);
+                  //jCompl.clickOnItem( "$GLOBALS" );
+                  //Sleep( 500 );
+                  //CheckResult( eoPHP, "$GLOBALS" );
+
+                  completionInfo.listItself.hideAll();
+              }
+          }
+      });
+    } catch (Exception ex) {
+      ex.printStackTrace(System.out);
+      fail("Completion check failed: \"" + ex.getMessage() + "\"");
     }
-    catch( Exception ex )
-    {
-      ex.printStackTrace( System.out );
-      fail( "Completion check failed: \"" + ex.getMessage( ) + "\"" );
-    }
-
     // Brackets
     // Predefined
     String[] asCheckers =

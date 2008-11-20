@@ -51,7 +51,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
-import org.openide.util.Task;
 
 /**
  * A helper class for checking what server, if any, has been explicitly set

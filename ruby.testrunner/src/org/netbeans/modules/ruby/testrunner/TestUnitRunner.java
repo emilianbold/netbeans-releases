@@ -58,7 +58,8 @@ import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.TestRunnerUtilities.DefaultTaskEvaluator;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
-import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.TestRunnerInputProcessorFactory;
+import org.netbeans.modules.ruby.testrunner.ui.TestRunnerLineConvertor;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.netbeans.modules.ruby.testrunner.ui.TestUnitHandlerFactory;
@@ -168,22 +169,17 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        desc.setRerun(false); //disabled for now, see #147482
         TestSession session = new TestSession(name, 
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
-                TestUnitHandlerFactory.getHandlers(),
-                session,
-                true);
-        TestExecutionManager.getInstance().start(desc, recognizer);
+        TestExecutionManager.getInstance().start(desc, new TestUnitHandlerFactory(), session);
     }
 
     public boolean supports(TestType type) {
         return type == TestType.TEST_UNIT;
     }
 
-    public void customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug) {
+    public void customize(Project project, RakeTask task, final RubyExecutionDescriptor taskDescriptor, boolean debug) {
         boolean useRunner = TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.TEST_TASKS, task, new DefaultTaskEvaluator() {
 
             public boolean isDefault(RakeTask task) {
@@ -203,17 +199,26 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         TestSession session = new TestSession(task.getDisplayName(),
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
-                TestUnitHandlerFactory.getHandlers(),
-                session,
-                true);
 
         Map<String, String> env = new HashMap<String, String>(1);
         addTestUnitRunnerToEnv(env);
         taskDescriptor.addAdditionalEnv(env);
-        taskDescriptor.addOutputRecognizer(recognizer);
-        taskDescriptor.setReadMaxWaitTime(DEFAULT_WAIT_TIME);
-        taskDescriptor.setRerun(false);
-    }
+        Manager manager = Manager.getInstance();
+        final TestRunnerLineConvertor testConvertor = new TestRunnerLineConvertor(manager, session, new TestUnitHandlerFactory());
+        taskDescriptor.addStandardRecognizers();
+        taskDescriptor.addOutConvertor(testConvertor);
+        taskDescriptor.addErrConvertor(testConvertor);
+        taskDescriptor.lineBased(true);
+        taskDescriptor.setOutProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, true));
+        taskDescriptor.setErrProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false));
+        taskDescriptor.postBuild(new Runnable() {
+
+            public void run() {
+                TestExecutionManager.getInstance().finish();
+                testConvertor.refreshSession();
+            }
+        });
+        TestExecutionManager.getInstance().init(taskDescriptor);
+  }
 
 }

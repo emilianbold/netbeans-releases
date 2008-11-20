@@ -59,24 +59,22 @@ public class MeasureMobilityActionsTest  {
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Mobility Actions suite");
         System.setProperty("suitename", MeasureMobilityActionsTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness Mobility Actions suite");
 
         // TODO add some test cases
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)
-                .addTest(MobilitySetup.class, "cleanTempDir")
-
-                .addTest(CreateMobilityProjectTest.class, "testCreateMobilityProject") // Create Mobile Application
-                .addTest(CreateMobilityProjectTest.class, "testCreateMobilityLibrary") // Create Mobile Class Library
-                .addTest(OpenMIDletEditorTest.class, "measureTime") // Open a visual MIDlet
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateMobilityProjectTest.class)
+                .addTest(CreateMobilityProjectTest.class) // Create Mobile Application
+                .addTest(OpenMIDletEditorTest.class) // Open a visual MIDlet
 /* Strange results in switch tests, will check it later
                 .addTest(MIDletViewsSwitch.class, "testFlowToDesignSwitch") // Flow To Design Switch
                 .addTest(MIDletViewsSwitch.class, "testDesignToFlowSwitch") // Design To Flow Switch
                 .addTest(MIDletViewsSwitch.class, "testFlowToSourceSwitch") // Flow To Source Switch
                 .addTest(MIDletViewsSwitch.class, "testSourceToFlowSwitch") // Source To Flow Switch
 */
-                .addTest(CreateVisualMIDletTest.class, "measureTime") // Create Visual MIDlet
-                .addTest(CreateMIDletTest.class, "measureTime") // Create MIDlet
-                .addTest(SwitchConfigurationTest.class, "measureTime") // Switch Configuration
-                .addTest(OpenMobileProjectTest.class, "measureTime") // Open Mobile CLDC project
+                .addTest(CreateVisualMIDletTest.class) // Create Visual MIDlet
+                .addTest(CreateMIDletTest.class) // Create MIDlet
+                .addTest(SwitchConfigurationTest.class) // Switch Configuration
+                .addTest(OpenMobileProjectTest.class) // Open Mobile CLDC project
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;

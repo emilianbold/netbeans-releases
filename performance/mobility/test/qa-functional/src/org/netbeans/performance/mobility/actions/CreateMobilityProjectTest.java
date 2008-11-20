@@ -48,7 +48,9 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-
+import org.netbeans.performance.mobility.setup.MobilitySetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  * Test create CreateMobilityProject
  *
@@ -79,6 +81,14 @@ public class CreateMobilityProjectTest extends PerformanceTestCase {
         super(testName, performanceDataName);
         expectedTime = 10000;
         WAIT_AFTER_OPEN = 10000;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)
+             .addTest(CreateMobilityProjectTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
     public void testCreateMobilityProject() {

@@ -46,6 +46,9 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.mobility.setup.MobilitySetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -74,6 +77,19 @@ public class MobilityToolsDialogsTest  extends PerformanceTestCase {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;          
     }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)
+             .addTest(MobilityToolsDialogsTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testMobilityToolsDialogs() {
+        doMeasurement();
+    }
+
     @Override
     public void initialize() {
         log(":: initialize");

@@ -42,6 +42,7 @@
 package org.netbeans.performance.mobility.setup;
 
 import java.io.IOException;
+import org.openide.util.Exceptions;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 
@@ -57,38 +58,42 @@ public class MobilitySetup extends JellyTestCase {
         super(testName);
     }
 
-    public void openProject(String projectPath) {
-        String projectsDir = CommonUtilities.getProjectsDir() + projectPath;
-       // Object prj = ProjectSupport.openProject(projectsDir);
-       // assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
-    }
-    
-    public void openMobilityMIDletProject() {
-        openProject("MobileApplicationVisualMIDlet");
+    public void testCloseMemoryToolbar() {
+        CommonUtilities.closeMemoryToolbar();
     }
 
-    public void openMobilitySwitchProject() {
-        openProject("MobileApplicationSwitchConfiguration");
+    public void testCloseWelcome() {
+        CommonUtilities.closeWelcome();
+    }
+
+    public void testCloseAllDocuments() {
+        CommonUtilities.closeAllDocuments();
+    }
+
+    public void testCleanTempDir() throws IOException {
+        CommonUtilities.cleanTempDir();
+    }
+
+    public void testOpenMobilityMIDletProject() {
+
+        try {
+            this.openDataProjects("MobileApplicationVisualMIDlet");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    public void testOpenMobilitySwitchProject() {
+
+        try {
+            this.openDataProjects("MobileApplicationSwitchConfiguration");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     public void testCloseTaskWindow() {
         CommonUtilities.closeTaskWindow();
     }
-    
-    public void closeMemoryToolbar() {
-        CommonUtilities.closeMemoryToolbar();
-    }
 
-    public void closeWelcome() {
-        CommonUtilities.closeWelcome();
-    }
-
-    public void closeAllDocuments() {
-        CommonUtilities.closeAllDocuments();
-    }
-    
-    public void cleanTempDir() throws IOException {
-        CommonUtilities.cleanTempDir();
-    }
 }

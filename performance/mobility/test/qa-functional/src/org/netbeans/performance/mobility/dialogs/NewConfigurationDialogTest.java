@@ -47,6 +47,9 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.mobility.setup.MobilitySetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -68,6 +71,19 @@ public class NewConfigurationDialogTest  extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
         targetProject = "MobileApplicationVisualMIDlet";              
     }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)
+             .addTest(NewConfigurationDialogTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testNewConfigurationDialog() {
+        doMeasurement();
+    }
+
     @Override
     public void initialize() {
         log(":: initialize");

@@ -109,6 +109,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="cp $(TargetDir)$(TargetName).dll ..\..\nbbuild\netbeans\webcommon1\native"
 			/>
 		</Configuration>
 		<Configuration
@@ -229,7 +230,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\DbgpResponse.cpp"
+				RelativePath=".\DebugDocument.cpp"
 				>
 			</File>
 			<File
@@ -304,6 +305,10 @@
 			</File>
 			<File
 				RelativePath=".\DbgpTags.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DebugDocument.h"
 				>
 			</File>
 			<File

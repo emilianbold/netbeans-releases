@@ -55,7 +55,9 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-
+import org.netbeans.performance.mobility.setup.MobilitySetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  *
  * @author mmirilovic@netbeans.org
@@ -88,6 +90,18 @@ public class SwitchConfigurationTest extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
 
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)
+             .addTest(SwitchConfigurationTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testSwitchConfiguration() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         log(":: initialize");

@@ -137,21 +137,6 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
         return true;
     }
 
-    private String action2Quick(String actionName) {
-        if (ActionProvider.COMMAND_CLEAN.equals(actionName)) {
-            return JavaRunner.QUICK_CLEAN;
-        } else if (ActionProvider.COMMAND_RUN.equals(actionName) || ActionProvider.COMMAND_RUN_SINGLE.equals(actionName)) {
-            return JavaRunner.QUICK_RUN;
-        } else if (ActionProvider.COMMAND_DEBUG.equals(actionName) || ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName)) {
-            return JavaRunner.QUICK_DEBUG;
-        } else if (ActionProvider.COMMAND_TEST.equals(actionName) || ActionProvider.COMMAND_TEST_SINGLE.equals(actionName)) {
-            return JavaRunner.QUICK_TEST;
-        } else if (ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName)) {
-            return JavaRunner.QUICK_TEST_DEBUG;
-        }
-        assert false: "Cannot convert " + actionName + " to quick actions.";
-        return null;
-    }
 
     private String eventuallyShowDialog(Project project, String actionName) {
         if (mainClass != null) {

@@ -48,7 +48,9 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-
+import org.netbeans.performance.mobility.setup.MobilitySetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  *
  * @author mkhramov@netbeans.org
@@ -76,6 +78,14 @@ public class MIDletViewsSwitchTest extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_PREPARE = 10000;
         WAIT_AFTER_CLOSE = 5000;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)
+             .addTest(MIDletViewsSwitchTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
     @Override
