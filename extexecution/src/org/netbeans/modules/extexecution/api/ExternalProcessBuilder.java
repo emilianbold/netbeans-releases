@@ -43,10 +43,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
@@ -64,6 +67,8 @@ import org.openide.util.Utilities;
  */
 public final class ExternalProcessBuilder implements Callable<Process> {
 
+    private static final Logger LOGGER = Logger.getLogger(ExternalProcessBuilder.class.getName());
+    
     // FIXME: get rid of those proxy constants as soon as some NB Proxy API is available
     private static final String USE_PROXY_AUTHENTICATION = "useProxyAuthentication"; // NOI18N
 
@@ -260,7 +265,35 @@ public final class ExternalProcessBuilder implements Callable<Process> {
         pbEnv.putAll(env);
         adjustProxy(pb);
         pb.redirectErrorStream(redirectErrorStream);
+        logProcess(Level.FINE, pb);
         return pb.start();
+    }
+
+    /**
+     * Logs the given <code>pb</code> using the given <code>level</code>.
+     *
+     * @param pb the ProcessBuilder to log.
+     * @param level the level for logging.
+     */
+    private void logProcess(final Level level, final ProcessBuilder pb) {
+
+        if (!LOGGER.isLoggable(level)) {
+            return;
+        }
+
+        File dir = pb.directory();
+        String basedir = dir == null ? "" : "(basedir: " + dir.getAbsolutePath() + ") "; //NOI18N
+
+        StringBuilder command = new StringBuilder();
+        for (Iterator<String> it = pb.command().iterator(); it.hasNext();) {
+            command.append(it.next());
+            if (it.hasNext()) {
+                command.append(' '); //NOI18N
+            }
+        }
+
+        LOGGER.log(level, "Running: " + basedir + '"' + command.toString() + '"'); //NOI18N
+        LOGGER.log(level, "Environment: " + pb.environment()); //NOI18N
     }
 
     // package level for unit testing
