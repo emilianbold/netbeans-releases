@@ -154,7 +154,7 @@ public class FeatureProjectFactory implements ProjectFactory {
         
         public void run () {
             Set<String> cnbs = FeatureInfoAccessor.DEFAULT.getCodeName (info);
-            FindComponentModules findModules = new FindComponentModules(cnbs.toArray(new String[0]));
+            FindComponentModules findModules = new FindComponentModules(cnbs);
             findModules.createFindingTask ().waitFinished ();
             Collection<UpdateElement> toInstall = findModules.getModulesForInstall ();
             Collection<UpdateElement> toEnable = findModules.getModulesForEnable ();

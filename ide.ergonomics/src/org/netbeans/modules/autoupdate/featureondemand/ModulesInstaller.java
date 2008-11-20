@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -89,7 +90,7 @@ public class ModulesInstaller {
         modules4install = modules;
     }
     
-    public static boolean installModules (String... codeNames) {
+    public static boolean installModules (Set<String> codeNames) {
         assert ! SwingUtilities.isEventDispatchThread () : "Cannot run in EQ!";
         boolean success = false;
         

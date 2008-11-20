@@ -225,7 +225,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     private FindComponentModules getFinder () {
         assert cnbs != null : "Feature's code name is not null.";
         if (finder == null) {
-            finder = new FindComponentModules(cnbs.toArray(new String[0]));
+            finder = new FindComponentModules(cnbs);
         }
         return finder;
     }

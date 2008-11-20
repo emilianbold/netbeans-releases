@@ -120,7 +120,7 @@ public class Feature2LayerMapping {
                         String cnbs = p.getProperty("cnbs");
                         assert cnbs != null;
                         TreeSet<String> s = new TreeSet<String>();
-                        s.addAll(Arrays.asList(cnbs.split(",\n ")));
+                        s.addAll(Arrays.asList(cnbs.split(",")));
                         ic.add(FeatureInfo.create(s, layer));
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);

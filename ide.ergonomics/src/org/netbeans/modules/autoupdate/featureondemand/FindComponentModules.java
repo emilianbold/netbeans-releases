@@ -67,12 +67,8 @@ import org.openide.util.RequestProcessor;
 public final class FindComponentModules {
     private Collection<String> codeNames;
     
-    public FindComponentModules (String... components) {
-        if (components == null) {
-            codeNames = Collections.emptySet ();
-        } else {
-            codeNames = Arrays.asList (components);
-        }
+    public FindComponentModules(Set<String> components) {
+        codeNames = components;
     }
     
     public final String DO_CHECK = "do-check";
