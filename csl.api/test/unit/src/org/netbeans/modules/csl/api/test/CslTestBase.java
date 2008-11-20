@@ -290,6 +290,23 @@ public abstract class CslTestBase extends NbTestCase {
         return fo;
     }
 
+    /**
+     * Gets the <code>Source</code> for a file. This method makes sure that a
+     * <code>Document</code> is loaded from the file and accessible through the
+     * returned <code>Source</code> instance. Many language-specific feature
+     * implementations rely on that.
+     *
+     * @param relFilePath The file path relative to <code>getDataDir()</code>.
+     *
+     * @return The <code>Source</code> instance with a the <code>Document</code>
+     *   loaded from the specified file.
+     */
+    protected Source getTestSource(String relFilePath) {
+        FileObject f = getTestFile(relFilePath);
+        Document doc = GsfUtilities.getDocument(f, true);
+        return Source.create(doc);
+    }
+
     protected String readFile(final FileObject fo) {
         return read(fo);
     }
@@ -672,8 +689,7 @@ public abstract class CslTestBase extends NbTestCase {
     // Parser tests
     ////////////////////////////////////////////////////////////////////////////
     protected void checkErrors(final String relFilePath) throws Exception {
-        FileObject f = getTestFile(relFilePath);
-        Source testSource = Source.create(f);
+        Source testSource = getTestSource(relFilePath);
 
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
@@ -1011,18 +1027,10 @@ public abstract class CslTestBase extends NbTestCase {
      * occurrences on the exit points.
      */
     protected void checkOccurrences(String relFilePath, String caretLine, final boolean symmetric) throws Exception {
-        FileObject f = getTestFile(relFilePath);
-        Source testSource = Source.create(f);
+        Source testSource = getTestSource(relFilePath);
 
-        String text = testSource.createSnapshot().getText().toString();
-
-        int caretDelta = caretLine.indexOf('^');
-        assertTrue(caretDelta != -1);
-        caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-        int lineOffset = text.indexOf(caretLine);
-        assertTrue(lineOffset != -1);
-
-        final int caretOffset = lineOffset + caretDelta;
+        Document doc = testSource.getDocument();
+        final int caretOffset = getCaretOffset(doc.getText(0, doc.getLength()), caretLine);
 
         final OccurrencesFinder finder = getOccurrencesFinder();
         assertNotNull("getOccurrencesFinder must be implemented", finder);
@@ -1134,8 +1142,7 @@ public abstract class CslTestBase extends NbTestCase {
     }
     
     protected void checkSemantic(final String relFilePath, final String caretLine) throws Exception {
-        FileObject f = getTestFile(relFilePath);
-        Source testSource = Source.create(f);
+        Source testSource = getTestSource(relFilePath);
 
         if (caretLine != null) {
             int caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
@@ -1239,8 +1246,7 @@ public abstract class CslTestBase extends NbTestCase {
     }
 
     protected void checkRenameSections(final String relFilePath, final String caretLine) throws Exception {
-        FileObject f = getTestFile(relFilePath);
-        Source testSource = Source.create(f);
+        Source testSource = getTestSource(relFilePath);
 
         final int caretOffset;
         if (caretLine != null) {
@@ -1325,8 +1331,7 @@ public abstract class CslTestBase extends NbTestCase {
     }
     
     protected List<IndexDocument> indexFile(String relFilePath) throws Exception {
-        FileObject f = getTestFile(relFilePath);
-        Source testSource = Source.create(f);
+        Source testSource = getTestSource(relFilePath);
 
         final Object [] ret = new Object [] { null };
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
@@ -1597,8 +1602,7 @@ public abstract class CslTestBase extends NbTestCase {
             }
         };
 
-        FileObject f = getTestFile(relFilePath);
-        Source testSource = Source.create(f);
+        Source testSource = getTestSource(relFilePath);
 
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
@@ -1616,8 +1620,7 @@ public abstract class CslTestBase extends NbTestCase {
     }
     
     protected void checkFolds(String relFilePath) throws Exception {
-        FileObject f = getTestFile(relFilePath);
-        Source testSource = Source.create(f);
+        Source testSource = getTestSource(relFilePath);
 
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
@@ -2246,8 +2249,7 @@ public abstract class CslTestBase extends NbTestCase {
         final boolean caseSensitive = true;
         final NameKind kind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
 
-        FileObject f = getTestFile(file);
-        Source testSource = Source.create(f);
+        Source testSource = getTestSource(file);
 
         final int caretOffset;
         if (caretLine != null) {
@@ -2393,8 +2395,7 @@ public abstract class CslTestBase extends NbTestCase {
         final boolean caseSensitive = true;
         final NameKind kind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
 
-        FileObject f = getTestFile(file);
-        Source testSource = Source.create(f);
+        Source testSource = getTestSource(file);
 
         final int caretOffset;
         if (caretLine != null) {
@@ -2681,8 +2682,7 @@ public abstract class CslTestBase extends NbTestCase {
         final QueryType type = QueryType.COMPLETION;
         //boolean caseSensitive = true;
 
-        FileObject f = getTestFile(file);
-        Source testSource = Source.create(f);
+        Source testSource = getTestSource(file);
 
         final int caretOffset;
         if (caretLine != null) {
@@ -2730,10 +2730,8 @@ public abstract class CslTestBase extends NbTestCase {
     }
     
     public void checkPrefix(final String relFilePath) throws Exception {
-        FileObject f = getTestFile(relFilePath);
-        Source source = Source.create(f);
-
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
+        Source testSource = getTestSource(relFilePath);
+        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
@@ -2805,8 +2803,7 @@ public abstract class CslTestBase extends NbTestCase {
     }
     
     protected void checkOffsets(final String relFilePath, final String caretLine) throws Exception {
-        FileObject f = getTestFile(relFilePath);
-        Source testSource = Source.create(f);
+        Source testSource = getTestSource(relFilePath);
 
         if (caretLine != null) {
             int caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
@@ -3260,8 +3257,7 @@ public abstract class CslTestBase extends NbTestCase {
     }
     
     protected void checkTypes(final String relFilePath, final String caretLine) throws Exception {
-        FileObject f = getTestFile(relFilePath);
-        Source testSource = Source.create(f);
+        Source testSource = getTestSource(relFilePath);
 
         if (caretLine != null) {
             int caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
@@ -3590,7 +3586,7 @@ public abstract class CslTestBase extends NbTestCase {
         if (fileObject == null) {
             fileObject = getTestFile(relFilePath);
         }
-        Source testSource = Source.create(fileObject);
+        Source testSource = getTestSource(relFilePath);
 
         final int caretOffset;
         if (caretLine != null) {
@@ -3896,8 +3892,7 @@ public abstract class CslTestBase extends NbTestCase {
     }
 
     protected DeclarationLocation findDeclaration(String relFilePath, final String caretLine) throws Exception {
-        FileObject f = getTestFile(relFilePath);
-        Source testSource = Source.create(f);
+        Source testSource = getTestSource(relFilePath);
 
         final int caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
         enforceCaretOffset(testSource, caretOffset);
