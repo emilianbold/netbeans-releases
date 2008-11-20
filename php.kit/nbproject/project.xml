@@ -14,7 +14,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.php.editor</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.2.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -26,7 +26,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.php.project</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>2.4.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
