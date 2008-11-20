@@ -56,7 +56,6 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
  *
@@ -141,7 +140,7 @@ public class SavingPHPProjectProperties  extends org.netbeans.modules.performanc
     @Override
     public void tearDown() {
         super.tearDown();
-        ProjectSupport.closeProject(projectName);
+//        ProjectSupport.closeProject(projectName);
     }
 
 
