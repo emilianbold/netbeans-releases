@@ -94,7 +94,7 @@ public class RunScript extends Command implements Displayable {
                         }
                     };
                 }
-                ExecutionDescriptor descriptor = new ExecutionDescriptor().controllable(isControllable()).frontWindow(true).inputVisible(false).showProgress(true).optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
+                ExecutionDescriptor descriptor = new ExecutionDescriptor().controllable(isControllable()).frontWindow(true).inputVisible(true).showProgress(true).optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
                 InOutPostRedirector redirector = new InOutPostRedirector(scriptFile);
                 descriptor = descriptor.outProcessorFactory(redirector);
                 descriptor = descriptor.postExecution(redirector);
