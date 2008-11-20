@@ -133,28 +133,28 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
 
     public void pathsChanged(PathRegistryEvent event) {
         assert event != null;
-        final EventKind eventKind = event.getEventKind();
-        assert eventKind != null;
-        final PathKind pathKind = event.getPathKind();
-        assert pathKind != null;
-        final Collection<? extends ClassPath> affected = event.getAffectedPaths();
-        assert affected != null;
-        switch (eventKind) {
-            case PATHS_ADDED:
-                handlePathsAdded (affected, pathKind);
-                break;
-            case PATHS_REMOVED:
-                handlePathsRemoved (affected, pathKind);
-                break;
-            case PATHS_CHANGED:
-                handlePathsChanged (affected, pathKind);
-                break;
-            case INCLUDES_CHANGED:
-                handleIncludesChanged (affected, pathKind);
-                break;
-            default:
-                throw new IllegalArgumentException();
-        }
+//        final EventKind eventKind = event.getEventKind();
+//        assert eventKind != null;
+//        final PathKind pathKind = event.getPathKind();
+//        assert pathKind != null;
+//        final Collection<? extends ClassPath> affected = event.getAffectedPaths();
+//        assert affected != null;
+//        switch (eventKind) {
+//            case PATHS_ADDED:
+//                handlePathsAdded (affected, pathKind);
+//                break;
+//            case PATHS_REMOVED:
+//                handlePathsRemoved (affected, pathKind);
+//                break;
+//            case PATHS_CHANGED:
+//                handlePathsChanged (affected, pathKind);
+//                break;
+//            case INCLUDES_CHANGED:
+//                handleIncludesChanged (affected, pathKind);
+//                break;
+//            default:
+//                throw new IllegalArgumentException();
+//        }
     }
     
     private void handlePathsAdded (final Collection<? extends ClassPath> affected, final PathKind kind) {
@@ -395,7 +395,8 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             return !empty;
         }
 
-        private void findDependencies(final URL rootURL, final Stack<URL> cycleDetector, final Map<URL, List<URL>> depGraph, String[] binaryClassPathIds) {
+        private void findDependencies(final URL rootURL, final Stack<URL> cycleDetector, final Map<URL, List<URL>> depGraph,
+                final Set<URL> binaries, final String[] binaryClassPathIds) {
             if (depGraph.containsKey(rootURL)) {
                 return;
             }
@@ -420,9 +421,12 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                         for (URL sourceRoot : sourceRoots) {
                             if (!sourceRoot.equals(rootURL) && !cycleDetector.contains(sourceRoot)) {
                                 deps.add(sourceRoot);
-                                findDependencies(sourceRoot, cycleDetector, depGraph, binaryClassPathIds);
+                                findDependencies(sourceRoot, cycleDetector, depGraph, binaries, binaryClassPathIds);
                             }
                         }
+                    }
+                    else {
+                        
                     }
                 }
             }

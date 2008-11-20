@@ -49,31 +49,48 @@ import org.netbeans.api.java.classpath.ClassPath;
  */
 public class PathRegistryEvent extends EventObject {
 
-    private final EventKind eventKind;
-    private final PathKind pathKind;
-    private final Set<? extends ClassPath> pahs;
+    public static final class Change {
 
-    public PathRegistryEvent (final PathRegistry regs,
-            final EventKind eventKind,
-            final PathKind pathKind,
-            final Set<? extends ClassPath> paths) {
+        private final EventKind eventKind;
+        private final PathKind pathKind;
+        private final Set<? extends ClassPath> pahs;
+
+        public Change (final EventKind eventKind,
+                       final PathKind pathKind,
+                       final Set<? extends ClassPath> paths) {
+
+            assert eventKind != null;
+            this.pahs = paths;
+            this.eventKind = eventKind;
+            this.pathKind = pathKind;
+        }
+
+        public Set<? extends ClassPath> getAffectedPaths () {
+            return this.pahs;
+        }
+
+        public EventKind getEventKind () {
+            return eventKind;
+        }
+
+        public PathKind getPathKind () {
+            return pathKind;
+        }
+
+    }
+
+
+    private final Iterable<? extends Change> changes;
+
+    public PathRegistryEvent (final PathRegistry regs, final Iterable<? extends Change> changes) {
         super (regs);
-        assert eventKind != null;
-        this.pahs = paths;
-        this.eventKind = eventKind;
-        this.pathKind = pathKind;
+        assert changes != null;
+        this.changes = changes;
     }
 
-    public Set<? extends ClassPath> getAffectedPaths () {
-        return this.pahs;
+    public Iterable<? extends Change> getChanges () {
+        return this.changes;
     }
-
-    public EventKind getEventKind () {
-        return eventKind;
-    }
-
-    public PathKind getPathKind () {
-        return pathKind;
-    }
+    
 
 }
