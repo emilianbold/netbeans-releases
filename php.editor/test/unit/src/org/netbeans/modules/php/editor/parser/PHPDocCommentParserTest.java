@@ -187,29 +187,33 @@ public class PHPDocCommentParserTest extends GsfTestBase {
         assertNotNull(block);
     }
 
-    public void testProperty() throws Exception {
+    public void testProperty01() throws Exception {
         String comment = " * PHP Template.\n" +
-                " * @property string name\n" +
-                " * @property-read int ahoj\n" +
-                " * @property-write int death";
-        PHPDocCommentParser parser = new PHPDocCommentParser();
-        PHPDocBlock block = parser.parse(0, comment.length(), comment);
-        assertNotNull(block);
-        assertEquals("PHP Template.", block.getDescription());
-        List<PHPDocTag> tags = block.getTags();
-        assertEquals("Nunber of tags", 3, tags.size());
-        assertEquals(PHPDocTag.Type.PROPERTY, tags.get(0).getKind());
-        assertEquals("string name", tags.get(0).getValue());
-        assertEquals(comment.indexOf("@property string name") + 3, tags.get(0).getStartOffset());
-        assertEquals(comment.indexOf("@property string name") + "@property string name".length(), tags.get(0).getEndOffset() - 3);
-        assertEquals(PHPDocTag.Type.PROPERTY_READ, tags.get(1).getKind());
-        assertEquals("int ahoj", tags.get(1).getValue());
-        assertEquals(comment.indexOf("@property-read int ahoj") + 3, tags.get(1).getStartOffset());
-        assertEquals(comment.indexOf("@property-read int ahoj") + "@property-read int ahoj".length(), tags.get(1).getEndOffset() - 3);
-        assertEquals(PHPDocTag.Type.PROPERTY_WRITE, tags.get(2).getKind());
-        assertEquals("int death", tags.get(2).getValue());
-        assertEquals(comment.indexOf("@property-write int death") + 3, tags.get(2).getStartOffset());
-        assertEquals(comment.indexOf("@property-write int death") + "@property-write int death".length(), tags.get(2).getEndOffset() - 3);
+                " * @property string $name\n" +
+                " * @property-read int $ahoj\n" +
+                " * @property-write int $death";
+        perform(comment, "Property01");
+    }
+
+    public void testProperty02() throws Exception {
+        String comment = " * PHP Template.\n" +
+                " * @property";
+        perform(comment, "Property02");
+    }
+
+    public void testProperty03() throws Exception {
+        String comment = " * PHP Template.\n" +
+                " * @property string \n" +
+                " * @property-read int $ahoj\n" +
+                " * @property-write int $death";
+        perform(comment, "Property03");
+    }
+
+    public void testProperty04() throws Exception {
+        String comment = " * PHP Template.\n" +
+                " * @property-read int $ahoj there is some doc\n" +
+                " * @property-write int $death";
+        perform(comment, "Property03");
     }
 
     public void testReturnType01() throws Exception {
