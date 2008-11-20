@@ -46,7 +46,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileChangeAdapter;
@@ -73,6 +75,11 @@ public final class MIMEResolverImpl {
         
     private static final boolean CASE_INSENSITIVE =
         Utilities.isWindows() || Utilities.getOperatingSystem() == Utilities.OS_VMS;
+
+    // notification limit in bytes for reading file content. It should not exceed 4192 (4kB) because it is read in one disk touch.
+    private static final int READ_LIMIT = 4000;
+    private static Set<String> readLimitReported = new HashSet<String>();
+
     
     public static MIMEResolver forDescriptor(FileObject fo) {
         return new Impl(fo);
@@ -105,16 +112,19 @@ public final class MIMEResolverImpl {
         impl.parseDesc();
         FileElement[] elements = impl.smell;
         if(elements != null) {
-            for (int i = 0; i < elements.length; i++) {
-                FileElement fileElement = elements[i];
+            for (FileElement fileElement : elements) {
                 String mimeType = fileElement.getMimeType();
-                String[] extensions = fileElement.getExtensions();
-                if(extensions != null) {
-                    for (int j = 0; j < extensions.length; j++) {
-                        result.add(new String[] {extensions[j], mimeType});
+                if (mimeType != null) {  // can be null if <exit/> element is used
+                    String[] extensions = fileElement.getExtensions();
+                    if (extensions != null) {
+                        for (String extension : extensions) {
+                            if (extension.length() > 0) {  // ignore empty extension
+                                result.add(new String[] {extension, mimeType});
+                            }
+                        }
+                    } else {
+                        result.add(new String[] {null, mimeType});
                     }
-                } else {
-                    result.add(new String[] {null, mimeType});
                 }
             }
         }
@@ -166,6 +176,10 @@ public final class MIMEResolverImpl {
             for (int i = smell.length-1; i>=0; i--) {
                 String s = smell[i].resolve(fo);
                 if (s != null) {
+                    if (s.equals(FileElement.EXIT_MIME_TYPE)) {
+                        // if file matches conditions and exit element is present, do not continue in loop and return null
+                        return null;
+                    }
                     if (ERR.isLoggable(Level.FINE)) ERR.fine("MIMEResolverImpl.findMIMEType(" + fo + ")=" + s);  // NOI18N
                     return s;
                 }
@@ -212,8 +226,9 @@ public final class MIMEResolverImpl {
         }
         
         /** For debug purposes. */
+        @Override
         public String toString() {
-            return "MIMEResolverImpl.Impl[" + data + ", " + smell + "]";  // NOI18N
+            return "MIMEResolverImpl.Impl[" + data.getPath() + "]";  // NOI18N
         }
 
 
@@ -236,6 +251,10 @@ public final class MIMEResolverImpl {
         // references active resolver component
         private MIMEComponent component = null;        
         private String componentDelimiter = null;
+        // holds level of pattern element
+        private int patternLevel = 0;
+        // used to prohibit more pattern elements on the same level
+        Set<Integer> patternLevelSet;
 
 
         DescParser(FileObject fo) {
@@ -247,6 +266,7 @@ public final class MIMEResolverImpl {
         private static final short IN_FILE = 2;
         private static final short IN_RESOLVER = 3;
         private static final short IN_COMPONENT = 4;
+        private static final short IN_PATTERN = 5;
 
         // second state dimension
         private static final short IN_EXIT = INIT + 1;
@@ -259,13 +279,19 @@ public final class MIMEResolverImpl {
         private static final String RESOLVER = "resolver"; // NOI18N
         private static final String FATTR = "fattr"; // NOI18N
         private static final String NAME = "name"; // NOI18N
+        private static final String PATTERN = "pattern"; // NOI18N
+        private static final String VALUE = "value"; // NOI18N
+        private static final String RANGE = "range"; // NOI18N
+        private static final String IGNORE_CASE = "ignorecase"; // NOI18N
+        private static final String SUBSTRING = "substring"; // NOI18N
         private static final String MAGIC = "magic"; // NOI18N
         private static final String HEX = "hex"; // NOI18N
         private static final String MASK = "mask"; // NOI18N
-        private static final String VALUE = "text"; // NOI18N
+        private static final String TEXT = "text"; // NOI18N
         private static final String EXIT = "exit"; // NOI18N
         private static final String XML_RULE_COMPONENT = "xml-rule";  // NOI18N
 
+        @Override
         public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
 
             String s;
@@ -337,14 +363,57 @@ public final class MIMEResolverImpl {
                     } else if (FATTR.equals(qName)) {
 
                         s = atts.getValue(NAME); if (s == null) error();
-                        String val = atts.getValue(VALUE);
+                        String val = atts.getValue(TEXT);
                         template[0].fileCheck.addAttr(s, val);                        
+
+                    } else if (PATTERN.equals(qName)) {
+
+                        s = atts.getValue(VALUE); if (s == null) error();
+                        int range = Integer.valueOf(atts.getValue(RANGE));
+                        assert range <= READ_LIMIT || !readLimitReported.add(fo.getPath()): "MIME resolver " + fo.getPath() + " should not exceed " + READ_LIMIT + " bytes limit for files content check.";  //NOI18N
+                        boolean ignoreCase = Type.FilePattern.DEFAULT_IGNORE_CASE;
+                        String ignoreCaseAttr = atts.getValue(IGNORE_CASE);
+                        if (ignoreCaseAttr != null) {
+                            ignoreCase = Boolean.valueOf(ignoreCaseAttr);
+                        }
+                        if (file_state == IN_PATTERN) {
+                            if (patternLevelSet == null) {
+                                patternLevelSet = new HashSet<Integer>();
+                            }
+                            if (!patternLevelSet.add(patternLevel)) {
+                                error("Second pattern element on the same level not allowed");  //NOI18N
+                            }
+                            template[0].fileCheck.addInnerPattern(s, range, ignoreCase);
+                        } else {
+                            template[0].fileCheck.addPattern(s, range, ignoreCase);
+                            file_state = IN_PATTERN;
+                        }
+                        patternLevel++;
+                        break;
+
+                    } else if (NAME.equals(qName)) {
+
+                        s = atts.getValue(NAME); if (s == null) error();
+                        String substringAttr = atts.getValue(SUBSTRING);
+                        boolean substring = Type.FileName.DEFAULT_SUBSTRING;
+                        if (substringAttr != null) {
+                            substring = Boolean.valueOf(substringAttr);
+                        }
+                        boolean ignoreCase = Type.FileName.DEFAULT_IGNORE_CASE;
+                        String ignoreCaseAttr = atts.getValue(IGNORE_CASE);
+                        if (ignoreCaseAttr != null) {
+                            ignoreCase = Boolean.valueOf(ignoreCaseAttr);
+                        }
+                        template[0].fileCheck.addName(s, substring, ignoreCase);
+                        break;
 
                     } else if (RESOLVER.equals(qName)) {
 
                         if (template[0].fileCheck.exts == null 
                             && template[0].fileCheck.mimes == null 
-                            && template[0].fileCheck.fatts == null 
+                            && template[0].fileCheck.fatts == null
+                            && template[0].fileCheck.patterns == null
+                            && template[0].fileCheck.names == null
                             && template[0].fileCheck.magic == null) {
                                 error();  // at least one must be specified
                         }
@@ -357,7 +426,7 @@ public final class MIMEResolverImpl {
                         break;
 
                     } else if (EXIT.equals(qName)) {
-                        
+                        template[0].fileCheck.setExit();
                         file_state = IN_EXIT;
                         break;
                         
@@ -387,7 +456,7 @@ public final class MIMEResolverImpl {
                     
                     component.startElement(namespaceURI, localName, qName, atts);                    
                     break;
-                    
+
                 default:
 
             }
@@ -402,12 +471,19 @@ public final class MIMEResolverImpl {
             state = IN_COMPONENT;            
         }
         
+        @Override
         public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
             switch (state) {
                 case IN_FILE:
                     if (FILE.equals(qName)) {
                         state = IN_ROOT;
                         file_state = INIT;
+                    }
+                    if (PATTERN.equals(qName)) {
+                        if (--patternLevel == 0) {
+                            patternLevelSet = null;
+                            file_state = INIT;
+                        }
                     }
                     break;       
                     
@@ -427,6 +503,7 @@ public final class MIMEResolverImpl {
             }
         }
 
+        @Override
         public void characters(char[] data, int offset, int len) throws SAXException {
             if (state == IN_COMPONENT) component.characters(data, offset, len);
         }
@@ -444,6 +521,8 @@ public final class MIMEResolverImpl {
         private Type fileCheck = new Type();
         private String mime = null;
         private MIMEComponent rule = null;
+        // unique string to mark exit condition
+        private static final String EXIT_MIME_TYPE = "mime-type-to-exit";  //NOI18N
 
         private String[] getExtensions() {
             return fileCheck.exts;
@@ -453,6 +532,10 @@ public final class MIMEResolverImpl {
             return mime;
         }
         
+        private boolean isExit() {
+            return fileCheck.exit;
+        }
+
         private void setMIME(String mime) {
             if ("null".equals(mime)) return;  // NOI18N
             this.mime = mime;
@@ -462,9 +545,15 @@ public final class MIMEResolverImpl {
                         
             try {
                 if (fileCheck.accept(file)) {
-                    if (mime == null) return null;                    
-                    if (rule == null) return mime;                    
-                    if (rule.acceptFileObject(file)) return mime;
+                    if (rule != null && !rule.acceptFileObject(file)) {
+                        return null;
+                    }
+                    if (isExit() || mime == null) {
+                        // all matched but exit element was found or mime attribute of resolver element is null => escape this resolver
+                        return EXIT_MIME_TYPE;
+                    }
+                    // all matched
+                    return mime;
                 }
             } catch (IOException io) {
                 Logger.getLogger(MIMEResolverImpl.class.getName()).log(Level.INFO, null, io);
@@ -475,6 +564,7 @@ public final class MIMEResolverImpl {
         /**
          * For debug puroses only.
          */
+        @Override
         public String toString() {
             StringBuffer buf = new StringBuffer();
             buf.append("FileElement(");
@@ -497,16 +587,177 @@ public final class MIMEResolverImpl {
     private static class Type {
         Type() {}
         private String[] exts;
+        private static final String EMPTY_EXTENSION = "";  //NOI18N
         private String[] mimes;
         private String[] fatts;
+        private List<FilePattern> patterns;
+        private FilePattern lastAddedPattern = null;
+        private List<FileName> names;
         private String[] vals;   // contains null or value of attribute at the same index
         private byte[]   magic;
         private byte[]   mask;
+        private boolean exit = false;
 
-        
+        /** Used to search in the file for given pattern in given range. If there is an inner
+         * pattern element, it is used only if outer is fulfilled. Searching starts
+         * always from the beginning of the file. For example:
+         * <p>
+         * Pattern &lt;?php in first 255 bytes
+         * <pre>
+         *      &lt;pattern value="&lt;?php" range="255"/&gt;
+         * </pre>
+         * </p>
+         * <p>
+         * Pattern &lt;HTML&gt;> or &lt;html&gt; in first 255 bytes and pattern &lt;?php in first 4000 bytes.
+         * <pre>
+         *      &lt;pattern value="&lt;HTML&gt;" range="255" ignorecase="true"&gt;
+         *          &lt;pattern value="&lt;?php" range="4000"/&gt;
+         *      &lt;/pattern&gt;
+         * </pre>
+         * </p>
+         */
+        private class FilePattern {
+            // case sensitive by default
+            private static final boolean DEFAULT_IGNORE_CASE = false;
+            private final String value;
+            private final int range;
+            private final boolean ignoreCase;
+            private FilePattern inner;
+            private int pointer = 0;
+            private final byte[] bytes;
+            private final int valueLength;
+
+            public FilePattern(String value, int range, boolean ignoreCase) {
+                this.value = value;
+                this.valueLength = value.length();
+                if (ignoreCase) {
+                    this.bytes = value.toLowerCase().getBytes();
+                } else {
+                    this.bytes = value.getBytes();
+                }
+                this.range = range;
+                this.ignoreCase = ignoreCase;
+            }
+
+            public void setInner(FilePattern inner) {
+                this.inner = inner;
+            }
+
+            private boolean match(byte b) {
+                if (pointer < valueLength) {
+                    if (b == bytes[pointer]) {
+                        pointer++;
+                    } else {
+                        pointer = 0;
+                        return false;
+                    }
+                }
+                return pointer >= valueLength;
+            }
+
+            /** Read from given file and compare byte-by-byte if pattern
+             * appers in given range.
+             */
+            public boolean match(FileObject fo) throws IOException {
+                pointer = 0;
+                InputStream is = null;
+                boolean matched = false;
+                try {
+                    is = fo.getInputStream();  // it is CachedInputStream, so you can call getInputStream and read more times without performance penalty
+                    byte[] byteRange = new byte[range];
+                    int read = is.read(byteRange);
+                    for (int i = 0; i < read; i++) {
+                        byte b = byteRange[i];
+                        if (ignoreCase) {
+                            b = (byte) Character.toLowerCase(b);
+                        }
+                        if (match(b)) {
+                            matched = true;
+                            break;
+                        }
+                    }
+                } finally {
+                    try {
+                        if (is != null) {
+                            is.close();
+                        }
+                    } catch (IOException ioe) {
+                        // already closed
+                    }
+                }
+                if (matched) {
+                    if (inner == null) {
+                        return true;
+                    } else {
+                        return inner.match(fo);
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public String toString() {
+                return "[" + value + ", " + range + ", " + ignoreCase + (inner != null ? ", " + inner : "") + "]";
+            }
+        }
+
+        /** Used to compare filename with given name.
+         * For example:
+         * <p>
+         * Filename matches makefile, Makefile, MaKeFiLe, mymakefile, gnumakefile, makefile1, ....
+         * <pre>
+         *      &lt;name name="makefile" substring="true"/&gt;
+         * </pre>
+         * </p>
+         * <p>
+         * Filename exactly matches rakefile or Rakefile.
+         * <pre>
+         *      &lt;name name="rakefile" ignorecase="false"/&gt;
+         *      &lt;name name="Rakefile" ignorecase="false"/&gt;
+         * </pre>
+         * </p>
+         */
+        private class FileName {
+
+            // case insensitive by default
+            private static final boolean DEFAULT_IGNORE_CASE = true;
+            private static final boolean DEFAULT_SUBSTRING = false;
+            private final String name;
+            private final boolean substring;
+            private final boolean ignoreCase;
+
+            public FileName(String name, boolean substring, boolean ignoreCase) {
+                if (ignoreCase) {
+                    this.name = name.toLowerCase();
+                } else {
+                    this.name = name;
+                }
+                this.substring = substring;
+                this.ignoreCase = ignoreCase;
+            }
+
+            public boolean match(FileObject fo) {
+                String nameAndExt = fo.getNameExt();
+                if (ignoreCase) {
+                    nameAndExt = nameAndExt.toLowerCase();
+                }
+                if (substring) {
+                    return nameAndExt.contains(name);
+                } else {
+                    return nameAndExt.equals(name);
+                }
+            }
+
+            @Override
+            public String toString() {
+                return "[" + name + ", " + substring + ", " + ignoreCase + "]";
+            }
+        }
+
         /**
          * For debug purposes only.
          */
+        @Override
         public String toString() {
             int i = 0;
             StringBuffer buf = new StringBuffer();
@@ -529,6 +780,20 @@ public final class MIMEResolverImpl {
                 buf.append("file-attributes:");
                 for (i = 0; i<fatts.length; i++)
                     buf.append(fatts[i]).append("='").append(vals[i]).append("', ");
+            }
+
+            if (patterns != null) {
+                buf.append("patterns:");
+                for (FilePattern pattern : patterns) {
+                    buf.append(pattern.toString()).append(", ");
+                }
+            }
+
+            if (names != null) {
+                buf.append("names:");
+                for (FileName name : names) {
+                    buf.append(name.toString()).append(", ");
+                }
             }
 
             if (magic != null) {
@@ -557,6 +822,27 @@ public final class MIMEResolverImpl {
             vals = Util.addString(vals, value);
         }
 
+        private void addPattern(String value, int range, boolean ignoreCase) {
+            if (patterns == null) {
+                patterns = new ArrayList<FilePattern>();
+            }
+            lastAddedPattern = new FilePattern(value, range, ignoreCase);
+            patterns.add(lastAddedPattern);
+        }
+
+        private void addInnerPattern(String value, int range, boolean ignoreCase) {
+            FilePattern inner = new FilePattern(value, range, ignoreCase);
+            lastAddedPattern.setInner(inner);
+            lastAddedPattern = inner;
+        }
+
+        private void addName(String name, boolean substring, boolean ignoreCase) {
+            if (names == null) {
+                names = new ArrayList<FileName>();
+            }
+            names.add(new FileName(name, substring, ignoreCase));
+        }
+
         private boolean setMagic(byte[] magic, byte[] mask) {
             if (magic == null) return true;
             if (mask != null && magic.length != mask.length) return false;            
@@ -570,15 +856,34 @@ public final class MIMEResolverImpl {
             return true;
         }
 
+        private void setExit() {
+            exit = true;
+        }
+
         @SuppressWarnings("deprecation")
         private static String getMIMEType(String extension) {
             return FileUtil.getMIMEType(extension);
         }
+
+        /** #26521, 114976 - ignore not readable and windows' locked files. */
+        private static void handleIOException(FileObject fo, IOException ioe) throws IOException {
+            if (fo.canRead()) {
+                if (!Utilities.isWindows() || !(ioe instanceof FileNotFoundException) || !fo.isValid() || !fo.getName().toLowerCase().contains("ntuser")) {//NOI18N
+                    throw ioe;
+                }
+            }
+        }
+
         private boolean accept(FileObject fo) throws IOException {
             // check for resource extension
             if (exts != null) {
-                if (fo.getExt() == null) return false;
-                if (!Util.contains(exts, fo.getExt(), CASE_INSENSITIVE)) return false;
+                String ext = fo.getExt();
+                if (ext == null) {
+                    ext = EMPTY_EXTENSION;
+                }
+                if (!Util.contains(exts, ext, CASE_INSENSITIVE)) {
+                    return false;
+                }
             }
             
             // check for resource mime type
@@ -613,63 +918,36 @@ public final class MIMEResolverImpl {
             if (magic != null) {
                 byte[] header = new byte[magic.length];
 
-//                System.err.println("FO" + fo);
-                
-//                String m = mask == null ? "" : " mask " + XMLUtil.toHex(mask, 0, mask.length);
-//                System.err.println("Magic test " + XMLUtil.toHex(magic, 0, magic.length) + m);
-                
                 // fetch header
 
                 InputStream in = null;
-                boolean unexpectedEnd = false;
                 try {
                     in = fo.getInputStream();
-                    for (int i = 0; i<magic.length; ) {
-                        try {
-                            int read = in.read(header, i, magic.length-i);
-                            if (read < 0) unexpectedEnd = true;
-                            i += read;
-                        } catch (IOException ex) {
-                            unexpectedEnd = true;
-                            break;
-                        }
-                        if (unexpectedEnd) break;
+                    int read = in.read(header);
+                    if (read < 0) {
+                        return false;
                     }
                 } catch (IOException openex) {
-                    unexpectedEnd = true;
-                    boolean isBug114976 = false;
-                    if (Utilities.isWindows() && fo.canRead()  && (openex instanceof FileNotFoundException)) {
-                        if (fo.isValid() && fo.getName().toLowerCase().indexOf("ntuser") != -1) {//NOI18N
-                            isBug114976 = true;
-                        }
-                    }
-                    
-                    if (fo.canRead() == true && !isBug114976) {
-                        throw openex;
-                    } else {
-                        // #26521  silently do not recognize it
-                    }
+                    handleIOException(fo, openex);
+                    return false;
                 } finally {
                     try {
-                        if (in != null) in.close();
+                        if (in != null) {
+                            in.close();
+                        }
                     } catch (IOException ioe) {
                         // already closed
                     }
                 }
 
-
-//                System.err.println("Header " + XMLUtil.toHex(header, 0, header.length));
-                
                 // compare it
-                
-                if ( unexpectedEnd ) {
-                    return false;
-                } else {
-                    for (int i=0  ; i<magic.length; i++) {
-                        if (mask != null) header[i] &= mask[i];
-                        if (magic[i] != header[i]) {
-                            return false;
-                        }
+
+                for (int i = 0; i < magic.length; i++) {
+                    if (mask != null) {
+                        header[i] &= mask[i];
+                    }
+                    if (magic[i] != header[i]) {
+                        return false;
                     }
                 }
             }
@@ -684,10 +962,44 @@ public final class MIMEResolverImpl {
                     }
                 }
             }
-            
+
+            // check for patterns in file
+            if (patterns != null) {
+                try {
+                    boolean matched = false;
+                    for (FilePattern pattern : patterns) {
+                        if(pattern.match(fo)) {
+                            // at least one pattern matched => escape loop, otherwise continue
+                            matched = true;
+                            break;
+                        }
+                    }
+                    if (!matched) {
+                        return false;
+                    }
+                } catch (IOException ioe) {
+                    handleIOException(fo, ioe);
+                    return false;
+                }
+            }
+
+            // check file name
+            if (names != null) {
+                boolean matched = false;
+                for (FileName name : names) {
+                    if(name.match(fo)) {
+                        // at least one matched => escape loop, otherwise continue
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched) {
+                    return false;
+                }
+            }
+
             // all templates matched
             return true;
         }
-        
     }
 }

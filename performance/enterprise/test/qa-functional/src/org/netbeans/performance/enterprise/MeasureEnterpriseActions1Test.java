@@ -60,19 +60,15 @@ public class MeasureEnterpriseActions1Test {
         
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Enterprise Actions suite. Part 1");
         System.setProperty("suitename", MeasureEnterpriseActions1Test.class.getCanonicalName());
-
+        System.setProperty("suite", "UI Responsiveness Enterprise Actions suite. Part 1");
         
         // EPMeasureActions1
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EnterpriseSetup.class)
-                .addTest(EnterpriseSetup.class, "cleanTempDir")
-
-                // TODO: Uncomment once issue 138456 is fixed
-                // .addTest(CreateBPELmodule.class, "measureTime")
-                .addTest(CreateCompositeApplication.class, "measureTime")
-                .addTest(AddNewWSDLDocument.class, "measureTime")
-                .addTest(AddNewXMLSchema.class, "measureTime")
-                .addTest(AddNewXMLDocument.class, "measureTime")
-                .addTest(AddNewBpelProcess.class, "measureTime")
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateBPELmoduleTest.class)
+                .addTest(CreateCompositeApplicationTest.class)
+                .addTest(AddNewWSDLDocumentTest.class)
+                .addTest(AddNewXMLSchemaTest.class)
+                .addTest(AddNewXMLDocumentTest.class)
+                .addTest(AddNewBpelProcessTest.class)
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));    
 
         return suite;

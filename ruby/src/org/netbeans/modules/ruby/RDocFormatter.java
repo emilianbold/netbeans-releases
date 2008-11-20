@@ -60,6 +60,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.elements.ClassElement;
 import org.netbeans.modules.ruby.elements.MethodElement;
@@ -532,7 +533,7 @@ class RDocFormatter {
         }
         
         Language<?> language = RubyTokenId.language();
-        String mimeType = RubyMimeResolver.RUBY_MIME_TYPE;
+        String mimeType = RubyInstallation.RUBY_MIME_TYPE;
         if (ruby.indexOf(" <%") != -1) { // NOI18N
             mimeType = "application/x-httpd-eruby"; // RHTML
             Collection<LanguageProvider> providers = (Collection<LanguageProvider>) Lookup.getDefault().lookupAll(LanguageProvider.class);
@@ -544,7 +545,7 @@ class RDocFormatter {
             }
 
             if (language == null) {
-                mimeType = RubyMimeResolver.RUBY_MIME_TYPE;
+                mimeType = RubyInstallation.RUBY_MIME_TYPE;
                 language = RubyTokenId.language();
             }
         } else if (source.get(0).trim().startsWith("<")) {

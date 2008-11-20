@@ -80,6 +80,7 @@ import org.jruby.nb.ast.VCallNode;
 import org.jruby.nb.ast.types.INameNode;
 import org.jruby.nb.lexer.yacc.ISourcePosition;
 import org.jruby.util.ByteList;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Modifier;
@@ -121,7 +122,7 @@ public class AstUtilities {
     private static final boolean INCLUDE_DEFS_PREFIX = false;
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
-        ParserResult result = info.getEmbeddedResult(RubyMimeResolver.RUBY_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(RubyInstallation.RUBY_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -133,7 +134,7 @@ public class AstUtilities {
     }
     
     public static OffsetRange getAstOffsets(CompilationInfo info, OffsetRange lexicalRange) {
-        ParserResult result = info.getEmbeddedResult(RubyMimeResolver.RUBY_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(RubyInstallation.RUBY_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -1495,7 +1496,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
     }
 
     public static RubyParseResult getParseResult(CompilationInfo info) {
-        ParserResult result = info.getEmbeddedResult(RubyMimeResolver.RUBY_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(RubyInstallation.RUBY_MIME_TYPE, 0);
 
         if (result == null) {
             return null;
@@ -1505,7 +1506,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
     }
 
     public static Node getRoot(CompilationInfo info) {
-        return getRoot(info, RubyMimeResolver.RUBY_MIME_TYPE);
+        return getRoot(info, RubyInstallation.RUBY_MIME_TYPE);
     }
 
     public static Node getRoot(CompilationInfo info, String mimeType) {

@@ -105,7 +105,7 @@ incurs a penalty.</li>
 
 <H2>Declarative MIME Type Resolvers</H2>
 
-<p>To solve both of the above problems a developer can use a
+<p>To solve both of the above problems a developer should use a
 declarative MIME type resolver. The semantics of the MIME resolution
 may be specified in a simple manner and an implementation is available
 that will interpret the declaration as efficiently as possible.</p>
@@ -186,8 +186,6 @@ file (that is, <samp>*.xml</samp>) whose root element is
                   <font class="variable-name">url</font>=<font class="string">"mime-resolver.xml"</font>&gt;
                 &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"SystemFileSystem.localizingBundle"</font>
                       <font class="variable-name">stringvalue</font>=<font class="string">"org.nb.modules.ant.Bundle"</font>/&gt;
-                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"SystemFileSystem.icon"</font>
-                      <font class="variable-name">urlvalue</font>=<font class="string">"nbresloc:/org/nb/modules/ant/resolver-icon.gif"</font>/&gt;
                 &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"position"</font> <font class="variable-name">intvalue</font>=<font class="string">"1234"</font>/&gt;
             &lt;/<font class="function-name">file</font>&gt;
         &lt;/<font class="function-name">folder</font>&gt;
@@ -197,17 +195,14 @@ file (that is, <samp>*.xml</samp>) whose root element is
 
 <p>The resolver is registered as
 <samp>Services/MIMEResolver/org-nb-modules-ant-mime-resolver.xml</samp>.
-It is given a pleasant display name and icon since the user may see
-the resolver presented in NetBeans settings. The bundle file
+It is given a pleasant display name since the user may see
+the resolver presented under XML Layer node. The bundle file
 <samp>org/nb/modules/ant/Bundle.properties</samp> would contain a
 matching key:</p>
 
 <pre>
 <font class="variable-name">Services/MIMEResolver/org-nb-modules-ant-mime-resolver.xml</font>=<font class="string">Ant project files</font>
 </pre>
-
-<p>and <samp>org/nb/modules/ant/resolver-icon.gif</samp> should hold a
-suitable icon.</p>
 
 <p>
     Note that an <a href="http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/build/generated/layers.txt">open position</a>
@@ -216,31 +211,6 @@ suitable icon.</p>
     commonly used file types, or resolvers which logically must take precedence
     over more generic resolvers.
 </p>
-
-<h2>Using the MIME Resolver</h2>
-
-<p>Now whenever matching files are encountered, they will be treated
-as having the MIME type <code>text/x-ant+xml</code> (in this example).
-The data loader should be made to be sensitive to the resolved MIME
-type; this is most easily accomplished when subclassing
-<code>UniFileLoader</code>:</p>
-
-<pre>
-<font class="keyword">protected</font> <font class="type">void</font> <font class="function-name">initialize</font>() {
-    <font class="keyword">super</font>.initialize();
-    getExtensions().addMimeType(<font class="string">"text/x-ant+xml"</font>);
-}
-</pre>
-
-<p>Note that in this case <code>JEditorPane</code> will probably not
-recognize such files as being a variant of <code>text/xml</code> (the
-<code>text/*+xml</code> syntax is a pending standard), so you should
-remember when using a <code>DataEditorSupport</code> or similar to
-explicitly set the editor MIME type to <code>text/xml</code> (the
-default is taken from the file MIME type). In the future it is planned
-for editor supports to check an OpenIDE-specific type registry which
-would automatically associate a general XML editor kit with MIME types
-matching <code>text/*+xml</code> unless an exact match was found.</p>
 
 <h2>Links</h2>
 <a href="http://www.ietf.org/rfc/rfc3023.txt">RFC 3023: XML Media Types</a>

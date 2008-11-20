@@ -42,10 +42,10 @@ package org.netbeans.modules.ruby.elements;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.openide.filesystems.FileObject;
 
 
@@ -60,7 +60,7 @@ public abstract class RubyElement implements Element {
     public abstract ElementKind getKind();
 
     public String getMimeType() {
-        return RubyMimeResolver.RUBY_MIME_TYPE;
+        return RubyInstallation.RUBY_MIME_TYPE;
     }
 
     public boolean signatureEquals(ElementHandle handle) {

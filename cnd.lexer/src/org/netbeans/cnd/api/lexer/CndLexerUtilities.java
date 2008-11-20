@@ -81,8 +81,9 @@ public final class CndLexerUtilities {
     public static Language<CppTokenId> getLanguage(final Document doc) {
         // try from property
         Language lang = (Language) doc.getProperty(Language.class);
-        if (lang == null || (lang != CppTokenId.languageC() &&
-                             lang != CppTokenId.languageCpp())) {
+        if (lang == null 
+           || (lang != CppTokenId.languageC() && lang != CppTokenId.languageCpp()
+           && lang != CppTokenId.languagePreproc())) {
             lang = getLanguage((String) doc.getProperty("mimeType")); // NOI18N
         }
         @SuppressWarnings("unchecked")
@@ -564,7 +565,7 @@ public final class CndLexerUtilities {
             FortranTokenId.KW_EXIT,
             FortranTokenId.KW_EXTERNAL,
             FortranTokenId.KW_FLUSH,
-            FortranTokenId.KW_FILE,
+//            FortranTokenId.KW_FILE,
             FortranTokenId.KW_FORALL,
             FortranTokenId.KW_FORMAT,
             FortranTokenId.KW_FUNCTION,

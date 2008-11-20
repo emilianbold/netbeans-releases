@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.visualweb.webui.jsf.defaulttheme;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.project.jsf.services.RefreshService;
@@ -155,7 +156,16 @@ final class ThemesFolderNode extends AbstractNode {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            this.setKeys(getKeys());
+            updateKeys();
+        }
+
+        private void updateKeys() {
+            // XXX #152956 To avoid acquiring Children.MUTEX together with ProjectManager.mutex().
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    setKeys(getKeys());
+                }
+            });
         }
 
         @Override
