@@ -678,10 +678,6 @@ public class PrintASTVisitor implements Visitor {
         printNode.print(this);
     }
 
-    public void visit(PHPDocPropertyTag phpDocTag) {
-        
-    }
-
     public void visit(PHPDocNode phpDocNode) {
         XMLPrintNode printNode = new XMLPrintNode(phpDocNode, "PHPDocNode",
                 new String[] {"value", phpDocNode.getValue()});
