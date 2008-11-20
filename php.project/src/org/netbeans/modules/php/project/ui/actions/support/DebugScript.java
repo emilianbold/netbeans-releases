@@ -29,7 +29,7 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.File;
 import java.util.concurrent.Callable;
-import org.netbeans.modules.extexecution.api.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.spi.XDebugStarter;

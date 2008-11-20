@@ -41,9 +41,9 @@ package org.netbeans.modules.ruby.platform.execution;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor.LineConvertorFactory;
-import org.netbeans.modules.extexecution.api.print.LineConvertor;
-import org.netbeans.modules.extexecution.api.print.LineConvertors;
+import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
 
 /**
  *

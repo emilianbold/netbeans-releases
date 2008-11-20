@@ -97,8 +97,8 @@ public class ExecutionUtilsTest extends RubyTestBase {
         argList.add("File.open('" + file.getAbsolutePath() + "', 'w'){|f|f.printf ENV['GEM_PATH']}");
         descriptor.additionalArgs(argList.toArray(new String[argList.size()]));
         RubyProcessCreator rpc = new RubyProcessCreator(descriptor);
-        org.netbeans.modules.extexecution.api.ExecutionService service = 
-                org.netbeans.modules.extexecution.api.ExecutionService.newService(rpc, descriptor.toExecutionDescriptor(), null);
+        org.netbeans.api.extexecution.ExecutionService service =
+                org.netbeans.api.extexecution.ExecutionService.newService(rpc, descriptor.toExecutionDescriptor(), null);
         Future<Integer> execution = service.run();
         execution.get();
         assertTrue(execution.isDone());

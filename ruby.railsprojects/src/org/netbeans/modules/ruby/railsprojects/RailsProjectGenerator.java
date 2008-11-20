@@ -55,9 +55,9 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.extexecution.api.ExecutionService;
-import org.netbeans.modules.extexecution.api.print.LineConvertor;
-import org.netbeans.modules.extexecution.api.print.LineConvertors;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
@@ -151,8 +151,8 @@ public class RailsProjectGenerator {
 
             RubyProcessCreator rpc = new RubyProcessCreator(desc);
 
-            org.netbeans.modules.extexecution.api.ExecutionService es =
-                    org.netbeans.modules.extexecution.api.ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName);
+            org.netbeans.api.extexecution.ExecutionService es =
+                    org.netbeans.api.extexecution.ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName);
             try {
                 es.run().get();
             } catch (InterruptedException ex) {
