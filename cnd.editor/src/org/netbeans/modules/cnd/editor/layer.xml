@@ -316,6 +316,12 @@
                     </folder>
                 </folder>
 
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-cnd-editor-fortran-FortranBracesMatcher.instance">
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                </folder>
+
                 <file name="Reformatter.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter$Factory"/>
                 </file>
