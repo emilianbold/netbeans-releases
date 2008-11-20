@@ -274,7 +274,6 @@
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <package>org.netbeans.modules.cnd.editor.api</package>
                 <package>org.netbeans.modules.cnd.editor.cplusplus</package>
-                <package>org.netbeans.modules.cnd.editor.fortran</package>
                 <package>org.netbeans.modules.cnd.editor.spi.cplusplus</package>
             </friend-packages>
         </data>
