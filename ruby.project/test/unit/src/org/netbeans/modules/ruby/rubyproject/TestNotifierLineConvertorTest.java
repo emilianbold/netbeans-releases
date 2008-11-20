@@ -48,20 +48,20 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tor Norbye
  */
-public class TestNotifierTest extends RubyTestBase {
+public class TestNotifierLineConvertorTest extends RubyTestBase {
     
-    public TestNotifierTest(String testName) {
+    public TestNotifierLineConvertorTest(String testName) {
         super(testName);
     }
 
     public void testUnit() {
-        TestNotifier notifier = new TestNotifier(false, false);
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(false, false);
         
         assertTrue(notifier.recognizeLine("35 tests, 81 assertions, 0 failures, 1 errors"));
     }
 
     public void testRSpec() {
-        TestNotifier notifier = new TestNotifier(false, false);
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(false, false);
         
         assertTrue(notifier.recognizeLine("5 examples, 3 failures, 5 not implemented")); // older rspec format
         assertTrue(notifier.recognizeLine("5 examples, 3 failures, 5 pending"));
@@ -69,7 +69,7 @@ public class TestNotifierTest extends RubyTestBase {
     }
 
     public void testWindows() {        
-        TestNotifier notifier = new TestNotifier(false, false);
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(false, false);
 
         assertTrue(notifier.recognizeLine("35 tests, 81 assertions, 0 failures, 1 errors\r"));
         assertTrue(notifier.recognizeLine("5 examples, 3 failures, 5 not implemented\r"));
@@ -78,7 +78,7 @@ public class TestNotifierTest extends RubyTestBase {
     }
     
     public void testNoFalseNegatives() {
-        TestNotifier notifier = new TestNotifier(false, false);
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(false, false);
         
         assertFalse(notifier.recognizeLine("1 for example, 1 failure"));
         assertFalse(notifier.recognizeLine("hello world"));
@@ -89,187 +89,186 @@ public class TestNotifierTest extends RubyTestBase {
     }
     
     public void testAccumulate1() {
-        TestNotifier notifier = new TestNotifier(true, false);
-        notifier.processLine("35 tests, 81 assertions, 0 failures, 0 errors");
-        notifier.processLine("10 tests, 1 assertions, 0 failures, 0 errors\r");
-        notifier.processLine("1 tests, 0 assertions, 0 failures, 0 errors");
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
+        notifier.convert("35 tests, 81 assertions, 0 failures, 0 errors");
+        notifier.convert("10 tests, 1 assertions, 0 failures, 0 errors\r");
+        notifier.convert("1 tests, 0 assertions, 0 failures, 0 errors");
         assertEquals("46 tests, 82 assertions, 0 failures, 0 errors", notifier.getSummary());
         assertTrue(!notifier.isError() && !notifier.isWarning());
     }
 
     public void testAccumulate2() {
-        TestNotifier notifier = new TestNotifier(true, false);
-        notifier.processLine("35 tests, 81 assertions, 0 failures, 1 errors");
-        notifier.processLine("10 tests, 1 assertions, 5 failures, 1 errors\r");
-        notifier.processLine("1 tests, 0 assertions, 0 failures, 0 errors");
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
+        notifier.convert("35 tests, 81 assertions, 0 failures, 1 errors");
+        notifier.convert("10 tests, 1 assertions, 5 failures, 1 errors\r");
+        notifier.convert("1 tests, 0 assertions, 0 failures, 0 errors");
         assertEquals("46 tests, 82 assertions, 5 failures, 2 errors", notifier.getSummary());
         assertTrue(notifier.isError());
     }
 
     public void testRSpec1() {  
-        TestNotifier notifier = new TestNotifier(true, false);
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
 
-        notifier.processLine("5 examples, 3 failures, 5 not implemented");
-        notifier.processLine("1 example, 1 failure\r");
+        notifier.convert("5 examples, 3 failures, 5 not implemented");
+        notifier.convert("1 example, 1 failure\r");
         assertEquals("6 examples, 4 failures, 5 pending", notifier.getSummary());
         assertTrue(notifier.isError());
     }
 
     public void testRSpec1b() {  
-        TestNotifier notifier = new TestNotifier(true, false);
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
 
-        notifier.processLine("5 examples, 3 failures, 5 pending");
-        notifier.processLine("1 example, 1 failure\r");
+        notifier.convert("5 examples, 3 failures, 5 pending");
+        notifier.convert("1 example, 1 failure\r");
         assertEquals("6 examples, 4 failures, 5 pending", notifier.getSummary());
         assertTrue(notifier.isError());
     }
     
     public void testRSpec2() {
-        TestNotifier notifier = new TestNotifier(true, false);
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
 
-        notifier.processLine("0 examples, 0 failures, 5 not implemented");
-        notifier.processLine("1 example, 1 failure\r");
+        notifier.convert("0 examples, 0 failures, 5 not implemented");
+        notifier.convert("1 example, 1 failure\r");
         assertEquals("1 example, 1 failure, 5 pending", notifier.getSummary());
         assertTrue(notifier.isError());
     }
 
     public void testRSpec2b() {
-        TestNotifier notifier = new TestNotifier(true, false);
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
 
-        notifier.processLine("0 examples, 0 failures, 5 pending");
-        notifier.processLine("1 example, 1 failure\r");
+        notifier.convert("0 examples, 0 failures, 5 pending");
+        notifier.convert("1 example, 1 failure\r");
         assertEquals("1 example, 1 failure, 5 pending", notifier.getSummary());
         assertTrue(notifier.isError());
     }
 
     public void testRSpec3() {
-        TestNotifier notifier = new TestNotifier(true, false);
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
 
-        notifier.processLine("0 examples, 0 failures");
-        notifier.processLine("0 examples, 0 failures");
+        notifier.convert("0 examples, 0 failures");
+        notifier.convert("0 examples, 0 failures");
         assertEquals("0 examples, 0 failures", notifier.getSummary());
         assertTrue(!notifier.isError() && !notifier.isWarning());
     }
 
     public void testRSpec5() {  
-        TestNotifier notifier = new TestNotifier(true, false);
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
 
-        notifier.processLine("5 examples, 0 failures, 5 not implemented");
-        notifier.processLine("1 example, 0 failures, 1 pending\r");
+        notifier.convert("5 examples, 0 failures, 5 not implemented");
+        notifier.convert("1 example, 0 failures, 1 pending\r");
         assertEquals("6 examples, 0 failures, 6 pending", notifier.getSummary());
         assertTrue(notifier.isWarning() && !notifier.isError());
     }
 
     public void testCombined() {
-        TestNotifier notifier = new TestNotifier(true, false);
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
 
-        notifier.processLine("0 examples, 0 failures, 5 not implemented");
-        notifier.processLine("1 example, 1 failure\r");
+        notifier.convert("0 examples, 0 failures, 5 not implemented");
+        notifier.convert("1 example, 1 failure\r");
         assertEquals("1 example, 1 failure, 5 pending", notifier.getSummary());
-        notifier.processLine("1 tests, 1 assertions, 1 failures, 1 errors");
+        notifier.convert("1 tests, 1 assertions, 1 failures, 1 errors");
         assertEquals("1 test, 1 assertion, 1 example, 2 failures, 1 error, 5 pending", notifier.getSummary());
         assertTrue(notifier.isError());
     }
     
     public void testCombined2() {
-        TestNotifier notifier = new TestNotifier(true, false);
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
 
-        notifier.processLine("0 examples, 0 failures, 5 pending");
-        notifier.processLine("1 example, 1 failure\r");
+        notifier.convert("0 examples, 0 failures, 5 pending");
+        notifier.convert("1 example, 1 failure\r");
         assertEquals("1 example, 1 failure, 5 pending", notifier.getSummary());
-        notifier.processLine("1 tests, 1 assertions, 1 failures, 1 errors");
+        notifier.convert("1 tests, 1 assertions, 1 failures, 1 errors");
         assertEquals("1 test, 1 assertion, 1 example, 2 failures, 1 error, 5 pending", notifier.getSummary());
         assertTrue(notifier.isError());
     }
     
     public void testNoAccumulate() {
-        TestNotifier notifier = new TestNotifier(false, false);
-        notifier.processLine("35 tests, 81 assertions, 0 failures, 0 errors");
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(false, false);
+        notifier.convert("35 tests, 81 assertions, 0 failures, 0 errors");
         assertEquals("35 tests, 81 assertions, 0 failures, 0 errors", notifier.getSummary());
         assertTrue(!notifier.isError() && !notifier.isWarning());
-        notifier.processLine("10 tests, 1 assertions, 0 failures, 0 errors\r");
+        notifier.convert("10 tests, 1 assertions, 0 failures, 0 errors\r");
         assertEquals("10 tests, 1 assertion, 0 failures, 0 errors", notifier.getSummary());
         assertTrue(!notifier.isError() && !notifier.isWarning());
-        notifier.processLine("35 tests, 81 assertions, 0 failures, 1 errors");
+        notifier.convert("35 tests, 81 assertions, 0 failures, 1 errors");
         assertEquals("35 tests, 81 assertions, 0 failures, 1 error", notifier.getSummary());
         assertTrue(notifier.isError());
-        notifier.processLine("10 tests, 1 assertions, 0 failures, 0 errors\r");
+        notifier.convert("10 tests, 1 assertions, 0 failures, 0 errors\r");
         assertEquals("10 tests, 1 assertion, 0 failures, 0 errors", notifier.getSummary());
         assertTrue(!notifier.isError() && !notifier.isWarning());
     }
     
     public void testRake() {
-        TestNotifier notifier = new TestNotifier(true, false);
-        notifier.processLine("Test failures");
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
+        notifier.convert("Test failures");
         assertEquals("1 error", notifier.getSummary());
         assertTrue(notifier.isError());
     }
 
     public void testRake2() {
-        TestNotifier notifier = new TestNotifier(true, false);
-        notifier.processLine("1 tests, 1 assertions, 1 failures, 1 errors");
-        notifier.processLine("Test failures");
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
+        notifier.convert("1 tests, 1 assertions, 1 failures, 1 errors");
+        notifier.convert("Test failures");
         assertEquals("1 test, 1 assertion, 1 failure, 2 errors", notifier.getSummary());
         assertTrue(notifier.isError());
     }
 
     public void testRake2Windows() {
-        TestNotifier notifier = new TestNotifier(true, false);
-        notifier.processLine("1 tests, 1 assertions, 1 failures, 1 errors");
-        notifier.processLine("Test failures\r");
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
+        notifier.convert("1 tests, 1 assertions, 1 failures, 1 errors");
+        notifier.convert("Test failures\r");
         assertEquals("1 test, 1 assertion, 1 failure, 2 errors", notifier.getSummary());
         assertTrue(notifier.isError());
     }
 
     public void testRake3() {
-        TestNotifier notifier = new TestNotifier(false, false);
-        notifier.processLine("Test failures");
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(false, false);
+        notifier.convert("Test failures");
         assertEquals("1 error", notifier.getSummary());
         assertTrue(notifier.isError());
     }
 
     public void testRake4() {
-        TestNotifier notifier = new TestNotifier(true, false);
-        notifier.processLine("No Test failures");
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
+        notifier.convert("No Test failures");
         // Make sure we don't pick up "Test failures" as just a substring
         assertEquals("0 failures", notifier.getSummary());
         assertTrue(!notifier.isError() && !notifier.isWarning());
     }
 
     public void testOutputLog1() throws Exception {
-        TestNotifier notifier = new TestNotifier(true, false);
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
         FileObject fileObject = getTestFile("testfiles/testoutput.txt");
         String s = readFile(fileObject);
         String[] lines = s.split("\n");
         for (String line : lines) {
-            notifier.processLine(line);
+            notifier.convert(line);
         }
         assertEquals("313 tests, 504 assertions, 1 failure, 0 errors", notifier.getSummary());
         assertTrue(notifier.isError());
     }
 
     public void testOutputLog2() throws Exception {
-        TestNotifier notifier = new TestNotifier(true, false);
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
         FileObject fileObject = getTestFile("testfiles/testoutput2.txt");
         String s = readFile(fileObject);
         String[] lines = s.split("\n");
         for (String line : lines) {
-            notifier.processLine(line);
+            notifier.convert(line);
         }
         assertEquals("25 tests, 46 assertions, 0 failures, 0 errors", notifier.getSummary());
         assertFalse(notifier.isError());
     }
     
     public void testRerun116386() throws Exception {
-        TestNotifier notifier = new TestNotifier(true, false);
+        TestNotifierLineConvertor notifier = new TestNotifierLineConvertor(true, false);
         FileObject fileObject = getTestFile("testfiles/testoutput2.txt");
         String s = readFile(fileObject);
         String[] lines = s.split("\n");
         notifier.start();
         for (String line : lines) {
-            notifier.processLine(line);
+            notifier.convert(line);
         }
-        notifier.finish();
 
         assertEquals("25 tests, 46 assertions, 0 failures, 0 errors", notifier.getSummary());
         assertFalse(notifier.isError());
@@ -277,9 +276,8 @@ public class TestNotifierTest extends RubyTestBase {
         // Rerun!
         notifier.start();
         for (String line : lines) {
-            notifier.processLine(line);
+            notifier.convert(line);
         }
-        notifier.finish();
 
         assertEquals("25 tests, 46 assertions, 0 failures, 0 errors", notifier.getSummary());
         assertFalse(notifier.isError());

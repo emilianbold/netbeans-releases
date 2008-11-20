@@ -41,6 +41,7 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.awt.Color;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.JTextComponent;
@@ -49,8 +50,8 @@ import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.StatusBar;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.ActionText;
+import org.netbeans.modules.extexecution.api.print.ConvertedLine;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
@@ -61,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tor Norbye
  */
-public class TestNotifier extends OutputRecognizer implements Runnable {
+public class TestNotifierLineConvertor implements LineConvertor {
     
     /** Most recent message shown in the editor */
     private static String mostRecentMessage;
@@ -91,7 +92,7 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
      * @param showSuccesses If true, post results to the editor window even if
      * there are no failures
      */
-    public TestNotifier(boolean accumulate, boolean showSuccesses) {
+    public TestNotifierLineConvertor(boolean accumulate, boolean showSuccesses) {
         this.accumulate = accumulate;
         this.showSuccesses = showSuccesses;
     }
@@ -114,8 +115,8 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
         Pattern.compile("Test failures\\s?"); // NOI18N
     
     private final Pattern[] PATTERNS = new Pattern[] { TEST_UNIT_PATTERN, RSPEC_PATTERN, RAKE_PATTERN };
+    private boolean started;
 
-    @Override
     public void start() {
         // Possibly clear editor from previous error message (#115073)
         String lastMessage = mostRecentMessage;
@@ -134,14 +135,15 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
 
         resetResults();
     }
-    
-    @Override
-    public ActionText processLine(String outputLine) {
+
+    public synchronized List<ConvertedLine> convert(String line) {
+        if (!started) {
+            started = true;
+            start();
+        }
         if (QUIET) {
             return null;
         }
-
-        String line = outputLine;
 
         for (Pattern pattern : PATTERNS) {
             Matcher match = pattern.matcher(line);
@@ -158,14 +160,11 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
                     run();
                 } else {
                     String summary = getSummary();
-                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TestNotifier.class, "TestsCompleted", summary));
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TestNotifierLineConvertor.class, "TestsCompleted", summary));
                 }
             }
         }
 
-        if (line != outputLine) {
-            return new ActionText(new String[] { line }, null, null, null);
-        }
         return null;
     }
     
@@ -268,7 +267,7 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
     private String getCountDescription(String oneKey, String manyKey, int count) {
         String countString = Integer.toString(count);
         
-        return NbBundle.getMessage(TestNotifier.class, count == 1 ? oneKey : manyKey, countString);
+        return NbBundle.getMessage(TestNotifierLineConvertor.class, count == 1 ? oneKey : manyKey, countString);
     }
     
     boolean isError() {

@@ -65,10 +65,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
-import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.execution.ExecutionUtils;
 import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.netbeans.modules.ruby.platform.Util;
-import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -550,8 +549,8 @@ public final class RubyPlatformManager {
             // autodetection, otherwise interpreter under JRUBY_HOME would be
             // effectively used
             pb.environment().remove("JRUBY_HOME"); // NOI18N
-            pb.environment().put("JAVA_HOME", RubyExecution.getJavaHome()); // NOI18N
-            ExecutionService.logProcess(pb);
+            pb.environment().put("JAVA_HOME", ExecutionUtils.getJavaHome()); // NOI18N
+            ExecutionUtils.logProcess(pb);
             final Process proc = pb.start();
             // FIXME: set timeout
             Thread gatherer = new Thread(new Runnable() {

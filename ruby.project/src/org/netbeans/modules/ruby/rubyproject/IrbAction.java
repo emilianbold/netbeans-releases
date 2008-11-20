@@ -47,9 +47,9 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileUtil;
@@ -96,14 +96,14 @@ public final class IrbAction extends CallableSystemAction {
         if (evaluator != null) {
             charsetName = evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING);
         }
-        OutputRecognizer[] extraRecognizers = new OutputRecognizer[] { new TestNotifier(true, true) };
         String target = irbPath;
-        RubyExecutionDescriptor desc = descProvider.getScriptDescriptor(pwd, null/*specFile?*/, target, displayName, project.getLookup(), debug, extraRecognizers);
+        RubyExecutionDescriptor desc = descProvider.getScriptDescriptor(pwd, null/*specFile?*/, target, displayName, project.getLookup(), debug, new TestNotifierLineConvertor(true, true));
 
         // Override args
         desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
         desc.frontWindow(true);
-        new RubyExecution(desc, charsetName).run();
+        RubyProcessCreator rpc = new RubyProcessCreator(desc, charsetName);
+        ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName).run();
         
         return true;
     }

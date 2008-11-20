@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,116 +31,111 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby.platform;
+package org.netbeans.modules.ruby.platform.execution;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.ExecutionService;
-import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
+import org.netbeans.modules.extexecution.api.ExternalProcessBuilder;
+import org.netbeans.modules.extexecution.api.print.LineConvertors;
+import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 /**
- * Execution service for Ruby. Performs some Ruby specific setup like
- * setting environment required for JRuby, or enabling I/O syncing for
- * native Ruby.
- * 
- * @todo Set HTTP_PROXY in the launched process, as is done for GemManager?
- *   See issue 111680 for details - http://www.netbeans.org/issues/show_bug.cgi?id=111680
+ * A helper class for migrating from the ruby execution API to the new execution API (extexecution).
+ * Contains a lot of copy-pasted code from <code>RubyExecution</code> (which will eventually
+ * be removed).
  *
- * @author Tor Norbye
+ * @author Erno Mononen
  */
-public class RubyExecution extends ExecutionService {
-    
-    private static final String WINDOWS_DRIVE = "(?:\\S{1}:[\\\\/])"; // NOI18N
-    private static final String FILE_CHAR = "[^\\s\\[\\]\\:\\\"]"; // NOI18N
-    private static final String FILE = "((?:" + FILE_CHAR + "*))"; // NOI18N
-    private static final String FILE_WIN = "(" + WINDOWS_DRIVE + "(?:" + FILE_CHAR + ".*))"; // NOI18N
-    private static final String LINE = "([1-9][0-9]*)"; // NOI18N
-    private static final String ROL = ".*\\s?"; // NOI18N
-    private static final String SEP = "\\:"; // NOI18N
-    private static final String STD_SUFFIX = FILE + SEP + LINE + ROL;
-    
-    private static List<RegexpOutputRecognizer> stdRubyRecognizers;
-
-    private static final RegexpOutputRecognizer RUBY_COMPILER =
-        new RegexpOutputRecognizer(".*?" + STD_SUFFIX); // NOI18N
-
-    private static final RegexpOutputRecognizer RUBY_COMPILER_WIN_MY =
-        new RegexpOutputRecognizer(".*?" + FILE_WIN + SEP + LINE + ROL); // NOI18N
-
-    /* Keeping old one. Get rid of this with more specific recongizers? */
-    private static final RegexpOutputRecognizer RUBY_COMPILER_WIN =
-        new RegexpOutputRecognizer("^(?:(?:\\[|\\]|\\-|\\:|[0-9]|\\s|\\,)*)(?:\\s*from )?" + FILE_WIN + SEP + LINE + ROL); // NOI18N
-
-    private static final RegexpOutputRecognizer RAILS_RECOGNIZER =
-        new RegexpOutputRecognizer(".*#\\{RAILS_ROOT\\}/" + STD_SUFFIX); // NOI18N
-
-    public static final RegexpOutputRecognizer RUBY_TEST_OUTPUT =
-        new RegexpOutputRecognizer("\\s*test.*\\[" + STD_SUFFIX); // NOI18N
-    
-    // TODO - add some more recognizers here which recognize the prefix path to Ruby (gems, GEM_HOME, etc.) such that I
-    // can hyperlink to errors in the "rake", "rails" etc. load scripts
+public class RubyProcessCreator implements Callable<Process> {
 
     /** When not set (the default) do stdio syncing for native Ruby binaries */
     private static final boolean SYNC_RUBY_STDIO = System.getProperty("ruby.no.sync-stdio") == null; // NOI18N
-
     /** Set to suppress using the -Kkcode flag in case you're using a weird interpreter which doesn't support it */
     //private static final boolean SKIP_KCODE = System.getProperty("ruby.no.kcode") == null; // NOI18N
     private static final boolean SKIP_KCODE = true;
-    
     /** When not set (the default) bypass the JRuby launcher unix/ba-file scripts and launch VM directly */
-    public static final boolean LAUNCH_JRUBY_SCRIPT =
-        System.getProperty("ruby.use.jruby.script") != null; // NOI18N
+    private static final boolean LAUNCH_JRUBY_SCRIPT = System.getProperty("ruby.use.jruby.script") != null; // NOI18N
+    private final RubyExecutionDescriptor descriptor;
+    private final String charsetName;
 
-    private String charsetName;
-    
-    public RubyExecution(RubyExecutionDescriptor descriptor) {
-        super(descriptor);
-        
-        assert descriptor != null : "null descriptor";
+    public RubyProcessCreator(RubyExecutionDescriptor descriptor) {
+        this(descriptor, null);
+    }
+
+    public RubyProcessCreator(RubyExecutionDescriptor descriptor,
+            String charsetName) {
 
         if (descriptor.getCmd() == null) {
             descriptor.cmd(descriptor.getPlatform().getInterpreterFile());
         }
 
         descriptor.addBinPath(true);
-    }
-
-    /** Create a Ruby execution service with the given source-encoding charset */
-    public RubyExecution(RubyExecutionDescriptor descriptor, String charsetName) {
-        this(descriptor);
+        this.descriptor = descriptor;
         this.charsetName = charsetName;
-    }
-    
-    public synchronized static List<? extends RegexpOutputRecognizer> getStandardRubyRecognizers() {
-        if (stdRubyRecognizers == null) {
-            stdRubyRecognizers = new LinkedList<RegexpOutputRecognizer>();
-            stdRubyRecognizers.add(RubyExecution.RAILS_RECOGNIZER);
-            stdRubyRecognizers.add(RubyExecution.RUBY_COMPILER_WIN_MY);
-            stdRubyRecognizers.add(RubyExecution.RUBY_COMPILER);
-            stdRubyRecognizers.add(RubyExecution.RUBY_COMPILER_WIN);
-        }
-        return stdRubyRecognizers;
     }
 
     /**
-     * Returns the basic Ruby interpreter command and associated flags (not
-     * application arguments)
+     * Wraps the given locator as a LineConvertors.FileLocator. Just a temp utility
+     * method to ease the migration to extexecution.
      */
-    public static List<? extends String> getRubyArgs(final RubyPlatform platform) {
-        return new RubyExecution(new RubyExecutionDescriptor(platform)).getRubyArgs(platform.getHome().getAbsolutePath(),
-                platform.getInterpreterFile().getName(), null);
+    public static LineConvertors.FileLocator wrap(final FileLocator locator) {
+        LineConvertors.FileLocator wrapper = new LineConvertors.FileLocator() {
+
+            public FileObject find(String filename) {
+                return locator.find(filename);
+            }
+        };
+        return wrapper;
+    }
+
+    public Process call() throws Exception {
+        if (descriptor.debug) {
+            RubyDebuggerImplementation debugger = Lookup.getDefault().lookup(RubyDebuggerImplementation.class);
+            debugger.describeProcess(descriptor);
+            if (debugger == null || !debugger.canDebug()) {
+                assert false; //
+                return null;
+            }
+            return debugger.debug();
+        }
+        ExternalProcessBuilder builder = null;
+        List<? extends String> args = buildArgs();
+        if (!descriptor.cmd.getName().startsWith("jruby") || LAUNCH_JRUBY_SCRIPT) { // NOI18N
+            builder = new ExternalProcessBuilder(descriptor.cmd.getPath());
+        } else {
+            builder = new ExternalProcessBuilder(args.get(0));
+            args.remove(0);
+        }
+
+        for (String arg : args) {
+            builder = builder.addArgument(arg);
+
+        }
+        if (descriptor.getPwd() != null) {
+            builder = builder.workingDirectory(descriptor.getPwd());
+        }
+        for (Entry<String, String> entry : descriptor.getAdditionalEnvironment().entrySet()) {
+            builder = builder.addEnvironmentVariable(entry.getKey(), entry.getValue());
+        }
+
+        return builder.call();
     }
 
     private List<? extends String> getRubyArgs(String rubyHome, String cmdName, RubyExecutionDescriptor descriptor) {
@@ -154,12 +143,12 @@ public class RubyExecution extends ExecutionService {
         // Decide whether I'm launching JRuby, and if so, take a shortcut and launch
         // the VM directly. This is important because killing JRuby via the launcher script
         // is not working right; now that JRuby on Unix exec's the VM that part is okay but
-        // on Windows there are still problems.        
+        // on Windows there are still problems.
         if (!LAUNCH_JRUBY_SCRIPT && cmdName.startsWith("jruby")) { // NOI18N
             String javaHome = getJavaHome();
 
             argvList.add(javaHome + File.separator + "bin" + File.separator + // NOI18N
-                "java"); // NOI18N   
+                    "java"); // NOI18N
             // XXX Do I need java.exe on Windows?
 
             // Additional execution flags specified in the JRuby startup script:
@@ -181,14 +170,14 @@ public class RubyExecution extends ExecutionService {
                     argvList.add(arg);
                 }
             }
-            
+
             if (javaMemory != null) {
                 argvList.add(javaMemory);
             }
             if (javaStack != null) {
                 argvList.add(javaStack);
             }
-            
+
             // Classpath
             argvList.add("-classpath"); // NOI18N
 
@@ -200,7 +189,7 @@ public class RubyExecution extends ExecutionService {
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
-            
+
             if (!rubyHomeDir.isDirectory()) {
                 throw new IllegalArgumentException(rubyHomeDir.getAbsolutePath() + " does not exist."); // NOI18N
             }
@@ -212,11 +201,11 @@ public class RubyExecution extends ExecutionService {
 
             argvList.add(computeJRubyClassPath(
                     descriptor == null ? null : descriptor.getClassPath(), jrubyLib));
-            
+
             argvList.add("-Djruby.base=" + rubyHomeDir); // NOI18N
             argvList.add("-Djruby.home=" + rubyHomeDir); // NOI18N
             argvList.add("-Djruby.lib=" + jrubyLib); // NOI18N
-            
+
             // TODO - turn off verifier?
 
             if (Utilities.isWindows()) {
@@ -230,15 +219,15 @@ public class RubyExecution extends ExecutionService {
             // Main class
             argvList.add("org.jruby.Main"); // NOI18N
 
-            // TODO: JRUBYOPTS
+        // TODO: JRUBYOPTS
 
-            // Application arguments follow
+        // Application arguments follow
         }
-        
+
         if (!SKIP_KCODE && cmdName.startsWith("ruby")) { // NOI18N
             String cs = charsetName;
             if (cs == null) {
-            // Add project encoding flags
+                // Add project encoding flags
                 FileObject fo = descriptor.getFileObject();
                 if (fo != null) {
                     Charset charset = FileEncodingQuery.getEncoding(fo);
@@ -266,7 +255,7 @@ public class RubyExecution extends ExecutionService {
 
                 InstalledFileLocator locator = InstalledFileLocator.getDefault();
                 File f =
-                    locator.locate("modules/org-netbeans-modules-ruby-project.jar", // NOI18N
+                        locator.locate("modules/org-netbeans-modules-ruby-project.jar", // NOI18N
                         null, false); // NOI18N
 
                 if (f == null) {
@@ -288,26 +277,55 @@ public class RubyExecution extends ExecutionService {
         return argvList;
     }
 
-    @Override
+    /**
+     * Retruns list of default arguments and options from the descriptor's
+     * <code>initialArgs</code>, <code>script</code> and
+     * <code>additionalArgs</code> in that order.
+     */
+    private List<? extends String> getCommonArgs() {
+        List<String> argvList = new ArrayList<String>();
+        File cmd = descriptor.cmd;
+        assert cmd != null;
+
+        if (descriptor.getInitialArgs() != null) {
+            argvList.addAll(Arrays.asList(descriptor.getInitialArgs()));
+        }
+
+        if (descriptor.getScriptPrefix() != null) {
+            argvList.add(descriptor.getScriptPrefix());
+        }
+
+        if (descriptor.script != null) {
+            argvList.add(descriptor.script);
+        }
+
+        if (descriptor.getAdditionalArgs() != null) {
+            argvList.addAll(Arrays.asList(descriptor.getAdditionalArgs()));
+        }
+        return argvList;
+    }
+
     protected List<? extends String> buildArgs() {
         List<String> argvList = new ArrayList<String>();
         String rubyHome = descriptor.getCmd().getParentFile().getParent();
         String cmdName = descriptor.getCmd().getName();
-        argvList.addAll(getRubyArgs(rubyHome, cmdName, descriptor));
-        argvList.addAll(super.buildArgs());
+        if (descriptor.isRunThroughRuby()) {
+            argvList.addAll(getRubyArgs(rubyHome, cmdName, descriptor));
+        }
+        argvList.addAll(getCommonArgs());
         return argvList;
     }
-    
+
     public static String getJavaHome() {
         String javaHome = System.getProperty("jruby.java.home"); // NOI18N
 
         if (javaHome == null) {
             javaHome = System.getProperty("java.home"); // NOI18N
         }
-        
+
         return javaHome;
     }
-    
+
     /** Package-private for unit test. */
     static String computeJRubyClassPath(String extraCp, final File jrubyLib) {
         StringBuilder cp = new StringBuilder();
