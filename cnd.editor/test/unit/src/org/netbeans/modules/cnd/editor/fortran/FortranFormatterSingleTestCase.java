@@ -50,5 +50,54 @@ public class FortranFormatterSingleTestCase  extends FortranEditorBase {
     public FortranFormatterSingleTestCase(String testMethodName) {
         super(testMethodName);
     }
-
+    public void testIfFree() {
+        setLoadDocumentText(
+                "  implicit double precision (a-h)\n" +
+                "  implicit doubleprecision (o-z)\n" +
+                "  do i=-1,1\n" +
+                "  if (i.eq.0) then\n" +
+                "  write(*,*)a(i)\n" +
+                "  elseif(i.gt.0) then\n" +
+                "  write(*,*)b(i)\n" +
+                "  else if(i.lt.0) then\n" +
+                "  write(*,*)c(i)\n" +
+                "  endif\n" +
+                "  enddo\n" +
+                "  end\n" +
+                "  real*8 function a(n)\n" +
+                "  a=dble(n+10)\n" +
+                "  return\n" +
+                "  endfunction\n" +
+                "  double precision function b(n)\n" +
+                "  b=dble(n*10)\n" +
+                "  end\n" +
+                "  doubleprecision function c(n)\n" +
+                "  c=dble(n-10)\n" +
+                "  end function");
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("Incorrect if reformat (free form)",
+                "implicit double precision (a - h)\n" +
+                "implicit doubleprecision (o - z)\n" +
+                "do i = -1, 1\n" +
+                "    if (i .eq. 0) then\n" +
+                "        write(*, *)a(i)\n" +
+                "    elseif (i .gt. 0) then\n" +
+                "        write(*, *)b(i)\n" +
+                "    else if(i .lt. 0) then\n" +
+                "        write(*, *)c(i)\n" +
+                "    endif\n" +
+                "enddo\n" +
+                "end\n" +
+                "real * 8 function a(n)\n" +
+                "    a = dble(n + 10)\n" +
+                "    return\n" +
+                "endfunction\n" +
+                "double precision function b(n)\n" +
+                "    b = dble(n * 10)\n" +
+                "end\n" +
+                "doubleprecision function c(n)\n" +
+                "    c = dble(n - 10)\n" +
+                "end function");
+    }
 }
