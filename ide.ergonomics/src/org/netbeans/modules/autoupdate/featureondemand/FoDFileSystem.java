@@ -61,13 +61,13 @@ public class FoDFileSystem extends MultiFileSystem
 implements Runnable {
     private static FoDFileSystem INSTANCE;
     final static Logger LOG = Logger.getLogger (FoDFileSystem.class.getPackage ().toString ());
-    private static RequestProcessor RP = new RequestProcessor("FeatureOnDemand"); // NOI18N
+    private static RequestProcessor RP = new RequestProcessor("Ergonomics"); // NOI18N
     private RequestProcessor.Task refresh = RP.create(this);
 
     public FoDFileSystem() {
         assert INSTANCE == null;
         INSTANCE = this;
-        refresh.schedule(2000);
+        refresh();
     }
 
     public static synchronized FoDFileSystem getInstance() {
