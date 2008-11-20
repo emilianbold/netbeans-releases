@@ -60,12 +60,16 @@ import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.ResourceCollection;
+import org.apache.tools.ant.types.resources.ZipResource;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -88,6 +92,17 @@ public class LayerIndex extends Task {
     private File output;
     public void setOutput(File f) {
         output = f;
+    }
+
+    private String resourceId;
+    private List<ZipResource> resources;
+    /** If this parameter is provided, then this tasks creates a resource
+     * composed from all the layerfiles and makes it accessible under this refId
+     * @param id the refId to associate the collection with
+     */
+    public void setResourceId(String id) {
+        resourceId = id;
+        resources = new ZipArray();
     }
 
     @Override
@@ -117,11 +132,21 @@ public class LayerIndex extends Task {
                         String cnb = modname.replaceFirst("/\\d+$", "");
                         String layer = mf.getMainAttributes().getValue("OpenIDE-Module-Layer");
                         if (layer != null) {
-                            parse(jf.getInputStream(jf.getEntry(layer)), files, labels, positions, cnb, jf);
+                            if (resources != null) {
+                                ZipResource res = new LayerResource(jar, layer, cnb + ".xml");
+                                resources.add(res);
+                            } else {
+                                parse(jf.getInputStream(jf.getEntry(layer)), files, labels, positions, cnb, jf);
+                            }
                         }
                         ZipEntry generatedLayer = jf.getEntry("META-INF/generated-layer.xml");
                         if (generatedLayer != null) {
-                            parse(jf.getInputStream(generatedLayer), files, labels, positions, cnb, jf);
+                            if (resources != null) {
+                                ZipResource res = new LayerResource(jar, generatedLayer.getName(), cnb + "-generated.xml");
+                                resources.add(res);
+                            } else {
+                                parse(jf.getInputStream(generatedLayer), files, labels, positions, cnb, jf);
+                            }
                         }
                     } finally {
                         jf.close();
@@ -131,6 +156,12 @@ public class LayerIndex extends Task {
                 }
             }
         }
+
+        if (resources != null) {
+            getProject().getReferences().put(resourceId, resources);
+            return;
+        }
+
         int maxlength = 0;
         for (String cnb : files.values()) {
             maxlength = Math.max(maxlength, shortenCNB(cnb).length());
@@ -310,4 +341,38 @@ public class LayerIndex extends Task {
         });
     }
 
+    private static final class ZipArray extends ArrayList<ZipResource>
+    implements ResourceCollection {
+        public boolean isFilesystemOnly() {
+            return false;
+        }
+    }
+
+    private static final class LayerResource extends ZipResource {
+        private final String name;
+        
+        private LayerResource(
+            File jar, String path, String name) throws ZipException {
+            super(jar, "UTF-8", new org.apache.tools.zip.ZipEntry(path));
+            this.name = name;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+            final ZipFile z = new ZipFile(getZipfile(), ZipFile.OPEN_READ);
+            ZipEntry ze = z.getEntry(super.getName());
+            if (ze == null) {
+                z.close();
+                throw new BuildException("no entry " + getName() + " in "
+                                         + getArchive());
+            }
+            return z.getInputStream(ze);
+        }
+
+    }
 }

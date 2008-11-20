@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="ide.ergonomics">
+    <description>Builds, tests, and runs the project org.netbeans.modules.ide.ergonomics</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+
+    <target name="-release.dir" depends="-disable-kits,projectized-common.-release.dir"/>
+    <target name="basic-init" depends="-compile-ant,projectized-common.basic-init"/>
+    <target name="jar-prep" depends="-generate-proxies,projectized-common.jar-prep"/>
+
+    <!--
+    -
+    - Internal implementation
+    -
+    -->
+    <target name="-compile-ant" depends="projectized-common.basic-init">
+        <mkdir dir="${src-ant.build}"/>
+        <depend srcdir="src-ant" destdir="${src-ant.build}" cache="build/depcache-ant">
+            <classpath>
+                <path path="${src-ant.cp}"/>
+            </classpath>
+        </depend>
+        <javac srcdir="src-ant" destdir="${src-ant.build}"
+            deprecation="${build.compiler.deprecation}"
+            debug="true"
+            source="1.5" target="1.5" includeantruntime="false">
+            <classpath>
+                <path path="${src-ant.cp}"/>
+            </classpath>
+            <compilerarg line="${javac.compilerargs}"/>
+        </javac>
+        <copy todir="${src-ant.build}">
+            <fileset dir="src-ant" excludes="${jar-excludes}"/>
+        </copy>
+    </target>
+
+    <target name="-init-clusters">
+        <dirset id="ergonomic.clusters" dir="${netbeans.dest.dir}">
+            <include name="*"/>
+            <exclude name="harness*"/>
+            <exclude name="ide1*"/>
+            <exclude name="platform*"/>
+            <exclude name="ergonomics*"/>
+            <exclude name="nb*.*"/>
+            <exclude name="bin"/>
+            <exclude name="etc"/>
+        </dirset>
+    </target>
+
+
+    <target name="-disable-kits" depends="-init-clusters">
+        <mkdir dir="${release.dir}/config/Modules"/>
+        <subant genericantfile="build.xml" target="-disable-one-cluster">
+            <property name="xmldir" value="${release.dir}/config/Modules"/>
+            <property name="ergonomicsdir" location="${basedir}"/>
+            <dirset refid="ergonomic.clusters"/>
+        </subant>
+    </target>
+
+    <target name="-generate-proxies" depends="-init-clusters">
+        <subant genericantfile="build.xml" target="-proxy-one-cluster">
+            <property name="ergonomicsdir" location="${basedir}"/>
+            <dirset refid="ergonomic.clusters"/>
+        </subant>
+    </target>
+
+    <target name="-proxy-one-cluster" depends="-init-clusters">
+        <taskdef name="layerindex"
+             classname="org.netbeans.nbbuild.LayerIndex"
+             classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <layerindex resourceid="layers">
+            <modules dir=".">
+                <include name="modules/*.jar"/>
+            </modules>
+        </layerindex>
+        <taskdef name="extractlayer"
+             classname="org.netbeans.modules.ide.ergonomics.ant.ExtractLayer"
+             classpath="${ergonomicsdir}/build/antclasses/"/>
+
+        <pathconvert property="cluster.name">
+            <path location="."/>
+            <mapper type="flatten"/>
+        </pathconvert>
+
+        <property name="proxytmp" value="${ergonomicsdir}/build/proxies/${cluster.name}"/>
+        <property name="proxydir" value="${ergonomicsdir}/build/classes/org/netbeans/modules/ide/ergonomics/${cluster.name}"/>
+        <mkdir dir="${proxytmp}/layers"/>
+        <copy todir="${proxytmp}/layers">
+            <resources refid="layers"/>
+        </copy>
+
+
+        <xslt
+            basedir="${proxytmp}/layers/"
+            destdir="${proxytmp}/extracted/" style="${ergonomicsdir}/project-wizard.xsl"
+            useimplicitfileset="true" extension=".fragment"
+        >
+            <param name="cluster.name" expression="${cluster.name}"/>
+        </xslt>
+
+        <concat destfile="${proxytmp}/${cluster.name}.xml">
+            <header>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd"&gt;
+&lt;filesystem&gt;
+    &lt;folder name="Templates"&gt;
+        &lt;folder name="Project"&gt;
+            </header>
+            <filterchain>
+                <ignoreblank byline="true"/>
+            </filterchain>
+            <fileset dir="${proxytmp}/extracted">
+            </fileset>
+            <footer>
+        &lt;/folder&gt;
+    &lt;/folder&gt;
+&lt;/filesystem&gt;
+            </footer>
+        </concat>
+
+        <mkdir dir="${proxydir}"/>
+        <extractlayer
+            layer="${proxytmp}/${cluster.name}.xml"
+            bundle="${proxydir}/Bundle.properties"
+            destdir="${proxydir}"
+        >
+           <modules dir=".">
+                <include name="modules/*.jar"/>
+            </modules>
+            <bundlefilter>
+                <linecontains>
+                    <contains value="Templates"/>
+                </linecontains>
+            </bundlefilter>
+         </extractlayer>
+    </target>
+
+    
+    <target name="-disable-one-cluster" depends="-init-clusters">
+        <createmodulexml xmldir="${xmldir}">
+            <disabled dir=".">
+                <and>
+                    <filename name="modules/*.jar"/>
+                    <custom 
+                        classname="org.netbeans.nbbuild.ModuleStateSelector"
+                        classpath="${nb_all}/nbbuild/nbantext.jar"
+                    >
+                        <param name="acceptEnabled" value="true"/>
+                    </custom>
+                </and>
+            </disabled>
+        </createmodulexml>
+    </target>
+</project>
