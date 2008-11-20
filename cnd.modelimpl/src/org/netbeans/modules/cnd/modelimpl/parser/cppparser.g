@@ -98,7 +98,9 @@ options {
 	language = "Java";
 } 
 
-class CPPParser extends Parser;
+{
+@SuppressWarnings({"unchecked", "cast", "fallthrough"})
+}class CPPParser extends Parser;
 
 options {
 	k = 2;
