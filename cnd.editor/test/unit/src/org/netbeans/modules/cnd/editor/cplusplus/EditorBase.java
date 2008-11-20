@@ -31,12 +31,14 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.indent.CppIndentTask;
 import org.netbeans.modules.cnd.editor.indent.HotCharIndent;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 import org.netbeans.modules.cnd.test.base.BaseDocumentUnitTestCase;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.openide.util.Exceptions;
 
 /**
@@ -51,7 +53,7 @@ public class EditorBase extends BaseDocumentUnitTestCase {
     }
     
     @Override
-    protected EditorKit createEditorKit() {
+    protected final EditorKit createEditorKit() {
         if (isCPP) {
             return new CCKit();
         } else {
@@ -59,11 +61,11 @@ public class EditorBase extends BaseDocumentUnitTestCase {
         }
     }
 
-    protected void setCppEditorKit(boolean isCPP){
+    protected final void setCppEditorKit(boolean isCPP){
         this.isCPP = isCPP;
     }
 
-    protected void setDefaultsOptions(){
+    protected final void setDefaultsOptions(){
         // Note due to IZ#130533 the default style is changed. Hence we reset some properties.
         if (isCPP) {
             EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
@@ -89,7 +91,7 @@ public class EditorBase extends BaseDocumentUnitTestCase {
                 CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
-    protected void setDefaultsOptions(String style){
+    protected final void setDefaultsOptions(String style){
         if (isCPP) {
             EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
             EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP), style);
@@ -104,7 +106,7 @@ public class EditorBase extends BaseDocumentUnitTestCase {
      * by the formatter.
      * The caret position should be marked in the document text by '|'.
      */
-    protected void indentNewLine() {
+    protected final void indentNewLine() {
         try {
             int offset = getCaretOffset();
             getDocument().insertString(offset, "\n", null); // NOI18N
@@ -127,7 +129,7 @@ public class EditorBase extends BaseDocumentUnitTestCase {
      * by the formatter.
      * The caret position should be marked in the document text by '|'.
      */
-    protected void indentLine() {
+    protected final void indentLine() {
         try {
             int offset = getCaretOffset();
             CppIndentTask task = new CppIndentTask(getDocument());
@@ -140,7 +142,7 @@ public class EditorBase extends BaseDocumentUnitTestCase {
     /**
      * Perform reformatting of the whole document's text.
      */
-    protected void reformat() {
+    protected final void reformat() {
         Reformatter f = new Reformatter(getDocument(), CodeStyle.getDefault(getDocument()));
         try {
             f.reformat();
@@ -150,9 +152,9 @@ public class EditorBase extends BaseDocumentUnitTestCase {
     	}
     }
 
-    // ------- Private methods -------------
+    // ------- help methods -------------
 
-    protected void typeChar(char ch, boolean indentNewLine) throws Exception {
+    protected final void typeChar(char ch, boolean indentNewLine) throws Exception {
         int pos = getCaretOffset();
         getDocument ().insertString(pos, String.valueOf(ch), null);
         if (HotCharIndent.INSTANCE.getKeywordBasedReformatBlock(getDocument(), pos, ""+ch)) {
@@ -165,15 +167,15 @@ public class EditorBase extends BaseDocumentUnitTestCase {
         }
     }
 
-    protected void typeQuoteChar(char ch) throws Exception {
+    protected final void typeQuoteChar(char ch) throws Exception {
         typeChar(ch, false);
     }
 
-    protected boolean isSkipRightParen() {
+    protected final boolean isSkipRightParen() {
         return isSkipRightBracketOrParen(true);
     }
 
-    protected boolean isSkipRightBracketOrParen(boolean parenthesis) {
+    protected final boolean isSkipRightBracketOrParen(boolean parenthesis) {
         CppTokenId bracketTokenId = parenthesis
         ? CppTokenId.RPAREN
         : CppTokenId.RBRACKET;
@@ -188,13 +190,28 @@ public class EditorBase extends BaseDocumentUnitTestCase {
         }
     }
 
-    protected boolean isAddRightBrace() {
+    protected final boolean isAddRightBrace() {
         try {
             return BracketCompletion.isAddRightBrace(getDocument(), getCaretOffset());
         } catch (BadLocationException e) {
             e.printStackTrace(getLog());
             fail();
             return false; // should never be reached
+        }
+    }
+
+    protected final void breakLine() {
+        DocumentUtilities.setTypingModification(getDocument(), true);
+        Indent indent = Indent.get(getDocument());
+        indent.lock();
+        try {
+            CCKit.CCInsertBreakAction action = new CCKit.CCInsertBreakAction();
+            Object out = action.beforeBreak(null, getDocument(), getCaret());
+            indentNewLine();
+            action.afterBreak(null, getDocument(), getCaret(), out);
+        } finally {
+            indent.unlock();
+            DocumentUtilities.setTypingModification(getDocument(), false);
         }
     }
 }

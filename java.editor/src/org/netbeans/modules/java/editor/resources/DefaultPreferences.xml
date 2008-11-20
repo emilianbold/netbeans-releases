@@ -101,8 +101,5 @@ made subject to such option by the copyright holder.
     <entry javaType="java.lang.Boolean" name="word-match-match-case">
         <value><![CDATA[true]]></value>
     </entry>
-    <entry javaType="java.lang.String" name="word-match-static-words">
-        <value><![CDATA[Exception IntrospectionException FileNotFoundException IOException ArrayIndexOutOfBoundsException ClassCastException ClassNotFoundException CloneNotSupportedException NullPointerException NumberFormatException SQLException IllegalAccessException IllegalArgumentException]]></value>
-    </entry>
 
 </editor-preferences>

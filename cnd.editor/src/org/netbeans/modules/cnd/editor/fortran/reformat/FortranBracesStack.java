@@ -145,7 +145,7 @@ class FortranBracesStack {
             case KW_TYPE:
             case KW_BLOCKDATA:
             case KW_MAP:
-            case KW_FILE:
+//            case KW_FILE:
                 statementIndent = codeStyle.indentSize();
                 newEntry.setIndent(prevIndent + statementIndent);
                 newEntry.setSelfIndent(prevIndent);

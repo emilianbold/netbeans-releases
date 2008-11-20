@@ -140,6 +140,9 @@ done
 # Process arguments given on the command line.
 parse_args "$@"
 
+#enabling heap dump on OOME
+jargs="$jargs -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${userdir}/var/log/heapdump.hprof"
+
 jargs_without_clusters="$jargs"
 jargs="-Dnetbeans.dirs=\"${clusters}\" $jargs_without_clusters"
 

@@ -399,7 +399,12 @@ void runClass(char *mainclass, bool deleteAUClustersFile, DWORD *retCode) {
 
     // see BugTraq #5043070
     addOption("-Dsun.awt.keepWorkingSetOnMinimize=true");
-    
+
+    // enabling heap dump on OOME
+    addOption("-XX:+HeapDumpOnOutOfMemoryError");
+    snprintf(buf, 10240, "-XX:HeapDumpPath=%s\\var\\log\\heapdump.hprof", userdir);
+    addOption(buf);
+
     char *javapath = findJavaExeInDirectory(jdkhome);
     if (javapath == NULL) {
         sprintf(buf, "Cannot find java.exe.\nNeither %s%s nor %s%s exists.", 

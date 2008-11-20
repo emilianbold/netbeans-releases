@@ -143,7 +143,7 @@ public class DebianPackager implements PackagerDescriptor {
 
         private void writePackagingScriptBodyDebian(BufferedWriter bw, MakeConfiguration conf) throws IOException {
             PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
-            List<PackagerFileElement> fileList = (List<PackagerFileElement>) packagingConfiguration.getFiles().getValue();
+            List<PackagerFileElement> fileList = packagingConfiguration.getFiles().getValue();
 
             bw.write("# Copy files and create directories and links\n"); // NOI18N
             for (PackagerFileElement elem : fileList) {

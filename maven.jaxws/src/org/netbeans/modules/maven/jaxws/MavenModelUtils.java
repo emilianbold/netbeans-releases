@@ -45,6 +45,7 @@ import java.util.List;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
+import org.apache.maven.model.Resource;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -219,6 +220,35 @@ public class MavenModelUtils {
         return plugin; 
     }
     
+    public static void addWsdlResources(ModelHandle handle) {
+
+        Build bld = handle.getPOMModel().getBuild();
+        if (bld != null) {
+            boolean foundResourceForMetaInf = false;
+            List resources = bld.getResources();
+            if (resources != null) {
+                for (Object o: resources) {
+                    Resource resource = (Resource)o;
+                    if ("META-INF".equals(resource.getTargetPath())) { //NOI18N
+                        foundResourceForMetaInf = true;
+                    }
+                }
+            }
+            if (!foundResourceForMetaInf) {
+                Resource res = new Resource();
+                res.setTargetPath("META-INF"); //NOI18N
+                res.setDirectory("src"); //NOI18N
+                List<String> includes = new ArrayList<String>();
+                includes.add("jax-ws-catalog.xml"); //NOI18N
+                includes.add("wsdl/**"); //NOI18N
+                res.setIncludes(includes);
+                bld.addResource(res);
+                handle.markAsModified(handle.getPOMModel());
+            }
+        }
+
+    }
+    
     public static void addWsdlFile(ModelHandle handle, Plugin jaxWsPlugin, String wsdlPath) {
         
         Xpp3Dom conf = (Xpp3Dom) jaxWsPlugin.getConfiguration();
@@ -276,6 +306,29 @@ public class MavenModelUtils {
                         if (clientToRemove >= 0) {
                             wsdlFilesNode.removeChild(clientToRemove);
                             handle.markAsModified(handle.getPOMModel());
+                        }
+                    }
+                    
+                }
+            }
+        }
+    }
+    
+    public static void renameWsdlFile(ModelHandle handle, String oldWsdlPath, String newWsdlPath) {       
+        @SuppressWarnings("unchecked")
+        List<Plugin> plugins = handle.getPOMModel().getBuild().getPlugins();
+        for (Plugin plugin : plugins) {
+            if ("org.codehaus.mojo:jaxws-maven-plugin".equalsIgnoreCase(plugin.getKey())) { //NOI18N
+                Xpp3Dom conf = (Xpp3Dom) plugin.getConfiguration();
+                if (conf != null) {
+                    Xpp3Dom wsdlFilesNode = conf.getChild("wsdlFiles"); //NOI18N
+                    if (wsdlFilesNode != null) {
+                        for (Xpp3Dom wsdlFile:wsdlFilesNode.getChildren()) {
+                            if (oldWsdlPath.equals(wsdlFile.getValue())) {
+                                wsdlFile.setValue(newWsdlPath);
+                                handle.markAsModified(handle.getPOMModel());
+                                break;
+                            }
                         }
                     }
                     

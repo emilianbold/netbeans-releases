@@ -98,7 +98,7 @@ public class MakeConfiguration extends Configuration {
     private LinkerConfiguration linkerConfiguration;
     private ArchiverConfiguration archiverConfiguration;
     private PackagingConfiguration packagingConfiguration;
-    private RequiredProjectsConfiguration requiredProjectsConfiguration;
+    private RequiredProjectsConfiguration<LibraryItem> requiredProjectsConfiguration;
     private boolean languagesDirty = true;
 
     // Constructors
@@ -127,7 +127,7 @@ public class MakeConfiguration extends Configuration {
         linkerConfiguration = new LinkerConfiguration(this);
         archiverConfiguration = new ArchiverConfiguration(this);
         packagingConfiguration = new PackagingConfiguration(this);
-        requiredProjectsConfiguration = new RequiredProjectsConfiguration();
+        requiredProjectsConfiguration = new RequiredProjectsConfiguration<LibraryItem>();
 
         developmentHost.addPropertyChangeListener(compilerSet);
         developmentHost.addPropertyChangeListener(platform);
@@ -292,11 +292,11 @@ public class MakeConfiguration extends Configuration {
     }
 
     // LibrariesConfiguration
-    public RequiredProjectsConfiguration getRequiredProjectsConfiguration() {
+    public RequiredProjectsConfiguration<LibraryItem> getRequiredProjectsConfiguration() {
         return requiredProjectsConfiguration;
     }
 
-    public void setRequiredProjectsConfiguration(RequiredProjectsConfiguration requiredProjectsConfiguration) {
+    public void setRequiredProjectsConfiguration(RequiredProjectsConfiguration<LibraryItem> requiredProjectsConfiguration) {
         this.requiredProjectsConfiguration = requiredProjectsConfiguration;
     }
 
@@ -391,7 +391,7 @@ public class MakeConfiguration extends Configuration {
         clone.setLinkerConfiguration((LinkerConfiguration) getLinkerConfiguration().clone());
         clone.setArchiverConfiguration((ArchiverConfiguration) getArchiverConfiguration().clone());
         clone.setPackagingConfiguration((PackagingConfiguration) getPackagingConfiguration().clone());
-        clone.setRequiredProjectsConfiguration((RequiredProjectsConfiguration) getRequiredProjectsConfiguration().clone());
+        clone.setRequiredProjectsConfiguration(getRequiredProjectsConfiguration().cloneConf());
 
         dhconf.addPropertyChangeListener(csconf);
         dhconf.addPropertyChangeListener(pconf);
@@ -451,7 +451,7 @@ public class MakeConfiguration extends Configuration {
         set2.setName("Projects"); // NOI18N
         set2.setDisplayName(getString("ProjectsTxt1"));
         set2.setShortDescription(getString("ProjectsHint"));
-        set2.put(new RequiredProjectsNodeProp(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
+        set2.put(new RequiredProjectsNodeProp<LibraryItem>(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
         sheet.put(set2);
 
         return sheet;

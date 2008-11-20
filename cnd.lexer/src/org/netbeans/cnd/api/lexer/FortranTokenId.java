@@ -139,7 +139,7 @@ public enum FortranTokenId implements TokenId {
 //    KW_EXIST("exist", "keyword"), // NOI18N
     KW_EXIT("exit", "keyword"), // NOI18N
     KW_EXTERNAL("external", "keyword"), // NOI18N
-    KW_FILE("file", "keyword"), // NOI18N
+//    KW_FILE("file", "keyword"), // NOI18N
     KW_FLUSH("flush", "keyword"), // NOI18N
 //    KW_FMT("fmt", "keyword"), // NOI18N
     KW_FORALL("forall", "keyword"), // NOI18N
@@ -270,6 +270,7 @@ public enum FortranTokenId implements TokenId {
     OP_LT_EQ("<=", "operator"), // NOI18N
     OP_GT(">", "operator"), // NOI18N
     OP_GT_EQ(">=", "operator"), // NOI18N
+    OP_LT_GT("<>", "operator"), // NOI18N
 
     // Special Characters
     EQ("=", "special"), // NOI18N

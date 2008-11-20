@@ -1046,6 +1046,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                     return scriptLocation = new File(file);
                 }
             }
+            // #57153 suggests using SubBuildListener, but is it really necessary?
             return null;
         }
         

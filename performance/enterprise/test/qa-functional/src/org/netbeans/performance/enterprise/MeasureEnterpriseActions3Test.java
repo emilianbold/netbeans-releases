@@ -59,15 +59,14 @@ public class MeasureEnterpriseActions3Test {
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Enterprise Actions suite. Part 3");
         System.setProperty("suitename", MeasureEnterpriseActions3Test.class.getCanonicalName());
-
+        System.setProperty("suite", "UI Responsiveness Enterprise Actions suite. Part 3");
         
         // EPMeasureActions3
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(SchemaNavigatorSchemaView.class)
-                .addTest(SchemaNavigatorSchemaView.class, "measureTime")
-                .addTest(NavigatorSchemaViewMode.class, "measureTime")
-//TODO there is an password dialog solve before enable to run again                .addTest(DeployProject.class, "measureTime")
-                .addTest(OpenComplexDiagram.class, "measureTime")
-                .addTest(OpenBPELproject.class, "measureTime")
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(SchemaNavigatorSchemaViewTest.class)
+                .addTest(NavigatorSchemaViewModeTest.class)
+                // needs to be fixed .addTest(DeployProjectTest.class)
+                .addTest(OpenComplexDiagramTest.class)
+                // needs to be fixed .addTest(OpenBPELprojectTest.class)
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));    
         
         return suite;
