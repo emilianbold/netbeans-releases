@@ -39,46 +39,53 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.languages.windows;
+package org.netbeans.performance.languages.dialogs;
 
 
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.performance.languages.Projects;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class RailsGeneratorDialog extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class RubyPropertiesDialogTest  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
     public static final String suiteName="Scripting UI Responsiveness Dialogs suite";
     private Node testNode;
-    private String CMD, TITLE, projectName;
+    private String TITLE, projectName;
     
-    public RailsGeneratorDialog(String testName) {
+    public RubyPropertiesDialogTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;          
     }
-    public RailsGeneratorDialog(String testName, String performanceDataName)
-    {
+    
+    public RubyPropertiesDialogTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;          
+        expectedTime = WINDOW_OPEN;      
     }
-    
-    public void testRailsGneratorDialog() {
-        doMeasurement();
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(RubyPropertiesDialogTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
-    
+
     @Override
     public void initialize() {
-        log("::initialize");
-        CMD = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.railsprojects.Bundle", "rails-generator");
-        TITLE = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.railsprojects.Bundle", "GeneratorTitle");
-        projectName = Projects.RAILS_PROJECT;
-        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);            
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.ui.customizer.Bundle", "LBL_Customizer_Title", new String[]{projectName});
+        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);        
     }
+    
     @Override
     public void prepare() {
         log("::prepare");
@@ -86,8 +93,26 @@ public class RailsGeneratorDialog extends org.netbeans.modules.performance.utili
 
     @Override
     public ComponentOperator open() {
-        testNode.performPopupActionNoBlock(CMD);
-        return new NbDialogOperator(TITLE);        
+        // invoke Window / Properties from the main menu
+        new PropertiesAction().performPopup(testNode);
+        return new NbDialogOperator(TITLE);
     }
+    
+    public void testRubyProjectProperties() {
+        projectName = Projects.RUBY_PROJECT;
+        doMeasurement();
+    }
+    public void testRailsProjectProperties() {
+        projectName = Projects.RAILS_PROJECT;
+        doMeasurement();                
+    }
+
+
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }    
 
 }

@@ -39,76 +39,76 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.languages.windows ;
+package org.netbeans.performance.languages.dialogs;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+import org.netbeans.performance.languages.Projects;
 
-import javax.swing.JComponent;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.PropertiesAction;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.modules.performance.guitracker.LoggingRepaintManager.RegionFilter;
-
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class RubyGemsDialog extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Dialogs suite";
-    protected String MENU, TITLE;
+public class PhpPropertiesDialogTest extends PerformanceTestCase {
+
+    private Node testNode;
+    private String TITLE, projectName;
     
-    public RubyGemsDialog(String testName) {
+    public PhpPropertiesDialogTest(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;
-       
+        expectedTime = WINDOW_OPEN;          
     }
     
-    public RubyGemsDialog(String testName, String performanceDataName) {
+    public PhpPropertiesDialogTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;
-       
+        expectedTime = WINDOW_OPEN;      
     }
-    
-    public void testRubyGemsDialog() {
-        doMeasurement();
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(PhpPropertiesDialogTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
-    
+
     @Override
     public void initialize() {
-        log("::initialize");
-        MENU = "Tools"+"|"+"Ruby Gems"; //Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.rubyproject.gems.Bundle", "CTL_RubyGems");
-        TITLE = "Ruby Gems"; //org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.rubyproject.gems.Bundle", "CTL_RubyGems");
-        
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.php.project.ui.customizer.Bundle", "LBL_Customizer_Title", new String[]{projectName});       
+        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);        
     }
+    
     @Override
     public void prepare() {
-        log("prepare");
-        repaintManager().addRegionFilter(GemsProgress);
     }
-    private static final RegionFilter GemsProgress = new RegionFilter() {
-        public boolean accept(JComponent c) {
-           return  !(c instanceof javax.swing.JProgressBar);
-        }
-        public String getFilterName() {
-            return "Gems Dialog progressbar filter";
-        }
-    };
+
     @Override
     public ComponentOperator open() {
-        log("::open");
-        log("MENU:= "+MENU);
-        log("TITLE:= "+TITLE);
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU);
-        return new WizardOperator(TITLE);
+        new PropertiesAction().performPopup(testNode);
+        return new NbDialogOperator(TITLE);
     }
-    @Override
-    public void close() {
-        super.close();
-        repaintManager().resetRegionFilters();        
-        
-    }    
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(new RubyGemsDialog("testRubyGemsDialog"));        
+    
+    public void testPhpProjectProperties() {
+        projectName = Projects.PHP_PROJECT;
+        doMeasurement();
     }
+
+    public void testRubyProjectProperties() {
+        projectName = Projects.RUBY_PROJECT;
+        doMeasurement();
+    }
+
+    public void testRailsProjectProperties() {
+        projectName = Projects.RAILS_PROJECT;
+        doMeasurement();
+    }
+
 }

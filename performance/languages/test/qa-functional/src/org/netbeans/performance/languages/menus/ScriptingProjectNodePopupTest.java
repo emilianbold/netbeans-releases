@@ -41,30 +41,32 @@
 
 package org.netbeans.performance.languages.menus;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.languages.Projects;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.languages.Projects;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class ScriptingProjectNodePopup extends  PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Menus suite";
+public class ScriptingProjectNodePopupTest extends  PerformanceTestCase {
+
     protected static Node dataObjectNode;
     protected static ProjectsTabOperator projectsTab = null;
     
-    public ScriptingProjectNodePopup(String testName)
+    public ScriptingProjectNodePopupTest(String testName)
     {
         super(testName);
         expectedTime = 100;
     }
-    public ScriptingProjectNodePopup(String testName, String performanceDataName)
+    public ScriptingProjectNodePopupTest(String testName, String performanceDataName)
     {
         super(testName,performanceDataName);     
         expectedTime = 100;
@@ -72,12 +74,12 @@ public class ScriptingProjectNodePopup extends  PerformanceTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ScriptingProjectNodePopup("testRubyProjectNodePopupMenu","Ruby Project node popup in Projects View"));
-        suite.addTest(new ScriptingProjectNodePopup("testRailsProjectNodePopupMenu","Rails Project node popup in Projects View"));
-        suite.addTest(new ScriptingProjectNodePopup("testPHPProjectNodePopupMenu","PHP Project node popup in Projects View"));
-         
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(ScriptingProjectNodePopupTest.class)
+             .enableModules(".*").clusters(".*")));
         return suite;
     }
+
     /**
      * Selects node whose popup menu will be tested.
      */
@@ -124,7 +126,7 @@ public class ScriptingProjectNodePopup extends  PerformanceTestCase {
     public void testPHPProjectNodePopupMenu() {
         testNode(getProjectNode(Projects.PHP_PROJECT));
     }
-    
+
     public void testNode(Node node){
         dataObjectNode = node;
         doMeasurement();

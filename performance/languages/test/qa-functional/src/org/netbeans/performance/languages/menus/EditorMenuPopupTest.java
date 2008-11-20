@@ -41,26 +41,28 @@
 
 package org.netbeans.performance.languages.menus;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.languages.Projects;
+import org.netbeans.performance.languages.ScriptingUtilities;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.languages.Projects;
-import org.netbeans.performance.languages.ScriptingUtilities;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
 
-public class EditorMenuPopup extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Actions suite";
+public class EditorMenuPopupTest extends PerformanceTestCase {
+
     protected Node fileToBeOpened;
     protected String testProject;
     protected String docName; 
@@ -68,145 +70,133 @@ public class EditorMenuPopup extends org.netbeans.modules.performance.utilities.
     protected static ProjectsTabOperator projectsTab = null;    
     private EditorOperator editorOperator;
     
-    private JPopupMenuOperator pom;
-    
-    private int XPopup;
-    private int YPopup;
-    
-    public EditorMenuPopup(String testName) {
+    public EditorMenuPopupTest(String testName) {
         super(testName);
-        
         expectedTime = UI_RESPONSE;           
-        WAIT_AFTER_PREPARE = 1000;
-        
+        WAIT_AFTER_PREPARE = 200;
     }
-    public EditorMenuPopup(String testName, String performanceDataName) {
+
+    public EditorMenuPopupTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;           
-        WAIT_AFTER_PREPARE = 1000;        
+        WAIT_AFTER_PREPARE = 200;
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(EditorMenuPopupTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
             projectsTab = ScriptingUtilities.invokePTO();
-        
         return projectsTab.getProjectRootNode(projectName);
     }
     
     @Override
     public void initialize() {
-        super.initialize();
-        log("::initialize");
         String path = pathName+docName;
-        fileToBeOpened = new Node(getProjectNode(testProject),path);        
+        fileToBeOpened = new Node(getProjectNode(testProject),path);
+
+        new OpenAction().performAPI(fileToBeOpened);
+        editorOperator = EditorWindowOperator.getEditor(docName);
+
     }
     
     @Override
     public void prepare() {
-        log("::prepare"); 
-        new OpenAction().performAPI(fileToBeOpened);
-        editorOperator = EditorWindowOperator.getEditor(docName);  
     }
 
     @Override
     public ComponentOperator open() {
-        log("::open");
         editorOperator.clickForPopup();
-        pom = new JPopupMenuOperator();
-        
-        return null;
+        JPopupMenuOperator jpmo=new JPopupMenuOperator();
+        return jpmo;
     }
     
     @Override
-    public void close()
-    {
-        log("::close");
+    public void close() {
         editorOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
     }    
         
-    @Override
-    public void shutdown(){
-        log("::shutdown");
-    }    
-    
     public void test_RB_EditorPopup() {
         testProject = Projects.RUBY_PROJECT;
         pathName = "Source Files"+"|";
         docName = "ruby20kb.rb"; 
         doMeasurement();
-    } 
+    }
+
     public void test_RHTML_EditorPopup() {
         testProject = Projects.RAILS_PROJECT;
-        pathName = "Views"+"|";
+        pathName = "Unit Tests"+"|";
         docName = "rhtml20kb.rhtml"; 
         doMeasurement();        
     }
+
     public void test_PHP_EditorPopup() {
         testProject = Projects.PHP_PROJECT;
         pathName = "Source Files"+"|";
         docName = "php20kb.php";
         doMeasurement();
     }
+
     public void test_JS_EditorPopup() {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages"+"|";
         docName = "javascript20kb.js"; 
         doMeasurement();        
     }
+
     public void test_JSON_EditorPopup() {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages"+"|";
         docName = "json20kb.json"; 
         doMeasurement();        
     }
+
     public void test_CSS_EditorPopup() {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages"+"|";
         docName = "css20kb.css";
         doMeasurement();        
     }
+
     public void test_YML_EditorPopup() {
         testProject = Projects.RAILS_PROJECT;
-        pathName = "Configuration"+"|";
+        pathName = "Unit Tests"+"|";
         docName = "yaml20kb.yml"; 
         doMeasurement();        
     }
+
     public void test_BAT_EditorPopup() {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages"+"|";
         docName = "bat20kb.bat"; 
         doMeasurement();        
     }
+
     public void test_DIFF_EditorPopup() {   
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages"+"|";
         docName = "diff20kb.diff"; 
         doMeasurement();        
     }
+
     public void test_MANIFEST_EditorPopup() {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages"+"|";
         docName = "manifest20kb.mf";  
         doMeasurement();        
     }
+
     public void test_SH_EditorPopup() {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages"+"|";
         docName = "sh20kb.sh";            
         doMeasurement();        
     }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-
-        return suite;
-    }
-
-    /** Test could be executed internaly in IDE without XTest
-     * @param args arguments from command line
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }     
 
 }

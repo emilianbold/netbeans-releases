@@ -39,9 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.performance.languages.menus;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.languages.Projects;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -49,46 +51,37 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.languages.Projects;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
 
-public class ScriptingNodePopup extends PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Menus suite";
+public class ScriptingNodePopupTest extends PerformanceTestCase {
+
     private String testProject;
     private String docName;
-    private String pathName;
-    
     protected static Node dataObjectNode;
     protected static ProjectsTabOperator projectsTab = null;
     
-    public ScriptingNodePopup(String testName) {
+    public ScriptingNodePopupTest(String testName) {
         super(testName);
         expectedTime = 100;
     }
-    public ScriptingNodePopup(String testName, String performanceDataName) {
+
+    public ScriptingNodePopupTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = 100;        
     }
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ScriptingNodePopup("test_RB_NodePopup"," Ruby file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_RHTML_NodePopup","RHTML file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_YML_NodePopup","YML file node popup test"));        
-        suite.addTest(new ScriptingNodePopup("test_JS_NodePopup","Java Script file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_JSON_NodePopup","JSON file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_CSS_NodePopup","CSS file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_BAT_NodePopup","Batch script file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_DIFF_NodePopup","Diff file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_MANIFEST_NodePopup","Manifest file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_SH_NodePopup","Shell Script file node popup test"));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(ScriptingNodePopupTest.class)
+             .enableModules(".*").clusters(".*")));
         return suite;
     }
-    
 
     /**
      * Selects node whose popup menu will be tested.
@@ -128,68 +121,66 @@ public class ScriptingNodePopup extends PerformanceTestCase {
     
     public void test_RB_NodePopup() {
         testProject = Projects.RUBY_PROJECT;
-        pathName = "";
         docName = "ruby20kb.rb";
         testNode(new Node(getProjectNode(testProject),"Source Files"+"|"+docName));
     }
+
     public void test_PHP_NodePopup() {
         testProject = Projects.PHP_PROJECT;
-        pathName = "";
         docName = "php20kb.php";
         testNode(new Node(getProjectNode(testProject),"Source Files"+"|"+docName));        
     }
-    
+   
     public void test_RHTML_NodePopup() {
         testProject = Projects.RAILS_PROJECT;
-        pathName = "";
         docName = "rhtml20kb.rhtml";
-        testNode(new Node(getProjectNode(testProject),"Views"+"|"+docName));
+        testNode(new Node(getProjectNode(testProject),"Unit Tests"+"|"+docName));
     }
+
     public void test_YML_NodePopup() {
         testProject = Projects.RAILS_PROJECT;
-        pathName = "";
         docName = "yaml20kb.yml";        
-        testNode(new Node(getProjectNode(testProject),"Configuration"+"|"+docName));
-    }    
+        testNode(new Node(getProjectNode(testProject),"Unit Tests"+"|"+docName));
+    }
+
     public void test_JS_NodePopup() {
         testProject = Projects.SCRIPTING_PROJECT;
-        pathName = "";
         docName = "javascript20kb.js";        
         testNode(new Node(getProjectNode(testProject),"Web Pages"+"|"+docName));
     }
+
     public void test_JSON_NodePopup() {
         testProject = Projects.SCRIPTING_PROJECT;
-        pathName = "";
         docName = "json20kb.json";        
         testNode(new Node(getProjectNode(testProject),"Web Pages"+"|"+docName));
     }
+
     public void test_CSS_NodePopup() {
         testProject = Projects.SCRIPTING_PROJECT;
-        pathName = "";
         docName = "css20kb.css";        
         testNode(new Node(getProjectNode(testProject),"Web Pages"+"|"+docName));
     }
+
     public void test_BAT_NodePopup() {
         testProject = Projects.SCRIPTING_PROJECT;
-        pathName = "";
         docName = "bat20kb.bat";        
         testNode(new Node(getProjectNode(testProject),"Web Pages"+"|"+docName));
     }
+
     public void test_DIFF_NodePopup() {
         testProject = Projects.SCRIPTING_PROJECT;
-        pathName = "";
         docName = "diff20kb.diff";        
         testNode(new Node(getProjectNode(testProject),"Web Pages"+"|"+docName));
     }
+
     public void test_MANIFEST_NodePopup() {
         testProject = Projects.SCRIPTING_PROJECT;
-        pathName = "";
         docName = "manifest20kb.mf";        
         testNode(new Node(getProjectNode(testProject),"Web Pages"+"|"+docName));
     }
+
     public void test_SH_NodePopup() {
         testProject = Projects.SCRIPTING_PROJECT;
-        pathName = "";
         docName = "sh20kb.sh";        
         testNode(new Node(getProjectNode(testProject),"Web Pages"+"|"+docName));
     }

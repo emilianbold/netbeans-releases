@@ -39,74 +39,67 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.languages.windows;
+package org.netbeans.performance.languages.dialogs;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+import org.netbeans.performance.languages.Projects;
 
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.languages.Projects;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class RubyPropertiesDialog  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Dialogs suite";
+public class RailsGeneratorDialogTest extends PerformanceTestCase {
+
     private Node testNode;
-    private String TITLE, projectName;
+    private String CMD, TITLE, projectName;
     
-    public RubyPropertiesDialog(String testName) {
+    public RailsGeneratorDialogTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;          
     }
     
-    public RubyPropertiesDialog(String testName, String performanceDataName) {
+    public RailsGeneratorDialogTest(String testName, String performanceDataName)
+    {
         super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;      
+        expectedTime = WINDOW_OPEN;          
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(RailsGeneratorDialogTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    public void testRailsGeneratorDialog() {
+        doMeasurement();
     }
     
     @Override
     public void initialize() {
-        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.ui.customizer.Bundle", "LBL_Customizer_Title", new String[]{projectName});
-        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);        
+        CMD = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.railsprojects.Bundle", "rails-generator");
+        TITLE = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.railsprojects.Bundle", "RailsGenerator");
+        projectName = Projects.RAILS_PROJECT;
+        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);            
     }
-    
+
     @Override
     public void prepare() {
-        log("::prepare");
     }
 
     @Override
     public ComponentOperator open() {
-        // invoke Window / Properties from the main menu
-        new PropertiesAction().performPopup(testNode);
-        return new NbDialogOperator(TITLE);
+        testNode.performPopupActionNoBlock(CMD);
+        return new NbDialogOperator(TITLE);        
     }
-    
-    public void testRubyProjectProperties() {
-        projectName = Projects.RUBY_PROJECT;
-        doMeasurement();
-    }
-    public void testRailsProjectProperties() {
-        projectName = Projects.RAILS_PROJECT;
-        doMeasurement();                
-    }
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new RubyPropertiesDialog("testRubyProjectProperties","Ruby Project Properties dialog open time"));
-        suite.addTest(new RubyPropertiesDialog("testRailsProjectProperties","Ruby Project Properties dialog open time"));
-        return suite;
-    }
-
-    /** Test could be executed internaly in IDE without XTest
-     * @param args arguments from command line
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }    
 
 }

@@ -39,35 +39,46 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.languages.windows;
+package org.netbeans.performance.languages.dialogs;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class AddJavaScriptLibraryDialog  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class AddJavaScriptLibraryDialogTest  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
     
     public static final String suiteName="Scripting UI Responsiveness Actions suite";
     protected String MENU, TITLE;
     
-    public AddJavaScriptLibraryDialog(String testName) {
+    public AddJavaScriptLibraryDialogTest(String testName) {
         super(testName);
-        expectedTime = 18000;
+        expectedTime = 10000;
         WAIT_AFTER_OPEN=20000;         
     }
     
-    public AddJavaScriptLibraryDialog(String testName, String performanceDataName) {
+    public AddJavaScriptLibraryDialogTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);        
-        expectedTime = 18000;
+        expectedTime = 10000;
         WAIT_AFTER_OPEN=20000;         
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(AddJavaScriptLibraryDialogTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
     public void testAddJavaScriptLibraryDialog() {
         doMeasurement();
     }
@@ -94,6 +105,6 @@ public class AddJavaScriptLibraryDialog  extends org.netbeans.modules.performanc
         super.close();                
     }    
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(new AddJavaScriptLibraryDialog("testAddJavaScriptLibraryDialog"));        
+        junit.textui.TestRunner.run(new AddJavaScriptLibraryDialogTest("testAddJavaScriptLibraryDialog"));
     }
 }
