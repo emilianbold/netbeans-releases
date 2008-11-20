@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.util.ArrayList;
@@ -51,10 +50,10 @@ import java.util.Map;
  *
  * @author Vladimir Voskresenky
  */
-public final class XRefResultSet {
+public final class XRefResultSet<T> {
 
     public static Collection<ContextScope> sortedContextScopes(XRefResultSet bag, boolean byEntries) {
-        List<ContextScope> out = new ArrayList(ContextScope.values().length);
+        List<ContextScope> out = new ArrayList<ContextScope>(ContextScope.values().length);
         for (ContextScope scope : ContextScope.values()) {
             boolean added = false;
             int scopeNum;
@@ -70,7 +69,7 @@ public final class XRefResultSet {
                     curScopeNum = bag.getEntries(curScope).size();
                 } else {
                     curScopeNum = bag.getNumberOfContexts(curScope, false);
-                }                
+                }
                 if (curScopeNum <= scopeNum) {
                     out.add(i, scope);
                     added = true;
@@ -84,34 +83,33 @@ public final class XRefResultSet {
 
         return out;
     }
-
     private final Map<ContextScope, Collection<ContextEntry>> scopeEntries;
     private final Map<ContextScope, Integer> scopes;
-    private final Map<CharSequence, Object> unresolved;
+    private final Map<CharSequence, T> unresolved;
 
     public XRefResultSet() {
         scopeEntries = new HashMap<ContextScope, Collection<ContextEntry>>(ContextScope.values().length);
         scopes = new HashMap<ContextScope, Integer>(ContextScope.values().length);
-        unresolved = new HashMap<CharSequence, Object>(100);
+        unresolved = new HashMap<CharSequence, T>(100);
         for (ContextScope scopeContext : ContextScope.values()) {
             scopeEntries.put(scopeContext, new ArrayList<ContextEntry>(1024));
             scopes.put(scopeContext, new Integer(0));
         }
     }
-    
+
     public final void addEntry(ContextScope contextScope, ContextEntry entry) {
         scopeEntries.get(contextScope).add(entry);
     }
-    
+
     public final Collection<ContextEntry> getEntries(ContextScope contextScope) {
         return scopeEntries.get(contextScope);
     }
-    
+
     public final void incrementScopeCounter(ContextScope contextScope) {
         int val = scopes.get(contextScope);
         scopes.put(contextScope, ++val);
     }
-    
+
     public final int getNumberOfAllContexts() {
         int out = 0;
         for (int val : scopes.values()) {
@@ -129,21 +127,22 @@ public final class XRefResultSet {
         return num;
     }
 
-    public <T>T getUnresolvedEntry(CharSequence name) {
-        return (T)unresolved.get(name);
+    public T getUnresolvedEntry(CharSequence name) {
+        return unresolved.get(name);
     }
-    
-    public <T> void addUnresolvedEntry(CharSequence name, T value) {
+
+    public void addUnresolvedEntry(CharSequence name, T value) {
         unresolved.put(name, value);
     }
-    
-    public <T> Collection<T> getUnresolvedEntries(Comparator<? super T> comparator) {
-        List out = new ArrayList(unresolved.values());
+
+    public Collection<T> getUnresolvedEntries(Comparator<? super T> comparator) {
+        List<T> out = new ArrayList<T>(unresolved.values());
         Collections.sort(out, comparator);
         return out;
     }
-            
+
     public enum ContextScope {
+
         GLOBAL_FUNCTION,
         NAMESPACE_FUNCTION,
         FILE_LOCAL_FUNCTION,
@@ -153,8 +152,9 @@ public final class XRefResultSet {
         INLINED_CONSTRUCTOR,
         UNRESOLVED,
     };
-    
+
     public enum DeclarationKind {
+
         CLASSIFIER,
         ENUMERATOR,
         VARIABLE,
@@ -165,8 +165,9 @@ public final class XRefResultSet {
         MACRO,
         UNRESOLVED,
     }
-    
+
     public enum DeclarationScope {
+
         FUNCTION_THIS,
         CLASSIFIER_THIS,
         CLASSIFIER_PARENT,
@@ -183,8 +184,9 @@ public final class XRefResultSet {
         LIBRARY_GLOBAL,
         UNRESOLVED,
     }
-    
+
     public enum IncludeLevel {
+
         THIS_FILE,
         PROJECT_DIRECT,
         LIBRARY_DIRECT,
@@ -192,32 +194,33 @@ public final class XRefResultSet {
         LIBRARY_DEEP,
         UNRESOLVED,
     }
-    
+
     public enum UsageStatistics {
+
         FIRST_USAGE,
         SECOND_USAGE,
         NEXT_USAGE,
         UNKNOWN,
     }
-    
+
     public static final class ContextEntry {
+
         public final DeclarationKind declaration;
         public final DeclarationScope declarationScope;
         public final IncludeLevel declarationIncludeLevel;
         public final UsageStatistics usageStatistics;
-        
-        public final static ContextEntry UNRESOLVED = new ContextEntry(DeclarationKind.UNRESOLVED, DeclarationScope.UNRESOLVED, 
+        public final static ContextEntry UNRESOLVED = new ContextEntry(DeclarationKind.UNRESOLVED, DeclarationScope.UNRESOLVED,
                 IncludeLevel.UNRESOLVED, UsageStatistics.UNKNOWN);
         public final static ContextEntry UNRESOLVED_AFTER_UNRESOLVED = new ContextEntry(DeclarationKind.UNRESOLVED, DeclarationScope.UNRESOLVED,
                 IncludeLevel.UNRESOLVED, UsageStatistics.UNKNOWN);
-        public final static ContextEntry UNRESOLVED_TEMPLATE_BASED = new ContextEntry(DeclarationKind.UNRESOLVED, DeclarationScope.UNRESOLVED, 
-                IncludeLevel.UNRESOLVED, UsageStatistics.UNKNOWN);    
-        public final static ContextEntry UNRESOLVED_MACRO_BASED = new ContextEntry(DeclarationKind.UNRESOLVED, DeclarationScope.UNRESOLVED, 
-                IncludeLevel.UNRESOLVED, UsageStatistics.UNKNOWN);         
+        public final static ContextEntry UNRESOLVED_TEMPLATE_BASED = new ContextEntry(DeclarationKind.UNRESOLVED, DeclarationScope.UNRESOLVED,
+                IncludeLevel.UNRESOLVED, UsageStatistics.UNKNOWN);
+        public final static ContextEntry UNRESOLVED_MACRO_BASED = new ContextEntry(DeclarationKind.UNRESOLVED, DeclarationScope.UNRESOLVED,
+                IncludeLevel.UNRESOLVED, UsageStatistics.UNKNOWN);
         public final static ContextEntry RESOLVED = new ContextEntry(DeclarationKind.UNRESOLVED, DeclarationScope.UNRESOLVED,
                 IncludeLevel.UNRESOLVED, UsageStatistics.UNKNOWN);
-        
-        public ContextEntry(DeclarationKind declaration, DeclarationScope declarationScope, 
+
+        public ContextEntry(DeclarationKind declaration, DeclarationScope declarationScope,
                 IncludeLevel declarationIncludeLevel, UsageStatistics usageStatistics) {
             this.declaration = declaration;
             this.declarationScope = declarationScope;
@@ -225,5 +228,4 @@ public final class XRefResultSet {
             this.usageStatistics = usageStatistics;
         }
     }
-    
 }
