@@ -57,6 +57,7 @@ import org.openide.util.NbBundle;
 public class RubyLoggingOption extends AdvancedOption {
 
     private static final Logger RUBY_LOGGER = Logger.getLogger("org.netbeans.modules.ruby"); //NOI18N
+    private static final Logger EXECUTION_LOGGER = Logger.getLogger("org.netbeans.modules.extexecution"); //NOI18N
     private static final Logger DEBUGGER_LOGGER = Logger.getLogger("org.rubyforge.debugcommons"); //NOI18N
     
     @Override
@@ -76,6 +77,7 @@ public class RubyLoggingOption extends AdvancedOption {
 
     static void initLoggers () {
         setIfHigher(RUBY_LOGGER, RubyLoggingSettings.getDefault().getLoggingLevel(RUBY_LOGGER));
+        setIfHigher(EXECUTION_LOGGER, RubyLoggingSettings.getDefault().getLoggingLevel(EXECUTION_LOGGER));
         setIfHigher(DEBUGGER_LOGGER, RubyLoggingSettings.getDefault().getLoggingLevel(DEBUGGER_LOGGER));
     }
 
@@ -105,6 +107,7 @@ public class RubyLoggingOption extends AdvancedOption {
         @Override
         public void applyChanges() {
             setLevel(RUBY_LOGGER, Level.FINE, component.isStandardLoggingEnabled());
+            setLevel(EXECUTION_LOGGER, Level.FINE, component.isStandardLoggingEnabled());
             setLevel(DEBUGGER_LOGGER, Level.FINEST, component.isDebuggerLoggingEnabled());
         }
 
