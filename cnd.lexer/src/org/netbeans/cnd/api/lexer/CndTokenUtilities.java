@@ -156,6 +156,10 @@ public class CndTokenUtilities {
                     return ts.offset();
             }
         } while (ts.movePrevious());
+        ts.moveStart();
+        if (ts.moveNext()) {
+            return ts.offset();
+        }
         return 0;
     }
 
