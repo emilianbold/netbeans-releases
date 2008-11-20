@@ -142,7 +142,7 @@ public class DesignMultiViewElement extends TopComponent
     @Override
     public void componentShowing() {
         super.componentShowing();
-        setActivatedNodes(new Node[] {dataObject.getNodeDelegate()});
+        setActivatedNodes(dataObject.isValid() ? new Node[]{dataObject.getNodeDelegate()} : new Node[]{});
     }
     
     @Override
