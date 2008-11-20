@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.openide.util.Lookup;
@@ -56,6 +58,7 @@ public class PathRecognizerRegistry implements LookupListener {
 
     private final Lookup.Result<? extends PathRecognizer> pathRecognizers;
     private String[] mimeTypes;
+    private Map<String,Set<String>> idMap;
 
     private PathRecognizerRegistry() {
         pathRecognizers = Lookup.getDefault().lookupResult(PathRecognizer.class);
@@ -65,14 +68,26 @@ public class PathRecognizerRegistry implements LookupListener {
 
 
     public void collectIds (final Set<String> sourceIds, final Set<String> binaryIds) {
-        for (PathRecognizer f : pathRecognizers.allInstances()) {
-            Set<String> ids = f.getSourcePathIds();
-            assert ids != null;
-            sourceIds.addAll(ids);
-            ids = f.getBinaryPathIds();
-            assert ids != null;
-            binaryIds.addAll(ids);
+        Map<String,Set<String>> idMap = getIdMap();
+        for (Map.Entry<String,Set<String>> e : idMap.entrySet()) {
+            sourceIds.add(e.getKey());
+            binaryIds.addAll(e.getValue());
         }
+    }
+    //where
+    private synchronized Map<String,Set<String>> getIdMap () {
+        if (idMap == null) {
+            final Map<String,Set<String>> map = new HashMap<String, Set<String>>();
+            for (PathRecognizer f : pathRecognizers.allInstances()) {
+                Set<String> sids = f.getSourcePathIds();
+                Set<String> bids = f.getBinaryPathIds();
+                for (String sid : sids) {
+                    map.put(sid, new HashSet<String>(bids));    //Defensive copy
+                }
+            }
+            idMap = map;
+        }
+        return idMap;
     }
     
 
@@ -87,6 +102,12 @@ public class PathRecognizerRegistry implements LookupListener {
         return mimeTypes;
     }
 
+    public Set<String> getBinaryIdsForSourceId (final String sourceId) {
+        assert sourceId != null;
+        Map<String,Set<String>> idMap = getIdMap();
+        return idMap.get(sourceId);
+    }
+
     public static synchronized PathRecognizerRegistry getDefault () {
         if (instance == null) {
             instance = new PathRecognizerRegistry();
@@ -97,6 +118,7 @@ public class PathRecognizerRegistry implements LookupListener {
     public void resultChanged(LookupEvent ev) {
         synchronized (this) {
             mimeTypes = null;
+            idMap = null;
         }
     }
 

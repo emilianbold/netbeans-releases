@@ -46,10 +46,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -155,7 +158,8 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
     }
     
     private void handlePathsAdded (final Collection<? extends ClassPath> affected, final PathKind kind) {
-        
+        final Work w = new RootsWork(WorkType.COMPILE_BATCH, affected, kind);
+        submit(w);
     }
 
     private void handlePathsRemoved (final Collection<? extends ClassPath> affected, final PathKind kind) {
@@ -188,7 +192,8 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
     }
 
     private void handlePathsChanged (final Collection<? extends ClassPath> affected, final PathKind kind) {
-
+        final Work w = new RootsWork(WorkType.COMPILE_BATCH, affected, kind);
+        submit(w);
     }
 
     private void handleIncludesChanged (final Collection<? extends ClassPath> affected, final PathKind kind) {
@@ -216,7 +221,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                 LOGGER.fine("Folder created: "+FileUtil.getFileDisplayName(fo)+" Owner: " + root);
             }
             final Work w = new SingleFileWork(WorkType.COMPILE,root,fo);
-            getWorker().schedule(w);
+            submit(w);
         }
     }
     
@@ -225,7 +230,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
         final URL root = getOwningSourceRoot (fo);
         if (root != null &&  VisibilityQuery.getDefault().isVisible(fo) && FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null) {
             final Work w = new SingleFileWork(WorkType.COMPILE,root,fo);
-            getWorker().schedule(w);
+            submit(w);
         }
     }
 
@@ -234,7 +239,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
         final URL root = getOwningSourceRoot (fo);
         if (root != null &&  VisibilityQuery.getDefault().isVisible(fo) && FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null) {
             final Work w = new SingleFileWork(WorkType.COMPILE,root,fo);
-            getWorker().schedule(w);
+            submit(w);
         }
     }
 
@@ -303,7 +308,30 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
 
     }
 
-    private static class Task extends ParserResultTask {
+    private static class RootsWork extends Work {
+        private final Collection<? extends ClassPath> cps;
+        private final PathKind kind;
+
+        
+        public RootsWork (final WorkType type, final Collection<? extends ClassPath> cps, final PathKind kind) {
+            super (type);
+            assert cps != null;
+            this.cps = cps;
+            assert kind != null;
+            this.kind = kind;
+        }
+
+        public Collection<? extends ClassPath> getClassPaths() {
+            return this.cps;
+        }
+
+        public PathKind getPathKind () {
+            return this.kind;
+        }
+
+    }
+
+    private class Task extends ParserResultTask {
 
         private final List<Work> todo = new LinkedList<Work>();
         private boolean active;
@@ -366,6 +394,42 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             }
             return !empty;
         }
+
+        private void findDependencies(final URL rootURL, final Stack<URL> cycleDetector, final Map<URL, List<URL>> depGraph, String[] binaryClassPathIds) {
+            if (depGraph.containsKey(rootURL)) {
+                return;
+            }
+            final FileObject rootFo = URLMapper.findFileObject(rootURL);
+            if (rootFo == null) {
+                return;
+            }
+            cycleDetector.push(rootURL);
+            final List<ClassPath> pathToResolve = new ArrayList<ClassPath>(binaryClassPathIds.length);
+            for (String binaryClassPathId : binaryClassPathIds) {
+                ClassPath cp = ClassPath.getClassPath(rootFo, binaryClassPathId);
+                if (cp != null) {
+                    pathToResolve.add(cp);
+                }
+            }
+            final List<URL> deps = new LinkedList<URL>();
+            for (ClassPath cp : pathToResolve) {
+                for (ClassPath.Entry entry : cp.entries()) {
+                    final URL url = entry.getURL();
+                    final URL[] sourceRoots = regs.sourceForBinaryQuery(url, cp, false);
+                    if (sourceRoots != null) {
+                        for (URL sourceRoot : sourceRoots) {
+                            if (!sourceRoot.equals(rootURL) && !cycleDetector.contains(sourceRoot)) {
+                                deps.add(sourceRoot);
+                                findDependencies(sourceRoot, cycleDetector, depGraph, binaryClassPathIds);
+                            }
+                        }
+                    }
+                }
+            }
+            depGraph.put(rootURL, deps);
+            cycleDetector.pop();
+        }
+
     }
 
 }

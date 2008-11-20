@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,11 +60,9 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -126,6 +125,36 @@ public class PathRegistry {
     public void removePathRegistryListener (final PathRegistryListener listener) {
         assert listener != null;
         this.listeners.remove(listener);
+    }
+
+    public URL[] sourceForBinaryQuery (final URL binaryRoot, final ClassPath definingClassPath, final boolean fire) {
+        URL[] result = this.translatedRoots.get(binaryRoot);
+        if (result != null) {
+            if (result.length > 0) {
+                return result;
+            }
+            else {
+                return null;
+            }
+        }
+        else {
+            List<URL> cacheRoots = new ArrayList<URL> ();
+            Collection<? extends URL> unknownRes = getSources(SourceForBinaryQuery.findSourceRoots2(binaryRoot),cacheRoots,null);
+            if (unknownRes.isEmpty()) {
+                return null;
+            }
+            else {
+                synchronized (this) {
+                    for (URL u : unknownRes) {
+                        unknownRoots.put(u,new WeakValue(definingClassPath,u));
+                    }
+                }
+                if (fire) {
+                    this.resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.UNKNOWN_SOURCE, Collections.singleton(definingClassPath));
+                }
+                return result;
+            }
+        }
     }
 
     public Collection<? extends URL> getSources () {
