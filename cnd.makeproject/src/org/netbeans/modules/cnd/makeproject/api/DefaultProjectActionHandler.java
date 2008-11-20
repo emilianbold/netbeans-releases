@@ -47,8 +47,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -57,7 +55,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
@@ -114,15 +111,15 @@ public class DefaultProjectActionHandler implements ActionListener {
         // Then try services
         Lookup.Template<CustomProjectActionHandlerProvider> template = new Lookup.Template<CustomProjectActionHandlerProvider>(CustomProjectActionHandlerProvider.class);
         Lookup.Result<CustomProjectActionHandlerProvider> result = Lookup.getDefault().lookup(template);
-        Iterator iterator = result.allInstances().iterator();
-        while (iterator.hasNext()) {
-            Object caop = iterator.next();
-            if (caop instanceof CustomProjectActionHandlerProvider) {
-                customActionHandlerProvider = (CustomProjectActionHandlerProvider)caop;
-                if (customActionHandlerProvider.getClass().getName().contains("dbx")) { // NOI18N
-                    // prefer dbx over gdb ....
-                    break;
+        int priority = PrioritizedCustomProjectActionHandlerProvider.DEFAULT_PRIORITY;
+
+        for (CustomProjectActionHandlerProvider caop : result.allInstances()) {
+            if (caop instanceof PrioritizedCustomProjectActionHandlerProvider) {
+                if (((PrioritizedCustomProjectActionHandlerProvider) caop).getPriority() > priority) {
+                     customActionHandlerProvider = caop;
                 }
+            } else {
+                customActionHandlerProvider = caop;
             }
         }
         return customActionHandlerProvider;

@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.DebuggerChooserNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.netbeans.modules.cnd.settings.CppSettings;
@@ -408,7 +409,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             Children children = rootNode.getChildren();
             Node[] nodes1 = children.getNodes();
             for (int i = 0; i < nodes1.length; i++) {
-                if (nodes1[i].getName().equals("Build")) // NOI18N
+                if (nodes1[i].getName().equals("Build") || nodes1[i].getName().equals("Debuggers")) // NOI18N
                 {
                     btv.expandNode(nodes1[i]);
                 } else {
@@ -632,13 +633,24 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             if (!descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Run"))) { // NOI18N
                 descriptions.add(createNotFoundNode("Run")); // NOI18N
             }
-            if (!descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug"))) { // NOI18N
+            List<CustomizerNode> l = CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug"); // NOI18N
+            boolean debugNode = false;
+            if (l.size() > 1) {
+                CustomizerNode[] cn = { l.get(0) };
+                descriptions.add(new DebugCustomizerNode("Debuggers", getString("LBL_Config_Debugger"), l.toArray(cn))); // NOI18N
+                debugNode = true;
+            } else if (l.size() == 1) {
+                descriptions.addAll(l);
+                debugNode = true;
+            } else {
                 descriptions.add(createNotFoundNode("Debug")); // NOI18N
             }
-            //      descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes(false));
-            CustomizerNode advanced = getAdvancedCutomizerNode(descriptions);
-            if (advanced != null) {
-                descriptions.add(advanced);
+
+            if (!debugNode) {
+                CustomizerNode advanced = getAdvancedCutomizerNode(descriptions);
+                if (advanced != null) {
+                    descriptions.add(advanced);
+                }
             }
         }
         descriptions.add(createRequiredProjectsDescription(project));
@@ -961,6 +973,27 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
             ItemConfiguration itemConfiguration = item.getItemConfiguration(configuration); //ItemConfiguration)((MakeConfiguration)configuration).getAuxObject(ItemConfiguration.getId(item.getPath()));
             return itemConfiguration.getCustomToolConfiguration().getSheet();
+        }
+    }
+
+    class DebugCustomizerNode extends CustomizerNode {
+
+        public DebugCustomizerNode(String name, String displayName, CustomizerNode[] children) {
+            super(name, displayName, children);
+        }
+
+        @Override
+        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
+            Sheet sheet = new Sheet();
+
+            Sheet.Set set = new Sheet.Set();
+            set.setName("DebuggerChooser"); // NOI18N
+            set.setDisplayName(getString("LBL_DebuggerChooser")); // NOI18N
+            set.setShortDescription(getString("HINT_DebuggerChooser")); // NOI18N
+            set.put(new DebuggerChooserNodeProp(((MakeConfiguration) configuration).getDebuggerChooserConfiguration(),
+            getString("LBL_DebuggerChooser"), getString("HINT_DebuggerChooser"))); // NOI18N
+            sheet.put(set);
+            return sheet;
         }
     }
 

@@ -99,6 +99,7 @@ public class MakeConfiguration extends Configuration {
     private ArchiverConfiguration archiverConfiguration;
     private PackagingConfiguration packagingConfiguration;
     private RequiredProjectsConfiguration<LibraryItem> requiredProjectsConfiguration;
+    private DebuggerChooserConfiguration debuggerChooserConfiguration;
     private boolean languagesDirty = true;
 
     // Constructors
@@ -128,6 +129,7 @@ public class MakeConfiguration extends Configuration {
         archiverConfiguration = new ArchiverConfiguration(this);
         packagingConfiguration = new PackagingConfiguration(this);
         requiredProjectsConfiguration = new RequiredProjectsConfiguration<LibraryItem>();
+        debuggerChooserConfiguration = new DebuggerChooserConfiguration();
 
         developmentHost.addPropertyChangeListener(compilerSet);
         developmentHost.addPropertyChangeListener(platform);
@@ -300,6 +302,14 @@ public class MakeConfiguration extends Configuration {
         this.requiredProjectsConfiguration = requiredProjectsConfiguration;
     }
 
+    public DebuggerChooserConfiguration getDebuggerChooserConfiguration() {
+        return debuggerChooserConfiguration;
+    }
+
+    public void setDebuggerChooserConfiguration(DebuggerChooserConfiguration debuggerChooserConfiguration) {
+        this.debuggerChooserConfiguration = debuggerChooserConfiguration;
+    }
+
     public void assign(Configuration conf) {
         MakeConfiguration makeConf = (MakeConfiguration) conf;
         setName(makeConf.getName());
@@ -321,6 +331,7 @@ public class MakeConfiguration extends Configuration {
         getArchiverConfiguration().assign(makeConf.getArchiverConfiguration());
         getPackagingConfiguration().assign(makeConf.getPackagingConfiguration());
         getRequiredProjectsConfiguration().assign(makeConf.getRequiredProjectsConfiguration());
+        getDebuggerChooserConfiguration().assign(makeConf.getDebuggerChooserConfiguration());
 
         // do assign on all aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects(); // from this profile
@@ -392,6 +403,7 @@ public class MakeConfiguration extends Configuration {
         clone.setArchiverConfiguration((ArchiverConfiguration) getArchiverConfiguration().clone());
         clone.setPackagingConfiguration((PackagingConfiguration) getPackagingConfiguration().clone());
         clone.setRequiredProjectsConfiguration(getRequiredProjectsConfiguration().cloneConf());
+        clone.setDebuggerChooserConfiguration((DebuggerChooserConfiguration) getDebuggerChooserConfiguration().clone());
 
         dhconf.addPropertyChangeListener(csconf);
         dhconf.addPropertyChangeListener(pconf);
