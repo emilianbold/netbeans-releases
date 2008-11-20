@@ -590,6 +590,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         JPopupMenu menu = new JPopupMenu();
         menu.add(new SkipTestsAction(taProperties));
         menu.add(new DebugMavenAction(taProperties));
+        menu.add(new EnvVarAction(taProperties));
         menu.show(btnAddProps, btnAddProps.getSize().width, 0);
 
     }//GEN-LAST:event_btnAddPropsActionPerformed
@@ -1010,6 +1011,27 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             String replace = Constants.ACTION_PROPERTY_JPDALISTEN + "=maven"; //NOI18N
             String pattern = ".*" + Constants.ACTION_PROPERTY_JPDALISTEN + "([\\s]*=[\\s]*[\\S]+).*"; //NOI18N
             replacePattern(pattern, area, replace, true);
+        }
+    }
+
+    static class EnvVarAction extends AbstractAction {
+        private JTextArea area;
+
+        EnvVarAction(JTextArea area) {
+            putValue(Action.NAME, NbBundle.getMessage(ActionMappings.class, "ActionMappings.envVar"));
+            this.area = area;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String props = area.getText();
+            String sep = "\n";//NOI18N
+            if (props.endsWith("\n") || props.trim().length() == 0) {//NOI18N
+                sep = "";//NOI18N
+            }
+            props = props + sep + "Env.FOO=bar"; //NOI18N
+            area.setText(props);
+            area.setSelectionStart(props.length() - "Env.FOO=bar".length()); //NOI18N
+            area.setSelectionEnd(props.length());
         }
     }
 
