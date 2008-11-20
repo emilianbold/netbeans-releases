@@ -57,6 +57,7 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -97,7 +98,7 @@ public class PreviewMultiViewElement extends CloneableEditor
     public JComponent getVisualRepresentation() {
         if (des == null) {
             JPanel err = new JPanel();
-            JLabel emptyLabel = new JLabel("The WSDL Preview can not be rendered,because Java source or WSDL file isn't valid. Please switch to source or design view and correct the source file.");
+            JLabel emptyLabel = new JLabel(NbBundle.getMessage(PreviewMultiViewElement.class, "LBL_wsdlPreviewErrMsg"));
             err.add(emptyLabel, BorderLayout.CENTER);
             return err;
         } else {
