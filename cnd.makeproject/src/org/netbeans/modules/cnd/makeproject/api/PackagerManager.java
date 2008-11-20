@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.makeproject.api;
 
 import java.util.ArrayList;
@@ -47,8 +46,11 @@ import java.util.List;
 import java.util.Set;
 import org.openide.util.Lookup;
 
-public class PackagerManager  {
+public class PackagerManager {
+
     private static final PackagerManager instance = new PackagerManager();
+
+
     static {
         instance.addRegisteredPackagers();
     }
@@ -58,7 +60,7 @@ public class PackagerManager  {
         return instance;
     }
 
-    private PackagerManager(){
+    private PackagerManager() {
     }
 
     /*
@@ -92,8 +94,9 @@ public class PackagerManager  {
 
     public PackagerDescriptor getPackager(String name) {
         for (PackagerDescriptor packagerDescriptor : getPackagerList()) {
-            if (packagerDescriptor.getName().equals(name))
+            if (packagerDescriptor.getName().equals(name)) {
                 return packagerDescriptor;
+            }
         }
         return null;
     }
@@ -101,8 +104,9 @@ public class PackagerManager  {
     public int getNameIndex(String name) {
         int index = 0;
         for (PackagerDescriptor packagerDescriptor : getPackagerList()) {
-            if (packagerDescriptor.getName().equals(name))
+            if (packagerDescriptor.getName().equals(name)) {
                 return index;
+            }
             index++;
         }
         return 0;
@@ -120,16 +124,18 @@ public class PackagerManager  {
 
     public String getDisplayName(String name) {
         for (PackagerDescriptor packagerDescriptor : getPackagerList()) {
-            if (packagerDescriptor.getName().equals(name))
+            if (packagerDescriptor.getName().equals(name)) {
                 return packagerDescriptor.getDisplayName();
+            }
         }
         return null;
     }
 
     public String getName(String displayName) {
         for (PackagerDescriptor packagerDescriptor : getPackagerList()) {
-            if (packagerDescriptor.getDisplayName().equals(displayName))
+            if (packagerDescriptor.getDisplayName().equals(displayName)) {
                 return packagerDescriptor.getName();
+            }
         }
         return null;
     }
@@ -138,15 +144,14 @@ public class PackagerManager  {
      * Get list of packager providers registered via services
      */
     private static Set<PackagerDescriptorProvider> getPackagerDescriptorProviders() {
-        HashSet providers = new HashSet();
-        Lookup.Template template = new Lookup.Template(PackagerDescriptorProvider.class);
-        Lookup.Result result = Lookup.getDefault().lookup(template);
-        Collection collection = result.allInstances();
-        Iterator iterator = collection.iterator();
+        HashSet<PackagerDescriptorProvider> providers = new HashSet<PackagerDescriptorProvider>();
+        Lookup.Template<PackagerDescriptorProvider> template = new Lookup.Template<PackagerDescriptorProvider>(PackagerDescriptorProvider.class);
+        Lookup.Result<PackagerDescriptorProvider> result = Lookup.getDefault().lookup(template);
+        Iterator iterator = result.allInstances().iterator();
         while (iterator.hasNext()) {
             Object caop = iterator.next();
             if (caop instanceof PackagerDescriptorProvider) {
-                providers.add(caop);
+                providers.add((PackagerDescriptorProvider) caop);
             }
         }
         return providers;

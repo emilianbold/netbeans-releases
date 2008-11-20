@@ -255,4 +255,12 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="php-project-mime-resolver.xml" url="php-project-mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.resources.Bundle"/>
+                <attr name="position" intvalue="99000"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

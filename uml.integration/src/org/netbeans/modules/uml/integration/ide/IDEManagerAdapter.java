@@ -171,14 +171,12 @@ public class IDEManagerAdapter implements IIDEManager {
     }
 
     /* (non-Javadoc)
-     * @see com.embarcadero.integration.IIDEManager#closeProject(com.embarcadero.describe.structure.IProject)
      */
     public void closeProject(IProject proj) {
         UMLSupport.getUMLSupport().closeProject(proj);
     }
 
     /* (non-Javadoc)
-     * @see com.embarcadero.integration.IIDEManager#activateIDEProject(com.embarcadero.describe.structure.IProject)
      */
     public boolean activateIDEProject(IProject describeProject) {
         return true;
@@ -196,7 +194,6 @@ public class IDEManagerAdapter implements IIDEManager {
     }
 
     /* (non-Javadoc)
-     * @see com.embarcadero.integration.IIDEManager#deleteFile(java.io.File)
      */
     public void deleteFile(File file) {
         // IDEs will certainly want to override this default behavior.

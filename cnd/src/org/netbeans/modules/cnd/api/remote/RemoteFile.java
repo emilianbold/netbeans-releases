@@ -90,7 +90,7 @@ public class RemoteFile extends File {
         if (file instanceof RemoteFile) {
             RemoteFile rfile = (RemoteFile) file;
 
-            CommandProvider cmd = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
+            CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
             if (rfile.exists() && cmd.run(rfile.getHKey(), "cat " + rfile.getPath(), null) == 0) { //NOI18N
                 //TODO: works only for absolute paths and only for short files
                 return new StringReader(cmd.getOutput());
@@ -106,7 +106,7 @@ public class RemoteFile extends File {
     protected RemoteFile(String hkey, String pathname) {
         //TODO: one more reason for hkey to become a class: File(String parent, String child)
         super(pathname);
-        assert(!RemoteUtils.isLocalhost(hkey)); //TODO: invent smth clever to split up remote ones from local
+        assert (!RemoteUtils.isLocalhost(hkey)); //TODO: invent smth clever to split up remote ones from local
         this.hkey = hkey;
     }
 
@@ -119,8 +119,8 @@ public class RemoteFile extends File {
     @Override
     public File[] listFiles() {
         //TODO: till API review
-        CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
-        if (provider.run(hkey, "ls -A1 \"" + getPath() + "\"", null) == 0) {
+        CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
+        if (provider.run(hkey, "ls -A1 \"" + getPath() + "\"", null) == 0) { //NOI18N
             String files = provider.getOutput();
             if (files != null) {
                 BufferedReader bufferedReader = new BufferedReader(new StringReader(files));
@@ -128,7 +128,7 @@ public class RemoteFile extends File {
                 ArrayList<File> lines = new ArrayList<File>();
                 try {
                     while ((line = bufferedReader.readLine()) != null) {
-                        lines.add(new RemoteFile(hkey, getPath() + "/" + line)); //TODO: windows?
+                        lines.add(new RemoteFile(hkey, getPath() + "/" + line)); //TODO: windows? //NOI18N
                     }
                     bufferedReader.close();
                 } catch (IOException ex) {
@@ -145,22 +145,41 @@ public class RemoteFile extends File {
     @Override
     public boolean isDirectory() {
         //TODO: till API review
-        CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
-        return provider.run(hkey, "test -d \"" + getPath() + "\"", null) == 0;
+        CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
+        return provider.run(hkey, "test -d \"" + getPath() + "\"", null) == 0; //NOI18N
     }
 
     @Override
     public boolean isFile() {
         //TODO: till API review
-        CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
-        return provider.run(hkey, "test -f \"" + getPath() + "\"", null) == 0;
+        CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
+        return provider.run(hkey, "test -f \"" + getPath() + "\"", null) == 0; //NOI18N
     }
 
     @Override
     public boolean canRead() {
         //TODO: till API review
-        CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
-        return provider.run(hkey, "test -r \"" + getPath() + "\"", null) == 0;
+        CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
+        return provider.run(hkey, "test -r \"" + getPath() + "\"", null) == 0; //NOI18N
     }
-    
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RemoteFile other = (RemoteFile) obj;
+        if ((this.hkey == null) ? (other.hkey != null) : !this.hkey.equals(other.hkey)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() + hkey.hashCode() + 7;
+    }
 }

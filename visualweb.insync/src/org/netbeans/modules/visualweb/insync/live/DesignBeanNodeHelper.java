@@ -1128,6 +1128,11 @@ final class DesignBeanNodeHelper {
             
 //            DesignBean bodyBean = body.getDesignBean();
             DesignBean bodyBean = InSyncServiceProvider.get().getMarkupDesignBeanForElement(body);
+            if (bodyBean == null) {
+                // XXX #137120.
+                return null;
+            }
+
             DesignBean parent = bodyBean.getBeanParent();
             
             if (parent != null) {

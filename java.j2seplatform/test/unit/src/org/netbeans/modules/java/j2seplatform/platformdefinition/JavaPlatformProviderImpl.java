@@ -56,13 +56,13 @@ public class JavaPlatformProviderImpl implements JavaPlatformProvider {
 
 
     private PropertyChangeSupport support;
-    private List platforms;
+    private List<JavaPlatform> platforms;
     private JavaPlatform defaultPlatform;
 
     /** Creates a new instance of JavaPlatformProviderImpl */
     public JavaPlatformProviderImpl() {
         this.support = new PropertyChangeSupport (this);
-        this.platforms = new ArrayList ();
+        this.platforms = new ArrayList<JavaPlatform>();
         this.addPlatform (this.createDefaultPlatform());
     }
     
@@ -83,7 +83,7 @@ public class JavaPlatformProviderImpl implements JavaPlatformProvider {
     }
         
     public JavaPlatform[] getInstalledPlatforms() {
-        return (JavaPlatform[]) this.platforms.toArray(new JavaPlatform[this.platforms.size()]);
+        return this.platforms.toArray(new JavaPlatform[this.platforms.size()]);
     }    
     
     private synchronized JavaPlatform createDefaultPlatform () {

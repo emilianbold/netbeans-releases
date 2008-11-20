@@ -88,7 +88,7 @@ public class FunctionBreakpointType extends BreakpointType {
         // Next, check the main project. Is it one of ours?
         Project project = OpenProjects.getDefault().getMainProject();
         if (project != null) {
-            NativeProject np = (NativeProject) project.getLookup().lookup(NativeProject.class);
+            NativeProject np = project.getLookup().lookup(NativeProject.class);
             return np != null;
         }
         

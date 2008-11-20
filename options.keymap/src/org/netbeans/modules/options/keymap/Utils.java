@@ -83,10 +83,7 @@ class Utils {
             keyStroke = keyStroke.substring (5);
         }
         KeyStroke ks = Utilities.stringToKey (keyStroke);
-        if (ks == null) {
-            ErrorManager.getDefault ().notify (
-                new IllegalArgumentException (keyStroke)
-            );
+        if (ks == null) { // Return null to indicate an invalid keystroke
             return null;
         } else {
             KeyStroke result = KeyStroke.getKeyStroke (ks.getKeyCode (), modifiers);

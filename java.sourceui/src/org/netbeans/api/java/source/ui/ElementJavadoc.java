@@ -571,7 +571,7 @@ public class ElementJavadoc {
             }
             sb.append("&lt;"); //NOI18N
             for (int i = 0; i < tvars.length; i++) {
-                len += appendType(eu, sb, tvars[i], false, true);
+                len += appendType(eu, sb, tvars[i], false, true, false);
                 if (i < tvars.length - 1) {
                     sb.append(","); //NOI18N
                     len++;
@@ -585,7 +585,7 @@ public class ElementJavadoc {
                 sb.append(' '); //NOI18N
                 len++;
             }
-            len += appendType(eu, sb, ((MethodDoc)mdoc).returnType(), false, false);
+            len += appendType(eu, sb, ((MethodDoc)mdoc).returnType(), false, false, false);
         }
         String name = mdoc.name();
         len += name.length();
@@ -596,7 +596,7 @@ public class ElementJavadoc {
             Parameter[] params = mdoc.parameters();
             for(int i = 0; i < params.length; i++) {
                 boolean varArg = i == params.length - 1 && mdoc.isVarArgs();
-                appendType(eu, sb, params[i].type(), varArg, false);
+                appendType(eu, sb, params[i].type(), varArg, false, false);
                 sb.append(' ').append(params[i].name()); //NOI18N
                 String dim = params[i].type().dimension();
                 if (dim.length() > 0) {
@@ -614,7 +614,7 @@ public class ElementJavadoc {
         if (exs.length > 0) {
             sb.append("\nthrows "); //NOI18N
             for (int i = 0; i < exs.length; i++) {
-                appendType(eu, sb, exs[i], false, false);
+                appendType(eu, sb, exs[i], false, false, false);
                 if (i < exs.length - 1)
                     sb.append(", "); //NOI18N
             }
@@ -632,7 +632,7 @@ public class ElementJavadoc {
         len = sb.length() - len;
         if (len > 0)
             sb.append(' '); //NOI18N
-        appendType(eu, sb, fdoc.type(), false, false);
+        appendType(eu, sb, fdoc.type(), false, false, false);
         sb.append(" <b>").append(fdoc.name()).append("</b>"); //NOI18N
         sb.append("</tt></p>"); //NOI18N
         return sb;
@@ -661,7 +661,7 @@ public class ElementJavadoc {
         if (tvars.length > 0) {
             sb.append("&lt;"); //NOI18N
             for (int i = 0; i < tvars.length; i++) {
-                appendType(eu, sb, tvars[i], false, true);
+                appendType(eu, sb, tvars[i], false, true, false);
                 if (i < tvars.length - 1)
                     sb.append(","); //NOI18N
             }
@@ -673,7 +673,7 @@ public class ElementJavadoc {
                 Type supercls = cdoc.superclassType();
                 if (supercls != null) {
                     sb.append("\nextends "); //NOI18N
-                    appendType(eu, sb, supercls, false, false);
+                    appendType(eu, sb, supercls, false, false, false);
                 }
                 
             }
@@ -681,7 +681,7 @@ public class ElementJavadoc {
             if (ifaces.length > 0) {
                 sb.append(cdoc.isInterface() ? "\nextends " : "\nimplements "); //NOI18N
                 for (int i = 0; i < ifaces.length; i++) {
-                    appendType(eu, sb, ifaces[i], false, false);
+                    appendType(eu, sb, ifaces[i], false, false, false);
                     if (i < ifaces.length - 1)
                         sb.append(", "); //NOI18N
                 }
@@ -705,7 +705,7 @@ public class ElementJavadoc {
         for (AnnotationDesc annotationDesc : annotations) {
             AnnotationTypeDoc annotationType = annotationDesc.annotationType();
             if (annotationType != null) {
-                appendType(eu, sb, annotationType, false, false);
+                appendType(eu, sb, annotationType, false, false, true);
                 ElementValuePair[] pairs = annotationDesc.elementValues();
                 if (pairs.length > 0) {
                     sb.append('('); //NOI18N
@@ -1056,7 +1056,7 @@ public class ElementJavadoc {
             sb.append(' '); //NOI18N            
     }
     
-    private int appendType(ElementUtilities eu, StringBuilder sb, Type type, boolean varArg, boolean typeVar) {
+    private int appendType(ElementUtilities eu, StringBuilder sb, Type type, boolean varArg, boolean typeVar, boolean annotation) {
         int len = 0;
         WildcardType wt = type.asWildcardType();
         if (wt != null) {
@@ -1066,13 +1066,13 @@ public class ElementJavadoc {
             if (bounds != null && bounds.length > 0) {
                 sb.append(" extends "); //NOI18N
                 len += 9;
-                len += appendType(eu, sb, bounds[0], false, false);
+                len += appendType(eu, sb, bounds[0], false, false, false);
             }
             bounds = wt.superBounds();
             if (bounds != null && bounds.length > 0) {
                 sb.append(" super "); //NOI18N
                 len += 7;
-                len += appendType(eu, sb, bounds[0], false, false);
+                len += appendType(eu, sb, bounds[0], false, false, false);
             }
         } else {
             TypeVariable tv = type.asTypeVariable();
@@ -1083,7 +1083,7 @@ public class ElementJavadoc {
                     sb.append(" extends "); //NOI18N
                     len += 9;
                     for (int i = 0; i < bounds.length; i++) {
-                        len += appendType(eu, sb, bounds[i], false, false);
+                        len += appendType(eu, sb, bounds[i], false, false, false);
                         if (i < bounds.length - 1) {
                             sb.append(" & "); //NOI18N
                             len += 3;
@@ -1093,7 +1093,7 @@ public class ElementJavadoc {
             } else {
                 String tName = type.simpleTypeName();
                 ClassDoc cd = type.asClassDoc();
-                if (cd != null && cd.isAnnotationType())
+                if (cd != null && cd.isAnnotationType() && annotation)
                     tName = "@" + tName; //NOI18N
                 len += createLink(sb, eu.elementFor(type.asClassDoc()), tName);
                 ParameterizedType pt = type.asParameterizedType();
@@ -1102,7 +1102,7 @@ public class ElementJavadoc {
                     if (targs.length > 0) {
                         sb.append("&lt;"); //NOI18N
                         for (int j = 0; j < targs.length; j++) {
-                            len += appendType(eu, sb, targs[j], false, false);
+                            len += appendType(eu, sb, targs[j], false, false, false);
                             if (j < targs.length - 1) {
                                 sb.append(","); //NOI18N
                                 len++;

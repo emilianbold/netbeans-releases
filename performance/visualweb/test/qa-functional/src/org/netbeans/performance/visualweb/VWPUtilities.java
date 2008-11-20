@@ -41,7 +41,7 @@
 
 package org.netbeans.performance.visualweb;
 
-import org.netbeans.performance.visualweb.windows.WebFormDesignerOperator;
+import org.netbeans.performance.visualweb.WebFormDesignerOperator;
 
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -62,8 +62,11 @@ import org.netbeans.modules.performance.utilities.CommonUtilities;
  * @author  mmirilovic@netbeans.org
  */
 public class VWPUtilities extends CommonUtilities {
+
     private static final String menuItemName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_Fix_Missing_Server_Action");
     private static final String dialogName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.ui.Bundle", "LBL_Resolve_Missing_Server_Title");
+    public static final String WEB_PAGES = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_DocBase");
+
     /**
      * open jsp file from project and return WebFormDesigner
      * @param projectName name of the project

@@ -77,8 +77,7 @@ public class MakeConfiguration extends Configuration {
         getString("MakefileName"),
         getString("ApplicationName"),
         getString("DynamicLibraryName"),
-        getString("StaticLibraryName"),
-    };
+        getString("StaticLibraryName"),};
     public static final int TYPE_MAKEFILE = 0;
     public static final int TYPE_APPLICATION = 1;
     public static final int TYPE_DYNAMIC_LIB = 2;
@@ -99,7 +98,7 @@ public class MakeConfiguration extends Configuration {
     private LinkerConfiguration linkerConfiguration;
     private ArchiverConfiguration archiverConfiguration;
     private PackagingConfiguration packagingConfiguration;
-    private RequiredProjectsConfiguration requiredProjectsConfiguration;
+    private RequiredProjectsConfiguration<LibraryItem> requiredProjectsConfiguration;
     private boolean languagesDirty = true;
 
     // Constructors
@@ -109,7 +108,7 @@ public class MakeConfiguration extends Configuration {
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
         this(baseDir, name, configurationTypeValue, CompilerSetManager.getDefaultDevelopmentHost());
-    }    
+    }
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String host) {
         super(baseDir, name);
@@ -128,7 +127,7 @@ public class MakeConfiguration extends Configuration {
         linkerConfiguration = new LinkerConfiguration(this);
         archiverConfiguration = new ArchiverConfiguration(this);
         packagingConfiguration = new PackagingConfiguration(this);
-        requiredProjectsConfiguration = new RequiredProjectsConfiguration();
+        requiredProjectsConfiguration = new RequiredProjectsConfiguration<LibraryItem>();
 
         developmentHost.addPropertyChangeListener(compilerSet);
         developmentHost.addPropertyChangeListener(platform);
@@ -293,11 +292,11 @@ public class MakeConfiguration extends Configuration {
     }
 
     // LibrariesConfiguration
-    public RequiredProjectsConfiguration getRequiredProjectsConfiguration() {
+    public RequiredProjectsConfiguration<LibraryItem> getRequiredProjectsConfiguration() {
         return requiredProjectsConfiguration;
     }
 
-    public void setRequiredProjectsConfiguration(RequiredProjectsConfiguration requiredProjectsConfiguration) {
+    public void setRequiredProjectsConfiguration(RequiredProjectsConfiguration<LibraryItem> requiredProjectsConfiguration) {
         this.requiredProjectsConfiguration = requiredProjectsConfiguration;
     }
 
@@ -348,13 +347,13 @@ public class MakeConfiguration extends Configuration {
         copy.assign(this);
         // copy aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects();
-        Vector copiedAuxs = new Vector();
+        Vector<ConfigurationAuxObject> copiedAuxs = new Vector<ConfigurationAuxObject>();
         for (int i = 0; i < auxs.length; i++) {
             if (auxs[i] instanceof ItemConfiguration) {
                 copiedAuxs.add(((ItemConfiguration) auxs[i]).copy(copy));
             } else {
                 String id = auxs[i].getId();
-                ConfigurationAuxObject copyAux = (ConfigurationAuxObject) copy.getAuxObject(id);
+                ConfigurationAuxObject copyAux = copy.getAuxObject(id);
                 if (copyAux != null) {
                     copyAux.assign(auxs[i]);
                     copiedAuxs.add(copyAux);
@@ -392,7 +391,7 @@ public class MakeConfiguration extends Configuration {
         clone.setLinkerConfiguration((LinkerConfiguration) getLinkerConfiguration().clone());
         clone.setArchiverConfiguration((ArchiverConfiguration) getArchiverConfiguration().clone());
         clone.setPackagingConfiguration((PackagingConfiguration) getPackagingConfiguration().clone());
-        clone.setRequiredProjectsConfiguration((RequiredProjectsConfiguration) getRequiredProjectsConfiguration().clone());
+        clone.setRequiredProjectsConfiguration(getRequiredProjectsConfiguration().cloneConf());
 
         dhconf.addPropertyChangeListener(csconf);
         dhconf.addPropertyChangeListener(pconf);
@@ -413,7 +412,11 @@ public class MakeConfiguration extends Configuration {
         return clone;
     }
 
-    public Sheet getGeneralSheet(Project project) {
+//    /** @deprecated Use org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration.getBuildSheet() instead */
+//    public Sheet getGeneralSheet(Project project) {
+//        return getBuildSheet(project);
+//    }
+    public Sheet getBuildSheet(Project project) {
         Sheet sheet = new Sheet();
 
         Sheet.Set set = new Sheet.Set();
@@ -448,7 +451,7 @@ public class MakeConfiguration extends Configuration {
         set2.setName("Projects"); // NOI18N
         set2.setDisplayName(getString("ProjectsTxt1"));
         set2.setShortDescription(getString("ProjectsHint"));
-        set2.put(new RequiredProjectsNodeProp(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
+        set2.put(new RequiredProjectsNodeProp<LibraryItem>(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
         sheet.put(set2);
 
         return sheet;
@@ -502,9 +505,9 @@ public class MakeConfiguration extends Configuration {
             // Base it on actual files added to project
             for (int x = 0; x < items.length; x++) {
                 ItemConfiguration itemConfiguration = items[x].getItemConfiguration(this);
-                if (itemConfiguration == null || 
-                    itemConfiguration.getExcluded() == null || 
-                    itemConfiguration.getExcluded().getValue()) {
+                if (itemConfiguration == null ||
+                        itemConfiguration.getExcluded() == null ||
+                        itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
                 if (itemConfiguration.getTool() == Tool.CCompiler) {
@@ -587,13 +590,13 @@ public class MakeConfiguration extends Configuration {
 //        ret += Platforms.getPlatform(getPlatform().getValue()).getName();
 //        return ret;
     }
-    
+
     public static String getVariant(CompilerSet compilerSet, int platform) {
         return compilerSet.getName() + "-" + Platforms.getPlatform(platform).getName(); // NOI18N
     }
 
     public Set/*<Project>*/ getSubProjects() {
-        Set subProjects = new HashSet();
+        Set<Project> subProjects = new HashSet<Project>();
         LibrariesConfiguration librariesConfiguration = getLinkerConfiguration().getLibrariesConfiguration();
         LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
         for (int j = 0; j < libraryItems.length; j++) {
@@ -616,8 +619,8 @@ public class MakeConfiguration extends Configuration {
         return subProjects;
     }
 
-    public Set/*<String>*/ getSubProjectLocations() {
-        Set subProjectLocations = new HashSet();
+    public Set<String> getSubProjectLocations() {
+        Set<String> subProjectLocations = new HashSet<String>();
         LibrariesConfiguration librariesConfiguration = getLinkerConfiguration().getLibrariesConfiguration();
         LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
         for (int j = 0; j < libraryItems.length; j++) {
@@ -629,8 +632,8 @@ public class MakeConfiguration extends Configuration {
         return subProjectLocations;
     }
 
-    public Set/*<String>*/ getSubProjectOutputLocations() {
-        Set subProjectOutputLocations = new HashSet();
+    public Set<String> getSubProjectOutputLocations() {
+        Set<String> subProjectOutputLocations = new HashSet<String>();
         LibrariesConfiguration librariesConfiguration = getLinkerConfiguration().getLibrariesConfiguration();
         LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
         for (int j = 0; j < libraryItems.length; j++) {
@@ -646,7 +649,7 @@ public class MakeConfiguration extends Configuration {
         }
         return subProjectOutputLocations;
     }
-    
+
     public String getOutputValue() {
         String output = null;
         if (isLinkerConfiguration()) {
@@ -660,7 +663,7 @@ public class MakeConfiguration extends Configuration {
         }
         return output;
     }
-    
+
     public String getAbsoluteOutputValue() {
         String output = getOutputValue();
 
@@ -673,7 +676,7 @@ public class MakeConfiguration extends Configuration {
         }
         return expandMacros(output);
     }
-    
+
     public String expandMacros(String val) {
         // Substitute macros
         val = IpeUtils.expandMacro(val, "${OUTPUT_PATH}", getOutputValue()); // NOI18N

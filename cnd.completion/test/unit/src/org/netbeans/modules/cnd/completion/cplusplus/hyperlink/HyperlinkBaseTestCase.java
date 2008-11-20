@@ -42,8 +42,8 @@
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.io.File;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
@@ -108,7 +108,7 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         File testSourceFile = getDataFile(source);
         BaseDocument doc = getBaseDocument(testSourceFile);
         int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);
-        Token<CppTokenId> jumpToken = getJumpToken(doc, offset);
+        TokenItem<CppTokenId> jumpToken = getJumpToken(doc, offset);
         assertNotNull("Hyperlink not found token in file " + testSourceFile + " on position (" + lineIndex + ", " + colIndex + ")", // NOI18N
                         jumpToken);
         CsmOffsetable targetObject = findTargetObject(doc, offset, jumpToken);
@@ -129,7 +129,7 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         File testSourceFile = getDataFile(source);
         BaseDocument doc = getBaseDocument(testSourceFile);
         int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);
-        Token jumpToken = getJumpToken(doc, offset);
+        TokenItem<CppTokenId> jumpToken = getJumpToken(doc, offset);
         assertNotNull("Hyperlink not found token in file " + testSourceFile + " on position (" + lineIndex + ", " + colIndex + ")", // NOI18N
                         jumpToken);
         CsmOffsetable targetObject = findTargetObject(doc, offset, jumpToken);
@@ -157,7 +157,7 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         return "[" + file + ":" + "Line-" + line +"; Col-" + column + "]";
     }
     
-    private CsmOffsetable findTargetObject(BaseDocument doc, int offset, Token jumpToken) {
+    private CsmOffsetable findTargetObject(BaseDocument doc, int offset, TokenItem<CppTokenId> jumpToken) {
         CsmOffsetable csmItem = null;
         // emulate hyperlinks order
         // first ask includes handler
@@ -171,7 +171,7 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         return csmItem;
     }
     
-    private Token<CppTokenId> getJumpToken(BaseDocument doc, int offset) {
+    private TokenItem<CppTokenId> getJumpToken(BaseDocument doc, int offset) {
         return CsmAbstractHyperlinkProvider.getToken(doc, offset);
     }  
     

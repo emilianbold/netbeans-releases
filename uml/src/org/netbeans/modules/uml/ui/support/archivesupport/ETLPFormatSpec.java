@@ -43,8 +43,6 @@
 package org.netbeans.modules.uml.ui.support.archivesupport;
 
 /**
- * @author Embarcadero Technologies Inc.
- *
  *
  */
 public interface ETLPFormatSpec

@@ -93,6 +93,7 @@ public class ReferenceRepositoryImplTestCase extends TraceModelTestBase {
         int line = (Integer) params[0];
         int column = (Integer) params[1];
         boolean inProject = (Boolean)params[2];
+        @SuppressWarnings("unchecked")
         Set<CsmReferenceKind> kinds = (Set<CsmReferenceKind>) params[3];
         int offset = fileImpl.getOffset(line, column);
         CsmReference tgtRef = CsmReferenceResolver.getDefault().findReference(fileImpl, offset);

@@ -63,7 +63,6 @@ import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.display.ListElementEventSourceDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
 import org.openide.util.NbBundle;
@@ -73,6 +72,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 
 /**
  * @author David Kaspar

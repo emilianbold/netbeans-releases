@@ -79,6 +79,7 @@ public class PropertyPatternNode extends PatternNode {
     /* Gets the short description of this node.
     * @return A localized short description associated with this node.
     */
+    @Override
     public String getShortDescription() {
         String mode;
 
@@ -100,30 +101,32 @@ public class PropertyPatternNode extends PatternNode {
     }
 
 
-    /** Creates property set for this node
-     */
-    protected Sheet createSheet () {
-        Sheet sheet = Sheet.createDefault();
-        Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
-
-//        ps.put(createNameProperty( writeable ));
-//        ps.put(createTypeProperty( writeable ));
-//        ps.put(createModeProperty( writeable ));
-//        ps.put(createGetterProperty( false ));
-//        ps.put(createSetterProperty( false ));
-//        ps.put(createFieldProperty(false));
-
-        return sheet;
-    }
+//    /** Creates property set for this node
+//     */
+//    protected Sheet createSheet () {
+//        Sheet sheet = Sheet.createDefault();
+//        Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
+//
+////        ps.put(createNameProperty( writeable ));
+////        ps.put(createTypeProperty( writeable ));
+////        ps.put(createModeProperty( writeable ));
+////        ps.put(createGetterProperty( false ));
+////        ps.put(createSetterProperty( false ));
+////        ps.put(createFieldProperty(false));
+//
+//        return sheet;
+//    }
 
     /** Overrides the default implementation of clone node
      */
+    @Override
     public Node cloneNode() {
         return new PropertyPatternNode((PropertyPattern)pattern, writeable);
     }
 
     /** Sets the name of pattern
      */
+    @Override
     protected void setPatternName( String name )  {
         
         if ( pattern.getName().equals( name ) ) {

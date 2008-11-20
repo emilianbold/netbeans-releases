@@ -188,7 +188,7 @@ public class ConfigurationMakefileWriter {
         }
     }
     
-    private void writePrelude(MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    protected void writePrelude(MakeConfiguration conf, BufferedWriter bw) throws IOException {
         CCCCompilerConfiguration cCompilerConfiguration = conf.getCCompilerConfiguration();
         CCCCompilerConfiguration ccCompilerConfiguration = conf.getCCCompilerConfiguration();
         FortranCompilerConfiguration fortranCompilerConfiguration = conf.getFortranCompilerConfiguration();
@@ -278,7 +278,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
     }
     
-    private void writeBuildTarget(MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    protected void writeBuildTarget(MakeConfiguration conf, BufferedWriter bw) throws IOException {
         String output = getOutput(conf);
         bw.write("# Build Targets\n"); // NOI18N
         if (conf.isCompileConfiguration()) {
@@ -301,7 +301,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
     }
     
-    private void writeLinkTarget(MakeConfiguration conf, BufferedWriter bw, String output) throws IOException {
+    protected void writeLinkTarget(MakeConfiguration conf, BufferedWriter bw, String output) throws IOException {
         LinkerConfiguration linkerConfiguration = conf.getLinkerConfiguration();
         String command = ""; // NOI18N
 	if (linkerConfiguration.getTool().getModified())
@@ -350,7 +350,7 @@ public class ConfigurationMakefileWriter {
             bw.write("\t" + archiverConfiguration.getRunRanlib().getOption() + " " + output + "\n"); // NOI18N
     }
     
-    private void writeCompileTargets(MakeConfiguration conf, BufferedWriter bw) throws IOException {
+    protected void writeCompileTargets(MakeConfiguration conf, BufferedWriter bw) throws IOException {
         Item[] items = projectDescriptor.getProjectItems();
         if (conf.isCompileConfiguration()) {
             String target = null;

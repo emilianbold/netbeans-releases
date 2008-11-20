@@ -122,6 +122,7 @@ import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -149,6 +150,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -162,6 +164,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.ScriptVariable;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.VariableInfo;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
@@ -169,14 +172,14 @@ import org.openide.util.NbBundle;
 
 /**
  * Mirror is either Value or ReferenceType
- * 
+ *
  * @author Martin Entlicher
  */
 public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext> {
 
     private static final Logger loggerMethod = Logger.getLogger("org.netbeans.modules.debugger.jpda.invokeMethod"); // NOI18N
     private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
-    
+
     private Type newArrayType;
     private Expression2 expression;
     private Map<Tree, Type> subExpressionTypes = new IdentityHashMap<Tree, Type>();
@@ -198,6 +201,24 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     }
 
     @Override
+    public Mirror scan(Tree tree, EvaluationContext evaluationContext) {
+        Mirror result = super.scan(tree, evaluationContext);
+        if (result instanceof ArtificialMirror) {
+            return ((ArtificialMirror) result).getVMMirror();
+        }
+        return result;
+    }
+
+    @Override
+    public Mirror scan(TreePath path, EvaluationContext evaluationContext) {
+        Mirror result = super.scan(path, evaluationContext);
+        if (result instanceof ArtificialMirror) {
+            return ((ArtificialMirror) result).getVMMirror();
+        }
+        return result;
+    }
+
+    @Override
     public Mirror visitAnnotation(AnnotationTree arg0, EvaluationContext evaluationContext) {
         return null;
     }
@@ -213,12 +234,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         Mirror object = null;
         String methodName;
         Boolean isStatic = null;
-        ExpressionTree expression = arg0.getMethodSelect();
+        ExpressionTree expr = arg0.getMethodSelect();
         Element elm;
         Type preferredType = null;
         TreePath currentPath = getCurrentPath();
-        if (expression.getKind() == Tree.Kind.MEMBER_SELECT) {
-            MemberSelectTree mst = (MemberSelectTree) expression;
+        if (expr.getKind() == Tree.Kind.MEMBER_SELECT) {
+            MemberSelectTree mst = (MemberSelectTree) expr;
             object = mst.getExpression().accept(this, evaluationContext);
             methodName = mst.getIdentifier().toString();
             if (object == null) {
@@ -242,7 +263,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 methodName = elm.getSimpleName().toString();
             } else {
                 elm = null;
-                methodName = expression.toString();
+                methodName = expr.toString();
             }
         }
         List<? extends TypeMirror> paramTypes = null;
@@ -267,7 +288,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
             }
         }
-        
+
         List<? extends ExpressionTree> args = arg0.getArguments();
         List<Value> argVals = new ArrayList<Value>(args.size());
         for (ExpressionTree arg : args) {
@@ -361,7 +382,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         Method method = getConcreteMethodAndReportProblems(arg0, type, methodName, null, paramTypes, argTypes);
         return invokeMethod(arg0, method, isStatic, cType, objectReference, argVals, evaluationContext, preferredType != null);
     }
-    
+
     /*private Method getConcreteMethod(ReferenceType type, String methodName, List<? extends ExpressionTree> typeArguments) {
         List<Method> methods = type.methodsByName(methodName);
         String signature = createSignature(typeArguments);
@@ -410,11 +431,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return method;
     }
-    
+
     private static Method getConcreteMethod(ReferenceType type, String methodName, List<? extends TypeMirror> typeArguments) throws UnsuitableArgumentsException {
         return getConcreteMethod(type, methodName, null, typeArguments);
     }
-    
+
     private static Method getConcreteMethod(ReferenceType type, String methodName, String firstParamSignature, List<? extends TypeMirror> typeArguments) throws UnsuitableArgumentsException {
         List<Method> methods = type.methodsByName(methodName);
         String signature = createSignature(firstParamSignature, typeArguments);
@@ -422,7 +443,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         for (Method method : methods) {
             if (!method.isAbstract() &&
                 (!constructor || type.equals(method.declaringType())) &&
-                egualMethodSignatures(method.signature(), signature)) {
+                equalMethodSignatures(method.signature(), signature)) {
                 return method;
             }
         }
@@ -457,7 +478,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return possibleMethods.get(0);
     }
-    
+
     private static boolean equalTypes(List<? extends Type> methodTypes, List<? extends Type> argumentTypes) {
         if (methodTypes.size() != argumentTypes.size()) {
             return false;
@@ -471,7 +492,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return true;
     }
-    
+
     private static boolean acceptTypes(List<? extends Type> methodTypes, List<? extends Type> argumentTypes) {
         if (methodTypes.size() != argumentTypes.size()) {
             return false;
@@ -488,7 +509,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return true;
     }
-    
+
     private static boolean extendsType(Type argType, Type methodType) {
         if (methodType instanceof ReferenceType && argType instanceof ReferenceType) {
             return extendsType((ReferenceType) argType, (ReferenceType) methodType);
@@ -497,7 +518,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return false;
     }
-    
+
     /** @return true if t1 extends t2 */
     private static boolean extendsType(ReferenceType t1, ReferenceType t2) {
         if (t2 instanceof InterfaceType) {
@@ -540,7 +561,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             throw new IllegalStateException("Unknown ReferenceType: "+t2);
         }
     }
-    
+
     /** @return true if t2 is an extension of t1 */
     private static boolean extendsType(PrimitiveType t1, PrimitiveType t2) {
         // BooleanType, ByteType and CharType can be matched together only.
@@ -562,7 +583,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return false;
     }
-    
+
     private static Type unboxType(Type t) {
         if (t instanceof ClassType) {
             String name = ((ClassType) t).name();
@@ -586,15 +607,15 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return t;
     }
-    
-    private static boolean egualMethodSignatures(String s1, String s2) {
+
+    private static boolean equalMethodSignatures(String s1, String s2) {
         int i = s1.lastIndexOf(")");
         if (i > 0) s1 = s1.substring(0, i);
         i = s2.lastIndexOf(")");
         if (i > 0) s2 = s2.substring(0, i);
         return s1.equals(s2);
     }
-    
+
     private static String createSignature(String firstParamSignature, List<? extends TypeMirror> typeArguments) {
         StringBuilder signature = new StringBuilder("(");
         if (firstParamSignature != null) {
@@ -609,7 +630,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         //signature.append(getSignature(returnType));
         return signature.toString();
     }
-    
+
     private static String getTypeName(TypeMirror type) {
         if (type.getKind() == TypeKind.ARRAY) {
             return getTypeName(((javax.lang.model.type.ArrayType) type).getComponentType())+"[]";
@@ -623,7 +644,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return type.toString();
     }
-    
+
     private static String getSignature(String javaType) {
         if (javaType.equals("boolean")) {
             return "Z";
@@ -647,7 +668,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             return "L"+javaType.replace('.', '/')+";";
         }
     }
-    
+
     private static ReferenceType getClassType(Tree tree, TypeMirror type, EvaluationContext evaluationContext) {
         String className = ElementUtilities.getBinaryName((TypeElement) ((DeclaredType) type).asElement());
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
@@ -699,7 +720,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
             }
         }
-        
+
         if (left instanceof InterfaceType) {
             InterfaceType intLeft = (InterfaceType) left;
             if (right instanceof InterfaceType) {
@@ -715,7 +736,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return false;
     }
 
-    
+
     @Override
     public Mirror visitAssert(AssertTree arg0, EvaluationContext evaluationContext) {
         Assert2.error(arg0, "unsupported");
@@ -876,6 +897,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
         if (vm == null) return null;
         Tree.Kind kind = arg0.getKind();
+        if ((left instanceof ObjectReference) && (right instanceof ObjectReference)) {
+            if (kind == Tree.Kind.EQUAL_TO) {
+                return vm.mirrorOf(left.equals(right));
+            } else if (kind == Tree.Kind.NOT_EQUAL_TO) {
+                return vm.mirrorOf(!left.equals(right));
+            }
+        }
         if (left instanceof ObjectReference) {
             left = unboxIfCan(arg0, (ObjectReference) left, evaluationContext);
         }
@@ -1098,18 +1126,37 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitBlock(BlockTree arg0, EvaluationContext evaluationContext) {
-        Assert2.error(arg0, "unsupported");
-        return null;
+        Mirror lastResult = null;
+        try {
+            evaluationContext.pushBlock();
+            for (StatementTree statementTree : arg0.getStatements()) {
+                Mirror res = statementTree.accept(this, evaluationContext);
+                if (res != null) {
+                    lastResult = res;
+                }
+                if (res instanceof ArtificialMirror) {
+                    break;
+                }
+            }
+        } finally {
+            evaluationContext.popBlock();
+        }
+        return lastResult;
     }
 
     @Override
     public Mirror visitBreak(BreakTree arg0, EvaluationContext evaluationContext) {
-        Assert2.error(arg0, "unsupported");
-        return null;
+        Name label = arg0.getLabel();
+        if (label != null) {
+            Assert2.error(arg0, "unsupported");
+            return null;
+        }
+        return new Break();
     }
 
     @Override
     public Mirror visitCase(CaseTree arg0, EvaluationContext evaluationContext) {
+        // case is handled within visitSwitch method
         Assert2.error(arg0, "unsupported");
         return null;
     }
@@ -1142,14 +1189,36 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitContinue(ContinueTree arg0, EvaluationContext evaluationContext) {
-        Assert2.error(arg0, "unsupported");
-        return null;
+        Name label = arg0.getLabel();
+        if (label != null) {
+            Assert2.error(arg0, "unsupported");
+            return null;
+        }
+        return new Continue();
     }
 
     @Override
     public Mirror visitDoWhileLoop(DoWhileLoopTree arg0, EvaluationContext evaluationContext) {
-        Assert2.error(arg0, "unsupported");
-        return null;
+        Tree condition = arg0.getCondition();
+        Tree statement = arg0.getStatement();
+        Mirror result = null;
+        do {
+            try {
+                evaluationContext.pushBlock();
+                Mirror res = statement.accept(this, evaluationContext);
+                if (res instanceof Break) {
+                    break;
+                } else if (res instanceof Continue) {
+                    continue;
+                }
+                if (res != null) {
+                    result = res;
+                }
+            } finally {
+                evaluationContext.popBlock();
+            }
+        } while (((BooleanValue)condition.accept(this, evaluationContext)).value());
+        return result;
     }
 
     @Override
@@ -1165,16 +1234,112 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitEnhancedForLoop(EnhancedForLoopTree arg0, EvaluationContext evaluationContext) {
-        Assert2.error(arg0, "unsupported");
-        return null;
+        if (!evaluationContext.canInvokeMethods()) {
+            Assert2.error(arg0, "calleeException", new UnsupportedOperationException(), evaluationContext);
+        }
+        ExpressionTree exprTree = arg0.getExpression();
+        Mirror exprValue = exprTree.accept(this, evaluationContext);
+        if (!(exprValue instanceof ObjectReference)) {
+            Assert2.error(arg0, "forEachNotApplicable");
+        }
+        ObjectReference objRef = (ObjectReference)exprValue;
+        ReferenceType objType = objRef.referenceType();
+        VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        ReferenceType collType = vm.classesByName("java.util.Collection").get(0);
+        if (!instanceOf(objRef.type(), collType)) {
+            Assert2.error(arg0, "forEachNotApplicable");
+        }
+        Method iteratorMethod = null;
+        try {
+            iteratorMethod = getConcreteMethod(objType, "iterator", Collections.EMPTY_LIST);
+        } catch (UnsuitableArgumentsException ex) {
+        }
+        ObjectReference iterator = (ObjectReference)invokeMethod(arg0, iteratorMethod, Boolean.FALSE, (ClassType)objRef.type(),
+                objRef, Collections.EMPTY_LIST, evaluationContext, false);
+        Method nextMethod = null, hasNextMethod = null;
+        try {
+            ReferenceType iteratorType = iterator.referenceType();
+            nextMethod = getConcreteMethod(iteratorType, "next", Collections.EMPTY_LIST);
+            hasNextMethod = getConcreteMethod(iteratorType, "hasNext", Collections.EMPTY_LIST);
+        } catch (UnsuitableArgumentsException ex) {
+        }
+
+        Mirror result = null;
+        try {
+            evaluationContext.pushBlock();
+            VariableTree varTree = arg0.getVariable();
+            varTree.accept(this, evaluationContext); // declare variable
+            ScriptVariable scriptVar = evaluationContext.getScriptVariableByName(varTree.getName().toString());
+            StatementTree statementTree = arg0.getStatement();
+            do {
+                Value value = invokeMethod(arg0, hasNextMethod, Boolean.FALSE, (ClassType)iterator.type(),
+                    iterator, Collections.EMPTY_LIST, evaluationContext, false);
+                if (!((BooleanValue)value).value()) {
+                    break;
+                }
+                value = invokeMethod(arg0, nextMethod, Boolean.FALSE, (ClassType)iterator.type(),
+                    iterator, Collections.EMPTY_LIST, evaluationContext, false);
+                scriptVar.setValue(value); // [TODO] check if value is assignable to variable
+                try {
+                    evaluationContext.pushBlock();
+                    Mirror returnValue = statementTree.accept(this, evaluationContext);
+                    if (returnValue instanceof Break) {
+                        break;
+                    } else if (returnValue instanceof Continue) {
+                        continue;
+                    }
+                    if (returnValue != null) {
+                        result = returnValue;
+                    }
+                } finally {
+                    evaluationContext.popBlock();
+                }
+            } while(true);
+        } finally {
+            evaluationContext.popBlock();
+        }
+        return result;
     }
 
     @Override
     public Mirror visitForLoop(ForLoopTree arg0, EvaluationContext evaluationContext) {
-        Assert2.error(arg0, "unsupported");
-        return null;
+        try {
+            evaluationContext.pushBlock();
+            for (StatementTree st : arg0.getInitializer()) {
+                st.accept(this, evaluationContext);
+            }
+            Mirror result = null;
+            ExpressionTree condition = arg0.getCondition();
+            List<? extends ExpressionStatementTree> updateList = arg0.getUpdate();
+            StatementTree statement = arg0.getStatement();
+            while (condition == null || ((BooleanValue)condition.accept(this, evaluationContext)).value()) {
+                Mirror value = null;
+                try {
+                    evaluationContext.pushBlock();
+                    value = statement.accept(this, evaluationContext);
+                    if (value instanceof Break) {
+                        break;
+                    } else if (value instanceof Continue) {
+                        continue;
+                    }
+                    if (value != null) {
+                        result = value;
+                    }
+                } finally {
+                    evaluationContext.popBlock();
+                    if ((value instanceof Continue) || !(value instanceof ArtificialMirror)) {
+                        for (Tree tree : updateList) {
+                            tree.accept(this, evaluationContext);
+                        } // for
+                    } // if
+                } // finally
+            } // while
+            return result;
+        } finally {
+            evaluationContext.popBlock();
+        }
     }
-    
+
     private Mirror getIdentifierByName(IdentifierTree arg0, EvaluationContext evaluationContext) {
         String name = arg0.getName().toString();
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
@@ -1204,14 +1369,19 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         Field field = evaluationContext.getFrame().location().declaringType().fieldByName(name);
         if (field != null) {
             if (field.isStatic()) {
-                evaluationContext.getVariables().put(arg0, new VariableInfo(field));
+                evaluationContext.putField(arg0, field, null);
                 return field.declaringType().getValue(field);
             }
             ObjectReference thisObject = evaluationContext.getFrame().thisObject();
             if (thisObject != null) {
-                evaluationContext.getVariables().put(arg0, new VariableInfo(field, thisObject));
+                evaluationContext.putField(arg0, field, thisObject);
                 return thisObject.getValue(field);
             }
+        }
+        ScriptVariable var = evaluationContext.getScriptVariableByName(name);
+        if (var != null) { // [TODO] local variables should be checked before checking fields
+            evaluationContext.putScriptVariable(arg0, var);
+            return var.getValue();
         }
         try {
             LocalVariable lv = evaluationContext.getFrame().visibleVariableByName(name);
@@ -1221,13 +1391,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     Field outer = thiz.referenceType().fieldByName("val$"+name);
                     if (outer != null) {
                         Value val = thiz.getValue(outer);
-                        evaluationContext.getVariables().put(arg0, new VariableInfo(outer, thiz));
+                        evaluationContext.putField(arg0, outer, thiz);
                         return val;
                     }
                 }
                 Assert2.error(arg0, "unknownVariable", name);
             }
-            evaluationContext.getVariables().put(arg0, new VariableInfo(lv));
+            evaluationContext.putLocalVariable(arg0, lv);
             return evaluationContext.getFrame().getValue(lv);
         } catch (AbsentInformationException aiex) {}
         Assert2.error(arg0, "unknownType", name);
@@ -1243,7 +1413,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             JPDAClassType classType = evaluationContext.getDebugger().getClassType(refType);
             return ((JDIVariable) classType.classObject()).getJDIValue();
         }
-        
+
         // return special variable
         if (expression.returnReplaced().equals(identifier)) {
             ThreadReference tr = evaluationContext.getFrame().thread();
@@ -1319,7 +1489,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     Assert2.error(arg0, "unknownVariable", fieldName);
                 }
                 if (field.isStatic()) {
-                    evaluationContext.getVariables().put(arg0, new VariableInfo(field));
+                    evaluationContext.putField(arg0, field, null);
                     return declaringType.getValue(field);
                 }
                 ObjectReference thisObject = evaluationContext.getFrame().thisObject();
@@ -1335,7 +1505,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     }
                 }
                 if (thisObject != null) {
-                    evaluationContext.getVariables().put(arg0, new VariableInfo(field, thisObject));
+                    evaluationContext.putField(arg0, field, thisObject);
                     try {
                         return thisObject.getValue(field);
                     } catch (IllegalArgumentException iaex) {
@@ -1350,6 +1520,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             case EXCEPTION_PARAMETER:
                 ve = (VariableElement) elm;
                 String varName = ve.getSimpleName().toString();
+                ScriptVariable var = evaluationContext.getScriptVariableByName(varName);
+                if (var != null) {
+                    evaluationContext.putScriptVariable(arg0, var);
+                    return var.getValue();
+                }
                 try {
                     LocalVariable lv = evaluationContext.getFrame().visibleVariableByName(varName);
                     if (lv == null) {
@@ -1358,13 +1533,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                             Field outer = thiz.referenceType().fieldByName("val$"+varName);
                             if (outer != null) {
                                 Value val = thiz.getValue(outer);
-                                evaluationContext.getVariables().put(arg0, new VariableInfo(outer, thiz));
+                                evaluationContext.putField(arg0, outer, thiz);
                                 return val;
                             }
                         }
                         Assert2.error(arg0, "unknownVariable", varName);
                     }
-                    evaluationContext.getVariables().put(arg0, new VariableInfo(lv));
+                    evaluationContext.putLocalVariable(arg0, lv);
                     return evaluationContext.getFrame().getValue(lv);
                 } catch (AbsentInformationException aiex) {
                     return (Value) Assert2.error(arg0, "unknownVariable", varName);
@@ -1381,13 +1556,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                             Field outer = thiz.referenceType().fieldByName("val$"+paramName);
                             if (outer != null) {
                                 Value val = thiz.getValue(outer);
-                                evaluationContext.getVariables().put(arg0, new VariableInfo(outer, thiz));
+                                evaluationContext.putField(arg0, outer, thiz);
                                 return val;
                             }
                         }
                         Assert2.error(arg0, "unknownVariable", paramName);
                     }
-                    evaluationContext.getVariables().put(arg0, new VariableInfo(lv));
+                    evaluationContext.putLocalVariable(arg0, lv);
                     return frame.getValue(lv);
                 } catch (AbsentInformationException aiex) {
                     try {
@@ -1413,7 +1588,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 throw new UnsupportedOperationException("Not supported element kind:"+elm.getKind()+" Tree = '"+arg0+"'");
         }
     }
-    
+
     private ReferenceType findEnclosingType(ReferenceType type, String name) {
         if (type.name().equals(name)) {
             return type;
@@ -1429,7 +1604,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return null;
     }
-    
+
     private boolean isNestedOf(ReferenceType nested, ReferenceType type) {
         if (nested.equals(type)) {
             return true;
@@ -1441,7 +1616,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return false;
     }
-    
+
     private ObjectReference findEnclosingObject(Tree arg0, ObjectReference object, ReferenceType type, String fieldName, String methodName) {
         if (instanceOf(object.referenceType(), type)) {
             return object;
@@ -1469,8 +1644,23 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitIf(IfTree arg0, EvaluationContext evaluationContext) {
-        Assert2.error(arg0, "unsupported");
-        return null;
+        Mirror conditionValue = arg0.getCondition().accept(this, evaluationContext);
+        StatementTree statement;
+        if (((BooleanValue)conditionValue).value()) {
+            statement = arg0.getThenStatement();
+        } else {
+            statement = arg0.getElseStatement();
+        }
+        if (statement != null) {
+            try {
+                evaluationContext.pushBlock();
+                return statement.accept(this, evaluationContext);
+            } finally {
+                evaluationContext.popBlock();
+            }
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -1493,9 +1683,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             Assert2.error(arg0, "arraySizeBadType", index);
         }
         int i = ((PrimitiveValue) index).intValue();
-        if (i >= ((ArrayReference) array).length()) {
+        if (i < 0 || i >= ((ArrayReference) array).length()) {
             Assert2.error(arg0, "arrayIndexOutOfBounds", array, i);
         }
+        evaluationContext.putArrayAccess(arg0, (ArrayReference)array, i);
         return ((ArrayReference) array).getValue(i);
     }
 
@@ -1595,7 +1786,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             return constructNewArray(arg0, type, initializerTrees, evaluationContext);
         }
     }
-    
+
     private ArrayReference constructNewArray(ArrayType[] arrayTypes, int[] dimensions, int dimension) {
         ArrayReference array = arrayTypes[dimension].newInstance(dimensions[dimension]);
         if (dimension > 0) {
@@ -1614,7 +1805,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return array;
     }
-    
+
     private ArrayReference constructNewArray(NewArrayTree arg0, Type type, List<? extends ExpressionTree> initializerTrees, EvaluationContext evaluationContext) {
         int n = initializerTrees.size();
         List<Value> elements = new ArrayList<Value>(n);
@@ -1637,9 +1828,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return array;
     }
-    
+
     private static final String BRACKETS = "[][][][][][][][][][][][][][][][][][][][]"; // NOI18N
-    
+
     private ArrayType getArrayType(NewArrayTree arg0, Type type, int depth) {
         String arrayClassName;
         if (depth < BRACKETS.length()/2) {
@@ -1656,7 +1847,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return (ArrayType) classes.get(0);
     }
-    
+
     private Type getSubArrayType(Tree arg0, Type type) {
         String name = type.name();
         if (name.endsWith("[]")) {
@@ -1673,7 +1864,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return type;
     }
-    
+
     private Type getPrimitiveType(String name, VirtualMachine vm) {
         if (name.equals(Boolean.TYPE.getName())) {
             return vm.mirrorOf(true).type();
@@ -1734,7 +1925,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         List<Value> argVals = new ArrayList<Value>(args.size());
         for (ExpressionTree arg : args) {
             Mirror argValue = arg.accept(this, evaluationContext);
-            if (!(argValue instanceof Value)) {
+            if ((argValue != null) && !(argValue instanceof Value)) {
                 Assert2.error(arg, "Not a value");
             }
             argVals.add((Value) argValue);
@@ -1817,7 +2008,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
         }
     }
-    
+
     @Override
     public Mirror visitParenthesized(ParenthesizedTree arg0, EvaluationContext evaluationContext) {
         return arg0.getExpression().accept(this, evaluationContext);
@@ -1825,8 +2016,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitReturn(ReturnTree arg0, EvaluationContext evaluationContext) {
-        Assert2.error(arg0, "unsupported");
-        return null;
+        ExpressionTree exprTree = arg0.getExpression();
+        Mirror result = exprTree.accept(this, evaluationContext);
+        return new Return(result);
     }
 
     private Value getEnumConstant(Tree arg0, VariableElement ve, EvaluationContext evaluationContext) {
@@ -1840,7 +2032,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                      Collections.singletonList((Value) constantNameRef), evaluationContext, false);
         return enumValue;
     }
-    
+
     @Override
     public Mirror visitMemberSelect(MemberSelectTree arg0, EvaluationContext evaluationContext) {
         TreePath currentPath = getCurrentPath();
@@ -1882,6 +2074,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
                 Field f = clazz.fieldByName(name);
                 if (f != null) {
+                    evaluationContext.putField(arg0, f, null);
                     return clazz.getValue(f);
                 }
             } else if (expression instanceof InterfaceType) {
@@ -1898,6 +2091,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
                 Field f = type.fieldByName(name);
                 if (f != null) {
+                    evaluationContext.putField(arg0, f, (ObjectReference) expression);
                     return ((ObjectReference) expression).getValue(f);
                 }
             }
@@ -1949,6 +2143,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         return null;
                     }
                     if (f != null) {
+                        evaluationContext.putField(arg0, f, null);
                         return clazz.getValue(f);
                     } else {
                         Assert2.error(arg0, "unknownField", fieldName);
@@ -1978,6 +2173,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     }
                     Field f = type.fieldByName(fieldName);
                     if (f != null) {
+                        evaluationContext.putField(arg0, f, (ObjectReference) expression);
                         return ((ObjectReference) expression).getValue(f);
                     } else {
                         Assert2.error(arg0, "unknownField", fieldName);
@@ -2008,14 +2204,53 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitEmptyStatement(EmptyStatementTree arg0, EvaluationContext evaluationContext) {
-        Assert2.error(arg0, "unsupported");
         return null;
     }
 
     @Override
     public Mirror visitSwitch(SwitchTree arg0, EvaluationContext evaluationContext) {
-        Assert2.error(arg0, "unsupported");
-        return null;
+        Mirror switchValue = arg0.getExpression().accept(this, evaluationContext);
+        CaseTree defaultTree = null;
+        Mirror result = null;
+        boolean caseMatched = false;
+        for (CaseTree caseTree : arg0.getCases()) {
+            Tree caseExpr = caseTree.getExpression();
+            if (caseExpr == null) {
+                defaultTree =  caseTree;
+                continue;
+            }
+            if (!caseMatched) {
+                Mirror value = caseExpr.accept(this, evaluationContext);
+                if (switchValue.equals(value)) {
+                    caseMatched = true;
+                } // if
+            } // if
+            if (caseMatched) {
+                try {
+                    evaluationContext.pushBlock();
+                    for (StatementTree tree : caseTree.getStatements()) {
+                        Mirror res = tree.accept(this, evaluationContext);
+                        if (res != null) {
+                            result = res;
+                        }
+                    } // for
+                } finally {
+                    evaluationContext.popBlock();
+                }
+            } // if
+        } // for
+        try {
+            evaluationContext.pushBlock();
+            for (StatementTree tree : defaultTree.getStatements()) {
+                Mirror res = tree.accept(this, evaluationContext);
+                if (res != null) {
+                    result = res;
+                }
+            } // for
+        } finally {
+            evaluationContext.popBlock();
+        }
+        return result;
     }
 
     @Override
@@ -2135,13 +2370,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitInstanceOf(InstanceOfTree arg0, EvaluationContext evaluationContext) {
-        Mirror expression = arg0.getExpression().accept(this, evaluationContext);
+        Mirror expr = arg0.getExpression().accept(this, evaluationContext);
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
         if (vm == null) return null;
-        if (expression == null) return vm.mirrorOf(false);
-        Assert2.assertAssignable(expression, ObjectReference.class, arg0, "instanceOfLeftOperandNotAReference", expression);
+        if (expr == null) return vm.mirrorOf(false);
+        Assert2.assertAssignable(expr, ObjectReference.class, arg0, "instanceOfLeftOperandNotAReference", expr);
 
-        ReferenceType expressionType = ((ObjectReference) expression).referenceType();
+        ReferenceType expressionType = ((ObjectReference) expr).referenceType();
         Type type = (Type) arg0.getType().accept(this, evaluationContext);
 
         return vm.mirrorOf(instanceOf(expressionType, type));
@@ -2149,12 +2384,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitUnary(UnaryTree arg0, EvaluationContext evaluationContext) {
-        Mirror expression = arg0.getExpression().accept(this, evaluationContext);
+        Mirror expr = arg0.getExpression().accept(this, evaluationContext);
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
         if (vm == null) return null;
         Tree.Kind kind = arg0.getKind();
-        if (expression instanceof BooleanValue) {
-            boolean v = ((BooleanValue) expression).value();
+        if (expr instanceof BooleanValue) {
+            boolean v = ((BooleanValue) expr).value();
             switch (kind) {
                 case LOGICAL_COMPLEMENT:
                     v = !v;
@@ -2163,8 +2398,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             return vm.mirrorOf(v);
         }
-        if (expression instanceof ByteValue) {
-            byte v = ((ByteValue) expression).value();
+        if (expr instanceof ByteValue) {
+            byte v = ((ByteValue) expr).value();
             switch (kind) {
                 case BITWISE_COMPLEMENT:
                     int i = ~v;
@@ -2192,8 +2427,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             return vm.mirrorOf(v);
         }
-        if (expression instanceof CharValue) {
-            char v = ((CharValue) expression).value();
+        if (expr instanceof CharValue) {
+            char v = ((CharValue) expr).value();
             switch (kind) {
                 case BITWISE_COMPLEMENT:
                     int i = ~v;
@@ -2221,8 +2456,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             return vm.mirrorOf(v);
         }
-        if (expression instanceof ShortValue) {
-            short v = ((ShortValue) expression).value();
+        if (expr instanceof ShortValue) {
+            short v = ((ShortValue) expr).value();
             switch (kind) {
                 case BITWISE_COMPLEMENT:
                     int i = ~v;
@@ -2250,8 +2485,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             return vm.mirrorOf(v);
         }
-        if (expression instanceof IntegerValue) {
-            int v = ((IntegerValue) expression).value();
+        if (expr instanceof IntegerValue) {
+            int v = ((IntegerValue) expr).value();
             switch (kind) {
                 case BITWISE_COMPLEMENT:
                     v = ~v;
@@ -2279,8 +2514,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             return vm.mirrorOf(v);
         }
-        if (expression instanceof LongValue) {
-            long v = ((LongValue) expression).value();
+        if (expr instanceof LongValue) {
+            long v = ((LongValue) expr).value();
             switch (kind) {
                 case BITWISE_COMPLEMENT:
                     v = ~v;
@@ -2308,8 +2543,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             return vm.mirrorOf(v);
         }
-        if (expression instanceof DoubleValue) {
-            double v = ((DoubleValue) expression).value();
+        if (expr instanceof DoubleValue) {
+            double v = ((DoubleValue) expr).value();
             switch (kind) {
                 case POSTFIX_DECREMENT:
                     setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
@@ -2334,8 +2569,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             return vm.mirrorOf(v);
         }
-        if (expression instanceof FloatValue) {
-            float v = ((FloatValue) expression).value();
+        if (expr instanceof FloatValue) {
+            float v = ((FloatValue) expr).value();
             switch (kind) {
                 case POSTFIX_DECREMENT:
                     setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
@@ -2360,20 +2595,47 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             return vm.mirrorOf(v);
         }
-        throw new IllegalStateException("Bad expression type: "+expression);
+        throw new IllegalStateException("Bad expression type: "+expr);
     }
 
     @Override
     public Mirror visitVariable(VariableTree arg0, EvaluationContext evaluationContext) {
         // Variable declaration
-        Assert2.error(arg0, "unsupported");
+        javax.lang.model.element.Name name = arg0.getName();
+        Tree typeTree = arg0.getType();
+        Type type = (Type)typeTree.accept(this, evaluationContext);
+        ScriptVariable var = evaluationContext.createScriptLocalVariable(name.toString(), type);
+        ExpressionTree initializer = arg0.getInitializer();
+        if (initializer != null) {
+            Mirror initialValue = initializer.accept(this, evaluationContext);
+            var.setValue(initialValue);
+            return initialValue;
+        }
         return null;
     }
 
     @Override
     public Mirror visitWhileLoop(WhileLoopTree arg0, EvaluationContext evaluationContext) {
-        Assert2.error(arg0, "unsupported");
-        return null;
+        Tree condition = arg0.getCondition();
+        Tree statement = arg0.getStatement();
+        Mirror result = null;
+        while (((BooleanValue)condition.accept(this, evaluationContext)).value()) {
+            try {
+                evaluationContext.pushBlock();
+                Mirror res = statement.accept(this, evaluationContext);
+                if (res instanceof Break) {
+                    break;
+                } else if (res instanceof Continue) {
+                    continue;
+                }
+                if (res != null) {
+                    result = res;
+                }
+            } finally {
+                evaluationContext.popBlock();
+            }
+        }
+        return result;
     }
 
     @Override
@@ -2389,29 +2651,15 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     }
 
     private void setToMirror(Tree var, Value value, EvaluationContext evaluationContext) {
-        VariableInfo varInfo = evaluationContext.getVariables().get(var);
+        VariableInfo varInfo = evaluationContext.getVariableInfo(var);
         if (varInfo == null) {
             Assert2.error(var, "unknownVariable", var.toString());
             // EvaluationException will be thrown from the Assert
             throw new IllegalStateException("Unknown variable "+var);
         }
-        try {
-            if (varInfo.field != null) {
-                if (varInfo.fieldObject != null) {
-                    varInfo.fieldObject.setValue(varInfo.field, value);
-                } else {
-                    ((ClassType) varInfo.field.declaringType()).setValue(varInfo.field, value);
-                }
-            } else {
-                evaluationContext.getFrame().setValue(varInfo.var, value);
-            }
-        } catch (InvalidTypeException itex) {
-            
-        } catch (ClassNotLoadedException cnlex) {
-            
-        }
+        varInfo.setValue(value);
     }
-    
+
     private Value invokeMethod(Tree arg0, Method method, Boolean isStatic, ClassType type,
                                ObjectReference objectReference, List<Value> argVals,
                                EvaluationContext evaluationContext, boolean nonVirtual) {
@@ -2490,7 +2738,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
         }
     }
-    
+
     /**
      * Auto-boxes or un-boxes arguments of a method.
      */
@@ -2514,7 +2762,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
         }
     }
-    
+
     /**
      * Auto-boxes or un-boxes elements of an array.
      */
@@ -2595,7 +2843,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
         }
     }
-    
+
     private static void unboxMethodToBeCalled(Tree arg0, Mirror v, EvaluationContext evaluationContext) {
         if (!evaluationContext.canInvokeMethods()) {
             Assert2.error(arg0, "calleeException", new UnsupportedOperationException(), evaluationContext);
@@ -2605,7 +2853,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         evaluationContext.methodToBeInvoked();
     }
-    
+
     private static Mirror unboxIfCan(Tree arg0, ObjectReference r, EvaluationContext evaluationContext) {
         String name = ((ReferenceType) r.type()).name();
         boolean methodCalled = false;
@@ -2730,7 +2978,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         return type;
     }
-    
+
     public static ObjectReference box(PrimitiveValue v, ReferenceType type,
                                        ThreadReference thread) throws InvalidTypeException,
                                                                       ClassNotLoadedException,
@@ -2742,7 +2990,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             List<Method> methods = type.methodsByName("<init>");
             String signature = "("+v.type().signature()+")";
             for (Method method : methods) {
-                if (!method.isAbstract() && egualMethodSignatures(method.signature(), signature)) {
+                if (!method.isAbstract() && equalMethodSignatures(method.signature(), signature)) {
                     constructor = method;
                 }
             }
@@ -2817,7 +3065,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             throw new IllegalStateException("Unknown primitive type: "+t);
         }
         if (v == null) {
-            return ""+null;
+            return "" + null;
         }
         ObjectReference ov = (ObjectReference) v;
         // Call toString() method:
@@ -2837,9 +3085,562 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             throw new IllegalStateException("Result of toString() call on "+ov+" is not a String, but: "+sv);
         }
     }
-    
+
+    // *************************************************************************
+    // inner classes
+    // *************************************************************************
+
     private static final class UnsuitableArgumentsException extends Exception {
         public UnsuitableArgumentsException() {}
     }
-    
+
+    private static abstract class ArtificialMirror implements Mirror {
+
+        public VirtualMachine virtualMachine() {
+            return null;
+        }
+
+        public abstract Mirror getVMMirror();
+
+    }
+
+    // used to drive code execution after 'break' statement is encountered
+    private static final class Break extends ArtificialMirror {
+
+        @Override
+        public String toString() {
+            return "break"; // NOI18N
+        }
+
+        public Mirror getVMMirror() {
+            return null;
+        }
+
+    }
+
+    // used to drive code execution after 'continue' statement is encountered
+    private static final class Continue extends ArtificialMirror {
+
+        @Override
+        public String toString() {
+            return "continue"; // NOI18N
+        }
+
+        public Mirror getVMMirror() {
+            return null;
+        }
+
+    }
+
+    private static final class Return extends ArtificialMirror {
+
+        private Mirror value;
+
+        Return (Mirror value) {
+            this.value = value;
+        }
+
+        public Mirror getVMMirror() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return "continue"; // NOI18N
+        }
+
+    }
+
+    private static class BooleanVal extends ArtificialMirror implements BooleanValue {
+
+        private boolean value;
+        private EvaluationContext context;
+
+        BooleanVal(EvaluationContext context, boolean value) {
+            this.context = context;
+            this.value = value;
+        }
+
+        @Override
+        public Mirror getVMMirror() {
+            VirtualMachine vm = context.getDebugger().getVirtualMachine();
+            return vm.mirrorOf(value);
+        }
+
+        public boolean value() {
+            return value;
+        }
+
+        public boolean booleanValue() {
+            return value;
+        }
+
+        public byte byteValue() {
+            return (byte)(value ? 1 : 0);
+        }
+
+        public char charValue() {
+            return (char)byteValue();
+        }
+
+        public short shortValue() {
+            return (short)(value ? 1 : 0);
+        }
+
+        public int intValue() {
+            return value ? 1 : 0;
+        }
+
+        public long longValue() {
+            return value ? 1 : 0;
+        }
+
+        public float floatValue() {
+            return value ? 1 : 0;
+        }
+
+        public double doubleValue() {
+            return value ? 1 : 0;
+        }
+
+        public Type type() {
+            return context.getDebugger().getVirtualMachine().mirrorOf(true).type();
+        }
+
+    } // BoolVal
+
+    private static class ByteVal extends ArtificialMirror implements ByteValue {
+
+        private byte value;
+        private EvaluationContext context;
+
+        ByteVal(EvaluationContext context, byte value) {
+            this.context = context;
+            this.value = value;
+        }
+
+        @Override
+        public Mirror getVMMirror() {
+            VirtualMachine vm = context.getDebugger().getVirtualMachine();
+            return vm.mirrorOf(value);
+        }
+
+        public byte value() {
+            return value;
+        }
+
+        public boolean booleanValue() {
+            return value != 0;
+        }
+
+        public byte byteValue() {
+            return value;
+        }
+
+        public char charValue() {
+            return (char)value;
+        }
+
+        public short shortValue() {
+            return (short)value;
+        }
+
+        public int intValue() {
+            return value;
+        }
+
+        public long longValue() {
+            return value;
+        }
+
+        public float floatValue() {
+            return value;
+        }
+
+        public double doubleValue() {
+            return value;
+        }
+
+        public Type type() {
+            return context.getDebugger().getVirtualMachine().mirrorOf((byte)0).type();
+        }
+
+        public int compareTo(ByteValue o) {
+            return value - ((ByteValue)o).value();
+        }
+
+    } // ByteVal
+
+    private static class ShortVal extends ArtificialMirror implements ShortValue {
+
+        private short value;
+        private EvaluationContext context;
+
+        ShortVal(EvaluationContext context, short value) {
+            this.context = context;
+            this.value = value;
+        }
+
+        @Override
+        public Mirror getVMMirror() {
+            VirtualMachine vm = context.getDebugger().getVirtualMachine();
+            return vm.mirrorOf(value);
+        }
+
+        public short value() {
+            return value;
+        }
+
+        public boolean booleanValue() {
+            return value != 0;
+        }
+
+        public byte byteValue() {
+            return (byte)value;
+        }
+
+        public char charValue() {
+            return (char)value;
+        }
+
+        public short shortValue() {
+            return value;
+        }
+
+        public int intValue() {
+            return value;
+        }
+
+        public long longValue() {
+            return value;
+        }
+
+        public float floatValue() {
+            return value;
+        }
+
+        public double doubleValue() {
+            return value;
+        }
+
+        public Type type() {
+            return context.getDebugger().getVirtualMachine().mirrorOf((short)0).type();
+        }
+
+        public int compareTo(ShortValue o) {
+            return value - ((ShortValue)o).value();
+        }
+
+    } // ShortVal
+
+    private static class IntVal extends ArtificialMirror implements IntegerValue {
+
+        private int value;
+        private EvaluationContext context;
+
+        IntVal(EvaluationContext context, int value) {
+            this.context = context;
+            this.value = value;
+        }
+
+        @Override
+        public Mirror getVMMirror() {
+            VirtualMachine vm = context.getDebugger().getVirtualMachine();
+            return vm.mirrorOf(value);
+        }
+
+        public int value() {
+            return value;
+        }
+
+        public boolean booleanValue() {
+            return value != 0;
+        }
+
+        public byte byteValue() {
+            return (byte)value;
+        }
+
+        public char charValue() {
+            return (char)value;
+        }
+
+        public short shortValue() {
+            return (short)value;
+        }
+
+        public int intValue() {
+            return value;
+        }
+
+        public long longValue() {
+            return value;
+        }
+
+        public float floatValue() {
+            return value;
+        }
+
+        public double doubleValue() {
+            return value;
+        }
+
+        public Type type() {
+            return context.getDebugger().getVirtualMachine().mirrorOf(0).type();
+        }
+
+        public int compareTo(IntegerValue o) {
+            return value - ((IntegerValue)o).value();
+        }
+
+    } // IntVal
+
+    private static class LongVal extends ArtificialMirror implements LongValue {
+
+        private long value;
+        private EvaluationContext context;
+
+        LongVal(EvaluationContext context, long value) {
+            this.context = context;
+            this.value = value;
+        }
+
+        @Override
+        public Mirror getVMMirror() {
+            VirtualMachine vm = context.getDebugger().getVirtualMachine();
+            return vm.mirrorOf(value);
+        }
+
+        public long value() {
+            return value;
+        }
+
+        public boolean booleanValue() {
+            return value != 0;
+        }
+
+        public byte byteValue() {
+            return (byte)value;
+        }
+
+        public char charValue() {
+            return (char)value;
+        }
+
+        public short shortValue() {
+            return (short)value;
+        }
+
+        public int intValue() {
+            return (int)value;
+        }
+
+        public long longValue() {
+            return value;
+        }
+
+        public float floatValue() {
+            return value;
+        }
+
+        public double doubleValue() {
+            return value;
+        }
+
+        public Type type() {
+            return context.getDebugger().getVirtualMachine().mirrorOf((long)0).type();
+        }
+
+        public int compareTo(LongValue o) {
+            return (int)(value - ((LongValue) o).value());
+        }
+
+    } // LongVal
+
+    private static class CharVal extends ArtificialMirror implements CharValue {
+
+        private char value;
+        private EvaluationContext context;
+
+        CharVal(EvaluationContext context, char value) {
+            this.context = context;
+            this.value = value;
+        }
+
+        @Override
+        public Mirror getVMMirror() {
+            VirtualMachine vm = context.getDebugger().getVirtualMachine();
+            return vm.mirrorOf(value);
+        }
+
+        public char value() {
+            return value;
+        }
+
+        public boolean booleanValue() {
+            return value != 0;
+        }
+
+        public byte byteValue() {
+            return (byte)value;
+        }
+
+        public char charValue() {
+            return value;
+        }
+
+        public short shortValue() {
+            return (short)value;
+        }
+
+        public int intValue() {
+            return value;
+        }
+
+        public long longValue() {
+            return value;
+        }
+
+        public float floatValue() {
+            return value;
+        }
+
+        public double doubleValue() {
+            return value;
+        }
+
+        public Type type() {
+            return context.getDebugger().getVirtualMachine().mirrorOf(' ').type();
+        }
+
+        public int compareTo(CharValue o) {
+            return value - ((CharValue)o).value();
+        }
+
+    } // CharVal
+
+    private static class FloatVal extends ArtificialMirror implements FloatValue {
+
+        private float value;
+        private EvaluationContext context;
+
+        FloatVal(EvaluationContext context, float value) {
+            this.context = context;
+            this.value = value;
+        }
+
+        @Override
+        public Mirror getVMMirror() {
+            VirtualMachine vm = context.getDebugger().getVirtualMachine();
+            return vm.mirrorOf(value);
+        }
+
+        public float value() {
+            return value;
+        }
+
+        public boolean booleanValue() {
+            return value != 0;
+        }
+
+        public byte byteValue() {
+            return (byte)value;
+        }
+
+        public char charValue() {
+            return (char)value;
+        }
+
+        public short shortValue() {
+            return (short)value;
+        }
+
+        public int intValue() {
+            return (int)value;
+        }
+
+        public long longValue() {
+            return (long)value;
+        }
+
+        public float floatValue() {
+            return value;
+        }
+
+        public double doubleValue() {
+            return value;
+        }
+
+        public Type type() {
+            return context.getDebugger().getVirtualMachine().mirrorOf((float)0).type();
+        }
+
+        public int compareTo(FloatValue o) {
+            return (int)(value - ((FloatValue) o).value());
+        }
+
+    } // FloatVal
+
+    private static class DoubleVal extends ArtificialMirror implements DoubleValue {
+
+        private double value;
+        private EvaluationContext context;
+
+        DoubleVal(EvaluationContext context, double value) {
+            this.context = context;
+            this.value = value;
+        }
+
+        @Override
+        public Mirror getVMMirror() {
+            VirtualMachine vm = context.getDebugger().getVirtualMachine();
+            return vm.mirrorOf(value);
+        }
+
+        public double value() {
+            return value;
+        }
+
+        public boolean booleanValue() {
+            return value != 0;
+        }
+
+        public byte byteValue() {
+            return (byte)value;
+        }
+
+        public char charValue() {
+            return (char)value;
+        }
+
+        public short shortValue() {
+            return (short)value;
+        }
+
+        public int intValue() {
+            return (int)value;
+        }
+
+        public long longValue() {
+            return (long)value;
+        }
+
+        public float floatValue() {
+            return (float)value;
+        }
+
+        public double doubleValue() {
+            return value;
+        }
+
+        public Type type() {
+            return context.getDebugger().getVirtualMachine().mirrorOf((double)0).type();
+        }
+
+        public int compareTo(DoubleValue o) {
+            return (int)(value - ((DoubleValue) o).value());
+        }
+
+    } // DoubleVal
+
 }

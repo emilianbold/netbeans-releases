@@ -43,6 +43,7 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
@@ -179,10 +180,10 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
             assertNotNull(createdFiles[i]+" file/folder cannot be found", fo.getFileObject(createdFiles[i]));
         }
         EditableProperties props = aph.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ArrayList l = new ArrayList(props.keySet());
-        for (int i=0; i<createdProperties.length; i++) {
-            assertNotNull(createdProperties[i]+" property cannot be found in project.properties", props.getProperty(createdProperties[i]));
-            l.remove(createdProperties[i]);
+        List<String> l = new ArrayList<String>(props.keySet());
+        for (String p : createdProperties) {
+            assertNotNull(p + " property cannot be found in project.properties", props.getProperty(p));
+            l.remove(p);
         }
         assertEquals("Found unexpected property: "+l,createdProperties.length, props.keySet().size());
     } 
@@ -205,10 +206,9 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
             assertNotNull(createdFilesExtSources[i]+" file/folder cannot be found", fo.getFileObject(createdFilesExtSources[i]));
         } 
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ArrayList l = new ArrayList(props.keySet());
+        List<String> l = new ArrayList<String>(props.keySet());
         int extFileRefCount = 0;
-        for (int i=0; i<createdPropertiesExtSources.length; i++) {
-            String propName = createdPropertiesExtSources[i];
+        for (String propName : createdPropertiesExtSources) {
             String propValue = props.getProperty(propName);
             assertNotNull(propName+" property cannot be found in project.properties", propValue);
             l.remove(propName);

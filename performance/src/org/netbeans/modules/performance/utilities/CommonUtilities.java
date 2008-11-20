@@ -41,22 +41,23 @@
 
 package org.netbeans.modules.performance.utilities;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.io.File;
-import java.io.IOException;
-import javax.swing.tree.TreePath;
-import java.text.SimpleDateFormat;
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.*;
 import java.util.Date;
 import java.util.Locale;
+import java.text.SimpleDateFormat;
+import javax.swing.tree.TreePath;
 
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
@@ -73,7 +74,7 @@ import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-
+import org.netbeans.jellytools.PluginsOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -85,13 +86,8 @@ import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-
 import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.jellytools.PluginsOperator;
-
 
 
 /**
@@ -101,18 +97,20 @@ import org.netbeans.jellytools.PluginsOperator;
  */
 public class CommonUtilities {
     
-    public static final String SOURCE_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
-    public static final String TEST_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
-    public static final String WEB_PAGES = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_DocBase");
+    public static final String SOURCE_PACKAGES;// = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
+    public static final String TEST_PACKAGES;// = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
+    //public static final String WEB_PAGES;// = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_DocBase");
     private static PerformanceTestCase test = null;
     
     private static int size=0;
-    private static String prev="";
     
     private static String projectsDir; // <nbextra>/data/
     private static String tempDir; // <nbjunit.workdir>/tmpdir/
     
     static {
+        SOURCE_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
+        TEST_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
+       // WEB_PAGES = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_DocBase");
         String workDir = System.getProperty("nbjunit.workdir");
         if (workDir != null) {
             projectsDir = workDir + File.separator;
@@ -193,7 +191,6 @@ public class CommonUtilities {
      * Close Welcome.
      */
     public static void closeWelcome(){
-        String TCOName = Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title");
         TopComponentOperator tComponent = null;
         try {
             tComponent = new TopComponentOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.welcome.Bundle", "LBL_Tab_Title"));
@@ -237,12 +234,15 @@ public class CommonUtilities {
     }
     
     public static void closeTaskWindow() {
+        waitProjectTasksFinished();
         TopComponentOperator tco = new TopComponentOperator("Tasks");
         tco.close();
     }
     
     public static void installPlugin(String name) {
+
        PluginsOperator po = PluginsOperator.invoke();
+
        po.install(name);
        po.close();
     }   
@@ -273,7 +273,70 @@ public class CommonUtilities {
             new NbDialogOperator(about).close();
         }
     }
-    
+
+    public static String jEditProjectOpen() {
+
+/* Temporary solution - download jEdit from internal location */
+
+        OutputStream out = null;
+        URLConnection conn = null;
+        InputStream in = null;
+        int BUFFER = 2048;
+
+        try {
+            URL url = new URL("http://spbweb.russia.sun.com/~ok153203/jEdit41.zip");
+
+            out = new BufferedOutputStream(new FileOutputStream(System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + "jEdit41.zip"));
+            conn = url.openConnection();
+            in = conn.getInputStream();
+            byte[] buffer = new byte[1024];
+            int numRead;
+            while ((numRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, numRead);
+            }
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        } finally {
+            try {
+                if (in != null) {
+                    in.close();
+                }
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException ioe) {
+            }
+        }
+
+        try {
+            BufferedOutputStream dest = null;
+            FileInputStream fis = new FileInputStream(new File(System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + "jEdit41.zip"));
+            ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                if (entry.isDirectory()) {
+                    new File(System.getProperty("nbjunit.workdir") + File.separator + ".." + File.separator + "data" + File.separator + entry.getName()).mkdir();
+                    continue;
+                }
+                int count;
+                byte data[] = new byte[BUFFER];
+                FileOutputStream fos = new FileOutputStream(System.getProperty("nbjunit.workdir") + File.separator + ".." + File.separator + "data" + File.separator + entry.getName());
+                dest = new BufferedOutputStream(fos, BUFFER);
+                while ((count = zis.read(data, 0, BUFFER)) != -1) {
+                    dest.write(data, 0, count);
+                }
+                dest.flush();
+                dest.close();
+            }
+            zis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + "jEdit41.zip";
+    }
+
+
     /**
      * Open files
      *
@@ -474,7 +537,7 @@ public class CommonUtilities {
      * Build project and wait for finish
      * @param project
      */
-    public static void buildproject(String project) {
+    public static void buildProject(String project) {
         ProjectRootNode prn = ProjectsTabOperator.invoke().getProjectRootNode(project);
         prn.buildProject();
         StringComparator sc = MainWindowOperator.getDefault().getComparator();        
@@ -616,7 +679,29 @@ public class CommonUtilities {
         
         runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
     }
-    
+
+    public static Node getTomcatServerNode(){
+        RuntimeTabOperator rto = RuntimeTabOperator.invoke();
+
+        TreePath path = null;
+
+        JTreeOperator runtimeTree = rto.tree();
+        long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
+        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 6000);
+        try {
+            path = runtimeTree.findPath("Servers");
+            runtimeTree.selectPath(path);
+            path = runtimeTree.findPath("Servers|Tomcat"); // NOI18N
+            runtimeTree.selectPath(path);
+        } catch (Exception exc) {
+            exc.printStackTrace(System.err);
+            throw new Error("Cannot find Tomcat Server Node", exc);
+        }
+        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
+
+        return new Node(runtimeTree,path);
+    }
+
     public static Node getApplicationServerNode(){
         RuntimeTabOperator rto = RuntimeTabOperator.invoke();
         
@@ -648,16 +733,29 @@ public class CommonUtilities {
     
     public static Node startApplicationServer() {
         Node node = performApplicationServerAction("Start", "Starting");  // NOI18N
-        new EventTool().waitNoEvent(80000);
+        new EventTool().waitNoEvent(10000);
         return node;
     }
     
     public static Node stopApplicationServer() {
         Node node = performApplicationServerAction("Stop", "Stopping");  // NOI18N
-        new EventTool().waitNoEvent(50000);
+        new EventTool().waitNoEvent(10000);
         return node;
     }
-    
+
+    public static Node startTomcatServer() {
+        Node node = performTomcatServerAction("Start");  // NOI18N
+        new EventTool().waitNoEvent(10000);
+        return node;
+    }
+
+    public static Node stopTomcatServer() {
+        Node node = performTomcatServerAction("Stop");  // NOI18N
+        new EventTool().waitNoEvent(10000);
+        return node;
+    }
+
+
         public static void addTomcatServer() {
 
         String appServerPath = System.getProperty("tomcat.installRoot");
@@ -702,6 +800,23 @@ public class CommonUtilities {
 
     }
 
+    private static Node performTomcatServerAction(String action) {
+        Node asNode = getTomcatServerNode();
+        asNode.select();
+        new EventTool().waitNoEvent(10000);
+        String serverIDEName = asNode.getText();
+        log("ServerNode name = "+serverIDEName);
+        JPopupMenuOperator popup = asNode.callPopup();
+        if (popup == null) {
+            throw new Error("Cannot get context menu for Tomcat server node ");
+        }
+        boolean startEnabled = popup.showMenuItem(action).isEnabled();
+        if(startEnabled) {
+            popup.pushMenuNoBlock(action);
+        }
+        return asNode;
+    }
+
     /**
      * Invoke action on Application server node (start/stop/...)
      * @param action Action to be invoked on the Application server node
@@ -709,7 +824,7 @@ public class CommonUtilities {
     private static Node performApplicationServerAction(String action, String message) {
         Node asNode = getApplicationServerNode();
         asNode.select();
-        
+        new EventTool().waitNoEvent(10000);
         String serverIDEName = asNode.getText();
         log("ServerNode name = "+serverIDEName);
         JPopupMenuOperator popup = asNode.callPopup();
@@ -720,69 +835,11 @@ public class CommonUtilities {
         if(startEnabled) {
             popup.pushMenuNoBlock(action);
         }
-        
-  //      waitForAppServerTask(message, serverIDEName);
-        
+      
         return asNode;
     }
     
-/*    private static void waitForAppServerTask(String taskName, String serverIDEName) {
-        Controller controller = Controller.getDefault();
-        TaskModel model = controller.getModel();
-        
-        InternalHandle task = waitServerTaskHandle(model,taskName+" "+serverIDEName);
-        long taskTimestamp = task.getTimeStampStarted();
-        
-        log("task started at : "+taskTimestamp);
-        int i=0;
-        while(i<12000) { // max 12000*50=600000=10 min
-            i++;
-            int state = task.getState();
-            if(state == task.STATE_FINISHED) { return; }
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException exc) {
-                exc.printStackTrace(System.err);
-                return;
-            }
-        }
-    }*/
-    
- /*   private static InternalHandle waitServerTaskHandle(TaskModel model, String serverIDEName) {
-        for(int i=0; i<12000; i++) { // max 12000*50=600000=10 min
-            InternalHandle[] handles =  model.getHandles();
-            InternalHandle  serverTask = getServerTaskHandle(handles,serverIDEName);
-            if(serverTask != null) {
-                log("Returning task handle");
-                return serverTask;
-            }
-            
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException exc) {
-                exc.printStackTrace(System.err);
-            }
-        }
-        
-        return null;
-    }*/
-/*    
-    private static InternalHandle getServerTaskHandle(InternalHandle[] handles, String taskName) {
-        if(handles.length == 0)  {
-            log("Empty tasks queue");
-            return null;
-        }
-        
-        for (InternalHandle internalHandle : handles) {
-            if(internalHandle.getDisplayName().equals(taskName)) {
-                log("Expected task found...");
-                return internalHandle;
-            }
-        }
-        return null;
-    }
-  */ 
-    
+
     public static void waitProjectTasksFinished() {
         String status=MainWindowOperator.getDefault().getStatusText();
         boolean tasks=true;
@@ -802,14 +859,12 @@ public class CommonUtilities {
      * Wait finished scan - repeatedly
      */
     public static void waitScanFinished(){
-          //ProjectSupport.waitScanFinished();
         try {
-            new QueueTool().waitEmpty(1000);
+            new QueueTool().waitEmpty();
         } catch (TimeoutExpiredException tee) {            
             getLog().println("The following exception is ignored");
             tee.printStackTrace(getLog());
         }
-        //ProjectSupport.waitScanFinished();
      }
     
     public static void initLog(PerformanceTestCase testCase) {
@@ -849,7 +904,18 @@ public class CommonUtilities {
     }
     
     public static void xmlTestResults(String path, String suite, String name, String classname, String sname, String unit, String pass, long threshold, long[] results, int repeat) {
-    
+
+        System.out.println();
+        System.out.println("#####  Results for "+name+"   #####");
+        System.out.print("#####        [");
+        for(int i=1;i<=repeat;i++)             
+            System.out.print(results[i]+"ms, ");
+        System.out.println("]");
+        for (int i=1;i<=name.length()+27;i++)
+            System.out.print("#");
+        System.out.println();
+        System.out.println();
+/*
         File resLocal=new File(path+File.separator+"performance.xml");
         PrintStream ps=null;
         try {
@@ -866,8 +932,10 @@ public class CommonUtilities {
         {
             ps.close();
         }
-        
-      File resGlobal=new File(path+File.separator+"../../allPerformance.xml");  
+*/
+        path=System.getProperty("nbjunit.workdir");
+      //File resGlobal=new File(path+File.separator+"../../allPerformance.xml");
+        File resGlobal=new File(path+File.separator+"allPerformance.xml");
       FileOutputStream fos=null;
       FileInputStream fis=null;
       if (!resGlobal.exists()) {
@@ -905,7 +973,7 @@ public class CommonUtilities {
             
             fos.write(("      <Test name=\""+name+"\" unit=\""+unit+"\""+" results=\""+pass+"\""+" threshold=\""+threshold+"\""+" classname=\""+classname+"\">\n").getBytes());
             fos.write(("         <PerformanceData runOrder=\"1\" value=\""+results[1]+"\"/>\n").getBytes());
-            for (int i=2;i<=repeat;i++) 
+            for (int i=2;i<=repeat;i++)
                 fos.write(("         <PerformanceData runOrder=\"2\" value=\""+results[i]+"\"/>\n").getBytes());
             fos.write(("      </Test>\n").getBytes());
 
@@ -918,5 +986,10 @@ public class CommonUtilities {
         }
                
     }
-    
+
+    public static void processUnitTestsResults(String className, PerformanceData pd) {
+        long[] result=new long[2];
+        result[1]=pd.value;
+        CommonUtilities.xmlTestResults(System.getProperty("nbjunit.workdir"), "Unit Tests Suite", pd.name, className, className, pd.unit, "passed", 120000 , result, 1);
+    }
 }

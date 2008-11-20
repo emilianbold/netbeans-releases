@@ -51,10 +51,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.zip.*;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -62,12 +58,9 @@ import org.openide.util.Utilities;
 public class UMLCoreModule 
 {   
    public static void checkInitUml1() {
-      // Retrieve the desired configuration home.  If the property
-      // embarcadero.home-dir has already been set then do not change it
-      // (because that is where the user wants the configuration directory).
+      // Retrieve the desired configuration home.  
       // If the configuration directory has not been set then set it to
-      // netbeans user home.  The configuration manager will then use the
-      // embarcadero.home-dir property to determine the configuration location.
+      // netbeans user home. 
 
        String nbuser = System.getProperty("netbeans.user"); // NOI18N
        if (nbuser!=null)

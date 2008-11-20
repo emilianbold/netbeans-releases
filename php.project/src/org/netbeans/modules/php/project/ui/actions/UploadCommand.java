@@ -65,7 +65,7 @@ import org.openide.windows.InputOutput;
  * Upload files to remote connection.
  * @author Tomas Mysik
  */
-public class UploadCommand extends FtpCommand implements Displayable {
+public class UploadCommand extends RemoteCommand implements Displayable {
     public static final String ID = "upload"; // NOI18N
     public static final String DISPLAY_NAME = NbBundle.getMessage(UploadCommand.class, "LBL_UploadCommand");
 
@@ -98,8 +98,8 @@ public class UploadCommand extends FtpCommand implements Displayable {
 
         FileObject[] sources = Utils.getSourceObjects(getProject());
 
-        InputOutput ftpLog = getFtpLog(getRemoteConfiguration().getDisplayName());
-        RemoteClient remoteClient = getRemoteClient(ftpLog);
+        InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
+        RemoteClient remoteClient = getRemoteClient(remoteLog);
         String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName());
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         TransferInfo transferInfo = null;
@@ -144,7 +144,7 @@ public class UploadCommand extends FtpCommand implements Displayable {
                 processRemoteException(ex);
             }
             if (transferInfo != null) {
-                processTransferInfo(transferInfo, ftpLog);
+                processTransferInfo(transferInfo, remoteLog);
             }
             progressHandle.finish();
         }

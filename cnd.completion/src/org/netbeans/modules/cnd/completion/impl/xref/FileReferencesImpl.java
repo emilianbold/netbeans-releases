@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CndAbstractTokenProcessor;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -143,7 +144,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
 
     @Override
     protected boolean isThis(CsmReference ref) {
-        Token refToken = ReferencesSupport.getRefTokenIfPossible(ref);
+        TokenItem<CppTokenId> refToken = ReferencesSupport.getRefTokenIfPossible(ref);
         if (refToken != null) {
             return refToken.id() == CppTokenId.THIS;
         } else {
@@ -219,7 +220,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
                         skip = isInDeadBlock(tokenOffset, deadBlocks);
                     }
                     ReferenceImpl ref = ReferencesSupport.createReferenceImpl(
-                            csmFile, doc, tokenOffset, token, derefToken == null?
+                            csmFile, doc, tokenOffset, CndTokenUtilities.createTokenItem(token, tokenOffset), derefToken == null?
                                 null : CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
                     contextBuilder.reference(ref, derefToken);
                     ref.setFileReferencesContext(fileReferncesContext);

@@ -38,53 +38,72 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.ruby;
 
-import junit.framework.TestCase;
+import java.io.IOException;
+import java.io.OutputStream;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * @author Tor Norbye
+ * @author Tor Norbye, Jiri Skrivanek
  */
-public class RubyMimeResolverTest extends TestCase {
+public class RubyMimeResolverTest extends NbTestCase {
+
     public RubyMimeResolverTest(String testName) {
         super(testName);
     }
 
-    private boolean checkValidHeader(String header) {
-        String truncated = header.length() > RubyMimeResolver.HEADER_LENGTH ?
-            header.substring(0, RubyMimeResolver.HEADER_LENGTH) : header;
-        byte[] h = truncated.getBytes();
-
-        return RubyMimeResolver.isRubyHeader(h);
+    public void testRubyResolver() throws IOException {
+        FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("ruby");
+        String[] validHeaders = {
+            "#!/usr/bin/ruby",
+            "#!/usr/bin/ruby1.8",
+            "#!/usr/bin/jruby",
+            "#! /usr/bin/ruby",
+            "#! /usr/bin/ruby\n",
+            "#! /usr/bin/ruby.exe",
+            "#! /usr/bin/ruby.exe ",
+            "#!C:\\programs\\ruby.exe",
+            "#!C:\\programs\\ruby.exe",
+            "#!/Users/tor/dev/ruby/install/ruby-1.8.5/bin/ruby\n",
+            "#!/space/ruby/ruby-1.8.6-p110/bin/ruby1.8.6-p110",
+            "#!/usr/bin/env jruby -J-Xmx512M",
+            "#!/usr/bin/env ruby",
+            "#!/usr/bin/env jruby",
+            "#!/usr/bin/env.exe jruby",
+            "#!D:/Development/Ruby/ruby-1.8.6-dist/bin/ruby"
+        };
+        String[] invalidHeaders = {
+            "# !C:\\programs\\ruby.exe",
+            "#!/bin/sh",
+            //"#!/bin/rubystuff/bin/ksh", // mistakenly resolved as ruby file
+            "#!/usr/bin/rub",
+            "#!/usr/bin/",
+            "#! /usr/bin/rub\ny",
+            //"#! /usr/b\nin/ruby", // mistakenly resolved as ruby file
+            "#/usr/bin/ruby",
+            "#!/usr/bin/env.exe jrub"
+        };
+        for (String header : validHeaders) {
+            assertHeader(fo, header, "text/x-ruby");
+        }
+        for (String header : invalidHeaders) {
+            assertHeader(fo, header, "content/unknown");
+        }
+        fo = FileUtil.createMemoryFileSystem().getRoot().createData("rakefile");
+        assertEquals("rakefile should be resolved.", "text/x-ruby", fo.getMIMEType());
+        fo = FileUtil.createMemoryFileSystem().getRoot().createData("Rakefile");
+        assertEquals("rakefile should be resolved.", "text/x-ruby", fo.getMIMEType());
+        fo = FileUtil.createMemoryFileSystem().getRoot().createData("a.rb");
+        assertEquals("All .rb should be resolved.", "text/x-ruby", fo.getMIMEType());
     }
 
-    public void testRubyHeader() {
-        assertTrue(checkValidHeader("#!/usr/bin/ruby"));
-        assertTrue(checkValidHeader("#!/usr/bin/ruby1.8"));
-        assertTrue(checkValidHeader("#!/usr/bin/jruby"));
-        assertTrue(checkValidHeader("#! /usr/bin/ruby"));
-        assertTrue(checkValidHeader("#! /usr/bin/ruby\n"));
-        assertTrue(checkValidHeader("#! /usr/bin/ruby.exe"));
-        assertTrue(checkValidHeader("#! /usr/bin/ruby.exe "));
-        assertTrue(checkValidHeader("#!C:\\programs\\ruby.exe"));
-        assertTrue(checkValidHeader("#!C:\\programs\\ruby.exe"));
-        assertTrue(checkValidHeader("#!/Users/tor/dev/ruby/install/ruby-1.8.5/bin/ruby\n"));
-        assertTrue(checkValidHeader("#!/space/ruby/ruby-1.8.6-p110/bin/ruby1.8.6-p110"));
-        assertTrue(checkValidHeader("#!/usr/bin/env jruby -J-Xmx512M"));
-        assertTrue(checkValidHeader("#!/usr/bin/env ruby"));
-        assertTrue(checkValidHeader("#!/usr/bin/env jruby"));
-        assertTrue(checkValidHeader("#!/usr/bin/env.exe jruby"));
-        assertTrue(checkValidHeader("#!D:/Development/Ruby/ruby-1.8.6-dist/bin/ruby"));
-
-        assertFalse(checkValidHeader("# !C:\\programs\\ruby.exe"));
-        assertFalse(checkValidHeader("#!/bin/sh"));
-        assertFalse(checkValidHeader("#!/bin/rubystuff/bin/ksh"));
-        assertFalse(checkValidHeader("#!/usr/bin/rub"));
-        assertFalse(checkValidHeader("#!/usr/bin/"));
-        assertFalse(checkValidHeader("#! /usr/bin/rub\ny"));
-        assertFalse(checkValidHeader("#! /usr/b\nin/ruby"));
-        assertFalse(checkValidHeader("#/usr/bin/ruby"));
-        assertFalse(checkValidHeader("#!/usr/bin/env.exe jrub"));
-    }    
+    private void assertHeader(FileObject fo, String header, String expectedMimeType) throws IOException {
+        OutputStream os = fo.getOutputStream();
+        os.write(header.getBytes());
+        os.close();
+        assertEquals("Header " + header + " wrongly resolved.", expectedMimeType, fo.getMIMEType());
+    }
 }

@@ -98,7 +98,7 @@ public final class SkewActionFactory extends AbstractComposerActionFactory {
                 bBox.add(m_skewed.getScreenBBox());
                 
                 m_factory.getSceneManager().getScreenManager().repaint(bBox, SVGObjectOutline.SELECTOR_OVERLAP);
-            } else {
+            } else if (evt.getID() == MouseEvent.MOUSE_RELEASED) {
                 actionCompleted();
                 m_skewed.commitChanges();
             }
@@ -113,6 +113,9 @@ public final class SkewActionFactory extends AbstractComposerActionFactory {
             m_skewed.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
             m_skewed.applyTextChanges();
             m_skewed.commitChanges();
+            if (getScreenManager().getShowAllArea()){
+                getScreenManager().refresh();
+            }
             super.actionCompleted();
         }
     }

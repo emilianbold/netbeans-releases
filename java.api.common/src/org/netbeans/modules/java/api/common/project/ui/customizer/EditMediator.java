@@ -135,7 +135,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
         // Remember all buttons
 
         this.list = list;
-        this.listModel = (DefaultListModel)list.getModel();
+        this.listModel = list.getModel();
         this.selectionModel = list.getSelectionModel();
         this.addJar = addJar;
         this.addLibrary = addLibrary;

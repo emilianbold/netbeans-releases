@@ -52,7 +52,6 @@ import org.netbeans.api.project.TestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
 
 /**
  * Tests for BinaryForSourceQueryImpl
@@ -81,7 +80,6 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
         scratch = null;
         projdir = null;
         pm = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
     

@@ -667,7 +667,7 @@ final class ModuleListParser {
      * <ol>
      * <li> ${nb_all} - location of NB sources (used only for netbeans.org modules)
      * <li> ${netbeans.dest.dir} - location of NB build
-     * <li> ${basedir} - directory of this project (used only for standalone modules)
+     * <li> ${basedir} - directory of the project initiating the scan (most significant for standalone modules)
      * <li> ${suite.dir} - directory of the suite (used only for suite modules)
      * <li> ${nb.cluster.TOKEN} - list of module paths included in cluster TOKEN (comma-separated) (used only for netbeans.org modules)
      * <li> ${nb.cluster.TOKEN.dir} - directory in ${netbeans.dest.dir} where cluster TOKEN is built (used only for netbeans.org modules)

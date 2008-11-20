@@ -87,11 +87,12 @@ public class PartialImageGridPreview extends AbstractImagePreviewComponent {
 	
 	public void setImageURL(URL imageURL) throws MalformedURLException, IllegalArgumentException {
 		this.imageURL = imageURL;
-		if (imageURL == null)
-			return;
+		if (imageURL == null){
+                    return;
+                }
 		Image image = ImageUtils.loadImage(imageURL);
 		if (image == null) {
-			throw new IllegalArgumentException();
+                    throw new IllegalArgumentException();
 		}
 		BufferedImage bufImg = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics = (Graphics2D) bufImg.getGraphics();
@@ -207,6 +208,7 @@ public class PartialImageGridPreview extends AbstractImagePreviewComponent {
 	}
 	
 	
+        @Override
 	public void paintComponent(Graphics g) {
 		//int rounding = 20;
 		//g.setColor(Color.BLACK);
@@ -216,6 +218,7 @@ public class PartialImageGridPreview extends AbstractImagePreviewComponent {
 			//this.createPreview();
 			int offX = (this.getWidth() - this.preview.getWidth(this)) / 2;
 			int offY = (this.getHeight() - this.preview.getHeight(this)) / 2;
+                        g.clearRect(0, 0, this.getWidth(), this.getWidth());
 			g.drawImage(this.preview, offX, offY, this);
 		}
 	}

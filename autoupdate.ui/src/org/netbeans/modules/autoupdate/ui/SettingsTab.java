@@ -263,7 +263,7 @@ public class SettingsTab extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lGeneral, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lGeneral.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cbGlobalInstall, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbSharedInstall.text")); // NOI18N
-        cbGlobalInstall.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 7, 0, 0));
+        cbGlobalInstall.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbGlobalInstall.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbGlobalInstallActionPerformed(evt);
@@ -278,6 +278,9 @@ public class SettingsTab extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
+                        .add(10, 10, 10)
+                        .add(cbGlobalInstall))
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(addButton)
                             .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 785, Short.MAX_VALUE))
@@ -286,19 +289,18 @@ public class SettingsTab extends javax.swing.JPanel {
                         .add(12, 12, 12)
                         .add(lCheckPeriod)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbCheckPeriod, 0, 506, Short.MAX_VALUE)
+                        .add(cbCheckPeriod, 0, 533, Short.MAX_VALUE)
                         .add(58, 58, 58)
                         .add(bProxy))
                     .add(layout.createSequentialGroup()
                         .add(lGeneral)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparatorAdvanced, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE))
+                        .add(jSeparatorAdvanced, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 734, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(lConnection)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparatorConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE))
-                    .add(lUpdateCenters)
-                    .add(cbGlobalInstall))
+                        .add(jSeparatorConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE))
+                    .add(lUpdateCenters))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -396,7 +398,7 @@ private class Listener implements ListSelectionListener,  TableModelListener {
     
     private void modelOrSelectionChanged() {
         int rowIndex = table.getSelectedRow();
-        if (rowIndex != -1) {
+        if (rowIndex != -1 && table.getRowCount() > 0) {
             UpdateUnitProvider uup = ((SettingsTableModel)table.getModel()).getUpdateUnitProvider(rowIndex);
             if (uup != null) {
                 StringBuffer sb = new StringBuffer();

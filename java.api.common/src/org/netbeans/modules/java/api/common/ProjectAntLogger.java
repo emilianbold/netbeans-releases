@@ -57,7 +57,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class ProjectAntLogger extends AntLogger {
 
-    private Class projectClass;
+    private Class<?> projectClass;
     private String[] messages;
 
     public ProjectAntLogger(Class projectClass, String[] messages) {

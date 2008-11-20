@@ -40,8 +40,10 @@
  */
 package org.netbeans.modules.websvc.wsitmodelext.trust;
 
+import java.util.HashMap;
 import javax.xml.namespace.QName;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
@@ -54,10 +56,15 @@ public enum TrustQName {
     KEYTYPE(createTrustQName("KeyType")),                     //NOI18N
     KEYSIZE(createTrustQName("KeySize"));                     //NOI18N
 
-    public static final String TRUST_NS_URI = "http://schemas.xmlsoap.org/ws/2005/02/trust";    //NOI18N
-    public static final String TRUST_12_NS_URI = "http://docs.oasis-open.org/ws-sx/ws-trust/200512";    //NOI18N
-
     public static final String TRUST_NS_PREFIX = "t";                                       //NOI18N
+
+    public static final String TRUST_NS_URI = "http://schemas.xmlsoap.org/ws/2005/02/trust";    //NOI18N
+    public static final String TRUST_NS_URI_EXT = "http://schemas.xmlsoap.org/ws/2005/02/trust/WS-Trust.xsd";    //NOI18N
+    public static final String TRUST_NS_URI_LOCAL = "nbres:/org/netbeans/modules/websvc/wsitmodelext/catalog/resources/WS-Trust.xsd";    //NOI18N
+
+    public static final String TRUST_12_NS_URI = "http://docs.oasis-open.org/ws-sx/ws-trust/200512";    //NOI18N
+    public static final String TRUST_12_NS_URI_EXT = "http://docs.oasis-open.org/ws-sx/ws-trust/200512";    //NOI18N
+    public static final String TRUST_12_NS_URI_LOCAL = "nbres:/org/netbeans/modules/websvc/wsitmodelext/catalog/resources/ws-trust-1.3.xsd";    //NOI18N
     
     static QName createTrustQName(String localName){
         return new QName(TRUST_NS_URI, localName, TRUST_NS_PREFIX);
@@ -96,4 +103,30 @@ public enum TrustQName {
         return qnames;
     }
     private final QName qName;
+
+    public Map<String, String> getSchemaLocations(boolean local) {
+        HashMap<String, String> hmap = new HashMap<String, String>();
+        for (ConfigVersion cfg : ConfigVersion.values()) {
+            try {
+                String nsUri = getNamespaceUri(cfg);
+                if (nsUri != null) {
+                    hmap.put(nsUri, getSchemaLocation(nsUri, local));
+                }
+            } catch (IllegalArgumentException iae) {
+                // ignore - just skip this
+            }
+        }
+        return hmap;
+    }
+
+    public String getSchemaLocation(String namespace, boolean local) {
+        if (TRUST_NS_URI.equals(namespace)) {
+            return local ? TRUST_NS_URI_LOCAL : TRUST_NS_URI_EXT;
+        }
+        if (TRUST_12_NS_URI.equals(namespace)) {
+            return local ? TRUST_12_NS_URI_LOCAL : TRUST_12_NS_URI_EXT;
+        }
+        return null;
+    }
+
 }

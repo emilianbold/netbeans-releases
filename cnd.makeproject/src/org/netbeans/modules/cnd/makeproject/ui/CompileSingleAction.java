@@ -61,7 +61,7 @@ public class CompileSingleAction extends NodeAction {
                 enabled = false;
                 break;
             }
-	    ActionProvider ap = (ActionProvider)project.getLookup().lookup(ActionProvider.class);
+	    ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
 	    if (ap != null)
 		enabled = ap.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, Lookups.fixed(new Object[] {project, n}));
 	    if (!enabled)
@@ -79,7 +79,7 @@ public class CompileSingleAction extends NodeAction {
 	    Node n = activatedNodes[i];
 	    Project project = (Project)n.getValue("Project"); // NOI18N
 	    Item item = (Item)n.getValue("Item"); // NOI18N
-	    ActionProvider ap = (ActionProvider)project.getLookup().lookup(ActionProvider.class);
+	    ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
 	    if (ap != null) 
 		ap.invokeAction(ActionProvider.COMMAND_COMPILE_SINGLE, Lookups.fixed(new Object[] {project, n}));
 	}

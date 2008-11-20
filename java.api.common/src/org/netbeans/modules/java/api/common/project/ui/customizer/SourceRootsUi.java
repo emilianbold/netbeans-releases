@@ -380,7 +380,7 @@ out:            for( int i = 0; i < files.length; i++ ) {
                     continue;
                 }
                 if ((p=FileOwnerQuery.getOwner(normalizedFile.toURI()))!=null && !p.getProjectDirectory().equals(project.getProjectDirectory())) {
-                    final Sources sources = (Sources) p.getLookup().lookup (Sources.class);
+                    final Sources sources = p.getLookup().lookup(Sources.class);
                     if (sources == null) {
                         rootsFromOtherProjects.add (normalizedFile);
                         continue;

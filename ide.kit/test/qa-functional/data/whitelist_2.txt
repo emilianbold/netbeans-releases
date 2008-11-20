@@ -739,6 +739,8 @@ org.netbeans.lib.uihandler.LogRecords
 org.netbeans.modules.ant.debugger.breakpoints.AntBreakpointActionProvider
 org.netbeans.modules.apisupport.project.Install
 org.netbeans.modules.apisupport.project.universe.NbPlatform
+org.netbeans.modules.autoupdate.pluginimporter.Installer
+org.netbeans.modules.autoupdate.pluginimporter.StatusLineImportIcon
 org.netbeans.modules.autoupdate.services.InstallManager
 org.netbeans.modules.autoupdate.ui.actions.AvailableUpdatesNotification
 org.netbeans.modules.autoupdate.ui.actions.AvailableUpdatesNotification$UpdatesFlasher
@@ -2034,6 +2036,7 @@ org.openide.util.Lookup$Item
 org.openide.util.Lookup$Provider
 org.openide.util.Lookup$Result
 org.openide.util.Lookup$Template
+org.openide.util.LookupEvent
 org.openide.util.LookupListener
 org.openide.util.Mutex
 org.openide.util.Mutex$Action

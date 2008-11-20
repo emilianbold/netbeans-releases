@@ -75,7 +75,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
+//import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
 
 
@@ -229,12 +229,12 @@ public class PrepareIDEForEnterpriseComplexMeasurements extends JellyTestCase {
     public void openProjects() {
         try {
             String projectsLocation = CommonUtilities.getProjectsDir() + "TravelReservationService" + File.separator;
-            ProjectSupport.openProject(projectsLocation + "ReservationPartnerServices");
+//            ProjectSupport.openProject(projectsLocation + "ReservationPartnerServices");
             // TODO
 //            ProjectSupport.waitScanFinished();
-            ProjectSupport.openProject(projectsLocation + "TravelReservationService");
+  //          ProjectSupport.openProject(projectsLocation + "TravelReservationService");
 //            ProjectSupport.waitScanFinished();
-            ProjectSupport.openProject(projectsLocation + "TravelReservationServiceApplication");
+    //        ProjectSupport.openProject(projectsLocation + "TravelReservationServiceApplication");
 //            ProjectSupport.waitScanFinished();
             // TODO: Remove this workaround: closing all modals
             closeAllModal();

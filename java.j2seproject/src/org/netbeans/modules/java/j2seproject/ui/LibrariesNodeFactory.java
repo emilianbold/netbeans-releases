@@ -79,7 +79,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
     }
 
     public NodeList createNodes(Project p) {
-        J2SEProject project = (J2SEProject)p.getLookup().lookup(J2SEProject.class);
+        J2SEProject project = p.getLookup().lookup(J2SEProject.class);
         assert project != null;
         return new LibrariesNodeList(project);
     }
@@ -100,7 +100,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
         LibrariesNodeList(J2SEProject proj) {
             project = proj;
             testSources = project.getTestSourceRoots();
-            J2SELogicalViewProvider logView = (J2SELogicalViewProvider)project.getLookup().lookup(J2SELogicalViewProvider.class);
+            J2SELogicalViewProvider logView = project.getLookup().lookup(J2SELogicalViewProvider.class);
             assert logView != null;
             evaluator = logView.getEvaluator();
             helper = logView.getUpdateHelper();

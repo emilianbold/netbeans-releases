@@ -42,9 +42,12 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security;
 
+import java.util.HashMap;
 import javax.xml.namespace.QName;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 /**
  *
@@ -53,9 +56,14 @@ import java.util.Set;
 public enum SecurityQName {
     SECPOLID(createSecurityQName("Id"));                        //NOI18N
 
+    public static final String SECURITY_UTILITY_NS_PREFIX = "wsu";         //NOI18N
+
     public static final String SECURITY_UTILITY = 
             "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"; //NOI18N
-    public static final String SECURITY_UTILITY_NS_PREFIX = "wsu";         //NOI18N
+    public static final String SECURITY_UTILITY_EXT =
+            "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"; //NOI18N
+    public static final String SECURITY_UTILITY_LOCAL =
+            "nbres:/org/netbeans/modules/websvc/wsitmodelext/catalog/resources/oasis-200401-wss-wssecurity-utility-1.0.xsd"; //NOI18N
             
     public static QName createSecurityQName(String localName){
         return new QName(SECURITY_UTILITY, localName, SECURITY_UTILITY_NS_PREFIX);
@@ -79,5 +87,18 @@ public enum SecurityQName {
         return qnames;
     }
     private final QName qName;
+
+    public Map<String, String> getSchemaLocations(boolean local) {
+        HashMap<String, String> hmap = new HashMap<String, String>();
+        hmap.put(SECURITY_UTILITY, getSchemaLocation(SECURITY_UTILITY, local));
+        return hmap;
+    }
+
+    public String getSchemaLocation(String namespace, boolean local) {
+        if (SECURITY_UTILITY.equals(namespace)) {
+            return local ? SECURITY_UTILITY_LOCAL : SECURITY_UTILITY_EXT;
+        }
+        return null;
+    }
 
 }

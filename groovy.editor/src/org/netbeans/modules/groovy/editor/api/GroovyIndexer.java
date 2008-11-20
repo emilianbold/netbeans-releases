@@ -63,6 +63,8 @@ import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  *
@@ -91,6 +93,14 @@ public class GroovyIndexer implements Indexer {
 
     private static FileObject preindexedDb;
 
+    // some statistics about the indexer
+
+    private static long indexerRunTime = 0;
+    private static long indexerFirstRun = 0;
+    private static long filesIndexed = 0;
+
+    private static final Logger LOG = Logger.getLogger(GroovyIndexer.class.getName());
+
     public boolean isIndexable(ParserFile file) {
         String extension = file.getExtension();
 
@@ -101,6 +111,13 @@ public class GroovyIndexer implements Indexer {
     }
 
     public List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException {
+
+        long indexerThisStartTime = System.currentTimeMillis();
+
+        if (indexerFirstRun == 0) {
+            indexerFirstRun = indexerThisStartTime;
+        }
+
         GroovyParserResult r = (GroovyParserResult) result;
         ASTNode root = AstUtilities.getRoot(r);
 
@@ -111,7 +128,26 @@ public class GroovyIndexer implements Indexer {
         TreeAnalyzer analyzer = new TreeAnalyzer(r, factory);
         analyzer.analyze();
 
-        return analyzer.getDocuments();
+        List<IndexDocument> retVal = analyzer.getDocuments();
+
+        LOG.setLevel(Level.OFF);
+
+        filesIndexed++;
+        long indexerThisStopTime = System.currentTimeMillis();
+        long indexerThisRunTime = indexerThisStopTime - indexerThisStartTime;
+        indexerRunTime += indexerThisRunTime;
+
+        LOG.log(Level.FINEST, "Indexed File                : {0}", r.getFile().getNameExt());
+        LOG.log(Level.FINEST, "Indexing time (ms)          : {0}", indexerThisRunTime);
+
+        LOG.log(Level.FINEST, "Number of files indexed     : {0}", filesIndexed);
+        LOG.log(Level.FINEST, "Time spend indexing (ms)    : {0}", indexerRunTime);
+        LOG.log(Level.FINEST, "Avg indexing time/file (ms) : {0}", indexerRunTime/filesIndexed);
+        LOG.log(Level.FINEST, "Time betw. 1st and Last idx : {0}", indexerThisStopTime - indexerFirstRun);
+        LOG.log(Level.FINEST, "---------------------------------------------------------------------------------");
+
+        return retVal;
+
     }
 
     public String getPersistentUrl(File file) {
@@ -148,7 +184,8 @@ public class GroovyIndexer implements Indexer {
     }
 
     public boolean acceptQueryPath(String url) {
-        return url.indexOf("/ruby2/") == -1 && url.indexOf("/gems/") == -1 && url.indexOf("lib/ruby/") == -1; // NOI18N
+        // LOG.log(Level.FINEST, "acceptQueryPath : {0}", url);
+        return url.indexOf("/target/") == -1 && url.indexOf("/art/") == -1; // NOI18N
     }
 
     private static class TreeAnalyzer {

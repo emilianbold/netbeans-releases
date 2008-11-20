@@ -78,7 +78,6 @@ public class LinkEndCreationData
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.uml.core.metamodel.common.commonactions.ILinkEndCreationData#setInsertAt(com.embarcadero.describe.basicactions.IInputPin)
      */
     public void setInsertAt(IInputPin pPin)
     {

@@ -137,5 +137,16 @@ public class FrobnitzFactoryProcessor extends LayerGeneratingProcessor {
  * </pre>
  * <p>and this layer should be loaded automatically by the module system
  * (in addition to any explicit layer specified in source code).</p>
+ * <p>There are two basic ways to test a layer-generating processor:</p>
+ * <ol>
+ * <li>Create some registrations of the annotation inside the unit test class
+ *     (so that they are processed as the tests are compiled).
+ *     Make the test check that the corresponding SPI loads the registrations.</li>
+ * <li>Run the processor programmatically on some sample registrations,
+ *     confirming that it succeeds or aborts under the right conditions.
+ *     For this, <code>AnnotationProcessorTestUtils</code> is useful.</li>
+ * </ol>
+ * <p><a href="http://hg.netbeans.org/main/raw-file/tip/openide.util/test/unit/src/org/netbeans/modules/openide/util/ServiceProviderProcessorTest.java"><code>ServiceProviderProcessorTest</code></a>
+ * demonstrates both styles.<p>
  */
 package org.openide.filesystems.annotations;

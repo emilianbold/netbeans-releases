@@ -59,6 +59,15 @@ cd Contents/Resources/NetBeans*/${NB_CLUSTER_DIR}
 mkdir -p var
 touch var/license_accepted
 
+#fix for 151681
+cd "$NETBEANS_INSTALL_DIR"
+"$dirname"/perm.sh
+
+#Fix for 151681
+#Go to the /Application/NetBeans folder to change its permissions
+cd ../
+chmod g+w .
+
 #add Product ID
 "$dirname"/addproduct_id.sh "NB"
 

@@ -28,18 +28,9 @@ package org.netbeans.modules.compapp.javaee.codegen.model;
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -66,12 +57,8 @@ public class EJBProjectTest extends NbTestCase {
     }
 
     public void setUp() throws Exception {
-        FileObject scratch = TestUtil.makeScratchDir(this);
-        this.scratchDir = FileUtil.toFile(scratch);
-    }
-
-    public void tearDown() throws Exception {
-        TestUtil.deleteRec(scratchDir);
+        clearWorkDir();
+        scratchDir = getWorkDir();
     }
 
     public void testSUForEJBJarMissingPortName() throws Exception {

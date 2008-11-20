@@ -184,10 +184,14 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * @return string representation of type of this variable.
      */
     public String getValue() {
-        if (value.charAt(0) == '>' && value.endsWith(".\"<")) { // NOI18N
-            return '>' + value.substring(2, value.length() - 3).replace("\\\"", "\"") + '<'; // NOI18N
+        if (value != null && value.length() > 0) {
+            if (value.charAt(0) == '>' && value.endsWith(".\"<")) { // NOI18N
+                return '>' + value.substring(2, value.length() - 3).replace("\\\"", "\"") + '<'; // NOI18N
+            } else {
+                return value.replace("\\\"", "\""); // NOI18N
+            }
         } else {
-            return value.replace("\\\"", "\""); // NOI18N
+            return "";
         }
     }
 
@@ -569,7 +573,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             if (currentEngine == null) {
                 return null;
             }
-            debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
+            debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
         }
         return debugger;
     }

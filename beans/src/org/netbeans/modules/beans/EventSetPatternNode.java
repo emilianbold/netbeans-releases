@@ -68,6 +68,7 @@ public final class EventSetPatternNode extends PatternNode {
         superSetName( pattern.getName() );
     }
 
+    @Override
     protected void setPatternName( String name ) {
 //        
 //        if ( pattern.getName().equals( name ) ) {
@@ -105,6 +106,7 @@ public final class EventSetPatternNode extends PatternNode {
     /** Gets the short description of this node.
     * @return A localized short description associated with this node.
     */
+    @Override
     public String getShortDescription() {
         return (((EventSetPattern)pattern).isUnicast () ?
                 getString( "HINT_UnicastEventSet" ) :
@@ -112,23 +114,24 @@ public final class EventSetPatternNode extends PatternNode {
                + " : " + getName(); // NOI18N
     }
 
-    /** Creates property set for this node */
-    protected Sheet createSheet () {
-        Sheet sheet = Sheet.createDefault();
-        Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
-
-//        ps.put(createNameProperty( writeable ));
-//        ps.put(createTypeProperty( writeable ));
-//        ps.put(createIsUnicastProperty( writeable ));
-//        ps.put(createAddListenerProperty( false ));
-//        ps.put(createRemoveListenerProperty( false ));
-
-        return sheet;
-    }
+//    /** Creates property set for this node */
+//    protected Sheet createSheet () {
+//        Sheet sheet = Sheet.createDefault();
+//        Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
+//
+////        ps.put(createNameProperty( writeable ));
+////        ps.put(createTypeProperty( writeable ));
+////        ps.put(createIsUnicastProperty( writeable ));
+////        ps.put(createAddListenerProperty( false ));
+////        ps.put(createRemoveListenerProperty( false ));
+//
+//        return sheet;
+//    }
 
     /** Overrides the default implementation of clone node
      */
 
+    @Override
     public Node cloneNode() {
         return new EventSetPatternNode((EventSetPattern)pattern, writeable );
     }

@@ -86,7 +86,6 @@ public class DerivationLabelManager extends BasicUMLLabelManager
     @Override
     protected Widget createLabel(String name, LabelType type)
     {
-        String text = "";
         Widget retVal = null;
         
         if(name.equals(BINDING) == true)
@@ -105,12 +104,12 @@ public class DerivationLabelManager extends BasicUMLLabelManager
     protected String buildBindingLabel()
     {
         IDerivation element = (IDerivation) getModelElement();
-        String retVal = "<<binding>> "; // NOI18N
+        String retVal = "<<binding>> <"; // NOI18N
         int len0 = retVal.length();
          
         ETList < IUMLBinding > pBindings = element.getBindings();
         String sFormalName = "";
-	String sActualName = "";
+        String sActualName = "";
         
         for(IUMLBinding binding : pBindings)
         {
@@ -127,33 +126,26 @@ public class DerivationLabelManager extends BasicUMLLabelManager
                 if (sFormalName != null && sFormalName.length() > 0) 
                 {
                     retVal += binding.getFormal().getNameWithAlias();
-                    retVal += "::"; // NO18N
+                    retVal += "->"; // NO18N
                 }
                 if (sActualName != null)
                 {
                     if (sActualName.length() == 0)
                     {
-                        sActualName = "int";
+                        sActualName = "int";//NOI18N
                     }
                     retVal += sActualName;
                 }
             }
         }
 
-        //retVal += ">"; // NOI18N
+        retVal += ">"; // NOI18N
         return retVal;
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
-        String propName = evt.getPropertyName();
-        
-//        if(propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()))
-//        {
-//            INamedElement element = (INamedElement) getModelElement();
-//            String name = element.getNameWithAlias();
-//            updateLabel(LabelType.EDGE, NAME, name);
-//        }
         super.propertyChange(evt);
         updateLabel(LabelType.EDGE, BINDING, buildBindingLabel());
     }

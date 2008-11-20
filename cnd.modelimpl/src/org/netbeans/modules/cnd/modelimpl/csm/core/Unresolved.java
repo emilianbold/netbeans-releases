@@ -214,7 +214,7 @@ public final class Unresolved implements Disposable {
             return getMacros().iterator();
         }
         
-        public CsmUID getUID() {
+        public CsmUID<CsmFile> getUID() {
             if (uid == null) {
                 uid = UIDUtilities.createUnresolvedFileUID(this.getProject());
             }

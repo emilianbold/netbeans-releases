@@ -91,7 +91,6 @@ public class CreateObjectAction
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.uml.core.metamodel.common.commonactions.ICreateObjectAction#setResult(com.embarcadero.describe.basicactions.IOutputPin)
      */
     public void setResult(IOutputPin pPin)
     {

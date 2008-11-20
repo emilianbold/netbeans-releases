@@ -185,7 +185,7 @@ public class PropertyElementManager implements IPropertyElementManager
                //        	Object pDisp = null;
                //        	String className = getClassNameFromID(pDef);
                //			Class clazz = Class.forName(className);
-               //			Class[] params = null;//{com.embarcadero.com.Dispatch.class};
+               //			Class[] params = null;//
                //			Constructor constructor = clazz.getConstructor(params);
                //
                //			Object[] paramInstances = {pDisp1};

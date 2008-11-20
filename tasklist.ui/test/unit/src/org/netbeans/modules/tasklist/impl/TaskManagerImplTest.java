@@ -44,6 +44,7 @@ package org.netbeans.modules.tasklist.impl;
 import java.util.Collections;
 import java.util.Iterator;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.tasklist.filter.TaskFilter;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.PushTaskScanner;
@@ -127,6 +128,7 @@ public class TaskManagerImplTest extends NbTestCase {
         assertEquals(1, impl.getTasks().getTasks().size());
     }
 
+    @RandomlyFails // NB-Core-Build #1732: impl._waitFinished() hangs
     public void testProviderCanRemoveTasks() throws Exception {
         final Callback[] cb = new Callback[1];
         final PushTaskScanner scanner = new PushTaskScanner("", "", null) {

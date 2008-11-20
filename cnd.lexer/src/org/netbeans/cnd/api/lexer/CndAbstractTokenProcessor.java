@@ -52,10 +52,9 @@ public abstract class CndAbstractTokenProcessor<T extends Token> implements CndT
 
     public void end(int offset, int lastTokenOffset) {}
 
-    public int getLastSeparatorOffset() {
-        return -1;
+    public boolean isStopped() {
+        return false;
     }
-
     /**
      *
      * @param token

@@ -67,7 +67,7 @@ public class FilePathAdaptor {
     }
 
     private static FilePathMapper getConverting() {
-        FilePathMapper conv = (FilePathMapper) Lookup.getDefault().lookup(FilePathMapper.class);
+        FilePathMapper conv = Lookup.getDefault().lookup(FilePathMapper.class);
         return conv == null ? FilePathMapperDefault.DEFAULT : conv;
     }
     

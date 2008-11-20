@@ -51,7 +51,7 @@ public class AstRendererException extends Exception {
 //    }
     public AstRendererException(FileImpl file, int offset, String message){
         super("\n"+ // NOI18N
-              file.getAbsolutePath().toString()+
+              file.getAbsolutePath() +
               ":"+file.getLineColumn(offset)[0]+ // NOI18N
               ":"+file.getLineColumn(offset)[1]+ // NOI18N
               ": error: "+ message // NOI18N

@@ -70,7 +70,7 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     private HashMap<Breakpoint, BreakpointImpl> breakpointToImpl = new HashMap<Breakpoint, BreakpointImpl>();
 
     public BreakpointsEngineListener(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
         //session = (Session) lookupProvider.lookupFirst(null, Session.class);
         debugger.addPropertyChangeListener(this);
         //breakpointsReader = PersistenceManager.findBreakpointsReader();
