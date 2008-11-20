@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * help class for CsmUID based on repository Key
  * @author Vladimir Voskresensky
  */
-public abstract class KeyBasedUID<T extends CsmIdentifiable> implements CsmUID<T>, KeyHolder, SelfPersistent, Comparable {
+public abstract class KeyBasedUID<T extends CsmIdentifiable> implements CsmUID<T>, KeyHolder, SelfPersistent, Comparable<T> {
     private final Key key;
     
     protected KeyBasedUID(Key key) {
@@ -65,13 +65,14 @@ public abstract class KeyBasedUID<T extends CsmIdentifiable> implements CsmUID<T
     }
     
     public T getObject() {
-        return (T) RepositoryUtils.get(this);
+        return RepositoryUtils.get(this);
     }
 
     public Key getKey() {
         return key;
     }
     
+    @Override
     public String toString() {
         String retValue;
         
@@ -79,6 +80,7 @@ public abstract class KeyBasedUID<T extends CsmIdentifiable> implements CsmUID<T
         return "KeyBasedUID on " + retValue; // NOI18N
     }
 
+    @Override
     public int hashCode() {
         int retValue;
         
@@ -86,6 +88,7 @@ public abstract class KeyBasedUID<T extends CsmIdentifiable> implements CsmUID<T
         return retValue;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -105,7 +108,7 @@ public abstract class KeyBasedUID<T extends CsmIdentifiable> implements CsmUID<T
         key = KeyObjectFactory.getDefaultFactory().readKey(aStream);
     }
 
-    public int compareTo(Object o) {
+    public int compareTo(T o) {
         assert o != null;
         assert o instanceof KeyBasedUID;
         Comparable o1 = (Comparable)this.key;

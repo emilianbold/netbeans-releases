@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.asm.core.hyperlink;
 
 import java.io.IOException;
@@ -63,89 +61,85 @@ import org.netbeans.modules.asm.model.AsmState;
 public class AsmHyperlinkProvider implements HyperlinkProvider {
 
     private Document lastDocument;
-    private int []lastResult;
-         
+    private int[] lastResult;
     private final GoToLabelAction labelResolver = new GoToLabelAction();
-       
+
     public AsmHyperlinkProvider() {
-        lastResult = new int[] { -1, -1, -1 };
+        lastResult = new int[]{-1, -1, -1};
     }
-    
-    public boolean isHyperlinkPoint(Document doc, int offset) {                      
+
+    public boolean isHyperlinkPoint(Document doc, int offset) {
         AsmState state = AsmObjectUtilities.getAccessor(doc).getState();
         lastDocument = doc;
         if (state != null) {
             int res[] = labelResolver.computeLabel(state, offset);
-            if (res[0] != -1)  {
+            if (res[0] != -1) {
                 lastResult = res;
                 return true;
-            }                
+            }
         }
-                                                   
+
         return false;
     }
 
     public int[] getHyperlinkSpan(Document doc, int offset) {
-        if(doc != lastDocument && !checkResult()) {
+        if (doc != lastDocument && !checkResult()) {
             return null;
         }
-        
-        return new int[] { lastResult[0], 
-                           lastResult[1] 
-                         };                 
+
+        return new int[]{lastResult[0],
+                    lastResult[1]
+                };
     }
 
     public void performClickAction(Document doc, int offset) {
-        
-        if(doc != lastDocument || !checkResult()) {
+
+        if (doc != lastDocument || !checkResult()) {
             return;
         }
-        
+
         DataObject ob = NbEditorUtilities.getDataObject(doc);
         int position = lastResult[2];
-        
+
         if (!openFileInEditor(ob)) {
             return;
         }
-        
+
         EditorCookie ed = ob.getCookie(org.openide.cookies.EditorCookie.class);
-        
+
         if (ed != null) {
             try {
                 ed.openDocument();
             } catch (IOException ex) {
                 return;
             }
-            
+
             JEditorPane pane = ed.getOpenedPanes()[0];
             pane.setCaretPosition(position);
-            
-            TopComponent tc = (TopComponent)
-                    SwingUtilities.getAncestorOfClass(TopComponent.class,
-                                                      pane);
-            if (tc != null) { 
+
+            TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, pane);
+            if (tc != null) {
                 tc.requestActive();
             }
         }
     }
 
-   private boolean checkResult() {
-       return !(lastResult[0] == -1 || lastResult[1] == -1 ||
-                lastResult[2] == -1);       
-   }
-    
+    private boolean checkResult() {
+        return !(lastResult[0] == -1 || lastResult[1] == -1 ||
+                lastResult[2] == -1);
+    }
+
     private boolean openFileInEditor(DataObject ob) {
-        EditCookie ck = (EditCookie) ob.getCookie(EditCookie.class);
+        EditCookie ck = ob.getCookie(EditCookie.class);
         if (ck != null) {
             ck.edit();
             return true;
         }
-        OpenCookie oc = (OpenCookie) ob.getCookie(OpenCookie.class);
+        OpenCookie oc = ob.getCookie(OpenCookie.class);
         if (oc != null) {
             oc.open();
             return true;
         }
         return false;
     }
-    
 }
