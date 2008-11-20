@@ -45,7 +45,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.maven.model.Profile;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -62,9 +61,9 @@ public @Deprecated class JarPackagingRunChecker implements PrerequisitesChecker 
     
     private List applicableActions = Arrays.asList(new String[] {
         ActionProvider.COMMAND_RUN,
-        ActionProvider.COMMAND_RUN_SINGLE,
+        ActionProvider.COMMAND_RUN_SINGLE + ".main",
         ActionProvider.COMMAND_DEBUG,
-        ActionProvider.COMMAND_DEBUG_SINGLE
+        ActionProvider.COMMAND_DEBUG_SINGLE + ".main"
     });
     /** Creates a new instance of JarPackagingRunChecker */
     public JarPackagingRunChecker() {

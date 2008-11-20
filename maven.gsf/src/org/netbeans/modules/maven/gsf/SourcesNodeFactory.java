@@ -58,6 +58,7 @@ import org.openide.nodes.Node;
  *
  * @author mkleint
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=139)
 public class SourcesNodeFactory implements NodeFactory {
     
     /** Creates a new instance of SourcesNodeFactory */

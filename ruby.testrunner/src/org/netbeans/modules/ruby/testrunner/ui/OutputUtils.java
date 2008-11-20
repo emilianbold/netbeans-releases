@@ -41,13 +41,10 @@
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.io.File;
-import java.util.List;
 import java.util.logging.Logger;
-import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.execution.ExecutionUtils;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputProcessor;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
-import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -68,7 +65,7 @@ final class OutputUtils {
     static void openCallstackFrame(Node node, String frameInfo, int line) {
 
         Report report = getTestsuiteNode(node).getReport();
-        FileLocation location = getFileLocation(frameInfo);
+        ExecutionUtils.FileLocation location = ExecutionUtils.getLocation(frameInfo);
         if (location != null) {
             FileObject fo = findFile(location.file, report.getFileLocator());
             if (fo != null) {
@@ -81,16 +78,6 @@ final class OutputUtils {
         }
 
         LOGGER.info("Could not open a file for " + frameInfo) ;
-    }
-
-    static FileLocation getFileLocation(String locationLine) {
-        for (RegexpOutputRecognizer each : RubyExecution.getStandardRubyRecognizers()) {
-            FileLocation location = each.processLine(locationLine);
-            if (location != null) {
-                return location;
-            }
-        }
-        return null;
     }
 
     static TestsuiteNode getTestsuiteNode(Node node) {

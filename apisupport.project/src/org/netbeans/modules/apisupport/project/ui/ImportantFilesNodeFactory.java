@@ -78,6 +78,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author mkleint
  */
+@NodeFactory.Registration(projectType={"org-netbeans-modules-apisupport-project-suite","org-netbeans-modules-apisupport-project"}, position=200)
 public class ImportantFilesNodeFactory implements NodeFactory {
 
     /** Package private for unit tests. */

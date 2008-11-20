@@ -335,7 +335,12 @@ public class PluginPropertyUtils {
                 NBPluginParameterExpressionEvaluator eval = new NBPluginParameterExpressionEvaluator(prj, EmbedderFactory.getProjectEmbedder().getSettings(), new Properties());
                 for (Xpp3Dom ch : childs) {
                     try {
-                        Object evaluated = eval.evaluate(ch.getValue().trim());
+                        String val = ch.getValue();
+                        if (val == null) {
+                            //#153063
+                            continue;
+                        }
+                        Object evaluated = eval.evaluate(val.trim());
                         toRet.put(ch.getName(), evaluated != null ? ("" + evaluated) : ch.getValue().trim());  //NOI18N
                     } catch (ExpressionEvaluationException ex) {
                         Exceptions.printStackTrace(ex);

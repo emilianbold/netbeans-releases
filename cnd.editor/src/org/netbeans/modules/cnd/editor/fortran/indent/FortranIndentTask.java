@@ -266,6 +266,10 @@ public class FortranIndentTask extends FortranIndentSupport implements IndentTas
                         case KW_WHERE:
                             matchToken = findMatchingToken(token, KW_WHERE, KW_ENDWHERE);
                             break;
+
+                        case KW_WHILE:
+                            matchToken = findMatchingToken(token, KW_WHILE, KW_END);
+                            break;
                     }// END SWITCH
                     if (matchToken != null) {
                         indent = getTokenIndent(matchToken);
