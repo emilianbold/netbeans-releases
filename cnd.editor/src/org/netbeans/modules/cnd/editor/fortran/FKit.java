@@ -62,7 +62,7 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.editor.*;
 
-import org.netbeans.modules.cnd.editor.deprecated.fortran.options.FortranCodeStyle;
+import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 import org.netbeans.modules.editor.*;
 import org.netbeans.modules.cnd.utils.MIMENames;
 
