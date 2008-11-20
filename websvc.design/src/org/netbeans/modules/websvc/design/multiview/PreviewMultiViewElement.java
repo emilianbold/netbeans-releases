@@ -166,7 +166,7 @@ public class PreviewMultiViewElement extends CloneableEditor
     public void componentShowing() {
         if (des != null) {
             super.componentShowing();
-            setActivatedNodes(new Node[]{dataObject.getNodeDelegate()});
+            setActivatedNodes(dataObject.isValid() ? new Node[]{dataObject.getNodeDelegate()} : new Node[]{});
             setEditableDisabled();
         }
     }
