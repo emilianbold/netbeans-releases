@@ -45,9 +45,9 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.enterprise.actions.AddNewBpelProcess;
-import org.netbeans.performance.enterprise.actions.CreateCompositeApplication;
-import org.netbeans.performance.enterprise.actions.WatchProjects;
+import org.netbeans.performance.enterprise.actions.AddNewBpelProcessTest;
+import org.netbeans.performance.enterprise.actions.CreateCompositeApplicationTest;
+import org.netbeans.performance.enterprise.actions.WatchProjectsTest;
 
 public class MeasureEnterpriseGCTest extends NbTestCase {
 
@@ -62,16 +62,16 @@ public class MeasureEnterpriseGCTest extends NbTestCase {
         System.setProperty("suitename", MeasureEnterpriseGCTest.class.getCanonicalName());
 
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WatchProjects.class)
-                .addTest(WatchProjects.class, "testInitGCProjects")
-                .addTest(AddNewBpelProcess.class, "measureTime")
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WatchProjectsTest.class)
+                .addTest(WatchProjectsTest.class, "testInitGCProjects")
+                .addTest(AddNewBpelProcessTest.class, "measureTime")
 
                 // TODO: Uncomment once issue 138456 is fixed
                 //.addTest(CreateBPELmodule.class, "measureTime")
                 
-                .addTest(CreateCompositeApplication.class, "measureTime")    
+                .addTest(CreateCompositeApplicationTest.class, "measureTime")
 //                .addTest(OpenSchemaView.class, "testGCwithOpenComplexSchemaView")    
-                .addTest(WatchProjects.class, "testGCProjects")
+                .addTest(WatchProjectsTest.class, "testGCProjects")
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));    
 /*
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddNewBpelProcess.class)

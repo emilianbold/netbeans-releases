@@ -80,7 +80,6 @@ import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
-import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
@@ -220,7 +219,7 @@ public class RetoucheUtils {
 
     /** Return the most distant method in the hierarchy that is overriding the given method, or null */
     public static IndexedMethod getOverridingMethod(RubyElementCtx element, CompilationInfo info) {
-        RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
+        RubyIndex index = RubyIndex.get(info.getIndex(RubyUtils.RUBY_MIME_TYPE), info.getFileObject());
         String fqn = AstUtilities.getFqnName(element.getPath());
 
         return index.getOverridingMethod(fqn, element.getName());
@@ -230,7 +229,7 @@ public class RetoucheUtils {
         StringBuffer buf = new StringBuffer();
         // TODO - check whether we need ruby highlighting or rhtml highlighting
         TokenHierarchy tokenH = TokenHierarchy.create(text, RubyTokenId.language());
-        Lookup lookup = MimeLookup.getLookup(MimePath.get(RubyMimeResolver.RUBY_MIME_TYPE));
+        Lookup lookup = MimeLookup.getLookup(MimePath.get(RubyUtils.RUBY_MIME_TYPE));
         FontColorSettings settings = lookup.lookup(FontColorSettings.class);
         @SuppressWarnings("unchecked")
         TokenSequence<? extends TokenId> tok = tokenH.tokenSequence();

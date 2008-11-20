@@ -277,7 +277,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                 // No parse tree - try to just use the syntax info to do a simple index lookup
                 // for methods and classes
                 String text = doc.getText(range.getStart(), range.getLength());
-                RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
+                RubyIndex index = RubyIndex.get(info.getIndex(RubyInstallation.RUBY_MIME_TYPE), info.getFileObject());
 
                 if ((index == null) || (text.length() == 0)) {
                     return DeclarationLocation.NONE;
@@ -316,7 +316,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                 return DeclarationLocation.NONE;
             }
 
-            RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
+            RubyIndex index = RubyIndex.get(info.getIndex(RubyInstallation.RUBY_MIME_TYPE), info.getFileObject());
 
             int tokenOffset = lexOffset;
 
@@ -1208,7 +1208,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                 // No parse tree - try to just use the syntax info to do a simple index lookup
                 // for methods and classes
                 String text = doc.getText(range.getStart(), range.getLength());
-                RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
+                RubyIndex index = RubyIndex.get(info.getIndex(RubyInstallation.RUBY_MIME_TYPE), info.getFileObject());
 
                 if ((index == null) || (text.length() == 0)) {
                     return null;
@@ -1231,7 +1231,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                 } // TODO: @ - field?
             }
 
-            RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
+            RubyIndex index = RubyIndex.get(info.getIndex(RubyInstallation.RUBY_MIME_TYPE), info.getFileObject());
 
             TokenHierarchy<Document> th = TokenHierarchy.get(doc);
 
@@ -1422,7 +1422,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
         Node closest = root;
         int astOffset = 0;
         int lexOffset = 0;
-        RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
+        RubyIndex index = RubyIndex.get(info.getIndex(RubyInstallation.RUBY_MIME_TYPE), info.getFileObject());
 
         if (root == null) {
             return DeclarationLocation.NONE;

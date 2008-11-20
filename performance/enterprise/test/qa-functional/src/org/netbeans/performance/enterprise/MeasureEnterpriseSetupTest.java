@@ -38,13 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.enterprise;
 
-import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
 
 /**
@@ -53,42 +51,15 @@ import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
  *
  * @author  rkubacki@netbeans.org, mmirilovic@netbeans.org
  */
-public class MeasureEnterpriseSetupTest extends NbTestCase {
+public class MeasureEnterpriseSetupTest {
 
-    public MeasureEnterpriseSetupTest(java.lang.String testName) {
-        super(testName);
-    }
-    
-    public static Test suite(NbTestSuite suite) {
-        PerformanceTestCase.prepareForMeasurements();
-
-        suite.addTest(NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(EnterpriseSetup.class)
-            .addTest("cleanTempDir")
-            .addTest("closeMemoryToolbar")
-            .addTest("closeWelcome")
-
-            .addTest("addApplicationServer")
-            .addTest("addTomcatServer")
-
-            .addTest("openWebProject")
-            .addTest("openReservationPartnerServicesProject")
-            .addTest("openTravelReservationServiceProject")
-            .addTest("openTravelReservationServiceApplicationProject")
-            .addTest("openSoaTestProject")
-            .addTest("openBPELTestProject")
-            .addTest("closeAllDocuments")
-            .enableModules(".*")
-            .clusters(".*")
-        ));    
-        
-        return suite;        
-    }
-
-    public static Test suite() {
+    public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Enterprise Setup suite");
-        System.setProperty("suitename", MeasureEnterpriseSetupTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness Enterprise Setup suite");
 
-        return suite(suite);
+        suite.addTest(NbModuleSuite.create(EnterpriseSetup.class, ".*", ".*"));
+
+        return suite;
     }
-}
+
+ }

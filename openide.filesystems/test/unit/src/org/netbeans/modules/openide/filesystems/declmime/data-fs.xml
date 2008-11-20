@@ -37,5 +37,44 @@
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
     ]]>
     </file>
+        <file name="php.txt"><![CDATA[
+<?php
+        ]]>
+        </file>
+        <file name="not-php.txt"><![CDATA[
+This is not php file.
+        ]]>
+        </file>
+        <file name="html-php.txt"><![CDATA[
+<!DOCTYPE HTML
+<html>
+0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+<?php
+define
+        ]]>
+        </file>
+        <file name="ruby.cgi"><![CDATA[
+#!  /usr/bin/ruby
+        ]]>
+        </file>
+        <file name="makefile"/>
+        <file name="Makefile"/>
+        <file name="MaKeFiLe"/>
+        <file name="mymakefile"/>
+        <file name="gnumakefile"/>
+        <file name="makefile1"/>
+        <file name="makefileRakefile"/>
+        <file name="makefile.Rakefile"/>
+        <file name="rakefile"/>
+        <file name="Rakefile"/>
+        <file name="empty-extension"/>
+        <file name="cpp"><![CDATA[
+//    -*- C++ -*-
+        ]]>
+        </file>
+        <file name="cpp.not"><![CDATA[
+//    -*- C++ -*-
+        ]]>
+        </file>
     </folder>
 </filesystem>

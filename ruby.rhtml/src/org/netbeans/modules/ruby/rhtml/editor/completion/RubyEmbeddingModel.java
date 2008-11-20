@@ -46,7 +46,6 @@ import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 
 /**
@@ -56,12 +55,13 @@ import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsf.api.EmbeddingModel.class)
 public class RubyEmbeddingModel implements IncrementalEmbeddingModel {
     final Set<String> sourceMimeTypes = Collections.singleton(RhtmlTokenId.MIME_TYPE);
+    private static final String RUBY_MIME_TYPE = "text/x-ruby"; // NOI18N
 
     public RubyEmbeddingModel() {
     }
     
     public String getTargetMimeType() {
-        return RubyMimeResolver.RUBY_MIME_TYPE;
+        return RUBY_MIME_TYPE;
     }
 
     public Set<String> getSourceMimeTypes() {

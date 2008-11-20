@@ -57,7 +57,7 @@ public class ProjectTabBridge {
     private Class refClass = null;
 
     public ProjectTabBridge() throws ClassNotFoundException {
-	ClassLoader c = (ClassLoader)Lookup.getDefault ().lookup (ClassLoader.class);
+	ClassLoader c = Lookup.getDefault ().lookup (ClassLoader.class);
 	// Find the class
 	if (c == null) {
 	    refClass = Class.forName(className);

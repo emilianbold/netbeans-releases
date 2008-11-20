@@ -64,32 +64,14 @@ made subject to such option by the copyright holder.
 
   <target name="all-nozip" depends="build-nozip,commit-validation" description="Build the IDE (no ZIP file, unpacked) and run basic validation tests."/>
 
-  <target name="assure-ant">
-      <fail message="You need Ant version 1.7.0 or later to build NetBeans.">
-          <condition>
-              <not>
-                  <antversion atleast="1.7.0"/>
-              </not>
-          </condition>
-      </fail>
-  </target>
-  
-  <!-- Fallback for ant.core.lib - it is not set in some cases - 124554 -->
-  <available property="ant.core.lib" value="${ant.home}/lib/ant.jar" file="${ant.home}/lib/ant.jar"/>
-  <!-- if the previous location is not correct than find the ant.jar from the java.class.path value -->
-  <pathconvert property="ant.core.lib">
-    <mapper type="regexp" from="${path.separator}([^${path.separator}]*ant.jar)${path.separator}" to="\1"/>
-    <path location="${path.separator}${java.class.path}${path.separator}"/>
-  </pathconvert>
-
   <target name="-load-build-properties">
     <property file="build.properties"/>
   </target>
 
   <target name="bootstrap"
           description="Bootstrap NetBeans-specific Ant extensions."
-          depends="-jdk-init,assure-ant,-load-build-properties">
-    <fail message="You need JDK 1.5 to build NetBeans">
+          depends="-jdk-init,-load-build-properties">
+    <fail message="You need JDK 1.5+ to build NetBeans">
         <condition>
             <not>
                 <isset property="have-jdk-1.5"/>
@@ -2060,7 +2042,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <property name="sigtest.output.dir" location="build/sigtest/generate"/>
     
     <subant target="gen-sigtest" buildpath="${modules.fullpath}" failonerror="false">
-      <property name="ant.core.lib" value="${ant.core.lib}"/>
       <property name="sigtest.basedir" value="${sigtest.basedir}"/>
       <property name="sigtest.output.dir" location="${sigtest.output.dir}"/>
     </subant>
@@ -2078,9 +2059,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <mapper type="identity" />
     </pathconvert>
     
-    <subant target="gen-sigtest" buildpath="${modules.fullpath}">
-      <property name="ant.core.lib" value="${ant.core.lib}"/>
-    </subant>
+    <subant target="gen-sigtest" buildpath="${modules.fullpath}"/>
   </target>
   
   <target name="check-sigtests-release" depends="bootstrap"
@@ -2100,7 +2079,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </pathconvert>
     <subant target="check-sigtest" buildpath="${modules.fullpath}" failonerror="${fail.on.error}">
         <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
-        <property name="ant.core.lib" value="${ant.core.lib}"/>
     </subant>
   </target>
 
@@ -2131,7 +2109,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <mkdir dir="${sigtest.output.dir}"/>
     <subant target="check-sigtest" buildpath="${modules.fullpath}" failonerror="false">
         <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
-        <property name="ant.core.lib" value="${ant.core.lib}"/>
         <property name="sigtest.basedir" value="${sigtest.basedir}"/>
     </subant>
   </target>

@@ -187,25 +187,16 @@ public class CppMetaModel implements PropertyChangeListener {
 	}*/
     }
     
-    private void fireObjectParsed(Document doc)
-    {
-//        synchronized (listeners)
-//        {
-	    Object o = doc.getProperty(Document.StreamDescriptionProperty);
-            DataObject dobj = (o instanceof DataObject) ? (DataObject) o : null;
-//            for(Iterator it = listeners.iterator(); it.hasNext();)
-//            {
-//                ((ParsingListener)it.next()).objectParsed(new ParsingEvent(dobj));
-//            }
-            // vk++ had to change the code above to avoid concurrent modification exception
-            ParsingListener[] alist = new ParsingListener[listeners.size()];
-            listeners.toArray(alist);
-            for (int i = 0; i < alist.length; i++) {
-                alist[i].objectParsed(new ParsingEvent(dobj));
+    private void fireObjectParsed(Document doc) {
+        Object o = doc.getProperty(Document.StreamDescriptionProperty);
+        if (o instanceof DataObject) {
+            DataObject dobj = (DataObject) o;
+            // listeners is a ConcurrentLinkedQueue now. It intelligently
+            // handles concurrent modification without throwing exceptions.
+            for (ParsingListener listener : listeners) {
+                listener.objectParsed(new ParsingEvent(dobj));
             }
-            // vk--
-            
-//        }        
+        }
     }
 
     private String getShortName(Document doc) {

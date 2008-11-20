@@ -39,17 +39,14 @@
 
 package org.netbeans.modules.mobility.svgcore.items.form;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 
 /**
  * @author akorostelev
  */
-public class SVGFormElement extends SVGComponentDrop{
+public abstract class SVGFormElement extends SVGComponentDrop{
 
     private static final String ID_PATTERN = PATTERN + "COMPONENT_ID" + PATTERN;//NOI18N
 
@@ -93,15 +90,7 @@ public class SVGFormElement extends SVGComponentDrop{
     }
     
     protected String getSnippetString() throws IOException{
-        InputStream is = SVGFormElement.class.getResourceAsStream(mySnippetPath);
-        assert is != null : mySnippetPath + " resource Input Stream is null";//NOI18N
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
-        StringBuffer buffer = new StringBuffer();
-        String line;
-        while ((line = in.readLine()) != null) {
-            buffer.append(line);
-        }
-        return buffer.toString();
+        return getSnippetString(SVGFormElement.class, mySnippetPath);
     }
   
     private String myIdPrefix;

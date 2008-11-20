@@ -61,15 +61,7 @@ public class MeasureMobilitySetupTest extends NbTestSuite {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for Mobility Pack");
         System.setProperty("suitename", MeasureMobilitySetupTest.class.getCanonicalName());
 
-        suite.addTest(NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(MobilitySetup.class)
-            .addTest("closeMemoryToolbar")
-            .addTest("closeWelcome")
-
-            .addTest("openMobilityMIDletProject")
-            .addTest("openMobilitySwitchProject")
-
-            .addTest("closeAllDocuments")
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)
             .enableModules(".*")
             .clusters(".*")
         ));

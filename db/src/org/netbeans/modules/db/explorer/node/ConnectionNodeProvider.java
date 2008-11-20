@@ -67,18 +67,21 @@ public class ConnectionNodeProvider extends NodeProvider {
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
             public ConnectionNodeProvider createInstance(Lookup lookup) {
-                return new ConnectionNodeProvider(lookup);
+                ConnectionNodeProvider provider = new ConnectionNodeProvider(lookup);
+                provider.setup();
+                return provider;
             }
         };
     }
     
-    private ConnectionList connectionList;
+    private final ConnectionList connectionList;
     
     private ConnectionNodeProvider(Lookup lookup) {
         super(lookup, new ConnectionComparator());
-
         connectionList = getLookup().lookup(ConnectionList.class);
-        
+    }
+    
+    private void setup() {
         connectionList.addConnectionListener(
             new ConnectionListener() {
                 public void connectionsChanged() {
@@ -90,7 +93,7 @@ public class ConnectionNodeProvider extends NodeProvider {
         update();
     }
     
-    private void update() {
+    private synchronized void update() {
         List<Node> newList = new ArrayList<Node>();
         DatabaseConnection[] connections = connectionList.getConnections();
         for (DatabaseConnection connection : connections) {

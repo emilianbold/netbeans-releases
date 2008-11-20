@@ -44,12 +44,16 @@ package org.netbeans.modules.mobility.javon;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+
+import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.IndentEngine;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -65,9 +69,8 @@ public class OutputFileFormatter {
     private StringWriter stringWriter;
     
     /** Creates a new instance of OutputFileFormatter */
-    public OutputFileFormatter( FileObject fileObject ) throws Exception {
-        
-//        System.err.println(" >>> Generating file - " + fileObject.getPath());
+    public OutputFileFormatter( FileObject fileObject ) 
+        throws DataObjectNotFoundException, IOException {
         
         this.fileObject = fileObject;
         
@@ -75,7 +78,12 @@ public class OutputFileFormatter {
         EditorCookie editorCookie = dataObject.getCookie( EditorCookie.class );
         
         styledDocument = editorCookie.openDocument();
-        styledDocument.remove( 0, styledDocument.getLength());
+        try {
+            styledDocument.remove( 0, styledDocument.getLength());
+        }
+        catch (BadLocationException e ){
+            ErrorManager.getDefault().notify( e );
+        }
         indentEngine = IndentEngine.find( styledDocument );
         
         stringWriter = new StringWriter( 4096 );

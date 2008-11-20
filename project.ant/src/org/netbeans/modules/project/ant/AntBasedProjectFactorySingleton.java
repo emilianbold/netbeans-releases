@@ -175,6 +175,9 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
             return null;
         }
         Document projectXml = loadProjectXml(projectDiskFile);
+        if (projectXml == null) {
+            return null;
+        }
         Element typeEl = Util.findElement(projectXml.getDocumentElement(), "type", PROJECT_NS); // NOI18N
         if (typeEl == null) {
             return null;

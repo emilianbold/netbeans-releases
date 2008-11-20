@@ -1,0 +1,1 @@
+<circle cx="%%COORDINATE_CENTER_X%%" cy="%%COORDINATE_CENTER_Y%%" r="%%RADIUS%%" fill="red" stroke="black" stroke-width="1"/>

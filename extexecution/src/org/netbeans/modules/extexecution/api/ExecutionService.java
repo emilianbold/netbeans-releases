@@ -75,6 +75,7 @@ import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.extexecution.api.input.InputReaderTask;
 import org.netbeans.modules.extexecution.api.input.InputReaders;
+import org.netbeans.modules.extexecution.api.input.LineProcessors;
 import org.openide.util.Cancellable;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -533,8 +534,14 @@ public final class ExecutionService {
 
     private InputProcessor createOutProcessor(OutputWriter writer) {
         LineConvertorFactory convertorFactory = descriptor.getOutConvertorFactory();
-        InputProcessor outProcessor = InputProcessors.printing(writer,
-                convertorFactory != null ? convertorFactory.newLineConvertor() : null, true);
+        InputProcessor outProcessor = null;
+        if (descriptor.isOutLineBased()) {
+            outProcessor = InputProcessors.bridge(LineProcessors.printing(writer,
+                    convertorFactory != null ? convertorFactory.newLineConvertor() : null, true));
+        } else {
+            outProcessor = InputProcessors.printing(writer,
+                    convertorFactory != null ? convertorFactory.newLineConvertor() : null, true);
+        }
 
         InputProcessorFactory descriptorOutFactory = descriptor.getOutProcessorFactory();
         if (descriptorOutFactory != null) {
@@ -546,8 +553,14 @@ public final class ExecutionService {
 
     private InputProcessor createErrProcessor(OutputWriter writer) {
         LineConvertorFactory convertorFactory = descriptor.getErrConvertorFactory();
-        InputProcessor errProcessor = InputProcessors.printing(writer,
-                convertorFactory != null ? convertorFactory.newLineConvertor() : null, false);
+        InputProcessor errProcessor = null;
+        if (descriptor.isErrLineBased()) {
+            errProcessor = InputProcessors.bridge(LineProcessors.printing(writer,
+                    convertorFactory != null ? convertorFactory.newLineConvertor() : null, false));
+        } else {
+            errProcessor = InputProcessors.printing(writer,
+                    convertorFactory != null ? convertorFactory.newLineConvertor() : null, false);
+        }
 
         InputProcessorFactory descriptorErrFactory = descriptor.getErrProcessorFactory();
         if (descriptorErrFactory != null) {

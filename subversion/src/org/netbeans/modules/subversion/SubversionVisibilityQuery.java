@@ -94,7 +94,16 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation2
             return true;
         }
         try {
-            return getCache().getStatus(file).getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
+            // get cached status so you won't block or trigger synchronous shareability calls
+            FileInformation info = getCache().getCachedStatus(file);
+            if(info != null) {
+                return info.getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
+            } else {
+                // status isn't cached yet; lets be optimistic here and return true
+                // the visibility will be called again as soon as the refreshes finnishes
+                getCache().refreshAsync(file); 
+                return true;
+            }
         } catch (Exception e) {
             Subversion.LOG.log(Level.SEVERE, e.getMessage(), e);
             return true;

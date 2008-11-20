@@ -82,9 +82,9 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         clone.setLibraryLevel((IntConfiguration)getLibraryLevel().clone());
         clone.setStandardsEvolution((IntConfiguration)getStandardsEvolution().clone());
         clone.setLanguageExt((IntConfiguration)getLanguageExt().clone());
-        clone.setIncludeDirectories((VectorConfiguration)getIncludeDirectories().clone());
+        clone.setIncludeDirectories(getIncludeDirectories().cloneConf());
         clone.setInheritIncludes((BooleanConfiguration)getInheritIncludes().clone());
-        clone.setPreprocessorConfiguration((VectorConfiguration)getPreprocessorConfiguration().clone());
+        clone.setPreprocessorConfiguration(getPreprocessorConfiguration().cloneConf());
         clone.setInheritPreprocessor((BooleanConfiguration)getInheritPreprocessor().clone());
         return clone;
     }

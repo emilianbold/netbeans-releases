@@ -352,7 +352,7 @@ public class FortranReformatterImpl {
                 case KW_TYPE:
                 case KW_BLOCKDATA:
                 case KW_MAP:
-                case KW_FILE:
+//                case KW_FILE:
                 case KW_IF:
                 case KW_DO:
                 case KW_ELSEIF:
