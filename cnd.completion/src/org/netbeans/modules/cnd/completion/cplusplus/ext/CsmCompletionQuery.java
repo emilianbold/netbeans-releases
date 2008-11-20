@@ -205,24 +205,16 @@ abstract public class CsmCompletionQuery {
 
         CsmCompletionResult ret = null;
 
-        SyntaxSupport support = doc.getSyntaxSupport();
-        CsmSyntaxSupport sup = (CsmSyntaxSupport) support.get(CsmSyntaxSupport.class);
-
-        if (!checkCondition(doc, offset)) {
+        CompletionSupport sup = CompletionSupport.get(doc);
+        if (sup == null || !checkCondition(doc, offset)) {
             return null;
         }
 
         try {
             // find last separator position
-            int lastSepatorOffset = sup.getLastSeparatorOffset();
-            final int lastSepOffset;
-            if (lastSepatorOffset >= 0 && lastSepatorOffset < offset) {
-                lastSepOffset = lastSepatorOffset;
-            } else {
-                lastSepOffset = sup.getLastCommandSeparator(offset);
-            }
+            final int lastSepOffset = sup.getLastCommandSeparator(offset);
             final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
-            tp.setJava15(true);
+            tp.enableTemplateSupport(true);
             doc.readLock();
             try {
                 CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
