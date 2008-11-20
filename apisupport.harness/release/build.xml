@@ -145,7 +145,7 @@ made subject to such option by the copyright holder.
     <target name="test-lib-init" depends="init">
         <!-- NbModuleSuite must be made to ignore disabled.modules during a test; see discussion in #136621: -->
         <delete failonerror="false">
-            <fileset dir="${suite.dir}" erroronmissingdir="false">
+            <fileset dir="${suite.dir}">
                 <include name="build/cluster/config/Modules/*.xml_hidden"/>
             </fileset>
         </delete>
