@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
  * implemented after JavaSyntaxSupport
  */
 @Deprecated
+@SuppressWarnings("deprecation")
 abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
     // Internal C++ declaration token processor states
@@ -127,8 +128,6 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     }
 
     abstract protected CsmFinder getFinder();
-
-    abstract protected FileReferencesContext getFileReferencesContext();
 
     protected void setJava15(boolean java15) {
         this.java15 = java15;

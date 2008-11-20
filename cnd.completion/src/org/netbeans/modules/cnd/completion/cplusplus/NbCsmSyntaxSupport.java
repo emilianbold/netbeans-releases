@@ -41,23 +41,11 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus;
 
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmSyntaxSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmField;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmParameter;
-import java.net.URL;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 /**
 * Support methods for syntax analyzes
@@ -65,8 +53,9 @@ import org.openide.loaders.DataObjectNotFoundException;
 * @author Miloslav Metelka, Vladimir Voskresensky
 * @version 1.00
 */
-
-public class NbCsmSyntaxSupport extends CsmSyntaxSupport {
+@Deprecated
+@SuppressWarnings("deprecation")
+public class NbCsmSyntaxSupport extends org.netbeans.modules.cnd.completion.cplusplus.ext.CsmSyntaxSupport {
 
     protected static final String PACKAGE_SUMMARY = "package-summary"; // NOI18N
     
@@ -74,29 +63,10 @@ public class NbCsmSyntaxSupport extends CsmSyntaxSupport {
         super(doc);        
     }
     
-    public CsmFinder getSupportJCFinder(){
-        return getFinder();
-    }
-    
     public CsmFinder getFinder() {
         DataObject dobj = NbEditorUtilities.getDataObject(getDocument());
         assert dobj != null;
         FileObject fo = dobj.getPrimaryFile();
         return CsmFinderFactory.getDefault().getFinder(fo);
-    }
-
-    protected FileReferencesContext getFileReferencesContext() {
-        return null;
-    }
-    
-    protected DataObject getDataObject(FileObject fo) {
-        DataObject dob = null;
-        if (fo != null) {
-            try {
-                dob = DataObject.find(fo);
-            } catch (DataObjectNotFoundException e) {
-            }
-        }
-        return dob;
     }
 }

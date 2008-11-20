@@ -69,7 +69,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.lexer.Token;
+import javax.swing.text.Document;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.editor.BaseDocument;
@@ -170,8 +170,9 @@ abstract public class CsmCompletionQuery {
         return query(component, doc, offset, openingSource, sort);
     }
 
-    public static boolean checkCondition(CsmSyntaxSupport sup, final int dot) {
-        return sup != null && !sup.isCompletionDisabled(dot) && sup.isIncludeCompletionDisabled(dot);
+    public static boolean checkCondition(final Document doc, final int dot) {
+        return !CompletionSupport.isPreprocCompletionEnabled(doc, dot)
+                && CompletionSupport.isCompletionEnabled(doc, dot);
     }
 
 
@@ -207,7 +208,7 @@ abstract public class CsmCompletionQuery {
         SyntaxSupport support = doc.getSyntaxSupport();
         CsmSyntaxSupport sup = (CsmSyntaxSupport) support.get(CsmSyntaxSupport.class);
 
-        if (!checkCondition(sup, offset)) {
+        if (!checkCondition(doc, offset)) {
             return null;
         }
 
@@ -269,7 +270,7 @@ abstract public class CsmCompletionQuery {
                 if (TRACE_COMPLETION) {
                     System.err.println("expression " + exp);
                 }
-                ret = getResult(component, sup, openingSource, offset, exp, sort, isInIncludeDirective(doc, offset));
+                ret = getResult(component, doc, openingSource, offset, exp, sort, isInIncludeDirective(doc, offset));
             } else if (TRACE_COMPLETION) {
                 System.err.println("Error expression " + tp.getResultExp());
             }
@@ -282,9 +283,10 @@ abstract public class CsmCompletionQuery {
 
     abstract protected boolean isProjectBeeingParsed(boolean openingSource);
 
-    protected CsmCompletionResult getResult(JTextComponent component, CsmSyntaxSupport sup, boolean openingSource, int offset, CsmCompletionExpression exp, boolean sort, boolean inIncludeDirective) {
+    private CsmCompletionResult getResult(JTextComponent component, Document doc, boolean openingSource, int offset, CsmCompletionExpression exp, boolean sort, boolean inIncludeDirective) {
         CompletionResolver resolver = getCompletionResolver(openingSource, sort, inIncludeDirective);
         if (resolver != null) {
+            CompletionSupport sup = CompletionSupport.get(doc);
             CsmOffsetableDeclaration context = sup.getDefinition(offset, getFileReferencesContext());
             Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort);
             ctx.resolveExp(exp);
@@ -678,7 +680,7 @@ abstract public class CsmCompletionQuery {
         /**
          * Syntax support for the given baseDocument
          */
-        private CsmSyntaxSupport sup;
+        private CompletionSupport sup;
         /** Whether the query is performed to open the source file. It has slightly
          * different handling in some situations.
          */
@@ -718,7 +720,7 @@ abstract public class CsmCompletionQuery {
         private CsmOffsetableDeclaration contextElement;
 
         public Context(JTextComponent component,
-                CsmSyntaxSupport sup, boolean openingSource, int endOffset,
+                CompletionSupport sup, boolean openingSource, int endOffset,
                 CsmFinder finder,
                 CompletionResolver compResolver, CsmOffsetableDeclaration contextElement, boolean sort) {
             this.component = component;
@@ -925,7 +927,7 @@ abstract public class CsmCompletionQuery {
                             // Get all fields and methods of the cls
                             result = new CsmCompletionResult(component, getBaseDocument(), res, formatType(lastType, true, true, true),
                                     exp, substPos, 0, cls.getName().length() + 1, isProjectBeeingParsed(), contextElement);
-                        } else { // Found package (otherwise ok would be false)
+                        } else { // Found namespace (otherwise ok would be false)
                             if (true) {
                                 // in C++ it's not legal to have NS-> or NS.
                                 result = null;
@@ -938,27 +940,6 @@ abstract public class CsmCompletionQuery {
                                 res.add(lastNamespace); // return only the package
                             } else {
                                 res = finder.findNestedNamespaces(lastNamespace, "", false, false); // find all nested namespaces
-
-                                String text = null;
-                                try {
-                                    int firstTokenIdx = exp.getTokenOffset(0);
-                                    int cmdStartIdx = sup.getLastCommandSeparator(firstTokenIdx);
-                                    if (cmdStartIdx < 0) {
-                                        text = sup.getDocument().getText(0, firstTokenIdx);
-                                        cmdStartIdx = text.lastIndexOf(0x0A);
-                                        if (cmdStartIdx != -1) {
-                                            text = text.substring(cmdStartIdx + 1);
-                                        }
-                                    } else {
-                                        text = sup.getDocument().getText(cmdStartIdx, firstTokenIdx - cmdStartIdx);
-                                    }
-                                } catch (BadLocationException e) {
-                                    // ignore and provide full list of items
-                                }
-
-                                if (text != null && -1 == text.indexOf("package")) { //NOI18N
-                                    res.addAll(finder.findClasses(lastNamespace, "", false, false)); // package classes
-                                }
                             }
                             result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*',
                                     exp, substPos, 0, 0, isProjectBeeingParsed(), contextElement);
@@ -1009,22 +990,16 @@ abstract public class CsmCompletionQuery {
                                 try {
                                     int firstTokenIdx = exp.getTokenOffset(0);
                                     int cmdStartIdx = sup.getLastCommandSeparator(firstTokenIdx);
-                                    if (cmdStartIdx < 0) {
-                                        text = sup.getDocument().getText(0, firstTokenIdx);
-                                        cmdStartIdx = text.lastIndexOf(0x0A);
-                                        if (cmdStartIdx != -1) {
-                                            text = text.substring(cmdStartIdx + 1);
-                                        }
-                                    } else {
+                                    if (cmdStartIdx >= 0) {
                                         text = sup.getDocument().getText(cmdStartIdx, firstTokenIdx - cmdStartIdx);
                                     }
                                 } catch (BadLocationException e) {
                                     // ignore and provide full list of items
                                 }
 
+                                // if not "using namespace" or "namespace A = " then add elements
                                 if (text != null && -1 == text.indexOf("namespace")) { //NOI18N
                                     res.addAll(finder.findNamespaceElements(lastNamespace, "", false, false, false)); // namespace elements //NOI18N
-//                                res.addAll(finder.findStaticNamespaceElements(lastNamespace, endOffset, "", false, false, false)); // namespace elements //NOI18N
                                 }
                             }
                             result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*', //NOI18N
@@ -1578,7 +1553,7 @@ abstract public class CsmCompletionQuery {
                     if (isConstructor) { // Help for the constructor
                         CsmClassifier cls = null;
                         if (first) {
-                            cls = sup.getClassFromName(CsmCompletionQuery.this.getFinder(), mtdName, true);
+                            cls = CompletionSupport.getClassFromName(CsmCompletionQuery.this.getFinder(), mtdName, true);
                         } else { // not first
 //                        if ((last)&&(lastNamespace != null)) { // valid package
 //                            cls = JCUtilities.getExactClass(finder, mtdName, (lastNamespace.isGlobal() ? "" : lastNamespace.getName()));
@@ -1672,7 +1647,7 @@ abstract public class CsmCompletionQuery {
                             }
                             String parmStr = "*"; // NOI18N
                             List typeList = getTypeList(item, 1);
-                            List filtered = sup.filterMethods(mtdList, typeList, methodOpen);
+                            List filtered = CompletionSupport.filterMethods(mtdList, typeList, methodOpen);
                             if (filtered.size() > 0) {
                                 mtdList = filtered;
                                 parmStr = formatTypeList(typeList, methodOpen);
