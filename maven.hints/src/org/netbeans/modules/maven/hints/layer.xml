@@ -50,15 +50,13 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+
     <folder name="org-netbeans-modules-java-hints">
         <folder name="rules">
             <folder name="errors">
                 <file name="org-netbeans-modules-maven-hints-errors-SearchClassDependencyInRepo.instance"/>
             </folder>
             <folder name="hints">
-                <folder name="general">
-                    <!--file name="org-netbeans-modules-maven-hints-TestMavenHint.instance"/-->
-                </folder>
                 <folder name="maven">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.hints.Bundle"/>
                     
@@ -67,4 +65,53 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+
+    <folder name="org-netbeans-modules-maven-hints">
+        <file name="org-netbeans-modules-maven-hints-pom-ReleaseVersionError.instance">
+            <attr name="position" intvalue="100"/>
+        </file>
+        <file name="org-netbeans-modules-maven-hints-pom-OverridePluginManagementError.instance">
+            <attr name="position" intvalue="200"/>
+        </file>
+        <file name="org-netbeans-modules-maven-hints-pom-OverrideDependencyManagementError.instance">
+            <attr name="position" intvalue="300"/>
+        </file>
+        <file name="org-netbeans-modules-maven-hints-pom-MoveToDependencyManagementHint.instance">
+            <attr name="position" intvalue="1000"/>
+        </file>
+    </folder>
+
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-maven-pom+xml">
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-maven-hints-pom-StatusProvider.instance"/>
+                </folder>
+            </folder>
+            <!-- for some reason the previous entry doens't work TODO file as bug-->
+            <folder name="xml">
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-maven-hints-pom-StatusProvider.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="OptionsDialog">
+        <folder name="Editor">
+            <folder name="Hints">
+                <folder name="text">
+                    <folder name="x-maven-pom+xml">
+                        <file name="org.netbeans.modules.maven.hints.pom.HintsOptionsPanelController.instance"/>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="TaskList">
+        <folder name="Scanners">
+            <file name="org-netbeans-modules-maven-hints-pom-TaskListBridge.instance"/>
+        </folder>
+    </folder>
+
 </filesystem>

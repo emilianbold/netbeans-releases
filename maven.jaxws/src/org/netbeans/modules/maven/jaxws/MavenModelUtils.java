@@ -40,13 +40,7 @@
 package org.netbeans.modules.maven.jaxws;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import org.apache.maven.model.Build;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.PluginExecution;
-import org.apache.maven.model.Resource;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -55,20 +49,35 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.openide.filesystems.FileObject;
+import javax.xml.namespace.QName;
+import org.apache.maven.project.MavenProject;
+import org.netbeans.modules.maven.model.pom.Build;
+import org.netbeans.modules.maven.model.pom.Configuration;
+import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMQName;
+import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.maven.model.pom.PluginExecution;
+import org.netbeans.modules.maven.model.pom.Resource;
 
 /**
  *
  * @author mkuchtiak
  */
 public class MavenModelUtils {
-    
-    public static Plugin getJaxWSPlugin(ModelHandle handle) {
+
+    /**
+     * returns a RESOLVED project instance of the
+     * plugin if defined in the pom.xml or any of the parents.
+     * @param handle
+     * @return
+     */
+    public static org.apache.maven.model.Plugin getJaxWSPlugin(MavenProject project) {
         @SuppressWarnings("unchecked")
-        List<Plugin> plugins = handle.getPOMModel().getBuild().getPlugins();
-        for (Plugin plg : plugins) {
-            if ("org.codehaus.mojo:jaxws-maven-plugin".equalsIgnoreCase(plg.getKey())) { //NOI18N
+        List<org.apache.maven.model.Plugin> plugins = project.getBuildPlugins();
+        for (org.apache.maven.model.Plugin plg : plugins) {
+            if ("org.codehaus.mojo:jaxws-maven-plugin".equalsIgnoreCase(plg.getKey())) {
                 //TODO CHECK THE ACTUAL PARAMETER VALUES..
                 return plg;
             }
@@ -76,10 +85,10 @@ public class MavenModelUtils {
         return null;
     }
     
-    public static Plugin getWarPlugin(ModelHandle handle) {
+    public static org.apache.maven.model.Plugin getWarPlugin(MavenProject project) {
         @SuppressWarnings("unchecked")
-        List<Plugin> plugins = handle.getPOMModel().getBuild().getPlugins();
-        for (Plugin plg : plugins) {
+        List<org.apache.maven.model.Plugin> plugins = project.getBuildPlugins();
+        for (org.apache.maven.model.Plugin plg : plugins) {
             if ("org.apache.maven.plugins:maven-war-plugin".equalsIgnoreCase(plg.getKey())) { //NOI18N
                 //TODO CHECK THE ACTUAL PARAMETER VALUES..
                 return plg;
@@ -87,251 +96,224 @@ public class MavenModelUtils {
         }
         return null;
     }
-        
-    public static Plugin addJaxWSPlugin(ModelHandle handle) {
-        Plugin plugin = new Plugin();
+
+    /**
+     * adds jaxws plugin, requires the model to have a transaction started,
+     * eg. by calling as part of Utilities.performPOMModelOperations(ModelOperation<POMModel>)
+     * @param model
+     * @return
+     */
+    public static Plugin addJaxWSPlugin(POMModel model) {
+        assert model.isIntransaction() : "need to call model modifications under transaction."; //NOI18N
+        Build bld = model.getProject().getBuild();
+        if (bld == null) {
+            bld = model.getFactory().createBuild();
+            model.getProject().setBuild(bld);
+        }
+        Plugin plugin = bld.findPluginById("org.codehaus.mojo", "jaxws-maven-plugin"); //NOI18N
+        if (plugin != null) {
+            //TODO CHECK THE ACTUAL PARAMETER VALUES..
+            return plugin;
+        }
+        plugin = model.getFactory().createPlugin();
         plugin.setGroupId("org.codehaus.mojo"); //NOI18N
         plugin.setArtifactId("jaxws-maven-plugin"); //NOI18N
         plugin.setVersion("1.10"); //NOI18N
-        Plugin old = null;
-
-        Build bld = handle.getPOMModel().getBuild();
-        if (bld != null) {
-            old = (Plugin) bld.getPluginsAsMap().get(plugin.getKey());
+        bld.addPlugin(plugin);
+        PluginExecution exec = plugin.findExecutionById("wsimport-generate"); //NOI18N
+        if (exec == null) {
+            exec = model.getFactory().createExecution();
+            exec.setId("wsimport-generate"); //NOI18N
+            exec.setPhase("generate-sources"); //NOI18N
+            exec.addGoal("wsimport"); //NOI18N
+            plugin.addExecution(exec);
         } else {
-            handle.getPOMModel().setBuild(new Build());
+            //shall we do something here?
         }
-        if (old != null) {
-            plugin = old;
-        } else {
-            handle.getPOMModel().getBuild().addPlugin(plugin);
-        }
-
-        @SuppressWarnings("unchecked")
-        List<PluginExecution> execs = plugin.getExecutions();
-        if (execs == null || execs.size() == 0) {
-            PluginExecution ex = new PluginExecution();
-            ex.setId("wsimport-generate"); //NOI18N
-            ex.setPhase("generate-sources"); //NOI18N
-            List<String> goals = new ArrayList<String>();
-            goals.add("wsimport"); //NOI18N
-            ex.setGoals(goals);
-            plugin.addExecution(ex);
-        } else {
-            //TODO iterate execution goals and check for wsimport..
+        Configuration config = plugin.getConfiguration();
+        if (config == null) {
+            config = model.getFactory().createConfiguration();
+            plugin.setConfiguration(config);
         }
 
-        Xpp3Dom conf = (Xpp3Dom) plugin.getConfiguration();
-        if (conf == null) {
-            conf = new Xpp3Dom("configuration"); //NOI18N
-            plugin.setConfiguration(conf);
-        }
-
-        Xpp3Dom destDir = conf.getChild("sourceDestDir"); //NOI18N
-        if (destDir == null) {
-            destDir = new Xpp3Dom("sourceDestDir"); //NOI18N
-            destDir.setValue("${project.build.directory}/generated-sources/jaxws-wsimport"); //NOI18N
-            conf.addChild(destDir );
-        }
-
-        Xpp3Dom xnocompile = conf.getChild("xnocompile"); //NOI18N
-        if (xnocompile== null) {
-            xnocompile = new Xpp3Dom("xnocompile"); //NOI18N
-            xnocompile.setValue("true");
-            conf.addChild(xnocompile);
-        }
-        
-        Xpp3Dom verbose = conf.getChild("verbose"); //NOI18N
-        if (verbose == null) {
-            verbose = new Xpp3Dom("verbose"); //NOI18N
-            verbose.setValue("true"); //NOI18N
-            conf.addChild(verbose);
-        }
-
-        Xpp3Dom catalog = conf.getChild("catalog"); //NOI18N
-        if (catalog == null) {
-            catalog = new Xpp3Dom("catalog"); //NOI18N
-            catalog.setValue("${basedir}/"+MavenJAXWSSupportIml.CATALOG_PATH); //NOI18N
-            conf.addChild(catalog);
-        }
-
-        handle.markAsModified(handle.getPOMModel());
+        config.setSimpleParameter("sourceDestDir", "${project.build.directory}/generated-sources/jaxws-wsimport"); //NOI18N
+        config.setSimpleParameter("xnocompile", "true"); //NOI18N
+        config.setSimpleParameter("verbose", "true"); //NOI18N
+        config.setSimpleParameter("catalog", "${basedir}/" + MavenJAXWSSupportIml.CATALOG_PATH);
         return plugin; 
     }
         
-    public static Plugin addWarlugin(ModelHandle handle) {
-
-        Plugin plugin = new Plugin();
-        plugin.setGroupId("org.apache.maven.plugins"); //NOI18N
-        plugin.setArtifactId("maven-war-plugin"); //NOI18N
+    public static Plugin addWarPlugin(POMModel model) {
+        assert model.isIntransaction() : "need to call model modifications under transaction."; //NOI18N
+        Build bld = model.getProject().getBuild();
+        if (bld == null) {
+            bld = model.getFactory().createBuild();
+            model.getProject().setBuild(bld);
+        }
+        Plugin plugin = bld.findPluginById("org.apache.maven.plugins", "maven-war-plugin"); //NOI18N
+        if (plugin == null) {
+            plugin = model.getFactory().createPlugin();
+            plugin.setGroupId("org.apache.maven.plugins"); //NOI18N
+            plugin.setArtifactId("maven-war-plugin"); //NOI18N
+            bld.addPlugin(plugin);
+        }
         plugin.setVersion("2.0.2"); //NOI18N
-        Plugin old = null;
 
-        Build bld = handle.getPOMModel().getBuild();
-        if (bld != null) {
-            old = (Plugin) bld.getPluginsAsMap().get(plugin.getKey());
-        } else {
-            handle.getPOMModel().setBuild(new Build());
+        Configuration config = plugin.getConfiguration();
+        if (config == null) {
+            config = model.getFactory().createConfiguration();
+            plugin.setConfiguration(config);
         }
-        if (old != null) {
-            plugin = old;
-        } else {
-            handle.getPOMModel().getBuild().addPlugin(plugin);
+        List<POMExtensibilityElement> ex = config.getConfigurationElements();
+        POMExtensibilityElement webResources = findChild(config.getConfigurationElements(), "webResources");
+        if (webResources == null) {
+            webResources = model.getFactory().createPOMExtensibilityElement(
+                    POMQName.createQName("webResources", model.getPOMQNames().isNSAware()));
+            config.addExtensibilityElement(webResources);
         }
+        //TODO how to recognize if the correct resource element is present???
 
-        Xpp3Dom conf = (Xpp3Dom) plugin.getConfiguration();
-        if (conf == null) {
-            conf = new Xpp3Dom("configuration"); //NOI18N
-            plugin.setConfiguration(conf);
-        }
+        POMExtensibilityElement res = findChild(webResources.getExtensibilityElements(), "resource");
+        //we check for presense only, we should iterate all and check the internals.
+        if (res == null) {
+            res = model.getFactory().createPOMExtensibilityElement(
+                    POMQName.createQName("resource", model.getPOMQNames().isNSAware()));
+            webResources.addExtensibilityElement(res);
+            POMExtensibilityElement dir = model.getFactory().createPOMExtensibilityElement(
+                    POMQName.createQName("directory", model.getPOMQNames().isNSAware()));
+            dir.setElementText("src");
+            res.addExtensibilityElement(dir);
 
-        Xpp3Dom webResources = conf.getChild("webResources"); //NOI18N
-        if (webResources  == null) {
-            webResources  = new Xpp3Dom("webResources"); //NOI18N
-            conf.addChild(webResources);
-        }
+            POMExtensibilityElement tp = model.getFactory().createPOMExtensibilityElement(POMQName.createQName("targetPath",
+                    model.getPOMQNames().isNSAware()));
+            tp.setElementText("WEB-INF");
+            res.addExtensibilityElement(tp);
 
-        Xpp3Dom resource = webResources.getChild("resource"); //NOI18N
-        if (resource == null) {
-            resource = new Xpp3Dom("resource"); //NOI18N
-            webResources.addChild(resource);
-            
-            Xpp3Dom directory = new Xpp3Dom("directory"); //NOI18N
-            directory.setValue("src"); //NOI18N
-            resource.addChild(directory);
-            
-            Xpp3Dom targetPath = new Xpp3Dom("targetPath"); //NOI18N
-            targetPath.setValue("WEB-INF"); //NOI18N
-            resource.addChild(targetPath);
-            
-            Xpp3Dom includes = new Xpp3Dom("includes"); //NOI18N
-            resource.addChild(includes);
+            POMExtensibilityElement in = model.getFactory().createPOMExtensibilityElement(POMQName.createQName("includes",
+                    model.getPOMQNames().isNSAware()));
+            res.addExtensibilityElement(in);
 
-            Xpp3Dom include = new Xpp3Dom("include"); //NOI18N
-            include.setValue("jax-ws-catalog.xml"); //NOI18N
-            includes.addChild(include);
-            
-            include = new Xpp3Dom("include"); //NOI18N
-            include.setValue("wsdl/**"); //NOI18N
-            includes.addChild(include);           
+            POMExtensibilityElement include = model.getFactory().createPOMExtensibilityElement(POMQName.createQName("include",
+                    model.getPOMQNames().isNSAware()));
+            include.setElementText("jax-ws-catalog.xml");
+            in.addExtensibilityElement(include);
+
+            include = model.getFactory().createPOMExtensibilityElement(POMQName.createQName("include",
+                    model.getPOMQNames().isNSAware()));
+            include.setElementText("wsdl/**");
+            in.addExtensibilityElement(include);
         }
     
-        handle.markAsModified(handle.getPOMModel());
         return plugin; 
     }
     
-    public static void addWsdlResources(ModelHandle handle) {
-
-        Build bld = handle.getPOMModel().getBuild();
-        if (bld != null) {
+    public static void addWsdlResources(POMModel model) {
+        Build bld = model.getProject().getBuild();
+        if (bld == null) {
+            return;
+        }
             boolean foundResourceForMetaInf = false;
-            List resources = bld.getResources();
+            List<Resource> resources = bld.getResources();
             if (resources != null) {
-                for (Object o: resources) {
-                    Resource resource = (Resource)o;
+                for (Resource resource : resources) {
                     if ("META-INF".equals(resource.getTargetPath())) { //NOI18N
                         foundResourceForMetaInf = true;
                     }
                 }
             }
             if (!foundResourceForMetaInf) {
-                Resource res = new Resource();
+                Resource res = model.getFactory().createResource();
                 res.setTargetPath("META-INF"); //NOI18N
                 res.setDirectory("src"); //NOI18N
-                List<String> includes = new ArrayList<String>();
-                includes.add("jax-ws-catalog.xml"); //NOI18N
-                includes.add("wsdl/**"); //NOI18N
-                res.setIncludes(includes);
+                res.addInclude("jax-ws-catalog.xml"); //NOI18N
+                res.addInclude("wsdl/**"); //NOI18N
                 bld.addResource(res);
-                handle.markAsModified(handle.getPOMModel());
+            }
+
+    }
+    
+
+    private static POMExtensibilityElement findChild(List<POMExtensibilityElement> elems, String name) {
+        for (POMExtensibilityElement e : elems) {
+            if (name.equals(e.getQName().getLocalPart())) {
+                return e;
             }
         }
-
+        return null;
     }
     
-    public static void addWsdlFile(ModelHandle handle, Plugin jaxWsPlugin, String wsdlPath) {
-        
-        Xpp3Dom conf = (Xpp3Dom) jaxWsPlugin.getConfiguration();
-        if (conf == null) {
-            conf = new Xpp3Dom("configuration"); //NOI18N
-            jaxWsPlugin.setConfiguration(conf);
-
-            Xpp3Dom destDir = new Xpp3Dom("sourceDestDir"); //NOI18N
-            destDir.setValue("${project.build.directory}/generated-sources/jaxws-wsimport"); //NOI18N
-            conf.addChild(destDir);
-
-            Xpp3Dom xnocompile = new Xpp3Dom("xnocompile"); //NOI18N
-            xnocompile.setValue("true"); //NOI18N
-            conf.addChild(xnocompile);
-
-            Xpp3Dom verbose = new Xpp3Dom("verbose"); //NOI18N
-            verbose.setValue("true"); //NOI18N
-            conf.addChild(verbose);
-
-            Xpp3Dom catalog = new Xpp3Dom("catalog"); //NOI18N
-            catalog.setValue("${basedir}/"+MavenJAXWSSupportIml.CATALOG_PATH); //NOI18N
-            conf.addChild(catalog);
+    public static void addWsdlFile(Plugin plugin, String wsdlPath) {
+        POMModel model = plugin.getModel();
+        Configuration config = plugin.getConfiguration();
+        if (config == null) {
+            config = model.getFactory().createConfiguration();
+            plugin.setConfiguration(config);
+            //TODO shall we add the other config elements
         }
-
-        Xpp3Dom wsdlFiles = conf.getChild("wsdlFiles"); //NOI18N
+        POMExtensibilityElement wsdlFiles = findChild(config.getConfigurationElements(), "wsdlFiles");
         if (wsdlFiles == null) {
-            wsdlFiles = new Xpp3Dom("wsdlFiles"); //NOI18N
-            conf.addChild(wsdlFiles);
+            QName qname = POMQName.createQName("wsdlFiles", model.getPOMQNames().isNSAware()); //NOI18N
+            wsdlFiles = model.getFactory().createPOMExtensibilityElement(qname);
+            config.addExtensibilityElement(wsdlFiles);
         }
-
-        Xpp3Dom wsdlFile = new Xpp3Dom("wsdlFile"); //NOI18N
-        wsdlFile.setValue(wsdlPath);
-        wsdlFiles.addChild(wsdlFile);
-
-        handle.markAsModified(handle.getPOMModel());
+        QName qname = POMQName.createQName("wsdlFile", model.getPOMQNames().isNSAware()); //NOI18N
+        List<POMExtensibilityElement> elems = wsdlFiles.getExtensibilityElements();
+        for (POMExtensibilityElement el : elems) {
+            if (qname.equals(el.getQName())) {
+                if (wsdlPath.equals(el.getElementText())) {
+                    //already there..
+                    return;
+                }
+            }
+        }
+        POMExtensibilityElement el = model.getFactory().createPOMExtensibilityElement(qname);
+        el.setElementText(wsdlPath);
+        wsdlFiles.addExtensibilityElement(el);
     }
     
-    public static void removeWsdlFile(ModelHandle handle, String wsdlPath) {       
-        @SuppressWarnings("unchecked")
-        List<Plugin> plugins = handle.getPOMModel().getBuild().getPlugins();
-        for (Plugin plugin : plugins) {
-            if ("org.codehaus.mojo:jaxws-maven-plugin".equalsIgnoreCase(plugin.getKey())) { //NOI18N
-                Xpp3Dom conf = (Xpp3Dom) plugin.getConfiguration();
-                if (conf != null) {
-                    Xpp3Dom wsdlFilesNode = conf.getChild("wsdlFiles"); //NOI18N
-                    if (wsdlFilesNode != null) {
-                        int clientToRemove = -1;
-                        Xpp3Dom[] wsdlFiles = wsdlFilesNode.getChildren();
-                        for (int i=0; i<wsdlFiles.length;i++) {
-                            if (wsdlPath.equals(wsdlFiles[i].getValue())) {
-                                clientToRemove = i;
-                                break;
-                            }
-                        }
-                        if (clientToRemove >= 0) {
-                            wsdlFilesNode.removeChild(clientToRemove);
-                            handle.markAsModified(handle.getPOMModel());
+    public static void removeWsdlFile(POMModel model, String wsdlPath) {
+        Build bld = model.getProject().getBuild();
+        if (bld == null) {
+            return;
+        }
+        Plugin plugin = bld.findPluginById("org.codehaus.mojo", "jaxws-maven-plugin");
+        if (plugin != null) {
+            Configuration config = plugin.getConfiguration();
+            if (config != null) {
+                POMExtensibilityElement wsdlFiles = findChild(config.getConfigurationElements(), "wsdlFiles");
+                if (wsdlFiles != null) {
+                    List<POMExtensibilityElement> files = wsdlFiles.getExtensibilityElements();
+                    for (POMExtensibilityElement el : files) {
+                        if ("wsdlFile".equals(el.getQName().getLocalPart()) &&
+                            wsdlPath.equals(el.getElementText())) {
+                            wsdlFiles.removeExtensibilityElement(el);
+                            break;
                         }
                     }
-                    
                 }
             }
         }
     }
     
-    public static void renameWsdlFile(ModelHandle handle, String oldWsdlPath, String newWsdlPath) {       
-        @SuppressWarnings("unchecked")
-        List<Plugin> plugins = handle.getPOMModel().getBuild().getPlugins();
-        for (Plugin plugin : plugins) {
-            if ("org.codehaus.mojo:jaxws-maven-plugin".equalsIgnoreCase(plugin.getKey())) { //NOI18N
-                Xpp3Dom conf = (Xpp3Dom) plugin.getConfiguration();
-                if (conf != null) {
-                    Xpp3Dom wsdlFilesNode = conf.getChild("wsdlFiles"); //NOI18N
-                    if (wsdlFilesNode != null) {
-                        for (Xpp3Dom wsdlFile:wsdlFilesNode.getChildren()) {
-                            if (oldWsdlPath.equals(wsdlFile.getValue())) {
-                                wsdlFile.setValue(newWsdlPath);
-                                handle.markAsModified(handle.getPOMModel());
-                                break;
-                            }
+    public static void renameWsdlFile(POMModel model, String oldWsdlPath, String newWsdlPath) {
+        Build bld = model.getProject().getBuild();
+        if (bld == null) {
+            return;
+        }
+        Plugin plugin = bld.findPluginById("org.codehaus.mojo", "jaxws-maven-plugin"); //NOI18N
+        if (plugin != null) {
+            Configuration config = plugin.getConfiguration();
+            if (config != null) {
+                POMExtensibilityElement wsdlFiles = findChild(config.getConfigurationElements(), "wsdlFiles");
+                if (wsdlFiles != null) {
+                    List<POMExtensibilityElement> files = wsdlFiles.getExtensibilityElements();
+                    for (POMExtensibilityElement el : files) {
+                        if ("wsdlFile".equals(el.getQName().getLocalPart()) && //NOI18N
+                            oldWsdlPath.equals(el.getElementText())) {
+                            el.setElementText(newWsdlPath);
+                            break;
                         }
                     }
-                    
                 }
             }
         }
@@ -355,7 +337,5 @@ public class MavenModelUtils {
                 }
             }
         }
-
     }
-
 }

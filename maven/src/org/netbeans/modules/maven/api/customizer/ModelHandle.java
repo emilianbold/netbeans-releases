@@ -45,10 +45,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.apache.maven.model.Activation;
-import org.apache.maven.model.ActivationProperty;
-import org.apache.maven.model.BuildBase;
-import org.apache.maven.model.Model;
 import org.apache.maven.profiles.ProfilesRoot;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.configurations.M2Configuration;
@@ -57,6 +53,11 @@ import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.model.pom.Activation;
+import org.netbeans.modules.maven.model.pom.ActivationProperty;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Profile;
+import org.netbeans.modules.maven.model.profile.ProfilesModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -77,13 +78,13 @@ public final class ModelHandle {
     public static final String PROFILE_PRIVATE = "netbeans-private"; //NOI18N
     public static final String PROPERTY_PROFILE = "netbeans.execution"; //NOI18N
 
-    private Model model;
+    private POMModel model;
     private MavenProject project;
-    private ProfilesRoot profiles; 
+    private ProfilesModel profiles;
     private Map<String, ActionToGoalMapping> mappings;
     private Map<ActionToGoalMapping, Boolean> modMappings;
-    private org.apache.maven.model.Profile publicProfile;
-    private org.apache.maven.profiles.Profile privateProfile;
+    private Profile publicProfile;
+    private org.netbeans.modules.maven.model.profile.Profile privateProfile;
     private List<Configuration> configurations;
     private boolean modProfiles = false;
     private boolean modModel = false;
@@ -99,7 +100,7 @@ public final class ModelHandle {
     
     static class AccessorImpl extends CustomizerProviderImpl.ModelAccessor {
         
-         public ModelHandle createHandle(Model model, ProfilesRoot prof,
+         public ModelHandle createHandle(POMModel model, ProfilesModel prof,
                                         MavenProject proj, 
                                         Map<String, ActionToGoalMapping> mapp, 
                                         List<ModelHandle.Configuration> configs,
@@ -116,12 +117,16 @@ public final class ModelHandle {
     }
     
     /** Creates a new instance of ModelHandle */
-    private ModelHandle(Model mdl, ProfilesRoot profile, MavenProject proj, 
+    private ModelHandle(POMModel mdl, ProfilesModel profile, MavenProject proj,
                         Map<String, ActionToGoalMapping> mappings,
                         List<Configuration> configs, Configuration active) {
         model = mdl;
+        model.startTransaction();
+        //TODO when and how to do transaction rollback?
         project = proj;
         this.profiles = profile;
+        //TODO when and how to do transaction rollback?
+        profiles.startTransaction();
         this.mappings = mappings;
         this.modMappings = new HashMap<ActionToGoalMapping, Boolean>();
         for (ActionToGoalMapping map : mappings.values()) {
@@ -135,7 +140,7 @@ public final class ModelHandle {
      * pom.xml model
      * @return
      */
-    public Model getPOMModel() {
+    public POMModel getPOMModel() {
         return model;
     }
     
@@ -143,7 +148,7 @@ public final class ModelHandle {
      * profiles.xml model
      * @return 
      */
-    public ProfilesRoot getProfileModel() {
+    public ProfilesModel getProfileModel() {
         return profiles;
     }
     
@@ -152,17 +157,15 @@ public final class ModelHandle {
      * use getNetbeansPublicProfile(false)
      * @return
      */
-    public org.apache.maven.model.Profile getNetbeansPublicProfile() {
+    public Profile getNetbeansPublicProfile() {
         return getNetbeansPublicProfile(true);
     }
     
-    public org.apache.maven.model.Profile getNetbeansPublicProfile(boolean addIfNotPresent) {
+    public Profile getNetbeansPublicProfile(boolean addIfNotPresent) {
         if (publicProfile == null) {
-            List lst = model.getProfiles();
+            List<Profile> lst = model.getProject().getProfiles();
             if (lst != null) {
-                Iterator it = lst.iterator();
-                while (it.hasNext()) {
-                    org.apache.maven.model.Profile profile = (org.apache.maven.model.Profile) it.next();
+                for (Profile profile : lst) {
                     if (PROFILE_PUBLIC.equals(profile.getId())) {
                         publicProfile = profile;
                         break;
@@ -170,21 +173,21 @@ public final class ModelHandle {
                 }
             }
             if (publicProfile == null && addIfNotPresent) {
-                publicProfile = new org.apache.maven.model.Profile();
+                publicProfile = model.getFactory().createProfile();
                 publicProfile.setId(PROFILE_PUBLIC);
-                Activation act = new Activation();
-                ActivationProperty prop = new ActivationProperty();
+                Activation act = model.getFactory().createActivation();
+                ActivationProperty prop = model.getFactory().createActivationProperty();
                 prop.setName(PROPERTY_PROFILE);
                 prop.setValue("true"); //NOI18N
-                act.setProperty(prop);
+                act.setActivationProperty(prop);
                 publicProfile.setActivation(act);
-                publicProfile.setBuild(new BuildBase());
-                model.addProfile(publicProfile);
+                publicProfile.setBuildBase(model.getFactory().createBuildBase());
+                model.getProject().addProfile(publicProfile);
                 markAsModified(model);
             }
         }
         if (publicProfile == null && !addIfNotPresent) {
-            return new org.apache.maven.model.Profile();
+            return model.getFactory().createProfile();
         }
         return publicProfile;
     }
@@ -193,17 +196,15 @@ public final class ModelHandle {
      * use getNetbeansPrivateProfile(false)
      * @return 
      */
-    public org.apache.maven.profiles.Profile getNetbeansPrivateProfile() {
+    public org.netbeans.modules.maven.model.profile.Profile getNetbeansPrivateProfile() {
         return getNetbeansPrivateProfile(true);
     }
     
-    public org.apache.maven.profiles.Profile getNetbeansPrivateProfile(boolean addIfNotPresent) {
+    public org.netbeans.modules.maven.model.profile.Profile getNetbeansPrivateProfile(boolean addIfNotPresent) {
         if (privateProfile == null) {
-            List lst = profiles.getProfiles();
+            List<org.netbeans.modules.maven.model.profile.Profile> lst = profiles.getProfilesRoot().getProfiles();
             if (lst != null) {
-                Iterator it = lst.iterator();
-                while (it.hasNext()) {
-                    org.apache.maven.profiles.Profile profile = (org.apache.maven.profiles.Profile) it.next();
+                for (org.netbeans.modules.maven.model.profile.Profile profile : lst) {
                     if (PROFILE_PRIVATE.equals(profile.getId())) {
                         privateProfile = profile;
                         break;
@@ -211,21 +212,21 @@ public final class ModelHandle {
                 }
             }
             if (privateProfile == null && addIfNotPresent) {
-                privateProfile = new org.apache.maven.profiles.Profile();
+                privateProfile = profiles.getFactory().createProfile();
                 privateProfile.setId(PROFILE_PRIVATE);
-                org.apache.maven.profiles.Activation act = new org.apache.maven.profiles.Activation();
-                org.apache.maven.profiles.ActivationProperty prop = new org.apache.maven.profiles.ActivationProperty();
+                org.netbeans.modules.maven.model.profile.Activation act = profiles.getFactory().createActivation();
+                org.netbeans.modules.maven.model.profile.ActivationProperty prop = profiles.getFactory().createActivationProperty();
                 prop.setName(PROPERTY_PROFILE);
                 prop.setValue("true"); //NOI18N
-                act.setProperty(prop);
+                act.setActivationProperty(prop);
                 privateProfile.setActivation(act);
-                profiles.addProfile(privateProfile);
+                profiles.getProfilesRoot().addProfile(privateProfile);
                 markAsModified(profiles);
             }
         }
         if (privateProfile == null && !addIfNotPresent) {
             // just return something to prevent npes.. won't be live though..
-            return new org.apache.maven.profiles.Profile();
+            return profiles.getFactory().createProfile();
         }
         return privateProfile;
     }
