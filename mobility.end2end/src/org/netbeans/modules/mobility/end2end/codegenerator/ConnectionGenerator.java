@@ -205,7 +205,21 @@ public class ConnectionGenerator {
             OutputLogger.getInstance().log( creating );
 //            
             Javon javon = new Javon( mapping );
-            javon.generate( ph );
+            if ( javon.generate( ph ) ){
+                StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage( ConnectionGenerator.class,
+                            "MSG_SuccessGenerated" )); // NOI18N
+                OutputLogger.getInstance().log(NbBundle.getMessage(
+                    ConnectionGenerator.class,
+                    "TXT_GenerationSuccess" ));// NOI18N
+            }
+            else {
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage( ConnectionGenerator.class, "MSG_Failure" )); // NOI18N
+                OutputLogger.getInstance().log(NbBundle.getMessage(
+                    ConnectionGenerator.class,
+                    "TXT_GenerationUnsuccess" ));// NOI18N
+            }
 //            Streams.setOut(ow);
 //            Streams.setErr(ow);
 //            outputs = new Main().run( mapping, "" ); // NOI18N
@@ -240,12 +254,6 @@ public class ConnectionGenerator {
 //            }
         } 
         finally {
-            StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage( ConnectionGenerator.class, 
-                            "MSG_SuccessGenerated" )); // NOI18N
-            OutputLogger.getInstance().log(NbBundle.getMessage( 
-                    ConnectionGenerator.class, 
-                    "TXT_GenerationFinished" ));// NOI18N
             ph.finish();
             OutputLogger.getInstance().close();
         }
