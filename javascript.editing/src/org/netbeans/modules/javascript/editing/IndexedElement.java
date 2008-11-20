@@ -42,8 +42,6 @@ package org.netbeans.modules.javascript.editing;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.ParserFile;
-import org.netbeans.modules.csl.spi.DefaultParserFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -232,12 +230,6 @@ public abstract class IndexedElement extends JsElement {
         }
 
         return document;
-    }
-
-    public ParserFile getFile() {
-        boolean platform = false; // XXX FIND OUT WHAT IT IS!
-
-        return new DefaultParserFile(getFileObject(), null, platform);
     }
 
     @Override

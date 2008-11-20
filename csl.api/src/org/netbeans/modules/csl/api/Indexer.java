@@ -81,7 +81,7 @@ public abstract interface Indexer {
      * When you call file.getFileObject() during this process, it will have to do a
      * FileUtil.toFileObject(file) which is not cheap. 
      */
-    boolean isIndexable(@NonNull ParserFile file);
+    boolean isIndexable(@NonNull File file);
    
     /** For files that are {@link #isIndexable}, index the given file by
      * operating on the provided {@link Index} using the given {@link ParserResult} to

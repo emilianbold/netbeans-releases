@@ -55,7 +55,6 @@ import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Indexer;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.ParserFile;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.IndexDocument;
@@ -68,6 +67,7 @@ import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -135,8 +135,8 @@ public class JsIndexer implements Indexer {
         return "javascript"; // NOI18N
     }
     
-    public boolean isIndexable(ParserFile file) {
-        String extension = file.getExtension();
+    public boolean isIndexable(File file) {
+        String extension = FileUtil.getExtension(file.getName());
 
         if (extension.equals("json")) {
             // json: not indexed
@@ -144,7 +144,7 @@ public class JsIndexer implements Indexer {
             return false;
         }
         if (extension.equals("html")) {
-            if (file.getNameExt().equals("DataTable.js.html")) {
+            if (file.getName().equals("DataTable.js.html")) {
                 // Large file from YUI, skip
                 return false;
             }
@@ -152,12 +152,14 @@ public class JsIndexer implements Indexer {
         } else if (extension.equals("rhtml") || extension.equals("jsp") || extension.equals("php")) { // NOI18N
             return true;
         } else if (extension.equals("js"))  {
-            String name = file.getNameExt();
+            String name = file.getName();
 
             // Yahoo file that is always minimized and not uaually needed - it's an alias for 
             // other stuff
             if (name.equals("utilities.js")) {
-                String relative = file.getRelativePath();
+// XXX: parsingapi
+//                String relative = file.getRelativePath();
+                String relative = file.getAbsolutePath();
                 if (relative != null && relative.indexOf("yui") != -1) { // NOI18N
                     return false;
                 }
@@ -165,7 +167,7 @@ public class JsIndexer implements Indexer {
             
             // Avoid double-indexing files that have multiple versions - e.g. foo.js and foo-min.js
             // or foo.uncompressed
-            FileObject fo = file.getFileObject();
+            FileObject fo = FileUtil.toFileObject(file);
             if (fo == null) {
                 return true;
             }

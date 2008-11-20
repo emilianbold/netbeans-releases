@@ -98,11 +98,9 @@ import org.netbeans.modules.csl.api.Indexer;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.NameKind;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
-import org.netbeans.modules.csl.api.ParserFile;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.spi.DefaultParserFile;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.AstRule;
@@ -1372,7 +1370,7 @@ public abstract class CslTestBase extends NbTestCase {
         assertNotNull("getIndexer must be implemented", indexer);
         FileObject fo = getTestFile(relFilePath);
         assertNotNull(fo);
-        ParserFile file = new DefaultParserFile(fo, null, false);
+        File file = FileUtil.toFile(fo);
         
         assertEquals(isIndexable, indexer.isIndexable(file));
     }

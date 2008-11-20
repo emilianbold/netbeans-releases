@@ -52,7 +52,6 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.ParserFile;
 import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
@@ -168,13 +167,7 @@ public final class AstUtilities {
     }
 
     public static Node getForeignNode(final IndexedElement o, JsParseResult[] compilationInfoRet) {
-        ParserFile file = o.getFile();
-
-        if (file == null) {
-            return null;
-        }
-
-        FileObject fo = file.getFileObject();
+        FileObject fo = o.getFileObject();
         if (fo == null) {
             return null;
         }

@@ -46,7 +46,6 @@ import java.util.*;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.lib.editor.codetemplates.spi.*;
@@ -58,7 +57,6 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.util.Exceptions;
 
 

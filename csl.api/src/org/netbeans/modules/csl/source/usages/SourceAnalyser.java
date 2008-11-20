@@ -49,7 +49,6 @@ import java.util.Map;
 import org.netbeans.modules.csl.api.IndexDocument;
 import org.netbeans.modules.csl.api.IndexDocumentFactory;
 import org.netbeans.modules.csl.api.Indexer;
-import org.netbeans.modules.csl.api.ParserFile;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
@@ -125,19 +124,20 @@ public class SourceAnalyser implements IndexDocumentFactory {
         }
         index.store(fileUrl, documents);
     }
-    
-    public void delete (final ParserFile parserFile, Language language) throws IOException {
-        if (!this.index.isValid(false)) {
-            return;
-        }
-        //this.toDelete.add(className);
 
-        Indexer indexer = language.getIndexer();
-        if (indexer != null && indexer.isIndexable(parserFile)) {
-            String fileUrl = indexer.getPersistentUrl(parserFile.getFile());
-            index.store(fileUrl, null);
-        }
-    }
+// XXX: parsingapi
+//    public void delete (final ParserFile parserFile, Language language) throws IOException {
+//        if (!this.index.isValid(false)) {
+//            return;
+//        }
+//        //this.toDelete.add(className);
+//
+//        Indexer indexer = language.getIndexer();
+//        if (indexer != null && indexer.isIndexable(parserFile)) {
+//            String fileUrl = indexer.getPersistentUrl(parserFile.getFile());
+//            index.store(fileUrl, null);
+//        }
+//    }
 
     Map<String,String> getTimeStamps() throws IOException {
         return index.getTimeStamps();

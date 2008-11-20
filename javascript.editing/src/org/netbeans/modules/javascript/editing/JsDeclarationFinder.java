@@ -410,7 +410,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
                 } else {
                     int astOffset = node.getSourceStart();
                     int lexOffset = LexUtilities.getLexerOffset(infoRet[0], astOffset);
-                    loc = new DeclarationLocation(com.getFile().getFileObject(),
+                    loc = new DeclarationLocation(com.getFileObject(),
                        lexOffset, com);
                 }
                 if (invalid) {
