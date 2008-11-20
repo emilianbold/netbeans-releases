@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
-import javax.swing.text.Document;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.TokenContextPath;
@@ -49,7 +48,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.FormatTokenPosition;
 import org.netbeans.editor.ext.ExtFormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
-import org.netbeans.modules.cnd.editor.deprecated.fortran.options.FortranCodeStyle;
+import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 
 /**
  * Fortran indentation services are located here

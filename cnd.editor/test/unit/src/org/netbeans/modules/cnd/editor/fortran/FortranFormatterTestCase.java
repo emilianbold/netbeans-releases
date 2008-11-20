@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
-import org.netbeans.modules.cnd.editor.deprecated.fortran.options.FortranCodeStyle;
+import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 
 /**
  *

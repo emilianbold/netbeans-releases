@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.editor.fortran;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import org.netbeans.editor.Formatter;
-import org.netbeans.modules.cnd.editor.deprecated.fortran.options.FortranCodeStyle;
+import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 import org.netbeans.modules.cnd.test.FormatterBaseDocumentUnitTestCase;
 import org.openide.util.Exceptions;
 
