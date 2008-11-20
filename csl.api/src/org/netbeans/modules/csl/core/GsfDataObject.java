@@ -74,7 +74,7 @@ public class GsfDataObject extends MultiDataObject {
     private static Language templateLanguage;
 
     private GenericEditorSupport jes;
-    private Language language;
+    private final Language language;
     
     public GsfDataObject(FileObject pf, MultiFileLoader loader, Language language) throws DataObjectExistsException {
         super(pf, loader);
@@ -95,6 +95,7 @@ public class GsfDataObject extends MultiDataObject {
                 createEditorSupport().saveAs( folder, fileName );
             }
         });
+        getCookieSet().add(createEditorSupport());
     }
     
     public @Override Node createNodeDelegate() {
@@ -107,10 +108,7 @@ public class GsfDataObject extends MultiDataObject {
     }
 
     public @Override <T extends Cookie> T getCookie(Class<T> type) {
-        if (type.isAssignableFrom(GenericEditorSupport.class) && language != null) {
-            return type.cast(createEditorSupport ());
-        }
-        return super.getCookie(type);
+        return getCookieSet().getCookie(type);
     }
 
     @Override
