@@ -100,7 +100,8 @@ options {
 
 {
 @SuppressWarnings({"unchecked", "cast", "fallthrough"})
-}class CPPParser extends Parser;
+}
+class CPPParser extends Parser;
 
 options {
 	k = 2;
