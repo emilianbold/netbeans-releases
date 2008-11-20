@@ -161,8 +161,8 @@ public class JsOccurrenceFinder extends OccurrencesFinder<JsParseResult> {
                 // Document was just closed
                 return;
             }
+            doc.readLock();
             try {
-                doc.readLock();
                 int length = doc.getLength();
                 OffsetRange astRange = AstUtilities.getRange(closest);
                 OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
