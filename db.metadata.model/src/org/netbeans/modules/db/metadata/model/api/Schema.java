@@ -133,6 +133,13 @@ public class Schema extends MetadataElement {
         return impl.getView(name);
     }
 
+    public Collection<Procedure> getProcedures() {
+        return impl.getProcedures();
+    }
+
+    public Procedure getProcedure(String name) {
+        return impl.getProcedure(name);
+    }
 
     @Override
     public String toString() {

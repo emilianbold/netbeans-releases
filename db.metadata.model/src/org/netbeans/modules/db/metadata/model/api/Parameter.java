@@ -37,28 +37,65 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.spi;
+package org.netbeans.modules.db.metadata.model.api;
 
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Tuple;
+import org.netbeans.modules.db.metadata.model.spi.ParameterImplementation;
 
 /**
+ * Encapsulates a parameter to a stored procedure or function.
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class ColumnImplementation {
+public class Parameter extends Value {
 
-    private Column column;
+    public enum Direction { 
+        IN, OUT, INOUT;
+    };
 
-    public final Column getColumn() {
-        if (column == null) {
-            column = MetadataAccessor.getDefault().createColumn(this);
-        }
-        return column;
+    private final ParameterImplementation impl;
+
+    Parameter(ParameterImplementation impl) {
+        this.impl = impl;
     }
 
-    public abstract Tuple getParent();
+    public Procedure getParent() {
+        return impl.getParent();
+    }
 
-    public abstract String getName();
+    public String getName() {
+        return impl.getName();
+    }
+
+    public SQLType getType() {
+        return impl.getType();
+    }
+
+    public Direction getDirection() {
+        return impl.getDirection();
+    }
+
+    public int getPrecision() {
+        return impl.getPrecision();
+    }
+
+    public int getLength() {
+        return impl.getLength();
+    }
+
+    public short getScale() {
+        return impl.getScale();
+    }
+
+    public short getRadix() {
+        return impl.getRadix();
+    }
+
+    public Nullable getNullable() {
+        return impl.getNullable();
+    }
+
+    @Override
+    public String toString() {
+        return "Column[name='" + impl.getName() + "']"; // NOI18N
+    }
 }

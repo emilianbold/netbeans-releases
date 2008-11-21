@@ -39,9 +39,17 @@
 
 package org.netbeans.modules.db.metadata.model.jdbc;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.spi.ViewImplementation;
 
@@ -56,10 +64,13 @@ import org.netbeans.modules.db.metadata.model.spi.ViewImplementation;
 public class JDBCView extends ViewImplementation {
     private static final Logger LOGGER = Logger.getLogger(JDBCView.class.getName());
 
-    private final JDBCTable table;
+    private final JDBCSchema jdbcSchema;
+    private final String name;
+    private Map<String, Column> columns;
 
     public JDBCView(JDBCSchema jdbcSchema, String name) {
-        table = new JDBCTable(jdbcSchema, name);
+        this.jdbcSchema = jdbcSchema;
+        this.name = name;
     }
 
     @Override
@@ -67,29 +78,58 @@ public class JDBCView extends ViewImplementation {
         return "JDBCView[name='" + getName() + "']"; // NOI18N
     }
 
-    @Override
-    public Schema getParent() {
-        return table.getParent();
+    public final Schema getParent() {
+        return jdbcSchema.getSchema();
+    }
+
+    public final String getName() {
+        return name;
+    }
+
+    public final Collection<Column> getColumns() {
+        return initColumns().values();
+    }
+
+    public final Column getColumn(String name) {
+        return MetadataUtilities.find(name, initColumns());
+    }
+
+    protected JDBCColumn createJDBCColumn(String name) {
+        return new JDBCColumn(this.getView(), name);
+    }
+
+    protected void createColumns() {
+        Map<String, Column> newColumns = new LinkedHashMap<String, Column>();
+        try {
+            ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getColumns(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name, "%"); // NOI18N
+            try {
+                while (rs.next()) {
+                    String columnName = rs.getString("COLUMN_NAME"); // NOI18N
+                    Column column = createJDBCColumn(columnName).getColumn();
+                    newColumns.put(columnName, column);
+                    LOGGER.log(Level.FINE, "Created column {0}", column);
+                }
+            } finally {
+                rs.close();
+            }
+        } catch (SQLException e) {
+            throw new MetadataException(e);
+        }
+        columns = Collections.unmodifiableMap(newColumns);
+    }
+
+    private Map<String, Column> initColumns() {
+        if (columns != null) {
+            return columns;
+        }
+        LOGGER.log(Level.FINE, "Initializing columns in {0}", this);
+        createColumns();
+        return columns;
     }
 
     @Override
-    public String getName() {
-        return table.getName();
-    }
-
-    @Override
-    public Collection<Column> getColumns() {
-        return table.getColumns();
-    }
-
-    @Override
-    public Column getColumn(String name) {
-        return table.getColumn(name);
-    }
-
-    @Override
-    public void refresh() {
-        table.refresh();
+    public final void refresh() {
+        columns = null;
     }
 
 }

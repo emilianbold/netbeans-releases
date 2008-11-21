@@ -37,28 +37,64 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.spi;
+package org.netbeans.modules.db.metadata.model.api;
 
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Tuple;
+import java.sql.Types;
+import java.util.EnumSet;
 
 /**
+ * This is a type-safe enumeration wrapper around java.sql.Types
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class ColumnImplementation {
+public enum SQLType {
+    // Fixed length types
+    BIT(Types.BIT),
+    TINYINT(Types.TINYINT),
+    SMALLINT(Types.SMALLINT),
+    INTEGER(Types.INTEGER),
+    BIGINT(Types.BIGINT),
+    FLOAT(Types.FLOAT),
+    REAL(Types.REAL),
+    DOUBLE(Types.DOUBLE),
+    NUMERIC(Types.NUMERIC),
+    DECIMAL(Types.DECIMAL),
+    CHAR(Types.CHAR),
+    DATE(Types.DATE),
+    TIME(Types.TIME),
+    TIMESTAMP(Types.TIMESTAMP),
+    NULL(Types.NULL),
+    OTHER(Types.OTHER),
+    JAVA_OBJECT(Types.JAVA_OBJECT),
+    DISTINCT(Types.DISTINCT),
+    REF(Types.REF),
+    DATALINK(Types.DATALINK),
+    BOOLEAN(Types.BOOLEAN),
+    VARCHAR(Types.VARCHAR),
+    LONGVARCHAR(Types.LONGVARCHAR),
+    BINARY(Types.BINARY),
+    VARBINARY(Types.VARBINARY),
+    LONGVARBINARY(Types.LONGVARBINARY),
+    STRUCT(Types.STRUCT),
+    ARRAY(Types.ARRAY),
+    BLOB(Types.BLOB),
+    CLOB(Types.CLOB);
 
-    private Column column;
+    private final int javasqltype;
 
-    public final Column getColumn() {
-        if (column == null) {
-            column = MetadataAccessor.getDefault().createColumn(this);
-        }
-        return column;
+    private static EnumSet<SQLType> variableTypes;
+
+    SQLType(int type) {
+        this.javasqltype = type;
     }
 
-    public abstract Tuple getParent();
-
-    public abstract String getName();
+    /**
+     * Get the java.sql.Type type specifier for the given SQLType
+     *
+     * @param type the SQLType type specifier
+     * @return the matching java.sql.Type type specifier
+     */
+    public int getJavaSQLType(SQLType type) {
+        return type.javasqltype;
+    }
 }

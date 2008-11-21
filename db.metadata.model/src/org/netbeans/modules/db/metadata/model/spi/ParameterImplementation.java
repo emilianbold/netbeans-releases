@@ -40,25 +40,43 @@
 package org.netbeans.modules.db.metadata.model.spi;
 
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Tuple;
+import org.netbeans.modules.db.metadata.model.api.Nullable;
+import org.netbeans.modules.db.metadata.model.api.Parameter;
+import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
+import org.netbeans.modules.db.metadata.model.api.Procedure;
+import org.netbeans.modules.db.metadata.model.api.SQLType;
 
 /**
  *
  * @author Andrei Badea
  */
-public abstract class ColumnImplementation {
+public abstract class ParameterImplementation {
 
-    private Column column;
+    private Parameter param;
 
-    public final Column getColumn() {
-        if (column == null) {
-            column = MetadataAccessor.getDefault().createColumn(this);
+    public final Parameter getParameter() {
+        if (param == null) {
+            param = MetadataAccessor.getDefault().createParameter(this);
         }
-        return column;
+        return param;
     }
 
-    public abstract Tuple getParent();
+    public abstract Direction getDirection();
+
+    public abstract Procedure getParent();
 
     public abstract String getName();
+
+    public abstract int getPrecision();
+
+    public abstract short getRadix();
+
+    public abstract short getScale();
+
+    public abstract SQLType getType();
+
+    public abstract int getLength();
+
+    public abstract Nullable getNullable();
+
 }

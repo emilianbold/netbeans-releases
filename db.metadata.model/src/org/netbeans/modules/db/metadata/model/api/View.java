@@ -46,7 +46,7 @@ import org.netbeans.modules.db.metadata.model.spi.ViewImplementation;
  *
  * @author Andrei Badea
  */
-public class View extends MetadataElement {
+public class View extends Tuple {
 
     final ViewImplementation impl;
 

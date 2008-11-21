@@ -37,28 +37,25 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.spi;
-
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Tuple;
+package org.netbeans.modules.db.metadata.model.api;
 
 /**
+ * A Value is a data value used when working with the database.  It can be
+ * a column in a table, a column in a result set, or a parameter in a procedure
+ * or a function.
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class ColumnImplementation {
+public abstract class Value extends MetadataElement {
+    public abstract SQLType getType();
 
-    private Column column;
+    public abstract int getPrecision();
 
-    public final Column getColumn() {
-        if (column == null) {
-            column = MetadataAccessor.getDefault().createColumn(this);
-        }
-        return column;
-    }
+    public abstract int getLength();
 
-    public abstract Tuple getParent();
+    public abstract short getScale();
 
-    public abstract String getName();
+    public abstract short getRadix();
+
+    public abstract Nullable getNullable();
 }

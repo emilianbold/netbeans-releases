@@ -37,28 +37,32 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.spi;
+package org.netbeans.modules.db.metadata.model.api;
 
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Tuple;
+import java.util.Collection;
 
 /**
+ * A tuple is something that is represented by a set of rows, with each
+ * row being represented by one or more columns
  *
- * @author Andrei Badea
+ * @author David
  */
-public abstract class ColumnImplementation {
+public abstract class Tuple extends MetadataElement {
+    /**
+     * Returns the columns in this tuple.
+     *
+     * @return the columns.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
+     */
+    public abstract Collection<Column> getColumns();
 
-    private Column column;
+    /**
+     * Returns the column with the given name.
+     *
+     * @param name a column name.
+     * @return a column named {@code name} or {@code null} if there is no such column.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
+     */
+    public abstract Column getColumn(String name);
 
-    public final Column getColumn() {
-        if (column == null) {
-            column = MetadataAccessor.getDefault().createColumn(this);
-        }
-        return column;
-    }
-
-    public abstract Tuple getParent();
-
-    public abstract String getName();
 }

@@ -37,28 +37,13 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.spi;
+package org.netbeans.modules.db.metadata.model.api;
 
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Tuple;
+import java.sql.DatabaseMetaData;
 
 /**
- *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class ColumnImplementation {
-
-    private Column column;
-
-    public final Column getColumn() {
-        if (column == null) {
-            column = MetadataAccessor.getDefault().createColumn(this);
-        }
-        return column;
-    }
-
-    public abstract Tuple getParent();
-
-    public abstract String getName();
+public enum Nullable {
+    NULLABLE, NOT_NULLABLE, UNKNOWN;
 }

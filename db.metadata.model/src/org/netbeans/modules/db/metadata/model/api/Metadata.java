@@ -46,6 +46,8 @@ import org.netbeans.modules.db.metadata.model.MetadataModelImplementation;
 import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ParameterImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ProcedureImplementation;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ViewImplementation;
@@ -151,6 +153,16 @@ public class Metadata {
         @Override
         public Column createColumn(ColumnImplementation impl) {
             return new Column(impl);
+        }
+
+        @Override
+        public Procedure createProcedure(ProcedureImplementation impl) {
+            return new Procedure(impl);
+        }
+
+        @Override
+        public Parameter createParameter(ParameterImplementation impl) {
+            return new Parameter(impl);
         }
 
         @Override

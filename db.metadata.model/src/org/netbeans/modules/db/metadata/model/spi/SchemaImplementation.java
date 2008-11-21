@@ -42,6 +42,7 @@ package org.netbeans.modules.db.metadata.model.spi;
 import java.util.Collection;
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.Procedure;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.View;
@@ -68,6 +69,10 @@ public abstract class SchemaImplementation {
     public abstract View getView(String name);
 
     public abstract Collection<View> getViews();
+
+    public abstract Procedure getProcedure(String name);
+
+    public abstract Collection<Procedure> getProcedures();
 
     public abstract boolean isDefault();
 

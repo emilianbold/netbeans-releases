@@ -37,28 +37,80 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.spi;
+package org.netbeans.modules.db.metadata.model.jdbc;
 
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Tuple;
+import java.util.logging.Logger;
+import org.netbeans.modules.db.metadata.model.api.Nullable;
+import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
+import org.netbeans.modules.db.metadata.model.api.Procedure;
+import org.netbeans.modules.db.metadata.model.api.SQLType;
+import org.netbeans.modules.db.metadata.model.spi.ParameterImplementation;
 
 /**
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public abstract class ColumnImplementation {
+class JDBCParameter extends ParameterImplementation {
 
-    private Column column;
+    private static final Logger LOGGER = Logger.getLogger(JDBCParameter.class.getName());
+    private final JDBCProcedure jdbcProcedure;
+    private final Direction direction;
+    private final JDBCValue value;
 
-    public final Column getColumn() {
-        if (column == null) {
-            column = MetadataAccessor.getDefault().createColumn(this);
-        }
-        return column;
+    public JDBCParameter(JDBCProcedure jdbcProcedure, JDBCValue value, Direction direction) {
+        this.jdbcProcedure = jdbcProcedure;
+        this.direction = direction;
+        this.value = value;
     }
 
-    public abstract Tuple getParent();
+    @Override
+    public String toString() {
+        return "JDBCParameter[name='" + getName() + "']"; // NOI18N
+    }
 
-    public abstract String getName();
+    @Override
+    public Procedure getParent() {
+        return jdbcProcedure.getProcedure();
+    }
+
+    @Override
+    public Direction getDirection() {
+        return direction;
+    }
+
+    @Override
+    public String getName() {
+        return value.getName();
+    }
+
+    @Override
+    public int getPrecision() {
+        return value.getPrecision();
+    }
+
+    @Override
+    public short getRadix() {
+        return value.getRadix();
+    }
+
+    @Override
+    public short getScale() {
+        return value.getScale();
+    }
+
+    @Override
+    public SQLType getType() {
+        return value.getType();
+    }
+
+    @Override
+    public int getLength() {
+        return value.getLength();
+    }
+
+    @Override
+    public Nullable getNullable() {
+        return value.getNullable();
+    }
+
 }

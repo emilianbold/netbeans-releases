@@ -39,26 +39,39 @@
 
 package org.netbeans.modules.db.metadata.model.spi;
 
+import java.util.Collection;
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Tuple;
+import org.netbeans.modules.db.metadata.model.api.Parameter;
+import org.netbeans.modules.db.metadata.model.api.Procedure;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
  *
  * @author Andrei Badea
  */
-public abstract class ColumnImplementation {
+public abstract class ProcedureImplementation {
 
-    private Column column;
+    private Procedure table;
 
-    public final Column getColumn() {
-        if (column == null) {
-            column = MetadataAccessor.getDefault().createColumn(this);
+    public final Procedure getProcedure() {
+        if (table == null) {
+            table = MetadataAccessor.getDefault().createProcedure(this);
         }
-        return column;
+        return table;
     }
 
-    public abstract Tuple getParent();
+    public abstract Schema getParent();
 
     public abstract String getName();
+
+    public abstract Collection<Column> getColumns();
+
+    public abstract Column getColumn(String name);
+
+    public abstract Collection<Parameter> getParameters();
+
+    public abstract Parameter getParameter(String name);
+
+    public abstract void refresh();
 }

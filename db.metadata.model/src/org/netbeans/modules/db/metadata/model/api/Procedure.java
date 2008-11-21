@@ -39,31 +39,87 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import java.util.Collection;
+import org.netbeans.modules.db.metadata.model.spi.ProcedureImplementation;
 
 /**
- * Encapsulates a table column.
  *
  * @author Andrei Badea
  */
-public class Column extends MetadataElement {
+public class Procedure extends Tuple {
 
-    private final ColumnImplementation impl;
+    final ProcedureImplementation impl;
 
-    Column(ColumnImplementation impl) {
+    Procedure(ProcedureImplementation impl) {
         this.impl = impl;
     }
 
-    public Tuple getParent() {
+    /**
+     * Returns the schema containing this table.
+     *
+     * @return the parent schema.
+     */
+    public Schema getParent() {
         return impl.getParent();
     }
 
+    /**
+     * Returns the name of this table; never {@code null}.
+     *
+     * @return the name.
+     */
     public String getName() {
         return impl.getName();
     }
 
+    /**
+     * Returns the columns in the result set for this procedure.
+     *
+     * @return the columns.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
+     */
+    public Collection<Column> getColumns() {
+        return impl.getColumns();
+    }
+
+    /**
+     * Returns the column with the given name.
+     *
+     * @param name a column name.
+     * @return a column named {@code name} or {@code null} if there is no such column.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
+     */
+    public Column getColumn(String name) {
+        return impl.getColumn(name);
+    }
+
+    /**
+     * Returns the list of parameters for this procedure
+     *
+     * @return the list of parameters for this procedure
+     * @throws MetadataException if an error occurs while retrieving the metadata
+     */
+    public Collection<Parameter> getParameters() {
+        return impl.getParameters();
+    }
+
+    /**
+     * Returns the parameter with the given name
+     * @throws MetadataException if an error occurs while retrieving the metadata
+     */
+    public Parameter getParameter(String name) {
+        return impl.getParameter(name);
+    }
+
+    /**
+     * Refresh the table metadata from the database
+     */
+    public void refresh() {
+        impl.refresh();
+    }
+
     @Override
     public String toString() {
-        return "Column[name='" + impl.getName() + "']"; // NOI18N
+        return "View[name='" + getName() + "']"; // NOI18N
     }
 }
