@@ -213,7 +213,7 @@ public class PHPDocCommentParserTest extends GsfTestBase {
         String comment = " * PHP Template.\n" +
                 " * @property-read int $ahoj there is some doc\n" +
                 " * @property-write int $death";
-        perform(comment, "Property03");
+        perform(comment, "Property04");
     }
 
     public void testReturnType01() throws Exception {
