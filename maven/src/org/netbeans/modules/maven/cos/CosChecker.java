@@ -38,15 +38,21 @@
  */
 package org.netbeans.modules.maven.cos;
 
+import hidden.org.codehaus.plexus.util.DirectoryScanner;
+import hidden.org.codehaus.plexus.util.IOUtil;
 import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -57,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -132,6 +139,133 @@ public class CosChecker implements PrerequisitesChecker {
         return true;
     }
 
+    private boolean checkAndCopyResources(boolean includeTests, long stamp, RunConfig config) {
+        List<Resource> toprocess = new ArrayList<Resource>();
+        List<Resource> toprocessTests = new ArrayList<Resource>();
+        @SuppressWarnings("unchecked")
+        List<Resource> res = config.getMavenProject().getResources();
+        for (Resource r : res) {
+            if (r.isFiltering()) {
+                if (checkResource(r, null, stamp)) {
+                    return false;
+                }
+                // if filtering resource not changed, proceed with CoS
+                continue;
+            }
+            toprocess.add(r);
+        }
+        if (includeTests) {
+            res = config.getMavenProject().getTestResources();
+            for (Resource r : res) {
+                if (r.isFiltering()) {
+                    if (!checkResource(r, null, stamp)) {
+                        return false;
+                    }
+                    // if filtering resource not changed, proceed with CoS
+                    continue;
+                }
+                toprocessTests.add(r);
+            }
+        }
+        String output = config.getMavenProject().getBuild().getOutputDirectory();
+        FileObject outputFO = FileUtilities.convertStringToFileObject(output);
+        if (outputFO == null) {
+            return false;
+        }
+        for (Resource r : toprocess) {
+            checkResource(r, outputFO, stamp);
+        }
+        if (includeTests) {
+            output = config.getMavenProject().getBuild().getTestOutputDirectory();
+            outputFO = FileUtilities.convertStringToFileObject(output);
+            if (outputFO == null) {
+                return false;
+            }
+            for (Resource r : toprocessTests) {
+                checkResource(r, outputFO, stamp);
+            }
+        }
+        return true;
+    }
+
+    private boolean checkResource(Resource r, FileObject outputDir, long stamp) {
+        String dir = r.getDirectory();
+        File dirFile = FileUtil.normalizeFile(new File(dir));
+  //      System.out.println("checkresource dirfile =" + dirFile);
+        if (dirFile.exists()) {
+            List<File> toCopy = new ArrayList<File>();
+            DirectoryScanner ds = new DirectoryScanner();
+            ds.setBasedir(dirFile);
+            ds.addDefaultExcludes();
+            //includes/excludes
+            String[] incls = (String[]) r.getIncludes().toArray(new String[0]);
+            ds.setIncludes(incls);
+            String[] excls = (String[]) r.getExcludes().toArray(new String[0]);
+            ds.setExcludes(excls);
+            ds.scan();
+            String[] inclds = ds.getIncludedFiles();
+//            System.out.println("found=" + inclds.length);
+            for (String inc : inclds) {
+                File f = new File(dirFile, inc);
+                if (f.lastModified() >= 0) { //XXX TODO stamp) { for some reason, the
+                    // java infrastructure seems to delete the non class files on output dir, we need to copy over
+                    // everytime.
+//                    System.out.println("to copy-" + f);
+                    toCopy.add(FileUtil.normalizeFile(f));
+                }
+            }
+            if (toCopy.size() > 0) {
+                if (outputDir != null) {
+                    //copy to output dir
+                    for (File file : toCopy) {
+                        String relPath = FileUtilities.getRelativePath(dirFile, file);
+                        if (relPath == null) {
+                            return false;
+                        }
+                        String targetPath = r.getTargetPath();
+                        if (targetPath != null && targetPath.trim().length() > 0) {
+                            if (!targetPath.endsWith("/")) {
+                                targetPath = targetPath + "/";
+                            }
+                            relPath = targetPath + relPath;
+                        }
+  //                      System.out.println("relpath=" + relPath);
+                        FileObject fo = outputDir.getFileObject(relPath);
+                        if (fo == null) {
+                            File outFileDir = new File(FileUtil.toFile(outputDir), relPath).getParentFile();
+                            outFileDir.mkdirs();
+                            FileUtil.refreshFor(outFileDir);
+                            FileObject parentDir = FileUtil.toFileObject(outFileDir);
+                            try {
+                                fo = parentDir.createData(file.getName());
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                        FileObject sourceFO = FileUtil.toFileObject(file);
+                        InputStream in = null;
+                        OutputStream out = null;
+                        try {
+                            in = sourceFO.getInputStream();
+                            out = fo.getOutputStream();
+                            FileUtil.copy(in, out);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            IOUtil.close(in);
+                            IOUtil.close(out);
+                        }
+                    }
+                } else {
+                    //the case of filtering source roots, here we want to return false
+                    //to skip CoS altogether.
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 
     private boolean checkRunMainClass(RunConfig config) {
         String actionName = config.getActionName();
@@ -152,6 +286,10 @@ public class CosChecker implements PrerequisitesChecker {
 
                 //TODO check the COS timestamp against resources etc.
                 //if changed, perform part of the maven build. (or skip COS)
+                if (!checkAndCopyResources(false, stamp, config)) {
+                    //we have some filtered resources modified, skip CoS
+                    return true;
+                }
 
                 Map<String, Object> params = new HashMap<String, Object>();
                 params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
@@ -217,6 +355,13 @@ public class CosChecker implements PrerequisitesChecker {
                     return true;
                 }
             }
+            Map<String, Object> params = new HashMap<String, Object>();
+            String test = config.getProperties().getProperty("test"); //NOI18N
+            if (test == null) {
+                //user somehow configured mapping in unknown way.
+                return true;
+            }
+
             long stamp = getLastCoSLastTouch(config, true);
             //check the COS timestamp against critical files (pom.xml)
             // if changed, don't do COS.
@@ -226,14 +371,12 @@ public class CosChecker implements PrerequisitesChecker {
 
             //TODO check the COS timestamp against resources etc.
             //if changed, perform part of the maven build. (or skip COS)
-
-
-            Map<String, Object> params = new HashMap<String, Object>();
-            String test = config.getProperties().getProperty("test"); //NOI18N
-            if (test == null) {
-                //user somehow configured mapping in unknown way.
+            if (!checkAndCopyResources(true, stamp, config)) {
+                //we have some filtered resources modified, skip CoS
                 return true;
             }
+
+
             params.put(JavaRunner.PROP_EXECUTE_FILE, config.getSelectedFileObject());
 
             List<String> jvmProps = new ArrayList<String>();
