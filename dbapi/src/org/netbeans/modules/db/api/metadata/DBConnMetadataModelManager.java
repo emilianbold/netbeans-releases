@@ -40,6 +40,7 @@
 package org.netbeans.modules.db.api.metadata;
 
 import java.sql.Connection;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -63,10 +64,24 @@ import org.openide.util.Mutex;
 public class DBConnMetadataModelManager {
     private static final Logger LOGGER = Logger.getLogger(DBConnMetadataModelManager.class.getName());
 
+    // XXX test against memory leak.
+    // XXX test if DatabaseConnection can be GC'd.
+
+    private final static WeakHashMap<DatabaseConnection, MetadataModel> conn2Model = new WeakHashMap<DatabaseConnection, MetadataModel>();
+
+
     private DBConnMetadataModelManager() {}
 
     public static MetadataModel get(final DatabaseConnection dbconn) {
-        return MetadataModels.get(checkAndGetConnection(dbconn), dbconn.getSchema());
+        synchronized (DBConnMetadataModelManager.class) {
+            Connection conn = checkAndGetConnection(dbconn);
+            MetadataModel model = conn2Model.get(dbconn);
+            if (model == null) {
+                model = MetadataModels.createModel(conn, dbconn.getSchema());
+                conn2Model.put(dbconn, model);
+            }
+            return model;
+        }
     }
 
     private static Connection checkAndGetConnection(final DatabaseConnection dbconn) {
@@ -100,7 +115,7 @@ public class DBConnMetadataModelManager {
         // 3. TH2: notifies tables have changed.
         // 4. TH2: closes the dialog opened in #2.
         //
-        // If in #3 TH2 wants to acquire the model lock, it doesn't get it since it
+        // If in #3 TH2 wants to acquire the model lock, it doesn't createModel it since it
         // is held by TH1, #4 is never performed and the connect dialog stays open.
 
         public void tablesChanged(DatabaseConnection dbconn) {
