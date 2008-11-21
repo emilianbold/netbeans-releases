@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.PrioritizedCus
 
 public class DebuggerChooserConfiguration {
 
-    private static List<CustomizerNode>  cnlist = null;
+    private static List<CustomizerNode>  nodes = null;
     private static String[] names;
     private static int def;
 
@@ -68,15 +68,15 @@ public class DebuggerChooserConfiguration {
     }
 
     private static void init() {
-        if (cnlist == null) {
-            cnlist = CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug"); // NOI18N
+        if (nodes == null) {
+            nodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug"); // NOI18N
             String[] defnames = new String[] { "" };
 
-            if (cnlist.size() >= 1) {
+            if (nodes.size() >= 1) {
                 int priority = PrioritizedCustomizerNode.DEFAULT_PRIORITY;
                 int idx = 0;
                 List<String> n = new ArrayList<String>();
-                for (CustomizerNode node : cnlist) {
+                for (CustomizerNode node : nodes) {
                     if (node instanceof PrioritizedCustomizerNode) {
                         if (((PrioritizedCustomizerNode) node).getPriority() > priority) {
                             priority = ((PrioritizedCustomizerNode) node).getPriority();
@@ -144,6 +144,14 @@ public class DebuggerChooserConfiguration {
             return names[getValue()];
         } else {
             return "???"; // FIXUP // NOI18N
+        }
+    }
+
+    public CustomizerNode getNode() {
+        if (getValue() < nodes.size()) {
+            return nodes.get(getValue());
+        } else {
+            return null;
         }
     }
 
