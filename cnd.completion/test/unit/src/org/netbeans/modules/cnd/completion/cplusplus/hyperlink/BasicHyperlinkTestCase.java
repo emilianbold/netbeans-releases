@@ -516,6 +516,13 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ147632.cc", 12, 25, "IZ147632.cc", 3, 5);
     }
 
+    public void testIZ152875() throws Exception {
+        // IZ#152875 : No mark occurrences in macros actual parameters
+        performTest("IZ152875.cc", 12, 26, "IZ152875.cc", 9, 24);
+        performTest("IZ152875.cc", 12, 43, "IZ152875.cc", 9, 39);
+        performTest("IZ152875.cc", 12, 53, "IZ152875.cc", 10, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
