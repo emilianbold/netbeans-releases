@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 public class RubyLoggingOption extends AdvancedOption {
 
     private static final Logger RUBY_LOGGER = Logger.getLogger("org.netbeans.modules.ruby"); //NOI18N
-    private static final Logger EXECUTION_LOGGER = Logger.getLogger("org.netbeans.modules.extexecution"); //NOI18N
+    private static final Logger EXECUTION_LOGGER = Logger.getLogger("org.netbeans.api.extexecution"); //NOI18N
     private static final Logger DEBUGGER_LOGGER = Logger.getLogger("org.rubyforge.debugcommons"); //NOI18N
     
     @Override

@@ -69,15 +69,16 @@ testmodule() {
         echo Test OK: $1
     else
         echo $1 >>$RESULT
+        exit 5
     fi
 }
 
 ant clean $ANT_PARAM || exit 2
 ant build $ANT_PARAM || exit 2
-ant commit-validation $ANT_PARAM || echo commit-validation >$RESULT
-ant build-test-dist $ANT_PARAM || echo build-test-dist >>$RESULT
+ant commit-validation $ANT_PARAM || exit 3
+ant build-test-dist $ANT_PARAM || exit 4
 
-testmodule openide.util
+testmodule openide.awt || exit 5
 
 FAILED=`cat $RESULT | wc -l`
 if [ "$FAILED" -gt 0 ]; then

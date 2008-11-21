@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -896,27 +896,31 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
             boolean skipInstanceMethods = call.isStatic();
 
-            Set<IndexedMethod> methods = Collections.emptySet();
+            Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
 
-            String type = call.getType();
+            Set<? extends String> types = Collections.emptySet();
+            String callType = call.getType();
+            if (callType != null) {
+                types = Collections.singleton(callType);
+            }
             String lhs = call.getLhs();
 
-            if ((type == null) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
+            if ((types.isEmpty()) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
                 Node method = AstUtilities.findLocalScope(node, path);
 
                 if (method != null) {
                     // TODO - if the lhs is "foo.bar." I need to split this
                     // up and do it a bit more cleverly
-                    RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
-                    type = analyzer.getType(lhs);
+                    RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*request.info.getParserResult(),*/index, method, node, astOffset, lexOffset, doc, fileObject);
+                    types = analyzer.getTypes(lhs);
                 }
             }
 
             // I'm not doing any data flow analysis at this point, so
             // I can't do anything with a LHS like "foo.". Only actual types.
-            if ((type != null) && (type.length() > 0)) {
+            if (!types.isEmpty()) {
                 if ("self".equals(lhs)) { // NOI18N
-                    type = fqn;
+                    types = Collections.singleton(fqn);
                     skipPrivate = true;
                 } else if ("super".equals(lhs)) { // NOI18N
                     skipPrivate = true;
@@ -924,27 +928,29 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     IndexedClass sc = index.getSuperclass(fqn);
 
                     if (sc != null) {
-                        type = sc.getFqn();
+                        types = Collections.singleton(sc.getFqn());
                     } else {
                         ClassNode cls = AstUtilities.findClass(path);
 
                         if (cls != null) {
-                            type = AstUtilities.getSuperclass(cls);
+                            types = Collections.singleton(AstUtilities.getSuperclass(cls));
                         }
                     }
 
-                    if (type == null) {
-                        type = "Object"; // NOI18N
+                    if (types.isEmpty()) {
+                        types = Collections.singleton("Object"); // NOI18N
                     }
                 }
 
-                if ((type != null) && (type.length() > 0)) {
+                if (!types.isEmpty()) {
                     // Possibly a class on the left hand side: try searching with the class as a qualifier.
                     // Try with the LHS + current FQN recursively. E.g. if we're in
                     // Test::Unit when there's a call to Foo.x, we'll try
                     // Test::Unit::Foo, and Test::Foo
                     while (methods.isEmpty()) {
-                        methods = index.getInheritedMethods(fqn + "::" + type, prefix, kind);
+                        for (String type : types) {
+                            methods.addAll(index.getInheritedMethods(fqn + "::" + type, prefix, kind));
+                        }
 
                         int f = fqn.lastIndexOf("::");
 
@@ -956,17 +962,19 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     }
 
                     // Add methods in the class (without an FQN)
-                    Set<IndexedMethod> m = index.getInheritedMethods(type, prefix, kind);
+                    for (String type : types) {
+                        Set<IndexedMethod> m = index.getInheritedMethods(type, prefix, kind);
 
-                    if (!m.isEmpty()) {
-                        methods.addAll(m);
+                        if (!m.isEmpty()) {
+                            methods.addAll(m);
+                        }
                     }
                 }
             }
 
             // Try just the method call (e.g. across all classes). This is ignoring the 
             // left hand side because we can't resolve it.
-            if ((methods.isEmpty())) {
+            if ((methods.isEmpty()) || types.contains(null)) {
                 methods = index.getMethods(prefix, null, kind);
             }
 

@@ -664,6 +664,9 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
             case 'f':
             case 'F':
                 return token(CppTokenId.FLOAT_LITERAL);
+            case 'l':
+            case 'L':
+                return token(CppTokenId.DOUBLE_LITERAL);
             default:
                 backup(1);
                 return token(CppTokenId.DOUBLE_LITERAL);

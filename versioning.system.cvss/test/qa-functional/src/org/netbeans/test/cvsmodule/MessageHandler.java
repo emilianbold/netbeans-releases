@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,52 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.test.cvsmodule;
 
-package org.netbeans.test.cvsmodule.testsuites;
-
-import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.cvsmodule.BranchCreationAndSwitchTest;
-import org.netbeans.test.cvsmodule.BranchTest;
-import org.netbeans.test.cvsmodule.TestKit;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 /**
  *
- * @author tester
+ * @author pvcs
  */
-public class workingWithBranchesTestSuite extends JellyTestCase {
+public final class MessageHandler extends Handler {
 
-    public workingWithBranchesTestSuite(String testName) {
-        super(testName);
-        try {
-            TestKit.extractProtocol(getDataDir());
-        } catch (Exception e ) {
-            e.printStackTrace();
-        }
+    String message;
+    boolean started = false;
+    boolean finished = false;
+
+    public MessageHandler(String message) {
+        this.message = message;
     }
-    
+
     @Override
-    public void setUp() {
-        System.out.println("### "+getName()+" ###");
-    }
-
-    public static Test suite() {
-        String osName = System.getProperty("os.name");
-        if (osName.contains("Windows")&&!(osName.contains("Vista"))) {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
-        } else {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                    .addTest(BranchTest.class, "testCheckOutProject", "testBranchDialogUI", "testSwitchToBranchDialogUI", "testMergeChangesFromBranchDialogUI", "testOnNonVersioned", "removeAllData")
-                    .addTest(BranchCreationAndSwitchTest.class, "testCheckOutProject", "testCreateBranchForProject", "testSwitchProjectToBranch", "removeAllData")
-                    .enableModules(".*")
-                    .clusters(".*"));
+    public void publish(LogRecord record) {
+//        throw new UnsupportedOperationException("Not supported yet.");
+        if (started == false) {
+            if (record.getMessage().indexOf("Start - " + message) > -1) {
+                started = true;
+                finished = false;
+            }
+        }
+        if (started) {
+            if (record.getMessage().indexOf("End - " + message) > -1) {
+                started = false;
+                finished = true;
+            }
         }
     }
-    
+
+    @Override
+    public void flush() {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void close() throws SecurityException {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
 }
