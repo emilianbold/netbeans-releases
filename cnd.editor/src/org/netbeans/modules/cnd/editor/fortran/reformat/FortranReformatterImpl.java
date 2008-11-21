@@ -436,6 +436,7 @@ public class FortranReformatterImpl {
                 case KW_ENDTYPE:
                 case KW_ENDUNION:
                 case KW_ENDWHERE:
+                case KW_ENDWHILE:
                 case KW_END:
                     braces.pop(ts);
                     isEnd = true;
