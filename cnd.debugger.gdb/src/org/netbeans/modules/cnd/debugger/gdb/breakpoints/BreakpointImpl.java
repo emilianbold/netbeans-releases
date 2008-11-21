@@ -70,7 +70,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     protected String err = null;
     private int breakpointNumber = -1;
     private boolean runWhenValidated = false;
-    private Logger log = Logger.getLogger("gdb.logger");
+    private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
 
     protected BreakpointImpl(GdbBreakpoint breakpoint, GdbDebugger debugger) {
         this.debugger = debugger;
