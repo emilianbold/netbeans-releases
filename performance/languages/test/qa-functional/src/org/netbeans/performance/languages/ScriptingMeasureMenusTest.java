@@ -41,14 +41,10 @@
 
 package org.netbeans.performance.languages;
 
-
-
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.languages.menus.EditorMenuPopup;
-import org.netbeans.performance.languages.menus.ScriptingNodePopup;
-import org.netbeans.performance.languages.menus.ScriptingProjectNodePopup;
+import org.netbeans.performance.languages.menus.*;
 
 /**
  *
@@ -60,10 +56,11 @@ public class ScriptingMeasureMenusTest {
 
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Menus suite");
         System.setProperty("suitename", ScriptingMeasureMenusTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness Scripting Menus suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingProjectNodePopup.class)
-        .addTest(ScriptingNodePopup.class)
-        .addTest(EditorMenuPopup.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingProjectNodePopupTest.class)
+        .addTest(ScriptingNodePopupTest.class)
+        .addTest(EditorMenuPopupTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
         
         return suite;

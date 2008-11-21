@@ -786,12 +786,22 @@ public class BracketCompletionTestCase extends EditorBase  {
         setLoadDocumentText(
                 "           char* a = \"\\|\"");
         breakLine();
-        // TODO: second line should be in the first column after fixing bug in indentation
         assertDocumentTextAndCaret("Incorrect identing of main",
                 "           char* a = \"\\\n" +
-                "           |\"");
+                "|\"");
     }     
-    
+
+    public void testBreakLineInString2_1() throws Exception {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "           char* a = \"\\\\|\"");
+        breakLine();
+        // TODO: second line should be in the first column after fixing bug in indentation
+        assertDocumentTextAndCaret("Incorrect identing of main",
+                "           char* a = \"\\\\\"\n" +
+                "           \"|\"");
+    }
+
     public void testBreakLineInString3() throws Exception {
         setDefaultsOptions();
         setLoadDocumentText(

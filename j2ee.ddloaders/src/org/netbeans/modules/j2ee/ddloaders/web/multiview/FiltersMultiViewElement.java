@@ -254,19 +254,14 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
                 NbBundle.getMessage(FiltersMultiViewElement.class,"LBL_filterClass"),
                 NbBundle.getMessage(FiltersMultiViewElement.class,"LBL_description")
             };
-            char[] mnem = new char[] {
-                NbBundle.getMessage(FiltersMultiViewElement.class,"LBL_filterName_mnem").charAt(0),
-                NbBundle.getMessage(FiltersMultiViewElement.class,"LBL_filterClass_mnem").charAt(0),
-                NbBundle.getMessage(FiltersMultiViewElement.class,"LBL_description_mnem").charAt(0)
-            };
             String[] a11y_desc = new String[]{
                 NbBundle.getMessage(FiltersMultiViewElement.class,"ACSD_filterName"),
                 NbBundle.getMessage(FiltersMultiViewElement.class,"ACSD_filterClass"),
                 NbBundle.getMessage(FiltersMultiViewElement.class,"ACSD_filterDescription")
             };
             boolean[] buttons = new boolean[]{false,true,false};
-            SimpleDialogPanel.DialogDescriptor descriptor = new SimpleDialogPanel.DialogDescriptor(labels);
-            descriptor.setMnemonics(mnem);
+            SimpleDialogPanel.DialogDescriptor descriptor =
+                    new SimpleDialogPanel.DialogDescriptor(labels, true);
             descriptor.setButtons(buttons);
             descriptor.setA11yDesc(a11y_desc);
             descriptor.setTextField(new boolean[]{true,true,false});

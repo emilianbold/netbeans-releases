@@ -72,5 +72,19 @@ public interface NodeFactory {
     NodeList<?> createNodes(Project p);
     
 //    Node findPath(Project p, Node root, Object target);
+    /**
+     * annotation to register NodeFactory instances.
+     * @since org.netbeans.modules.projectuiapi 1.33
+     */
+    public @interface Registration {
+        /**
+         * token(s) denoting one or more project types, eg. org-netbeans-modules-maven or org-netbeans-modules-java-j2seproject
+         * @return
+         */
+        String[] projectType();
+
+        int position() default Integer.MAX_VALUE;
+;
+    }
     
 }

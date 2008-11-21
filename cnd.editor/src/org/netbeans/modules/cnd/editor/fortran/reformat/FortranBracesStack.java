@@ -51,6 +51,7 @@ import static org.netbeans.cnd.api.lexer.FortranTokenId.*;
  */
 class FortranBracesStack {
     private static final boolean TRACE_STACK = false;
+    private static final int FIXED_FORMAT_SHIFT = 6;
     
     private Stack<FortranStackEntry> stack = new Stack<FortranStackEntry>();
     private FortranCodeStyle codeStyle;
@@ -88,6 +89,11 @@ class FortranBracesStack {
         pushImpl(newEntry);
     }
 
+    public void push(FortranTokenId id) {
+        FortranStackEntry newEntry = new FortranStackEntry(id);
+        pushImpl(newEntry);
+    }
+
     private void pushImpl(FortranStackEntry newEntry) {
         FortranStackEntry prevEntry = peek();
         int prevIndent = 0;
@@ -102,7 +108,8 @@ class FortranBracesStack {
             case KW_ELSEIF:
             case KW_ELSE:
                 if (prevEntry != null && 
-                   (prevEntry.getKind() == KW_IF || prevEntry.getKind() == KW_ELSE || prevEntry.getKind() == KW_ELSEIF)) {
+                   (prevEntry.getKind() == KW_IF || prevEntry.getKind() == KW_ELSE || prevEntry.getKind() == KW_ELSEIF) ||
+                    prevEntry.getKind() == KW_WHERE || prevEntry.getKind() == KW_ELSE || prevEntry.getKind() == KW_ELSEWHERE) {
                     newEntry.setIndent(prevIndent);
                     newEntry.setSelfIndent(prevSelfIndent);
                     break;
@@ -119,15 +126,23 @@ class FortranBracesStack {
                 newEntry.setIndent(prevIndent + statementIndent);
                 newEntry.setSelfIndent(prevIndent);
                 break;
+            case KW_WHERE:
+            case KW_DO:
+            case KW_FORALL:
             case KW_WHILE:
                 newEntry.setIndent(prevIndent + statementIndent);
                 newEntry.setSelfIndent(prevIndent);
                 break;
-            case KW_DO:
-            case KW_FORALL:
             case KW_SELECT:
-                newEntry.setIndent(prevIndent + switchIndent);
-                newEntry.setSelfIndent(prevIndent);
+            case KW_SELECTCASE:
+            case KW_SELECTTYPE:
+                if (codeStyle.indentCasesFromSwitch()) {
+                    newEntry.setIndent(prevSelfIndent + codeStyle.indentSize() + switchIndent);
+                    newEntry.setSelfIndent(prevSelfIndent);
+                } else {
+                    newEntry.setIndent(prevSelfIndent + switchIndent);
+                    newEntry.setSelfIndent(prevSelfIndent);
+                }
                 break;
             case KW_MODULE:
             case KW_PROGRAM:
@@ -135,21 +150,21 @@ class FortranBracesStack {
             case KW_SUBROUTINE:
             case KW_FUNCTION:
             case KW_BLOCK:
-                statementIndent = codeStyle.indentSize();
                 newEntry.setIndent(prevIndent + statementIndent);
                 newEntry.setSelfIndent(prevIndent);
                 break;
             case KW_INTERFACE:
             case KW_STRUCTURE:
             case KW_UNION:
+            case KW_ENUM:
             case KW_TYPE:
             case KW_BLOCKDATA:
             case KW_MAP:
-//            case KW_FILE:
-                statementIndent = codeStyle.indentSize();
                 newEntry.setIndent(prevIndent + statementIndent);
                 newEntry.setSelfIndent(prevIndent);
                 break;
+            default:
+                assert(false);
         }
         push(newEntry);
     }
@@ -157,7 +172,7 @@ class FortranBracesStack {
     public int getIndent(){
         int shift = 0;
         if (!codeStyle.isFreeFormatFortran()){
-            shift = 5;
+            shift = FIXED_FORMAT_SHIFT;
         }
         FortranStackEntry top = peek();
         if (top != null) {
@@ -169,7 +184,7 @@ class FortranBracesStack {
     public int getSelfIndent(){
         int shift = 0;
         if (!codeStyle.isFreeFormatFortran()){
-            shift = 5;
+            shift = FIXED_FORMAT_SHIFT;
         }
         FortranStackEntry top = peek();
         if (top != null) {
@@ -179,9 +194,10 @@ class FortranBracesStack {
     }
 
     private void push(FortranStackEntry entry) {
-        if (entry.getKind() == KW_ELSE || entry.getKind() == KW_ELSEIF){
+        if (entry.getKind() == KW_ELSE || entry.getKind() == KW_ELSEIF || entry.getKind() == KW_ELSEWHERE){
             if (stack.size() > 0 && 
-                (stack.peek().getKind() == KW_IF || stack.peek().getKind() == KW_ELSE || stack.peek().getKind() == KW_ELSEIF)) {
+                (stack.peek().getKind() == KW_IF || stack.peek().getKind() == KW_ELSE || stack.peek().getKind() == KW_ELSEIF ||
+                 stack.peek().getKind() == KW_WHERE ||stack.peek().getKind() == KW_ELSEWHERE)) {
                 stack.pop();
             }
         }

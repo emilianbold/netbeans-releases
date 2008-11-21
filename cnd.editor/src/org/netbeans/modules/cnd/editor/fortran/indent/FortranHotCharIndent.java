@@ -63,6 +63,8 @@ public enum FortranHotCharIndent {
                     return true;
                 } else if (checkCase(doc, fnw, "end subroutine")) { // NOI18N
                     return true;
+                } else if (checkCase(doc, fnw, "end while")) { // NOI18N
+                    return true;
                 }
             } catch (BadLocationException e) {
             }
@@ -82,6 +84,10 @@ public enum FortranHotCharIndent {
                 if (checkCase(doc, fnw, "endif")) { // NOI18N
                     return true;
                 } else if (checkCase(doc, fnw, "end if")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "elseif")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "else if")) { // NOI18N
                     return true;
                 }
             } catch (BadLocationException e) {

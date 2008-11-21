@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
@@ -56,22 +55,19 @@ import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
  *
  * @author Alexander Simon
  */
-/* XXX would need a public no-arg constructor
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class)
-*/
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class)
 public class FortranDataLoader extends CndAbstractDataLoaderExt {
-    
-    private static FortranDataLoader instance;
 
+    private static FortranDataLoader instance;
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975686L;
 
-    protected FortranDataLoader() {
-	super("org.netbeans.modules.cnd.loaders.FortranDataObject"); // NOI18N
+    public FortranDataLoader() {
+        super("org.netbeans.modules.cnd.loaders.FortranDataObject"); // NOI18N
         instance = this;
     }
 
-    public static FortranDataLoader getInstance(){
+    public static FortranDataLoader getInstance() {
         if (instance == null) {
             instance = SharedClassObject.findObject(FortranDataLoader.class, true);
         }
@@ -81,10 +77,10 @@ public class FortranDataLoader extends CndAbstractDataLoaderExt {
     /** set the default display name */
     @Override
     protected String defaultDisplayName() {
-	return NbBundle.getMessage(CndAbstractDataLoader.class, "PROP_FortranDataLoader_Name"); // NOI18N
+        return NbBundle.getMessage(CndAbstractDataLoader.class, "PROP_FortranDataLoader_Name"); // NOI18N
     }
 
-    protected String getMimeType(){
+    protected String getMimeType() {
         return MIMENames.FORTRAN_MIME_TYPE;
     }
 

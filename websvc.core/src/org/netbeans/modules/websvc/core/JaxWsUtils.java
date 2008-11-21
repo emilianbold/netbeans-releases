@@ -376,7 +376,7 @@ public class JaxWsUtils {
                     GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
 
                     // add implementation clause
-                    ClassTree modifiedClass = genUtils.addImplementsClause(javaClass, port.getJavaName());
+                    //ClassTree modifiedClass = genUtils.addImplementsClause(javaClass, port.getJavaName());
 
                     //add @WebService annotation
                     TypeElement WSAn = workingCopy.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
@@ -395,7 +395,7 @@ public class JaxWsUtils {
                     AnnotationTree WSAnnotation = make.Annotation(
                             make.QualIdent(WSAn),
                             attrs);
-                    modifiedClass = genUtils.addAnnotation(modifiedClass, WSAnnotation);
+                    ClassTree  modifiedClass = genUtils.addAnnotation(javaClass, WSAnnotation);
 
                     if (WsdlPort.SOAP_VERSION_12.equals(port.getSOAPVersion())) {
                         TypeElement BindingAn = workingCopy.getElements().getTypeElement("javax.xml.ws.BindingType"); //NOI18N

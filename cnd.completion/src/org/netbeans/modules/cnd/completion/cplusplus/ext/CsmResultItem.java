@@ -332,7 +332,7 @@ public abstract class CsmResultItem implements CompletionItem {
     // It needs in case if some files have not been parsed yet
     private boolean isAlreadyIncluded(JTextComponent component, String include) {
         TokenSequence<CppTokenId> ts;
-        ts = CndLexerUtilities.getCppTokenSequence(component, 0);
+        ts = CndLexerUtilities.getCppTokenSequence(component, 0, false, false);
         ts.moveStart();
         while (ts.moveNext()) {
             if (ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
@@ -363,7 +363,7 @@ public abstract class CsmResultItem implements CompletionItem {
     // Says is it forward declarartion or not
     private boolean isForwardDeclaration(JTextComponent component) {
         TokenSequence<CppTokenId> ts;
-        ts = CndLexerUtilities.getCppTokenSequence(component, 0);
+        ts = CndLexerUtilities.getCppTokenSequence(component, 0, false, false);
         ts.moveStart();
         if (!ts.moveNext()) {
             return false;
@@ -429,9 +429,9 @@ public abstract class CsmResultItem implements CompletionItem {
                         CsmOffsetable guardOffset = fiq.getGuardOffset(currentFile);
                         TokenSequence<CppTokenId> ts;
                         if (guardOffset != null) {
-                            ts = CndLexerUtilities.getCppTokenSequence(component, guardOffset.getStartOffset());
+                            ts = CndLexerUtilities.getCppTokenSequence(component, guardOffset.getStartOffset(), false, false);
                         } else {
-                            ts = CndLexerUtilities.getCppTokenSequence(component, 0);
+                            ts = CndLexerUtilities.getCppTokenSequence(component, 0, false, false);
                         }
                         if (ts != null) {
                             int offset = getIncludeOffsetFromTokenSequence(ts);
@@ -764,7 +764,7 @@ public abstract class CsmResultItem implements CompletionItem {
 
         private boolean isAfterShiftOperator(JTextComponent c) {
             TokenSequence<CppTokenId> ts;
-            ts = CndLexerUtilities.getCppTokenSequence(c, 0);
+            ts = CndLexerUtilities.getCppTokenSequence(c, 0, true, false);
             ts.moveStart();
             if (!ts.moveNext()) {
                 return false;
