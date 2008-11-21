@@ -65,6 +65,12 @@ public enum FortranHotCharIndent {
                     return true;
                 } else if (checkCase(doc, fnw, "end while")) { // NOI18N
                     return true;
+                } else if (checkCase(doc, fnw, "end type")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "endtype")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "case")) { // NOI18N
+                    return true;
                 }
             } catch (BadLocationException e) {
             }
@@ -99,10 +105,44 @@ public enum FortranHotCharIndent {
                     return true;
                 } else if (checkCase(doc, fnw, "end program")) { // NOI18N
                     return true;
+                } else if (checkCase(doc, fnw, "endenum")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "end enum")) { // NOI18N
+                    return true;
                 }
             } catch (BadLocationException e) {
             }
-        } else if ("a".equals(typedText) || "a".equals(typedText)) { // NOI18N
+        } else if ("n".equals(typedText) || "N".equals(typedText)) { // NOI18N
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, "end function")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "endfunction")) { // NOI18N
+                    return true;
+                }
+            } catch (BadLocationException e) {
+            }
+        } else if ("l".equals(typedText) || "L".equals(typedText)) { // NOI18N
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, "endforall")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "end forall")) { // NOI18N
+                    return true;
+                }
+            } catch (BadLocationException e) {
+            }
+        } else if ("p".equals(typedText) || "P".equals(typedText)) { // NOI18N
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, "endmap")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "end map")) { // NOI18N
+                    return true;
+                }
+            } catch (BadLocationException e) {
+            }
+        } else if ("a".equals(typedText) || "A".equals(typedText)) { // NOI18N
             try {
                 int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
                 if (checkCase(doc, fnw, "endblockdata")) { // NOI18N
@@ -112,6 +152,16 @@ public enum FortranHotCharIndent {
                 } else if (checkCase(doc, fnw, "end block data")) { // NOI18N
                     return true;
                 } else if (checkCase(doc, fnw, "endblock data")) { // NOI18N
+                    return true;
+                }
+            } catch (BadLocationException e) {
+            }
+        } else if ("t".equals(typedText) || "T".equals(typedText)) { // NOI18N
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, "endselect")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "end select")) { // NOI18N
                     return true;
                 }
             } catch (BadLocationException e) {

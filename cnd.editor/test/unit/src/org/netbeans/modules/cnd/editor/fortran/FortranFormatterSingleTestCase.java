@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
+import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
+
 /**
  *
  * @author Alexander Simon
@@ -48,20 +50,18 @@ public class FortranFormatterSingleTestCase  extends FortranEditorBase {
     public FortranFormatterSingleTestCase(String testMethodName) {
         super(testMethodName);
     }
-    public void testEndBlockData4Free() {
+    public void testFunctionFixed() {
         setLoadDocumentText(
-                "BLoCKdatA Unit\n" +
-                "    DoublePrecision A\n" +
-                "    datA a/1d0/\n" +
-                "    COMMOn /a/ a\n" +
-                "   eNDBLOCK dat|");
+                "      Module A\n" +
+                "          INTERFACE\n" +
+                "              FUNCTION EXT3 (P, Q)|");
         setDefaultsOptions();
-        typeChar('a', true);
-        assertDocumentTextAndCaret("Incorrect block data indent (free form)",
-                "BLoCKdatA Unit\n" +
-                "    DoublePrecision A\n" +
-                "    datA a/1d0/\n" +
-                "    COMMOn /a/ a\n" +
-                "eNDBLOCK data|");
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect function indent (fixed form)",
+                "      Module A\n" +
+                "          INTERFACE\n" +
+                "              FUNCTION EXT3 (P, Q)\n" +
+                "                  |");
     }
 }

@@ -397,25 +397,25 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "eNDBLOCK data|");
     }
 
-//    public void testElseIfFree() {
-//        setLoadDocumentText(
-//                "program A\n" +
-//                "    integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
-//                "    i = 1\n" +
-//                "    if (j(3) == i + 2) then\n" +
-//                "        i = j(5)\n" +
-//                "    elseif |");
-//        setDefaultsOptions();
-//        indentNewLine();
-//        assertDocumentTextAndCaret("Incorrect statements indent (free form)",
-//                "program A\n" +
-//                "    integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
-//                "    i = 1\n" +
-//                "    if (j(3) == i + 2) then\n" +
-//                "        i = j(5)\n" +
-//                "    elseif \n" +
-//                "        |");
-//    }
+    public void testElseIfFree() {
+        setLoadDocumentText(
+                "program A\n" +
+                "    integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
+                "    i = 1\n" +
+                "    if (j(3) == i + 2) then\n" +
+                "        i = j(5)\n" +
+                "    elseif |");
+        setDefaultsOptions();
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect statements indent (free form)",
+                "program A\n" +
+                "    integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
+                "    i = 1\n" +
+                "    if (j(3) == i + 2) then\n" +
+                "        i = j(5)\n" +
+                "    elseif \n" +
+                "        |");
+    }
 
     public void testElseIf2Free() {
         setLoadDocumentText(
@@ -514,24 +514,24 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "        |");
     }
 
-//    public void testElseWhereFree() {
-//        setLoadDocumentText(
-//                "program A\n" +
-//                "    integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
-//                "    i = 1\n" +
-//                "    where(j > 2)\n" +
-//                "        j = 10\n" +
-//                "        else wher|");
-//        setDefaultsOptions();
-//        typeChar('e', true);
-//        assertDocumentTextAndCaret("Incorrect statements indent (free form)",
-//                "program A\n" +
-//                "    integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
-//                "    i = 1\n" +
-//                "    where(j > 2)\n" +
-//                "        j = 10\n" +
-//                "    else where|");
-//    }
+    public void testElseWhereFree() {
+        setLoadDocumentText(
+                "program A\n" +
+                "    integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
+                "    i = 1\n" +
+                "    where(j > 2)\n" +
+                "        j = 10\n" +
+                "        else wher|");
+        setDefaultsOptions();
+        typeChar('e', true);
+        assertDocumentTextAndCaret("Incorrect statements indent (free form)",
+                "program A\n" +
+                "    integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
+                "    i = 1\n" +
+                "    where(j > 2)\n" +
+                "        j = 10\n" +
+                "    else where|");
+    }
 
     public void testElseWhere2Free() {
         setLoadDocumentText(
@@ -628,79 +628,79 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    |");
     }
 
-//    public void testEndTypeFree() {
-//        setLoadDocumentText(
-//                "Enum Enum\n" +
-//                "    Enumerator zero, one, two\n" +
-//                "endEnum Enum\n" +
-//                "Type Enum1\n" +
-//                "    Type(Enum) Enum\n" +
-//                "    endTyp|");
-//        setDefaultsOptions();
-//        typeChar('e', true);
-//        assertDocumentTextAndCaret("Incorrect type indent (free form)",
-//                "Enum Enum\n" +
-//                "    Enumerator zero, one, two\n" +
-//                "endEnum Enum\n" +
-//                "Type Enum1\n" +
-//                "    Type(Enum) Enum\n" +
-//                "endType|");
-//    }
-//
-//    public void testEndType2Free() {
-//        setLoadDocumentText(
-//                "Enum Enum\n" +
-//                "    Enumerator zero, one, two\n" +
-//                "endEnum Enum\n" +
-//                "Type Enum1\n" +
-//                "    Type(Enum) Enum\n" +
-//                "    end Typ|");
-//        setDefaultsOptions();
-//        typeChar('e', true);
-//        assertDocumentTextAndCaret("Incorrect type indent (free form)",
-//                "Enum Enum\n" +
-//                "    Enumerator zero, one, two\n" +
-//                "endEnum Enum\n" +
-//                "Type Enum1\n" +
-//                "    Type(Enum) Enum\n" +
-//                "end Type|");
-//    }
-//
-//    public void testEnumFree() {
-//        setLoadDocumentText(
-//                "Enum |");
-//        setDefaultsOptions();
-//        indentNewLine();
-//        assertDocumentTextAndCaret("Incorrect enum indent (free form)",
-//                "Enum \n" +
-//                "    |");
-//    }
-//
-//    public void testEndEnumFree() {
-//        setLoadDocumentText(
-//                "Enum Enum\n" +
-//                "    Enumerator zero, one, two\n" +
-//                "endEnu|");
-//        setDefaultsOptions();
-//        typeChar('m', true);
-//        assertDocumentTextAndCaret("Incorrect enum indent (free form)",
-//                "Enum Enum\n" +
-//                "    Enumerator zero, one, two\n" +
-//                "endEnum|");
-//    }
-//
-//    public void testEndEnum2Free() {
-//        setLoadDocumentText(
-//                "Enum Enum\n" +
-//                "    Enumerator zero, one, two\n" +
-//                "end Enu|");
-//        setDefaultsOptions();
-//        typeChar('m', true);
-//        assertDocumentTextAndCaret("Incorrect enum indent (free form)",
-//                "Enum Enum\n" +
-//                "    Enumerator zero, one, two\n" +
-//                "end Enum|");
-//    }
+    public void testEndTypeFree() {
+        setLoadDocumentText(
+                "Enum Enum\n" +
+                "    Enumerator zero, one, two\n" +
+                "endEnum Enum\n" +
+                "Type Enum1\n" +
+                "    Type(Enum) Enum\n" +
+                "    endTyp|");
+        setDefaultsOptions();
+        typeChar('e', true);
+        assertDocumentTextAndCaret("Incorrect type indent (free form)",
+                "Enum Enum\n" +
+                "    Enumerator zero, one, two\n" +
+                "endEnum Enum\n" +
+                "Type Enum1\n" +
+                "    Type(Enum) Enum\n" +
+                "endType|");
+    }
+
+    public void testEndType2Free() {
+        setLoadDocumentText(
+                "Enum Enum\n" +
+                "    Enumerator zero, one, two\n" +
+                "endEnum Enum\n" +
+                "Type Enum1\n" +
+                "    Type(Enum) Enum\n" +
+                "    end Typ|");
+        setDefaultsOptions();
+        typeChar('e', true);
+        assertDocumentTextAndCaret("Incorrect type indent (free form)",
+                "Enum Enum\n" +
+                "    Enumerator zero, one, two\n" +
+                "endEnum Enum\n" +
+                "Type Enum1\n" +
+                "    Type(Enum) Enum\n" +
+                "end Type|");
+    }
+
+    public void testEnumFree() {
+        setLoadDocumentText(
+                "Enum |");
+        setDefaultsOptions();
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect enum indent (free form)",
+                "Enum \n" +
+                "    |");
+    }
+
+    public void testEndEnumFree() {
+        setLoadDocumentText(
+                "Enum Enum\n" +
+                "    Enumerator zero, one, two\n" +
+                "endEnu|");
+        setDefaultsOptions();
+        typeChar('m', true);
+        assertDocumentTextAndCaret("Incorrect enum indent (free form)",
+                "Enum Enum\n" +
+                "    Enumerator zero, one, two\n" +
+                "endEnum|");
+    }
+
+    public void testEndEnum2Free() {
+        setLoadDocumentText(
+                "Enum Enum\n" +
+                "    Enumerator zero, one, two\n" +
+                "end Enu|");
+        setDefaultsOptions();
+        typeChar('m', true);
+        assertDocumentTextAndCaret("Incorrect enum indent (free form)",
+                "Enum Enum\n" +
+                "    Enumerator zero, one, two\n" +
+                "end Enum|");
+    }
 
     public void testSelectFree() {
         setLoadDocumentText(
@@ -788,120 +788,120 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "        |");
     }
 
-//    public void testSelect4Free() {
-//        setLoadDocumentText(
-//                "Enum Enum\n" +
-//                "    Enumerator zero, one, two\n" +
-//                "endEnum Enum\n" +
-//                "Type Enum1\n" +
-//                "    Type(Enum) Enum\n" +
-//                "endType Enum1\n" +
-//                "Type(Enum),parameter::Enum2/zero/\n" +
-//                "Type(Enum1) Enum,Enum3\n" +
-//                "Enum3.Enum=two\n" +
-//                "selectCase(Enum3.Enum)\n" +
-//                "    case(zero)\n" +
-//                "        print *, \" zero \", Enum3.Enum\n" +
-//                "        cas|");
-//        setDefaultsOptions();
-//        typeChar('e', true);
-//        assertDocumentTextAndCaret("Incorrect select indent (free form)",
-//                "Enum Enum\n" +
-//                "    Enumerator zero, one, two\n" +
-//                "endEnum Enum\n" +
-//                "Type Enum1\n" +
-//                "    Type(Enum) Enum\n" +
-//                "endType Enum1\n" +
-//                "Type(Enum),parameter::Enum2/zero/\n" +
-//                "Type(Enum1) Enum,Enum3\n" +
-//                "Enum3.Enum=two\n" +
-//                "selectCase(Enum3.Enum)\n" +
-//                "    case(zero)\n" +
-//                "        print *, \" zero \", Enum3.Enum\n" +
-//                "    case|");
-//    }
-//
-//    public void testSelect5Free() {
-//        setLoadDocumentText(
-//                "Enum Enum\n" +
-//                "    Enumerator zero, one, two\n" +
-//                "endEnum Enum\n" +
-//                "Type Enum1\n" +
-//                "    Type(Enum) Enum\n" +
-//                "endType Enum1\n" +
-//                "Type(Enum),parameter::Enum2/zero/\n" +
-//                "Type(Enum1) Enum,Enum3\n" +
-//                "Enum3.Enum=two\n" +
-//                "selectCase(Enum3.Enum)\n" +
-//                "    case(zero)\n" +
-//                "        print *, \" zero \", Enum3.Enum\n" +
-//                "    case(one)\n" +
-//                "        print *, \" one \", Enum3.Enum\n" +
-//                "    case(two)\n" +
-//                "        print *, \" two \", Enum3.Enum\n" +
-//                "        endSelec|");
-//        setDefaultsOptions();
-//        typeChar('t', true);
-//        assertDocumentTextAndCaret("Incorrect select indent (free form)",
-//                "Enum Enum\n" +
-//                "    Enumerator zero, one, two\n" +
-//                "endEnum Enum\n" +
-//                "Type Enum1\n" +
-//                "    Type(Enum) Enum\n" +
-//                "endType Enum1\n" +
-//                "Type(Enum),parameter::Enum2/zero/\n" +
-//                "Type(Enum1) Enum,Enum3\n" +
-//                "Enum3.Enum=two\n" +
-//                "selectCase(Enum3.Enum)\n" +
-//                "    case(zero)\n" +
-//                "        print *, \" zero \", Enum3.Enum\n" +
-//                "    case(one)\n" +
-//                "        print *, \" one \", Enum3.Enum\n" +
-//                "    case(two)\n" +
-//                "        print *, \" two \", Enum3.Enum\n" +
-//                "endSelect|");
-//    }
-//
-//    public void testSelect6Free() {
-//        setLoadDocumentText(
-//                "Enum Enum\n" +
-//                "    Enumerator zero, one, two\n" +
-//                "endEnum Enum\n" +
-//                "Type Enum1\n" +
-//                "    Type(Enum) Enum\n" +
-//                "endType Enum1\n" +
-//                "Type(Enum),parameter::Enum2/zero/\n" +
-//                "Type(Enum1) Enum,Enum3\n" +
-//                "Enum3.Enum=two\n" +
-//                "selectCase(Enum3.Enum)\n" +
-//                "    case(zero)\n" +
-//                "        print *, \" zero \", Enum3.Enum\n" +
-//                "    case(one)\n" +
-//                "        print *, \" one \", Enum3.Enum\n" +
-//                "    case(two)\n" +
-//                "        print *, \" two \", Enum3.Enum\n" +
-//                "        end Selec|");
-//        setDefaultsOptions();
-//        typeChar('t', true);
-//        assertDocumentTextAndCaret("Incorrect select indent (free form)",
-//                "Enum Enum\n" +
-//                "    Enumerator zero, one, two\n" +
-//                "endEnum Enum\n" +
-//                "Type Enum1\n" +
-//                "    Type(Enum) Enum\n" +
-//                "endType Enum1\n" +
-//                "Type(Enum),parameter::Enum2/zero/\n" +
-//                "Type(Enum1) Enum,Enum3\n" +
-//                "Enum3.Enum=two\n" +
-//                "selectCase(Enum3.Enum)\n" +
-//                "    case(zero)\n" +
-//                "        print *, \" zero \", Enum3.Enum\n" +
-//                "    case(one)\n" +
-//                "        print *, \" one \", Enum3.Enum\n" +
-//                "    case(two)\n" +
-//                "        print *, \" two \", Enum3.Enum\n" +
-//                "end Select|");
-//    }
+    public void testSelect4Free() {
+        setLoadDocumentText(
+                "Enum Enum\n" +
+                "    Enumerator zero, one, two\n" +
+                "endEnum Enum\n" +
+                "Type Enum1\n" +
+                "    Type(Enum) Enum\n" +
+                "endType Enum1\n" +
+                "Type(Enum),parameter::Enum2/zero/\n" +
+                "Type(Enum1) Enum,Enum3\n" +
+                "Enum3.Enum=two\n" +
+                "selectCase(Enum3.Enum)\n" +
+                "    case(zero)\n" +
+                "        print *, \" zero \", Enum3.Enum\n" +
+                "        cas|");
+        setDefaultsOptions();
+        typeChar('e', true);
+        assertDocumentTextAndCaret("Incorrect select indent (free form)",
+                "Enum Enum\n" +
+                "    Enumerator zero, one, two\n" +
+                "endEnum Enum\n" +
+                "Type Enum1\n" +
+                "    Type(Enum) Enum\n" +
+                "endType Enum1\n" +
+                "Type(Enum),parameter::Enum2/zero/\n" +
+                "Type(Enum1) Enum,Enum3\n" +
+                "Enum3.Enum=two\n" +
+                "selectCase(Enum3.Enum)\n" +
+                "    case(zero)\n" +
+                "        print *, \" zero \", Enum3.Enum\n" +
+                "    case|");
+    }
+
+    public void testSelect5Free() {
+        setLoadDocumentText(
+                "Enum Enum\n" +
+                "    Enumerator zero, one, two\n" +
+                "endEnum Enum\n" +
+                "Type Enum1\n" +
+                "    Type(Enum) Enum\n" +
+                "endType Enum1\n" +
+                "Type(Enum),parameter::Enum2/zero/\n" +
+                "Type(Enum1) Enum,Enum3\n" +
+                "Enum3.Enum=two\n" +
+                "selectCase(Enum3.Enum)\n" +
+                "    case(zero)\n" +
+                "        print *, \" zero \", Enum3.Enum\n" +
+                "    case(one)\n" +
+                "        print *, \" one \", Enum3.Enum\n" +
+                "    case(two)\n" +
+                "        print *, \" two \", Enum3.Enum\n" +
+                "        endSelec|");
+        setDefaultsOptions();
+        typeChar('t', true);
+        assertDocumentTextAndCaret("Incorrect select indent (free form)",
+                "Enum Enum\n" +
+                "    Enumerator zero, one, two\n" +
+                "endEnum Enum\n" +
+                "Type Enum1\n" +
+                "    Type(Enum) Enum\n" +
+                "endType Enum1\n" +
+                "Type(Enum),parameter::Enum2/zero/\n" +
+                "Type(Enum1) Enum,Enum3\n" +
+                "Enum3.Enum=two\n" +
+                "selectCase(Enum3.Enum)\n" +
+                "    case(zero)\n" +
+                "        print *, \" zero \", Enum3.Enum\n" +
+                "    case(one)\n" +
+                "        print *, \" one \", Enum3.Enum\n" +
+                "    case(two)\n" +
+                "        print *, \" two \", Enum3.Enum\n" +
+                "endSelect|");
+    }
+
+    public void testSelect6Free() {
+        setLoadDocumentText(
+                "Enum Enum\n" +
+                "    Enumerator zero, one, two\n" +
+                "endEnum Enum\n" +
+                "Type Enum1\n" +
+                "    Type(Enum) Enum\n" +
+                "endType Enum1\n" +
+                "Type(Enum),parameter::Enum2/zero/\n" +
+                "Type(Enum1) Enum,Enum3\n" +
+                "Enum3.Enum=two\n" +
+                "selectCase(Enum3.Enum)\n" +
+                "    case(zero)\n" +
+                "        print *, \" zero \", Enum3.Enum\n" +
+                "    case(one)\n" +
+                "        print *, \" one \", Enum3.Enum\n" +
+                "    case(two)\n" +
+                "        print *, \" two \", Enum3.Enum\n" +
+                "        end Selec|");
+        setDefaultsOptions();
+        typeChar('t', true);
+        assertDocumentTextAndCaret("Incorrect select indent (free form)",
+                "Enum Enum\n" +
+                "    Enumerator zero, one, two\n" +
+                "endEnum Enum\n" +
+                "Type Enum1\n" +
+                "    Type(Enum) Enum\n" +
+                "endType Enum1\n" +
+                "Type(Enum),parameter::Enum2/zero/\n" +
+                "Type(Enum1) Enum,Enum3\n" +
+                "Enum3.Enum=two\n" +
+                "selectCase(Enum3.Enum)\n" +
+                "    case(zero)\n" +
+                "        print *, \" zero \", Enum3.Enum\n" +
+                "    case(one)\n" +
+                "        print *, \" one \", Enum3.Enum\n" +
+                "    case(two)\n" +
+                "        print *, \" two \", Enum3.Enum\n" +
+                "end Select|");
+    }
 
     public void testModuleFree() {
         setLoadDocumentText(
@@ -1009,133 +1009,133 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    END INTERFACE|");
     }
 
-//    public void testFunctionFree() {
-//        setLoadDocumentText(
-//                "Module A\n" +
-//                "    INTERFACE" +
-//                "        FUNCTION EXT3 (P, Q)|");
-//        setDefaultsOptions();
-//        indentNewLine();
-//        assertDocumentTextAndCaret("Incorrect function indent (free form)",
-//                "Module A\n" +
-//                "    INTERFACE" +
-//                "        FUNCTION EXT3 (P, Q)\n" +
-//                "            |");
-//    }
-//
-//    public void testFunction2Free() {
-//        setLoadDocumentText(
-//                "Module A\n" +
-//                "    INTERFACE" +
-//                "        DOUBLEPRECISION FUNCTION EXT3 (P, Q)|");
-//        setDefaultsOptions();
-//        indentNewLine();
-//        assertDocumentTextAndCaret("Incorrect function indent (free form)",
-//                "Module A\n" +
-//                "    INTERFACE" +
-//                "        DOUBLEPRECISION FUNCTION EXT3 (P, Q)\n" +
-//                "            |");
-//    }
-//
-//    public void testEndFunctionFree() {
-//        setLoadDocumentText(
-//                "Module A\n" +
-//                "    INTERFACE\n" +
-//                "        FUNCTION EXT3 (P, Q)\n" +
-//                "            LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
-//                "            ENDFUNCTIO|");
-//        setDefaultsOptions();
-//        typeChar('N', true);
-//        assertDocumentTextAndCaret("Incorrect end function indent (free form)",
-//                "Module A\n" +
-//                "    INTERFACE\n" +
-//                "        FUNCTION EXT3 (P, Q)\n" +
-//                "            LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
-//                "        ENDFUNCTION|");
-//    }
-//
-//    public void testEndFunction2Free() {
-//        setLoadDocumentText(
-//                "Module A\n" +
-//                "    INTERFACE\n" +
-//                "        FUNCTION EXT3 (P, Q)\n" +
-//                "            LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
-//                "            END FUNCTIO|");
-//        setDefaultsOptions();
-//        typeChar('N', true);
-//        assertDocumentTextAndCaret("Incorrect end function indent (free form)",
-//                "Module A\n" +
-//                "    INTERFACE\n" +
-//                "        FUNCTION EXT3 (P, Q)\n" +
-//                "            LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
-//                "        END FUNCTION|");
-//    }
-//
-//    public void testForallFree() {
-//        setLoadDocumentText(
-//                "implicit none\n" +
-//                "integer(4) i, j(0:9)\n" +
-//                "do i=1,10\n" +
-//                "    call a(i);j(10-i)=i\n" +
-//                "enddo\n" +
-//                "forall (i = 2:7, J(I) <> 3)|");
-//        setDefaultsOptions();
-//        indentNewLine();
-//        assertDocumentTextAndCaret("Incorrect forall indent (free form)",
-//                "implicit none\n" +
-//                "integer(4) i, j(0:9)\n" +
-//                "do i=1,10\n" +
-//                "    call a(i);j(10-i)=i\n" +
-//                "enddo\n" +
-//                "forall (i = 2:7, J(I) <> 3)\n" +
-//                "    |");
-//    }
-//
-//    public void testEndForallFree() {
-//        setLoadDocumentText(
-//                "implicit none\n" +
-//                "integer(4) i, j(0:9)\n" +
-//                "do i=1,10\n" +
-//                "    call a(i);j(10-i)=i\n" +
-//                "enddo\n" +
-//                "forall (i=2:7,J(I)<>3)\n" +
-//                "    j(i)=100\n" +
-//                "    endforal|");
-//        setDefaultsOptions();
-//        typeChar('l', true);
-//        assertDocumentTextAndCaret("Incorrect forall indent (free form)",
-//                "implicit none\n" +
-//                "integer(4) i, j(0:9)\n" +
-//                "do i=1,10\n" +
-//                "    call a(i);j(10-i)=i\n" +
-//                "enddo\n" +
-//                "forall (i=2:7,J(I)<>3)\n" +
-//                "    j(i)=100\n" +
-//                "endforall|");
-//    }
+    public void testFunctionFree() {
+        setLoadDocumentText(
+                "Module A\n" +
+                "    INTERFACE\n" +
+                "        FUNCTION EXT3 (P, Q)|");
+        setDefaultsOptions();
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect function indent (free form)",
+                "Module A\n" +
+                "    INTERFACE\n" +
+                "        FUNCTION EXT3 (P, Q)\n" +
+                "            |");
+    }
 
-//    public void testEndForall2Free() {
-//        setLoadDocumentText(
-//                "implicit none\n" +
-//                "integer(4) i, j(0:9)\n" +
-//                "do i=1,10\n" +
-//                "    call a(i);j(10-i)=i\n" +
-//                "enddo\n" +
-//                "forall (i=2:7,J(I)<>3)\n" +
-//                "    j(i)=100\n" +
-//                "    end foral|");
-//        setDefaultsOptions();
-//        typeChar('l', true);
-//        assertDocumentTextAndCaret("Incorrect forall indent (free form)",
-//                "implicit none\n" +
-//                "integer(4) i, j(0:9)\n" +
-//                "do i=1,10\n" +
-//                "    call a(i);j(10-i)=i\n" +
-//                "enddo\n" +
-//                "forall (i=2:7,J(I)<>3)\n" +
-//                "    j(i)=100\n" +
-//                "end forall|");
-//    }
+    public void testFunction2Free() {
+        setLoadDocumentText(
+                "Module A\n" +
+                "    INTERFACE\n" +
+                "        DOUBLEPRECISION FUNCTION EXT3 (P, Q)|");
+        setDefaultsOptions();
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect function indent (free form)",
+                "Module A\n" +
+                "    INTERFACE\n" +
+                "        DOUBLEPRECISION FUNCTION EXT3 (P, Q)\n" +
+                "            |");
+    }
+
+    public void testEndFunctionFree() {
+        setLoadDocumentText(
+                "Module A\n" +
+                "    INTERFACE\n" +
+                "        FUNCTION EXT3 (P, Q)\n" +
+                "            LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
+                "            ENDFUNCTIO|");
+        setDefaultsOptions();
+        typeChar('N', true);
+        assertDocumentTextAndCaret("Incorrect end function indent (free form)",
+                "Module A\n" +
+                "    INTERFACE\n" +
+                "        FUNCTION EXT3 (P, Q)\n" +
+                "            LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
+                "        ENDFUNCTION|");
+    }
+
+    public void testEndFunction2Free() {
+        setLoadDocumentText(
+                "Module A\n" +
+                "    INTERFACE\n" +
+                "        FUNCTION EXT3 (P, Q)\n" +
+                "            LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
+                "            END FUNCTIO|");
+        setDefaultsOptions();
+        typeChar('N', true);
+        assertDocumentTextAndCaret("Incorrect end function indent (free form)",
+                "Module A\n" +
+                "    INTERFACE\n" +
+                "        FUNCTION EXT3 (P, Q)\n" +
+                "            LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
+                "        END FUNCTION|");
+    }
+
+    public void testForallFree() {
+        setLoadDocumentText(
+                "implicit none\n" +
+                "integer(4) i, j(0:9)\n" +
+                "do i=1,10\n" +
+                "    call a(i);j(10-i)=i\n" +
+                "enddo\n" +
+                "forall (i = 2:7, J(I) <> 3)|");
+        setDefaultsOptions();
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect forall indent (free form)",
+                "implicit none\n" +
+                "integer(4) i, j(0:9)\n" +
+                "do i=1,10\n" +
+                "    call a(i);j(10-i)=i\n" +
+                "enddo\n" +
+                "forall (i = 2:7, J(I) <> 3)\n" +
+                "    |");
+    }
+
+    public void testEndForallFree() {
+        setLoadDocumentText(
+                "implicit none\n" +
+                "integer(4) i, j(0:9)\n" +
+                "do i=1,10\n" +
+                "    call a(i);j(10-i)=i\n" +
+                "enddo\n" +
+                "forall (i=2:7,J(I)<>3)\n" +
+                "    j(i)=100\n" +
+                "    endforal|");
+        setDefaultsOptions();
+        typeChar('l', true);
+        assertDocumentTextAndCaret("Incorrect forall indent (free form)",
+                "implicit none\n" +
+                "integer(4) i, j(0:9)\n" +
+                "do i=1,10\n" +
+                "    call a(i);j(10-i)=i\n" +
+                "enddo\n" +
+                "forall (i=2:7,J(I)<>3)\n" +
+                "    j(i)=100\n" +
+                "endforall|");
+    }
+
+    public void testEndForall2Free() {
+        setLoadDocumentText(
+                "implicit none\n" +
+                "integer(4) i, j(0:9)\n" +
+                "do i=1,10\n" +
+                "    call a(i);j(10-i)=i\n" +
+                "enddo\n" +
+                "forall (i=2:7,J(I)<>3)\n" +
+                "    j(i)=100\n" +
+                "    end foral|");
+        setDefaultsOptions();
+        typeChar('l', true);
+        assertDocumentTextAndCaret("Incorrect forall indent (free form)",
+                "implicit none\n" +
+                "integer(4) i, j(0:9)\n" +
+                "do i=1,10\n" +
+                "    call a(i);j(10-i)=i\n" +
+                "enddo\n" +
+                "forall (i=2:7,J(I)<>3)\n" +
+                "    j(i)=100\n" +
+                "end forall|");
+    }
 
     public void testDoFree() {
         setLoadDocumentText(
@@ -1207,24 +1207,24 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "                |");
     }
 
-//    public void testEndMapFree() {
-//        setLoadDocumentText(
-//                "program\n" +
-//                "    structure /explorer2/\n" +
-//                "        union\n" +
-//                "            map\n" +
-//                "                logical*1 :: var\n" +
-//                "                end ma|");
-//        setDefaultsOptions();
-//        typeChar('p', true);
-//        assertDocumentTextAndCaret("Incorrect map indent (free form)",
-//                "program\n" +
-//                "    structure /explorer2/\n" +
-//                "        union\n" +
-//                "            map\n" +
-//                "                logical*1 :: var\n" +
-//                "            end map|");
-//    }
+    public void testEndMapFree() {
+        setLoadDocumentText(
+                "program\n" +
+                "    structure /explorer2/\n" +
+                "        union\n" +
+                "            map\n" +
+                "                logical*1 :: var\n" +
+                "                end ma|");
+        setDefaultsOptions();
+        typeChar('p', true);
+        assertDocumentTextAndCaret("Incorrect map indent (free form)",
+                "program\n" +
+                "    structure /explorer2/\n" +
+                "        union\n" +
+                "            map\n" +
+                "                logical*1 :: var\n" +
+                "            end map|");
+    }
 
     public void testUnionFree() {
         setLoadDocumentText(
@@ -1269,16 +1269,16 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    end structure|");
     }
 
-//    public void testSubroutine2Fixed() {
-//        setLoadDocumentText(
-//                "      recoursive subroutine p(c)|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        indentNewLine();
-//        assertDocumentTextAndCaret("Incorrect new-line subroutine indent (fixed form)",
-//                "      recoursive subroutine p(c)\n" +
-//                "          |");
-//    }
+    public void testSubroutine2Fixed() {
+        setLoadDocumentText(
+                "      recursive subroutine p(c)|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect new-line subroutine indent (fixed form)",
+                "      recursive subroutine p(c)\n" +
+                "          |");
+    }
 
     public void testBlockDataFixed() {
         setLoadDocumentText(
@@ -1302,98 +1302,98 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          |");
     }
 
-//    public void testEndBlockDataFixed() {
-//        setLoadDocumentText(
-//                "      BLoCKdatA Unit\n" +
-//                "          DoublePrecision A\n" +
-//                "          datA a/1d0/\n" +
-//                "          COMMOn /a/ a\n" +
-//                "         eNDBLOCKdat|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('a', true);
-//        assertDocumentTextAndCaret("Incorrect block data indent (fixed form)",
-//                "      BLoCKdatA Unit\n" +
-//                "          DoublePrecision A\n" +
-//                "          datA a/1d0/\n" +
-//                "          COMMOn /a/ a\n" +
-//                "      eNDBLOCKdata|");
-//    }
-//
-//    public void testEndBlockData2Fixed() {
-//        setLoadDocumentText(
-//                "      BLoCKdatA Unit\n" +
-//                "          DoublePrecision A\n" +
-//                "          datA a/1d0/\n" +
-//                "          COMMOn /a/ a\n" +
-//                "         eND BLOCK dat|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('a', true);
-//        assertDocumentTextAndCaret("Incorrect block data indent (fixed form)",
-//                "      BLoCKdatA Unit\n" +
-//                "          DoublePrecision A\n" +
-//                "          datA a/1d0/\n" +
-//                "          COMMOn /a/ a\n" +
-//                "      eND BLOCK data|");
-//    }
-//
-//    public void testEndBlockData3Fixed() {
-//        setLoadDocumentText(
-//                "      BLoCKdatA Unit\n" +
-//                "          DoublePrecision A\n" +
-//                "          datA a/1d0/\n" +
-//                "          COMMOn /a/ a\n" +
-//                "         eND BLOCKdat|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('a', true);
-//        assertDocumentTextAndCaret("Incorrect block data indent (fixed form)",
-//                "      BLoCKdatA Unit\n" +
-//                "          DoublePrecision A\n" +
-//                "          datA a/1d0/\n" +
-//                "          COMMOn /a/ a\n" +
-//                "      eND BLOCKdata|");
-//    }
-//
-//    public void testEndBlockData4Fixed() {
-//        setLoadDocumentText(
-//                "      BLoCKdatA Unit\n" +
-//                "          DoublePrecision A\n" +
-//                "          datA a/1d0/\n" +
-//                "          COMMOn /a/ a\n" +
-//                "         eNDBLOCK dat|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('a', true);
-//        assertDocumentTextAndCaret("Incorrect block data indent (fixed form)",
-//                "      BLoCKdatA Unit\n" +
-//                "          DoublePrecision A\n" +
-//                "          datA a/1d0/\n" +
-//                "          COMMOn /a/ a\n" +
-//                "      eNDBLOCK data|");
-//    }
-//
-//    public void testElseIfFixed() {
-//        setLoadDocumentText(
-//                "      program A\n" +
-//                "          integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
-//                "          i = 1\n" +
-//                "          if (j(3) == i + 2) then\n" +
-//                "              i = j(5)\n" +
-//                "          elseif |");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        indentNewLine();
-//        assertDocumentTextAndCaret("Incorrect statements indent (fixed form)",
-//                "      program A\n" +
-//                "          integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
-//                "          i = 1\n" +
-//                "          if (j(3) == i + 2) then\n" +
-//                "              i = j(5)\n" +
-//                "          elseif \n" +
-//                "              |");
-//    }
+    public void testEndBlockDataFixed() {
+        setLoadDocumentText(
+                "      BLoCKdatA Unit\n" +
+                "          DoublePrecision A\n" +
+                "          datA a/1d0/\n" +
+                "          COMMOn /a/ a\n" +
+                "         eNDBLOCKdat|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('a', true);
+        assertDocumentTextAndCaret("Incorrect block data indent (fixed form)",
+                "      BLoCKdatA Unit\n" +
+                "          DoublePrecision A\n" +
+                "          datA a/1d0/\n" +
+                "          COMMOn /a/ a\n" +
+                "      eNDBLOCKdata|");
+    }
+
+    public void testEndBlockData2Fixed() {
+        setLoadDocumentText(
+                "      BLoCKdatA Unit\n" +
+                "          DoublePrecision A\n" +
+                "          datA a/1d0/\n" +
+                "          COMMOn /a/ a\n" +
+                "         eND BLOCK dat|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('a', true);
+        assertDocumentTextAndCaret("Incorrect block data indent (fixed form)",
+                "      BLoCKdatA Unit\n" +
+                "          DoublePrecision A\n" +
+                "          datA a/1d0/\n" +
+                "          COMMOn /a/ a\n" +
+                "      eND BLOCK data|");
+    }
+
+    public void testEndBlockData3Fixed() {
+        setLoadDocumentText(
+                "      BLoCKdatA Unit\n" +
+                "          DoublePrecision A\n" +
+                "          datA a/1d0/\n" +
+                "          COMMOn /a/ a\n" +
+                "         eND BLOCKdat|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('a', true);
+        assertDocumentTextAndCaret("Incorrect block data indent (fixed form)",
+                "      BLoCKdatA Unit\n" +
+                "          DoublePrecision A\n" +
+                "          datA a/1d0/\n" +
+                "          COMMOn /a/ a\n" +
+                "      eND BLOCKdata|");
+    }
+
+    public void testEndBlockData4Fixed() {
+        setLoadDocumentText(
+                "      BLoCKdatA Unit\n" +
+                "          DoublePrecision A\n" +
+                "          datA a/1d0/\n" +
+                "          COMMOn /a/ a\n" +
+                "         eNDBLOCK dat|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('a', true);
+        assertDocumentTextAndCaret("Incorrect block data indent (fixed form)",
+                "      BLoCKdatA Unit\n" +
+                "          DoublePrecision A\n" +
+                "          datA a/1d0/\n" +
+                "          COMMOn /a/ a\n" +
+                "      eNDBLOCK data|");
+    }
+
+    public void testElseIfFixed() {
+        setLoadDocumentText(
+                "      program A\n" +
+                "          integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
+                "          i = 1\n" +
+                "          if (j(3) == i + 2) then\n" +
+                "              i = j(5)\n" +
+                "          elseif |");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect statements indent (fixed form)",
+                "      program A\n" +
+                "          integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
+                "          i = 1\n" +
+                "          if (j(3) == i + 2) then\n" +
+                "              i = j(5)\n" +
+                "          elseif \n" +
+                "              |");
+    }
 
     public void testElseIf2Fixed() {
         setLoadDocumentText(
@@ -1497,25 +1497,25 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "              |");
     }
 
-//    public void testElseWhereFixed() {
-//        setLoadDocumentText(
-//                "      program A\n" +
-//                "          integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
-//                "          i = 1\n" +
-//                "          where(j > 2)\n" +
-//                "              j = 10\n" +
-//                "              else wher|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('e', true);
-//        assertDocumentTextAndCaret("Incorrect statements indent (fixed form)",
-//                "      program A\n" +
-//                "          integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
-//                "          i = 1\n" +
-//                "          where(j > 2)\n" +
-//                "              j = 10\n" +
-//                "          else where|");
-//    }
+    public void testElseWhereFixed() {
+        setLoadDocumentText(
+                "      program A\n" +
+                "          integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
+                "          i = 1\n" +
+                "          where(j > 2)\n" +
+                "              j = 10\n" +
+                "              else wher|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('e', true);
+        assertDocumentTextAndCaret("Incorrect statements indent (fixed form)",
+                "      program A\n" +
+                "          integer :: j(5)/1, 2, 3, 4, 5/, i\n" +
+                "          i = 1\n" +
+                "          where(j > 2)\n" +
+                "              j = 10\n" +
+                "          else where|");
+    }
 
     public void testElseWhere2Fixed() {
         setLoadDocumentText(
@@ -1617,84 +1617,84 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          |");
     }
 
-//    public void testEndTypeFixed() {
-//        setLoadDocumentText(
-//                "      Enum Enum\n" +
-//                "          Enumerator zero, one, two\n" +
-//                "      endEnum Enum\n" +
-//                "      Type Enum1\n" +
-//                "          Type(Enum) Enum\n" +
-//                "          endTyp|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('e', true);
-//        assertDocumentTextAndCaret("Incorrect type indent (fixed form)",
-//                "      Enum Enum\n" +
-//                "          Enumerator zero, one, two\n" +
-//                "      endEnum Enum\n" +
-//                "      Type Enum1\n" +
-//                "          Type(Enum) Enum\n" +
-//                "      endType|");
-//    }
-//
-//    public void testEndType2Fixed() {
-//        setLoadDocumentText(
-//                "      Enum Enum\n" +
-//                "          Enumerator zero, one, two\n" +
-//                "      endEnum Enum\n" +
-//                "      Type Enum1\n" +
-//                "          Type(Enum) Enum\n" +
-//                "          end Typ|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('e', true);
-//        assertDocumentTextAndCaret("Incorrect type indent (fixed form)",
-//                "      Enum Enum\n" +
-//                "          Enumerator zero, one, two\n" +
-//                "      endEnum Enum\n" +
-//                "      Type Enum1\n" +
-//                "          Type(Enum) Enum\n" +
-//                "      end Type|");
-//    }
-//
-//    public void testEnumFixed() {
-//        setLoadDocumentText(
-//                "      Enum |");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        indentNewLine();
-//        assertDocumentTextAndCaret("Incorrect enum indent (fixed form)",
-//                "      Enum \n" +
-//                "          |");
-//    }
-//
-//    public void testEndEnumFixed() {
-//        setLoadDocumentText(
-//                "      Enum Enum\n" +
-//                "          Enumerator zero, one, two\n" +
-//                "      endEnu|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('m', true);
-//        assertDocumentTextAndCaret("Incorrect enum indent (fixed form)",
-//                "      Enum Enum\n" +
-//                "          Enumerator zero, one, two\n" +
-//                "      endEnum|");
-//    }
-//
-//    public void testEndEnum2Fixed() {
-//        setLoadDocumentText(
-//                "      Enum Enum\n" +
-//                "          Enumerator zero, one, two\n" +
-//                "      end Enu|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('m', true);
-//        assertDocumentTextAndCaret("Incorrect enum indent (fixed form)",
-//                "      Enum Enum\n" +
-//                "          Enumerator zero, one, two\n" +
-//                "      end Enum|");
-//    }
+    public void testEndTypeFixed() {
+        setLoadDocumentText(
+                "      Enum Enum\n" +
+                "          Enumerator zero, one, two\n" +
+                "      endEnum Enum\n" +
+                "      Type Enum1\n" +
+                "          Type(Enum) Enum\n" +
+                "          endTyp|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('e', true);
+        assertDocumentTextAndCaret("Incorrect type indent (fixed form)",
+                "      Enum Enum\n" +
+                "          Enumerator zero, one, two\n" +
+                "      endEnum Enum\n" +
+                "      Type Enum1\n" +
+                "          Type(Enum) Enum\n" +
+                "      endType|");
+    }
+
+    public void testEndType2Fixed() {
+        setLoadDocumentText(
+                "      Enum Enum\n" +
+                "          Enumerator zero, one, two\n" +
+                "      endEnum Enum\n" +
+                "      Type Enum1\n" +
+                "          Type(Enum) Enum\n" +
+                "          end Typ|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('e', true);
+        assertDocumentTextAndCaret("Incorrect type indent (fixed form)",
+                "      Enum Enum\n" +
+                "          Enumerator zero, one, two\n" +
+                "      endEnum Enum\n" +
+                "      Type Enum1\n" +
+                "          Type(Enum) Enum\n" +
+                "      end Type|");
+    }
+
+    public void testEnumFixed() {
+        setLoadDocumentText(
+                "      Enum |");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect enum indent (fixed form)",
+                "      Enum \n" +
+                "          |");
+    }
+
+    public void testEndEnumFixed() {
+        setLoadDocumentText(
+                "      Enum Enum\n" +
+                "          Enumerator zero, one, two\n" +
+                "      endEnu|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('m', true);
+        assertDocumentTextAndCaret("Incorrect enum indent (fixed form)",
+                "      Enum Enum\n" +
+                "          Enumerator zero, one, two\n" +
+                "      endEnum|");
+    }
+
+    public void testEndEnum2Fixed() {
+        setLoadDocumentText(
+                "      Enum Enum\n" +
+                "          Enumerator zero, one, two\n" +
+                "      end Enu|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('m', true);
+        assertDocumentTextAndCaret("Incorrect enum indent (fixed form)",
+                "      Enum Enum\n" +
+                "          Enumerator zero, one, two\n" +
+                "      end Enum|");
+    }
 
     public void testSelectFixed() {
         setLoadDocumentText(
@@ -1785,123 +1785,123 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "              |");
     }
 
-//    public void testSelect4Fixed() {
-//        setLoadDocumentText(
-//                "      Enum Enum\n" +
-//                "          Enumerator zero, one, two\n" +
-//                "      endEnum Enum\n" +
-//                "      Type Enum1\n" +
-//                "          Type(Enum) Enum\n" +
-//                "      endType Enum1\n" +
-//                "      Type(Enum),parameter::Enum2/zero/\n" +
-//                "      Type(Enum1) Enum,Enum3\n" +
-//                "      Enum3.Enum=two\n" +
-//                "      selectCase(Enum3.Enum)\n" +
-//                "          case(zero)\n" +
-//                "              print *, \" zero \", Enum3.Enum\n" +
-//                "              cas|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('e', true);
-//        assertDocumentTextAndCaret("Incorrect select indent (fixed form)",
-//                "      Enum Enum\n" +
-//                "          Enumerator zero, one, two\n" +
-//                "      endEnum Enum\n" +
-//                "      Type Enum1\n" +
-//                "          Type(Enum) Enum\n" +
-//                "      endType Enum1\n" +
-//                "      Type(Enum),parameter::Enum2/zero/\n" +
-//                "      Type(Enum1) Enum,Enum3\n" +
-//                "      Enum3.Enum=two\n" +
-//                "      selectCase(Enum3.Enum)\n" +
-//                "          case(zero)\n" +
-//                "              print *, \" zero \", Enum3.Enum\n" +
-//                "          case|");
-//    }
-//
-//    public void testSelect5Fixed() {
-//        setLoadDocumentText(
-//                "      Enum Enum\n" +
-//                "          Enumerator zero, one, two\n" +
-//                "      endEnum Enum\n" +
-//                "      Type Enum1\n" +
-//                "          Type(Enum) Enum\n" +
-//                "      endType Enum1\n" +
-//                "      Type(Enum),parameter::Enum2/zero/\n" +
-//                "      Type(Enum1) Enum,Enum3\n" +
-//                "      Enum3.Enum=two\n" +
-//                "      selectCase(Enum3.Enum)\n" +
-//                "          case(zero)\n" +
-//                "              print *, \" zero \", Enum3.Enum\n" +
-//                "          case(one)\n" +
-//                "              print *, \" one \", Enum3.Enum\n" +
-//                "          case(two)\n" +
-//                "              print *, \" two \", Enum3.Enum\n" +
-//                "              endSelec|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('t', true);
-//        assertDocumentTextAndCaret("Incorrect select indent (fixed form)",
-//                "      Enum Enum\n" +
-//                "          Enumerator zero, one, two\n" +
-//                "      endEnum Enum\n" +
-//                "      Type Enum1\n" +
-//                "          Type(Enum) Enum\n" +
-//                "      endType Enum1\n" +
-//                "      Type(Enum),parameter::Enum2/zero/\n" +
-//                "      Type(Enum1) Enum,Enum3\n" +
-//                "      Enum3.Enum=two\n" +
-//                "      selectCase(Enum3.Enum)\n" +
-//                "          case(zero)\n" +
-//                "              print *, \" zero \", Enum3.Enum\n" +
-//                "          case(one)\n" +
-//                "              print *, \" one \", Enum3.Enum\n" +
-//                "          case(two)\n" +
-//                "              print *, \" two \", Enum3.Enum\n" +
-//                "      endSelect|");
-//    }
-//
-//    public void testSelect6Fixed() {
-//        setLoadDocumentText(
-//                "      Enum Enum\n" +
-//                "          Enumerator zero, one, two\n" +
-//                "      endEnum Enum\n" +
-//                "      Type Enum1\n" +
-//                "          Type(Enum) Enum\n" +
-//                "      endType Enum1\n" +
-//                "      Type(Enum),parameter::Enum2/zero/\n" +
-//                "      Type(Enum1) Enum,Enum3\n" +
-//                "      Enum3.Enum=two\n" +
-//                "      selectCase(Enum3.Enum)\n" +
-//                "          case(zero)\n" +
-//                "              print *, \" zero \", Enum3.Enum\n" +
-//                "          case(one)\n" +
-//                "              print *, \" one \", Enum3.Enum\n" +
-//                "          case(two)\n" +
-//                "              print *, \" two \", Enum3.Enum\n" +
-//                "              end Selec|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('t', true);
-//        assertDocumentTextAndCaret("Incorrect select indent (fixed form)",
-//                "      Enum Enum\n" +
-//                "          Enumerator zero, one, two\n" +
-//                "      endEnum Enum\n" +
-//                "      Type Enum1\n" +
-//                "          Type(Enum) Enum\n" +
-//                "      endType Enum1\n" +
-//                "      Type(Enum),parameter::Enum2/zero/\n" +
-//                "      Type(Enum1) Enum,Enum3\n" +
-//                "      Enum3.Enum=two\n" +
-//                "      selectCase(Enum3.Enum)\n" +
-//                "          case(zero)\n" +
-//                "              print *, \" zero \", Enum3.Enum\n" +
-//                "          case(one)\n" +
-//                "              print *, \" one \", Enum3.Enum\n" +
-//                "          case(two)\n" +
-//                "              print *, \" two \", Enum3.Enum\n" +
-//                "      end Select|");
-//    }
+    public void testSelect4Fixed() {
+        setLoadDocumentText(
+                "      Enum Enum\n" +
+                "          Enumerator zero, one, two\n" +
+                "      endEnum Enum\n" +
+                "      Type Enum1\n" +
+                "          Type(Enum) Enum\n" +
+                "      endType Enum1\n" +
+                "      Type(Enum),parameter::Enum2/zero/\n" +
+                "      Type(Enum1) Enum,Enum3\n" +
+                "      Enum3.Enum=two\n" +
+                "      selectCase(Enum3.Enum)\n" +
+                "          case(zero)\n" +
+                "              print *, \" zero \", Enum3.Enum\n" +
+                "              cas|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('e', true);
+        assertDocumentTextAndCaret("Incorrect select indent (fixed form)",
+                "      Enum Enum\n" +
+                "          Enumerator zero, one, two\n" +
+                "      endEnum Enum\n" +
+                "      Type Enum1\n" +
+                "          Type(Enum) Enum\n" +
+                "      endType Enum1\n" +
+                "      Type(Enum),parameter::Enum2/zero/\n" +
+                "      Type(Enum1) Enum,Enum3\n" +
+                "      Enum3.Enum=two\n" +
+                "      selectCase(Enum3.Enum)\n" +
+                "          case(zero)\n" +
+                "              print *, \" zero \", Enum3.Enum\n" +
+                "          case|");
+    }
+
+    public void testSelect5Fixed() {
+        setLoadDocumentText(
+                "      Enum Enum\n" +
+                "          Enumerator zero, one, two\n" +
+                "      endEnum Enum\n" +
+                "      Type Enum1\n" +
+                "          Type(Enum) Enum\n" +
+                "      endType Enum1\n" +
+                "      Type(Enum),parameter::Enum2/zero/\n" +
+                "      Type(Enum1) Enum,Enum3\n" +
+                "      Enum3.Enum=two\n" +
+                "      selectCase(Enum3.Enum)\n" +
+                "          case(zero)\n" +
+                "              print *, \" zero \", Enum3.Enum\n" +
+                "          case(one)\n" +
+                "              print *, \" one \", Enum3.Enum\n" +
+                "          case(two)\n" +
+                "              print *, \" two \", Enum3.Enum\n" +
+                "              endSelec|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('t', true);
+        assertDocumentTextAndCaret("Incorrect select indent (fixed form)",
+                "      Enum Enum\n" +
+                "          Enumerator zero, one, two\n" +
+                "      endEnum Enum\n" +
+                "      Type Enum1\n" +
+                "          Type(Enum) Enum\n" +
+                "      endType Enum1\n" +
+                "      Type(Enum),parameter::Enum2/zero/\n" +
+                "      Type(Enum1) Enum,Enum3\n" +
+                "      Enum3.Enum=two\n" +
+                "      selectCase(Enum3.Enum)\n" +
+                "          case(zero)\n" +
+                "              print *, \" zero \", Enum3.Enum\n" +
+                "          case(one)\n" +
+                "              print *, \" one \", Enum3.Enum\n" +
+                "          case(two)\n" +
+                "              print *, \" two \", Enum3.Enum\n" +
+                "      endSelect|");
+    }
+
+    public void testSelect6Fixed() {
+        setLoadDocumentText(
+                "      Enum Enum\n" +
+                "          Enumerator zero, one, two\n" +
+                "      endEnum Enum\n" +
+                "      Type Enum1\n" +
+                "          Type(Enum) Enum\n" +
+                "      endType Enum1\n" +
+                "      Type(Enum),parameter::Enum2/zero/\n" +
+                "      Type(Enum1) Enum,Enum3\n" +
+                "      Enum3.Enum=two\n" +
+                "      selectCase(Enum3.Enum)\n" +
+                "          case(zero)\n" +
+                "              print *, \" zero \", Enum3.Enum\n" +
+                "          case(one)\n" +
+                "              print *, \" one \", Enum3.Enum\n" +
+                "          case(two)\n" +
+                "              print *, \" two \", Enum3.Enum\n" +
+                "              end Selec|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('t', true);
+        assertDocumentTextAndCaret("Incorrect select indent (fixed form)",
+                "      Enum Enum\n" +
+                "          Enumerator zero, one, two\n" +
+                "      endEnum Enum\n" +
+                "      Type Enum1\n" +
+                "          Type(Enum) Enum\n" +
+                "      endType Enum1\n" +
+                "      Type(Enum),parameter::Enum2/zero/\n" +
+                "      Type(Enum1) Enum,Enum3\n" +
+                "      Enum3.Enum=two\n" +
+                "      selectCase(Enum3.Enum)\n" +
+                "          case(zero)\n" +
+                "              print *, \" zero \", Enum3.Enum\n" +
+                "          case(one)\n" +
+                "              print *, \" one \", Enum3.Enum\n" +
+                "          case(two)\n" +
+                "              print *, \" two \", Enum3.Enum\n" +
+                "      end Select|");
+    }
 
     public void testModuleFixed() {
         setLoadDocumentText(
@@ -2015,140 +2015,140 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "          END INTERFACE|");
     }
 
-//    public void testFunctionFixed() {
-//        setLoadDocumentText(
-//                "      Module A\n" +
-//                "          INTERFACE" +
-//                "              FUNCTION EXT3 (P, Q)|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        indentNewLine();
-//        assertDocumentTextAndCaret("Incorrect function indent (fixed form)",
-//                "      Module A\n" +
-//                "          INTERFACE" +
-//                "              FUNCTION EXT3 (P, Q)\n" +
-//                "                  |");
-//    }
-//
-//    public void testFunction2Fixed() {
-//        setLoadDocumentText(
-//                "      Module A\n" +
-//                "          INTERFACE" +
-//                "              DOUBLEPRECISION FUNCTION EXT3 (P, Q)|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        indentNewLine();
-//        assertDocumentTextAndCaret("Incorrect function indent (fixed form)",
-//                "      Module A\n" +
-//                "          INTERFACE" +
-//                "              DOUBLEPRECISION FUNCTION EXT3 (P, Q)\n" +
-//                "                  |");
-//    }
-//
-//    public void testEndFunctionFixed() {
-//        setLoadDocumentText(
-//                "      Module A\n" +
-//                "          INTERFACE\n" +
-//                "              FUNCTION EXT3 (P, Q)\n" +
-//                "                  LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
-//                "                  ENDFUNCTIO|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('N', true);
-//        assertDocumentTextAndCaret("Incorrect end function indent (fixed form)",
-//                "      Module A\n" +
-//                "          INTERFACE\n" +
-//                "              FUNCTION EXT3 (P, Q)\n" +
-//                "                  LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
-//                "              ENDFUNCTION|");
-//    }
-//
-//    public void testEndFunction2Fixed() {
-//        setLoadDocumentText(
-//                "      Module A\n" +
-//                "          INTERFACE\n" +
-//                "              FUNCTION EXT3 (P, Q)\n" +
-//                "                  LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
-//                "                  END FUNCTIO|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('N', true);
-//        assertDocumentTextAndCaret("Incorrect end function indent (fixed form)",
-//                "      Module A\n" +
-//                "          INTERFACE\n" +
-//                "              FUNCTION EXT3 (P, Q)\n" +
-//                "                  LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
-//                "              END FUNCTION|");
-//    }
-//
-//    public void testForallFixed() {
-//        setLoadDocumentText(
-//                "      implicit none\n" +
-//                "      integer(4) i, j(0:9)\n" +
-//                "      do i=1,10\n" +
-//                "          call a(i);j(10-i)=i\n" +
-//                "      enddo\n" +
-//                "      forall (i = 2:7, J(I) <> 3)|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        indentNewLine();
-//        assertDocumentTextAndCaret("Incorrect forall indent (fixed form)",
-//                "      implicit none\n" +
-//                "      integer(4) i, j(0:9)\n" +
-//                "      do i=1,10\n" +
-//                "          call a(i);j(10-i)=i\n" +
-//                "      enddo\n" +
-//                "      forall (i = 2:7, J(I) <> 3)\n" +
-//                "          |");
-//    }
-//
-//    public void testEndForallFixed() {
-//        setLoadDocumentText(
-//                "      implicit none\n" +
-//                "      integer(4) i, j(0:9)\n" +
-//                "      do i=1,10\n" +
-//                "          call a(i);j(10-i)=i\n" +
-//                "      enddo\n" +
-//                "      forall (i=2:7,J(I)<>3)\n" +
-//                "          j(i)=100\n" +
-//                "          endforal|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('l', true);
-//        assertDocumentTextAndCaret("Incorrect forall indent (fixed form)",
-//                "      implicit none\n" +
-//                "      integer(4) i, j(0:9)\n" +
-//                "      do i=1,10\n" +
-//                "          call a(i);j(10-i)=i\n" +
-//                "      enddo\n" +
-//                "      forall (i=2:7,J(I)<>3)\n" +
-//                "          j(i)=100\n" +
-//                "      endforall|");
-//    }
-//
-//    public void testEndForall2Fixed() {
-//        setLoadDocumentText(
-//                "      implicit none\n" +
-//                "      integer(4) i, j(0:9)\n" +
-//                "      do i=1,10\n" +
-//                "          call a(i);j(10-i)=i\n" +
-//                "      enddo\n" +
-//                "      forall (i=2:7,J(I)<>3)\n" +
-//                "          j(i)=100\n" +
-//                "          end foral|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('l', true);
-//        assertDocumentTextAndCaret("Incorrect forall indent (fixed form)",
-//                "      implicit none\n" +
-//                "      integer(4) i, j(0:9)\n" +
-//                "      do i=1,10\n" +
-//                "          call a(i);j(10-i)=i\n" +
-//                "      enddo\n" +
-//                "      forall (i=2:7,J(I)<>3)\n" +
-//                "          j(i)=100\n" +
-//                "      end forall|");
-//    }
+    public void testFunctionFixed() {
+        setLoadDocumentText(
+                "      Module A\n" +
+                "          INTERFACE\n" +
+                "              FUNCTION EXT3 (P, Q)|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect function indent (fixed form)",
+                "      Module A\n" +
+                "          INTERFACE\n" +
+                "              FUNCTION EXT3 (P, Q)\n" +
+                "                  |");
+    }
+
+    public void testFunction2Fixed() {
+        setLoadDocumentText(
+                "      Module A\n" +
+                "          INTERFACE\n" +
+                "              DOUBLEPRECISION FUNCTION EXT3 (P, Q)|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect function indent (fixed form)",
+                "      Module A\n" +
+                "          INTERFACE\n" +
+                "              DOUBLEPRECISION FUNCTION EXT3 (P, Q)\n" +
+                "                  |");
+    }
+
+    public void testEndFunctionFixed() {
+        setLoadDocumentText(
+                "      Module A\n" +
+                "          INTERFACE\n" +
+                "              FUNCTION EXT3 (P, Q)\n" +
+                "                  LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
+                "                  ENDFUNCTIO|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('N', true);
+        assertDocumentTextAndCaret("Incorrect end function indent (fixed form)",
+                "      Module A\n" +
+                "          INTERFACE\n" +
+                "              FUNCTION EXT3 (P, Q)\n" +
+                "                  LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
+                "              ENDFUNCTION|");
+    }
+
+    public void testEndFunction2Fixed() {
+        setLoadDocumentText(
+                "      Module A\n" +
+                "          INTERFACE\n" +
+                "              FUNCTION EXT3 (P, Q)\n" +
+                "                  LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
+                "                  END FUNCTIO|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('N', true);
+        assertDocumentTextAndCaret("Incorrect end function indent (fixed form)",
+                "      Module A\n" +
+                "          INTERFACE\n" +
+                "              FUNCTION EXT3 (P, Q)\n" +
+                "                  LOGICAL EXT3 ; INTEGER P (1000) ; LOGICAL Q (1000)\n" +
+                "              END FUNCTION|");
+    }
+
+    public void testForallFixed() {
+        setLoadDocumentText(
+                "      implicit none\n" +
+                "      integer(4) i, j(0:9)\n" +
+                "      do i=1,10\n" +
+                "          call a(i);j(10-i)=i\n" +
+                "      enddo\n" +
+                "      forall (i = 2:7, J(I) <> 3)|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect forall indent (fixed form)",
+                "      implicit none\n" +
+                "      integer(4) i, j(0:9)\n" +
+                "      do i=1,10\n" +
+                "          call a(i);j(10-i)=i\n" +
+                "      enddo\n" +
+                "      forall (i = 2:7, J(I) <> 3)\n" +
+                "          |");
+    }
+
+    public void testEndForallFixed() {
+        setLoadDocumentText(
+                "      implicit none\n" +
+                "      integer(4) i, j(0:9)\n" +
+                "      do i=1,10\n" +
+                "          call a(i);j(10-i)=i\n" +
+                "      enddo\n" +
+                "      forall (i=2:7,J(I)<>3)\n" +
+                "          j(i)=100\n" +
+                "          endforal|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('l', true);
+        assertDocumentTextAndCaret("Incorrect forall indent (fixed form)",
+                "      implicit none\n" +
+                "      integer(4) i, j(0:9)\n" +
+                "      do i=1,10\n" +
+                "          call a(i);j(10-i)=i\n" +
+                "      enddo\n" +
+                "      forall (i=2:7,J(I)<>3)\n" +
+                "          j(i)=100\n" +
+                "      endforall|");
+    }
+
+    public void testEndForall2Fixed() {
+        setLoadDocumentText(
+                "      implicit none\n" +
+                "      integer(4) i, j(0:9)\n" +
+                "      do i=1,10\n" +
+                "          call a(i);j(10-i)=i\n" +
+                "      enddo\n" +
+                "      forall (i=2:7,J(I)<>3)\n" +
+                "          j(i)=100\n" +
+                "          end foral|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('l', true);
+        assertDocumentTextAndCaret("Incorrect forall indent (fixed form)",
+                "      implicit none\n" +
+                "      integer(4) i, j(0:9)\n" +
+                "      do i=1,10\n" +
+                "          call a(i);j(10-i)=i\n" +
+                "      enddo\n" +
+                "      forall (i=2:7,J(I)<>3)\n" +
+                "          j(i)=100\n" +
+                "      end forall|");
+    }
 
     public void testDoFixed() {
         setLoadDocumentText(
@@ -2224,25 +2224,25 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "                      |");
     }
 
-//    public void testEndMapFixed() {
-//        setLoadDocumentText(
-//                "      program\n" +
-//                "          structure /explorer2/\n" +
-//                "              union\n" +
-//                "                  map\n" +
-//                "                      logical*1 :: var\n" +
-//                "                      end ma|");
-//        setDefaultsOptions();
-//        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-//        typeChar('p', true);
-//        assertDocumentTextAndCaret("Incorrect map indent (fixed form)",
-//                "      program\n" +
-//                "          structure /explorer2/\n" +
-//                "              union\n" +
-//                "                  map\n" +
-//                "                      logical*1 :: var\n" +
-//                "                  end map|");
-//    }
+    public void testEndMapFixed() {
+        setLoadDocumentText(
+                "      program\n" +
+                "          structure /explorer2/\n" +
+                "              union\n" +
+                "                  map\n" +
+                "                      logical*1 :: var\n" +
+                "                      end ma|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        typeChar('p', true);
+        assertDocumentTextAndCaret("Incorrect map indent (fixed form)",
+                "      program\n" +
+                "          structure /explorer2/\n" +
+                "              union\n" +
+                "                  map\n" +
+                "                      logical*1 :: var\n" +
+                "                  end map|");
+    }
 
     public void testUnionFixed() {
         setLoadDocumentText(
