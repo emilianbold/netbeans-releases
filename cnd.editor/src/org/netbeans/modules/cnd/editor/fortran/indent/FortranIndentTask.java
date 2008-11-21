@@ -209,6 +209,9 @@ public class FortranIndentTask extends FortranIndentSupport implements IndentTas
 
                         case KW_BLOCK:
                             matchToken = findMatchingToken(token, KW_BLOCK, KW_ENDBLOCK);
+                            if (matchToken == null) {
+                                matchToken = findMatchingToken(token, KW_BLOCKDATA, KW_ENDBLOCKDATA);
+                            }
                             break;
 
                         case KW_BLOCKDATA:
@@ -287,6 +290,9 @@ public class FortranIndentTask extends FortranIndentSupport implements IndentTas
 
                     case KW_ENDBLOCK:
                         matchToken = findMatchingToken(token, KW_BLOCK, KW_ENDBLOCK);
+                        if (matchToken == null) {
+                            matchToken = findMatchingToken(token, KW_BLOCKDATA, KW_ENDBLOCKDATA);
+                        }
                         break;
 
                     case KW_ENDBLOCKDATA:
@@ -395,6 +401,7 @@ public class FortranIndentTask extends FortranIndentSupport implements IndentTas
                         indent = getTokenIndent(startToken) + getShiftWidth();
                         break;
 
+                    case KW_RECURSIVE:
                     case KW_ELSE:
                     case KW_CASE:
                     case KW_WHERE:

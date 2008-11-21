@@ -570,11 +570,11 @@ public class LegecyFortranFormatterTestCase extends FortranEditorBase {
                 "implicit doubleprecision (o - z)\n" +
                 "do i = -1, 1\n" +
                 "    if (i .eq. 0) then\n" +
-                "        write(*, *)a(i)\n" +
+                "        write(*, *) a(i)\n" +
                 "    elseif (i .gt. 0) then\n" +
-                "        write(*, *)b(i)\n" +
+                "        write(*, *) b(i)\n" +
                 "    else if (i .lt. 0) then\n" +
-                "        write(*, *)c(i)\n" +
+                "        write(*, *) c(i)\n" +
                 "    endif\n" +
                 "enddo\n" +
                 "end\n" +
@@ -622,11 +622,11 @@ public class LegecyFortranFormatterTestCase extends FortranEditorBase {
                 "      implicit doubleprecision (o - z)\n" +
                 "      do i = -1, 1\n" +
                 "          if (i .eq. 0) then\n" +
-                "              write(*, *)a(i)\n" +
+                "              write(*, *) a(i)\n" +
                 "          elseif (i .gt. 0) then\n" +
-                "              write(*, *)b(i)\n" +
+                "              write(*, *) b(i)\n" +
                 "          else if (i .lt. 0) then\n" +
-                "              write(*, *)c(i)\n" +
+                "              write(*, *) c(i)\n" +
                 "          endif\n" +
                 "      enddo\n" +
                 "      end\n" +
