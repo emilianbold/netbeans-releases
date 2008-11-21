@@ -132,9 +132,34 @@ made subject to such option by the copyright holder.
         </architecture>
         <strip flags="-s"/>
     </fortran>
+    <assembler>
+        <compiler name="gas,as"/>
+        <version flags="-version"/>
+        <development_mode>
+            <fast_build flags=""/>
+            <debug flags="-g" default="true"/>
+            <performance_debug flags="-g"/>
+            <test_coverage flags="-g"/>
+            <diagnosable_release flags="-g"/>
+            <release flags=""/>
+            <performance_release flags=""/>
+        </development_mode>
+        <warning_level>
+            <no_warnings flags="-W"/>
+            <default flags="" default="true"/>
+            <more_warnings flags=""/>
+            <warning2error flags="--fatal-warnings"/>
+        </warning_level>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags="--32"/>
+            <bits_64 flags="--64"/>
+        </architecture>
+        <strip flags="-s"/>
+    </assembler>
     <scanner>
-        <error pattern="([a-zA-Z]:[^:\n]*|[^:\n]*):([^:\n]*):([^:\n]*):([^\n]*)" language="c,cpp,fortran"/>
-        <error pattern="([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*" language="c,cpp,fortran"/>
+        <error pattern="([a-zA-Z]:[^:\n]*|[^:\n]*):([^:\n]*):([^:\n]*):([^\n]*)" language="c,cpp,fortran,assembler"/>
+        <error pattern="([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*" language="c,cpp,fortran,assembler"/>
         <stack_header pattern="In file included from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"/>
         <stack_next pattern="                 from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"/>
         <change_directory pattern="cd\\s+([\\S]+)[\\s;]"/>
