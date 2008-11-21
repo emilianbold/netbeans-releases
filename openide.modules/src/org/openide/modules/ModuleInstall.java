@@ -90,6 +90,7 @@ public class ModuleInstall extends SharedClassObject {
     /**
      * @deprecated Use {@link #restored} instead.
     */
+    @Deprecated
     public void installed() {
         restored();
     }
@@ -116,6 +117,7 @@ public class ModuleInstall extends SharedClassObject {
     /**
      * @deprecated Use {@link #restored} instead.
      */
+    @Deprecated
     public void updated(int release, String specVersion) {
         restored();
     }
