@@ -111,7 +111,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert this.projectUID != null;
             
-        this.projectRef = new WeakReference(project); 
+        this.projectRef = new WeakReference<ProjectBase>(project);
         declarationsSorageKey = new DeclarationContainer(this).getKey();
 
         project.registerNamespace(this);
@@ -127,7 +127,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert this.projectUID != null;
 
-        this.projectRef = new WeakReference(project); 
+        this.projectRef = new WeakReference<ProjectBase>(project);
         this.qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
         // TODO: rethink once more
         // now all classes do have namespaces
@@ -223,8 +223,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
+        DeclarationContainer declStorage = getDeclarationsSorage();
+        if (declStorage == null) {
+            return Collections.<CsmOffsetableDeclaration>emptyList();
+        }
         // add all declarations
-        Collection<CsmUID<CsmOffsetableDeclaration>> uids = getDeclarationsSorage().getDeclarationsUIDs();
+        Collection<CsmUID<CsmOffsetableDeclaration>> uids = declStorage.getDeclarationsUIDs();
         // add all unnamed declarations
         synchronized (unnamedDeclarations) {
             uids.addAll(unnamedDeclarations);
@@ -235,8 +239,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
+        DeclarationContainer declStorage = getDeclarationsSorage();
+        if (declStorage == null) {
+            return Collections.<CsmOffsetableDeclaration>emptyList().iterator();
+        }
         // add all declarations
-        Collection<CsmUID<CsmOffsetableDeclaration>> uids = getDeclarationsSorage().getDeclarationsUIDs();
+        Collection<CsmUID<CsmOffsetableDeclaration>> uids = declStorage.getDeclarationsUIDs();
         // add all unnamed declarations
         synchronized (unnamedDeclarations) {
             uids.addAll(unnamedDeclarations);
@@ -245,9 +253,13 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> findUidsByPrefix(String prefix) {
+        DeclarationContainer declStorage = getDeclarationsSorage();
+        if (declStorage == null) {
+            return Collections.<CsmUID<CsmOffsetableDeclaration>>emptyList();
+        }
         // To improve performance use char(255) instead real Character.MAX_VALUE
         char maxChar = 255; //Character.MAX_VALUE;
-        return getDeclarationsSorage().getUIDsRange(prefix, prefix+maxChar);
+        return declStorage.getUIDsRange(prefix, prefix+maxChar);
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getUnnamedUids() {
@@ -510,7 +522,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             if (projectRef instanceof ProjectBase) {
                 prj = (ProjectBase)projectRef;
             } else if (projectRef instanceof Reference) {
-                prj = ((Reference<ProjectBase>)projectRef).get();
+                @SuppressWarnings("unchecked")
+                Reference<ProjectBase> ref = (Reference<ProjectBase>) projectRef;
+                prj = ref.get();
             }
             if (prj == null) {
                 prj = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);
