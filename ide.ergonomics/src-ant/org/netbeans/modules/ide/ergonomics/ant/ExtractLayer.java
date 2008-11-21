@@ -96,6 +96,10 @@ public final class ExtractLayer extends Task {
     public void setBundle(File f) {
         bundle = f;
     }
+    private String clusterName;
+    public void setClusterName(String n) {
+        clusterName = n;
+    }
     private FilterChain bundleFilter;
     public void addConfiguredBundleFilter(FilterChain b) {
         bundleFilter = b;
@@ -110,6 +114,9 @@ public final class ExtractLayer extends Task {
             throw new BuildException();
         }
         if (output == null) {
+            throw new BuildException();
+        }
+        if (clusterName == null) {
             throw new BuildException();
         }
 
@@ -196,9 +203,9 @@ public final class ExtractLayer extends Task {
         }
         Concat.TextElement te = new Concat.TextElement();
         te.setProject(getProject());
-        te.addText("cnbs=\\" + modules + "\n\n");
+        te.addText("\n\n\ncnbs=\\" + modules + "\n\n");
         te.setFiltering(false);
-        concat.addHeader(te);
+        concat.addFooter(te);
         concat.execute();
 
 
@@ -215,7 +222,7 @@ public final class ExtractLayer extends Task {
 
             TransformerFactory fack = TransformerFactory.newInstance();
             Transformer t = fack.newTransformer(xslt);
-            t.setParameter("cluster.name", layer.getName().replaceFirst("\\.[^\\.]+$", ""));
+            t.setParameter("cluster.name", clusterName);
 
             StreamSource orig = new StreamSource(layer);
             StreamResult gen = new StreamResult(new File(output, "layer.xml"));

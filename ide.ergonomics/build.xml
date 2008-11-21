@@ -78,9 +78,9 @@
 
         <pathconvert property="cluster.name">
             <path location="."/>
-            <mapper type="flatten"/>
+            <mapper type="regexp" from=".*/([a-z]*)[0-9\.]*" to="\1"/>
         </pathconvert>
-
+        
         <property name="proxytmp" value="${ergonomicsdir}/build/proxies/${cluster.name}"/>
         <property name="proxydir" value="${ergonomicsdir}/build/classes/org/netbeans/modules/ide/ergonomics/${cluster.name}"/>
         <mkdir dir="${proxytmp}/layers"/>
@@ -117,8 +117,15 @@
             </footer>
         </concat>
 
+        <available
+            file="${ergonomicsdir}/${cluster.name}.properties"
+            value="${ergonomicsdir}/${cluster.name}.properties"
+            property="proxyprop"
+        />
+        <property name="proxyprop" location="${ergonomicsdir}/empty.properties"/>
         <mkdir dir="${proxydir}"/>
         <extractlayer
+            clusterName="${cluster.name}"
             layer="${proxytmp}/${cluster.name}.xml"
             bundle="${proxydir}/Bundle.properties"
             destdir="${proxydir}"
@@ -130,6 +137,7 @@
                 <linecontains>
                     <contains value="Templates"/>
                 </linecontains>
+                <concatfilter prepend="${proxyprop}"/>
             </bundlefilter>
          </extractlayer>
     </target>

@@ -107,7 +107,7 @@ public class Feature2LayerMapping {
             AbstractLookup l = new AbstractLookup(ic);
             for (String c : clusters.split(File.pathSeparator)) {
                 int last = c.lastIndexOf(File.separatorChar);
-                String clusterName = c.substring(last + 1);
+                String clusterName = c.substring(last + 1).replaceFirst("[0-9\\.]*$", "");
                 String basename = "/org/netbeans/modules/ide/ergonomics/" + clusterName;
                 String layerName = basename + "/layer.xml";
                 String bundleName = basename + "/Bundle.properties";
@@ -118,7 +118,7 @@ public class Feature2LayerMapping {
                         Properties p = new Properties();
                         p.load(bundle.openStream());
                         String cnbs = p.getProperty("cnbs");
-                        assert cnbs != null;
+                        assert cnbs != null : "Error loading from " + bundle; // NOI18N
                         TreeSet<String> s = new TreeSet<String>();
                         s.addAll(Arrays.asList(cnbs.split(",")));
                         ic.add(FeatureInfo.create(s, layer));
