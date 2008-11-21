@@ -111,11 +111,11 @@ public final class ToolchainManager {
                 }
             }
             if (TRACE) {
-                System.out.println("Declared vendors:");
+                System.err.println("Declared vendors:");
             } // NOI18N
             for (CompilerVendor v : vendors.values()) {
                 if (TRACE) {
-                    System.out.println(v.toString());
+                    System.err.println(v.toString());
                 }
                 descriptors.add(new ToolchainDescriptorImpl(v));
             }
@@ -260,7 +260,7 @@ public final class ToolchainManager {
     boolean isMyFolder(String path, ToolchainDescriptor d, int platform, boolean known) {
         boolean res = isMyFolderImpl(path, d, platform, known);
         if (TRACE && res) {
-            System.out.println("Path [" + path + "] belongs to tool chain " + d.getName());
+            System.err.println("Path [" + path + "] belongs to tool chain " + d.getName());
         } // NOI18N
         return res;
     }
@@ -310,10 +310,10 @@ public final class ToolchainManager {
         String s = getCommandOutput(path, path + "/" + c.getNames()[0] + " " + flag, true); // NOI18N
         boolean res = pattern.matcher(s).find();
         if (TRACE && !res) {
-            System.out.println("No match for pattern [" + c.getVersionPattern() + "]:");
+            System.err.println("No match for pattern [" + c.getVersionPattern() + "]:");
         } // NOI18N
         if (TRACE && !res) {
-            System.out.println("Run " + path + "/" + c.getNames()[0] + " " + flag + "\n" + s);
+            System.err.println("Run " + path + "/" + c.getNames()[0] + " " + flag + "\n" + s);
         } // NOI18N
         return res;
     }
@@ -374,7 +374,7 @@ public final class ToolchainManager {
         String base = null;
         try {
             if (TRACE) {
-                System.out.println("Read registry " + key);
+                System.err.println("Read registry " + key);
             } // NOI18N
             Process process = pb.start();
             BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -383,13 +383,13 @@ public final class ToolchainManager {
             while ((line = br.readLine()) != null) {
                 line = line.trim();
                 if (TRACE) {
-                    System.out.println("\t" + line);
+                    System.err.println("\t" + line);
                 } // NOI18N
                 Matcher m = p.matcher(line);
                 if (m.find() && m.groupCount() == 1) {
                     base = m.group(1).trim();
                     if (TRACE) {
-                        System.out.println("\tFound " + base);
+                        System.err.println("\tFound " + base);
                     } // NOI18N
                 }
             }
@@ -548,7 +548,7 @@ public final class ToolchainManager {
                 String name = file.getNameExt();
                 for (ToolchainDescriptor descriptor : descriptors) {
                     if (name.equals(descriptor.getFileName())) {
-                        //System.out.println("Found file " + file.getNameExt()); // NOI18N
+                        //System.err.println("Found file " + file.getNameExt()); // NOI18N
                         Document doc = XMLUtil.createDocument("toolchaindefinition", "http://www.netbeans.org/ns/cnd-toolchain-definition/1", null, null); // NOI18N
                         Element root = doc.getDocumentElement();
                         Element element;
@@ -1715,13 +1715,13 @@ public final class ToolchainManager {
                             } catch (NumberFormatException ex) {
                                 // skip
                                 if (TRACE) {
-                                    System.out.println("Incorrect version information:" + xmlns);
+                                    System.err.println("Incorrect version information:" + xmlns);
                                 } // NOI18N
                             }
                         }
                     } else {
                         if (TRACE) {
-                            System.out.println("Incorrect version information:" + xmlns);
+                            System.err.println("Incorrect version information:" + xmlns);
                         } // NOI18N
                     }
                 }
