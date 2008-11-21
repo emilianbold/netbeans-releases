@@ -50,13 +50,12 @@ import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
-import org.openide.loaders.ExtensionList;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class, position=300)
 public class CDataLoader extends CndAbstractDataLoaderExt {
     
     private static CDataLoader instance;
