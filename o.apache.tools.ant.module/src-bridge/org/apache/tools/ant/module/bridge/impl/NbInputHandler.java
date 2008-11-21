@@ -104,12 +104,23 @@ final class NbInputHandler implements InputHandler {
 
         JPanel pane = new JPanel();
         pane.setLayout(new GridBagLayout());
-
-        JLabel jLabel1 = new JLabel(request.getPrompt());
+        String promptText = request.getPrompt().trim();
+        JLabel prompt = new JLabel();
+        if (promptText.contains("\n")) { // #35712
+            prompt.setText("<html>" + promptText.
+                    replaceAll("&", "&amp;").
+                    replaceAll("<", "&lt;").
+                    replaceAll("\r?\n", "<br>"));
+        } else {
+            prompt.setText(promptText);
+        }
+        if (promptText.length() > 0) {
+            prompt.setDisplayedMnemonic(promptText.charAt(0));
+        }
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(12, 12, 11, 6);
-        pane.add(jLabel1, gridBagConstraints);
+        pane.add(prompt, gridBagConstraints);
 
         JComponent comp = null;
         if (request instanceof MultipleChoiceInputRequest) {
@@ -123,20 +134,17 @@ final class NbInputHandler implements InputHandler {
             comp = input;
         }
 
+        prompt.setLabelFor(comp);
+
         comp.getAccessibleContext().setAccessibleDescription(
         NbBundle.getMessage(NbInputHandler.class, "ACSD_input_handler")); // NOI18N
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(12, 6, 11, 6);
         pane.add(comp, gridBagConstraints);
-
-        jLabel1.setLabelFor(comp);
-        if (request.getPrompt().length() > 0)
-            jLabel1.setDisplayedMnemonic(request.getPrompt().charAt(0));
 
         pane.getAccessibleContext().setAccessibleName(
         NbBundle.getMessage(NbInputHandler.class, "TITLE_input_handler")); // NOI18N
