@@ -32,24 +32,24 @@ public class InstanceWizard extends WizardDescriptor
 {
     
     public InstanceWizard() {
-        super(new InstanceWizardIterator());
+        setPanelsAndSettings(new InstanceWizardIterator(this), this);
         
-        putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
-        putProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
-        putProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+        putProperty(PROP_AUTO_WIZARD_STYLE, true);
+        putProperty(PROP_CONTENT_DISPLAYED, true);
+        putProperty(PROP_CONTENT_NUMBERED, true);
         
         setTitle(NbBundle.getMessage(InstanceWizard.class, "LBL_InstanceWiz_Title"));
         setTitleFormat(new MessageFormat(NbBundle.getMessage(InstanceWizard.class, "LBL_InstanceWiz_TitleFormat")));
-        
-        initialize();
     }
+
+    String name, url, sync;
     
     /**
      * Sets error message what should be displayed
      *
      * @param message
      */
-    public void setErrorMessage(String message) {
-        putProperty("WizardPanel_errorMessage", message);
+    void setErrorMessage(String message) {
+        putProperty(PROP_ERROR_MESSAGE, message);
     }
 }

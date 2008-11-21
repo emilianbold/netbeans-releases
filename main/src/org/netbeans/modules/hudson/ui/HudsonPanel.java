@@ -37,7 +37,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -94,47 +94,47 @@ public class HudsonPanel extends JPanel implements PropertyChangeListener, Mouse
     private JComponent content;
     private JComponent bottomContent;
     
-    protected final ImageIcon hTopLeftInFocus = new ImageIcon( Utilities.loadImage( SEL_HEADER_TOP_LEFT_IMAGE ) );
-    protected final ImageIcon hTopRightInFocus = new ImageIcon( Utilities.loadImage( SEL_HEADER_TOP_RIGHT_IMAGE ) );
-    protected final ImageIcon hBottomLeftInFocus = new ImageIcon( Utilities.loadImage( SEL_HEADER_BOTTOM_LEFT_IMAGE ) );
-    protected final ImageIcon hBottomRightInFocus = new ImageIcon( Utilities.loadImage( SEL_HEADER_BOTTOM_RIGHT_IMAGE ) );
-    protected final ImageIcon hTopInFocus = new ImageIcon( Utilities.loadImage( SEL_HEADER_TOP_IMAGE ) );
-    protected final ImageIcon hBottomInFocus = new ImageIcon( Utilities.loadImage( SEL_HEADER_BOTTOM_IMAGE ) );
-    protected final ImageIcon hLeftInFocus = new ImageIcon( Utilities.loadImage( SEL_HEADER_LEFT_IMAGE ) );
-    protected final ImageIcon hRightInFocus = new ImageIcon( Utilities.loadImage( SEL_HEADER_RIGHT_IMAGE ) );
+    protected final ImageIcon hTopLeftInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_HEADER_TOP_LEFT_IMAGE));
+    protected final ImageIcon hTopRightInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_HEADER_TOP_RIGHT_IMAGE));
+    protected final ImageIcon hBottomLeftInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_HEADER_BOTTOM_LEFT_IMAGE));
+    protected final ImageIcon hBottomRightInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_HEADER_BOTTOM_RIGHT_IMAGE));
+    protected final ImageIcon hTopInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_HEADER_TOP_IMAGE));
+    protected final ImageIcon hBottomInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_HEADER_BOTTOM_IMAGE));
+    protected final ImageIcon hLeftInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_HEADER_LEFT_IMAGE));
+    protected final ImageIcon hRightInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_HEADER_RIGHT_IMAGE));
     
-    protected final ImageIcon leftSideInFocus = new ImageIcon( Utilities.loadImage( SEL_LEFT_SIDE_IMAGE ) );
-    protected final ImageIcon rightSideInFocus = new ImageIcon( Utilities.loadImage( SEL_RIGHT_SIDE_IMAGE ) );
+    protected final ImageIcon leftSideInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_LEFT_SIDE_IMAGE));
+    protected final ImageIcon rightSideInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_RIGHT_SIDE_IMAGE));
     
-    protected final ImageIcon fTopLeftInFocus = new ImageIcon( Utilities.loadImage( SEL_FOOTER_TOP_LEFT_IMAGE ) );
-    protected final ImageIcon fTopRightInFocus = new ImageIcon( Utilities.loadImage( SEL_FOOTER_TOP_RIGHT_IMAGE ) );
-    protected final ImageIcon fBottomLeftInFocus = new ImageIcon( Utilities.loadImage( SEL_FOOTER_BOTTOM_LEFT_IMAGE ) );
-    protected final ImageIcon fBottomRightInFocus = new ImageIcon( Utilities.loadImage( SEL_FOOTER_BOTTOM_RIGHT_IMAGE ) );
-    protected final ImageIcon fTopInFocus = new ImageIcon( Utilities.loadImage( SEL_FOOTER_TOP_IMAGE ) );
-    protected final ImageIcon fBottomInFocus = new ImageIcon( Utilities.loadImage( SEL_FOOTER_BOTTOM_IMAGE ) );
-    protected final ImageIcon fLeftInFocus = new ImageIcon( Utilities.loadImage( SEL_FOOTER_LEFT_IMAGE ) );
-    protected final ImageIcon fRightInFocus = new ImageIcon( Utilities.loadImage( SEL_FOOTER_RIGHT_IMAGE ) );
+    protected final ImageIcon fTopLeftInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_FOOTER_TOP_LEFT_IMAGE));
+    protected final ImageIcon fTopRightInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_FOOTER_TOP_RIGHT_IMAGE));
+    protected final ImageIcon fBottomLeftInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_FOOTER_BOTTOM_LEFT_IMAGE));
+    protected final ImageIcon fBottomRightInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_FOOTER_BOTTOM_RIGHT_IMAGE));
+    protected final ImageIcon fTopInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_FOOTER_TOP_IMAGE));
+    protected final ImageIcon fBottomInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_FOOTER_BOTTOM_IMAGE));
+    protected final ImageIcon fLeftInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_FOOTER_LEFT_IMAGE));
+    protected final ImageIcon fRightInFocus = new ImageIcon(ImageUtilities.loadImage(SEL_FOOTER_RIGHT_IMAGE));
     
-    protected final ImageIcon hTopLeftDeselect = new ImageIcon( Utilities.loadImage( DESEL_HEADER_TOP_LEFT_IMAGE ) );
-    protected final ImageIcon hTopRightDeselect = new ImageIcon( Utilities.loadImage( DESEL_HEADER_TOP_RIGHT_IMAGE ) );
-    protected final ImageIcon hBottomLeftDeselect = new ImageIcon( Utilities.loadImage( DESEL_HEADER_BOTTOM_LEFT_IMAGE ) );
-    protected final ImageIcon hBottomRightDeselect = new ImageIcon( Utilities.loadImage( DESEL_HEADER_BOTTOM_RIGHT_IMAGE ) );
-    protected final ImageIcon hTopDeselect = new ImageIcon( Utilities.loadImage( DESEL_HEADER_TOP_IMAGE ) );
-    protected final ImageIcon hBottomDeselect = new ImageIcon( Utilities.loadImage( DESEL_HEADER_BOTTOM_IMAGE ) );
-    protected final ImageIcon hLeftDeselect = new ImageIcon( Utilities.loadImage( DESEL_HEADER_LEFT_IMAGE ) );
-    protected final ImageIcon hRightDeselect = new ImageIcon( Utilities.loadImage( DESEL_HEADER_RIGHT_IMAGE ) );
+    protected final ImageIcon hTopLeftDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_HEADER_TOP_LEFT_IMAGE));
+    protected final ImageIcon hTopRightDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_HEADER_TOP_RIGHT_IMAGE));
+    protected final ImageIcon hBottomLeftDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_HEADER_BOTTOM_LEFT_IMAGE));
+    protected final ImageIcon hBottomRightDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_HEADER_BOTTOM_RIGHT_IMAGE));
+    protected final ImageIcon hTopDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_HEADER_TOP_IMAGE));
+    protected final ImageIcon hBottomDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_HEADER_BOTTOM_IMAGE));
+    protected final ImageIcon hLeftDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_HEADER_LEFT_IMAGE));
+    protected final ImageIcon hRightDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_HEADER_RIGHT_IMAGE));
     
-    protected final ImageIcon leftSideDeselect = new ImageIcon( Utilities.loadImage( DESEL_LEFT_SIDE_IMAGE ) );
-    protected final ImageIcon rightSideDeselect = new ImageIcon( Utilities.loadImage( DESEL_RIGHT_SIDE_IMAGE ) );
+    protected final ImageIcon leftSideDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_LEFT_SIDE_IMAGE));
+    protected final ImageIcon rightSideDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_RIGHT_SIDE_IMAGE));
     
-    protected final ImageIcon fTopLeftDeselect = new ImageIcon( Utilities.loadImage( DESEL_FOOTER_TOP_LEFT_IMAGE ) );
-    protected final ImageIcon fTopRightDeselect = new ImageIcon( Utilities.loadImage( DESEL_FOOTER_TOP_RIGHT_IMAGE ) );
-    protected final ImageIcon fBottomLeftDeselect = new ImageIcon( Utilities.loadImage( DESEL_FOOTER_BOTTOM_LEFT_IMAGE ) );
-    protected final ImageIcon fBottomRightDeselect = new ImageIcon( Utilities.loadImage( DESEL_FOOTER_BOTTOM_RIGHT_IMAGE ) );
-    protected final ImageIcon fTopDeselect = new ImageIcon( Utilities.loadImage( DESEL_FOOTER_TOP_IMAGE ) );
-    protected final ImageIcon fBottomDeselect = new ImageIcon( Utilities.loadImage( DESEL_FOOTER_BOTTOM_IMAGE ) );
-    protected final ImageIcon fLeftDeselect = new ImageIcon( Utilities.loadImage( DESEL_FOOTER_LEFT_IMAGE ) );
-    protected final ImageIcon fRightDeselect = new ImageIcon( Utilities.loadImage( DESEL_FOOTER_RIGHT_IMAGE ) );
+    protected final ImageIcon fTopLeftDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_FOOTER_TOP_LEFT_IMAGE));
+    protected final ImageIcon fTopRightDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_FOOTER_TOP_RIGHT_IMAGE));
+    protected final ImageIcon fBottomLeftDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_FOOTER_BOTTOM_LEFT_IMAGE));
+    protected final ImageIcon fBottomRightDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_FOOTER_BOTTOM_RIGHT_IMAGE));
+    protected final ImageIcon fTopDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_FOOTER_TOP_IMAGE));
+    protected final ImageIcon fBottomDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_FOOTER_BOTTOM_IMAGE));
+    protected final ImageIcon fLeftDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_FOOTER_LEFT_IMAGE));
+    protected final ImageIcon fRightDeselect = new ImageIcon(ImageUtilities.loadImage(DESEL_FOOTER_RIGHT_IMAGE));
     
     private boolean focusedBorder = false;
     
@@ -202,6 +202,7 @@ public class HudsonPanel extends JPanel implements PropertyChangeListener, Mouse
         }
     }
     
+    @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = org.netbeans.modules.hudson.util.Utilities.prepareGraphics(g);
         

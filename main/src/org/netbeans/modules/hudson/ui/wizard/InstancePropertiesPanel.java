@@ -44,14 +44,14 @@ import org.openide.util.RequestProcessor;
  * 
  * @author Michal Mocnak
  */
-public class InstancePropertiesPanel implements WizardDescriptor.Panel, ChangeListener {
+public class InstancePropertiesPanel implements WizardDescriptor.Panel<InstanceWizard>, ChangeListener {
     
     private final static String HTTP_PREFIX = "http://";
     private final static String HTTPS_PREFIX = "https://";
     
     private InstancePropertiesVisual component;
     
-    private WizardDescriptor wizard;
+    private InstanceWizard wizard;
     
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
@@ -72,12 +72,11 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, ChangeLi
         return HelpCtx.DEFAULT_HELP;
     }
     
-    public void readSettings(Object o) {
-        if (o instanceof WizardDescriptor)
-            wizard = (WizardDescriptor) o;
+    public void readSettings(InstanceWizard wiz) {
+        wizard = wiz;
     }
     
-    public void storeSettings(Object o) {}
+    public void storeSettings(InstanceWizard wiz) {}
     
     public synchronized boolean isValid() {
         String name = getInstancePropertiesVisual().getDisplayName();
@@ -85,20 +84,17 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, ChangeLi
         String sync = getInstancePropertiesVisual().isSync() ? getInstancePropertiesVisual().getSyncTime() : "0";
         
         if (name.length() == 0) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(InstancePropertiesPanel.class,
-                    "MSG_EmptyName"));
+            wizard.setErrorMessage(NbBundle.getMessage(InstancePropertiesPanel.class, "MSG_EmptyName"));
             return false;
         }
         
         if (HudsonManagerImpl.getInstance().getInstanceByName(name) != null) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(InstancePropertiesPanel.class,
-                    "MSG_ExistName"));
+            wizard.setErrorMessage(NbBundle.getMessage(InstancePropertiesPanel.class, "MSG_ExistName"));
             return false;
         }
         
         if (url.length() == 0) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(InstancePropertiesPanel.class,
-                    "MSG_EmptyUrl"));
+            wizard.setErrorMessage(NbBundle.getMessage(InstancePropertiesPanel.class, "MSG_EmptyUrl"));
             return false;
         }
         
@@ -106,8 +102,7 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, ChangeLi
             url = HTTP_PREFIX + url;
         
         if (checkingFlag == true) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(InstancePropertiesPanel.class,
-                    "MSG_Checking"));
+            wizard.setErrorMessage(NbBundle.getMessage(InstancePropertiesPanel.class, "MSG_Checking"));
             return false;
         }
         
@@ -129,8 +124,7 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, ChangeLi
                     checkingState = false;
                     
                     // Set wizard tool tip text
-                    wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(InstancePropertiesPanel.class,
-                            "MSG_Checking"));
+                    wizard.setErrorMessage(NbBundle.getMessage(InstancePropertiesPanel.class, "MSG_Checking"));
                     
                     try {
                         URLConnection connection = new URL(checkingUrl).openConnection();
@@ -171,21 +165,19 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, ChangeLi
         }
         
         if (checkingState == false) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(InstancePropertiesPanel.class,
-                    "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION));
+            wizard.setErrorMessage(NbBundle.getMessage(InstancePropertiesPanel.class, "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION));
             return false;
         }
         
         if (HudsonManagerImpl.getDefault().getInstance(url) != null) {
-            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(InstancePropertiesPanel.class,
-                    "MSG_ExistUrl"));
+            wizard.setErrorMessage(NbBundle.getMessage(InstancePropertiesPanel.class, "MSG_ExistUrl"));
             return false;
         }
         
-        wizard.putProperty("WizardPanel_errorMessage", null);
-        wizard.putProperty(InstanceWizardConstants.PROP_DISPLAY_NAME, name);
-        wizard.putProperty(InstanceWizardConstants.PROP_URL, url);
-        wizard.putProperty(InstanceWizardConstants.PROP_SYNC, sync);
+        wizard.setErrorMessage(null);
+        wizard.name = name;
+        wizard.url = url;
+        wizard.sync = sync;
         
         return true;
     }

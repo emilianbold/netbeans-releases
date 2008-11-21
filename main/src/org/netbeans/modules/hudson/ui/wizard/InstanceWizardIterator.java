@@ -21,7 +21,7 @@ package org.netbeans.modules.hudson.ui.wizard;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -33,47 +33,36 @@ import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
+import org.openide.util.ChangeSupport;
 
 /**
  *
  * @author Michal Mocnak
  */
-public class InstanceWizardIterator implements WizardDescriptor.InstantiatingIterator,
+public class InstanceWizardIterator implements WizardDescriptor.InstantiatingIterator<InstanceWizard>,
          ChangeListener {
     
-    private WizardDescriptor wizard;
-    private WizardDescriptor.Panel[] panels;
-    private int index;
+    private final InstanceWizard wizard;
+
+    public InstanceWizardIterator(InstanceWizard wizard) {
+        this.wizard = wizard;
+    }
     
     private InstancePropertiesPanel propertiesPanel = new InstancePropertiesPanel();
-    
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-    
-    /**
-     * Initialize panels representing individual wizard's steps and sets
-     * various properties for them influencing wizard appearance.
-     */
-    private WizardDescriptor.Panel[] getPanels() {
-        if (panels == null) {
-            panels = new WizardDescriptor.Panel[] {propertiesPanel};
-            decoratePanels(panels);
-        }
-        
-        return panels;
+    {
+        decoratePanels(Collections.<WizardDescriptor.Panel<?>>singletonList(propertiesPanel));
     }
+    
+    private final ChangeSupport cs = new ChangeSupport(this);
     
     public Set instantiate() throws IOException {
         Set<HudsonInstance> results = new HashSet<HudsonInstance>();
         
-        String name = (String) wizard.getProperty(InstanceWizardConstants.PROP_DISPLAY_NAME);
-        String url = (String) wizard.getProperty(InstanceWizardConstants.PROP_URL);
-        String sync = (String) wizard.getProperty(InstanceWizardConstants.PROP_SYNC);
-        
-        if (null == name || null == url)
+        if (null == wizard.name || null == wizard.url)
             return results;
         
         // Create a new hudson instance
-        HudsonInstance instance = HudsonInstanceImpl.createHudsonInstance(name, url, sync);
+        HudsonInstance instance = HudsonInstanceImpl.createHudsonInstance(wizard.name, wizard.url, wizard.sync);
         
         if (null != instance)
             results.add(instance);
@@ -81,14 +70,12 @@ public class InstanceWizardIterator implements WizardDescriptor.InstantiatingIte
         return results;
     }
     
-    public void initialize(WizardDescriptor wizard) {
-        this.wizard = wizard;
-    }
+    public void initialize(WizardDescriptor wizard) {}
     
     public void uninitialize(WizardDescriptor wizard) {}
     
-    public Panel current() {
-        return getPanels()[index];
+    public Panel<InstanceWizard> current() {
+        return propertiesPanel;
     }
     
     public String name() {
@@ -96,76 +83,52 @@ public class InstanceWizardIterator implements WizardDescriptor.InstantiatingIte
     }
     
     public boolean hasNext() {
-        return index < getPanels().length - 1;
+        return false;
     }
     
     public boolean hasPrevious() {
-        return index > 0;
+        return false;
     }
     
     public void nextPanel() {
-        if (!hasNext())
-            throw new NoSuchElementException();
-        
-        index++;
+        throw new NoSuchElementException();
     }
     
     public void previousPanel() {
-        if (!hasPrevious())
-            throw new NoSuchElementException();
-        
-        index--;
+        throw new NoSuchElementException();
     }
     
     public void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        cs.addChangeListener(l);
     }
     
     public void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    
-    private void fireChangeEvent() {
-        ArrayList<ChangeListener> tempList;
-        
-        synchronized (listeners) {
-            tempList = new ArrayList<ChangeListener>(listeners);
-        }
-        
-        ChangeEvent event = new ChangeEvent(this);
-        
-        for (ChangeListener l : tempList) {
-            l.stateChanged(event);
-        }
+        cs.removeChangeListener(l);
     }
     
     public void stateChanged(ChangeEvent e) {
-        fireChangeEvent();
+        cs.fireChange();
     }
     
-    private void decoratePanels(WizardDescriptor.Panel[] panels) {
-        String[] steps = new String[panels.length];
-        for (int i = 0; i < panels.length; i++) {
-            Component c = panels[i].getComponent();
+    private void decoratePanels(List<WizardDescriptor.Panel<?>> panels) {
+        String[] steps = new String[panels.size()];
+        for (int i = 0; i < panels.size(); i++) {
+            Component c = panels.get(i).getComponent();
             
             // Default step name to component name of panel.
             steps[i] = c.getName();
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Sets step number of a component
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));  //NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", i);  //NOI18N
                 // Sets steps names for a panel
                 jc.putClientProperty("WizardPanel_contentData", steps);                     //NOI18N
                 // Turn on subtitle creation on each step
-                jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);         //NOI18N
+                jc.putClientProperty("WizardPanel_autoWizardStyle", true);         //NOI18N
                 // Show steps on the left side with the image on the background
-                jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);         //NOI18N
+                jc.putClientProperty("WizardPanel_contentDisplayed", true);         //NOI18N
                 // Turn on numbering of all steps
-                jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);          //NOI18N
+                jc.putClientProperty("WizardPanel_contentNumbered", true);          //NOI18N
             }
         }
     }

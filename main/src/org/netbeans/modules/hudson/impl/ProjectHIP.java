@@ -78,10 +78,6 @@ class ProjectHIP extends HudsonInstanceProperties {
     }
 
     @Override
-    public synchronized void save(OutputStream out, String comments) {
-    }
-
-    @Override
     public synchronized void store(OutputStream out, String comments) throws IOException {
     }
 
