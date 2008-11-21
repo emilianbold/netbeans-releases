@@ -43,10 +43,10 @@ package org.netbeans.test.cvsmodule;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.javacvs.BrowseRepositoryFolderOperator;
 import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
@@ -72,7 +72,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class ImportWizardTest extends JellyTestCase {
     
-    String os_name;
+    static String os_name;
     File file;
     static String sessionCVSroot;
     final String projectName = "ForImport";
@@ -80,6 +80,7 @@ public class ImportWizardTest extends JellyTestCase {
     final String PROTOCOL_FOLDER = "protocol";
     Operator.DefaultStringComparator comOperator; 
     Operator.DefaultStringComparator oldOperator;
+    static Logger log;
     
     public static Test suite() {
         return NbModuleSuite.create(
@@ -105,13 +106,13 @@ public class ImportWizardTest extends JellyTestCase {
     
     @Override
     protected void setUp() throws Exception {
-        
-        os_name = System.getProperty("os.name");
         System.out.println("### "+getName()+" ###");
-        try {
-            TestKit.extractProtocol(getDataDir());
-        } catch (Exception e ) {
-            e.printStackTrace();
+        if (log == null) {
+            log = Logger.getLogger("org.netbeans.modules.versioning.system.cvss.t9y");
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
         }
         
     }
@@ -127,10 +128,17 @@ public class ImportWizardTest extends JellyTestCase {
     /** Creates a new instance of ImportWizardTest */
     public ImportWizardTest(String name) {
         super(name);
+        if (os_name == null) {
+            os_name = System.getProperty("os.name");
+        }
+        try {
+            TestKit.extractProtocol(getDataDir());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     public void testImportWizardPserverUI() {   
-        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -170,7 +178,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardLocalUI() {
-        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -207,7 +214,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardForkUI() {
-        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -245,7 +251,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardExtUI() {
-        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -287,7 +292,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardLoginSuccess() throws Exception {
-        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -319,7 +323,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardExt() {
-        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -363,7 +366,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardLocal() {
-        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -391,7 +393,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardFork() {
-        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -419,7 +420,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardPserver() {
-        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -461,7 +461,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardSecondStepUI() throws Exception {
-        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -514,10 +513,13 @@ public class ImportWizardTest extends JellyTestCase {
     public void testImportWizardFinish() throws Exception {
         String CVSroot;
         PseudoCvsServer cvss;
-        OutputOperator.invoke();
-        TestKit.unversionProject(file, projectName);
+
+        MessageHandler mh = new MessageHandler("Importing");
+        log.addHandler(mh);
+
+        TestKit.closeProject(projectName);
+        prepareProject();
         
-        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -556,10 +558,7 @@ public class ImportWizardTest extends JellyTestCase {
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         folderToImportOper.finish();
         
-        
-        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.waitText("Importing finished");
+        TestKit.waitText(mh);
         cvss.stop();
         in.close();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
