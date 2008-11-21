@@ -105,14 +105,14 @@ made subject to such option by the copyright holder.
     <target name="build" depends="-init,branding,release" description="Build all modules in the suite.">
         <subant target="netbeans" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false"/>
         <mkdir dir="${cluster}/config/Modules"/>
-        <createmodulexml xmldir="${cluster}/config/Modules">
-            <hidden dir="${netbeans.dest.dir}">
-                <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
-                    <param name="excludeModules" value="${disabled.modules}"/>
-                    <param name="excluded" value="true"/>
-                </custom>
-            </hidden>
-        </createmodulexml>
+        <pathfileset pathsep="," property="disabled.modules.paths.list">
+            <path path="${cluster.path}"/>
+            <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
+                <param name="excludeModules" value="${disabled.modules}"/>
+                <param name="excluded" value="true"/>
+            </custom>
+        </pathfileset>
+        <createmodulexml xmldir="${cluster}/config/Modules" hidden="${disabled.modules.paths.list}"/>
     </target>
 
     <target name="nbms" depends="build" description="Build NBMs and an Auto Update site descriptor for all modules in the suite.">

@@ -104,13 +104,26 @@ public class CreateModuleXML extends Task {
     private List<String> autoloadNames = new ArrayList<String>(10);
     private List<String> eagerNames = new ArrayList<String>(10);
     private List<String> hiddenNames = new ArrayList<String>(10);
-    
+    private String hiddenList;
+
+    /**
+     * In addition to &gt;hidden&lt; nested fileset, list of hidden modules can
+     * be specified as comma-separated list in attribute 'hidden'.
+     * @param hiddenList
+     */
+    public void setHidden(String hiddenList) {
+        // Only hidden parameters can be specified as list of absolute file paths,
+        // enabled, eager and autoload modules need relative path to create proper module xml
+        this.hiddenList = hiddenList;
+    }
+
     public void execute() throws BuildException {
         if (xmldir == null) throw new BuildException("Must set xmldir attribute", getLocation());
         if (!xmldir.exists ()) {
             if (!xmldir.mkdirs()) throw new BuildException("Cannot create directory " + xmldir, getLocation());
         }
-        if (enabled.isEmpty() && disabled.isEmpty() && autoload.isEmpty() && eager.isEmpty() && hidden.isEmpty()) {
+        if (enabled.isEmpty() && disabled.isEmpty() && autoload.isEmpty() && eager.isEmpty() && hidden.isEmpty()
+                && hiddenList == null) {
             log("Warning: <createmodulexml> with no modules listed", Project.MSG_WARN);
         }
         for (FileSet fs : enabled) {
@@ -128,6 +141,8 @@ public class CreateModuleXML extends Task {
         for (FileSet fs : hidden) {
             scanModules(fs, false, false, false, true, hiddenNames);
         }
+        if (hiddenList != null && hiddenList.length() > 0)
+            scanModulesInList(hiddenList, false, false, false, true, hiddenNames);
         Collections.sort(enabledNames);
         Collections.sort(disabledNames);
         Collections.sort(autoloadNames);
@@ -155,119 +170,137 @@ public class CreateModuleXML extends Task {
         File dir = scan.getBasedir();
         for (String kid : scan.getIncludedFiles()) {
             File module = new File(dir, kid);
-            if (!module.exists()) throw new BuildException("Module file does not exist: " + module, getLocation());
-            if (!module.getName().endsWith(".jar")) throw new BuildException("Only *.jar may be listed, check the fileset: " + module, getLocation());
+            scanOneModule(module, kid, isEnabled, isAutoload, isEager, isHidden, names);
+        }
+    }
+
+    private void scanModulesInList(String modulesList, boolean isEnabled, boolean isAutoload,
+            boolean isEager, boolean isHidden, List<String> names) throws BuildException {
+        String[] modules = modulesList.split(",");
+        for (String modulePath : modules) {
+            File module = new File(modulePath);
+            scanOneModule(module, null, isEnabled, isAutoload, isEager, isHidden, names);
+        }
+    }
+
+    private void scanOneModule(File module, String kid, boolean isEnabled,boolean isAutoload, boolean isEager, boolean isHidden, List<String> names) throws BuildException {
+        if (!module.exists()) {
+            throw new BuildException("Module file does not exist: " + module, getLocation());
+        }
+        if (!module.getName().endsWith(".jar")) {
+            throw new BuildException("Only *.jar may be listed, check the fileset: " + module, getLocation());
+        }
+        try {
+            JarFile jar = new JarFile(module);
             try {
-                JarFile jar = new JarFile(module);
-                try {
-                    Manifest m = jar.getManifest();
-                    Attributes attr = m.getMainAttributes();
-                    String codename = attr.getValue("OpenIDE-Module");
-                    if (codename == null) {
-                        throw new BuildException("Missing manifest tag OpenIDE-Module; " + module + " is not a module", getLocation());
+                Manifest m = jar.getManifest();
+                Attributes attr = m.getMainAttributes();
+                String codename = attr.getValue("OpenIDE-Module");
+                if (codename == null) {
+                    throw new BuildException("Missing manifest tag OpenIDE-Module; " + module + " is not a module", getLocation());
+                }
+                if (codename.endsWith(" ") || codename.endsWith("\t")) {
+                    // #62887
+                    throw new BuildException("Illegal trailing space in OpenIDE-Module value from " + module, getLocation());
+                }
+                int idx = codename.lastIndexOf('/');
+                String codenamebase;
+                int rel;
+                if (idx == -1) {
+                    codenamebase = codename;
+                    rel = -1;
+                } else {
+                    codenamebase = codename.substring(0, idx);
+                    try {
+                        rel = Integer.parseInt(codename.substring(idx + 1));
+                    } catch (NumberFormatException e) {
+                        throw new BuildException("Invalid OpenIDE-Module '" + codename + "' in " + module, getLocation());
                     }
-                    if (codename.endsWith(" ") || codename.endsWith("\t")) { // #62887
-                        throw new BuildException("Illegal trailing space in OpenIDE-Module value from " + module, getLocation());
-                    }
-                    int idx = codename.lastIndexOf('/');
-                    String codenamebase;
-                    int rel;
-                    if (idx == -1) {
-                        codenamebase = codename;
-                        rel = -1;
-                    } else {
-                        codenamebase = codename.substring(0, idx);
-                        try {
-                            rel = Integer.parseInt(codename.substring(idx + 1));
-                        } catch (NumberFormatException e) {
-                            throw new BuildException("Invalid OpenIDE-Module '" + codename + "' in " + module, getLocation());
-                        }
-                    }
-                    File xml = new File(xmldir, codenamebase.replace('.', '-') + ".xml");
-                    if (xml.exists()) {
-                        // XXX should check that the old file actually matches what we would have written
-                        log("Will not overwrite " + xml + "; skipping...", Project.MSG_VERBOSE);
-                        continue;
-                    }
-                    String displayname = attr.getValue("OpenIDE-Module-Name");
-                    if (displayname == null) {
-                        String bundle = attr.getValue("OpenIDE-Module-Localizing-Bundle");
-                        if (bundle != null) {
-                            // Display name actually found in a bundle, not manifest.
-                            ZipEntry entry = jar.getEntry(bundle);
-                            InputStream is;
-                            if (entry != null) {
-                                is = jar.getInputStream(entry);
-                            } else {
-                                File moduleloc = new File(new File(module.getParentFile(), "locale"), module.getName());
-                                if (! moduleloc.isFile()) {
+                }
+                File xml = new File(xmldir, codenamebase.replace('.', '-') + ".xml");
+                if (xml.exists()) {
+                    // XXX should check that the old file actually matches what we would have written
+                    log("Will not overwrite " + xml + "; skipping...", Project.MSG_VERBOSE);
+                    return;
+                }
+                String displayname = attr.getValue("OpenIDE-Module-Name");
+                if (displayname == null) {
+                    String bundle = attr.getValue("OpenIDE-Module-Localizing-Bundle");
+                    if (bundle != null) {
+                        // Display name actually found in a bundle, not manifest.
+                        ZipEntry entry = jar.getEntry(bundle);
+                        InputStream is;
+                        if (entry != null) {
+                            is = jar.getInputStream(entry);
+                        } else {
+                            File moduleloc = new File(new File(module.getParentFile(), "locale"), module.getName());
+                            if (!moduleloc.isFile()) {
+                                throw new BuildException("Expecting localizing bundle: " + bundle + " in: " + module);
+                            }
+                            JarFile jarloc = new JarFile(moduleloc);
+                            try {
+                                ZipEntry entry2 = jarloc.getEntry(bundle);
+                                if (entry2 == null) {
                                     throw new BuildException("Expecting localizing bundle: " + bundle + " in: " + module);
                                 }
-                                JarFile jarloc = new JarFile(moduleloc);
-                                try {
-                                    ZipEntry entry2 = jarloc.getEntry(bundle);
-                                    if (entry2 == null) {
-                                        throw new BuildException("Expecting localizing bundle: " + bundle + " in: " + module);
-                                    }
-                                    is = jarloc.getInputStream(entry2);
-                                } finally {
-                                    jarloc.close();
-                                }
-                            }
-                            try {
-                                Properties p = new Properties();
-                                p.load(is);
-                                displayname = p.getProperty("OpenIDE-Module-Name");
+                                is = jarloc.getInputStream(entry2);
                             } finally {
-                                is.close();
+                                jarloc.close();
                             }
                         }
-                    }
-                    if (displayname == null) displayname = codename;
-                    names.add(displayname);
-                    String spec = attr.getValue("OpenIDE-Module-Specification-Version");
-                    
-                    if (isHidden) {
-                        File h = new File(xml.getParentFile(), xml.getName() + "_hidden");
-                        h.createNewFile();
-                    }
-                    
-                    if (isEager || isAutoload || isEnabled) {
-                        OutputStream os = new FileOutputStream(xml);
                         try {
-                            PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
-                            // Please make sure formatting matches what the IDE actually spits
-                            // out; it could matter.
-                            pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-                            pw.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Module Status 1.0//EN\"");
-                            pw.println("                        \"http://www.netbeans.org/dtds/module-status-1_0.dtd\">");
-                            pw.println("<module name=\"" + codenamebase + "\">");
-                            pw.println("    <param name=\"autoload\">" + isAutoload + "</param>");
-                            pw.println("    <param name=\"eager\">" + isEager + "</param>");
-                            if (!isAutoload && !isEager) {
-                                pw.println("    <param name=\"enabled\">" + isEnabled + "</param>");
-                            }
-                            pw.println("    <param name=\"jar\">" + kid.replace(File.separatorChar, '/') + "</param>");
-                            if (rel != -1) {
-                                pw.println("    <param name=\"release\">" + rel + "</param>");
-                            }
-                            pw.println("    <param name=\"reloadable\">false</param>");
-                            if (spec != null) {
-                                pw.println("    <param name=\"specversion\">" + spec + "</param>");
-                            }
-                            pw.println("</module>");
-                            pw.flush();
-                            pw.close();
+                            Properties p = new Properties();
+                            p.load(is);
+                            displayname = p.getProperty("OpenIDE-Module-Name");
                         } finally {
-                            os.close();
+                            is.close();
                         }
                     }
-                } finally {
-                    jar.close();
                 }
-            } catch (IOException ioe) {
-                throw new BuildException("Caught while processing " + module + ": " + ioe, ioe, getLocation());
+                if (displayname == null) {
+                    displayname = codename;
+                }
+                names.add(displayname);
+                String spec = attr.getValue("OpenIDE-Module-Specification-Version");
+                if (isHidden) {
+                    File h = new File(xml.getParentFile(), xml.getName() + "_hidden");
+                    h.createNewFile();
+                }
+                if (isEager || isAutoload || isEnabled) {
+                    OutputStream os = new FileOutputStream(xml);
+                    try {
+                        PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
+                        // Please make sure formatting matches what the IDE actually spits
+                        // out; it could matter.
+                        pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+                        pw.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Module Status 1.0//EN\"");
+                        pw.println("                        \"http://www.netbeans.org/dtds/module-status-1_0.dtd\">");
+                        pw.println("<module name=\"" + codenamebase + "\">");
+                        pw.println("    <param name=\"autoload\">" + isAutoload + "</param>");
+                        pw.println("    <param name=\"eager\">" + isEager + "</param>");
+                        if (!isAutoload && !isEager) {
+                            pw.println("    <param name=\"enabled\">" + isEnabled + "</param>");
+                        }
+                        pw.println("    <param name=\"jar\">" + kid.replace(File.separatorChar, '/') + "</param>");
+                        if (rel != -1) {
+                            pw.println("    <param name=\"release\">" + rel + "</param>");
+                        }
+                        pw.println("    <param name=\"reloadable\">false</param>");
+                        if (spec != null) {
+                            pw.println("    <param name=\"specversion\">" + spec + "</param>");
+                        }
+                        pw.println("</module>");
+                        pw.flush();
+                        pw.close();
+                    } finally {
+                        os.close();
+                    }
+                }
+            } finally {
+                jar.close();
             }
+        } catch (IOException ioe) {
+            throw new BuildException("Caught while processing " + module + ": " + ioe, ioe, getLocation());
         }
     }
     

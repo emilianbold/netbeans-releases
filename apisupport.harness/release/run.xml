@@ -48,7 +48,10 @@ made subject to such option by the copyright holder.
             <isset property="suite.dir"/>
         </condition>
         <property name="test.user.dir" location="build/testuserdir"/>
-        <property name="install" location="${netbeans.dest.dir}"/>
+        <pathconvert property="install">
+            <path path="${cluster.path}"/>
+            <regexpmapper from="(.*)platform[0-9]*$$" to="\1"/>
+        </pathconvert>
         <property name="run.args.common" value='--userdir "${test.user.dir}" -J-Dnetbeans.logger.console=true -J-ea'/>
         <!-- In case run from a suite module, to get app.name and/or branding.token: -->
         <property file="${suite.dir}/nbproject/private/private.properties"/>
@@ -93,7 +96,7 @@ made subject to such option by the copyright holder.
 
     <target name="-prepare-as-platform" depends="-init" if="app.name">
         <property name="disabled.modules" value=""/>
-        <property name="enabled.clusters" value=""/>
+        <!-- XXX property name="enabled.clusters" value=""/>
         <property name="disabled.clusters" value=""/>
         <pathconvert property="run.platform.update.tracking">
             <path>
@@ -115,18 +118,35 @@ made subject to such option by the copyright holder.
                     </selector>
                 </fileset>
             </path>
-            <mapper type="regexp" from="[/\\]([^/\\]+)[/\\](config[/\\]Modules|update_tracking)[/\\]" to="\1"/> <!-- #71849, #73494 -->
-        </pathconvert>
-        <fail message="Must have at least one cluster from the platform">
-            <!-- Otherwise ${run.platform.clusters} gets filled with nonsense. -->
+            <mapper type="regexp" from="[/\\]([^/\\]+)[/\\](config[/\\]Modules|update_tracking)[/\\]" to="\1"/ --> <!-- #71849, #73494 -->
+        <!-- /pathconvert -->
+
+        <fail message="Platform cluster is not present in cluster.path: '${cluster.path}'">
             <condition>
-                <equals arg1="${run.platform.clusters.duplicates}" arg2=""/>
+                <not>
+                    <matches string="${cluster.path}" pattern="[\\/]platform[0-9]*([;:]|$)"/>
+                </not>
             </condition>
         </fail>
+        <!-- XXX pathfileset property="run.platform.update.tracking" include="**/update_tracking/*.xml">
+            <path path="${cluster.path}"/>
+        </pathfileset>
+        <pathfileset property="run.platform.clusters.filtered" pathsep=",">
+            <path path="${cluster.path}"/>
+            <selector>
+                <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
+                    <param name="excludeModules" value="${disabled.modules}"/>
+                    <param name="includeClusters" value="${enabled.clusters}"/>
+                    <param name="excludeClusters" value="${disabled.clusters}"/>
+                    <param name="updateTrackingFiles" value="${run.platform.update.tracking}"/>
+                </custom>
+            </selector>
+        </pathfileset -->
         <pathconvert property="run.platform.clusters">
             <path>
                 <pathelement location="${cluster}"/>
-                <dirset dir="${netbeans.dest.dir}" includes="${run.platform.clusters.duplicates}" excludes="platform*"/>
+                <!-- Does not exclude clusters in which all modules are excluded, shouldn't be a problem -->
+                <pathelement path="${cluster.path}"/>
             </path>
         </pathconvert>
         <pathconvert property="run.exe">
@@ -181,11 +201,12 @@ You must shut it down before trying to run it again.
 
     <target name="debug">
         <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
+        <pathfileset property="cluster.path.jars" include="**/*.jar">
+            <path path="${cluster.path}"/>
+        </pathfileset>
         <nbjpdastart name="NetBeans" addressproperty="debug.port" transport="dt_socket">
             <classpath>
-                <fileset dir="${netbeans.dest.dir}">
-                    <include name="**/*.jar"/>
-                </fileset>
+                <path path="${cluster.path.jars}"/>
                 <fileset dir="${cluster}">
                     <include name="**/*.jar"/>
                 </fileset>
@@ -200,15 +221,16 @@ You must shut it down before trying to run it again.
     
     <target name="profile" description="Profile a project in the IDE.">
         <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
+        <pathfileset property="cluster.path.jars" include="**/*.jar">
+            <path path="${cluster.path}"/>
+        </pathfileset>
         <nbprofiledirect 
             jvmargsprefix="-J" 
             jvmargsproperty="profiler.jvmargs" 
             mainclass="org.netbeans.Main"
         >
             <classpath>
-                <fileset dir="${netbeans.dest.dir}">
-                    <include name="**/*.jar"/>
-                </fileset>
+                <path path="${cluster.path.jars}"/>
                 <fileset dir="${cluster}">
                     <include name="**/*.jar"/>
                 </fileset>

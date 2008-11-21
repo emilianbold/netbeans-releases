@@ -899,17 +899,18 @@ public final class ParseProjectXml extends Task {
         if (module == null) {
             throw new BuildException("No dependent module " + cnb, getLocation());
         }
-        String cluster = module.getClusterName();
-        if (cluster != null) { // #68716
-            if ((includedClusters != null && !includedClusters.isEmpty() && ! ModuleSelector.clusterMatch(includedClusters, cluster)) ||
-                    ((includedClusters == null || includedClusters.isEmpty()) && excludedClusters != null && excludedClusters.contains(cluster))) {
-                throw new BuildException("The module " + cnb + " cannot be compiled against because it is part of the cluster " + cluster +
-                                         " which has been excluded from the target platform in your suite configuration", getLocation());
-            }
-            if (excludedModules != null && excludedModules.contains(cnb)) { // again #68716
-                throw new BuildException("Module " + cnb + " excluded from the target platform", getLocation());
-            }
-        }
+//  XXX - no more included/excluded clusters
+//        String cluster = module.getClusterName();   // TODO - abs. path in clusterName, get rid of netbeans.dest.dir altogether
+//        if (cluster != null) { // #68716
+//            if ((includedClusters != null && !includedClusters.isEmpty() && ! ModuleSelector.clusterMatch(includedClusters, cluster)) ||
+//                    ((includedClusters == null || includedClusters.isEmpty()) && excludedClusters != null && excludedClusters.contains(cluster))) {
+//                throw new BuildException("The module " + cnb + " cannot be compiled against because it is part of the cluster " + cluster +
+//                                         " which has been excluded from the target platform in your suite configuration", getLocation());
+//            }
+//            if (excludedModules != null && excludedModules.contains(cnb)) { // again #68716
+//                throw new BuildException("Module " + cnb + " excluded from the target platform", getLocation());
+//            }
+//        }
         return module.getJar();
     }
  
@@ -966,6 +967,7 @@ public final class ParseProjectXml extends Task {
                 // no cluster name is specified for standalone or module in module suite
                 cluster = "cluster";
             }
+            // TODO - path probably composed wrongly with respect to cluster.path
             return ParseProjectXml.cachedTestDistLocation + sep + testtype + sep + cluster + sep + cnb.replace('.','-');
         }
 
@@ -1176,6 +1178,7 @@ public final class ParseProjectXml extends Task {
         if (cluster == null) {
             cluster = "cluster";
         }
+        // TODO - path probably composed wrongly with respect to cluster.path
         return ParseProjectXml.cachedTestDistLocation + sep + testType + sep + cluster + sep + entry.getCnb().replace('.', '-') + sep + "tests.jar";
     }
 
