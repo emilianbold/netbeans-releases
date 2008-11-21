@@ -151,7 +151,8 @@ public class OpenProjectListTest extends NbTestCase {
         assertTrue ("Document f1_2_open is loaded.", handler.openFiles.contains (f1_2_open.getURL ().toExternalForm ()));
         assertFalse ("Document f2_1_open isn't loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1767
     public void testListenerOpenClose () throws Exception {
         assertTrue ("No project is open.", OpenProjectList.getDefault ().getOpenProjects ().length == 0); 
         ChangeListener list = new ChangeListener();
