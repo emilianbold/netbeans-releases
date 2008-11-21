@@ -110,6 +110,7 @@ public class FortranExtendedTokenSequence {
         int index = ts.index();
         try {
             int column = 0;
+            boolean first = true;
             while(ts.movePrevious()){
                 DiffResult diff = diffs.getDiffs(this, 0);
                 if (diff != null){
@@ -126,7 +127,14 @@ public class FortranExtendedTokenSequence {
                         }
                         continue;
                     }
+                    if (first && diff.after != null){
+                        column+=diff.after.spaceLength();
+                        if (diff.after.hasNewLine()) {
+                            return column;
+                        }
+                    }
                 }
+                first = false;
                 switch (ts.token().id()) {
                     case NEW_LINE:
                     case PREPROCESSOR_DIRECTIVE:
@@ -230,6 +238,117 @@ public class FortranExtendedTokenSequence {
                         break;
                     default:
                         return ts.token();
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ Token<FortranTokenId> lookNextLineImportant(int i){
+        int index = ts.index();
+        try {
+            while(ts.moveNext()){
+                switch (ts.token().id()) {
+                    case LINE_COMMENT_FIXED:
+                    case LINE_COMMENT_FREE:
+                    case PREPROCESSOR_DIRECTIVE:
+                    case NEW_LINE:
+                        return null;
+                    case WHITESPACE:
+                        break;
+                    default:
+                        i--;
+                        if (i == 0) {
+                            return ts.token();
+                        }
+                        break;
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ Token<FortranTokenId> lookNextLineImportantAfter(FortranTokenId tokenId){
+        int index = ts.index();
+        boolean find = ts.token().id() == tokenId;
+        try {
+            while(ts.moveNext()){
+                switch (ts.token().id()) {
+                    case LINE_COMMENT_FIXED:
+                    case LINE_COMMENT_FREE:
+                    case PREPROCESSOR_DIRECTIVE:
+                    case NEW_LINE:
+                        return null;
+                    case WHITESPACE:
+                        break;
+                    default:
+                        if (ts.token().id() == tokenId) {
+                            find = true;
+                            break;
+                        } else if (find) {
+                            return ts.token();
+                        }
+                        break;
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ boolean hasLineToken(FortranTokenId tokenId){
+        int index = ts.index();
+        try {
+            while(ts.moveNext()){
+                switch (ts.token().id()) {
+                    case LINE_COMMENT_FIXED:
+                    case LINE_COMMENT_FREE:
+                    case PREPROCESSOR_DIRECTIVE:
+                    case NEW_LINE:
+                        return false;
+                    case WHITESPACE:
+                        break;
+                    default:
+                        if (ts.token().id() == tokenId) {
+                            return true;
+                        }
+                        break;
+                }
+            }
+            return false;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ FortranTokenId hasLineToken(FortranTokenId ... tokenId){
+        int index = ts.index();
+        try {
+            while(ts.moveNext()){
+                switch (ts.token().id()) {
+                    case LINE_COMMENT_FIXED:
+                    case LINE_COMMENT_FREE:
+                    case PREPROCESSOR_DIRECTIVE:
+                    case NEW_LINE:
+                        return null;
+                    case WHITESPACE:
+                        break;
+                    default:
+                        for(FortranTokenId t: tokenId){
+                            if (ts.token().id() == t) {
+                                return t;
+                            }
+                        }
+                        break;
                 }
             }
             return null;

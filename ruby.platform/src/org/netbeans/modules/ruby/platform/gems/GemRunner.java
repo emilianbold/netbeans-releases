@@ -60,11 +60,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.execution.ExecutionUtils;
 import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.Sudo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -320,11 +319,11 @@ final class GemRunner {
 
         File cmd = new File(platform.getInterpreter());
 
-        if (!cmd.getName().startsWith("jruby") || RubyExecution.LAUNCH_JRUBY_SCRIPT) { // NOI18N
+        if (!cmd.getName().startsWith("jruby") || ExecutionUtils.launchJRubyScript()) { // NOI18N
             argList.add(cmd.getPath());
         }
 
-        argList.addAll(RubyExecution.getRubyArgs(platform));
+        argList.addAll(ExecutionUtils.getRubyArgs(platform));
 
         GemManager gemManager = platform.getGemManager();
         assert gemManager != null : "gemManager cannot be null";
@@ -365,7 +364,8 @@ final class GemRunner {
         Util.adjustProxy(pb);
 
         // PATH additions for JRuby etc.
-        new RubyExecution(new RubyExecutionDescriptor(platform, "gem", pb.directory()).cmd(cmd)).setupProcessEnvironment(pb.environment()); // NOI18N
+        RubyExecutionDescriptor descriptor = new RubyExecutionDescriptor(platform, "gem", pb.directory()).cmd(cmd);
+        ExecutionUtils.setupProcessEnvironment(pb.environment(), descriptor.getCmd().getParent(), descriptor.getAppendJdkToPath());
 
         if (output == null) {
             output = new ArrayList<String>(40);
@@ -374,7 +374,7 @@ final class GemRunner {
         int exitCode = -1;
 
         try {
-            ExecutionService.logProcess(pb);
+            ExecutionUtils.logProcess(pb);
             pb.redirectErrorStream(true);
             Process process = pb.start();
 

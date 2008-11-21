@@ -48,7 +48,6 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
@@ -106,8 +105,9 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     }
 
     /** Called before every test case. */
+    @Override
     public void setUp() throws IOException {
-        openProject(DATA_PROJECT_NAME);
+        openDataProjects(DATA_PROJECT_NAME);
         workdirpath = getWorkDir().getParentFile().getAbsolutePath();
         System.out.println("########  " + getName() + "  #######");
     }

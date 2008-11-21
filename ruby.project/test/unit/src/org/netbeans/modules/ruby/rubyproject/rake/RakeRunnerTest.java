@@ -68,7 +68,7 @@ public class RakeRunnerTest extends RubyProjectTestBase {
         RakeTask task1 = new RakeTask("atask", "A Task", "This is a task");
         RakeTask task2 = new RakeTask("anothertask", "Another Task", "This is another task");
         List<RubyExecutionDescriptor> executionDescriptors =
-                rakeRunner.getExecutionDescriptors(Arrays.asList(task1, task2));
+                rakeRunner.getDescriptors(Arrays.asList(task1, task2));
 
         RubyExecutionDescriptor task1Descriptor = executionDescriptors.get(0);
         assertEquals(0, task1Descriptor.getInitialArgs().length);
@@ -90,7 +90,7 @@ public class RakeRunnerTest extends RubyProjectTestBase {
         RakeTask task2 = new RakeTask("anothertask", "Another Task", "This is another task");
         task2.addTaskParameters("PARAM1=1", "PARAM2=2");
         List<RubyExecutionDescriptor> executionDescriptors =
-                rakeRunner.getExecutionDescriptors(Arrays.asList(task1, task2));
+                rakeRunner.getDescriptors(Arrays.asList(task1, task2));
 
         RubyExecutionDescriptor task1Descriptor = executionDescriptors.get(0);
         assertEquals(0, task1Descriptor.getInitialArgs().length);
@@ -116,7 +116,7 @@ public class RakeRunnerTest extends RubyProjectTestBase {
         RakeTask taskWithTaskParams = new RakeTask("anothertask", "Another Task", "This is another task");
         taskWithTaskParams.addTaskParameters("TASK_PARAM1=1", "TASK_PARAM2=2");
         List<RubyExecutionDescriptor> executionDescriptors =
-                rakeRunner.getExecutionDescriptors(Arrays.asList(noTaskParamsTask, taskWithTaskParams));
+                rakeRunner.getDescriptors(Arrays.asList(noTaskParamsTask, taskWithTaskParams));
 
         RubyExecutionDescriptor task1Descriptor = executionDescriptors.get(0);
         assertEquals(0, task1Descriptor.getInitialArgs().length);
@@ -143,7 +143,7 @@ public class RakeRunnerTest extends RubyProjectTestBase {
         task.addRakeParameters("-r/path/to/nowhere.rb");
         task.addTaskParameters("PARAM=value");
         List<RubyExecutionDescriptor> executionDescriptors =
-                rakeRunner.getExecutionDescriptors(Arrays.asList(task));
+                rakeRunner.getDescriptors(Arrays.asList(task));
 
         RubyExecutionDescriptor taskDescriptor = executionDescriptors.get(0);
         assertEquals(1, taskDescriptor.getInitialArgs().length);

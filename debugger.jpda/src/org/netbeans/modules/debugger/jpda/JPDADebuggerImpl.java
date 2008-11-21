@@ -631,14 +631,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public Value evaluateIn (String expression) throws InvalidExpressionException {
         Expression expr = null;
-        try {
-            expr = Expression.parse (expression, Expression.LANGUAGE_JAVA_1_5);
-            return evaluateIn (expr);
-        } catch (ParseException e) {
-            InvalidExpressionException iee = new InvalidExpressionException(e.getMessage());
-            iee.initCause(e);
-            throw iee;
-        }
+        expr = new Expression (expression, Expression.LANGUAGE_JAVA_1_5);
+        return evaluateIn (expr);
     }
 
     //PATCH 48174

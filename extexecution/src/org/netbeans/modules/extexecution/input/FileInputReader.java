@@ -48,9 +48,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.extexecution.api.input.InputProcessor;
-import org.netbeans.modules.extexecution.api.input.InputReader;
-import org.netbeans.modules.extexecution.api.input.InputReaders;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputReader;
+import org.netbeans.api.extexecution.input.InputReaders;
 
 /**
  *

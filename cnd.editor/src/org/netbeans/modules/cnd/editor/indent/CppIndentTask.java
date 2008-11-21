@@ -40,6 +40,7 @@ package org.netbeans.modules.cnd.editor.indent;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
@@ -68,8 +69,8 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         }
         int caretOffset = context.caretOffset();
         int lineOffset = context.lineStartOffset(caretOffset);
-        ts = CndLexerUtilities.getCppTokenSequence(doc, lineOffset);
-        if (ts == null || !ts.moveNext()) {
+        ts = CndLexerUtilities.getCppTokenSequence(doc, lineOffset, false, false);
+        if (ts == null) {
             return;
         }
         int indent = indentLine(new TokenItem(ts, true), caretOffset);
@@ -107,6 +108,21 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
             // leave untouched for now, (bug#22570)
             return -1;
         }
+        //if ((dotPos >= 1 && DocumentUtilities.getText(doc).charAt(dotPos-1) != '\\')
+        //    || (dotPos >= 2 && DocumentUtilities.getText(doc).charAt(dotPos-2) == '\\')) {
+        if (token.getTokenID() == CppTokenId.STRING_LITERAL || token.getTokenID() == CppTokenId.CHAR_LITERAL) {
+            int start = token.getTokenSequence().offset();
+            Token<CppTokenId> tok = token.getTokenSequence().token();
+            if (start < caretOffset && caretOffset < start + tok.length()) {
+                // if insede literal
+                if (caretOffset >= start + 2 && tok.text().charAt(caretOffset - start - 2) == '\\') {
+                    if (!(caretOffset > start + 2 && tok.text().charAt(caretOffset - start - 3) == '\\')) {
+                        return -1;
+                    }
+                }
+            }
+        }
+
         if (token.getTokenID() == CppTokenId.BLOCK_COMMENT || token.getTokenID() == CppTokenId.DOXYGEN_COMMENT){
             if (isMultiLineComment(token)) {
                 // Indent the inner lines of the multi-line comment by one
@@ -521,8 +537,8 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
             codeStyle = CodeStyle.getDefault(doc);
         }
         int lineOffset = IndentUtils.lineStartOffset(doc, caretOffset);
-        ts = CndLexerUtilities.getCppTokenSequence(doc, lineOffset);
-        if (ts == null || !ts.moveNext()) {
+        ts = CndLexerUtilities.getCppTokenSequence(doc, lineOffset, false, false);
+        if (ts == null) {
             return;
         }
         int indent = indentLine(new TokenItem(ts, true), caretOffset);

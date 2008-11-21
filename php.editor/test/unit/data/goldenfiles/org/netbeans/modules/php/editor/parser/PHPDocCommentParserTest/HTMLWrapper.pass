@@ -1,0 +1,9 @@
+<PHPDocBlock start='3' end='105'>
+    <Tags>
+        <PHPDocTypeTag start='7' end='108' kind='THROWS'>
+            <Types>
+                <PHPDocNode start='18' end='43' value='sfInitializationException'/>
+            </Types>
+        </PHPDocTypeTag>
+    </Tags>
+</PHPDocBlock>

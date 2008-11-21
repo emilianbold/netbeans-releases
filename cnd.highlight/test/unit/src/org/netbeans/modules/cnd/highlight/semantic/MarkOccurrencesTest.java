@@ -38,10 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.Collection;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
@@ -54,7 +54,6 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
     public MarkOccurrencesTest(String testName) {
         super(testName);
     }
-
     private static final String SOURCE = "markocc.cc"; // NOI18N
 
     public void testMacro() throws Exception {
@@ -90,8 +89,39 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
         // class Foo 
         performTest(SOURCE, 110);
     }
+
+    public void testPreproc1() throws Exception {
+        performTest(SOURCE, 30, 1);
+    }
+
+    public void testPreproc2() throws Exception {
+        performTest(SOURCE, 32, 3);
+    }
+
+    public void testPreproc3() throws Exception {
+        performTest(SOURCE, 38, 3);
+    }
+
+    public void testPreproc4() throws Exception {
+        performTest(SOURCE, 44, 7);
+    }
+
+    public void testPreproc5() throws Exception {
+        performTest(SOURCE, 34, 3);
+    }
+
+    public void testPreproc6() throws Exception {
+        performTest(SOURCE, 42, 5);
+    }
     
-    protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
-        return MarkOccurrencesHighlighter.getOccurrences(testFile, offset, null);
+    protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile, int offset) {
+        BaseDocument doc;
+        try {
+            doc = getBaseDocument(testFile.getFile());
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+            doc = null;
+        }
+        return MarkOccurrencesHighlighter.getOccurrences(doc, testFile, offset, null);
     }
 }

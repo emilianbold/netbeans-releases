@@ -56,7 +56,7 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.completion.cplusplus.NbCsmSyntaxSupport;
+import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -131,7 +131,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
             return false;
         }
         String name = jumpToken.text().toString();
-        String msg = NbBundle.getBundle(NbCsmSyntaxSupport.class).getString(msgKey); //NOI18N
+        String msg = NbBundle.getBundle(CsmCompletionUtils.class).getString(msgKey); //NOI18N
         msg = MessageFormat.format(msg, new Object[]{name});
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);//NOI18N
         return true;
@@ -156,7 +156,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
                 name = jumpToken.text().toString();
             }
 
-            String msg = NbBundle.getBundle(NbCsmSyntaxSupport.class).getString(key);
+            String msg = NbBundle.getBundle(CsmCompletionUtils.class).getString(key);
 
             org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object[]{name}));
             return false;

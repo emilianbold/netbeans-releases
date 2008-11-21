@@ -56,6 +56,10 @@ import org.openide.util.NbBundle;
  */
 public class RubyLoggingOption extends AdvancedOption {
 
+    private static final Logger RUBY_LOGGER = Logger.getLogger("org.netbeans.modules.ruby"); //NOI18N
+    private static final Logger EXECUTION_LOGGER = Logger.getLogger("org.netbeans.modules.extexecution"); //NOI18N
+    private static final Logger DEBUGGER_LOGGER = Logger.getLogger("org.rubyforge.debugcommons"); //NOI18N
+    
     @Override
     public String getDisplayName() {
         return NbBundle.getMessage(RubyLoggingOption.class, "RubyLoggingOption.displayName.text");
@@ -71,16 +75,29 @@ public class RubyLoggingOption extends AdvancedOption {
         return new Controller();
     }
 
+    static void initLoggers () {
+        setIfHigher(RUBY_LOGGER, RubyLoggingSettings.getDefault().getLoggingLevel(RUBY_LOGGER));
+        setIfHigher(EXECUTION_LOGGER, RubyLoggingSettings.getDefault().getLoggingLevel(EXECUTION_LOGGER));
+        setIfHigher(DEBUGGER_LOGGER, RubyLoggingSettings.getDefault().getLoggingLevel(DEBUGGER_LOGGER));
+    }
+
+    private static void setIfHigher(Logger logger, Level level) {
+        if (level == null) {
+            return;
+        }
+        if (logger.getLevel() == null || level.intValue() < logger.getLevel().intValue()) {
+            logger.setLevel(level);
+        }
+    }
+
     private static final class Controller extends OptionsPanelController {
 
         private final RubyLoggingOptionsPanel component = new RubyLoggingOptionsPanel();
-        private final Logger rubyLogger = Logger.getLogger("org.netbeans.modules.ruby"); //NOI18N
-        private final Logger debuggerLogger = Logger.getLogger("org.rubyforge.debugcommons"); //NOI18N
 
         @Override
         public void update() {
-            Level debuggerLevel = debuggerLogger.getLevel();
-            Level rubyLevel = rubyLogger.getLevel();
+            Level debuggerLevel = DEBUGGER_LOGGER.getLevel();
+            Level rubyLevel = RUBY_LOGGER.getLevel();
             boolean toggle = debuggerLevel != null && debuggerLevel.intValue() <= Level.FINEST.intValue();
             component.setDebuggerLogging(toggle);
             toggle = rubyLevel != null && rubyLevel.intValue() <= Level.FINE.intValue();
@@ -89,8 +106,9 @@ public class RubyLoggingOption extends AdvancedOption {
 
         @Override
         public void applyChanges() {
-            setLevel(rubyLogger, Level.FINE, component.isStandardLoggingEnabled());
-            setLevel(debuggerLogger, Level.FINEST, component.isDebuggerLoggingEnabled());
+            setLevel(RUBY_LOGGER, Level.FINE, component.isStandardLoggingEnabled());
+            setLevel(EXECUTION_LOGGER, Level.FINE, component.isStandardLoggingEnabled());
+            setLevel(DEBUGGER_LOGGER, Level.FINEST, component.isDebuggerLoggingEnabled());
         }
 
         @Override
@@ -132,11 +150,11 @@ public class RubyLoggingOption extends AdvancedOption {
                 Level original = logger.getLevel();
                 if (original == null || original.intValue() > level.intValue()) {
                     logger.setLevel(level);
-                    loggingSettings.setOriginalLoggingLevel(logger, original);
+                    loggingSettings.setLoggingLevel(logger, level);
                 }
             } else {
-                Level original = loggingSettings.getOriginalLoggingLevel(logger);
-                logger.setLevel(original);
+                logger.setLevel(null);
+                loggingSettings.setLoggingLevel(logger, null);
             }
         }
     }

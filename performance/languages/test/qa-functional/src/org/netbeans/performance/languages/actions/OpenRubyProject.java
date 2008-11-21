@@ -48,7 +48,6 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 
 /**
@@ -82,7 +81,7 @@ public class OpenRubyProject extends org.netbeans.modules.performance.utilities.
     @Override
     public void prepare() {
         // closeProject should be here so the project is available after the test finished
-        ProjectSupport.closeProject(projectName);
+//        ProjectSupport.closeProject(projectName);
         new ActionNoBlock("File|Open Project...", null).perform(); //NOI18N
         WizardOperator opd = new WizardOperator("Open Project"); //NOI18N
         JTextComponentOperator path = new JTextComponentOperator(opd,1);

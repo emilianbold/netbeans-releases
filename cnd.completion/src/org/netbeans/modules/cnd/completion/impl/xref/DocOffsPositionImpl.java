@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.completion.impl.xref;
 
 import javax.swing.text.BadLocationException;
@@ -51,20 +50,21 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
  * @author Vladimir Voskresensky
  */
 public class DocOffsPositionImpl implements CsmOffsetable.Position {
+
     private int line;
     private int col;
     private final int offset;
     private final BaseDocument doc;
 
     public DocOffsPositionImpl(BaseDocument doc, int offset) {
-        this(-1,-1,offset, doc);
+        this(-1, -1, offset, doc);
     }
-    
+
     public DocOffsPositionImpl(CsmOffsetable.Position pos) {
         if (pos != null) {
             this.line = pos.getLine();
             this.col = pos.getColumn();
-            this.offset = pos.getOffset();            
+            this.offset = pos.getOffset();
         } else {
             this.line = -1;
             this.col = -1;
@@ -72,7 +72,7 @@ public class DocOffsPositionImpl implements CsmOffsetable.Position {
         }
         this.doc = null;
     }
-    
+
     public DocOffsPositionImpl(int line, int col, int offset, BaseDocument doc) {
         this.line = line;
         this.col = col;
@@ -91,7 +91,7 @@ public class DocOffsPositionImpl implements CsmOffsetable.Position {
     public int getColumn() {
         return getColumn(true);
     }
-    
+
     public int getLine(boolean create) {
         if (create && this.line == -1 && this.doc != null) {
             try {
@@ -113,11 +113,13 @@ public class DocOffsPositionImpl implements CsmOffsetable.Position {
         }
         return this.col;
     }
-    
-    /*package*/BaseDocument getDocument() {
+
+    /*package*/
+    BaseDocument getDocument() {
         return this.doc;
     }
-    
+
+    @Override
     public String toString() {
         return "" + getLine(true) + ':' + getColumn(true) + '/' + getOffset();
     }

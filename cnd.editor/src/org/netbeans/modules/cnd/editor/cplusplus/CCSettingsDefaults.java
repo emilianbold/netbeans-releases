@@ -42,11 +42,8 @@
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 
-import java.util.Collections;
-import java.util.List;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
-import org.netbeans.editor.TokenContext;
 
 /** Default settings values for C and C++ 
  *  registered in cpp-preferences.xml and cpp-preferences.xml
@@ -55,10 +52,6 @@ public class CCSettingsDefaults {
 
     public static Acceptor getDefaultAbbrevResetAcceptor() {
         return AcceptorFactory.NON_JAVA_IDENTIFIER;
-    }
-
-    public static List<? extends TokenContext> getTokenContext() {
-        return Collections.singletonList(CCTokenContext.context);
     }
 
     public static Acceptor getDefaultIdentifierAcceptor() {

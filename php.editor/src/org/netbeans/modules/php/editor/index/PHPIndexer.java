@@ -60,31 +60,7 @@ import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
-import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Comment;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.Include;
-import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocPropertyTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
-import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
-import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Statement;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -446,8 +422,13 @@ public class PHPIndexer implements Indexer {
                     }
                 }
             }
-            for (PHPDocPropertyTag tag : Utils.getPropertyTags(root, classDeclaration)) {
-                String signature = createFieldsDeclarationRecord(tag.getFieldName(), tag.getFieldType(), BodyDeclaration.Modifier.PUBLIC, tag.getStartOffset());
+            for (PHPDocVarTypeTag tag : Utils.getPropertyTags(root, classDeclaration)) {
+                String name = tag.getVariable().getValue();
+                if (name.charAt(0) == '$') {  //NOI18N
+                    name = name.substring(1);
+                }
+                // TODO if the property has defined more types, then it should be reflected
+                String signature = createFieldsDeclarationRecord(name, tag.getTypes().get(0).getValue(), BodyDeclaration.Modifier.PUBLIC, tag.getStartOffset());
                 document.addPair(FIELD_FIELD, signature, false);
             }
         }

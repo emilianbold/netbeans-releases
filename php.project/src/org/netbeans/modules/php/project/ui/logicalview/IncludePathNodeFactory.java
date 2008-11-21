@@ -74,6 +74,7 @@ import org.openide.util.NbBundle;
  *
  * @author Radek Matous
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-php-project", position=200)
 public class IncludePathNodeFactory implements NodeFactory {
 
     /** Creates a new instance of SourcesNodeFactory */

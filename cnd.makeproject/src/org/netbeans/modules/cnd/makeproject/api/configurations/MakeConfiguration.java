@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodePro
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.PlatformNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -89,12 +88,14 @@ public class MakeConfiguration extends Configuration {
     private LanguageBooleanConfiguration cRequired;
     private LanguageBooleanConfiguration cppRequired;
     private LanguageBooleanConfiguration fortranRequired;
+    private LanguageBooleanConfiguration assemblerRequired;
     private DevelopmentHostConfiguration developmentHost;
     private PlatformConfiguration platform;
     private BooleanConfiguration dependencyChecking;
     private CCompilerConfiguration cCompilerConfiguration;
     private CCCompilerConfiguration ccCompilerConfiguration;
     private FortranCompilerConfiguration fortranCompilerConfiguration;
+    private AssemblerConfiguration assemblerConfiguration;
     private LinkerConfiguration linkerConfiguration;
     private ArchiverConfiguration archiverConfiguration;
     private PackagingConfiguration packagingConfiguration;
@@ -118,12 +119,14 @@ public class MakeConfiguration extends Configuration {
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
         fortranRequired = new LanguageBooleanConfiguration();
+        assemblerRequired = new LanguageBooleanConfiguration();
         platform = new PlatformConfiguration(developmentHost, compilerSet.getPlatform(), Platforms.getPlatformDisplayNames());
         makefileConfiguration = new MakefileConfiguration(this);
         dependencyChecking = new BooleanConfiguration(null, isMakefileConfiguration() ? false : MakeOptions.getInstance().getDepencyChecking());
         cCompilerConfiguration = new CCompilerConfiguration(baseDir, null);
         ccCompilerConfiguration = new CCCompilerConfiguration(baseDir, null);
         fortranCompilerConfiguration = new FortranCompilerConfiguration(baseDir, null);
+        assemblerConfiguration = new AssemblerConfiguration(baseDir, null);
         linkerConfiguration = new LinkerConfiguration(this);
         archiverConfiguration = new ArchiverConfiguration(this);
         packagingConfiguration = new PackagingConfiguration(this);
@@ -187,6 +190,14 @@ public class MakeConfiguration extends Configuration {
 
     public void setFortranRequired(LanguageBooleanConfiguration fortranRequired) {
         this.fortranRequired = fortranRequired;
+    }
+
+    public LanguageBooleanConfiguration getAssemblerRequired() {
+        return assemblerRequired;
+    }
+
+    public void setAssemblerRequired(LanguageBooleanConfiguration assemblerRequired) {
+        this.assemblerRequired = assemblerRequired;
     }
 
     public PlatformInfo getPlatformInfo() {
@@ -267,6 +278,14 @@ public class MakeConfiguration extends Configuration {
         return fortranCompilerConfiguration;
     }
 
+    public void setAssemblerConfiguration(AssemblerConfiguration assemblerConfiguration) {
+        this.assemblerConfiguration = assemblerConfiguration;
+    }
+
+    public AssemblerConfiguration getAssemblerConfiguration() {
+        return assemblerConfiguration;
+    }
+
     public void setLinkerConfiguration(LinkerConfiguration linkerConfiguration) {
         this.linkerConfiguration = linkerConfiguration;
     }
@@ -310,6 +329,7 @@ public class MakeConfiguration extends Configuration {
         getCRequired().assign(makeConf.getCRequired());
         getCppRequired().assign(makeConf.getCppRequired());
         getFortranRequired().assign(makeConf.getFortranRequired());
+        getAssemblerRequired().assign(makeConf.getAssemblerRequired());
         getPlatform().assign(makeConf.getPlatform());
         getDependencyChecking().assign(makeConf.getDependencyChecking());
 
@@ -317,6 +337,7 @@ public class MakeConfiguration extends Configuration {
         getCCompilerConfiguration().assign(makeConf.getCCompilerConfiguration());
         getCCCompilerConfiguration().assign(makeConf.getCCCompilerConfiguration());
         getFortranCompilerConfiguration().assign(makeConf.getFortranCompilerConfiguration());
+        getAssemblerConfiguration().assign(makeConf.getAssemblerConfiguration());
         getLinkerConfiguration().assign(makeConf.getLinkerConfiguration());
         getArchiverConfiguration().assign(makeConf.getArchiverConfiguration());
         getPackagingConfiguration().assign(makeConf.getPackagingConfiguration());
@@ -381,6 +402,7 @@ public class MakeConfiguration extends Configuration {
         clone.setCRequired((LanguageBooleanConfiguration) getCRequired().clone());
         clone.setCppRequired((LanguageBooleanConfiguration) getCppRequired().clone());
         clone.setFortranRequired((LanguageBooleanConfiguration) getFortranRequired().clone());
+        clone.setAssemblerRequired((LanguageBooleanConfiguration) getAssemblerRequired().clone());
         PlatformConfiguration pconf = (PlatformConfiguration) getPlatform().clone();
         clone.setPlatform(pconf);
         clone.setMakefileConfiguration((MakefileConfiguration) getMakefileConfiguration().clone());
@@ -388,6 +410,7 @@ public class MakeConfiguration extends Configuration {
         clone.setCCompilerConfiguration((CCompilerConfiguration) getCCompilerConfiguration().clone());
         clone.setCCCompilerConfiguration((CCCompilerConfiguration) getCCCompilerConfiguration().clone());
         clone.setFortranCompilerConfiguration((FortranCompilerConfiguration) getFortranCompilerConfiguration().clone());
+        clone.setAssemblerConfiguration((AssemblerConfiguration) getAssemblerConfiguration().clone());
         clone.setLinkerConfiguration((LinkerConfiguration) getLinkerConfiguration().clone());
         clone.setArchiverConfiguration((ArchiverConfiguration) getArchiverConfiguration().clone());
         clone.setPackagingConfiguration((PackagingConfiguration) getPackagingConfiguration().clone());
@@ -428,9 +451,8 @@ public class MakeConfiguration extends Configuration {
         set.put(new PlatformNodeProp(getPlatform(), false, getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N
-        if (CppSettings.getDefault().isFortranEnabled()) {
-            set.put(new BooleanNodeProp(getFortranRequired(), true, "fortranRequired", getString("FortranRequiredTxt"), getString("FortranRequiredHint"))); // NOI18N
-        }
+        set.put(new BooleanNodeProp(getFortranRequired(), true, "fortranRequired", getString("FortranRequiredTxt"), getString("FortranRequiredHint"))); // NOI18N
+        set.put(new BooleanNodeProp(getAssemblerRequired(), true, "assemblerRequired", getString("AssemblerRequiredTxt"), getString("AssemblerRequiredHint"))); // NOI18N
         set.put(new IntNodeProp(getConfigurationType(), true, "ConfigurationType", getString("ConfigurationTypeTxt"), getString("ConfigurationTypeHint"))); // NOI18N
         sheet.put(set);
 
@@ -451,7 +473,7 @@ public class MakeConfiguration extends Configuration {
         set2.setName("Projects"); // NOI18N
         set2.setDisplayName(getString("ProjectsTxt1"));
         set2.setShortDescription(getString("ProjectsHint"));
-        set2.put(new RequiredProjectsNodeProp(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
+        set2.put(new RequiredProjectsNodeProp<LibraryItem>(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
         sheet.put(set2);
 
         return sheet;
@@ -480,6 +502,11 @@ public class MakeConfiguration extends Configuration {
         return fortranRequired.getValue();
     }
 
+    public boolean hasAssemblerFiles(MakeConfigurationDescriptor configurationDescriptor) {
+        reCountLanguages(configurationDescriptor);
+        return assemblerRequired.getValue();
+    }
+
 //    public boolean hasAsmFiles(MakeConfigurationDescriptor configurationDescriptor) {
 //        if (getLanguagesDirty())
 //            reCountLanguages(configurationDescriptor);
@@ -489,6 +516,7 @@ public class MakeConfiguration extends Configuration {
         boolean hasCFiles = false;
         boolean hasCPPFiles = false;
         boolean hasFortranFiles = false;
+        boolean hasAssemblerFiles = false;
         //boolean hasCAsmFiles = false;
 
 
@@ -519,6 +547,9 @@ public class MakeConfiguration extends Configuration {
                 if (itemConfiguration.getTool() == Tool.FortranCompiler) {
                     hasFortranFiles = true;
                 }
+                if (itemConfiguration.getTool() == Tool.Assembler) {
+                    hasAssemblerFiles = true;
+                }
             //            if (itemConfiguration.getTool() == Tool.AsmCompiler) {
             //                hasCAsmFiles = false;
             //            }
@@ -527,6 +558,7 @@ public class MakeConfiguration extends Configuration {
         cRequired.setDefault(hasCFiles);
         cppRequired.setDefault(hasCPPFiles);
         fortranRequired.setDefault(hasFortranFiles);
+        assemblerRequired.setDefault(hasAssemblerFiles);
         //asmRequired.setValueDef(hasCAsmFiles);
 
         languagesDirty = false;

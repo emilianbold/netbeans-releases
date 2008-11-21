@@ -50,19 +50,21 @@ import static org.netbeans.cnd.api.lexer.FortranTokenId.*;
 class FortranStackEntry {
 
     private final FortranTokenId kind;
-    private final String text;
     private int indent;
     private int selfIndent;
 
     FortranStackEntry(FortranExtendedTokenSequence ts) {
         kind = ts.token().id();
-        text = ts.token().text().toString();
         init();
     }
 
     FortranStackEntry(Token<FortranTokenId> token) {
         kind = token.id();
-        text = token.text().toString();
+        init();
+    }
+
+    FortranStackEntry(FortranTokenId id) {
+        kind = id;
         init();
     }
 
@@ -72,6 +74,7 @@ class FortranStackEntry {
             case KW_INTERFACE:
             case KW_STRUCTURE:
             case KW_UNION:
+            case KW_ENUM:
             case KW_TYPE:
             case KW_BLOCKDATA:
 
@@ -82,16 +85,18 @@ class FortranStackEntry {
             case KW_FUNCTION:
 
             case KW_MAP:
-//            case KW_FILE:
 
             case KW_BLOCK:
             case KW_IF:
             case KW_ELSE:
             case KW_ELSEIF:
-            case KW_WHILE:
             case KW_ELSEWHERE:
+            case KW_WHERE:
+            case KW_WHILE:
             case KW_FORALL:
             case KW_SELECT:
+            case KW_SELECTCASE:
+            case KW_SELECTTYPE:
                 break;
             default:
                 assert (false);
@@ -114,10 +119,6 @@ class FortranStackEntry {
         this.selfIndent = selfIndent;
     }
     
-    public String getText() {
-        return text;
-    }
-
     public FortranTokenId getKind() {
         return kind;
     }

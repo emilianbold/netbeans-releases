@@ -58,12 +58,6 @@ import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
  *
  * @author Anton Chechel
  */
-
-/**
- * Use PropertyEdiotrWrapperRE.createTickerElement()
- * @deprecated
- */
-@Deprecated
 public class TickerEditorElement extends PropertyEditorResourceElement implements DocumentListener, CleanUp {
 
     private long componentID;
@@ -98,10 +92,7 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
             setText(null);
             setAllEnabled(false);
             return;
-
         }
-
-
 
         this.componentID = wrapper.getComponentID();
         final String[] _tickerText = new String[1];
@@ -145,8 +136,7 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
     private synchronized void setText(String text) {
         doNotFireEvent = true;
         tickerTextField.setText(text);
-        doNotFireEvent =
-                false;
+        doNotFireEvent = false;
     }
 
     private void setAllEnabled(boolean isEnabled) {

@@ -95,7 +95,6 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
 
     private PropertyEditorJavaString(TypeID typeID) {
         this.typeID = typeID;
-        customEditor = new CustomEditor();
     }
     
     private PropertyEditorJavaString(TypeID typeID, PropertyValue resetToDefaultValue) {
@@ -125,6 +124,9 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
 
     @Override
     public Component getCustomEditor() {
+        if (customEditor == null) {
+            customEditor = new CustomEditor();
+        }
         PropertyValue value = (PropertyValue) super.getValue();
         if (value != null) {
             customEditor.setText(MidpTypes.getJavaCode(value));

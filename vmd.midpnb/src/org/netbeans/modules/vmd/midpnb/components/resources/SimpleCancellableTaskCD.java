@@ -58,7 +58,6 @@ import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorGoToSource;
-import org.netbeans.modules.vmd.midpnb.propertyeditors.MidpNbPropertiesCategories;
 
 /**
  *

@@ -60,7 +60,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.midp.codegen.MidpDatabindingCodeSupport;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResourceLazyInit;
 import org.openide.util.NbBundle;
 
 /**
@@ -110,7 +110,7 @@ public class StringItemCD extends ComponentDescriptor {
                     PropertyEditorComboBox.createInstance(ImageItemCD.getAppearanceValues(), TYPEID,
                         NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Appearance_RB_LABEL"), // NOI18N
                         NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Appearance_UCLABEL")), ItemCD.PROP_APPEARANCE_MODE) // NOI18N
-                .addProperty(NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Font"), PropertyEditorResource.createFontPropertyEditor(), PROP_FONT); // NOI18N
+                .addProperty(NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Font"), PropertyEditorResourceLazyInit.createFontPropertyEditor(), PROP_FONT); // NOI18N
     }
 
     private static Presenter createSetterPresenter() {

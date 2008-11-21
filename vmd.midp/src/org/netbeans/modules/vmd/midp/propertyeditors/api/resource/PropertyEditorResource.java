@@ -90,6 +90,12 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  */
 
+/**
+ * Use PropertyEditorResourceinit instead.
+ *
+ * @deprecated
+ */
+@Deprecated
 public class PropertyEditorResource extends PropertyEditorUserCode implements PropertyEditorElement {
 
     private Map<String, DesignComponent> createdComponents;
@@ -102,6 +108,70 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
     private DatabindingElement databindingElement;
     private boolean databinding;
     private WeakReference<DesignComponent> component;
+
+    
+    /**
+     * Try to avoid this method becouse it's in most of the cases it creates AWT/Swing component outside of the WTK also it creates components before ther are
+     * actualy need it.
+     *
+     */
+    @Deprecated
+    public static final PropertyEditorResource createInstance(PropertyEditorResourceElement perElement, String newComponentAsText, String noneComponentAsText, String userCodeLabel) {
+        return new PropertyEditorResource(perElement, newComponentAsText, noneComponentAsText, userCodeLabel, false);
+    }
+    
+    // Passing null in the construstor and using createResourceElement() to create part of the Properties panel enables late ini of swing components
+    @Deprecated
+    public static final DesignPropertyEditor createFontPropertyEditor() {
+        return new PropertyEditorResource(FontCD.TYPEID, NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_UCLABEL"), false) { //NOI18N
+
+            @Override
+            protected PropertyEditorResourceElement createResourceElement() {
+                return new FontEditorElement();
+            }
+        };
+    }
+    @Deprecated
+    public static final DesignPropertyEditor createTickerPropertyEditor() {
+        return new PropertyEditorResource(TickerCD.TYPEID, NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_UCLABEL"), false) { //NOI18N
+
+            @Override
+            protected PropertyEditorResourceElement createResourceElement() {
+                return new TickerEditorElement();
+            }
+        };
+    }
+    @Deprecated
+    public static final DesignPropertyEditor createImagePropertyEditor() {
+        return new PropertyEditorResource(ImageCD.TYPEID, NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_UCLABEL"), false) { //NOI18N
+
+            @Override
+            protected PropertyEditorResourceElement createResourceElement() {
+                return new ImageEditorElement();
+            }
+        };
+    }
+    @Deprecated
+    public static final DesignPropertyEditor createImagePropertyEditorWithDatabinding() {
+        return new PropertyEditorResource(ImageCD.TYPEID, NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_UCLABEL"), true) { //NOI18N
+
+            @Override
+            protected PropertyEditorResourceElement createResourceElement() {
+                return new ImageEditorElement();
+            }
+        };
+    }
+
+    /**
+     * This method allows to create all Custom Editor UI element at the moment when it is really need it.
+     * In getCustomEditor method. To make this method work you need to also override 
+     *
+     * @param type
+     * @param newComponentAsText
+     * @param noneComponentAsText
+     * @param userCodeLabel
+     * @param databinding
+     */
 
     private PropertyEditorResource(TypeID type,
             String newComponentAsText,
@@ -123,7 +193,7 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         this.componentTypeID = type;
         this.newComponentAsText = newComponentAsText;
         this.noneComponentAsText = noneComponentAsText;
-        
+
         createdComponents = new HashMap<String, DesignComponent>();
     }
 
@@ -151,55 +221,6 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         perElement.setPropertyEditorMessageAwareness(this);
 
         createdComponents = new HashMap<String, DesignComponent>();
-    }
-
-    @Deprecated
-    public static final PropertyEditorResource createInstance(PropertyEditorResourceElement perElement, String newComponentAsText, String noneComponentAsText, String userCodeLabel) {
-        return new PropertyEditorResource(perElement, newComponentAsText, noneComponentAsText, userCodeLabel, false);
-    }
-
-    // Passing null in the construstor and using createResourceElement() to create part of the Properties panel enables late ini of swing components
-    public static final DesignPropertyEditor createFontPropertyEditor() {
-        return new PropertyEditorResource(FontCD.TYPEID, NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_UCLABEL"), false) { //NOI18N
-
-            @Override
-            protected PropertyEditorResourceElement createResourceElement() {
-                return new FontEditorElement();
-            }
-
-        };
-    }
-
-    public static final DesignPropertyEditor createTickerPropertyEditor() {
-        return new PropertyEditorResource(TickerCD.TYPEID, NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_UCLABEL"), false) { //NOI18N
-
-            @Override
-            protected PropertyEditorResourceElement createResourceElement() {
-                return new TickerEditorElement();
-            }
-
-        };
-    }
-
-    public static final DesignPropertyEditor createImagePropertyEditor() {
-        return new PropertyEditorResource(ImageCD.TYPEID, NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_UCLABEL"), false) { //NOI18N
-
-            @Override
-            protected PropertyEditorResourceElement createResourceElement() {
-                return new ImageEditorElement();
-            }
-
-        };
-    }
-
-    public static final DesignPropertyEditor createImagePropertyEditorWithDatabinding() {
-        return new PropertyEditorResource(ImageCD.TYPEID, NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_UCLABEL"), true) { //NOI18N
-
-             @Override
-            protected PropertyEditorResourceElement createResourceElement() {
-                return new ImageEditorElement();
-            }
-        };
     }
 
     @Override

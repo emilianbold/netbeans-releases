@@ -61,6 +61,7 @@ import org.openide.nodes.Node;
  *
  * @author mkleint
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=200)
 public class OtherRootNodeFactory implements NodeFactory {
     
     private static final String KEY_OTHER = "otherRoots"; //NOI18N
