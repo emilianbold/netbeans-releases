@@ -68,23 +68,25 @@ import org.netbeans.modules.asm.core.dataobjects.AsmObjectUtilities;
 public class AsmEditorKit extends NbEditorKit {
 
     public static final String MIME_TYPE = "text/x-asm"; // NOI18N
-    
+
+    /** Initialize document by adding the draw-layers for example. */
     @Override
-    public Syntax createSyntax(Document doc) {
+    protected void initDocument(BaseDocument doc) {
+        super.initDocument(doc);
         AsmModelAccessor acc = (AsmModelAccessor) doc.getProperty(AsmModelAccessor.class);
 
         if (acc == null) {
-            
+
             AsmModelProvider modelProv = null;
             AsmSyntaxProvider syntProv = null;
-            
-            Collection<? extends AsmTypesProvider> idents = 
-                 Lookup.getDefault().lookup(new Lookup.Template<AsmTypesProvider>(AsmTypesProvider.class)).allInstances();
+
+            Collection<? extends AsmTypesProvider> idents =
+                    Lookup.getDefault().lookup(new Lookup.Template<AsmTypesProvider>(AsmTypesProvider.class)).allInstances();
 
             AsmTypesProvider.ResolverResult res = null;
-                       
+
             String text = AsmObjectUtilities.getText(NbEditorUtilities.getFileObject(doc));
-                      
+
             for (AsmTypesProvider ident : idents) {
                 res = ident.resolve(new StringReader(text));
                 if (res != null) {
@@ -92,25 +94,23 @@ public class AsmEditorKit extends NbEditorKit {
                     syntProv = res.getSyntaxProvider();
 
                     Logger.getLogger(AsmEditorKit.class.getName()).
-                        log(Level.FINE, "Asm Regognized " + modelProv + " " + syntProv); // NOI18N
-                }                                
+                            log(Level.FINE, "Asm Regognized " + modelProv + " " + syntProv); // NOI18N
+                }
             }
 
-            if (res == null ||  modelProv  == null || syntProv == null) {
-                return new EditorSyntax();
+            if (res == null || modelProv == null || syntProv == null) {
+                return;
             }
-            
+
             AsmModel model = modelProv.getModel();
             AsmSyntax synt = syntProv.getSyntax(model);
-                                 
+
             acc = new AsmModelAccessorImpl(model, synt, doc);
 
             doc.putProperty(AsmModelAccessor.class, acc);
-            doc.putProperty(AsmModel.class, model);                   
-            doc.putProperty(Language.class, new AsmLanguageHierarchy(synt).language());                        
+            doc.putProperty(AsmModel.class, model);
+            doc.putProperty(Language.class, new AsmLanguageHierarchy(synt).language());
         }
-
-        return new EditorSyntax();
     }
 
     @Override
