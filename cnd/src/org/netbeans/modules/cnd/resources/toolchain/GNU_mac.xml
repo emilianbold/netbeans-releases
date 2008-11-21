@@ -47,4 +47,18 @@ made subject to such option by the copyright holder.
     <linker>
         <dynamic_library_basic flags="-dynamiclib -install_name "/>
     </linker>
+    <assembler>
+        <version flags="-version xyz"/>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags="-arch i386"/>
+            <bits_64 flags="-arch x86_64"/>
+        </architecture>
+        <warning_level>
+            <no_warnings flags="-W"/>
+            <default flags="" default="true"/>
+            <more_warnings flags=""/>
+            <warning2error flags=""/>
+        </warning_level>
+    </assembler>
 </toolchaindefinition>

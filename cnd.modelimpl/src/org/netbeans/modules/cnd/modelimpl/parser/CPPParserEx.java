@@ -746,6 +746,7 @@ public class CPPParserEx extends CPPParser {
                 break;
             case tsInvalid:
                 reportError("classForwardDeclaration: invalid TypeSpecifier"); // NOI18N
+                break;
             default:
                 throw new IllegalArgumentException("Illegal argument: " + ts); // NOI18N
         }
@@ -807,6 +808,7 @@ public class CPPParserEx extends CPPParser {
                 break;
             case tsInvalid:
                 reportError("classForwardDeclaration: invalid TypeSpecifier"); // NOI18N
+                break;
             default:
                 throw new IllegalArgumentException("Illegal argument: " + ts); // NOI18N
         }

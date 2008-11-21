@@ -38,62 +38,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.makeproject.api.compilers;
 
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 
-package org.netbeans.modules.asm.core.fasthighlighter;
+public class Assembler extends BasicCompiler {
 
-import org.netbeans.editor.DrawContext;
-import org.netbeans.editor.DrawLayer;
-import org.netbeans.editor.DrawLayerFactory;
-import org.netbeans.editor.MarkFactory;
-import org.netbeans.editor.TokenID;
-
-
-public abstract class FastHighlightLayer extends DrawLayer.AbstractLayer {       
-    
-    public static final int FAST_HIGHLIGHT_LAYER_VISIBILITY = 
-                         DrawLayerFactory.HIGHLIGHT_SEARCH_LAYER_VISIBILITY;
-     
-    private boolean enabled;
-    
-    protected int []res;
-    protected int cur;
-    
-    public FastHighlightLayer(String name) {
-        super(name);
-        this.enabled = false;
-        this.res = new int[0];
+    /** Creates a new instance of GNUCCompiler */
+    public Assembler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        super(hkey, flavor, kind, name, displayName, path); // NOI18N
     }
 
-    public void setEnabled(boolean enabled) {        
-        this.enabled = enabled;                             
-    }
-    
-    public void init(DrawContext drawCtx) {
-        super.init(drawCtx);
-        cur = 0; 
+    @Override
+    public Assembler createCopy() {
+        Assembler copy = new Assembler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath());
+        copy.setName(getName());
+        return copy;
     }
 
-    public void setResult(int []res) {
-        this.res = res;
-        cur = 0;
+    @Override
+    public CompilerDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getAssembler();
     }
-            
-    public boolean isActive(DrawContext drawCtx, MarkFactory.DrawMark drawMark) {
-        return enabled;
-    }
-
-    public void updateContext(DrawContext drawCtx) {        
-        TokenID tok = drawCtx.getTokenID();
-        if (enabled && tok != null) {
-            while (cur < res.length && res[cur] < drawCtx.getTokenOffset()) {
-                cur++;
-            }
-            if (cur < res.length && res[cur] == drawCtx.getTokenOffset()) {                                            
-                draw(drawCtx, cur);               
-           }
-       }
-    }
-    
-    protected abstract void draw(DrawContext drawCtx, int position);
 }

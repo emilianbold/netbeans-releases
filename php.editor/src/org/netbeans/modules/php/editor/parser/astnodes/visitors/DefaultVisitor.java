@@ -377,7 +377,4 @@ public class DefaultVisitor implements Visitor {
         scan(node.getClassName());
         scan(node.getConstant());
     }
-
-    public void visit(PHPDocPropertyTag phpDocPropertyTag) {
-    }
 }

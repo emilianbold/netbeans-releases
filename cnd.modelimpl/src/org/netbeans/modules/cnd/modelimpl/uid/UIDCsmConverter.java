@@ -98,8 +98,8 @@ public class UIDCsmConverter {
         }
     }
     
-    public static CsmObject UIDtoCsmObject(CsmUID uid) {
-        return uid == null ? null : (CsmObject)uid.getObject();
+    public static <T extends CsmObject> T UIDtoCsmObject(CsmUID<T> uid) {
+        return uid == null ? null : uid.getObject();
     }    
 
     public static CsmNamespace UIDtoNamespace(CsmUID<CsmNamespace> uid) {

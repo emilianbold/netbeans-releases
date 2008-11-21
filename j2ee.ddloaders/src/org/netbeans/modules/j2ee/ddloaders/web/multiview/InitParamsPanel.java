@@ -76,9 +76,6 @@ public class InitParamsPanel extends DefaultTablePanel {
         });
         editButton.addActionListener(new TableActionListener(false));
         addButton.addActionListener(new TableActionListener(true));
-        addButton.setMnemonic(NbBundle.getMessage(InitParamsPanel.class, "LBL_addInitParam_mnem").charAt(0));
-        editButton.setMnemonic(NbBundle.getMessage(InitParamsPanel.class, "LBL_editInitParam_mnem").charAt(0));
-        removeButton.setMnemonic(NbBundle.getMessage(InitParamsPanel.class, "LBL_removeInitParam_mnem").charAt(0));
     }
 
     void setModel(Servlet servlet, InitParam[] params) {
@@ -98,17 +95,13 @@ public class InitParamsPanel extends DefaultTablePanel {
                 NbBundle.getMessage(InitParamsPanel.class,"LBL_initParamValue"),
                 NbBundle.getMessage(InitParamsPanel.class,"LBL_description")
             };
-            char[] mnem = new char[] {
-                NbBundle.getMessage(InitParamsPanel.class,"LBL_initParamName_mnem").charAt(0),
-                NbBundle.getMessage(InitParamsPanel.class,"LBL_initParamValue_mnem").charAt(0),
-                NbBundle.getMessage(InitParamsPanel.class,"LBL_description_mnem").charAt(0)
-            };
             String[] a11y_desc = new String[]{
                 NbBundle.getMessage(InitParamsPanel.class,"ACSD_init_param_name"),
                 NbBundle.getMessage(InitParamsPanel.class,"ACSD_init_param_value"),
                 NbBundle.getMessage(InitParamsPanel.class,"ACSD_init_param_desc")
             };
-            SimpleDialogPanel.DialogDescriptor descriptor = new SimpleDialogPanel.DialogDescriptor(labels);
+            SimpleDialogPanel.DialogDescriptor descriptor =
+                    new SimpleDialogPanel.DialogDescriptor(labels, true);
             if (!add) {
                 String[] initValues = new String[] {
                     (String)model.getValueAt(row,0),
@@ -117,7 +110,6 @@ public class InitParamsPanel extends DefaultTablePanel {
                 };
                 descriptor.setInitValues(initValues);
             }
-            descriptor.setMnemonics(mnem);
             descriptor.setTextField(new boolean[]{true,true,false});
             descriptor.setA11yDesc(a11y_desc);
             final SimpleDialogPanel dialogPanel = new SimpleDialogPanel(descriptor);

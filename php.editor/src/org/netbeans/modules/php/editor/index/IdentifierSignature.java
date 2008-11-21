@@ -50,7 +50,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocPropertyTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -235,7 +235,7 @@ public class IdentifierSignature {
         return new IdentifierSignature(name);
     }
 
-    public static void add(ClassDeclaration declaration, List<PHPDocPropertyTag> propertyTags, List<IdentifierSignature> results) {
+    public static void add(ClassDeclaration declaration, List<PHPDocVarTypeTag> propertyTags, List<IdentifierSignature> results) {
         String className = CodeUtils.extractClassName(declaration);
         add(declaration.getBody().getStatements(), className, true, results);
         add(propertyTags, className, true, results);
@@ -285,14 +285,20 @@ public class IdentifierSignature {
         }
     }
 
-    private static void add(List<PHPDocPropertyTag> tags, String typename, Boolean clsMember, List<IdentifierSignature> results) {
+    private static void add(List<PHPDocVarTypeTag> tags, String typename, Boolean clsMember, List<IdentifierSignature> results) {
         int mask = IdentifierSignature.DECLARATION;
         mask |= IdentifierSignature.MODIFIER_PUBLIC;
         if (clsMember) {
             mask |= IdentifierSignature.CLS_MEMBER;
         }
-        for (PHPDocPropertyTag tag : tags) {
-            results.add(new IdentifierSignature(tag.getFieldName(), typename, mask));
+        for (PHPDocVarTypeTag tag : tags) {
+            String name = tag.getVariable().getValue();
+            if (name != null) {
+                if (name.charAt(0) == '$') {
+                    name = name.substring(1);
+                }
+                results.add(new IdentifierSignature(name, typename, mask));
+            }
         }
     }
 
