@@ -68,7 +68,7 @@ public class CsmFontColorManager {
         getCreateProvider(mimeType).addListener(listener);
     }
     
-    private final String DEFAULT_MIME_TYPE = "text/x-c++"; //NOI18N
+    private static final String DEFAULT_MIME_TYPE = "text/x-c++"; //NOI18N
     
     /* package */ Color getColor(FontColorProvider.Entity color) {
         // completion is not aware of document type

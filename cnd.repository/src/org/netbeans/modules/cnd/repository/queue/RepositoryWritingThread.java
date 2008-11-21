@@ -69,7 +69,7 @@ public class RepositoryWritingThread implements Runnable {
                 (++numOfSpareCycles >= NUM_SPARE_TIMES_TO_ALLOW_MAINTENANCE)
                 && maintenanceIsNeeded) {
 
-                if (Stats.queueTrace) { System.err.printf("%s: maintenance %n ms...\n", getName(), Stats.maintenanceInterval); } // NOI18N
+                if (Stats.queueTrace) { System.err.printf("%s: maintenance %d ms...\n", getName(), Stats.maintenanceInterval); } // NOI18N
                 long time = System.currentTimeMillis();
                 
                 // there should be no maintenance if the writing is blocked
@@ -90,7 +90,7 @@ public class RepositoryWritingThread implements Runnable {
                 }
 
             } else {
-                if( Stats.queueTrace ) { System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.maintenanceInterval); } // NOI18N
+                if( Stats.queueTrace ) { System.err.printf("%s: sleeping %d ms...\n", getName(), Stats.maintenanceInterval); } // NOI18N
                 Thread.sleep(Stats.maintenanceInterval);
             }
             
