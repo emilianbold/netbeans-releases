@@ -77,7 +77,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -328,7 +327,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             } else {
                 tfBaseDirectory.setText(""); // NOI18N
                 btBaseDirectory.setEnabled(false);
-                cbFamily.removeAllItems();
+                tfFamily.setText(""); // NOI18N
                 tfCPath.setText(""); // NOI18N
                 tfCppPath.setText(""); // NOI18N
                 tfFortranPath.setText(""); // NOI18N
@@ -538,15 +537,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         if (cs != null) {
             tfBaseDirectory.setText(cs.getDirectory());
             btBaseDirectory.setEnabled(!isRemoteHostSelected());
-            cbFamily.removeAllItems();
-            List<CompilerFlavor> list = CompilerFlavor.getFlavors(csm.getPlatform());
-            for (CompilerFlavor cf : list) {
-                cbFamily.addItem(cf);
-            }
-            cbFamily.addItem(CompilerFlavor.getUnknown(csm.getPlatform()));
-            cbFamily.setSelectedItem(cs.getCompilerFlavor());
+            tfFamily.setText(cs.getCompilerFlavor().toString());
         } else {
-            cbFamily.removeAllItems();
+            tfFamily.setText(""); // NOI18N
             ServerRecord record = null;
             if (serverList != null) {
                 record = serverList.get(hkey);
@@ -1098,7 +1091,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btDuplicate.addActionListener(this);
         btDefault = new javax.swing.JButton();
         btDefault.addActionListener(this);
-        cbFamily = new javax.swing.JComboBox();
+        tfFamily = new javax.swing.JTextField();
         lbDevHost = new javax.swing.JLabel();
         cbDevHost = new javax.swing.JComboBox();
         cbDevHost.addItemListener(this);
@@ -1310,7 +1303,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         add(btFortranBrowse, gridBagConstraints);
         btFortranBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btFortranVersion.AccessibleContext.accessibleDescription")); // NOI18N
 
-        lbFamily.setLabelFor(cbFamily);
+        lbFamily.setLabelFor(tfFamily);
         lbFamily.setText(bundle.getString("LBL_CompilerCollection")); // NOI18N
         lbFamily.setToolTipText(bundle.getString("HINT_CompilerCollection")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1564,14 +1557,15 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(ToolSetPanel, gridBagConstraints);
 
-        cbFamily.setEnabled(false);
+        tfFamily.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
-        add(cbFamily, gridBagConstraints);
+        add(tfFamily, gridBagConstraints);
 
         lbDevHost.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_DevelopmentHosts").charAt(0));
         lbDevHost.setLabelFor(cbDevHost);
@@ -1653,7 +1647,6 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
     tfBaseDirectory.setText(dirPath);
 
     CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
-    CompilerFlavor cf = (CompilerFlavor)cbFamily.getSelectedItem();
     csm.reInitCompilerSet(cs, dirPath);
     changed = true;
     update(false);
@@ -1834,7 +1827,6 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JCheckBox cbCRequired;
     private javax.swing.JCheckBox cbCppRequired;
     private javax.swing.JComboBox cbDevHost;
-    private javax.swing.JComboBox cbFamily;
     private javax.swing.JCheckBox cbFortranRequired;
     private javax.swing.JCheckBox cbGdbRequired;
     private javax.swing.JCheckBox cbMakeRequired;
@@ -1855,6 +1847,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JTextField tfBaseDirectory;
     private javax.swing.JTextField tfCPath;
     private javax.swing.JTextField tfCppPath;
+    private javax.swing.JTextField tfFamily;
     private javax.swing.JTextField tfFortranPath;
     private javax.swing.JTextField tfGdbPath;
     private javax.swing.JTextField tfMakePath;
