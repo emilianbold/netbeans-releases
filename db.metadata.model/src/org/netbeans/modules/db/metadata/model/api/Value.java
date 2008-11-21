@@ -39,23 +39,23 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import java.sql.Connection;
-import org.netbeans.modules.db.metadata.model.JDBCConnMetadataModel;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-
 /**
- * Provides access to the database model for DB Explorer database connections.
- * This class is temporary, as such acess should be provided directly by
- * the DB Explorer through a {@code DatabaseConnection.getMetadataModel()} method.
+ * A Value is a data value used when working with the database.  It can be
+ * a column in a table, a column in a result set, or a parameter in a procedure
+ * or a function.
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class MetadataModels {
+public abstract class Value extends MetadataElement {
+    public abstract SQLType getType();
 
+    public abstract int getPrecision();
 
-    private MetadataModels() {}
+    public abstract int getLength();
 
-    public static MetadataModel createModel(Connection conn, String defaultSchemaName) {
-        return MetadataAccessor.getDefault().createMetadataModel(new JDBCConnMetadataModel(conn, defaultSchemaName));
-    }
+    public abstract short getScale();
+
+    public abstract short getRadix();
+
+    public abstract Nullable getNullable();
 }

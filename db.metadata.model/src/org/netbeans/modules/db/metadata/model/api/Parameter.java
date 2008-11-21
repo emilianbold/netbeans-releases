@@ -39,23 +39,63 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import java.sql.Connection;
-import org.netbeans.modules.db.metadata.model.JDBCConnMetadataModel;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.netbeans.modules.db.metadata.model.spi.ParameterImplementation;
 
 /**
- * Provides access to the database model for DB Explorer database connections.
- * This class is temporary, as such acess should be provided directly by
- * the DB Explorer through a {@code DatabaseConnection.getMetadataModel()} method.
+ * Encapsulates a parameter to a stored procedure or function.
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class MetadataModels {
+public class Parameter extends Value {
 
+    public enum Direction { 
+        IN, OUT, INOUT;
+    };
 
-    private MetadataModels() {}
+    private final ParameterImplementation impl;
 
-    public static MetadataModel createModel(Connection conn, String defaultSchemaName) {
-        return MetadataAccessor.getDefault().createMetadataModel(new JDBCConnMetadataModel(conn, defaultSchemaName));
+    Parameter(ParameterImplementation impl) {
+        this.impl = impl;
+    }
+
+    public Procedure getParent() {
+        return impl.getParent();
+    }
+
+    public String getName() {
+        return impl.getName();
+    }
+
+    public SQLType getType() {
+        return impl.getType();
+    }
+
+    public Direction getDirection() {
+        return impl.getDirection();
+    }
+
+    public int getPrecision() {
+        return impl.getPrecision();
+    }
+
+    public int getLength() {
+        return impl.getLength();
+    }
+
+    public short getScale() {
+        return impl.getScale();
+    }
+
+    public short getRadix() {
+        return impl.getRadix();
+    }
+
+    public Nullable getNullable() {
+        return impl.getNullable();
+    }
+
+    @Override
+    public String toString() {
+        return "Column[name='" + impl.getName() + "']"; // NOI18N
     }
 }

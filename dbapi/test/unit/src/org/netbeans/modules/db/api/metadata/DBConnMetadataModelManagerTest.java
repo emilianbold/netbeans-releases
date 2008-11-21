@@ -37,25 +37,58 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.api.metadata;
 
-import java.sql.Connection;
-import org.netbeans.modules.db.metadata.model.JDBCConnMetadataModel;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Action;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.test.DBTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 
 /**
- * Provides access to the database model for DB Explorer database connections.
- * This class is temporary, as such acess should be provided directly by
- * the DB Explorer through a {@code DatabaseConnection.getMetadataModel()} method.
  *
- * @author Andrei Badea
+ * @author David
  */
-public class MetadataModels {
+public class DBConnMetadataModelManagerTest extends DDLTestBase {
+    private static final Action<Metadata> CHECK_TABLE_EXISTS_ACTION = new Action<Metadata>() {
+        public void run(Metadata md) {
+            assertNotNull(getTestTable(md));
+        }
+    };
 
+    private static Table getTestTable(Metadata md) {
+        return md.getDefaultSchema().getTable(DBTestBase.getTestTableName());
+    }
 
-    private MetadataModels() {}
+    public DBConnMetadataModelManagerTest(String name) {
+        super(name);
+    }
 
-    public static MetadataModel createModel(Connection conn, String defaultSchemaName) {
-        return MetadataAccessor.getDefault().createMetadataModel(new JDBCConnMetadataModel(conn, defaultSchemaName));
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    /**
+     * Test of get method, of class DBConnMetadataModelManager.
+     */
+    @Test
+    public void testGet() throws Exception {
+        DatabaseConnection dbconn = getDatabaseConnection(true);
+        createTestTable();
+
+        MetadataModel model = DBConnMetadataModelManager.get(dbconn);
+        assertNotNull(model);
+        
+        model.runReadAction(CHECK_TABLE_EXISTS_ACTION);
     }
 }
