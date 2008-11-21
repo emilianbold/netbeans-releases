@@ -324,9 +324,13 @@ public class FortranReformatterImpl {
                 case NUM_LITERAL_INT:
                 {
                     if (!codeStyle.isFreeFormatFortran() && ts.isFirstLineToken()) {
-                        FortranStackEntry top = braces.peek();
-                        if (top != null && top.getKind() == KW_DO && top.getLabel() == Integer.parseInt(current.text().toString())) {
-                            braces.pop(ts);
+                        while(true) {
+                            FortranStackEntry top = braces.peek();
+                            if (top != null && top.getKind() == KW_DO && top.getLabel() == Integer.parseInt(current.text().toString())) {
+                                braces.pop(ts);
+                                continue;
+                            }
+                            break;
                         }
                         if (doFormat()) {
                                 int space = indentAfterLabel - ts.getTokenPosition() - ts.token().length();
