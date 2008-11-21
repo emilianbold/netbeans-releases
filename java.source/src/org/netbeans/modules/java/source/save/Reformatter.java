@@ -2647,7 +2647,11 @@ public class Reformatter implements ReformatTask {
                     int index = tokens.index();
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                    old = indent;
+                    if (alignIndent >= 0)
+                        indent = alignIndent;
                     spaces(spacesCnt, true);
+                    indent = old;
                     ret = col;
                     accept(first, rest);
                     if (this.col > rightMargin) {
@@ -2662,7 +2666,11 @@ public class Reformatter implements ReformatTask {
                     }
                     break;
                 case WRAP_NEVER:
+                    old = indent;
+                    if (alignIndent >= 0)
+                        indent = alignIndent;
                     spaces(spacesCnt, true);
+                    indent = old;
                     ret = col;
                     accept(first, rest);
                     break;
@@ -2686,7 +2694,11 @@ public class Reformatter implements ReformatTask {
                     int index = tokens.index();
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                    old = indent;
+                    if (alignIndent >= 0)
+                        indent = alignIndent;
                     spaces(spacesCnt, true);
+                    indent = old;
                     ret = col;
                     wrapDepth++;
                     scan(tree, null);
@@ -2703,7 +2715,11 @@ public class Reformatter implements ReformatTask {
                     }
                     break;
                 case WRAP_NEVER:
+                    old = indent;
+                    if (alignIndent >= 0)
+                        indent = alignIndent;
                     spaces(spacesCnt, true);
+                    indent = old;
                     ret = col;
                     scan(tree, null);
                     break;
