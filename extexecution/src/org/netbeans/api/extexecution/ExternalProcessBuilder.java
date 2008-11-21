@@ -178,6 +178,11 @@ public final class ExternalProcessBuilder implements Callable<Process> {
      * <p>
      * All other properties of the returned builder are inherited from
      * <code>this</code>.
+     * <p>
+     * If there is a need to parse arguments already provided as one big
+     * string the method that can help is
+     * {@link Utilities#parseParameters(java.lang.String)}.
+     *
      *
      * @param argument command argument to add
      * @return new builder with additional argument for the command

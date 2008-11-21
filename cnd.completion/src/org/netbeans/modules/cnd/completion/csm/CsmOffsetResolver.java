@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 
@@ -64,7 +65,7 @@ import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
  */
 public class CsmOffsetResolver {
     private CsmFile file;
-    
+
     /** Creates a new instance of CsmOffsetResolver */
     public CsmOffsetResolver () {
     }
@@ -72,7 +73,7 @@ public class CsmOffsetResolver {
     public CsmOffsetResolver (CsmFile file) {
         this.file = file;
     }
-    
+
     public CsmFile getFile () {
         return file;
     }
@@ -82,11 +83,11 @@ public class CsmOffsetResolver {
     }
 
     // =================== resolve object under offset ============================
-    
+
     public CsmObject findObject(int offset) {
         return findObject(file, offset);
     }
-    
+
     // ==================== help methods =======================================
 
     public static CsmObject findObject(CsmFile file, int offset) {
@@ -102,7 +103,7 @@ public class CsmOffsetResolver {
         CsmObject last = findObjectWithContext(file, offset, null, fileReferncesContext);
         return last;
     }
-    
+
     private static CsmObject findObjectWithContext(CsmFile file, int offset, CsmContext context, FileReferencesContext fileReferncesContext) {
         assert (file != null) : "can't be null file in findObject";
         CsmObject last = null;
@@ -117,7 +118,7 @@ public class CsmOffsetResolver {
             CsmFunction fun = (CsmFunction)lastObj;
             // check if offset in return value
             CsmType retType = fun.getReturnType();
-            if (CsmOffsetUtilities.isInObject(retType, offset)) {
+            if (!CsmOffsetUtilities.sameOffsets(fun, retType) && CsmOffsetUtilities.isInObject(retType, offset)) {
                 context.setLastObject(retType);
                 return retType;
             }
@@ -125,28 +126,28 @@ public class CsmOffsetResolver {
             if (CsmKindUtilities.isTemplate(fun)) {
                 Collection<CsmTemplateParameter> templateParams = ((CsmTemplate)fun).getTemplateParameters();
                 CsmTemplateParameter templateParam = CsmOffsetUtilities.findObject(templateParams, context, offset);
-                if (templateParam != null) {
+                if (templateParam != null && !CsmOffsetUtilities.sameOffsets(fun,templateParam)) {
                     context.setLastObject(templateParam);
-                    return templateParam;                   
+                    return templateParam;
                 }
             }
             // check if offset in parameters
             @SuppressWarnings("unchecked")
             Collection<CsmParameter> params = fun.getParameters();
             CsmParameter param = CsmOffsetUtilities.findObject(params, context, offset);
-            if (param != null) {
+            if (param != null && !CsmOffsetUtilities.sameOffsets(fun, param)) {
                 CsmType type = param.getType();
                 if (CsmOffsetUtilities.isInObject(type, offset)) {
                     context.setLastObject(type);
                     return type;
                 }
                 return param;
-            }   
+            }
             // check for constructor initializers
             if (CsmKindUtilities.isConstructor(lastObj)) {
                 CsmInitializerListContainer ctor = (CsmInitializerListContainer)lastObj;
                 for (CsmExpression izer : ctor.getInitializerList()) {
-                    if (CsmOffsetUtilities.isInObject(izer, offset)) {
+                    if (!CsmOffsetUtilities.sameOffsets(lastObj, izer) && CsmOffsetUtilities.isInObject(izer, offset)) {
                         context.setLastObject(izer);
                         return izer;
                     }
@@ -155,49 +156,53 @@ public class CsmOffsetResolver {
             // for function definition search deeper in body's statements
             if (CsmKindUtilities.isFunctionDefinition(lastObj)) {
                 CsmFunctionDefinition funDef = (CsmFunctionDefinition)lastObj;
-                if (CsmOffsetUtilities.isInObject(funDef.getBody(), offset)) {
+                CsmCompoundStatement body = funDef.getBody();
+                if (!CsmOffsetUtilities.sameOffsets(funDef, body) && CsmOffsetUtilities.isInObject(body, offset)) {
                     last = null;
                     // offset is in body, try to find inners statement
-                    if (CsmStatementResolver.findInnerObject(funDef.getBody(), offset, context)) {
+                    if (CsmStatementResolver.findInnerObject(body, offset, context)) {
                         // if found exact object => return it, otherwise return last found scope
-                        lastObj = last = context.getLastObject();
+                        CsmObject found = context.getLastObject();
+                        if (!CsmOffsetUtilities.sameOffsets(body, found)) {
+                            lastObj = last = found;
+                        }
                     }
                 }
             }
-        } 
-        
+        }
+
         if (CsmKindUtilities.isClass(lastObj)) {
             // check if in inheritance part
             CsmClass clazz = (CsmClass)lastObj;
             Collection<CsmInheritance> inherits = clazz.getBaseClasses();
             CsmInheritance inh = CsmOffsetUtilities.findObject(inherits, context, offset);
-            if (inh != null) {
+            if (inh != null && !CsmOffsetUtilities.sameOffsets(clazz, inh)) {
                 context.setLastObject(inh);
                 last = inh;
-            }             
+            }
         } else if (CsmKindUtilities.isVariable(lastObj)) {
             CsmType type = ((CsmVariable)lastObj).getType();
-            if (CsmOffsetUtilities.isInObject(type, offset)) {
+            if (!CsmOffsetUtilities.sameOffsets(lastObj, type) && CsmOffsetUtilities.isInObject(type, offset)) {
                 context.setLastObject(type);
                 last = type;
-            }            
+            }
         } else if (CsmKindUtilities.isClassForwardDeclaration(lastObj)) {
             // check template parameters
             if (CsmKindUtilities.isTemplate(lastObj)) {
                 Collection<CsmTemplateParameter> templateParams = ((CsmTemplate)lastObj).getTemplateParameters();
                 CsmTemplateParameter templateParam = CsmOffsetUtilities.findObject(templateParams, context, offset);
-                if (templateParam != null) {
+                if (templateParam != null && !CsmOffsetUtilities.sameOffsets(lastObj, templateParam)) {
                     context.setLastObject(templateParam);
                     return templateParam;
                 }
             }
         }
         return last;
-    }    
-    
+    }
+
     public static CsmContext findContext(CsmFile file, int offset, FileReferencesContext fileReferncesContext) {
         CsmContext context = new CsmContext(offset);
         findObjectWithContext(file, offset, context, fileReferncesContext);
         return context;
-    }    
+    }
 }

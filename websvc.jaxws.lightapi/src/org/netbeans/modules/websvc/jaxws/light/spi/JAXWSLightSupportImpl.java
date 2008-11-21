@@ -116,11 +116,6 @@ public interface JAXWSLightSupportImpl {
      * @param serviceName service "display" name
      */
     public JaxWsService getService(String implClass);
-   
-    /**
-     * Returns the directory that contains the deployment descriptor in the project
-     */
-    public FileObject getDeploymentDescriptorFolder();
 
     /**
      * Returns a metadata model of a webservices deployment descriptor

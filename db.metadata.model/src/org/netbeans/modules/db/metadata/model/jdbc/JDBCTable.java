@@ -93,7 +93,7 @@ public class JDBCTable extends TableImplementation {
     }
 
     protected JDBCColumn createJDBCColumn(String name) {
-        return new JDBCColumn(this, name);
+        return new JDBCColumn(this.getTable(), name);
     }
 
     protected void createColumns() {
@@ -125,6 +125,7 @@ public class JDBCTable extends TableImplementation {
         return columns;
     }
 
+    @Override
     public final void refresh() {
         columns = null;
     }

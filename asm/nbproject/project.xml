@@ -208,7 +208,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.cnd.makeproject</friend>
+                <package>org.netbeans.modules.asm.core.dataobjects</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

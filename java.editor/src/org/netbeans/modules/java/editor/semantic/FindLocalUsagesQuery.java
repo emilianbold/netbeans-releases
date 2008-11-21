@@ -46,6 +46,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.HashSet;
@@ -146,6 +147,13 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
         Element el = info.getTrees().getElement(getCurrentPath());
         handleJavadoc(el);
         super.visitClass(tree, d);
+        return null;
+    }
+
+    @Override
+    public Void visitTypeParameter(TypeParameterTree node, Stack<Tree> p) {
+        handlePotentialVariable(getCurrentPath());
+        super.visitTypeParameter(node, p);
         return null;
     }
 

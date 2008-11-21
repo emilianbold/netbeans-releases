@@ -54,6 +54,10 @@ public class PHPDocVarTypeTag extends PHPDocTypeTag {
         this.variable = variable;
     }
 
+    /**
+     *
+     * @return can be null, if the variable is not defined (doesn't start with $)
+     */
     public PHPDocNode getVariable() {
         return variable;
     }

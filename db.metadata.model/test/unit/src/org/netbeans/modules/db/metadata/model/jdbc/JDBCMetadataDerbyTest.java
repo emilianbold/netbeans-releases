@@ -44,11 +44,13 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.View;
 import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
 /**
@@ -78,6 +80,7 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
                 "FOO_ID INT NOT NULL, " +
                 "BAR_NAME VARCHAR(16), " +
                 "FOREIGN KEY (FOO_ID) REFERENCES FOO(ID))");
+        stmt.executeUpdate("CREATE VIEW BARVIEW AS SELECT * FROM BAR");
         stmt.close();
         metadata = new JDBCMetadata(conn, "APP");
     }
@@ -113,6 +116,22 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         assertEquals("BAR_NAME", columnIterator.next().getName());
     }
 
+    public void testViews() throws Exception {
+        Schema schema = metadata.getDefaultSchema();
+
+        Collection<View> views = schema.getViews();
+        assertNames(new HashSet<String>(Arrays.asList("BARVIEW")), views);
+        View barView = schema.getView("BARVIEW");
+        assertTrue(views.contains(barView));
+        assertSame(schema, barView.getParent());
+
+        Collection<Column> columns = barView.getColumns();
+        assertNames(Arrays.asList("i+d", "FOO_ID", "BAR_NAME"), columns);
+        Column iPlusDColumn = barView.getColumn("i+d");
+        assertTrue(columns.contains(iPlusDColumn));
+        assertSame(barView, iPlusDColumn.getParent());
+    }
+
     public void testRefresh() throws Exception {
         assertNull(metadata.getDefaultCatalog().getSchema("FOOBAR"));
         Statement stmt = conn.createStatement();
@@ -128,9 +147,7 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         Statement stmt = conn.createStatement();
         stmt.executeUpdate("ALTER TABLE FOO ADD NEW_COLUMN VARCHAR(16)");
         stmt.close();
-        metadata.refreshTable("BAR");
-        assertNames(Arrays.asList("ID", "FOO_NAME"), fooTable.getColumns());
-        metadata.refreshTable("FOO");
+        fooTable.refresh();
         assertNames(Arrays.asList("ID", "FOO_NAME", "NEW_COLUMN"), fooTable.getColumns());
     }
 }

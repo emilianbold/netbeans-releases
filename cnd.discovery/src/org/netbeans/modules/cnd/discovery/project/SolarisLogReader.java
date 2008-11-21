@@ -345,7 +345,7 @@ public class SolarisLogReader {
         SUN, GNU, UNKNOWN;
     };
     
-    private class LineInfo {
+    private static class LineInfo {
         public String compileLine;
         public CompilerType compilerType = CompilerType.UNKNOWN;
         public CompilerFamily compilerFamily = CompilerFamily.UNKNOWN;

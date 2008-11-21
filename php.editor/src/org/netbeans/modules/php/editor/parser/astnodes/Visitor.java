@@ -223,8 +223,6 @@ public interface Visitor {
 
     public void visit(PHPDocTag phpDocTag);
 
-    public void visit(PHPDocPropertyTag phpDocPropertyTag);
-
     public void visit(PHPDocNode phpDocNode);
 
     public void visit(PHPDocStaticAccessType node);

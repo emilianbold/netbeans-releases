@@ -52,25 +52,28 @@ class FortranStackEntry {
     private final FortranTokenId kind;
     private int indent;
     private int selfIndent;
+    private int label = -1;
 
-    FortranStackEntry(FortranExtendedTokenSequence ts) {
-        kind = ts.token().id();
-        init();
-    }
-
-    FortranStackEntry(Token<FortranTokenId> token) {
+    FortranStackEntry(Token<FortranTokenId> token, FortranExtendedTokenSequence ts) {
         kind = token.id();
-        init();
+        init(ts);
     }
 
     FortranStackEntry(FortranTokenId id) {
         kind = id;
-        init();
+        init(null);
     }
 
-    private void init() {
+    private void init(FortranExtendedTokenSequence ts) {
         switch (kind) {
             case KW_DO:
+                if (ts != null) {
+                    Token<FortranTokenId> next = ts.lookNextLineImportantAfter(kind);
+                    if (next != null && next.id() == NUM_LITERAL_INT) {
+                        label = Integer.parseInt(next.text().toString());
+                    }
+                }
+                break;
             case KW_INTERFACE:
             case KW_STRUCTURE:
             case KW_UNION:
@@ -121,6 +124,10 @@ class FortranStackEntry {
     
     public FortranTokenId getKind() {
         return kind;
+    }
+
+    public int getLabel() {
+        return label;
     }
 
     @Override

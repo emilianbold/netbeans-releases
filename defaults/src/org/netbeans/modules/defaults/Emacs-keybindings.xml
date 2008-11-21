@@ -43,7 +43,8 @@ made subject to such option by the copyright holder.
 <!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN" "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
 
 <bindings>
-    <bind actionName="abbrev-expand" key="S-SPACE"/>    
+    <bind actionName="abbrev-expand" key="S-SPACE"/>
+    <bind actionName="adjust-caret-center" key="C-L"/>
     <bind actionName="adjust-window-center" key="C-U$C-L"/>
     <bind actionName="all-completion-show" key="CO-SPACE"/>
     <bind actionName="annotations-cycling" key="CS-C"/>

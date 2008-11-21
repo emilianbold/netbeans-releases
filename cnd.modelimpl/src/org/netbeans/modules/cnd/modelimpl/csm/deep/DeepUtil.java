@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
@@ -55,39 +53,40 @@ import java.util.*;
 public class DeepUtil {
 
     public static List<CsmScopeElement> merge(CsmVariable var, List<CsmStatement> statements) {
-        if( var == null ) {
-            return (List)statements;
-        }
-        else {
+        if (var == null) {
+            @SuppressWarnings("unchecked")
+            List<CsmScopeElement> out = (List) statements;
+            return out;
+        } else {
             List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
             l.add(var);
             l.addAll(statements);
             return l;
         }
     }
-    
+
     public static List<CsmScopeElement> merge(CsmCondition condition, CsmStatement statement) {
-        return merge(condition == null ? null : condition.getDeclaration(),  statement);
+        return merge(condition == null ? null : condition.getDeclaration(), statement);
     }
 
     public static List<CsmScopeElement> merge(CsmCondition condition, CsmStatement statement1, CsmStatement statement2) {
         CsmVariable var = (condition == null) ? (CsmVariable) null : condition.getDeclaration();
-        List<CsmScopeElement> l = merge(var,  statement1);
-        if( statement2 != null ) {
+        List<CsmScopeElement> l = merge(var, statement1);
+        if (statement2 != null) {
             l.add(statement2);
         }
         return l;
     }
-    
+
     public static List<CsmScopeElement> merge(CsmVariable var, CsmStatement statement) {
         List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
-        if( var != null ) {
+        if (var != null) {
             l.add(var);
         }
-        if( statement != null ) {
+        if (statement != null) {
             l.add(statement);
         }
         return l;
-    }    
+    }
 }
 

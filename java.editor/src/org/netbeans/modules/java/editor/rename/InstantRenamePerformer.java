@@ -367,6 +367,10 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             
             return LOCAL_CLASS_PARENTS.contains(enclosing.getKind());
         }
+
+        if (e.getKind() == ElementKind.TYPE_PARAMETER) {
+            return true;
+        }
         
         return false;
     }

@@ -65,6 +65,14 @@ public interface LineProcessor extends Closeable {
 
     /**
      * Notifies the processor that it should reset its state.
+     * <p>
+     * The circumstances when this method is called must be defined by
+     * the code using this class.
+     * <div class="nonnormative">
+     * For example processor created with
+     * {@link InputProcessors#bridge(LineProcessor)} delegates any call
+     * to {@link InputProcessor#reset()} to this method.
+     * </div>
      */
     void reset();
 
