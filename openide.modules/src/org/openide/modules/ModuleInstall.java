@@ -88,17 +88,7 @@ public class ModuleInstall extends SharedClassObject {
     }
 
     /**
-     * Called when the module is first installed.
-     * Should perform whatever setup functions are required.
-     * The default implementation calls restored.
-     * <p>Typically, would do one-off functions, and then also call {@link #restored}.
-     * @deprecated Better to check specific aspects of the module's installation.
-     *             For example, a globally installed module might be used in several
-     *             user directories. Only the module itself can know whether its
-     *             special installation tasks apply to some part of the global installation,
-     *             or whether they apply to the module's usage in the current user directory.
-     *             For this reason, implementing this method cannot be guaranteed
-     *             to have useful effects.
+     * @deprecated Use {@link #restored} instead.
     */
     public void installed() {
         restored();
@@ -117,37 +107,27 @@ public class ModuleInstall extends SharedClassObject {
      * be run once during every startup, and that cannot reasonably be put elsewhere.
      * <p>Basic programmatic services are available to the module at this stage -
      * for example, its class loader is ready for general use, any objects registered
-     * declaratively to lookup (e.g. system options or services) are ready to be
+     * declaratively to lookup are ready to be
      * queried, and so on.
      */
     public void restored() {
     }
 
     /**
-     * Called when the module is loaded and the version is higher than
-     * by the previous load
-     * The default implementation calls {@link #restored}.
-     * @param release The major release number of the <B>old</B> module code name or -1 if not specified.
-     * @param specVersion The specification version of the this <B>old</B> module.
-     * @deprecated Better to check specific aspects of the module's installation.
-     *             For example, a globally installed module might be used in several
-     *             user directories. Only the module itself can know whether its
-     *             special installation tasks apply to some part of the global installation,
-     *             or whether they apply to the module's usage in the current user directory.
-     *             For this reason, implementing this method cannot be guaranteed
-     *             to have useful effects.
-    */
+     * @deprecated Use {@link #restored} instead.
+     */
     public void updated(int release, String specVersion) {
         restored();
     }
 
     /**
-     * Called when the module is disabled or uninstalled (from a running NetBeans instance).
-     * Should remove whatever functionality that it had registered.
-     * @deprecated In practice there is no way to ensure that this method will really be called.
-     *             The module might simply be deleted or disabled while the IDE is not running.
-     *             <span class="nonnormative">(In fact this is always the case in NetBeans 6.0;
-     *             the Plugin Manager only uninstalls or disables modules between restarts.)</span>
+     * Called when the module is disabled while the application is still running.
+     * Should remove whatever functionality that it had registered in {@link #restored}.
+     * <p><strong>Beware:</strong> in practice there is no way to ensure that this method will really be called.
+     * The module might simply be deleted or disabled while the application is not running.
+     * <span class="nonnormative">In fact this is always the case in NetBeans 6.0;
+     * the Plugin Manager only uninstalls or disables modules between restarts.
+     * This method will still be called if you reload a module during development.</span>
     */
     public void uninstalled() {
     }
