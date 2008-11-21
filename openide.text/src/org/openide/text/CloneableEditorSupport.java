@@ -433,8 +433,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 prepareTask = null;
                 documentStatus = DOCUMENT_NO;
             }
-
-            openDocument();
+            
+            //Assign reference to local variable to avoid gc before return
+            StyledDocument doc = openDocument();
             super.open();
         } catch (final UserQuestionException e) {
             class Query implements Runnable, Callable<Void> {
@@ -447,7 +448,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     getListener().loadExc = null;
                     prepareTask = null;
                     documentStatus = DOCUMENT_NO;
-                    openDocument();
+                    //Assign reference to local variable to avoid gc before return
+                    StyledDocument doc = openDocument();
 
                     CloneableEditorSupport.super.open();
                     return null;
@@ -529,6 +531,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return redirect.prepareDocument();
         }
         synchronized (getLock()) {
+            StyledDocument doc = getDoc();
+            if ((doc == null) && (documentStatus != DOCUMENT_NO)) {
+                //Sync document status
+                closeDocument();
+            }
             switch (documentStatus) {
             case DOCUMENT_NO:
                 documentStatus = DOCUMENT_LOADING;
@@ -760,6 +767,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             //It is to avoid gc of loaded document while we work with it
             boolean wasCounterIncremented = false;
             try {
+                StyledDocument doc = getDoc();
+                if ((doc == null) && (documentStatus != DOCUMENT_NO)) {
+                    //Sync document status
+                    closeDocument();
+                }
                 //For DOCUMENT_NO strong reference is set in prepareDocument
                 if ((documentStatus == DOCUMENT_READY) || (documentStatus == DOCUMENT_LOADING) || (documentStatus == DOCUMENT_RELOADING)) {
                     counterOpenDocument++;
@@ -771,7 +783,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 }
                 try {
                     counterOpenDocument++;
-                    StyledDocument doc = openDocumentCheckIOE();
+                    doc = openDocumentCheckIOE();
                     return doc;
                 } finally {
                     counterOpenDocument--;
@@ -858,6 +870,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return redirect.getDocument();
         }
         synchronized (getLock()) {
+            StyledDocument doc = getDoc();
+            if ((doc == null) && (documentStatus != DOCUMENT_NO)) {
+                //Sync document status
+                closeDocument();
+            }
             while (true) {
                 switch (documentStatus) {
                 case DOCUMENT_NO:
@@ -876,7 +893,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                             isStrongSet = true;
                         }
                         try {
-                            StyledDocument doc = openDocumentCheckIOE();
+                            doc = openDocumentCheckIOE();
                             return doc;
                         } catch (IOException e) {
                             return null;
@@ -2511,12 +2528,16 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 this.doc = doc;
             }
         }
+        
         @Override
         public StyledDocument get() {
             return doc != null ? doc : super.get();
         }
 
         public void run() {
+            if (this != CloneableEditorSupport.this.doc) {
+                return;
+            }
             closeDocument();
         }
 
@@ -2530,7 +2551,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         @Override
         public String toString() {
-            return "StrongRef[doc=" + doc + ",super.get=" + super.get() + "]";
+            return "StrongRef@" + Integer.toHexString(System.identityHashCode(this)) + "[doc=" + doc + ",super.get=" + super.get() + "]";
         }
 
     } // end of StrongRef
