@@ -54,6 +54,7 @@ public class FortranFormatterSingleTestCase  extends FortranEditorBase {
         setLoadDocumentText(
                 "      program Bug001\n" +
                 "      do 1 i = 1, 67\n" +
+                "      do 1 j = 1, 67\n" +
                 " 1    write ( 6, 100, advance = 'YES') i\n" +
                 " 100  format ( 1h, ' ', i2.2)\n" +
                 "      end program Bug001");
@@ -63,7 +64,8 @@ public class FortranFormatterSingleTestCase  extends FortranEditorBase {
         assertDocumentText("Incorrect function indent (fixed form)",
                 "      program Bug001\n" +
                 "          do 1 i = 1, 67\n" +
-                " 1        write ( 6, 100, advance = 'YES') i\n" +
+                "              do 1 j = 1, 67\n" +
+                " 1                write ( 6, 100, advance = 'YES') i\n" +
                 " 100      format ( 1h, ' ', i2.2)\n" +
                 "      end program Bug001");
     }
