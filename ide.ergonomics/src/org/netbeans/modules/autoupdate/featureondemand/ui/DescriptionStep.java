@@ -81,7 +81,6 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     private Collection<UpdateElement> forEnable = null;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
     private static FindComponentModules finder = null;
-    private Set<String> cnbs = null;
 
     public Component getComponent () {
         if (panel == null) {
@@ -223,10 +222,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     }
     
     private FindComponentModules getFinder () {
-        assert cnbs != null : "Feature's code name is not null.";
-        if (finder == null) {
-            finder = new FindComponentModules(cnbs);
-        }
+        assert finder != null : "Finder needs to be created first!";
         return finder;
     }
 
@@ -250,7 +246,8 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         assert o != null && o instanceof FileObject : o + " is not null and instanceof FileObject.";
         FileObject fo = (FileObject) o;
         URL layer = FoDFileSystem.getInstance ().getDelegateFileSystem (fo);
-        cnbs = Feature2LayerMapping.getInstance ().getCodeName (layer);
+        Set<String> cnbs = Feature2LayerMapping.getInstance().getCodeName(layer);
+        finder = new FindComponentModules(cnbs);
     }
 
     public void storeSettings (WizardDescriptor settings) {
