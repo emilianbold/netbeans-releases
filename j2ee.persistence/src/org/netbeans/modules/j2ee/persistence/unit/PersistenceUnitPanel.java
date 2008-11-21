@@ -117,7 +117,6 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         
         initDataSource();
         
-        initJdbcComboBox();
         nameTextField.setText(persistenceUnit.getName());
         setTableGeneration();
         handleCmAmSelection();
@@ -192,7 +191,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
                 }
             }
         } else if (!isContainerManaged){
-            setSelectedConnection();
+            initJdbcComboBox();
             setSelectedLibrary();
             jtaCheckBox.setSelected(false);
         }
