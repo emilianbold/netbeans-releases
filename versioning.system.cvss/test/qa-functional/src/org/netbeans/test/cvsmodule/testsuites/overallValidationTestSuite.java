@@ -42,7 +42,10 @@ package org.netbeans.test.cvsmodule.testsuites;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.cvsmodule.CommittingCvs11Test;
+import org.netbeans.test.cvsmodule.CommittingCvs12Test;
 import org.netbeans.test.cvsmodule.DeleteTest;
+import org.netbeans.test.cvsmodule.IgnoreUnignoreTest;
 import org.netbeans.test.cvsmodule.ShowAnnotationsAndSearchHistoryTest;
 import org.netbeans.test.cvsmodule.TagTest;
 import org.netbeans.test.cvsmodule.TestKit;
@@ -66,17 +69,18 @@ public class overallValidationTestSuite extends JellyTestCase {
         } catch (Exception e ) {
             e.printStackTrace();
         }
+        
     }
 
     public static Test suite() {
 //        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(TagTest.class, "testCheckOutProject", "testTagDialogUI", "testCreateNewTag", "testCreateTagOnModified", "testOnNonVersioned", "removeAllData")
-                //.addTest(CommittingCvs11Test.class, "testCheckOutProject", "testCommitModified", "removeAllData")
-                //.addTest(CommittingCvs12Test.class, "testCheckOutProject", "testCommitModifiedCvs12", "removeAllData")
-                .addTest(DeleteTest.class, "testCheckOutProject", "testDeleteFile", "removeAllData")
+//                .addTest(TagTest.class, "testCheckOutProject", "testTagDialogUI", "testCreateNewTag", "testCreateTagOnModified", "testOnNonVersioned", "removeAllData")
+                .addTest(CommittingCvs11Test.class, "testCheckOutProject", "testCommitModified", "removeAllData")
+                .addTest(CommittingCvs12Test.class, "testCheckOutProject", "testCommitModifiedCvs12", "removeAllData")
+//                .addTest(DeleteTest.class, "testCheckOutProject", "testDeleteFile", "removeAllData")
                 //.addTest(UpdateErrorTest.class, "testCheckOutProject", "testUpdate", "removeAllData")
-                //.addTest(IgnoreUnignoreTest.class, "testCheckOutProject", "testIgnoreUnignoreFile", "testIgnoreUnignoreGuiForm", "removeAllData")
+                .addTest(IgnoreUnignoreTest.class, "testCheckOutProject", "testIgnoreUnignoreFile", "testIgnoreUnignoreGuiForm", "removeAllData")
                 //.addTest(ResolveConflictsAndRevertTest.class, "testCheckOutProject", "testResolveConflicts", "testRevertModifications")
                 .addTest(ShowAnnotationsAndSearchHistoryTest.class, "testCheckOutProject", "testShowAnnotations", "removeAllData")
                 .addTest(VersioningButtonsTest.class, "testCheckOutProject", "testVersioningButtons")
