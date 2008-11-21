@@ -191,17 +191,6 @@ public class JDBCSchema extends SchemaImplementation {
         return jdbcCatalog;
     }
 
-    public final void refreshTable(String tableName) {
-        if (tables == null) {
-            return;
-        }
-        Table table = MetadataUtilities.find(tableName, tables);
-        if (table == null) {
-            return;
-        }
-        ((JDBCTable) MetadataAccessor.getDefault().getTableImpl(table)).refresh();
-    }
-
     private Map<String, View> initViews() {
         if (views != null) {
             return views;

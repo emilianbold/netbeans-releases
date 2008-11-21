@@ -104,8 +104,4 @@ public abstract class MetadataAccessor {
     public abstract View createView(ViewImplementation impl);
 
     public abstract CatalogImplementation getCatalogImpl(Catalog catalog);
-
-    public abstract SchemaImplementation getSchemaImpl(Schema schema);
-
-    public abstract TableImplementation getTableImpl(Table table);
 }

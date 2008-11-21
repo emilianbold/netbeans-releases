@@ -169,15 +169,5 @@ public class Metadata {
         public CatalogImplementation getCatalogImpl(Catalog catalog) {
             return catalog.impl;
         }
-
-        @Override
-        public SchemaImplementation getSchemaImpl(Schema schema) {
-            return schema.impl;
-        }
-
-        @Override
-        public TableImplementation getTableImpl(Table table) {
-            return table.impl;
-        }
     }
 }
