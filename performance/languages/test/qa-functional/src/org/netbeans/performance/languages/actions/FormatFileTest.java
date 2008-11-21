@@ -55,7 +55,9 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
-
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -79,6 +81,14 @@ public class FormatFileTest extends org.netbeans.modules.performance.utilities.P
 
     public FormatFileTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(FormatFileTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
     @Override
@@ -136,13 +146,5 @@ public class FormatFileTest extends org.netbeans.modules.performance.utilities.P
         expectedTime = 1000;
         doMeasurement();
     }
-
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(FormatFileTest.class)
-            .enableModules(".*")
-            .clusters(".*")
-            .reuseUserDir(true)
-        );    
-    }    
+   
 }

@@ -42,6 +42,8 @@ import java.awt.event.ActionEvent;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -76,7 +78,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
+import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
+import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
@@ -91,6 +95,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.util.actions.Presenter;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -158,8 +164,30 @@ public class ActionProviderImpl implements ActionProvider {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return;
         }
+
+        //TODO if order is important, use the lookupmerger
+        Collection<? extends ActionConvertor> convertors = project.getLookup().lookupAll(ActionConvertor.class);
+        String convertedAction = null;
+        for (ActionConvertor convertor : convertors) {
+            convertedAction = convertor.convert(action, lookup);
+            if (convertedAction != null) {
+                break;
+            }
+        }
+        if (convertedAction == null) {
+            convertedAction = action;
+        }
+
+        Collection<? extends ReplaceTokenProvider> replacers = project.getLookup().lookupAll(ReplaceTokenProvider.class);
+        HashMap<String, String> replacements = new HashMap<String, String>();
+        for (ReplaceTokenProvider prov : replacers) {
+            replacements.putAll(prov.createReplacements(convertedAction, lookup));
+        }
+
+
+        Lookup enhanced = new ProxyLookup(lookup, Lookups.fixed(replacements));
         
-        RunConfig rc = ActionToGoalUtils.createRunConfig(action, project, lookup);
+        RunConfig rc = ActionToGoalUtils.createRunConfig(convertedAction, project, enhanced);
         if (rc == null) {
             Logger.getLogger(ActionProviderImpl.class.getName()).log(Level.INFO, "No handling for action:" + action + ". Ignoring."); //NOI18N
 
@@ -233,9 +261,9 @@ public class ActionProviderImpl implements ActionProvider {
             title = NbBundle.getMessage(ActionProviderImpl.class, "TXT_Debug", prj.getMavenProject().getArtifactId());
         } else if (ActionProvider.COMMAND_TEST.equals(action)) {
             title = NbBundle.getMessage(ActionProviderImpl.class, "TXT_Test", prj.getMavenProject().getArtifactId());
-        } else if (ActionProvider.COMMAND_RUN_SINGLE.equals(action)) {
+        } else if (action.startsWith(ActionProvider.COMMAND_RUN_SINGLE)) {
             title = NbBundle.getMessage(ActionProviderImpl.class, "TXT_Run", dobjName);
-        } else if (ActionProvider.COMMAND_DEBUG_SINGLE.equals(action) || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(action)) {
+        } else if (action.startsWith(ActionProvider.COMMAND_DEBUG_SINGLE) || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(action)) {
             title = NbBundle.getMessage(ActionProviderImpl.class, "TXT_Debug", dobjName);
         } else if (ActionProvider.COMMAND_TEST_SINGLE.equals(action)) {
             title = NbBundle.getMessage(ActionProviderImpl.class, "TXT_Test", dobjName);
@@ -252,8 +280,19 @@ public class ActionProviderImpl implements ActionProvider {
                 COMMAND_MOVE.equals(action)) {
             return true;
         }
-
-        return ActionToGoalUtils.isActionEnable(action, project, lookup);
+        //TODO if order is important, use the lookupmerger
+        Collection<? extends ActionConvertor> convertors = project.getLookup().lookupAll(ActionConvertor.class);
+        String convertedAction = null;
+        for (ActionConvertor convertor : convertors) {
+            convertedAction = convertor.convert(action, lookup);
+            if (convertedAction != null) {
+                break;
+            }
+        }
+        if (convertedAction == null) {
+            convertedAction = action;
+        }
+        return ActionToGoalUtils.isActionEnable(convertedAction, project, lookup);
     }
 
     public Action createBasicMavenAction(String name, String action) {

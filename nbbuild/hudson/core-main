@@ -130,6 +130,6 @@ if [ "$action" = "sync" ]; then
       hg up -C
     fi
     hg fetch -u "$push_username"@netbeans.org http://hg.netbeans.org/"$push_repo"
-    hg push https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo"
+    hg push https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo" || exit 9
     exit 0
 fi

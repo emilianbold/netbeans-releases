@@ -145,10 +145,9 @@ public class PackagerManager {
      */
     private static Set<PackagerDescriptorProvider> getPackagerDescriptorProviders() {
         HashSet<PackagerDescriptorProvider> providers = new HashSet<PackagerDescriptorProvider>();
-        Lookup.Template template = new Lookup.Template(PackagerDescriptorProvider.class);
-        Lookup.Result result = Lookup.getDefault().lookup(template);
-        Collection collection = result.allInstances();
-        Iterator iterator = collection.iterator();
+        Lookup.Template<PackagerDescriptorProvider> template = new Lookup.Template<PackagerDescriptorProvider>(PackagerDescriptorProvider.class);
+        Lookup.Result<PackagerDescriptorProvider> result = Lookup.getDefault().lookup(template);
+        Iterator iterator = result.allInstances().iterator();
         while (iterator.hasNext()) {
             Object caop = iterator.next();
             if (caop instanceof PackagerDescriptorProvider) {

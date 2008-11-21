@@ -44,8 +44,10 @@ import java.io.File;
 import java.util.Collection;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -108,9 +110,12 @@ public class AutoTestSupport {
         desc.fileLocator(fileLocator);
         desc.classPath(classPath); // Applies only to JRuby
         desc.showProgress(false);
-        desc.addOutputRecognizer(new TestNotifier(false, false));
         desc.addStandardRecognizers();
-        new RubyExecution(desc, charsetName).run();
+        LineConvertor testNotifier = new TestNotifierLineConvertor(false, false);
+        desc.addOutConvertor(testNotifier);
+        desc.addErrConvertor(testNotifier);
+        RubyProcessCreator rpc = new RubyProcessCreator(desc, charsetName);
+        ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName).run();
     }
     
     private TestRunner getTestRunner(TestRunner.TestType testType) {

@@ -90,6 +90,9 @@ public class CosChecker implements PrerequisitesChecker {
 
     private static final String MAVEN_MAIN_COS = ".netbeans_CoS_timestamp_main"; //NOI18N
     private static final String MAVEN_TEST_COS = ".netbeans_CoS_timestamp_test"; //NOI18N
+    private static final String RUN_MAIN = ActionProvider.COMMAND_RUN_SINGLE + ".main"; //NOI18N
+    private static final String DEBUG_MAIN = ActionProvider.COMMAND_DEBUG_SINGLE + ".main"; //NOI18N
+
 
     public static ExecutionResultChecker createResultChecker() {
         return new COSExChecker();
@@ -101,15 +104,13 @@ public class CosChecker implements PrerequisitesChecker {
             return true;
         }
         //compile on save stuff
-        if (NbMavenProject.TYPE_JAR.equals(
-                config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType())) {
-
-            if (RunUtils.hasApplicationCompileOnSaveEnabled(config) &&
-                   (ActionProvider.COMMAND_RUN.equals(actionName) ||
-                    ActionProvider.COMMAND_DEBUG.equals(actionName) ||
-                    ActionProvider.COMMAND_RUN_SINGLE.equals(actionName) ||
-                    ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName)))
-            {
+        if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
+            if ((NbMavenProject.TYPE_JAR.equals(
+                    config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType()) &&
+                    (ActionProvider.COMMAND_RUN.equals(actionName) ||
+                    ActionProvider.COMMAND_DEBUG.equals(actionName)) ||
+                    RUN_MAIN.equals(actionName) ||
+                    DEBUG_MAIN.equals(actionName))) {
                 long stamp = getLastCoSLastTouch(config, true);
                 System.out.println("stamp=" + stamp);
                 //check the COS timestamp against critical files (pom.xml)
@@ -425,9 +426,9 @@ public class CosChecker implements PrerequisitesChecker {
     private String action2Quick(String actionName) {
         if (ActionProvider.COMMAND_CLEAN.equals(actionName)) {
             return JavaRunner.QUICK_CLEAN;
-        } else if (ActionProvider.COMMAND_RUN.equals(actionName) || ActionProvider.COMMAND_RUN_SINGLE.equals(actionName)) {
+        } else if (ActionProvider.COMMAND_RUN.equals(actionName) || RUN_MAIN.equals(actionName)) {
             return JavaRunner.QUICK_RUN;
-        } else if (ActionProvider.COMMAND_DEBUG.equals(actionName) || ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName)) {
+        } else if (ActionProvider.COMMAND_DEBUG.equals(actionName) || DEBUG_MAIN.equals(actionName)) {
             return JavaRunner.QUICK_DEBUG;
         } else if (ActionProvider.COMMAND_TEST.equals(actionName) || ActionProvider.COMMAND_TEST_SINGLE.equals(actionName)) {
             return JavaRunner.QUICK_TEST;

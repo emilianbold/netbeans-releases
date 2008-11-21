@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.*;
@@ -68,30 +67,29 @@ public final class LibProjectImpl extends ProjectBase {
     }
 
     public static LibProjectImpl createInstance(ModelImpl model, String includePathName) {
-	ProjectBase instance = null;
+        ProjectBase instance = null;
         assert includePathName != null;
-	if( TraceFlags.PERSISTENT_REPOSITORY ) {
-	    try {
-		instance = readInstance(model, includePathName, includePathName);
-	    }
-	    catch( Exception e ) {
-		// just report to console;
-		// the code below will create project "from scratch"
-		cleanRepository(includePathName, true);
-		DiagnosticExceptoins.register(e);
-	    }
-	}
-	if( instance == null ) {
-	   instance = new LibProjectImpl(model, includePathName);
-	}
-        if (instance instanceof LibProjectImpl) {
-           assert ((LibProjectImpl)instance).includePath != null;
+        if (TraceFlags.PERSISTENT_REPOSITORY) {
+            try {
+                instance = readInstance(model, includePathName, includePathName);
+            } catch (Exception e) {
+                // just report to console;
+                // the code below will create project "from scratch"
+                cleanRepository(includePathName, true);
+                DiagnosticExceptoins.register(e);
+            }
         }
-	return (LibProjectImpl) instance;
+        if (instance == null) {
+            instance = new LibProjectImpl(model, includePathName);
+        }
+        if (instance instanceof LibProjectImpl) {
+            assert ((LibProjectImpl) instance).includePath != null;
+        }
+        return (LibProjectImpl) instance;
 
     }
 
-    protected String getPath(){
+    protected String getPath() {
         return includePath;
     }
 
@@ -105,22 +103,32 @@ public final class LibProjectImpl extends ProjectBase {
 
     @Override
     protected Collection<Key> getLibrariesKeys() {
-        return Collections.EMPTY_SET;
+        return Collections.<Key>emptySet();
     }
 
     /** override parent to avoid inifinite recursion */
     @Override
     public Collection<CsmProject> getLibraries() {
-        return Collections.EMPTY_SET;
+        return Collections.<CsmProject>emptySet();
     }
 
-    public void onFileRemoved(FileImpl file) {}
-    public void onFileRemoved(List<NativeFileItem> file) {}
-    public void onFileAdded(NativeFileItem file) {}
-    public void onFileAdded(List<NativeFileItem> file) {}
-    public void onFilePropertyChanged(NativeFileItem nativeFile) {}
-    public void onFilePropertyChanged(List<NativeFileItem> nativeFiles) {}
+    public void onFileRemoved(FileImpl file) {
+    }
 
+    public void onFileRemoved(List<NativeFileItem> file) {
+    }
+
+    public void onFileAdded(NativeFileItem file) {
+    }
+
+    public void onFileAdded(List<NativeFileItem> file) {
+    }
+
+    public void onFilePropertyChanged(NativeFileItem nativeFile) {
+    }
+
+    public void onFilePropertyChanged(List<NativeFileItem> nativeFiles) {
+    }
 
     @Override
     protected final ParserQueue.Position getIncludedFileParserQueuePosition() {
@@ -150,7 +158,6 @@ public final class LibProjectImpl extends ProjectBase {
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
-
     @Override
     public void write(DataOutput aStream) throws IOException {
         super.write(aStream);
@@ -158,7 +165,7 @@ public final class LibProjectImpl extends ProjectBase {
         aStream.writeUTF(this.includePath);
     }
 
-    public LibProjectImpl (DataInput aStream)  throws IOException {
+    public LibProjectImpl(DataInput aStream) throws IOException {
         super(aStream);
         this.includePath = FilePathCache.getString(aStream.readUTF()).toString();
         assert this.includePath != null;

@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.modelimpl.uid;
 
 import java.util.Collection;
@@ -61,19 +60,21 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.UIDFilter;
  * @author Alexander Simon
  */
 public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<Tfact> {
+
     private Collection<CsmUID<Tuid>> uids;
     boolean allowNullsAndSkip;
-    public LazyCsmCollection(Collection<CsmUID<Tuid>> uids, boolean allowNullsAndSkip){
+
+    public LazyCsmCollection(Collection<CsmUID<Tuid>> uids, boolean allowNullsAndSkip) {
         this.uids = uids;
         this.allowNullsAndSkip = allowNullsAndSkip;
     }
 
-    private Tfact convertToObject(CsmUID uid){
+    private Tfact convertToObject(CsmUID uid) {
         return (Tfact) UIDCsmConverter.UIDtoCsmObject(uid);
     }
 
-    private CsmUID<Tuid> convertToUID(Tfact object){
-        return ((CsmIdentifiable)object).getUID();
+    private CsmUID<Tuid> convertToUID(Tfact object) {
+        return ((CsmIdentifiable) object).getUID();
     }
 
     public int size() {
@@ -86,10 +87,10 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
 
     public boolean contains(Object o) {
         Iterator<Tfact> it = iterator();
-        while(it.hasNext()){
+        while (it.hasNext()) {
             Tfact object = it.next();
-            if (o == object || 
-                o != null && o.equals(object)){
+            if (o == object ||
+                    o != null && o.equals(object)) {
                 return true;
             }
         }
@@ -105,33 +106,34 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
     }
 
     public Object[] toArray() {
-	Object[] result = new Object[size()];
-	Iterator<Tfact> e = iterator();
+        Object[] result = new Object[size()];
+        Iterator<Tfact> e = iterator();
         int i = 0;
-	for (; e.hasNext(); i++)
-	    result[i] = e.next();
+        for (; e.hasNext(); i++) {
+            result[i] = e.next();
+        }
         if (i < size()) {
             Object[] a = new Object[i];
             System.arraycopy(result, 0, a, 0, i);
             result = a;
         }
-	return result;
+        return result;
     }
 
     public <T> T[] toArray(T[] a) {
         int size = size();
-        if (a.length < size)
-            a = (T[])java.lang.reflect.Array
-		.newInstance(a.getClass().getComponentType(), size);
+        if (a.length < size) {
+            a = (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size);
+        }
 
         Iterator<T> it = (Iterator<T>) iterator();
-	Object[] result = a;
+        Object[] result = a;
         int i = 0;
-	for (; it.hasNext(); i++)
-	    result[i] = it.next();
+        for (; it.hasNext(); i++) {
+            result[i] = it.next();
+        }
         if (i < size()) {
-            a = (T[])java.lang.reflect.Array
-		.newInstance(a.getClass().getComponentType(), i);
+            a = (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), i);
             System.arraycopy(result, 0, a, 0, i);
         }
         return a;
@@ -142,53 +144,56 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
     }
 
     public boolean remove(Object o) {
-        return uids.remove(convertToUID((Tfact)o));
+        return uids.remove(convertToUID((Tfact) o));
     }
 
     public boolean containsAll(Collection<?> c) {
-	Iterator<?> e = c.iterator();
-	while (e.hasNext())
-	    if(!contains(e.next()))
-		return false;
-	return true;
+        Iterator<?> e = c.iterator();
+        while (e.hasNext()) {
+            if (!contains(e.next())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public boolean addAll(Collection<? extends Tfact> c) {
-	boolean modified = false;
-    if (c instanceof LazyCsmCollection) {
-        return uids.addAll(((LazyCsmCollection)c).uids);
-    } else {
-        Iterator<? extends Tfact> it = c.iterator();
-        while (it.hasNext()) {
-            if (add(it.next()))
-            modified = true;
+        boolean modified = false;
+        if (c instanceof LazyCsmCollection) {
+            return uids.addAll(((LazyCsmCollection) c).uids);
+        } else {
+            Iterator<? extends Tfact> it = c.iterator();
+            while (it.hasNext()) {
+                if (add(it.next())) {
+                    modified = true;
+                }
+            }
         }
-    }
-	return modified;
+        return modified;
     }
 
     public boolean removeAll(Collection<?> c) {
-	boolean modified = false;
-	Iterator<?> it = iterator();
-	while (it.hasNext()) {
-	    if (c.contains(it.next())) {
-		it.remove();
-		modified = true;
-	    }
-	}
-	return modified;
+        boolean modified = false;
+        Iterator<?> it = iterator();
+        while (it.hasNext()) {
+            if (c.contains(it.next())) {
+                it.remove();
+                modified = true;
+            }
+        }
+        return modified;
     }
 
     public boolean retainAll(Collection<?> c) {
-	boolean modified = false;
-	Iterator<Tfact> it = iterator();
-	while (it.hasNext()) {
-	    if (!c.contains(it.next())) {
-		it.remove();
-		modified = true;
-	    }
-	}
-	return modified;
+        boolean modified = false;
+        Iterator<Tfact> it = iterator();
+        while (it.hasNext()) {
+            if (!c.contains(it.next())) {
+                it.remove();
+                modified = true;
+            }
+        }
+        return modified;
     }
 
     public void clear() {
@@ -197,8 +202,8 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
 
     @Override
     public String toString() {
-	StringBuffer buf = new StringBuffer();
-	buf.append("["); // NOI18N
+        StringBuffer buf = new StringBuffer();
+        buf.append("["); // NOI18N
 
         Iterator<Tfact> it = iterator();
         boolean hasNext = it.hasNext();
@@ -206,75 +211,80 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
             Tfact o = it.next();
             buf.append(o == this ? "(this Collection)" : String.valueOf(o));  // NOI18N
             hasNext = it.hasNext();
-            if (hasNext)
+            if (hasNext) {
                 buf.append(", "); // NOI18N
+            }
         }
 
-	buf.append("]"); // NOI18N
-	return buf.toString();
+        buf.append("]"); // NOI18N
+        return buf.toString();
     }
 
-    private class MyIterator<T> implements Iterator<T>{
-        
-        private Iterator it;       
-        private MyIterator(){
+    private class MyIterator<T> implements Iterator<T> {
+
+        private Iterator it;
+
+        private MyIterator() {
             it = uids.iterator();
         }
+
         public boolean hasNext() {
             return it.hasNext();
         }
-        
+
         public T next() {
-            CsmUID uid = (CsmUID)it.next();
+            CsmUID uid = (CsmUID) it.next();
             T decl = (T) convertToObject(uid);
             assert decl != null : "no object for UID " + uid;
             return decl;
         }
-        
+
         public void remove() {
             it.remove();
         }
     }
-    
-    private class MySafeIterator<T> implements Iterator<T>{
-        
-        private Iterator it;       
+
+    private class MySafeIterator<T> implements Iterator<T> {
+
+        private Iterator it;
         private T next;
         private CsmFilter filter;
-        
-        private MySafeIterator(){
+
+        private MySafeIterator() {
             this(null);
         }
-        private MySafeIterator(CsmFilter filter){
+
+        private MySafeIterator(CsmFilter filter) {
             this.filter = filter;
             it = uids.iterator();
             next = getNextNonNull();
         }
+
         public boolean hasNext() {
             return next != null;
         }
-        
+
         private T getNextNonNull() {
             T out = null;
             while (out == null && it.hasNext()) {
-                CsmUID uid = (CsmUID)it.next();
+                CsmUID uid = (CsmUID) it.next();
                 if (uid == null ||
-                    (filter != null && !((UIDFilter)filter).accept(uid))){
+                        (filter != null && !((UIDFilter) filter).accept(uid))) {
                     continue;
                 }
                 out = (T) convertToObject(uid);
             }
             return out;
         }
-        
+
         public T next() {
             T decl = next;
             next = getNextNonNull();
             return decl;
         }
-        
+
         public void remove() {
             it.remove();
         }
-    }    
+    }
 }

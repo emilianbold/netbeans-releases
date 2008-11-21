@@ -54,13 +54,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.CommitOperator;
@@ -68,6 +68,7 @@ import org.netbeans.jellytools.modules.javacvs.DiffOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
@@ -83,7 +84,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  */
 public class ExportPatchAndDiffTest extends JellyTestCase {
     
-    String os_name;
+    static String os_name;
     static String sessionCVSroot;
     final String projectName = "ForImport";
     final String pathToMain = "forimport|Main.java";
@@ -91,17 +92,32 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
     static File cacheFolder;
     Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
+    static Logger log;
     
     /** Creates a new instance of ExportPatchAndDiffTest */
     public ExportPatchAndDiffTest(String name) {
         super(name);
+        if (os_name == null) {
+            os_name = System.getProperty("os.name");
+        }
+        try {
+            TestKit.extractProtocol(getDataDir());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
     
     @Override
     protected void setUp() throws Exception {
-        os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### " + getName() + " ###");
+        if (log == null) {
+            log = Logger.getLogger("org.netbeans.modules.versioning.system.cvss.t9y");
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
     }
     
     public static Test suite() {
@@ -120,8 +136,15 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
     public void testCheckOutProject() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        MessageHandler mh = new MessageHandler("Checking out");
+        log.addHandler(mh);
+
         TestKit.closeProject(projectName);
-        new ProjectsTabOperator().tree().clearSelection();
+        TestKit.showStatusLabels();
+//
+        if ((os_name !=null) && (os_name.indexOf("Mac") > -1))
+            NewProjectWizardOperator.invoke().close();
+
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -159,18 +182,15 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
-        OutputOperator oo = OutputOperator.invoke();
-        OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.waitText("Checking out finished");
+
+        TestKit.waitText(mh);
+
         cvss.stop();
         in.close();
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
-        
-        ProjectSupport.waitScanFinished();
-        TestKit.waitForQueueEmpty();
+
         ProjectSupport.waitScanFinished();
         
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
@@ -181,10 +201,7 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
         PseudoCvsServer cvss;
         InputStream in;
-        OutputTabOperator oto;
-        oto = new OutputTabOperator(sessionCVSroot);
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        new ProjectsTabOperator().tree().clearSelection();
+
         Node nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
     
         nodeClass.performPopupAction("Open");
@@ -208,8 +225,7 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         File file = new File(patchFile);
         tf.setText(file.getCanonicalFile().toString());
         JButtonOperator btnExport = new JButtonOperator(dialog, "export");
-        oto = new OutputTabOperator(sessionCVSroot);
-        oto.clear();
+        //add
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "diff/export_diff.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
@@ -217,9 +233,9 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         btnExport.push();
         //        no output in output tab now
         //        oto.waitText("Diff Patch finished");
-        Thread.sleep(3000);
+        new EventTool().waitNoEvent(3000);
         cvss.stop();
-        Thread.sleep(2000);
+        new EventTool().waitNoEvent(2000);
         //test file existence
         assertTrue("Diff Patch file wasn't created!", file.isFile());
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -238,13 +254,8 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         PseudoCvsServer cvss;
         InputStream in;
-        //OutputOperator oo;
-        OutputTabOperator oto;
         org.openide.nodes.Node nodeIDE;
         String color;
-        
-        oto = new OutputTabOperator(sessionCVSroot);
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         
         Node node = new Node(new SourcePackagesNode(projectName), pathToMain);
         node.performPopupAction("Open");
@@ -261,13 +272,13 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         node.performPopupAction("CVS|Diff");
         
         //        oto.waitText("Diffing \"Main.java\" finished");
-        Thread.sleep(1000);
+        new EventTool().waitNoEvent(2000);
         cvss.stop();
         
         Node nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
         nodeIDE = (org.openide.nodes.Node) nodeClass.getOpenideNode();
         color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-        assertEquals("Wrong color for modified file", TestKit.MODIFIED_COLOR, color);
+        assertEquals("s for modified file", TestKit.MODIFIED_COLOR, color);
         
         //verify next button
         DiffOperator diffOp = new DiffOperator("Main.java");
@@ -313,28 +324,30 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         }
         
         //refresh button
-        oto = new OutputTabOperator(sessionCVSroot);
-        oto.clear();
+        MessageHandler mh = new MessageHandler("Refreshing");
+        log.addHandler(mh);
+
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "diff/refresh.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
         diffOp.refresh();
-        oto.waitText("Refreshing CVS Status finished");
+        TestKit.waitText(mh);
         cvss.stop();
-        Thread.sleep(1000);
+        new EventTool().waitNoEvent(1000);
         
         //update button
-        oto = new OutputTabOperator(sessionCVSroot);
-        oto.clear();
+        mh = new MessageHandler("Updating");
+        TestKit.removeHandlers(log);
+        log.addHandler(mh);
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "diff/refresh.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
         diffOp.update();
-        oto.waitText("Updating Sources finished");
+        TestKit.waitText(mh);
         cvss.stop();
-        Thread.sleep(1000);
+        new EventTool().waitNoEvent(1000);
         
         //commit button
         CommitOperator co = diffOp.commit();

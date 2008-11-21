@@ -1506,11 +1506,14 @@ EstimatedSpanView {
             View cv = child.getView();
             return cv.modelToView(pos, ca, b);
         } else {
+            Document doc = getDocument();
+            int docLen = (doc != null) ? doc.getLength() : -1;
             throw new BadLocationException("Offset " + pos + " with bias " + b + " is outside of the view" //NOI18N
                 + ", children = " + getViewCount() //NOI18N
                 + (getViewCount() > 0 ? " covering offsets <" +  //NOI18N
                     getView(0).getStartOffset() + ", " +  //NOI18N
-                    getView(getViewCount() - 1).getEndOffset() + ">" : "") //NOI18N
+                    getView(getViewCount() - 1).getEndOffset() + ">" : "") + //NOI18N
+                    ", docLen=" + docLen
                 , pos);
         }
     }

@@ -65,23 +65,23 @@ public class LinkerConfiguration implements AllOptionsProvider {
     private MakeConfiguration makeConfiguration;
 
     private StringConfiguration output;
-    private VectorConfiguration additionalLibs;
-    private VectorConfiguration dynamicSearch;
+    private VectorConfiguration<String> additionalLibs;
+    private VectorConfiguration<String> dynamicSearch;
     private BooleanConfiguration stripOption;
     private BooleanConfiguration picOption;
     private BooleanConfiguration norunpathOption;
     private BooleanConfiguration nameassignOption;
     private OptionsConfiguration commandLineConfiguration;
     private OptionsConfiguration additionalDependencies;
-    private LibrariesConfiguration librariesConfiguration;
+    private LibrariesConfiguration<LibraryItem> librariesConfiguration;
     private StringConfiguration tool;
 
     // Constructors
     public LinkerConfiguration(MakeConfiguration makeConfiguration) {
 	this.makeConfiguration = makeConfiguration;
 	output = new StringConfiguration(null, ""); // NOI18N
-	additionalLibs = new VectorConfiguration(null);
-	dynamicSearch = new VectorConfiguration(null);
+	additionalLibs = new VectorConfiguration<String>(null);
+	dynamicSearch = new VectorConfiguration<String>(null);
 	stripOption = new LinkerStripConfiguration(null, false); // NOI18N
 	picOption = new BooleanConfiguration(null, true, "", "-Kpic"); // NOI18N
 	norunpathOption = new BooleanConfiguration(null, true, "", "-norunpath"); // NOI18N
@@ -89,7 +89,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	commandLineConfiguration = new OptionsConfiguration();
 	additionalDependencies = new OptionsConfiguration();
 	additionalDependencies.setPreDefined(getAdditionalDependenciesPredefined());
-	librariesConfiguration = new LibrariesConfiguration();
+	librariesConfiguration = new LibrariesConfiguration<LibraryItem>();
 	tool = new StringConfiguration(null, ""); // NOI18N
     }
 
@@ -115,20 +115,20 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     // Additional Libraries
-    public VectorConfiguration getAdditionalLibs() {
+    public VectorConfiguration<String> getAdditionalLibs() {
 	return additionalLibs;
     }
 
-    public void setAdditionalLibs(VectorConfiguration additionalLibs) {
+    public void setAdditionalLibs(VectorConfiguration<String> additionalLibs) {
 	this.additionalLibs = additionalLibs;
     }
 
     // Dynamic Search
-    public VectorConfiguration getDynamicSearch() {
+    public VectorConfiguration<String> getDynamicSearch() {
 	return dynamicSearch;
     }
 
-    public void setDynamicSearch(VectorConfiguration dynamicSearch) {
+    public void setDynamicSearch(VectorConfiguration<String> dynamicSearch) {
 	this.dynamicSearch = dynamicSearch;
     }
 
@@ -181,10 +181,10 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     // LibrariesConfiguration
-    public LibrariesConfiguration getLibrariesConfiguration() {
+    public LibrariesConfiguration<LibraryItem> getLibrariesConfiguration() {
 	return librariesConfiguration;
     }
-    public void setLibrariesConfiguration(LibrariesConfiguration librariesConfiguration) {
+    public void setLibrariesConfiguration(LibrariesConfiguration<LibraryItem> librariesConfiguration) {
 	this.librariesConfiguration = librariesConfiguration;
     }
 
@@ -219,15 +219,15 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	LinkerConfiguration clone = new LinkerConfiguration(getMakeConfiguration());
 	// LinkerConfiguration
 	clone.setOutput((StringConfiguration)getOutput().clone());
-	clone.setAdditionalLibs((VectorConfiguration)getAdditionalLibs().clone());
-	clone.setDynamicSearch((VectorConfiguration)getDynamicSearch().clone());
+	clone.setAdditionalLibs(getAdditionalLibs().cloneConf());
+	clone.setDynamicSearch(getDynamicSearch().cloneConf());
 	clone.setCommandLineConfiguration((OptionsConfiguration)getCommandLineConfiguration().clone());
 	clone.setAdditionalDependencies((OptionsConfiguration)getAdditionalDependencies().clone());
 	clone.setStripOption((BooleanConfiguration)getStripOption().clone());
 	clone.setPICOption((BooleanConfiguration)getPICOption().clone());
 	clone.setNorunpathOption((BooleanConfiguration)getNorunpathOption().clone());
 	clone.setNameassignOption((BooleanConfiguration)getNameassignOption().clone());
-	clone.setLibrariesConfiguration((LibrariesConfiguration)getLibrariesConfiguration().clone());
+	clone.setLibrariesConfiguration(getLibrariesConfiguration().cloneConf());
 	clone.setTool((StringConfiguration)getTool().clone());
 	return clone;
     }
@@ -327,8 +327,8 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	set1.setDisplayName(getString("GeneralTxt"));
 	set1.setShortDescription(getString("GeneralHint"));
 	set1.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
-	set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseDir(), new String[] {"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories"))); // NOI18N
-	set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseDir(), new String[] {"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories"))); // NOI18N
+	set1.put(new VectorNodeProp<String>(getAdditionalLibs(), null, getMakeConfiguration().getBaseDir(), new String[] {"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories"))); // NOI18N
+	set1.put(new VectorNodeProp<String>(getDynamicSearch(), null, getMakeConfiguration().getBaseDir(), new String[] {"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories"))); // NOI18N
 	sheet.put(set1);
 	Sheet.Set set2 = new Sheet.Set();
 	set2.setName("Options"); // NOI18N
@@ -438,7 +438,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + outputName; // NOI18N 
     }
     
-    private class OutputNodeProp extends StringNodeProp {
+    private static class OutputNodeProp extends StringNodeProp {
         public OutputNodeProp(StringConfiguration stringConfiguration, String def, String txt1, String txt2, String txt3) {
             super(stringConfiguration, def, txt1, txt2, txt3);
         }

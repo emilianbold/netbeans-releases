@@ -112,18 +112,6 @@ public class JDBCConnMetadataModel implements MetadataModelImplementation {
         }
     }
 
-    public void refreshTable(final String tableName) {
-        LOGGER.log(Level.FINE, "Refreshing table ''{0}''", tableName);
-        lock.lock();
-        try {
-            if (jdbcMetadata != null) {
-                jdbcMetadata.refreshTable(tableName);
-            }
-        } finally {
-            lock.unlock();
-        }
-    }
-
     private void enterReadAccess(final Connection conn) throws SQLException {
         if (conn == null) {
             throw new NullPointerException("Connection can not be null");

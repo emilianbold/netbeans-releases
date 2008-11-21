@@ -69,6 +69,7 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.openide.text.CloneableEditorSupport;
@@ -260,17 +261,19 @@ public class FmtOptions {
             jep.setIgnoreRepaint(true);
             jep.setText(previewText);
             
-            //CodeStyle codeStyle = CodeStyle.get(previewPrefs);
             BaseDocument bd = (BaseDocument)jep.getDocument();
+            Reformat reformat = Reformat.get(bd);
+            reformat.lock();
             try {
-        	bd.getFormatter().reformatLock();
-                bd.getFormatter().reformat(bd, 0, bd.getLength());
+                reformat.reformat(0, bd.getLength());
+                String x = bd.getText(0, bd.getLength());
+                jep.setText(x);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
-        	bd.getFormatter().reformatUnlock();
+                reformat.unlock();
             }
-            
+
             jep.setIgnoreRepaint(false);
             jep.scrollRectToVisible(new Rectangle(0,0,10,10) );
             jep.repaint(100);

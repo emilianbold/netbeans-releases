@@ -51,8 +51,6 @@ import junit.textui.TestRunner;
 
 /**
  * Test that all classes in the system can load and link.
- * Since the default 64m is not enough to load all IDE classes, run with:
- * ant -f core/test/build.xml -Dxtest.attribs=emptyide -Dxtest.includes=org/netbeans/core/ValidateClassLinkageTest.class -Dxtest.ide.jvmargs=-XX:MaxPermSize=128m
  * @author Jesse Glick
  */
 public class ValidateClassLinkageTest extends NbTestCase {
@@ -108,10 +106,6 @@ public class ValidateClassLinkageTest extends NbTestCase {
                     String name = entry.getName();
                     if (name.endsWith(".class")) {
                         String clazz = name.substring(0, name.length() - 6).replace('/', '.');
-                        if (clazz.startsWith("org.netbeans.xtest.")) {
-                            // Skip these; a lot seem to want to link against Ant. Test-time only anyway.
-                            continue;
-                        }
                         if (clazz.startsWith("javax.help.tagext.")) {
                             // Servlet part of JavaHelp, which we don't use. Ignore.
                             continue;

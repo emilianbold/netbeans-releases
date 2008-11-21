@@ -45,7 +45,6 @@ import java.io.IOException;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
@@ -56,7 +55,7 @@ import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class, position=200)
 public class CCDataLoader extends CndAbstractDataLoaderExt {
     
     private static CCDataLoader instance;

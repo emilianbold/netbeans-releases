@@ -158,9 +158,9 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
         }
     }
 
-    protected class PopupItemAddTarget extends JMenuItem implements ActionListener {
+    protected static class PopupItemAddTarget extends JMenuItem implements ActionListener {
 
-        Node node = null;
+        private Node node = null;
 
         public PopupItemAddTarget(Node activeNode) {
             //super(getString("ADD_NEW_TARGET"), new ImageIcon(Utilities.loadImage("org/netbeans/modules/cnd/resources/AddMakeTargetAction.gif", true))); // NOI18N

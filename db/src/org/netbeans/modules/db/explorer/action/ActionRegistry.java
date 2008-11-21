@@ -40,6 +40,7 @@
 package org.netbeans.modules.db.explorer.action;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.Action;
@@ -47,6 +48,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -59,12 +62,11 @@ public class ActionRegistry implements ChangeListener {
     private static final String PATH = "Databases/Explorer/"; //NOI18N
     private static final String ACTIONS = "/Actions"; //NOI18N
 
-    /** change event support */
-    private ChangeSupport changeSupport;
+    private final ChangeSupport changeSupport;
+    private final List<Action> actions = new CopyOnWriteArrayList<Action>();
     
-    /** the registered actions */
-    private List<Action> actions = new CopyOnWriteArrayList<Action>();
-    
+    private Lookup.Result lookupResult;
+
     /**
      * Constructor.
      * 
@@ -83,25 +85,44 @@ public class ActionRegistry implements ChangeListener {
      */
     private void loadActions(String entryName) {
         Lookup lookup = Lookups.forPath(PATH + entryName + ACTIONS);
-        Collection<Object> actionList = (Collection<Object>)lookup.lookupAll(Object.class);
+        lookupResult = lookup.lookupResult(Object.class);
+        
+        initActions();
+
+        // listen for changes and re-init the actions when the lookup changes
+        lookupResult.addLookupListener(
+            new LookupListener() {
+                public void resultChanged(LookupEvent ev) {
+                    initActions();
+                    changeSupport.fireChange();
+                }
+            }
+        );
+    }
+
+    private void initActions() {
+        actions.clear();
+        Collection<Object> actionList = (Collection<Object>)lookupResult.allInstances();
         
         for (Object action : actionList) {
             if (action instanceof Action) {
                 actions.add((Action)action);
             } else if (action instanceof javax.swing.JSeparator) {
                 actions.add(null);
+            } else {
+                // TODO log this?  or throw exception?
             }
         }
     }
-
+    
     /**
-     * Get the list of the actions.  The order is based on the order that
+     * Get the actions.  The order is based on the order that
      * was defined in the layer file.
      * 
      * @return the actions
      */
-    public List<Action> getActions() {
-        return actions;
+    public Collection<Action> getActions() {
+        return Collections.unmodifiableList(actions);
     }
     
     public void addChangeListener(ChangeListener listener) {

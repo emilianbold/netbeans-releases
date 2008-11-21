@@ -752,10 +752,10 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                 if(pName == null){
                     jCbxPackageName.setToolTipText(NbBundle.getMessage(ClientInfo.class, "TOOLTIP_DEFAULT_PACKAGE"));
                 } else{
-                    jCbxPackageName.setToolTipText("");
+                    jCbxPackageName.setToolTipText(null);
                 }
             } else{
-                jCbxPackageName.setToolTipText("");
+                jCbxPackageName.setToolTipText(null);
             }
             jCbxPackageName.setSelectedItem(getPackageItem(pName));
             // Normalize selection, in case it's unspecified.
@@ -818,10 +818,10 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                 if(pName == null || pName.trim().equals("")){
                     jCbxPackageName.setToolTipText(NbBundle.getMessage(ClientInfo.class, "TOOLTIP_DEFAULT_PACKAGE"));
                 } else{
-                    jCbxPackageName.setToolTipText("");
+                    jCbxPackageName.setToolTipText(null);
                 }
             } else{
-                jCbxPackageName.setToolTipText("");
+                jCbxPackageName.setToolTipText(null);
             }
     }
     

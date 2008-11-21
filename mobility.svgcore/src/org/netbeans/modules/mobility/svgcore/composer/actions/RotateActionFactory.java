@@ -96,7 +96,7 @@ public final class RotateActionFactory extends AbstractComposerActionFactory {
                 bBox.add(m_rotated.getScreenBBox());
                 
                 m_factory.getSceneManager().getScreenManager().repaint(bBox, SVGObjectOutline.SELECTOR_OVERLAP);
-            } else {
+            } else if (evt.getID() == MouseEvent.MOUSE_RELEASED) {
                 actionCompleted();
                 m_rotated.commitChanges();
             }
@@ -121,6 +121,9 @@ public final class RotateActionFactory extends AbstractComposerActionFactory {
             repaintRotatePivot();
             m_rotated.applyTextChanges();
             m_rotated.commitChanges();
+            if (getScreenManager().getShowAllArea()){
+                getScreenManager().refresh();
+            }
             super.actionCompleted();
         }
         

@@ -42,17 +42,7 @@
                     </folder>
                 </folder>
 
-
-               <!-- <file name="Settings.settings" url="../options/AsmOptions.settings"/> -->
-
-                <!--
-                <folder name="FoldManager">
-		    <file name="org-netbeans-modules-asm-core-folding-AsmFoldManager$Factory.instance"/>
-		</folder>
-                -->
                 <folder name="SideBar">
-		    <!--<file name="org-netbeans-modules-asm-core-folding-AsmCodeFoldingSideBarFactory.instance"/>
-		    <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-asm-core-folding-AsmCodeFoldingSideBarFactory.instance" boolvalue="true"/> -->
                     <file name="org-netbeans-modules-asm-core-assistance-LiveRangeSidebarFactory.instance">
                         <attr name="position" intvalue="3830"/>
                     </file>
@@ -68,16 +58,6 @@
         </folder>
     </folder>
 
-    <!--<folder name="Menu">
-        <folder name="Window">
-            <folder name="Debug">
-                <file name="NavigatorAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-asm-core-ui-top-NavigatorAction.instance"/>
-                    <attr name="position" intvalue="952"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>-->
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
             <folder name="text">

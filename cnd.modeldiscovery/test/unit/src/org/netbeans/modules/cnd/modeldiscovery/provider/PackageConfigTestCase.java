@@ -110,12 +110,14 @@ public class PackageConfigTestCase extends BaseTestCase {
 
     }
 
-    @Test
-    public void testRemoteGtkPackage() {
-        if (canTestRemote()) { //TODO: 10k vs 3
-            PlatformInfo pi = PlatformInfo.getDefault(getHKey());
-            PkgConfigImpl pc = new PkgConfigImpl(pi, null);
-            basicTest(pc);
-        }
-    }
+// World is not yet ready for this test...
+
+//    @Test
+//    public void testRemoteGtkPackage() {
+//        if (canTestRemote()) { //TODO: 10k vs 3
+//            PlatformInfo pi = PlatformInfo.getDefault(getHKey());
+//            PkgConfigImpl pc = new PkgConfigImpl(pi, null);
+//            basicTest(pc);
+//        }
+//    }
 }

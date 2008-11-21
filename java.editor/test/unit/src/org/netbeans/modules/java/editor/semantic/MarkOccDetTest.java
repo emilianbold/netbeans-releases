@@ -309,9 +309,14 @@ public class MarkOccDetTest extends TestBase {
     public void testInsideConstructorInvocation() throws Exception {
         performTest("InsideConstructorInvocation", 9, 18);
     }
-    
+
     public void testException144264() throws Exception {
         performTest("Exception144264", 7, 19);
+    }
+    
+    public void testTypeParamMarkOccurrences() throws Exception {
+        performTest("TypeParamMarkOccurrences", 3, 14);
+        performTest("TypeParamMarkOccurrences", 3, 28);
     }
     
     private void performTest(String name, final int line, final int column) throws Exception {

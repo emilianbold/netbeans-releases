@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,12 +23,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.refactoring.ruby;
 
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
 import javax.swing.text.Document;
 
 import org.jruby.nb.ast.ArgumentNode;
@@ -45,7 +48,6 @@ import org.jruby.nb.ast.InstVarNode;
 import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.ModuleNode;
 import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.SClassNode;
 import org.jruby.nb.ast.SymbolNode;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -53,7 +55,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.Arity;
-import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
@@ -67,7 +68,6 @@ import org.netbeans.modules.ruby.lexer.Call;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 
-
 /**
  * This is a holder class for a Ruby element as well as its
  * context - used in various places in the refactoring classes.
@@ -79,6 +79,7 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public class RubyElementCtx {
+    
     private Node node;
     private Node root;
     private CompilationInfo info;
@@ -372,8 +373,9 @@ public class RubyElementCtx {
         return null;
     }
 
-    /** If the node is a method call, return the class of the method we're looking
-     * for (if any)
+    /**
+     * If the node is a method call, return the class of the method we're
+     * looking for (if any)
      */
     public String getDefClass() {
         if (defClass == null) {
@@ -389,10 +391,14 @@ public class RubyElementCtx {
                 Call call = Call.getCallType(doc, th, astOffset);
                 int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
 
-                String type = call.getType();
+                Set<? extends String> types = Collections.emptySet();
+                String callType = call.getType();
+                if (callType != null) {
+                    types = Collections.singleton(callType);
+                }
                 String lhs = call.getLhs();
 
-                if ((type == null) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
+                if ((types.isEmpty()) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
                     Node method = AstUtilities.findLocalScope(node, getPath());
 
                     if (method != null) {
@@ -400,7 +406,7 @@ public class RubyElementCtx {
                         // up and do it a bit more cleverly
                         RubyTypeAnalyzer analyzer =
                             new RubyTypeAnalyzer(null, method, node, astOffset, lexOffset, doc, null);
-                        type = analyzer.getType(lhs);
+                        types = analyzer.getTypes(lhs);
                     }
                 } else if (call == Call.LOCAL) {
                     // Look in the index to see which method it's coming from... 
@@ -421,10 +427,10 @@ public class RubyElementCtx {
 
                 if (defClass == null) {
                     // Just an inherited method call?
-                    if ((type == null) && (lhs == null)) {
+                    if ((!types.isEmpty()) && (lhs == null)) {
                         defClass = AstUtilities.getFqnName(getPath());
-                    } else if (type != null) {
-                        defClass = type;
+                    } else if (!types.isEmpty()) {
+                        defClass = getLast(types); // XXX should consider all types
                     } else {
                         defClass = RubyIndex.UNKNOWN_CLASS;
                     }
@@ -476,5 +482,13 @@ public class RubyElementCtx {
         // TODO: Blocks - "&" ?
         // Restargs - "*" ?
         return null;
+    }
+
+    private static <T> T getLast(final Collection<? extends T> types) {
+        if (types == null || types.isEmpty()) {
+            return null;
+        } else {
+            return (T) types.toArray()[types.size() - 1];
+        }
     }
 }

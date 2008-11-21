@@ -49,8 +49,8 @@ import javax.swing.ImageIcon;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor.RerunCondition;
-import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.netbeans.api.extexecution.ExecutionDescriptor.RerunCondition;
+import org.netbeans.api.extexecution.ExecutionService;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;

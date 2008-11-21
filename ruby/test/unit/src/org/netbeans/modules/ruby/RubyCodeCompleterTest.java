@@ -323,6 +323,10 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         checkCompletion("testfiles/completion/lib/song.rb", "ss.^");
     }
 
+    public void testIfWithFailingInferenceInBranchType() throws Exception {
+        checkCompletion("testfiles/if_with_failing_inference_in_branch_type.rb", "var.to_i^");
+    }
+
     // TODO - test more non-fc calls (e.g. x.foo)
     // TODO test with splat args (more args than are in def list)
     // TODO test with long arg lists

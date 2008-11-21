@@ -50,6 +50,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.Name;
 import org.openide.WizardDescriptor;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
@@ -58,7 +59,7 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
     private static final long serialVersionUID = 4L;
     
     private transient int index = 0;
-    private transient WizardDescriptor.Panel[] panels;
+    private transient WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private transient WizardDescriptor wiz;
 
     static Object create() {
@@ -74,7 +75,7 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
     public void removeChangeListener(ChangeListener changeListener) {
     }
     
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         return panels[index];
     }
     
@@ -115,7 +116,7 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
         this.wiz.putProperty("name",null); // NOI18N
     }
     
-    public Set instantiate(TemplateWizard templateWizard) throws IOException {
+    public Set<DataObject> instantiate(TemplateWizard templateWizard) throws IOException {
         File projectLocation = (File) wiz.getProperty("projdir"); // NOI18N
         String name = (String) wiz.getProperty("name"); // NOI18N
         return MakeSampleProjectGenerator.createProjectFromTemplate(templateWizard.getTemplate().getPrimaryFile(), projectLocation, name);

@@ -63,6 +63,7 @@ public class FortranContextDetector extends FortranExtendedTokenSequence {
             if (KEYWORD_CATEGORY.equals(prevCategory) ||
                 (SPECIAL_CATEGORY.equals(prevCategory) && previous.id() != RPAREN)){
                 switch(current.id()){
+                    case OP_MUL:
                     case OP_PLUS:
                     case OP_MINUS:
                         return OperatorKind.UNARY;
@@ -74,6 +75,7 @@ public class FortranContextDetector extends FortranExtendedTokenSequence {
                 switch(previous.id()){
                     case EQ: //("=", "operator"),
                         switch(current.id()){
+                            case OP_MUL:
                             case OP_PLUS:
                             case OP_MINUS:
                                 return OperatorKind.UNARY;
@@ -87,6 +89,7 @@ public class FortranContextDetector extends FortranExtendedTokenSequence {
                     case OP_NOT_EQ: //("!=","operator"),
                     case PERCENT: //("%", "operator"),
                         switch(current.id()){
+                            case OP_MUL:
                             case OP_PLUS:
                             case OP_MINUS:
                                 return OperatorKind.UNARY;
@@ -116,6 +119,7 @@ public class FortranContextDetector extends FortranExtendedTokenSequence {
                 if (SPECIAL_CATEGORY.equals(prevCategory)||
                     OPERATOR_CATEGORY.equals(prevCategory)) {
                      switch(current.id()){
+                        case OP_MUL:
                         case OP_PLUS:
                         case OP_MINUS:
                         default:
@@ -133,6 +137,7 @@ public class FortranContextDetector extends FortranExtendedTokenSequence {
                 if (next.id() == IDENTIFIER) {
                     if (isPreviousStatementParen()) {
                         switch(current.id()){
+                            case OP_MUL:
                             case OP_PLUS:
                             case OP_MINUS:
                                 return OperatorKind.UNARY;
@@ -151,6 +156,7 @@ public class FortranContextDetector extends FortranExtendedTokenSequence {
                 if (OPERATOR_CATEGORY.equals(nextCategory) ||
                     SPECIAL_CATEGORY.equals(nextCategory)){
                     switch(current.id()){
+                        case OP_MUL:
                         case OP_PLUS:
                         case OP_MINUS:
                             return OperatorKind.BINARY;
@@ -161,6 +167,7 @@ public class FortranContextDetector extends FortranExtendedTokenSequence {
                 if (next.id() == IDENTIFIER) {
                     // TODO need detect that previous ID is not type
                     switch(current.id()){
+                        case OP_MUL:
                         case OP_PLUS:
                         case OP_MINUS:
                             return OperatorKind.BINARY;
@@ -213,6 +220,8 @@ public class FortranContextDetector extends FortranExtendedTokenSequence {
                                     case KW_IF:
                                     case KW_WHILE:
                                     case KW_SELECT:
+                                    case KW_SELECTCASE:
+                                    case KW_SELECTTYPE:
                                         return true;
                                     default:
                                         while(movePrevious()){

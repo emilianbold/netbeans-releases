@@ -47,6 +47,8 @@ import org.openide.filesystems.FileObject;
  * absolute, possibly no-context) filename. Implementations of this interface
  * typically know something about how to interpret the filename, such as
  * relative to a project root.
+ *
+ * @deprecated Use {@link org.netbeans.modules.extexecution.api.print.LineConvertors.FileLocator} instead.
  * 
  * @author Tor Norbye
  */

@@ -42,10 +42,12 @@
 package org.netbeans.modules.mobility.e2e.mapping;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -53,18 +55,24 @@ import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.mobility.e2e.classdata.ClassData;
+import org.netbeans.modules.mobility.end2end.output.OutputLogger;
+import org.netbeans.modules.mobility.end2end.output.OutputLogger.LogLevel;
 import org.netbeans.modules.mobility.end2end.util.Util;
 import org.netbeans.modules.mobility.javon.JavonMapping;
 import org.netbeans.modules.mobility.javon.JavonTemplate;
 import org.netbeans.modules.mobility.javon.OutputFileFormatter;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 /**
@@ -102,94 +110,171 @@ public class ServerJavonTemplate extends JavonTemplate {
     }
 
     public boolean generateTarget( ProgressHandle ph, String target ) {
-        if( !outputSet.contains( target )) return false;
+        if( !outputSet.contains( target )) {
+            return true;
+        }
         
         String templateName = "";
         String outputDirectoryName = mapping.getServerMapping().getOutputDirectory();
         String outputFileName = "";
+        String msg = null;
         
         if( SERVLET.equals( target )) {
             templateName = "Templates/Server/Servlet.java";     // NOI18N
             outputFileName = mapping.getServerMapping().getClassName();
-            ph.progress( NbBundle.getMessage( ServerJavonTemplate.class, "MSG_Servlet" ));
+            msg = NbBundle.getMessage( ServerJavonTemplate.class, 
+                    "MSG_Servlet" ); //NOI18N
+            
         } else if( GATEWAYS.equals( target )) {
             templateName = "Templates/Server/Gateways.java"; // NOI18N
             outputFileName = "JavonGateways"; // NOI18N
-            ph.progress( NbBundle.getMessage( ServerJavonTemplate.class, "MSG_Gateways" ));
+            msg = NbBundle.getMessage( ServerJavonTemplate.class, 
+                    "MSG_Gateways" );//NOI18N
         } else if( INVOCATION.equals( target )) {
             templateName = "Templates/Server/InvocationAbstraction.java"; // NOI18N
             outputFileName = "InvocationAbstraction"; // NOI18N
-            ph.progress( NbBundle.getMessage( ServerJavonTemplate.class, "MSG_Invocation" ));
+            msg = NbBundle.getMessage( ServerJavonTemplate.class, 
+                    "MSG_Invocation" ); // NOI18N
         } else if( UTILITY.equals( target )) {
             templateName = "Templates/Server/Utility.java"; // NOI18N
             outputFileName = "Utility"; // NOI18N
-            ph.progress( NbBundle.getMessage( ServerJavonTemplate.class, "MSG_Utility" ));
+            msg = NbBundle.getMessage( ServerJavonTemplate.class, "MSG_Utility" );// NOI18N
         }
-        try {            
-            mapping.setProperty( "target", "server" ); // NOI18N
-            
-            FileObject outputRoot = FileUtil.toFileObject( FileUtil.normalizeFile( new File( outputDirectoryName )));
-            FileObject outputDir = outputRoot.getFileObject( mapping.getServerMapping().getPackageName().replace( '.', '/' ));
-            if( outputDir == null ) {
-                outputDir = FileUtil.createFolder(outputRoot, mapping.getServerMapping().getPackageName().replace( '.', '/' ));
-            }
+        ph.progress( msg );
+        OutputLogger.getInstance().log( msg );
+          
+        mapping.setProperty("target", "server"); // NOI18N
 
-            FileObject outputFile = outputDir.getFileObject( outputFileName, "java" );
-            if( outputFile == null ) {
-                outputFile = outputDir.createData( outputFileName, "java" );
-            }
-            OutputFileFormatter off = new OutputFileFormatter( outputFile );
-
-            ScriptEngineManager mgr = new ScriptEngineManager();
-            ScriptEngine eng = mgr.getEngineByName( "freemarker" );
-            Bindings bind = eng.getContext().getBindings( ScriptContext.ENGINE_SCOPE );
-
-            FileObject template = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject( templateName );        
-            bind.put( "mapping", mapping );
-            bind.put( "registry", mapping.getRegistry());
-            
-            // Prepare return and parameter types
-            Set<ClassData> returnTypes = new HashSet<ClassData>();
-            Set<ClassData> parameterTypes = new HashSet<ClassData>();
-            
-            for( JavonMapping.Service service : mapping.getServiceMappings()) {
-                returnTypes.addAll( service.getReturnTypes());
-                parameterTypes.addAll( service.getParameterTypes());
-            }
-            bind.put( "returnTypes", returnTypes );
-            bind.put( "parameterTypes", parameterTypes );
-            
-            Set<ClassData> instanceTypes = new HashSet<ClassData>();
-            instanceTypes.addAll( returnTypes );
-            instanceTypes.addAll( parameterTypes );
-            bind.put( "instanceTypes", instanceTypes );
-            
-            Writer w = null;
-            Reader is = null;
+        FileObject outputRoot = FileUtil.toFileObject(FileUtil
+                .normalizeFile(new File(outputDirectoryName)));
+        String pckgFolder = mapping.getServerMapping().getPackageName()
+                .replace('.', '/');
+        FileObject outputDir = outputRoot.getFileObject(pckgFolder);
+        if (outputDir == null) {
+            OutputLogger.getInstance().log(
+                    MessageFormat.format(NbBundle.getMessage(
+                            ServerJavonTemplate.class,
+                            "MSG_ServerFolderCreation"), new File(FileUtil
+                            .toFile(outputRoot), pckgFolder)));// NOI18N
             try {
-                w = new StringWriter();
-                is = new InputStreamReader( template.getInputStream());
+                outputDir = FileUtil.createFolder(outputRoot, pckgFolder);
+            }
+            catch (IOException e) {
+                OutputLogger.getInstance().log(
+                        LogLevel.ERROR,
+                        MessageFormat.format(NbBundle.getMessage(
+                                ServerJavonTemplate.class,
+                                "MSG_FailServerFolderCreation"), new File(
+                                FileUtil.toFile(outputRoot), pckgFolder)));// NOI18N
+                generationFailed(e, outputFileName);
+                return false;
+            }
+        }
 
-                eng.getContext().setWriter( w );
-                eng.getContext().setAttribute( FileObject.class.getName(), template, ScriptContext.ENGINE_SCOPE );
-                eng.getContext().setAttribute( ScriptEngine.FILENAME, template.getNameExt(), ScriptContext.ENGINE_SCOPE );
-
-                eng.eval( is );
-            } catch( Exception e ) {
-                e.printStackTrace();
-            } finally {
-                if( w != null ) {
-                    off.write( w.toString());
-//                            System.err.println( "" + w.toString());
-                    w.close();
-                }
-                if( is != null ) is.close();
-                off.close();
-            }                  
-        } catch( Exception e ) {                
-            e.printStackTrace();
+        FileObject outputFile = outputDir.getFileObject(outputFileName, "java");
+        if (outputFile == null) {
+            OutputLogger.getInstance().log(
+                    MessageFormat.format(NbBundle
+                            .getMessage(ServerJavonTemplate.class,
+                                    "MSG_ServerFileCreation"), new File(
+                            FileUtil.toFile(outputDir), outputFileName
+                                    + ".java")));// NOI18N
+            try {
+                outputFile = outputDir.createData(outputFileName, "java");
+            }
+            catch (IOException e) {
+                OutputLogger.getInstance().log(
+                        LogLevel.ERROR,
+                        MessageFormat.format(NbBundle.getMessage(
+                                ServerJavonTemplate.class,
+                                "MSG_FailServerFileCreation"), new File(
+                                FileUtil.toFile(outputDir), outputFileName
+                                        + ".java")));// NOI18N
+                generationFailed(e, outputFileName);
+                return false;
+            }
+        }
+        OutputFileFormatter off = null ;
+        try {
+            off = new OutputFileFormatter(outputFile);
+        }
+        catch ( DataObjectNotFoundException e ){
+            generationFailed(e, FileUtil.toFile(outputFile));
             return false;
         }
+        catch( IOException e ){
+            generationFailed(e, FileUtil.toFile(outputFile));
+            return false;
+        }
+
+        ScriptEngineManager mgr = new ScriptEngineManager();
+        ScriptEngine eng = mgr.getEngineByName("freemarker");
+        Bindings bind = eng.getContext()
+                .getBindings(ScriptContext.ENGINE_SCOPE);
+
+        FileObject template = Repository.getDefault().getDefaultFileSystem()
+                .getRoot().getFileObject(templateName);
+        OutputLogger.getInstance().log(
+                NbBundle.getMessage(ServerJavonTemplate.class,
+                        "MSG_ConfigureBindings"));//NOI18N
+        bind.put("mapping", mapping);
+        bind.put("registry", mapping.getRegistry());
+
+        // Prepare return and parameter types
+        Set<ClassData> returnTypes = new HashSet<ClassData>();
+        Set<ClassData> parameterTypes = new HashSet<ClassData>();
+
+        for (JavonMapping.Service service : mapping.getServiceMappings()) {
+            returnTypes.addAll(service.getReturnTypes());
+            parameterTypes.addAll(service.getParameterTypes());
+        }
+        bind.put("returnTypes", returnTypes);
+        bind.put("parameterTypes", parameterTypes);
+
+        Set<ClassData> instanceTypes = new HashSet<ClassData>();
+        instanceTypes.addAll(returnTypes);
+        instanceTypes.addAll(parameterTypes);
+        bind.put("instanceTypes", instanceTypes);
+
+        Writer w = null;
+        Reader is = null;
+        OutputLogger.getInstance().log(MessageFormat.format(
+                NbBundle.getMessage(ServerJavonTemplate.class,
+                    "MSG_GenerateServerFile" ),FileUtil.toFile(outputFile)));//NOI18N
+        try {
+            try {
+                w = new StringWriter();
+                is = new InputStreamReader(template.getInputStream());
+
+                eng.getContext().setWriter(w);
+                eng.getContext().setAttribute(FileObject.class.getName(),
+                        template, ScriptContext.ENGINE_SCOPE);
+                eng.getContext().setAttribute(ScriptEngine.FILENAME,
+                        template.getNameExt(), ScriptContext.ENGINE_SCOPE);
+
+                eng.eval(is);
+            }
+            catch (ScriptException e) {
+                OutputLogger.getInstance().log(e);
+                ErrorManager.getDefault().notify( e );
+                return false;
+            }
+            finally {
+                if (w != null) {
+                    off.write(w.toString());
+                    // System.err.println( "" + w.toString());
+                    w.close();
+                }
+                if (is != null)
+                    is.close();
+                off.close();
+            }
+        }
+        catch (IOException e) {
+            generationFailed(e, FileUtil.toFile(outputFile));
+            return false;
+        }
+        
         
         // Register servlet to the project
         final OpenProjects openProject = OpenProjects.getDefault();
@@ -207,6 +292,20 @@ public class ServerJavonTemplate extends JavonTemplate {
             Util.addServletToWebProject( serverProject, mapping );
         }
         
+        OutputLogger.getInstance().log(
+                MessageFormat.format(NbBundle.getMessage(
+                        ClientJavonTemplate.class,
+                            "MSG_ServerFileGenerated"),
+                            FileUtil.toFile(outputFile)));
+        
         return true;
+    }
+    
+    private void generationFailed( Exception e , Object file){
+        OutputLogger.getInstance().log(e);
+        ErrorManager.getDefault().notify( e );
+        OutputLogger.getInstance().log( MessageFormat.format(
+                NbBundle.getMessage(ServerJavonTemplate.class,
+                "MSG_FailGenerateServerFile" ), file ));
     }
 }

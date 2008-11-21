@@ -61,7 +61,8 @@ import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.TestRunnerUtilities.DefaultTaskEvaluator;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.RspecHandlerFactory;
-import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.TestRunnerInputProcessorFactory;
+import org.netbeans.modules.ruby.testrunner.ui.TestRunnerLineConvertor;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.openide.filesystems.FileObject;
@@ -181,18 +182,13 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        desc.setRerun(false); //disabled for now, see #147482
         TestSession session = new TestSession(name,
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
 
         addSpecOptsWarningIfNeeded(session, opts);
 
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
-                RspecHandlerFactory.getHandlers(),
-                session,
-                false);
-        TestExecutionManager.getInstance().start(desc, recognizer);
+        TestExecutionManager.getInstance().start(desc, new RspecHandlerFactory(), session);
     }
 
     /**
@@ -322,21 +318,26 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         }
         task.addTaskParameters("SPEC_OPTS=" + options); //NOI18N
 
-        FileLocator locator = project.getLookup().lookup(FileLocator.class);
         TestSession session = new TestSession(task.getDisplayName(),
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
         addSpecOptsWarningIfNeeded(session, specOpts);
         
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
-                RspecHandlerFactory.getHandlers(),
-                session,
-                false);
-        taskDescriptor.addOutputRecognizer(recognizer);
-        // using a shorter wait time than for test/unit since the only cases
-        // i've seen requiring more than 1000ms have all been test/unit executions
-        taskDescriptor.setReadMaxWaitTime(1500);
-        taskDescriptor.setRerun(false);
+        Manager manager = Manager.getInstance();
+        final TestRunnerLineConvertor convertor = new TestRunnerLineConvertor(manager, session, new RspecHandlerFactory());
+        taskDescriptor.addOutConvertor(convertor);
+        taskDescriptor.addErrConvertor(convertor);
+        taskDescriptor.lineBased(true);
+        taskDescriptor.setOutProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false));
+        taskDescriptor.setErrProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false));
+        taskDescriptor.postBuild(new Runnable() {
+
+            public void run() {
+                TestExecutionManager.getInstance().finish();
+                convertor.refreshSession();
+            }
+        });
+        TestExecutionManager.getInstance().init(taskDescriptor);
     }
 
 }
