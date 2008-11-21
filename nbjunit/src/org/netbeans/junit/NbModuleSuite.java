@@ -101,14 +101,14 @@ public class NbModuleSuite {
     public static final class Configuration extends Object {
         final List<Item> tests;
         final Class<? extends TestCase> latestTestCaseClass;
-        final String clusterRegExp;
+        final List<String> clusterRegExp;
         final String moduleRegExp;
         final ClassLoader parentClassLoader;
         final boolean reuseUserDir;
         final boolean gui;
 
         private Configuration(
-            String clusterRegExp, 
+            List<String> clusterRegExp,
             String moduleRegExp,
             ClassLoader parent, 
             List<Item> testItems,
@@ -134,12 +134,24 @@ public class NbModuleSuite {
          * ide and java clusters, it is handy to pass in <code>"ide.*|java.*</code>.
          * There is no need to requrest presence of <code>platform.*</code> cluster,
          * as that is available all the time by default.
+         * <p>
+         * Since version 1.55 this method can be called multiple times.
          * 
          * @param regExp regular expression to match cluster names
          * @return clone of this configuration with cluster set to regExp value
          */
         public Configuration clusters(String regExp) {
-            return new Configuration(regExp, moduleRegExp, parentClassLoader, tests, latestTestCaseClass, reuseUserDir, gui);
+            ArrayList<String> list = new ArrayList<String>();
+            if (clusterRegExp != null) {
+                list.addAll(clusterRegExp);
+            }
+            if (regExp != null) {
+                list.add(regExp);
+            }
+            if (list.isEmpty()) {
+                list = null;
+            }
+            return new Configuration(list, moduleRegExp, parentClassLoader, tests, latestTestCaseClass, reuseUserDir, gui);
         }
 
         /** By default only modules on classpath of the test are enabled, 
@@ -415,7 +427,7 @@ public class NbModuleSuite {
             File[] boot = new File(platform, "lib").listFiles();
             List<URL> bootCP = new ArrayList<URL>();
             for (int i = 0; i < boot.length; i++) {
-                URL u = boot[i].toURL();
+                URL u = boot[i].toURI().toURL();
                 if (u.toExternalForm().endsWith(".jar")) {
                     bootCP.add(u);
                 }
@@ -572,16 +584,18 @@ public class NbModuleSuite {
             if (config.clusterRegExp != null) {
                 File plat = findPlatform();
 
-                for (File f : plat.getParentFile().listFiles()) {
-                    if (f.equals(plat)) {
-                        continue;
-                    }
-                    if (!f.getName().matches(config.clusterRegExp)) {
-                        continue;
-                    }
-                    File m = new File(new File(f, "config"), "Modules");
-                    if (m.exists()) {
-                        clusters.add(f);
+                for (String c : config.clusterRegExp) {
+                    for (File f : plat.getParentFile().listFiles()) {
+                        if (f.equals(plat)) {
+                            continue;
+                        }
+                        if (!f.getName().matches(c)) {
+                            continue;
+                        }
+                        File m = new File(new File(f, "config"), "Modules");
+                        if (m.exists()) {
+                            clusters.add(f);
+                        }
                     }
                 }
             }
@@ -633,6 +647,9 @@ public class NbModuleSuite {
                         throw new IllegalStateException("Cannot find version:\n" + manifest);
                     }
                     File jar = jarFromURL(url);
+                    if (jar == null) {
+                        continue;
+                    }
                     if (jar.getParentFile().getName().equals("lib")) {
                         // Otherwise will get DuplicateException.
                         continue;
@@ -668,7 +685,11 @@ public class NbModuleSuite {
             if (m.matches()) {
                 return new File(URI.create(m.group(1)));
             } else {
-                throw new IllegalStateException(u.toExternalForm());
+                if (!u.getProtocol().equals("file")) {
+                    throw new IllegalStateException(u.toExternalForm());
+                } else {
+                    return null;
+                }
             }
         }
 

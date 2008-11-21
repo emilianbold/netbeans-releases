@@ -50,6 +50,7 @@ import java.util.Properties;
 import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import test.pkg.not.in.junit.NbModuleSuiteClusters;
 import test.pkg.not.in.junit.NbModuleSuiteTUserDir;
 
 /**
@@ -216,6 +217,37 @@ public class NbModuleSuiteTest extends TestCase {
 
         assertEquals("OK", System.getProperty("en.one"));
     }
+
+    public void testClustersCanBeCumulated() {
+        System.setProperty("clusters", "No");
+
+        Test instance = NbModuleSuite.create(
+            NbModuleSuite.emptyConfiguration().
+            gui(false).
+            clusters("ide[0-9]*").
+            clusters("java.*").
+            addTest(NbModuleSuiteClusters.class)
+        );
+        junit.textui.TestRunner.run(instance);
+
+        assertProperty("clusters", "ide:java");
+    }
+
+    public void testClustersCanBeCumulatedInReverseOrder() {
+        System.setProperty("clusters", "No");
+
+        Test instance = NbModuleSuite.create(
+            NbModuleSuite.emptyConfiguration().
+            gui(false).
+            clusters("java.*").
+            clusters("ide[0-9]*").
+            addTest(NbModuleSuiteClusters.class)
+        );
+        junit.textui.TestRunner.run(instance);
+
+        assertProperty("clusters", "java:ide");
+    }
+
     /*
     public void testAccessClassPathDefinedAutoload() {
 
