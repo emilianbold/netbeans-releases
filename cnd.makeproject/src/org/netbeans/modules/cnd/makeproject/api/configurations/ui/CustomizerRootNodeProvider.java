@@ -80,27 +80,13 @@ public class CustomizerRootNodeProvider {
 
     public synchronized List<CustomizerNode> getCustomizerNodes() {
         ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
-//        int[] priority = new int[PrioritizedCustomizerNode.MAX_ID];
-//
-//        for (int i = 0; i < PrioritizedCustomizerNode.MAX_ID; i++) {
-//            priority[i] = PrioritizedCustomizerNode.DEFAULT_ID;
-//        }
 
         // Add nodes from providers registerd old-style
-        // FIXME - Can we retire the old-style? (check with Ivan - its a 1 line change!)
         list.addAll(getCustomizerNodesRegisteredOldStyle());
 
         // Add nodes from providers register via services
         for (CustomizerNodeProvider provider : getCustomizerNodeProviders()) {
-            list.add(provider.factoryCreate());            CustomizerNode node = provider.factoryCreate();
-//            if (node instanceof PrioritizedCustomizerNode) {
-//                PrioritizedCustomizerNode pn = (PrioritizedCustomizerNode) node;
-//                if (pn.getPriority() > priority[pn.getID()]) {
-//                    list.add(node);
-//                }
-//            } else {
-//                list.add(node);
-//            }
+            list.add(provider.factoryCreate());
         }
         return list;
     }

@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.PrioritizedCustomizerNode;
 
 public class DebuggerChooserConfiguration {
 
@@ -72,13 +73,23 @@ public class DebuggerChooserConfiguration {
             String[] defnames = new String[] { "" };
 
             if (cnlist.size() >= 1) {
+                int priority = PrioritizedCustomizerNode.DEFAULT_PRIORITY;
+                int idx = 0;
                 List<String> n = new ArrayList<String>();
                 for (CustomizerNode node : cnlist) {
+                    if (node instanceof PrioritizedCustomizerNode) {
+                        if (((PrioritizedCustomizerNode) node).getPriority() > priority) {
+                            priority = ((PrioritizedCustomizerNode) node).getPriority();
+                            idx = n.size();
+                        }
+                    }
                     n.add(node.getDisplayName());
                 }
                 names = n.toArray(defnames);
+                def = idx;
             } else {
                 names = defnames;
+                def = 0;
             }
         }
     }

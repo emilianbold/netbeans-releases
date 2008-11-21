@@ -46,6 +46,8 @@ package org.netbeans.modules.cnd.makeproject.api.configurations.ui;
  * @author gordonp
  */
 public interface PrioritizedCustomizerNode {
+
+    public final static int DEFAULT_PRIORITY = -1;
     
     /**
      * Return a priority which helps resolve multiple instances of a similar node (ie, multiple debuggers).
@@ -53,10 +55,4 @@ public interface PrioritizedCustomizerNode {
      * @return The PrioritizedCustomizerNodes priority
      */
     public int getPriority();
-
-    /** Set the priority for a CustomizerNode */
-    public void setPriority(int priority);
-
-    /** Reset priority to default */
-    public void resetPriority();
 }

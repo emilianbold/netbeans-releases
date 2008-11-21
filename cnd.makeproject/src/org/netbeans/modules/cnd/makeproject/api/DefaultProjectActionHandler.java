@@ -111,16 +111,9 @@ public class DefaultProjectActionHandler implements ActionListener {
         // Then try services
         Lookup.Template<CustomProjectActionHandlerProvider> template = new Lookup.Template<CustomProjectActionHandlerProvider>(CustomProjectActionHandlerProvider.class);
         Lookup.Result<CustomProjectActionHandlerProvider> result = Lookup.getDefault().lookup(template);
-        int priority = PrioritizedCustomProjectActionHandlerProvider.DEFAULT_PRIORITY;
 
         for (CustomProjectActionHandlerProvider caop : result.allInstances()) {
-            if (caop instanceof PrioritizedCustomProjectActionHandlerProvider) {
-                if (((PrioritizedCustomProjectActionHandlerProvider) caop).getPriority() > priority) {
-                     customActionHandlerProvider = caop;
-                }
-            } else {
-                customActionHandlerProvider = caop;
-            }
+            customActionHandlerProvider = caop;
         }
         return customActionHandlerProvider;
     }
