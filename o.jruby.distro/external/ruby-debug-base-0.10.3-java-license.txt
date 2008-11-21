@@ -1,5 +1,5 @@
 Name: Fast JRuby Debugger Backend
-Version: 0.10.2
+Version: 0.10.3
 Description: Provides fast debugging capabilities for JRuby
 License: MIT
 OSR: 8206
