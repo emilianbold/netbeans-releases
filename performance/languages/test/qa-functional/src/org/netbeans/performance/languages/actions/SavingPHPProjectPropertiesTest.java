@@ -56,12 +56,14 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  *
  * @author mrkam@netbeans.org
  */
-public class SavingPHPProjectProperties  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class SavingPHPProjectPropertiesTest  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
     public static final String suiteName="Scripting UI Responsiveness Actions suite";
     
     public String category, project, projectName, projectType,  editorName;
@@ -69,14 +71,22 @@ public class SavingPHPProjectProperties  extends org.netbeans.modules.performanc
     private String title;
     private JButtonOperator okButton;
 
-    public SavingPHPProjectProperties(String testName) {
+    public SavingPHPProjectPropertiesTest(String testName) {
         super(testName);        
         expectedTime = 1000;
     }
     
-    public SavingPHPProjectProperties(String testName, String performanceDataName) {
+    public SavingPHPProjectPropertiesTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = 1000;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(SavingPHPProjectPropertiesTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
     @Override
@@ -151,13 +161,5 @@ public class SavingPHPProjectProperties  extends org.netbeans.modules.performanc
         editorName = "index.php";
         doMeasurement();        
     }
-    
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(SavingPHPProjectProperties.class)
-            .enableModules(".*")
-            .clusters(".*")
-            .reuseUserDir(true)
-        );    
-    }
+
 }

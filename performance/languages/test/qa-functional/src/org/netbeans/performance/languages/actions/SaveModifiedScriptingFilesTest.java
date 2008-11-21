@@ -54,12 +54,14 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
-
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class SaveModifiedScriptingFiles extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class SaveModifiedScriptingFilesTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
     public static final String suiteName="Scripting UI Responsiveness Actions suite";
     /** Editor with opened file */
     public static EditorOperator editorOperator;
@@ -70,17 +72,25 @@ public class SaveModifiedScriptingFiles extends org.netbeans.modules.performance
     protected String pathName;
     protected static ProjectsTabOperator projectsTab = null; 
     
-    public SaveModifiedScriptingFiles(String testName) {
+    public SaveModifiedScriptingFilesTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_PREPARE=2000;        
     }
-    public SaveModifiedScriptingFiles(String testName, String performanceDataName) {
+    public SaveModifiedScriptingFilesTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_PREPARE=2000;            
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(SaveModifiedScriptingFilesTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
     public void test_SaveRuby_File() {
         testProject = Projects.RUBY_PROJECT;
         pathName = "Source Files"+"|";
@@ -189,12 +199,4 @@ public class SaveModifiedScriptingFiles extends org.netbeans.modules.performance
         EditorOperator.closeDiscardAll();
     }    
     
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(SaveModifiedScriptingFiles.class)
-            .enableModules(".*")
-            .clusters(".*")
-            .reuseUserDir(true)
-        );    
-    }
 }

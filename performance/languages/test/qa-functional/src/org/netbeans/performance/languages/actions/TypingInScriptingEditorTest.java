@@ -55,12 +55,15 @@ import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author Administrator
  */
-public class TypingInScriptingEditor extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class TypingInScriptingEditorTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
     public static final String suiteName="Scripting UI Responsiveness Actions suite";
     protected Node fileToBeOpened;
     protected String testProject;
@@ -73,16 +76,25 @@ public class TypingInScriptingEditor extends org.netbeans.modules.performance.ut
     private int caretBlinkRate;
     private Font font;
     
-    public TypingInScriptingEditor(String testName) {
+    public TypingInScriptingEditorTest(String testName) {
         super(testName);
         expectedTime = UI_RESPONSE;       
         HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations             
     }
-    public TypingInScriptingEditor(String testName, String performanceDataName) {
+    public TypingInScriptingEditorTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = UI_RESPONSE;       
         HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations             
     }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(TypingInScriptingEditorTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
     @Override
     public void initialize() {
         log("::initialize");
@@ -200,12 +212,5 @@ public class TypingInScriptingEditor extends org.netbeans.modules.performance.ut
         doMeasurement();
     }
     */
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(TypingInScriptingEditor.class)
-            .enableModules(".*")
-            .clusters(".*")
-            .reuseUserDir(true)
-        );    
-    }    
+ 
 }

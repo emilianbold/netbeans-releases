@@ -57,12 +57,14 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager.RegionFilter;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
-
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class ScriptingCodeCompletionInEditor extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class ScriptingCodeCompletionInEditorTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
     public static final String suiteName="Scripting UI Responsiveness Actions suite";
     private int lineNumber = 39;
     private EditorOperator editorOperator;
@@ -74,14 +76,22 @@ public class ScriptingCodeCompletionInEditor extends org.netbeans.modules.perfor
     
     protected static ProjectsTabOperator projectsTab = null;
     
-    public ScriptingCodeCompletionInEditor(String testName) {
+    public ScriptingCodeCompletionInEditorTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public ScriptingCodeCompletionInEditor(String testName, String performanceDataName) {
+    public ScriptingCodeCompletionInEditorTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(ScriptingCodeCompletionInEditorTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
     @Override
@@ -217,14 +227,4 @@ public class ScriptingCodeCompletionInEditor extends org.netbeans.modules.perfor
                 }
             };    
 
-    public static Test suite() {
-        prepareForMeasurements();
-
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(ScriptingCodeCompletionInEditor.class)
-            .enableModules(".*")
-            .clusters(".*")
-            .reuseUserDir(true)
-        );
-    }
 }

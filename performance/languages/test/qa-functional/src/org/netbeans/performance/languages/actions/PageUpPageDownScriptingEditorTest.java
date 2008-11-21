@@ -20,13 +20,15 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
-
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author Administrator
  */
-public class PageUpPageDownScriptingEditor extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class PageUpPageDownScriptingEditorTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
     public static final String suiteName="Scripting UI Responsiveness Actions suite";
     private boolean pgup;
     private EditorOperator editorOperator;
@@ -37,17 +39,25 @@ public class PageUpPageDownScriptingEditor extends org.netbeans.modules.performa
     protected String fileName; 
     protected String nodePath;    
     
-    public PageUpPageDownScriptingEditor(String testName) {
+    public PageUpPageDownScriptingEditorTest(String testName) {
         super(testName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 200;        
     }
-    public PageUpPageDownScriptingEditor(String testName, String performanceDataName) {
+    public PageUpPageDownScriptingEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 200;        
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(PageUpPageDownScriptingEditorTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
     @Override
     public void initialize() {
         EditorOperator.closeDiscardAll();
@@ -180,15 +190,5 @@ public class PageUpPageDownScriptingEditor extends org.netbeans.modules.performa
         pgup = false;        
         doMeasurement();
     }    
-    
-    public static Test suite() {
-        prepareForMeasurements();
 
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(PageUpPageDownScriptingEditor.class)
-            .enableModules(".*")
-            .clusters(".*")
-            .reuseUserDir(true)
-        );    
-    }
 }

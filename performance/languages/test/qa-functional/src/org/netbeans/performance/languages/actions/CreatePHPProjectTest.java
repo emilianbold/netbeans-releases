@@ -39,80 +39,92 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.languages.dialogs;
+package org.netbeans.performance.languages.actions;
 
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.PropertiesAction;
-import org.netbeans.jellytools.nodes.Node;
+import java.io.File;
+
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NewPHPProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.languages.Projects;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.languages.setup.ScriptingSetup;
 
 /**
  *
- * @author mkhramov@netbeans.org
+ * @author mkhramov@netbeans.org, mrkam@netbeans.org
  */
-public class RubyPropertiesDialogTest  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Dialogs suite";
-    private Node testNode;
-    private String TITLE, projectName;
+public class CreatePHPProjectTest extends PerformanceTestCase {
+
+    private NewPHPProjectNameLocationStepOperator wizard_location;
+    public String category, project, project_name, project_type,  editor_name;
     
-    public RubyPropertiesDialogTest(String testName) {
-        super(testName);
-        expectedTime = WINDOW_OPEN;          
+    public CreatePHPProjectTest(String testName)
+    {
+        super(testName);        
+        expectedTime = 10000;
+        WAIT_AFTER_OPEN=20000;        
     }
     
-    public RubyPropertiesDialogTest(String testName, String performanceDataName) {
+    public CreatePHPProjectTest(String testName, String performanceDataName)
+    {
         super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;      
+        expectedTime = 10000;
+        WAIT_AFTER_OPEN=20000;        
     }
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(RubyPropertiesDialogTest.class)
+             .addTest(CreatePHPProjectTest.class)
              .enableModules(".*").clusters(".*")));
         return suite;
     }
 
     @Override
-    public void initialize() {
-        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.ui.customizer.Bundle", "LBL_Customizer_Title", new String[]{projectName});
-        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);        
-    }
-    
-    @Override
-    public void prepare() {
-        log("::prepare");
+    public void initialize(){
+        closeAllModal();
     }
 
     @Override
-    public ComponentOperator open() {
-        // invoke Window / Properties from the main menu
-        new PropertiesAction().performPopup(testNode);
-        return new NbDialogOperator(TITLE);
+    public void prepare(){
+        NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
+        wizard.selectCategory(category);
+        wizard.selectProject(project);
+        wizard.next();
+        wizard_location = new NewPHPProjectNameLocationStepOperator();
+        project_name = project_type + "_" + System.currentTimeMillis();
+        wizard_location.typeProjectName(project_name);
+        String directory = CommonUtilities.getTempDir() + "createdProjects"
+                + File.separator + project_name;
+        wizard_location.typeSourcesFolder(directory);
+        wizard.next();
     }
     
-    public void testRubyProjectProperties() {
-        projectName = Projects.RUBY_PROJECT;
-        doMeasurement();
+    public ComponentOperator open(){
+        wizard_location.finish();
+                CommonUtilities.waitProjectTasksFinished();
+//        wizard_location.waitClosed();
+//        TopComponentOperator.findTopComponent(editor_name, 0);
+//        return null;
+        return null;//new TopComponentOperator(editor_name);
     }
-    public void testRailsProjectProperties() {
-        projectName = Projects.RAILS_PROJECT;
-        doMeasurement();                
-    }
-
-
-    /** Test could be executed internaly in IDE without XTest
-     * @param args arguments from command line
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
+    
+    @Override
+    public void close(){
     }    
+    
+    public void testCreatePhpProject() {
+        category = "PHP";
+        project = Bundle.getString("org.netbeans.modules.php.project.ui.wizards.Bundle", "Templates/Project/PHP/PHPProject.php");
+        project_type = "PHPApplication";
+        editor_name = "index.php";
+        doMeasurement();        
+    }
 
 }

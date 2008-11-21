@@ -39,75 +39,94 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.languages.dialogs;
+package org.netbeans.performance.languages.actions;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.languages.setup.ScriptingSetup;
-import org.netbeans.performance.languages.Projects;
-
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.PropertiesAction;
-import org.netbeans.jellytools.nodes.Node;
+import junit.framework.Test;
+import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JTextComponentOperator;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class PhpPropertiesDialogTest extends PerformanceTestCase {
-
-    private Node testNode;
-    private String TITLE, projectName;
+public class OpenRubyProjectTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+    public static final String suiteName="Scripting UI Responsiveness Actions suite";
+    private static String projectName; 
+    private JButtonOperator openButton;
+    private String workdir;    
     
-    public PhpPropertiesDialogTest(String testName) {
+    public OpenRubyProjectTest(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;          
+        WAIT_AFTER_OPEN = 20000;
+        workdir = CommonUtilities.getProjectsDir();
     }
-    
-    public PhpPropertiesDialogTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;      
+
+    public OpenRubyProjectTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+        WAIT_AFTER_OPEN = 20000;
+        workdir = CommonUtilities.getProjectsDir();
     }
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(PhpPropertiesDialogTest.class)
+             .addTest(OpenRubyProjectTest.class)
              .enableModules(".*").clusters(".*")));
         return suite;
     }
 
     @Override
     public void initialize() {
-        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.php.project.ui.customizer.Bundle", "LBL_Customizer_Title", new String[]{projectName});       
-        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);        
+        log("::initialize::");
+        closeAllModal();
     }
     
     @Override
     public void prepare() {
+        // closeProject should be here so the project is available after the test finished
+//        ProjectSupport.closeProject(projectName);
+        new ActionNoBlock("File|Open Project...", null).perform(); //NOI18N
+        WizardOperator opd = new WizardOperator("Open Project"); //NOI18N
+        JTextComponentOperator path = new JTextComponentOperator(opd,1);
+        openButton = new JButtonOperator(opd, "Open Project"); //NOI18N
+        String paths = workdir + projectName;
+        path.setText(paths);        
     }
 
     @Override
     public ComponentOperator open() {
-        new PropertiesAction().performPopup(testNode);
-        return new NbDialogOperator(TITLE);
+        openButton.pushNoBlock();
+        return null;
     }
     
-    public void testPhpProjectProperties() {
-        projectName = Projects.PHP_PROJECT;
+    @Override
+    public void close() {
+        log("::close");
+        closeAllModal();
+    }
+
+    public void testOpenRubyProject() {
+        projectName = "RubyPerfTest"; //NO18N
+        expectedTime = 18000;
         doMeasurement();
     }
 
-    public void testRubyProjectProperties() {
-        projectName = Projects.RUBY_PROJECT;
+    public void testOpenRailsProject() {
+        projectName = "RailsPerfTest";
+        expectedTime = 18000;
         doMeasurement();
     }
 
-    public void testRailsProjectProperties() {
-        projectName = Projects.RAILS_PROJECT;
+    public void testOpenPHPProject() {
+        projectName = "PHPPerfTest";
+        expectedTime = 10000;
         doMeasurement();
     }
 

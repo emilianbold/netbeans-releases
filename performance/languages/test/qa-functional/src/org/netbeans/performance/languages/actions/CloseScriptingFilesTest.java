@@ -39,28 +39,27 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.performance.languages.actions;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
+import org.netbeans.performance.languages.Projects;
+import org.netbeans.performance.languages.ScriptingUtilities;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
-import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
-import org.netbeans.performance.languages.Projects;
-import org.netbeans.performance.languages.ScriptingUtilities;
-
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class CloseScriptingFiles extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Actions suite";
+public class CloseScriptingFilesTest extends PerformanceTestCase {
     
     /** Node to be opened/edited */
     public static Node fileToBeOpened ;
@@ -76,53 +75,52 @@ public class CloseScriptingFiles extends org.netbeans.modules.performance.utilit
     
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");    
     protected static String EDIT = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Edit");
-
     protected EditorOperator editor;
     
-    public CloseScriptingFiles(String testName) {
+    public CloseScriptingFilesTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;        
     }
-    public CloseScriptingFiles(String testName, String performanceDataName) {
+
+    public CloseScriptingFilesTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);        
         expectedTime = WINDOW_OPEN;        
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(CloseScriptingFilesTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
     @Override
     protected void initialize(){
-        log("::initialize");
         EditorOperator.closeDiscardAll();        
-
         closeAllModal();
     }
 
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
             projectsTab = ScriptingUtilities.invokePTO();
-        
         return projectsTab.getProjectRootNode(projectName);
     }
     
     @Override
     public void prepare() {
-        log("::prepare");
         String path = nodePath+"|"+fileName;    
         fileToBeOpened = new Node(getProjectNode(testProject),path);
-        log("========== Open file path ="+fileToBeOpened.getPath());        
-
         JPopupMenuOperator popup =  fileToBeOpened.callPopup();
         if (popup == null) {
             throw new Error("Cannot get context menu for node ["+ fileToBeOpened.getPath() + "] in project [" + testProject + "]");
         }
-        log("------------------------- after popup invocation ------------");
-
         try {
             popup.pushMenu(menuItem);
         } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
             tee.printStackTrace(getLog());
             throw new Error("Cannot push menu item ["+menuItem+"] of node [" + fileToBeOpened.getPath() + "] in project [" + testProject + "]");
         }
-        log("------------------------- after open ------------");
         editor = new EditorOperator(this.fileName);
     }
 
@@ -149,12 +147,4 @@ public class CloseScriptingFiles extends org.netbeans.modules.performance.utilit
         doMeasurement();
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(CloseScriptingFiles.class)
-            .enableModules(".*")
-            .clusters(".*")
-            .reuseUserDir(true)
-        );
-    }
 }

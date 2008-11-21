@@ -57,13 +57,15 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
-
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  * Test create Web Pack projects
  *
  * @author  mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
-public class CreateScriptingPackFiles extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class CreateScriptingPackFilesTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
    
     private String doccategory, doctype, docname, docfolder, suffix, projectfolder, buildedname;
     private NewFileNameLocationStepOperator location;
@@ -76,7 +78,7 @@ public class CreateScriptingPackFiles extends org.netbeans.modules.performance.u
      * Creates a new instance of CreateWebPackFiles
      * @param testName the name of the test
      */
-    public CreateScriptingPackFiles(String testName) {
+    public CreateScriptingPackFilesTest(String testName) {
         super(testName);
     }
     
@@ -85,8 +87,16 @@ public class CreateScriptingPackFiles extends org.netbeans.modules.performance.u
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public CreateScriptingPackFiles(String testName, String performanceDataName) {
+    public CreateScriptingPackFilesTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(CreateScriptingPackFilesTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
     
     public void testCreatePHPPage(){
@@ -223,13 +233,5 @@ public class CreateScriptingPackFiles extends org.netbeans.modules.performance.u
         log("::shutdown");
         super.shutdown();
     }
-    
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(CreateScriptingPackFiles.class)
-            .enableModules(".*")
-            .clusters(".*")
-            .reuseUserDir(true)
-        );    
-    }
+
 }

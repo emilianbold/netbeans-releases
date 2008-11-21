@@ -41,44 +41,78 @@
 package org.netbeans.performance.languages.actions;
 
 
-import java.io.File;
+import javax.swing.JComponent;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NewPHPProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  *
- * @author mkhramov@netbeans.org, mrkam@netbeans.org
+ * @author mkhramov@netbeans.org
  */
-public class CreatePHPProject  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class CreateRubyProjectTest  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
     public static final String suiteName="Scripting UI Responsiveness Actions suite";
-    private NewPHPProjectNameLocationStepOperator wizard_location;
+    private NewProjectNameLocationStepOperator wizard_location;
     
     public String category, project, project_name, project_type,  editor_name;
     
-    public CreatePHPProject(String testName)
-    {
+    public CreateRubyProjectTest(String testName) {
         super(testName);        
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;        
+        WAIT_AFTER_OPEN=20000;
     }
     
-    public CreatePHPProject(String testName, String performanceDataName)
-    {
+    public CreateRubyProjectTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;        
+        WAIT_AFTER_OPEN=20000;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(CreateRubyProjectTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
     @Override
     public void initialize(){
         log("::initialize::");
-        waitNoEvent(3000);
+
+        repaintManager().addRegionFilter(new LoggingRepaintManager.RegionFilter() {
+
+            public boolean accept(JComponent c) {
+                String cn = c.getClass().getName();
+                if ("javax.swing.JRootPane".equals(cn)
+                        && "org.netbeans.core.windows.view.ui.MainWindow".equals(
+                        c.getParent().getClass().getName())) {
+                    return false;
+                } else if ("null.nbGlassPane".equals(c.getName())) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
+            public String getFilterName() {
+                return "Ignores JRootPane under MainWindow, and nbGlassPane";
+            }
+        });
+
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_EXPLORER_TREE_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_DIFF_SIDEBAR_FILTER);
+
         closeAllModal();
     }
 
@@ -90,54 +124,58 @@ public class CreatePHPProject  extends org.netbeans.modules.performance.utilitie
     
     private void createProject() {
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
-        
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
+        wizard_location = new NewProjectNameLocationStepOperator();
         
-        wizard_location = new NewPHPProjectNameLocationStepOperator();
-
-        project_name = project_type + "_" + System.currentTimeMillis();        
-        wizard_location.typeProjectName(project_name);
-
-        String directory = CommonUtilities.getTempDir() + "createdProjects" 
-                + File.separator + project_name;       
-        wizard_location.typeSourcesFolder(directory);
-
-        wizard.next();
+        String directory = CommonUtilities.getTempDir() + "createdProjects";
+       
+        wizard_location.txtProjectLocation().setText("");
+        waitNoEvent(1000);
+        wizard_location.txtProjectLocation().setText(directory);
+        
+        project_name = project_type + "_" + System.currentTimeMillis();
+        wizard_location.txtProjectName().setText("");
+        waitNoEvent(1000);
+        wizard_location.txtProjectName().typeText(project_name);
     }
 
-    public ComponentOperator open(){
+    public ComponentOperator open() {
         log("::open");    
         wizard_location.finish();
-        
+        long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",120000);
         wizard_location.waitClosed();
+
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",oldTimeout);        
 
         TopComponentOperator.findTopComponent(editor_name, 0);
         return null;
     }
     
     @Override
-    public void close(){
+    public void close() {
         log("::close");
 
 //        ProjectSupport.closeProject(project_name);
     }    
     
-    public void testCreatePhpProject() {
-        category = "PHP";
-        project = Bundle.getString("org.netbeans.modules.php.project.ui.wizards.Bundle", "Templates/Project/PHP/PHPProject.php");
-        project_type = "PHPApplication";
-        editor_name = "index.php";
-        doMeasurement();        
+    public void testCreateRubyProject() {
+        category = "Ruby";
+        project = Bundle.getString("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle",
+                "Templates/Project/Ruby/emptyRuby.xml");
+        project_type = "RubyProject";
+        editor_name = "main.rb";
+        doMeasurement();
     }
     
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(CreatePHPProject.class)
-            .enableModules(".*")
-            .clusters(".*")
-            .reuseUserDir(true)
-        );    
+    public void testCreateRubyOnRailsProject() {
+        category = "Ruby";
+        project = "Ruby on Rails Application";
+        project_type = "RailsProject";
+        editor_name = "database.yml";
+        doMeasurement();
     }
+
 }

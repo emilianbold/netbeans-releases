@@ -41,68 +41,55 @@
 package org.netbeans.performance.languages.actions;
 
 
-import javax.swing.JComponent;
+import java.io.File;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  *
- * @author mkhramov@netbeans.org
+ * @author mkhramov@netbeans.org, mrkam@netbeans.org
  */
-public class CreateRubyProject  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class CreatePHPSampleProjectTest  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
     public static final String suiteName="Scripting UI Responsiveness Actions suite";
     private NewProjectNameLocationStepOperator wizard_location;
     
-    public String category, project, project_name, project_type,  editor_name;
+    public String category, project, project_name, project_type;
     
-    public CreateRubyProject(String testName) {
+    public CreatePHPSampleProjectTest(String testName)
+    {
         super(testName);        
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;
+        WAIT_AFTER_OPEN=20000;        
     }
     
-    public CreateRubyProject(String testName, String performanceDataName) {
+    public CreatePHPSampleProjectTest(String testName, String performanceDataName)
+    {
         super(testName,performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;
+        WAIT_AFTER_OPEN=20000;        
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(CreatePHPSampleProjectTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
     @Override
     public void initialize(){
-        log("::initialize::");
+        log("::initialize::");              
 
-        repaintManager().addRegionFilter(new LoggingRepaintManager.RegionFilter() {
-
-            public boolean accept(JComponent c) {
-                String cn = c.getClass().getName();
-                if ("javax.swing.JRootPane".equals(cn)
-                        && "org.netbeans.core.windows.view.ui.MainWindow".equals(
-                        c.getParent().getClass().getName())) {
-                    return false;
-                } else if ("null.nbGlassPane".equals(c.getName())) {
-                    return false;
-                } else {
-                    return true;
-                }
-            }
-
-            public String getFilterName() {
-                return "Ignores JRootPane under MainWindow, and nbGlassPane";
-            }
-        });
-
-        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
-        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_EXPLORER_TREE_FILTER);
-        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_DIFF_SIDEBAR_FILTER);
-
+        log("org.netbeans.modules.php.samples.donotopenreadmehtml = "
+                + System.getProperty("org.netbeans.modules.php.samples.donotopenreadmehtml"));
         closeAllModal();
     }
 
@@ -120,62 +107,64 @@ public class CreateRubyProject  extends org.netbeans.modules.performance.utiliti
         wizard_location = new NewProjectNameLocationStepOperator();
         
         String directory = CommonUtilities.getTempDir() + "createdProjects";
-       
+
+        // TODO Remove this workaround once issue 145104 is fixed
+        new File(directory).mkdirs();
+
         wizard_location.txtProjectLocation().setText("");
         waitNoEvent(1000);
-        wizard_location.txtProjectLocation().setText(directory);
+        wizard_location.txtProjectLocation().typeText(directory);
         
         project_name = project_type + "_" + System.currentTimeMillis();
+        log("================= Project name="+project_name+"}");
         wizard_location.txtProjectName().setText("");
         waitNoEvent(1000);
         wizard_location.txtProjectName().typeText(project_name);
     }
 
-    public ComponentOperator open() {
+    public ComponentOperator open(){
         log("::open");    
         wizard_location.finish();
-        long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
-        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",120000);
+        
+        //long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
+        //JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
+        //System.out.println("wait wizard closed...");
         wizard_location.waitClosed();
+        //System.out.println("done1...");
+        //System.out.println("project creation dialog closed");
+        //waitProjectCreatingDialogClosed();
+        //System.out.println("done2....");
 
-        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",oldTimeout);        
-
-        TopComponentOperator.findTopComponent(editor_name, 0);
+        //JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", oldTimeout);
+        
         return null;
     }
     
     @Override
-    public void close() {
+    public void close(){
         log("::close");
 
 //        ProjectSupport.closeProject(project_name);
     }    
     
-    public void testCreateRubyProject() {
-        category = "Ruby";
-        project = Bundle.getString("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle",
-                "Templates/Project/Ruby/emptyRuby.xml");
-        project_type = "RubyProject";
-        editor_name = "main.rb";
-        doMeasurement();
-    }
+//    private void waitProjectCreatingDialogClosed()
+//    {
+//       String dlgName = Bundle.getString("org.netbeans.modules.visualweb.project.jsf.ui.Bundle", "CAP_Opening_Projects");
+//       try {
+//           NbDialogOperator dlg = new NbDialogOperator(dlgName);
+//           dlg.waitClosed();
+//       } catch(TimeoutExpiredException tex) {
+//           tex.printStackTrace(getLog());
+//       }
+//
+//    }
     
-    public void testCreateRubyOnRailsProject() {
-        category = "Ruby";
-        project = "Ruby on Rails Application";
-        project_type = "RailsProject";
-        editor_name = "database.yml";
+    public void testCreatePhpSampleProject() {
+        category = "Samples|PHP";        
+        project = Bundle.getStringTrimmed("org.netbeans.modules.php.samples.Bundle",
+                "Templates/Project/Samples/PHP/AirAlliance");  // "Air Alliance Sample Application"
+        project_type="PHPSampleApp";              
         doMeasurement();
     }
 
-    public static Test suite() {
-        prepareForMeasurements();
-
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(CreateRubyProject.class)
-            .enableModules(".*")
-            .clusters(".*")
-            .reuseUserDir(true)
-        );    
-    }
 }

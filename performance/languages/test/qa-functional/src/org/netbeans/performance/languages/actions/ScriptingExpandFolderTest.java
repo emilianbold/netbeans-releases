@@ -53,13 +53,15 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 
-
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class ScriptingExpandFolder extends PerformanceTestCase {
+public class ScriptingExpandFolderTest extends PerformanceTestCase {
     public static final String suiteName="Scripting UI Responsiveness Actions suite";
     /** Name of the folder which test creates and expands */
     protected String project;
@@ -73,11 +75,19 @@ public class ScriptingExpandFolder extends PerformanceTestCase {
     /** Projects tab */
     protected ProjectsTabOperator projectTab;
     
-    public ScriptingExpandFolder(String testName) {
+    public ScriptingExpandFolderTest(String testName) {
         super(testName);
     }
-    public ScriptingExpandFolder(String testName, String performanceDataName) {
+    public ScriptingExpandFolderTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(ScriptingExpandFolderTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
     @Override
@@ -204,14 +214,4 @@ public class ScriptingExpandFolder extends PerformanceTestCase {
         System.setProperty("perf.dont.resolve.java.badges", "false");
     }    
 
-    public static Test suite() {
-        prepareForMeasurements();
-
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(ScriptingExpandFolder.class)
-            .enableModules(".*")
-            .clusters(".*")
-            .reuseUserDir(true)
-        );
-    }
 }
