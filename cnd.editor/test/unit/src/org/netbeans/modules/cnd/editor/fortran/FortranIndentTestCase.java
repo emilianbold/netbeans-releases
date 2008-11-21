@@ -299,15 +299,15 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 );
     }
 
-//    public void testSubroutine2Free() {
-//        setLoadDocumentText(
-//                "recursive subroutine p(c)|");
-//        setDefaultsOptions();
-//        indentNewLine();
-//        assertDocumentTextAndCaret("Incorrect new-line subroutine indent (free form)",
-//                "recursive subroutine p(c)\n" +
-//                "    |");
-//    }
+    public void testSubroutine2Free() {
+        setLoadDocumentText(
+                "recursive subroutine p(c)|");
+        setDefaultsOptions();
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect new-line subroutine indent (free form)",
+                "recursive subroutine p(c)\n" +
+                "    |");
+    }
 
     public void testBlockDataFree() {
         setLoadDocumentText(
@@ -329,74 +329,74 @@ public class FortranIndentTestCase extends FortranEditorBase {
                 "    |");
     }
 
-//    public void testEndBlockDataFree() {
-//        setLoadDocumentText(
-//                "BLoCKdatA Unit\n" +
-//                "    DoublePrecision A\n" +
-//                "    datA a/1d0/\n" +
-//                "    COMMOn /a/ a\n" +
-//                "   eNDBLOCKdat|");
-//        setDefaultsOptions();
-//        typeChar('a', true);
-//        assertDocumentTextAndCaret("Incorrect block data indent (free form)",
-//                "BLoCKdatA Unit\n" +
-//                "    DoublePrecision A\n" +
-//                "    datA a/1d0/\n" +
-//                "    COMMOn /a/ a\n" +
-//                "eNDBLOCKdata|");
-//    }
-//
-//    public void testEndBlockData2Free() {
-//        setLoadDocumentText(
-//                "BLoCKdatA Unit\n" +
-//                "    DoublePrecision A\n" +
-//                "    datA a/1d0/\n" +
-//                "    COMMOn /a/ a\n" +
-//                "   eND BLOCK dat|");
-//        setDefaultsOptions();
-//        typeChar('a', true);
-//        assertDocumentTextAndCaret("Incorrect block data indent (free form)",
-//                "BLoCKdatA Unit\n" +
-//                "    DoublePrecision A\n" +
-//                "    datA a/1d0/\n" +
-//                "    COMMOn /a/ a\n" +
-//                "eND BLOCK data|");
-//    }
-//
-//    public void testEndBlockData3Free() {
-//        setLoadDocumentText(
-//                "BLoCKdatA Unit\n" +
-//                "    DoublePrecision A\n" +
-//                "    datA a/1d0/\n" +
-//                "    COMMOn /a/ a\n" +
-//                "   eND BLOCKdat|");
-//        setDefaultsOptions();
-//        typeChar('a', true);
-//        assertDocumentTextAndCaret("Incorrect block data indent (free form)",
-//                "BLoCKdatA Unit\n" +
-//                "    DoublePrecision A\n" +
-//                "    datA a/1d0/\n" +
-//                "    COMMOn /a/ a\n" +
-//                "eND BLOCKdata|");
-//    }
-//
-//    public void testEndBlockData4Free() {
-//        setLoadDocumentText(
-//                "BLoCKdatA Unit\n" +
-//                "    DoublePrecision A\n" +
-//                "    datA a/1d0/\n" +
-//                "    COMMOn /a/ a\n" +
-//                "   eNDBLOCK dat|");
-//        setDefaultsOptions();
-//        typeChar('a', true);
-//        assertDocumentTextAndCaret("Incorrect block data indent (free form)",
-//                "BLoCKdatA Unit\n" +
-//                "    DoublePrecision A\n" +
-//                "    datA a/1d0/\n" +
-//                "    COMMOn /a/ a\n" +
-//                "eNDBLOCK data|");
-//    }
-//
+    public void testEndBlockDataFree() {
+        setLoadDocumentText(
+                "BLoCKdatA Unit\n" +
+                "    DoublePrecision A\n" +
+                "    datA a/1d0/\n" +
+                "    COMMOn /a/ a\n" +
+                "   eNDBLOCKdat|");
+        setDefaultsOptions();
+        typeChar('a', true);
+        assertDocumentTextAndCaret("Incorrect block data indent (free form)",
+                "BLoCKdatA Unit\n" +
+                "    DoublePrecision A\n" +
+                "    datA a/1d0/\n" +
+                "    COMMOn /a/ a\n" +
+                "eNDBLOCKdata|");
+    }
+
+    public void testEndBlockData2Free() {
+        setLoadDocumentText(
+                "BLoCKdatA Unit\n" +
+                "    DoublePrecision A\n" +
+                "    datA a/1d0/\n" +
+                "    COMMOn /a/ a\n" +
+                "   eND BLOCK dat|");
+        setDefaultsOptions();
+        typeChar('a', true);
+        assertDocumentTextAndCaret("Incorrect block data indent (free form)",
+                "BLoCKdatA Unit\n" +
+                "    DoublePrecision A\n" +
+                "    datA a/1d0/\n" +
+                "    COMMOn /a/ a\n" +
+                "eND BLOCK data|");
+    }
+
+    public void testEndBlockData3Free() {
+        setLoadDocumentText(
+                "BLoCKdatA Unit\n" +
+                "    DoublePrecision A\n" +
+                "    datA a/1d0/\n" +
+                "    COMMOn /a/ a\n" +
+                "   eND BLOCKdat|");
+        setDefaultsOptions();
+        typeChar('a', true);
+        assertDocumentTextAndCaret("Incorrect block data indent (free form)",
+                "BLoCKdatA Unit\n" +
+                "    DoublePrecision A\n" +
+                "    datA a/1d0/\n" +
+                "    COMMOn /a/ a\n" +
+                "eND BLOCKdata|");
+    }
+
+    public void testEndBlockData4Free() {
+        setLoadDocumentText(
+                "BLoCKdatA Unit\n" +
+                "    DoublePrecision A\n" +
+                "    datA a/1d0/\n" +
+                "    COMMOn /a/ a\n" +
+                "   eNDBLOCK dat|");
+        setDefaultsOptions();
+        typeChar('a', true);
+        assertDocumentTextAndCaret("Incorrect block data indent (free form)",
+                "BLoCKdatA Unit\n" +
+                "    DoublePrecision A\n" +
+                "    datA a/1d0/\n" +
+                "    COMMOn /a/ a\n" +
+                "eNDBLOCK data|");
+    }
+
 //    public void testElseIfFree() {
 //        setLoadDocumentText(
 //                "program A\n" +

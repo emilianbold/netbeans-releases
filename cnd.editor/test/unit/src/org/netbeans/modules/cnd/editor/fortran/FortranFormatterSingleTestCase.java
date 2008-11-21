@@ -48,52 +48,20 @@ public class FortranFormatterSingleTestCase  extends FortranEditorBase {
     public FortranFormatterSingleTestCase(String testMethodName) {
         super(testMethodName);
     }
-    public void testPreprocessorFree() {
+    public void testEndBlockData4Free() {
         setLoadDocumentText(
-                "#include \"file\"\n" +
-                "#define A\n" +
-                "#if defined A\n" +
-                "#undef A\n" +
-                "print *, \"this block_1 must be NOT in output text\"\n" +
-                "#elif 1\n" +
-                "print *, \"this block_2 must be in output text\"\n" +
-                "print *, \"and this string too\"\n" +
-                "#else\n" +
-                "print *, \"this block_3 must be NOT in output text\"\n" +
-                "#endif\n" +
-                "if (1 > 0) then\n" +
-                "#if 0\n" +
-                "    print *, \"this block_1 must be NOT in output text\"\n" +
-                "#elif (1 > 5)\n" +
-                "    print *, \"this block_3 must be NOT in output text\"\n" +
-                "#else\n" +
-                "    print *, \"this block_2 must be in output text\"\n" +
-                "#endif\n" +
-                "endif\n" +
-                "end");
+                "BLoCKdatA Unit\n" +
+                "    DoublePrecision A\n" +
+                "    datA a/1d0/\n" +
+                "    COMMOn /a/ a\n" +
+                "   eNDBLOCK dat|");
         setDefaultsOptions();
-        reformat();
-        assertDocumentText("Incorrect preprocessor reformat (free form)",
-                "#include \"file\"\n" +
-                "#define A\n" +
-                "#if defined A\n" +
-                "#undef A\n" +
-                "print *, \"this block_1 must be NOT in output text\"\n" +
-                "#elif 1\n" +
-                "print *, \"this block_2 must be in output text\"\n" +
-                "print *, \"and this string too\"\n" +
-                "#else\n" +
-                "print *, \"this block_3 must be NOT in output text\"\n" +
-                "#endif\n" +
-                "if (1 > 0) then\n" +
-                "#if 0\n" +
-                "    print *, \"this block_1 must be NOT in output text\"\n" +
-                "#elif (1 > 5)\n" +
-                "    print *, \"this block_3 must be NOT in output text\"\n" +
-                "#else\n" +
-                "    print *, \"this block_2 must be in output text\"\n" +
-                "#endif\n" +
-                "endif\n" +
-                "end");
+        typeChar('a', true);
+        assertDocumentTextAndCaret("Incorrect block data indent (free form)",
+                "BLoCKdatA Unit\n" +
+                "    DoublePrecision A\n" +
+                "    datA a/1d0/\n" +
+                "    COMMOn /a/ a\n" +
+                "eNDBLOCK data|");
     }
 }

@@ -102,6 +102,20 @@ public enum FortranHotCharIndent {
                 }
             } catch (BadLocationException e) {
             }
+        } else if ("a".equals(typedText) || "a".equals(typedText)) { // NOI18N
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, "endblockdata")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "end blockdata")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "end block data")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "endblock data")) { // NOI18N
+                    return true;
+                }
+            } catch (BadLocationException e) {
+            }
         }
         if (typedText != null && typedText.length() == 1 && Character.isLetter(typedText.charAt(0))) {
             try {
