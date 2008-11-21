@@ -296,7 +296,6 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         return findActionForShortcut (shortcut, "", false, null, "");
     }
 
-    //TODO: adjust CC to not offer prefix of a multi-keybinding
     /**
      * Finds action with conflicting shortcut (or a prefix, for a multi-keybinding)
      * for a shortcut
