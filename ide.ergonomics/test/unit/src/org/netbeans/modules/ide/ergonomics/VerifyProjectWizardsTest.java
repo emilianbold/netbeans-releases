@@ -60,6 +60,7 @@ public class VerifyProjectWizardsTest extends NbTestCase {
             NbModuleSuite.emptyConfiguration().
             addTest(VerifyProjectWizardsTest.class).
             gui(false).
+            clusters("ergonomics.*").
             clusters(".*")
         );
     }
