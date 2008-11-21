@@ -49,8 +49,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.Document;
 import javax.tools.JavaFileManager;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.CachingFileManager;
@@ -202,6 +206,14 @@ public final class ClasspathInfo {
             DataObject dObj = (DataObject) source;
             return create(dObj.getPrimaryFile());
         } else {
+            final String mimeType = (String) doc.getProperty("mimeType"); //NOI18N
+            if ("text/x-dialog-binding".equals(mimeType)) { //NOI18N
+                InputAttributes attributes = (InputAttributes) doc.getProperty(InputAttributes.class);
+                LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
+                FileObject fileObject = (FileObject) attributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
+                if (fileObject != null)
+                    return create(fileObject);
+            }
             return null;
         }
     }

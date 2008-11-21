@@ -262,9 +262,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                     anchorOffset = -1;
                     Source source = null;
                     if (queryType == DOCUMENTATION_QUERY_TYPE && element != null) {
-                        FileObject fo = SourceUtils.getFile(element, ClasspathInfo.create(doc));
-                        if (fo != null)
-                            source = Source.create(fo);
+                        ClasspathInfo cpInfo = ClasspathInfo.create(doc);
+                        if (cpInfo != null) {
+                            FileObject fo = SourceUtils.getFile(element, cpInfo);
+                            if (fo != null)
+                                source = Source.create(fo);
+                        }
                     }
                     if (source == null)
                         source = Source.create(doc);
