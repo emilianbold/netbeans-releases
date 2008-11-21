@@ -37,59 +37,46 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.api.metadata;
+package org.netbeans.modules.db.metadata.model.spi;
 
-import java.sql.Types;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.metadata.model.api.Action;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
-import org.netbeans.modules.db.metadata.model.api.MetadataModel;
-import org.netbeans.modules.db.metadata.model.api.Table;
-import org.netbeans.modules.db.test.DBTestBase;
-import org.netbeans.modules.db.test.DDLTestBase;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.netbeans.modules.db.metadata.model.api.Nullable;
+import org.netbeans.modules.db.metadata.model.api.Parameter;
+import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
+import org.netbeans.modules.db.metadata.model.api.Procedure;
+import org.netbeans.modules.db.metadata.model.api.SQLType;
 
 /**
  *
- * @author David
+ * @author Andrei Badea
  */
-public class DBConnMetadataModelProviderTest extends DDLTestBase {
-    private static final Action<Metadata> CHECK_TABLE_EXISTS_ACTION = new Action<Metadata>() {
-        public void run(Metadata md) {
-            assertNotNull(getTestTable(md));
+public abstract class ParameterImplementation {
+
+    private Parameter param;
+
+    public final Parameter getParameter() {
+        if (param == null) {
+            param = MetadataAccessor.getDefault().createParameter(this);
         }
-    };
-
-    private static Table getTestTable(Metadata md) {
-        return md.getDefaultSchema().getTable(DBTestBase.getTestTableName());
+        return param;
     }
 
-    public DBConnMetadataModelProviderTest(String name) {
-        super(name);
-    }
+    public abstract Direction getDirection();
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
+    public abstract Procedure getParent();
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
+    public abstract String getName();
 
-    /**
-     * Test of get method, of class DBConnMetadataModelProvider.
-     */
-    @Test
-    public void testGet() throws Exception {
-        DatabaseConnection dbconn = getDatabaseConnection(true);
-        createTestTable();
+    public abstract int getPrecision();
 
-        MetadataModel model = DBConnMetadataModelProvider.get(dbconn);
-        assertNotNull(model);
-        
-        model.runReadAction(CHECK_TABLE_EXISTS_ACTION);
-    }
+    public abstract short getRadix();
+
+    public abstract short getScale();
+
+    public abstract SQLType getType();
+
+    public abstract int getLength();
+
+    public abstract Nullable getNullable();
+
 }

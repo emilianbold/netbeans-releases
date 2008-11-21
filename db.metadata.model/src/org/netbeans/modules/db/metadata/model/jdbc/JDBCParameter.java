@@ -37,25 +37,80 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.jdbc;
 
-import java.sql.Connection;
-import org.netbeans.modules.db.metadata.model.JDBCConnMetadataModel;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import java.util.logging.Logger;
+import org.netbeans.modules.db.metadata.model.api.Nullable;
+import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
+import org.netbeans.modules.db.metadata.model.api.Procedure;
+import org.netbeans.modules.db.metadata.model.api.SQLType;
+import org.netbeans.modules.db.metadata.model.spi.ParameterImplementation;
 
 /**
- * Provides access to the database model for DB Explorer database connections.
- * This class is temporary, as such acess should be provided directly by
- * the DB Explorer through a {@code DatabaseConnection.getMetadataModel()} method.
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class MetadataModels {
+class JDBCParameter extends ParameterImplementation {
 
+    private static final Logger LOGGER = Logger.getLogger(JDBCParameter.class.getName());
+    private final JDBCProcedure jdbcProcedure;
+    private final Direction direction;
+    private final JDBCValue value;
 
-    private MetadataModels() {}
-
-    public static MetadataModel createModel(Connection conn, String defaultSchemaName) {
-        return MetadataAccessor.getDefault().createMetadataModel(new JDBCConnMetadataModel(conn, defaultSchemaName));
+    public JDBCParameter(JDBCProcedure jdbcProcedure, JDBCValue value, Direction direction) {
+        this.jdbcProcedure = jdbcProcedure;
+        this.direction = direction;
+        this.value = value;
     }
+
+    @Override
+    public String toString() {
+        return "JDBCParameter[name='" + getName() + "']"; // NOI18N
+    }
+
+    @Override
+    public Procedure getParent() {
+        return jdbcProcedure.getProcedure();
+    }
+
+    @Override
+    public Direction getDirection() {
+        return direction;
+    }
+
+    @Override
+    public String getName() {
+        return value.getName();
+    }
+
+    @Override
+    public int getPrecision() {
+        return value.getPrecision();
+    }
+
+    @Override
+    public short getRadix() {
+        return value.getRadix();
+    }
+
+    @Override
+    public short getScale() {
+        return value.getScale();
+    }
+
+    @Override
+    public SQLType getType() {
+        return value.getType();
+    }
+
+    @Override
+    public int getLength() {
+        return value.getLength();
+    }
+
+    @Override
+    public Nullable getNullable() {
+        return value.getNullable();
+    }
+
 }

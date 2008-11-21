@@ -39,23 +39,69 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import java.sql.Connection;
-import org.netbeans.modules.db.metadata.model.JDBCConnMetadataModel;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import java.util.Collection;
+import org.netbeans.modules.db.metadata.model.spi.ViewImplementation;
 
 /**
- * Provides access to the database model for DB Explorer database connections.
- * This class is temporary, as such acess should be provided directly by
- * the DB Explorer through a {@code DatabaseConnection.getMetadataModel()} method.
  *
  * @author Andrei Badea
  */
-public class MetadataModels {
+public class View extends Tuple {
 
+    final ViewImplementation impl;
 
-    private MetadataModels() {}
+    View(ViewImplementation impl) {
+        this.impl = impl;
+    }
 
-    public static MetadataModel createModel(Connection conn, String defaultSchemaName) {
-        return MetadataAccessor.getDefault().createMetadataModel(new JDBCConnMetadataModel(conn, defaultSchemaName));
+    /**
+     * Returns the schema containing this table.
+     *
+     * @return the parent schema.
+     */
+    public Schema getParent() {
+        return impl.getParent();
+    }
+
+    /**
+     * Returns the name of this table; never {@code null}.
+     *
+     * @return the name.
+     */
+    public String getName() {
+        return impl.getName();
+    }
+
+    /**
+     * Returns the columns in this table.
+     *
+     * @return the columns.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
+     */
+    public Collection<Column> getColumns() {
+        return impl.getColumns();
+    }
+
+    /**
+     * Returns the column with the given name.
+     *
+     * @param name a column name.
+     * @return a column named {@code name} or {@code null} if there is no such column.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
+     */
+    public Column getColumn(String name) {
+        return impl.getColumn(name);
+    }
+
+    /**
+     * Refresh the table metadata from the database
+     */
+    public void refresh() {
+        impl.refresh();
+    }
+
+    @Override
+    public String toString() {
+        return "View[name='" + getName() + "']"; // NOI18N
     }
 }

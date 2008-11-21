@@ -51,24 +51,31 @@ import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ViewImplementation;
 
 /**
- *
- * @author Andrei Badea
+ * This class delegates to an underlying table implementation, as basically
+ * a view is a kind of table.  I didn't do this as inheritance because I
+ * did not want to hard-code an inheritance relationship into the API.  Who
+ * knows, for some implementations, a view is not a table.
+ * 
+ * @author David Van Couvering
  */
-public class JDBCTable extends TableImplementation {
-
-    private static final Logger LOGGER = Logger.getLogger(JDBCTable.class.getName());
+public class JDBCView extends ViewImplementation {
+    private static final Logger LOGGER = Logger.getLogger(JDBCView.class.getName());
 
     private final JDBCSchema jdbcSchema;
     private final String name;
-
     private Map<String, Column> columns;
 
-    public JDBCTable(JDBCSchema jdbcSchema, String name) {
+    public JDBCView(JDBCSchema jdbcSchema, String name) {
         this.jdbcSchema = jdbcSchema;
         this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return "JDBCView[name='" + getName() + "']"; // NOI18N
     }
 
     public final Schema getParent() {
@@ -87,13 +94,8 @@ public class JDBCTable extends TableImplementation {
         return MetadataUtilities.find(name, initColumns());
     }
 
-    @Override
-    public String toString() {
-        return "JDBCTable[name='" + name + "']"; // NOI18N
-    }
-
     protected JDBCColumn createJDBCColumn(String name) {
-        return new JDBCColumn(this.getTable(), name);
+        return new JDBCColumn(this.getView(), name);
     }
 
     protected void createColumns() {
@@ -129,4 +131,5 @@ public class JDBCTable extends TableImplementation {
     public final void refresh() {
         columns = null;
     }
+
 }

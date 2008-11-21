@@ -37,25 +37,41 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.spi;
 
-import java.sql.Connection;
-import org.netbeans.modules.db.metadata.model.JDBCConnMetadataModel;
+import java.util.Collection;
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Parameter;
+import org.netbeans.modules.db.metadata.model.api.Procedure;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
- * Provides access to the database model for DB Explorer database connections.
- * This class is temporary, as such acess should be provided directly by
- * the DB Explorer through a {@code DatabaseConnection.getMetadataModel()} method.
  *
  * @author Andrei Badea
  */
-public class MetadataModels {
+public abstract class ProcedureImplementation {
 
+    private Procedure table;
 
-    private MetadataModels() {}
-
-    public static MetadataModel createModel(Connection conn, String defaultSchemaName) {
-        return MetadataAccessor.getDefault().createMetadataModel(new JDBCConnMetadataModel(conn, defaultSchemaName));
+    public final Procedure getProcedure() {
+        if (table == null) {
+            table = MetadataAccessor.getDefault().createProcedure(this);
+        }
+        return table;
     }
+
+    public abstract Schema getParent();
+
+    public abstract String getName();
+
+    public abstract Collection<Column> getColumns();
+
+    public abstract Column getColumn(String name);
+
+    public abstract Collection<Parameter> getParameters();
+
+    public abstract Parameter getParameter(String name);
+
+    public abstract void refresh();
 }

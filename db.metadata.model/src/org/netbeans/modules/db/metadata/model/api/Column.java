@@ -54,7 +54,7 @@ public class Column extends MetadataElement {
         this.impl = impl;
     }
 
-    public Table getParent() {
+    public Tuple getParent() {
         return impl.getParent();
     }
 

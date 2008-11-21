@@ -39,23 +39,11 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import java.sql.Connection;
-import org.netbeans.modules.db.metadata.model.JDBCConnMetadataModel;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import java.sql.DatabaseMetaData;
 
 /**
- * Provides access to the database model for DB Explorer database connections.
- * This class is temporary, as such acess should be provided directly by
- * the DB Explorer through a {@code DatabaseConnection.getMetadataModel()} method.
- *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class MetadataModels {
-
-
-    private MetadataModels() {}
-
-    public static MetadataModel createModel(Connection conn, String defaultSchemaName) {
-        return MetadataAccessor.getDefault().createMetadataModel(new JDBCConnMetadataModel(conn, defaultSchemaName));
-    }
+public enum Nullable {
+    NULLABLE, NOT_NULLABLE, UNKNOWN;
 }

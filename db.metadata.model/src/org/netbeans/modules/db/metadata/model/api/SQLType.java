@@ -39,23 +39,62 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import java.sql.Connection;
-import org.netbeans.modules.db.metadata.model.JDBCConnMetadataModel;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import java.sql.Types;
+import java.util.EnumSet;
 
 /**
- * Provides access to the database model for DB Explorer database connections.
- * This class is temporary, as such acess should be provided directly by
- * the DB Explorer through a {@code DatabaseConnection.getMetadataModel()} method.
+ * This is a type-safe enumeration wrapper around java.sql.Types
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class MetadataModels {
+public enum SQLType {
+    // Fixed length types
+    BIT(Types.BIT),
+    TINYINT(Types.TINYINT),
+    SMALLINT(Types.SMALLINT),
+    INTEGER(Types.INTEGER),
+    BIGINT(Types.BIGINT),
+    FLOAT(Types.FLOAT),
+    REAL(Types.REAL),
+    DOUBLE(Types.DOUBLE),
+    NUMERIC(Types.NUMERIC),
+    DECIMAL(Types.DECIMAL),
+    CHAR(Types.CHAR),
+    DATE(Types.DATE),
+    TIME(Types.TIME),
+    TIMESTAMP(Types.TIMESTAMP),
+    NULL(Types.NULL),
+    OTHER(Types.OTHER),
+    JAVA_OBJECT(Types.JAVA_OBJECT),
+    DISTINCT(Types.DISTINCT),
+    REF(Types.REF),
+    DATALINK(Types.DATALINK),
+    BOOLEAN(Types.BOOLEAN),
+    VARCHAR(Types.VARCHAR),
+    LONGVARCHAR(Types.LONGVARCHAR),
+    BINARY(Types.BINARY),
+    VARBINARY(Types.VARBINARY),
+    LONGVARBINARY(Types.LONGVARBINARY),
+    STRUCT(Types.STRUCT),
+    ARRAY(Types.ARRAY),
+    BLOB(Types.BLOB),
+    CLOB(Types.CLOB);
 
+    private final int javasqltype;
 
-    private MetadataModels() {}
+    private static EnumSet<SQLType> variableTypes;
 
-    public static MetadataModel createModel(Connection conn, String defaultSchemaName) {
-        return MetadataAccessor.getDefault().createMetadataModel(new JDBCConnMetadataModel(conn, defaultSchemaName));
+    SQLType(int type) {
+        this.javasqltype = type;
+    }
+
+    /**
+     * Get the java.sql.Type type specifier for the given SQLType
+     *
+     * @param type the SQLType type specifier
+     * @return the matching java.sql.Type type specifier
+     */
+    public int getJavaSQLType(SQLType type) {
+        return type.javasqltype;
     }
 }
