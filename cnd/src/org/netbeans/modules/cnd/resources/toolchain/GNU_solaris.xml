@@ -44,6 +44,16 @@ made subject to such option by the copyright holder.
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="GNU" display="GNU Solaris Compiler Collection" family="GNU"/>
     <platforms stringvalue="sun_intel,sun_sparc"/>
+    <assembler>
+        <compiler name="gas"/>
+        <version flags="-version"/>
+        <development_mode>
+            <debug flags="--gdwarf2" default="true"/>
+            <performance_debug flags="--gdwarf2"/>
+            <test_coverage flags="--gdwarf2"/>
+            <diagnosable_release flags="--gdwarf2"/>
+        </development_mode>
+    </assembler>
     <linker>
         <library_search flags="-L"/>
         <dynamic_library_search flags="-R"/>

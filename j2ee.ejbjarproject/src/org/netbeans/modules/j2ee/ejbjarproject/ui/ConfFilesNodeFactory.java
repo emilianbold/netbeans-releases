@@ -56,6 +56,7 @@ import org.openide.nodes.Node;
  *
  * @author gpatil
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-j2ee-ejbjarproject", position=200)
 public class ConfFilesNodeFactory implements NodeFactory {
 
     public ConfFilesNodeFactory() {

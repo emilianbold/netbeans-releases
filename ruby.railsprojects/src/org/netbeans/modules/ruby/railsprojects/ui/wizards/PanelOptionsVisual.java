@@ -50,7 +50,7 @@ import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
-import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
+import org.netbeans.modules.ruby.railsprojects.server.RailsServerUiUtils;
 import org.netbeans.modules.ruby.rubyproject.Util;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -112,7 +112,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         manageButton = new javax.swing.JButton();
         platforms = org.netbeans.modules.ruby.platform.PlatformComponentFactory.getRubyPlatformsComboxBox();
         serverLabel = new javax.swing.JLabel();
-        serverComboBox = RailsServerManager.getServerComboBox(getPlatform());
+        serverComboBox = RailsServerUiUtils.getServerComboBox(getPlatform());
 
         setPreferredSize(new java.awt.Dimension(226, 100));
 
@@ -205,7 +205,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     private void initServerComboBox(){
         RubyPlatform platform = getPlatform();
         if (platform != null) {
-            serverComboBox.setModel(new RailsServerManager.ServerListModel(getPlatform()));
+            serverComboBox.setModel(new RailsServerUiUtils.ServerListModel(getPlatform()));
         } else {
             serverComboBox.setModel(new DefaultComboBoxModel(new Object[]{}));
         }

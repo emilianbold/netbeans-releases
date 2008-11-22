@@ -49,7 +49,6 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
  *
@@ -135,7 +134,7 @@ public class CreatePHPSampleProject  extends org.netbeans.modules.performance.ut
     public void close(){
         log("::close");
 
-        ProjectSupport.closeProject(project_name);
+//        ProjectSupport.closeProject(project_name);
     }    
     
 //    private void waitProjectCreatingDialogClosed()

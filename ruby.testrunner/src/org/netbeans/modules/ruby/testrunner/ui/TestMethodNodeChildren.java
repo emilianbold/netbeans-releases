@@ -63,6 +63,7 @@ final class TestMethodNodeChildren extends Children.Array {
 
     /**
      */
+    @Override
     protected void addNotify() {
         Report.Trouble trouble = testcase.trouble;
 
@@ -128,11 +129,4 @@ final class TestMethodNodeChildren extends Children.Array {
         
         add(children);
     }
-    
-    /**
-     */
-    protected void removeNotify() {
-        remove(getNodes());
-    }
-    
 }

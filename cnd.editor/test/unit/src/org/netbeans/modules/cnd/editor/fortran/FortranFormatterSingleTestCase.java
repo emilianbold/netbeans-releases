@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
-import org.netbeans.modules.cnd.editor.deprecated.fortran.options.FortranCodeStyle;
+import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 
 /**
  *
@@ -50,5 +50,18 @@ public class FortranFormatterSingleTestCase  extends FortranEditorBase {
     public FortranFormatterSingleTestCase(String testMethodName) {
         super(testMethodName);
     }
-
+    public void testFunctionFixed() {
+        setLoadDocumentText(
+                "      Module A\n" +
+                "          INTERFACE\n" +
+                "              FUNCTION EXT3 (P, Q)|");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect function indent (fixed form)",
+                "      Module A\n" +
+                "          INTERFACE\n" +
+                "              FUNCTION EXT3 (P, Q)\n" +
+                "                  |");
+    }
 }

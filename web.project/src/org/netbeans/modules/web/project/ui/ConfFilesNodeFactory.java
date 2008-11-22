@@ -95,7 +95,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -104,6 +103,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkleint
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-web-project",position=500)
 public final class ConfFilesNodeFactory implements NodeFactory {
 
     /** Creates a new instance of ConfFilesNodeFactory */

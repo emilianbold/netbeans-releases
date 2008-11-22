@@ -41,6 +41,8 @@ public class FortranEditorUnitTest extends NbTestSuite {
         //addTestSuite(FortranBracketCompletionTestCase.class);
         addTestSuite(FortranIndentTestCase.class);
         addTestSuite(FortranFormatterTestCase.class);
+        addTestSuite(FortranFormatterFixedTestCase.class);
+        addTestSuite(LegecyFortranFormatterTestCase.class);
     }
 
     public static NbTestSuite suite() {

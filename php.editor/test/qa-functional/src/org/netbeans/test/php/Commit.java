@@ -70,6 +70,8 @@ import java.io.*;
 import java.util.Enumeration;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
+import javax.swing.SwingUtilities;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -196,17 +198,24 @@ public class Commit extends GeneralPHP
 
   protected CompletionInfo GetCompletion( )
   {
-    CompletionInfo result = new CompletionInfo( );
+    final CompletionInfo result = new CompletionInfo( );
     result.listItself = null;
     int iRedo = 10;
     while( true )
     {
       try
       {
-        result.listItself = new CompletionJListOperator( );
         try
         {
-          result.listItems = result.listItself.getCompletionItems( );
+          SwingUtilities.invokeAndWait(new Runnable() {
+              public void run() {
+                  result.listItself = new CompletionJListOperator();
+                  try {
+                      result.listItems = result.listItself.getCompletionItems();
+                  } catch (Exception ex) {
+                  }
+              }
+          });
           Object o = result.listItems.get( 0 );
           if(
               !o.toString( ).contains( "No suggestions" )
@@ -352,47 +361,43 @@ public class Commit extends GeneralPHP
     Sleep( 1000 );
 
     // Check code completion list
-    try
-    {
-      CompletionInfo completionInfo = GetCompletion( );
-      if( null == completionInfo )
-        fail( "NPE instead of competion info." );
-      // Magic CC number for complete list
-      if(
-          ( bInclass ? COMPLETION_LIST_INCLASS : COMPLETION_LIST_THRESHOLD )
-          > completionInfo.listItems.size( )
-        )
-      {
-        fail( "CC list looks to small, there are only: " + completionInfo.listItems.size( ) + " items in." );
+    try {
+      final CompletionInfo completionInfo = GetCompletion();
+      if (null == completionInfo) {
+          fail("NPE instead of competion info.");
+          // Magic CC number for complete list
+
+      }
+      if ((bInclass ? COMPLETION_LIST_INCLASS : COMPLETION_LIST_THRESHOLD) > completionInfo.listItems.size()) {
+          fail("CC list looks to small, there are only: " + completionInfo.listItems.size() + " items in.");
       }
 
-      if( !bInclass )
-      {
-        // Check some completions
-        String[] asCompletions =
-        {
-          "$GLOBALS",
-          "LC_MONETARY",
-          "ibase_wait_event",
-          "mysql_error",
-          "openssl_pkcs12_export_to_file",
-          "str_word_count",
-          "ZendAPI_Queue"
-        };
-        CheckCompletionItems( completionInfo.listItself, asCompletions );
-        //jCompl.clickOnItem( "$GLOBALS" );
-        //Sleep( 500 );
-        //CheckResult( eoPHP, "$GLOBALS" );
+      if (!bInclass) {
+          // Check some completions
+          final String[] asCompletions = {
+              "$GLOBALS",
+              "LC_MONETARY",
+              "ibase_wait_event",
+              "mysql_error",
+              "openssl_pkcs12_export_to_file",
+              "str_word_count",
+              "ZendAPI_Queue"
+          };
+          SwingUtilities.invokeAndWait(new Runnable() {
+              public void run() {
+                  CheckCompletionItems(completionInfo.listItself, asCompletions);
+              }
+          });
+          //jCompl.clickOnItem( "$GLOBALS" );
+          //Sleep( 500 );
+          //CheckResult( eoPHP, "$GLOBALS" );
 
-        completionInfo.listItself.hideAll( );
+          completionInfo.listItself.hideAll();
       }
+    } catch (Exception ex) {
+      ex.printStackTrace(System.out);
+      fail("Completion check failed: \"" + ex.getMessage() + "\"");
     }
-    catch( Exception ex )
-    {
-      ex.printStackTrace( System.out );
-      fail( "Completion check failed: \"" + ex.getMessage( ) + "\"" );
-    }
-
     // Brackets
     // Predefined
     String[] asCheckers =

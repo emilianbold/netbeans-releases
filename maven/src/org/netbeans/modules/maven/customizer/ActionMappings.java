@@ -167,15 +167,18 @@ public class ActionMappings extends javax.swing.JPanel {
         titles.put(ActionProvider.COMMAND_CLEAN, NbBundle.getMessage(ActionMappings.class, "COM_Clean_project"));
         titles.put(ActionProvider.COMMAND_COMPILE_SINGLE, NbBundle.getMessage(ActionMappings.class, "COM_Compile_file"));
         titles.put(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(ActionMappings.class, "COM_Debug_project"));
-        titles.put(ActionProvider.COMMAND_DEBUG_SINGLE, NbBundle.getMessage(ActionMappings.class, "COM_Debug_file"));
+        titles.put(ActionProvider.COMMAND_DEBUG_SINGLE + ".main", NbBundle.getMessage(ActionMappings.class, "COM_Debug_file_main"));
+        titles.put(ActionProvider.COMMAND_DEBUG_SINGLE + ".deploy", NbBundle.getMessage(ActionMappings.class, "COM_Debug_file_deploy"));
         titles.put(ActionProvider.COMMAND_DEBUG_STEP_INTO, null);
         titles.put(ActionProvider.COMMAND_DEBUG_TEST_SINGLE, NbBundle.getMessage(ActionMappings.class, "COM_Debug_test"));
         titles.put(ActionProvider.COMMAND_REBUILD, NbBundle.getMessage(ActionMappings.class, "COM_ReBuild_project"));
         titles.put(ActionProvider.COMMAND_RUN, NbBundle.getMessage(ActionMappings.class, "COM_Run_project"));
-        titles.put(ActionProvider.COMMAND_RUN_SINGLE, NbBundle.getMessage(ActionMappings.class, "COM_Run_file"));
+        titles.put(ActionProvider.COMMAND_RUN_SINGLE + ".main", NbBundle.getMessage(ActionMappings.class, "COM_Run_file_main"));
+        titles.put(ActionProvider.COMMAND_RUN_SINGLE + ".deploy", NbBundle.getMessage(ActionMappings.class, "COM_Run_file_deploy"));
         titles.put(ActionProvider.COMMAND_TEST, NbBundle.getMessage(ActionMappings.class, "COM_Test_project"));
         titles.put(ActionProvider.COMMAND_TEST_SINGLE, NbBundle.getMessage(ActionMappings.class, "COM_Test_file"));
         titles.put("profile", NbBundle.getMessage(ActionMappings.class, "COM_Profile_project"));
+        titles.put("javadoc", NbBundle.getMessage(ActionMappings.class, "COM_Javadoc_project"));
         comConfiguration.setEditable(false);
         comConfiguration.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -579,6 +582,8 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     
     private void loadMappings() {
         DefaultListModel model = new DefaultListModel();
+
+        boolean isWar = "war".equalsIgnoreCase(handle.getProject().getPackaging());
         if (handle != null) {
             addSingleAction(ActionProvider.COMMAND_BUILD, model);
             addSingleAction(ActionProvider.COMMAND_CLEAN, model);
@@ -586,11 +591,18 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             addSingleAction(ActionProvider.COMMAND_TEST, model);
             addSingleAction(ActionProvider.COMMAND_TEST_SINGLE, model);
             addSingleAction(ActionProvider.COMMAND_RUN, model);
-            addSingleAction(ActionProvider.COMMAND_RUN_SINGLE, model);
+            addSingleAction(ActionProvider.COMMAND_RUN_SINGLE + ".main", model);
+            if (isWar) {
+                addSingleAction(ActionProvider.COMMAND_RUN_SINGLE + ".deploy", model);
+            }
             addSingleAction(ActionProvider.COMMAND_DEBUG, model);
-            addSingleAction(ActionProvider.COMMAND_DEBUG_SINGLE, model);
+            addSingleAction(ActionProvider.COMMAND_DEBUG_SINGLE + ".main", model);
+            if (isWar) {
+                addSingleAction(ActionProvider.COMMAND_DEBUG_SINGLE + ".deploy", model);
+            }
             addSingleAction(ActionProvider.COMMAND_DEBUG_TEST_SINGLE, model);
             addSingleAction("profile", model);
+            addSingleAction("javadoc", model);
         }
         List customs = getActionMappings().getActions();
         if (customs != null) {

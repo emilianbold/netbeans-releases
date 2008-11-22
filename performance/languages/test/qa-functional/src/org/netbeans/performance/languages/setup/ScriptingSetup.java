@@ -41,9 +41,9 @@
 
 package org.netbeans.performance.languages.setup;
 
-
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
+import java.io.IOException;
+import org.openide.util.Exceptions;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.languages.Projects;
 
@@ -52,7 +52,6 @@ import org.netbeans.performance.languages.Projects;
  * @author mkhramov@netbeans.org
  */
 public class ScriptingSetup extends JellyTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Setup suite";
     
     public ScriptingSetup(String testName) {
         super(testName);
@@ -62,38 +61,48 @@ public class ScriptingSetup extends JellyTestCase {
         CommonUtilities.closeWelcome();
     }
 
-    public void testCloseAllDocuments() {
-        CommonUtilities.closeAllDocuments();
-    }
-
     public void testCloseMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();
     }
 
     public void testOpenRubyProject() {
-        openProject(Projects.RUBY_PROJECT);
+
+        try {
+            this.openDataProjects(Projects.RUBY_PROJECT);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
+
     public void testOpenRailsProject() {
-        openProject(Projects.RAILS_PROJECT);
+
+        try {
+            this.openDataProjects(Projects.RAILS_PROJECT);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     public void testOpenScriptingProject() {
-        openProject(Projects.SCRIPTING_PROJECT);
+
+        try {
+            this.openDataProjects(Projects.SCRIPTING_PROJECT);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    public void testOpenPHPProject() {
+
+        try {
+            this.openDataProjects(Projects.PHP_PROJECT);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public void testCloseTaskWindow() {
         CommonUtilities.closeTaskWindow();
     }
 
-    public void testOpenPHPProject() {
-        openProject(Projects.PHP_PROJECT);
-    }
-
-    public void openProject(String projectPath) {
-        String projectsDir = CommonUtilities.getProjectsDir() + projectPath;
-        Object prj = ProjectSupport.openProject(projectsDir);
-        assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
-    }
-    
 }

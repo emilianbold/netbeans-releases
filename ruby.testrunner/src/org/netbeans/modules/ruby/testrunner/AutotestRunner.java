@@ -50,8 +50,6 @@ import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.AutotestHandlerFactory;
-import org.netbeans.modules.ruby.testrunner.ui.Manager;
-import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.openide.filesystems.FileObject;
@@ -124,11 +122,7 @@ public class AutotestRunner implements TestRunner {
         TestSession session = new TestSession(displayName,
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
-                AutotestHandlerFactory.getHandlers(),
-                session,
-                true);
-        TestExecutionManager.getInstance().start(desc, recognizer);
+        TestExecutionManager.getInstance().start(desc, new AutotestHandlerFactory(), session);
     }
     
     private static void addRspecMediatorOptionsToEnv(Map<String, String> env) {

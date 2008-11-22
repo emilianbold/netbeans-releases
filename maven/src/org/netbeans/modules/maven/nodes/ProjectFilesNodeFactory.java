@@ -49,6 +49,7 @@ import org.openide.nodes.Node;
  * shows maven project files.
  * @author  Milos Kleint
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=700)
 public class ProjectFilesNodeFactory implements NodeFactory {
     
     /** Creates a new instance of ProjectFilesNodeFactory */

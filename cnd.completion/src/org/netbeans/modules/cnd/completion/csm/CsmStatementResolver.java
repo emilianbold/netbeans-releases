@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.completion.csm;
 
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
@@ -52,8 +53,6 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
-import java.util.Iterator;
-import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -70,26 +69,26 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
  * @author vv159170
  */
 public class CsmStatementResolver {
-    
+
     /** Creates a new instance of CsmStatementResolver */
     private CsmStatementResolver() {
     }
-    
-    /* 
+
+    /*
      * finds inner object for given offset and update context
      */
     public static boolean findInnerObject(CsmStatement stmt, int offset, CsmContext context) {
         if( stmt == null ) {
-            if (CsmUtilities.DEBUG) print("STATEMENT is null"); //NOI18N
+            print("STATEMENT is null"); //NOI18N
             return false;
-        } 
+        }
         if (!CsmOffsetUtilities.isInObject(stmt, offset)) {
-            if (CsmUtilities.DEBUG) print("Offset " + offset+ " is not in statement " + stmt); //NOI18N
+            print("Offset " + offset+ " is not in statement " + stmt); //NOI18N
             return false;
         }
         // update context of passed statements
         CsmContextUtilities.updateContext(stmt, offset, context);
-        
+
         CsmStatement.Kind kind = stmt.getKind();
         boolean found = true;
         switch (kind) {
@@ -128,32 +127,33 @@ public class CsmStatementResolver {
             case RETURN:
                 break;
             default:
-                if (CsmUtilities.DEBUG) print("unexpected statement kind"); //NOI18N
+                print("unexpected statement kind"); //NOI18N
                 break;
         }
         return found;
     }
-    
+
     private static boolean findInner(CsmCompoundStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
-        if( stmt != null ) {
-            for( Iterator iter = stmt.getStatements().iterator(); iter.hasNext(); ) {
-                CsmStatement curSt = (CsmStatement) iter.next();
-                if (findInnerObject(curSt, offset, context)) {
+        if (stmt != null) {
+            for (CsmStatement curSt : stmt.getStatements()) {
+                if (!CsmOffsetUtilities.sameOffsets(stmt, curSt) && findInnerObject(curSt, offset, context)) {
                     return true;
-                }                
+                }
             }
         }
         return false;
-    }      
-    
+    }
+
     private static boolean findInner(CsmTryCatchStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called";
-        if (findInnerObject(stmt.getTryStatement(), offset, context)) {
+        if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getTryStatement())
+                && findInnerObject(stmt.getTryStatement(), offset, context)) {
             return true;
         }
-        for( Iterator iter = stmt.getHandlers().iterator(); iter.hasNext(); ) {
-            if (findInnerObject((CsmStatement) iter.next(), offset, context)) {
+        for (CsmExceptionHandler handler : stmt.getHandlers()) {
+            if (!CsmOffsetUtilities.sameOffsets(stmt, handler)
+                    && findInnerObject(handler, offset, context)) {
                 return true;
             }
         }
@@ -164,46 +164,50 @@ public class CsmStatementResolver {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called";
         return findInner((CsmCompoundStatement) stmt, offset, context);
     }
-    
+
     private static boolean findInner(CsmIfStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called";
 
-        if (CsmOffsetUtilities.isInObject(stmt.getCondition(), offset)) {
-            if (CsmUtilities.DEBUG) print("in CONDITION of if statement "); //NOI18N
+        if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getCondition())
+                && CsmOffsetUtilities.isInObject(stmt.getCondition(), offset)) {
+            print("in CONDITION of if statement "); //NOI18N
             CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
             return true;
         }
-        if (findInnerObject(stmt.getThen(), offset, context)) {
-            if (CsmUtilities.DEBUG) print("in THEN: "); //NOI18N
+        if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getThen())
+                && findInnerObject(stmt.getThen(), offset, context)) {
+            print("in THEN: "); //NOI18N
             return true;
         }
-        if (findInnerObject(stmt.getElse(), offset, context)) {
-            if (CsmUtilities.DEBUG) print("in ELSE: ");     //NOI18N        
+        if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getElse())
+                && findInnerObject(stmt.getElse(), offset, context)) {
+            print("in ELSE: ");     //NOI18N
             return true;
         }
         return false;
     }
-    
+
     private static boolean findInner(CsmDeclarationStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in declaration statement when called"; //NOI18N
         List<CsmDeclaration> decls = stmt.getDeclarators();
         CsmDeclaration decl = CsmOffsetUtilities.findObject(decls, context, offset);
-        if (decl != null) {
-            if (CsmUtilities.DEBUG) print("we have declarator " + decl); //NOI18N
+        if (decl != null && (decls.size() == 1 || !CsmOffsetUtilities.sameOffsets(stmt, decl))) {
+            print("we have declarator " + decl); //NOI18N
             if (CsmKindUtilities.isClass(decl)) {
                 findInner((CsmClass)decl, offset, context);
             }
             if (CsmKindUtilities.isFunction(decl)) {
                 CsmFunction fun = (CsmFunction) decl;
-                
+
                 // check if offset in parameters
                 @SuppressWarnings("unchecked")
                 Collection<CsmParameter> params = fun.getParameters();
                 CsmParameter param = CsmOffsetUtilities.findObject(params, context, offset);
-                if (param != null) {
+                if (param != null && !CsmOffsetUtilities.sameOffsets(fun, param)) {
                     context.add(fun);
                     CsmType type = param.getType();
-                    if (CsmOffsetUtilities.isInObject(type, offset)) {
+                    if (!CsmOffsetUtilities.sameOffsets(param, type)
+                            && CsmOffsetUtilities.isInObject(type, offset)) {
                         context.setLastObject(type);
                     } else {
                         context.setLastObject(param);
@@ -218,141 +222,74 @@ public class CsmStatementResolver {
     private static boolean findInner(CsmClass clazz, int offset, CsmContext context) {
         CsmContextUtilities.updateContext(clazz, offset, context);
         CsmMember member = CsmOffsetUtilities.findObject(clazz.getMembers(), context, offset);
-        if (CsmKindUtilities.isClass(member)) {
-            findInner((CsmClass)member, offset, context);
-        } else if (CsmKindUtilities.isFunctionDefinition(member)) {
-            CsmContextUtilities.updateContext(member, offset, context);
-            findInnerObject(((CsmFunctionDefinition)member).getBody(), offset, context);
+        if (!CsmOffsetUtilities.sameOffsets(clazz, member)) {
+            if (CsmKindUtilities.isClass(member)) {
+                findInner((CsmClass)member, offset, context);
+            } else if (CsmKindUtilities.isFunctionDefinition(member)) {
+                CsmContextUtilities.updateContext(member, offset, context);
+                CsmCompoundStatement body = ((CsmFunctionDefinition)member).getBody();
+                if (!CsmOffsetUtilities.sameOffsets(member, body)) {
+                    findInnerObject(body, offset, context);
+                }
+            }
         }
         return true;
     }
 
     private static boolean findInner(CsmLoopStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
-        if (CsmOffsetUtilities.isInObject(stmt.getCondition(), offset)) {
-            if (CsmUtilities.DEBUG) print("in condition of loop statement isPostCheck()=" + stmt.isPostCheck()); //NOI18N
+        if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getCondition())
+                && CsmOffsetUtilities.isInObject(stmt.getCondition(), offset)) {
+            print("in condition of loop statement isPostCheck()=" + stmt.isPostCheck()); //NOI18N
             CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
             return true;
         }
-        return findInnerObject(stmt.getBody(), offset, context);
+        if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getBody())) {
+            return findInnerObject(stmt.getBody(), offset, context);
+        } else {
+            return false;
+        }
     }
-    
+
     private static boolean findInner(CsmForStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
         if (findInnerObject(stmt.getInitStatement(), offset, context)) {
-            if (CsmUtilities.DEBUG) print("in INIT of for statement"); //NOI18N
+            print("in INIT of for statement"); //NOI18N
             return true;
         }
         if (CsmOffsetUtilities.isInObject(stmt.getIterationExpression(), offset)) {
-            if (CsmUtilities.DEBUG) print("in ITERATION  of for statement"); //NOI18N
+            print("in ITERATION  of for statement"); //NOI18N
             CsmContextUtilities.updateContextObject(stmt.getIterationExpression(), offset, context);
             return true;
         }
         if (CsmOffsetUtilities.isInObject(stmt.getCondition(), offset)) {
-            if (CsmUtilities.DEBUG) print("in CONDITION of for statement "); //NOI18N
-            CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
-            return true;
-        }        
-        return findInnerObject(stmt.getBody(), offset, context);
-    }
-    
-    private static boolean findInner(CsmSwitchStatement stmt, int offset, CsmContext context) {
-        assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
-        if (CsmOffsetUtilities.isInObject(stmt.getCondition(), offset)) {
+            print("in CONDITION of for statement "); //NOI18N
             CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
             return true;
         }
-        return findInnerObject(stmt.getBody(), offset, context);
-    }    
-//    private static String toString(CsmExpression expr) {
-//        if( expr == null ) {
-//            return "null"; //NOI18N
-//        }
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("text='"); //NOI18N
-//        sb.append(expr.getText());
-//        sb.append("'"); //NOI18N
-//        return sb.toString();
-//    }
-    
-//    private static String toString(CsmType type) {
-//        StringBuilder sb = new StringBuilder();
-//        if( type == null ) {
-//            sb.append("null"); //NOI18N
-//        }
-//        else {
-//            if( type.isPointer() ) sb.append(" * "); //NOI18N
-//            if( type.isReference() ) sb.append(" & "); //NOI18N
-//            CsmClassifier classifier = type.getClassifier();
-//            sb.append(classifier == null ? "<null>": classifier.getName());
-//            for( int i = 0; i < type.getArrayDepth(); i++ ) {
-//                sb.append("[]"); //NOI18N
-//            }
-//        }
-//        return sb.toString();
-//    }
-    
-//    private static String toString(CsmCondition condition) {
-//        if( condition == null ) {
-//            return "null"; //NOI18N
-//        }
-//        StringBuilder sb = new StringBuilder(condition.getKind().toString());
-//        sb.append(' '); //NOI18N
-//        if( condition.getKind() == CsmCondition.Kind.EXPRESSION  ) {
-//            sb.append(toString(condition.getExpression()));
-//        }
-//        else { // condition.getKind() == CsmCondition.Kind.DECLARATION
-//            CsmVariable var = condition.getDeclaration();
-//            sb.append(toString(var));
-//        }
-//        return sb.toString();
-//    }
-//    
-//    private static String toString(CsmVariable var) {
-//        if( var == null ) {
-//            return "null"; //NOI18N
-//        }
-//        StringBuilder sb = new StringBuilder(var.getName());
-//        sb.append(getOffsetString(var));
-//        sb.append(" type: " + toString(var.getType())); //NOI18N
-//        return sb.toString();
-//    }
-//    
-//    private static String getOffsetString(CsmOffsetable obj) {
-//        return " [" + obj.getStartPosition() + '-' + obj.getEndPosition() + ']'; //NOI18N
-//    }
-    
+        if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getBody())) {
+            return findInnerObject(stmt.getBody(), offset, context);
+        } else {
+            return false;
+        }
+    }
+
+    private static boolean findInner(CsmSwitchStatement stmt, int offset, CsmContext context) {
+        assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
+        if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getCondition())
+                && CsmOffsetUtilities.isInObject(stmt.getCondition(), offset)) {
+            CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
+            return true;
+        }
+        if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getBody())) {
+            return findInnerObject(stmt.getBody(), offset, context);
+        } else {
+            return false;
+        }
+    }
+
     private static void print(String s) {
-        if (CsmUtilities.DEBUG) System.out.println(s);
-    }    
-    
-//    /*
-//     * container for found object
-//     * it could be CsmStatement of CsmObject
-//     */
-//    public static class Result {
-//        private CsmObject result;
-//        private CsmStatement container;
-//        
-//        public Result(CsmStatement container) {
-//            this(container, null);
-//        }
-//        
-//        public Result(CsmStatement container, CsmObject result) {
-//            this.container = container;
-//            this.result = result;
-//        }
-//        
-//        public boolean isStatement() {
-//            return result == null;
-//        }
-//        
-//        public CsmObject getObject() {
-//            return result;
-//        }
-//        
-//        public CsmStatement getLastStatement() {
-//            return container;
-//        }
-//    }
+        if (CsmUtilities.DEBUG) { System.out.println(s); }
+    }
+
 }

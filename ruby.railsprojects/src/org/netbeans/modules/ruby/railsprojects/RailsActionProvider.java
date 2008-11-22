@@ -42,8 +42,6 @@
 package org.netbeans.modules.ruby.railsprojects;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -57,28 +55,29 @@ import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectPropert
 import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.GotoTest;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
-import org.netbeans.modules.ruby.rubyproject.TestNotifier;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
+import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseActionProvider;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
+import org.netbeans.modules.ruby.rubyproject.TestNotifierLineConvertor;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
-import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -237,7 +236,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
                 testRunner.getInstance().runTest(file, isDebug);
             } else {
                 runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
-                        file.getNameExt(), context, isDebug, new OutputRecognizer[]{new TestNotifier(true, true)});
+                        file.getNameExt(), context, isDebug, new TestNotifierLineConvertor(true, true));
             }
             return;
 
@@ -380,14 +379,14 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
                     testRunner.getInstance().runTest(file, COMMAND_DEBUG_SINGLE.equals(command));
                 } else {
                     runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand,
-                            new OutputRecognizer[]{new TestNotifier(true, true)});
+                            new TestNotifierLineConvertor(true, true));
                 }
                 return;
             }
             
             if (path.length() == 0) {
                 // No corresponding URL - some other file we should just try to execute
-                runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand, null);
+                runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand);
                 return;
             }
 
@@ -395,51 +394,6 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
             return;
         }
         
-        if (COMMAND_RDOC.equals(command)) {
-            if (!platform.hasValidRake(true)) {
-                return;
-            }
-
-            // Run rake appdoc, then open <prj>/doc/app/index.html
-            LifecycleManager.getDefault().saveAll();
-            File pwd = FileUtil.toFile(project.getProjectDirectory());
-
-            Runnable showBrowser = new Runnable() {
-                public void run() {
-                    // TODO - wait for the file to be created
-                    // Open brower on the doc directory
-                    FileObject doc = project.getProjectDirectory().getFileObject("doc/app"); // NOI18N
-                    if (doc != null) {
-                        FileObject index = doc.getFileObject("index.html"); // NOI18N
-                        if (index != null) {
-                            try {
-                                URL url = FileUtil.toFile(index).toURI().toURL();
-
-                                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-                            }
-                            catch (MalformedURLException ex) {
-                                ErrorManager.getDefault().notify(ex);
-                            }
-                        }
-                    }
-                }
-            };
-            
-            RailsFileLocator fileLocator = new RailsFileLocator(context, project);
-            String displayName = NbBundle.getMessage(RailsActionProvider.class, "RakeDoc");
- 
-            new RubyExecution(new RubyExecutionDescriptor(getPlatform(), displayName, pwd, platform.getRake()).
-                    additionalArgs("appdoc"). // NOI18N
-                    postBuild(showBrowser).
-                    fileLocator(fileLocator).
-                    addStandardRecognizers(),
-                    getSourceEncoding()
-                    ).
-                    run();
-            
-            return;
-        }
-
         if (COMMAND_RSPEC.equals(command)) {
             boolean rspecTaskExists = RakeSupport.getRakeTask(project, RSPEC_TASK_NAME) != null;
             TestRunner testRunner = getTestRunner(TestRunner.TestType.RSPEC);
@@ -515,18 +469,17 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
             additionalArgs.add(railsEnv);
         } 
         
-        new RubyExecution(new RubyExecutionDescriptor(getPlatform(), displayName, pwd, script).
+        RubyExecutionDescriptor descriptor = new RubyExecutionDescriptor(getPlatform(), displayName, pwd, script).
                 showSuspended(false).
                 showProgress(false).
                 classPath(classPath).
                 allowInput().
                 // see #130264
                 additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()])). //NOI18N
-                fileLocator(new RailsFileLocator(context, project)).
-                addStandardRecognizers(),
-                getSourceEncoding()
-                ).
-                run();
+                fileLocator(new RailsFileLocator(context, project));
+        descriptor.addStandardRecognizers();
+        RubyProcessCreator rpc = new RubyProcessCreator(descriptor, getSourceEncoding());
+        ExecutionService.newService(rpc, descriptor.toExecutionDescriptor(), displayName).run();
                 
         // request focus for the output window - see #133519
         final String outputWindowId = "output"; //NOI18N
@@ -542,7 +495,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
     
     public RubyExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target,
             String displayName, final Lookup context, final boolean debug,
-            OutputRecognizer[] extraRecognizers) {
+            LineConvertor... extraConvertors) {
         String rubyOptions = SharedRubyProjectProperties.getRubyOptions(project);
 
         String includePath = RubyProjectUtil.getLoadPath(project);
@@ -596,11 +549,18 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         desc.additionalArgs(getApplicationArguments());
         desc.fileLocator(new RailsFileLocator(context, project));
         desc.addStandardRecognizers();
-        desc.addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT);
-        
-        if (extraRecognizers != null) {
-            for (OutputRecognizer recognizer : extraRecognizers) {
-                desc.addOutputRecognizer(recognizer);
+        LineConvertors.FileLocator locator = RubyProcessCreator.wrap(desc.getFileLocator());
+        desc.addOutConvertor(LineConvertors.filePattern(locator,
+                RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
+                RubyLineConvertorFactory.EXT_RE
+                ,1,2));
+        desc.addErrConvertor(LineConvertors.filePattern(locator,
+                RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
+                RubyLineConvertorFactory.EXT_RE
+                ,1,2));
+        if (extraConvertors != null) {
+            for (LineConvertor extra : extraConvertors) {
+                desc.addOutConvertor(extra);
             }
         }
 
