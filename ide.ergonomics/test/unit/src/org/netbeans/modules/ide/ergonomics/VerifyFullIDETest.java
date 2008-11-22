@@ -70,8 +70,18 @@ public class VerifyFullIDETest extends NbTestCase {
 
     public void testGetAllProjectFactories() throws Exception {
         StringBuilder sb = new StringBuilder();
-        Map<String,String> all = Feature2LayerMapping.nbprojectTypes();
+        Map<String,String> all = Feature2LayerMapping.projectFiles();
+
+        all.put("Fine", "org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton");
+        all.put("OK", "org.netbeans.modules.ruby.modules.project.rake.RakeBasedProjectFactorySingleton");
+        all.put("skip", "org.netbeans.modules.autoupdate.featureondemand.FeatureProjectFactory");
+        all.put("test", "org.netbeans.modules.autoupdate.featureondemand.api.TestFactory");
+
         iterateRegistrations(sb, ProjectFactory.class, null, all);
+
+        if (!all.isEmpty()) {
+            fail("No all IDE projects are registered for ergonomics mode:\n" + sb);
+        }
     }
 
     public void testGetAllNbProjects() throws Exception {
@@ -111,6 +121,13 @@ public class VerifyFullIDETest extends NbTestCase {
                 } else {
                     sb.append(" not present");
                     all.put("FAIL", more.toString());
+                }
+            } else {
+                if (all.values().remove(f.getClass().getName())) {
+                    sb.append(" OK");
+                } else {
+                    all.put("FAIL", f.getClass().getName());
+                    sb.append(" not present");
                 }
             }
             sb.append('\n');

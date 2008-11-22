@@ -62,7 +62,7 @@ public final class FeatureInfo {
     private final Internal internal = new Internal(this);
     private final Set<String> cnbs;
     final Map<String,String> nbproject = new HashMap<String,String>();
-    private final Map<String,String> files = new HashMap<String,String>();
+    final Map<String,String> files = new HashMap<String,String>();
 
     private FeatureInfo(Set<String> cnbs, URL delegateLayer) {
         this.cnbs = cnbs;
@@ -96,7 +96,7 @@ public final class FeatureInfo {
      * 
      * @param codeName name of module to check for
      * @param delegateLayer layer file to enable when the module 
-     * @param delegateFilePath relative path to some important file in project this module provides, file structure, or null
+     * @param delegateFilePath relative path to some important file in projectFile this module provides, file structure, or null
      * @return feature info descriptor to be used by the infrastructure
      */
     public static FeatureInfo create(String codeName, URL delegateLayer, String delegateFilePath) {
@@ -143,6 +143,23 @@ public final class FeatureInfo {
     }
 
     boolean isProject(FileObject dir, boolean deepCheck) {
+        if (isNbProject(dir, deepCheck)) {
+            return true;
+        } else {
+            if (files.isEmpty()) {
+                return false;
+            } else {
+                for (String s : files.keySet()) {
+                    if (dir.getFileObject(s) != null) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+    }
+
+    private boolean isNbProject(FileObject dir, boolean deepCheck) {
         if (nbproject.isEmpty()) {
             return false;
         } else {
@@ -185,5 +202,8 @@ public final class FeatureInfo {
 
     final void nbproject(String prjType, String clazz) {
         nbproject.put(prjType, clazz);
+    }
+    final void projectFile(String file, String clazz) {
+        files.put(file, clazz);
     }
 }

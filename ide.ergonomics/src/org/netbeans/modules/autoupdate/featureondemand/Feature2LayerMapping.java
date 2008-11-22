@@ -78,6 +78,16 @@ public class Feature2LayerMapping {
         }
         return map;
     }
+
+    public static Map<String,String> projectFiles() {
+        Map<String,String> map = new HashMap<String, String>();
+
+        Lookup.Result<FeatureInfo> result = featureTypesLookup().lookupResult(FeatureInfo.class);
+        for (FeatureInfo info : result.allInstances()) {
+            map.putAll(info.files);
+        }
+        return map;
+    }
     
     public Collection<URL> getLayerURLs () {
         List<URL> res = new ArrayList<URL>();
@@ -135,10 +145,17 @@ public class Feature2LayerMapping {
                         FeatureInfo info = FeatureInfo.create(s, layer);
 
                         final String prefix = "nbproject.";
+                        final String prefFile = "project.file.";
                         for (String key : p.stringPropertyNames()) {
                             if (key.startsWith(prefix)) {
                                 info.nbproject(
                                     key.substring(prefix.length()),
+                                    p.getProperty(key)
+                                );
+                            }
+                            if (key.startsWith(prefFile)) {
+                                info.projectFile(
+                                    key.substring(prefFile.length()),
                                     p.getProperty(key)
                                 );
                             }
