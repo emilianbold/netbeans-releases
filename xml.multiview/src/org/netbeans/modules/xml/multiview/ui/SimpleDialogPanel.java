@@ -291,11 +291,17 @@ public class SimpleDialogPanel extends JPanel {
         }
         
         /** Sets mnemonics for labels
+         * @deprecated Please use DialogDescriptor(String[] labels, boolean includesMnemonics)
+         * instead and provide mnemonics directly in labels (via &amp; escape chars)
          */
         public void setMnemonics(char[] mnem) {
             this.mnem=mnem;
         }
-        
+
+        /**
+         * @deprecated Please use DialogDescriptor(String[] labels, boolean includesMnemonics)
+         * instead and provide mnemonics directly in labels (via &amp; escape chars)
+         */
         public char[] getMnemonics() {
             return mnem;
         }

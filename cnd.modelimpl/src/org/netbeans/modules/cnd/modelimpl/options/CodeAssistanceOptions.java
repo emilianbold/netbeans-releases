@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.options;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -59,37 +58,33 @@ import org.w3c.dom.NodeList;
  * @author Sergey Grinev
  */
 public class CodeAssistanceOptions {
-    
+
     private AuxiliaryConfiguration aux;
-    
     private static final String CodeAssistanceData = "code-assistance-data"; //NOI18N
     private static final String CodeModelEnabled = "code-model-enabled"; //NOI18N
     private static final String ParseOrphanEnabled = "parse-orphan-enabled"; //NOI18N
-    
     private final String namespace;
     private final boolean shared;
-    
+
     // constructors
-    
     public CodeAssistanceOptions(Project project, boolean shared) {
         this.shared = shared;
         aux = ProjectUtils.getAuxiliaryConfiguration(project);
-        
-        AntBasedProjectType antPrj = ((AntBasedProjectType) project.getLookup().lookup(AntBasedProjectType.class));
+
+        AntBasedProjectType antPrj = (project.getLookup().lookup(AntBasedProjectType.class));
         namespace = antPrj.getPrimaryConfigurationDataElementNamespace(shared);
     }
-    
+
     public CodeAssistanceOptions(Project project) {
         this(project, false);
     }
-    
+
     // options
-    
     public boolean getCodeAssistanceEnabled() {
         String value = doLoad(CodeModelEnabled);
         return str2bool(value);
     }
-    
+
     public void setCodeAssistanceEnabled(Boolean enabled) {
         doSave(CodeModelEnabled, enabled.toString());
     }
@@ -102,12 +97,12 @@ public class CodeAssistanceOptions {
     public void setParseOrphanEnabled(Boolean enabled) {
         doSave(ParseOrphanEnabled, enabled.toString());
     }
-    
+
     // private methods
     private boolean str2bool(String value) {
         return (value == null) || (value.length() == 0) || Boolean.parseBoolean(value);
     }
-    
+
     private Element getConfigurationFragment() {
         Element data = aux.getConfigurationFragment(CodeAssistanceData, namespace, shared);
         if (data == null) {
@@ -119,7 +114,7 @@ public class CodeAssistanceOptions {
         }
         return data;
     }
-    
+
     private Element getNode(Element configurationFragment, String name) {
         NodeList nodes = configurationFragment.getElementsByTagNameNS(namespace, name);
         Element node;
@@ -127,14 +122,15 @@ public class CodeAssistanceOptions {
             node = configurationFragment.getOwnerDocument().createElementNS(namespace, name);
             configurationFragment.appendChild(node);
         } else {
-            node = (Element)nodes.item(0);
+            node = (Element) nodes.item(0);
         }
         return node;
     }
-    
+
     private String doLoad(final String name) {
-        return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+
+            public String run() {
                 Element configurationFragment = getConfigurationFragment();
                 if (configurationFragment == null) {
                     return null;
@@ -143,9 +139,10 @@ public class CodeAssistanceOptions {
             }
         });
     }
-    
+
     private void doSave(final String name, final String value) {
         ProjectManager.mutex().writeAccess(new Runnable() {
+
             public void run() {
                 Element configurationFragment = getConfigurationFragment();
                 if (configurationFragment != null) {
@@ -156,15 +153,14 @@ public class CodeAssistanceOptions {
             }
         });
     }
-    
+
     // utility
-    
     private static Document createDocument(String ns, String root) throws DOMException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
             return factory.newDocumentBuilder().getDOMImplementation().createDocument(ns, root, null);
         } catch (ParserConfigurationException ex) {
-            throw (DOMException)new DOMException(DOMException.NOT_SUPPORTED_ERR, "Cannot create parser").initCause(ex); // NOI18N
+            throw (DOMException) new DOMException(DOMException.NOT_SUPPORTED_ERR, "Cannot create parser").initCause(ex); // NOI18N
         }
     }
 }

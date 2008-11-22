@@ -40,7 +40,7 @@
                           <Component id="userTextField" alignment="0" pref="145" max="32767" attributes="3"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="leaveBlankLabel" pref="284" max="32767" attributes="1"/>
+                      <Component id="leaveBlankLabel" pref="288" max="32767" attributes="1"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="savePasswordCheckBox" min="-2" max="-2" attributes="0"/>
@@ -208,9 +208,9 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="userLabel1" min="-2" pref="136" max="-2" attributes="0"/>
-                      <Component id="userLabel2" min="-2" pref="136" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="userLabel2" max="32767" attributes="1"/>
+                      <Component id="userLabel1" alignment="0" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
