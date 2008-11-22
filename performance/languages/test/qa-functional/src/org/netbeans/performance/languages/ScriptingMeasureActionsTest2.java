@@ -46,7 +46,6 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.actions.*;
 
-
 /**
  *
  * @author mkhramov@netbeans.org, mrkam@netbeans.org
@@ -57,19 +56,14 @@ public class ScriptingMeasureActionsTest2 {
 
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
         System.setProperty("suitename", ScriptingMeasureActionsTest2.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness Scripting Actions suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(TypingInScriptingEditor.class)
-                .addTest(ScriptingCodeCompletionInEditor.class)
-                .addTest(OpenScriptingFiles.class)
-
-                // Saving modified document
-                .addTest(SaveModifiedScriptingFiles.class)
-
-                // Page Up and Down in scripting editor
-                .addTest(PageUpPageDownScriptingEditor.class)
-
-                // Can cause RubyProject to be closed in case of failure
-                .addTest(OpenRubyProject.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(TypingInScriptingEditorTest.class)
+                .addTest(ScriptingCodeCompletionInEditorTest.class)
+                .addTest(OpenScriptingFilesTest.class)
+                .addTest(SaveModifiedScriptingFilesTest.class)
+                .addTest(PageUpPageDownScriptingEditorTest.class)
+                .addTest(OpenRubyProjectTest.class)
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;        

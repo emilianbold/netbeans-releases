@@ -54,16 +54,16 @@ public class workingWithBranchesTestSuite extends JellyTestCase {
 
     public workingWithBranchesTestSuite(String testName) {
         super(testName);
-    }
-    
-    @Override
-    public void setUp() {
-        System.out.println("### "+getName()+" ###");
         try {
             TestKit.extractProtocol(getDataDir());
         } catch (Exception e ) {
             e.printStackTrace();
         }
+    }
+    
+    @Override
+    public void setUp() {
+        System.out.println("### "+getName()+" ###");
     }
 
     public static Test suite() {

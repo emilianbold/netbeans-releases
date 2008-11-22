@@ -46,7 +46,6 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.actions.*;
 
-
 /**
  *
  * @author mkhramov@netbeans.org, mrkam@netbeans.org
@@ -57,20 +56,20 @@ public class ScriptingMeasureActionsTest1 {
 
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
         System.setProperty("suitename", ScriptingMeasureActionsTest1.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness Scripting Actions suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateRubyProject.class)
-                .addTest(CreatePHPProject.class)
-                .addTest(CreatePHPSampleProject.class)
-                
-                .addTest(SavingPHPProjectProperties.class)
-                .addTest(CreateScriptingPackFiles.class)
-                .addTest(ScriptingExpandFolder.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateRubyProjectTest.class)
+                .addTest(CreatePHPProjectTest.class)
+                .addTest(CreatePHPSampleProjectTest.class)
+                .addTest(SavingPHPProjectPropertiesTest.class)
+                .addTest(CreateScriptingPackFilesTest.class)
+                .addTest(ScriptingExpandFolderTest.class)
                 .addTest(PHPNavigatorTest.class)
                 .addTest(GoToSourceTest.class)
                 .addTest(NavigateGoToSourceTest.class)
                 .addTest(FormatFileTest.class)
                 .addTest(CloseProjectTest.class)
-                .addTest(CloseScriptingFiles.class)
+                .addTest(CloseScriptingFilesTest.class)
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;        

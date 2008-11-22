@@ -44,12 +44,12 @@ package org.netbeans.test.cvsmodule;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.BranchOperator;
 import org.netbeans.jellytools.modules.javacvs.BrowseTagsOperator;
 import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
@@ -59,6 +59,7 @@ import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.modules.javacvs.SwitchToBranchOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -74,7 +75,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  */
 public class BranchTest extends JellyTestCase {
     
-    String os_name;
+    static String os_name;
     static String sessionCVSroot;
     boolean unix = false;
     final String projectName = "ForImport";
@@ -82,22 +83,31 @@ public class BranchTest extends JellyTestCase {
     final String PROTOCOL_FOLDER = "protocol";
     Operator.DefaultStringComparator comOperator; 
     Operator.DefaultStringComparator oldOperator;
+    static Logger log;
     
     /** Creates a new instance of BranchTest */
     public BranchTest(String name) {
         super(name);
-    }
-    
-    @Override
-    protected void setUp() throws Exception {
-        os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
-        System.out.println("### "+getName()+" ###");
+        if (os_name == null) {
+            os_name = System.getProperty("os.name");
+        }
         //extract CVS protocol dump file
         try {
             TestKit.extractProtocol(getDataDir());
         } catch (Exception e ) {
             e.printStackTrace();
+        }
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        System.out.println("### "+getName()+" ###");
+        if (log == null) {
+            log = Logger.getLogger("org.netbeans.modules.versioning.system.cvss.t9y");
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
         }
     }
     
@@ -123,9 +133,15 @@ public class BranchTest extends JellyTestCase {
     public void testCheckOutProject() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        MessageHandler mh = new MessageHandler("Checking out");
+        log.addHandler(mh);
+
         TestKit.closeProject(projectName);
-        OutputOperator.invoke();
-        new ProjectsTabOperator().tree().clearSelection();
+        TestKit.showStatusLabels();
+//        new ProjectsTabOperator().tree().clearSelection();
+        if ((os_name !=null) && (os_name.indexOf("Mac") > -1))
+            NewProjectWizardOperator.invoke().close();
+        
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -161,7 +177,7 @@ public class BranchTest extends JellyTestCase {
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
         cvss.stop();
         try {
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             in.close();
         } catch (IOException e) {
             //
@@ -180,17 +196,12 @@ public class BranchTest extends JellyTestCase {
         //combo.setSelectedItem(CVSroot);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
-        Thread.sleep(3000);
+        new EventTool().waitNoEvent(3000);
         
-        //OutputOperator oo = OutputOperator.invoke();
-        //System.out.println(CVSroot);
-        
-        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.waitText("Checking out finished");
+        TestKit.waitText(mh);
         cvss.stop();
         try {
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             in.close();
         } catch (IOException e) {
             //
@@ -490,11 +501,9 @@ public class BranchTest extends JellyTestCase {
     }
     
     public void testOnNonVersioned() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         //delete fake versioning of file
         //TestKit.unversionProject(file, projNonName);
-        
+        long lTimeOut = TestKit.changeTimeout("DialogWaiter.WaitDialogTimeout", 5000);
         TimeoutExpiredException tee = null;
         try {
             Node node = new Node(new SourcePackagesNode(projectName), "xx|NewClass.java");
@@ -503,6 +512,7 @@ public class BranchTest extends JellyTestCase {
             tee = (TimeoutExpiredException) e;
         }
         assertNotNull(tee);
+
         //
         tee = null;
         try {
@@ -521,6 +531,7 @@ public class BranchTest extends JellyTestCase {
             tee = (TimeoutExpiredException) e;
         }    
         assertNotNull(tee);
+        TestKit.changeTimeout("DialogWaiter.WaitDialogTimeout", lTimeOut);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
 }

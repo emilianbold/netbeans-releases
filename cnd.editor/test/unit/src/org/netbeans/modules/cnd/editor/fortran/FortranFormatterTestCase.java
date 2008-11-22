@@ -603,7 +603,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "                        structure STR6\n" +
                 "                            complex*16 s6\n" +
                 "                            structure STR7\n" +
-                "                                unsigned * 4 s7\n" +
+                "                                unsigned*4 s7\n" +
                 "                                structure STR8\n" +
                 "                                    complex*16 s8\n" +
                 "                                    structure STR9\n" +

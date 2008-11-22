@@ -378,7 +378,12 @@ public final class GrailsRuntime {
 
         public Process call() throws Exception {
             String executable =  Utilities.isWindows() ? RuntimeHelper.WIN_EXECUTABLE : RuntimeHelper.NIX_EXECUTABLE;
-            File grailsExecutable = new File(GrailsSettings.getInstance().getGrailsBase(), executable);
+            File grailsExecutable = null;
+            if (RuntimeHelper.isDebian(new File(GrailsSettings.getInstance().getGrailsBase()))) {
+                grailsExecutable = new File(RuntimeHelper.DEB_EXECUTABLE);
+            } else {
+                grailsExecutable = new File(GrailsSettings.getInstance().getGrailsBase(), executable);
+            }
 
             if (!grailsExecutable.exists()) {
                 LOGGER.log(Level.WARNING, "Executable doesn't exist: "

@@ -455,7 +455,7 @@ public class NavigationView extends ChoiceView {
      * Implements combobox list with index and source file line number.
      * Also implements Comparator to be used when sorting and binary search lookup
      */
-    class IndexLineNumber {
+    static class IndexLineNumber {
 
         private int index;
         private int lineNumber;
@@ -474,7 +474,7 @@ public class NavigationView extends ChoiceView {
         }
     }
 
-    class IndexLineNumberComparator implements Comparator<IndexLineNumber> {
+    static class IndexLineNumberComparator implements Comparator<IndexLineNumber> {
 
         public int compare(IndexLineNumber iln1, IndexLineNumber iln2) {
             if (iln1.getLineNumber() < iln2.getLineNumber()) {
@@ -487,7 +487,7 @@ public class NavigationView extends ChoiceView {
         }
     }
 
-    class NodesComparator implements Comparator<ViewNode> {
+    static class NodesComparator implements Comparator<ViewNode> {
 
         public int compare(ViewNode iln1, ViewNode iln2) {
             return iln1.getSortName().compareTo(iln2.getSortName());

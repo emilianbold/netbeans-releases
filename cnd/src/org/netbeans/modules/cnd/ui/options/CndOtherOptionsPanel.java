@@ -297,7 +297,7 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
             button.setText(getMessage("CndOtherOptionsPanel.Extensions.EditButton"));
         }
 
-        private final String DELIMITER = ", "; // NOI18N
+        private static final String DELIMITER = ", "; // NOI18N
     
         public void updateTextField() {
             String text = "";

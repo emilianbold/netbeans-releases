@@ -41,7 +41,7 @@ package org.netbeans.modules.db.metadata.model.spi;
 
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.api.Column;
-import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.Tuple;
 
 /**
  *
@@ -58,7 +58,7 @@ public abstract class ColumnImplementation {
         return column;
     }
 
-    public abstract Table getParent();
+    public abstract Tuple getParent();
 
     public abstract String getName();
 }
