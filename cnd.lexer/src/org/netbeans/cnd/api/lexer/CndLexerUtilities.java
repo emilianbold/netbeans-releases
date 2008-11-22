@@ -521,7 +521,7 @@ public final class CndLexerUtilities {
 
     private static void addFortranKeywords(Filter<FortranTokenId> filterToModify) {
         FortranTokenId[] ids = new FortranTokenId[]{
-            // Keyword
+            // Keywords
             FortranTokenId.KW_ALLOCATABLE,
             FortranTokenId.KW_ALLOCATE,
             FortranTokenId.KW_APOSTROPHE,
@@ -573,6 +573,7 @@ public final class CndLexerUtilities {
             FortranTokenId.KW_ENDTYPE,
             FortranTokenId.KW_ENDUNION,
             FortranTokenId.KW_ENDWHERE,
+            FortranTokenId.KW_ENDWHILE,
             FortranTokenId.KW_ENTRY,
             FortranTokenId.KW_ENUM,
             FortranTokenId.KW_ENUMERATOR,
@@ -580,7 +581,6 @@ public final class CndLexerUtilities {
             FortranTokenId.KW_EXIT,
             FortranTokenId.KW_EXTERNAL,
             FortranTokenId.KW_FLUSH,
-            //            FortranTokenId.KW_FILE,
             FortranTokenId.KW_FORALL,
             FortranTokenId.KW_FORMAT,
             FortranTokenId.KW_FUNCTION,
@@ -647,6 +647,32 @@ public final class CndLexerUtilities {
             FortranTokenId.KW_WHERE,
             FortranTokenId.KW_WHILE,
             FortranTokenId.KW_WRITE,
+            // Keyword C Extensions
+            FortranTokenId.KW_INT,
+            FortranTokenId.KW_SHORT,
+            FortranTokenId.KW_LONG,
+            FortranTokenId.KW_SIGNED,
+            FortranTokenId.KW_UNSIGNED,
+            FortranTokenId.KW_SIZE_T,
+            FortranTokenId.KW_INT8_T,
+            FortranTokenId.KW_INT16_T,
+            FortranTokenId.KW_INT32_T,
+            FortranTokenId.KW_INT64_T,
+            FortranTokenId.KW_INT_LEAST8_T,
+            FortranTokenId.KW_INT_LEAST16_T,
+            FortranTokenId.KW_INT_LEAST32_T,
+            FortranTokenId.KW_INT_LEAST64_T,
+            FortranTokenId.KW_INT_FAST8_T,
+            FortranTokenId.KW_INT_FAST16_T,
+            FortranTokenId.KW_INT_FAST32_T,
+            FortranTokenId.KW_INT_FAST64_T,
+            FortranTokenId.KW_INTMAX_T,
+            FortranTokenId.KW_INTPTR_T,
+            FortranTokenId.KW_FLOAT,
+            FortranTokenId.KW__COMPLEX,
+            FortranTokenId.KW__BOOL,
+            FortranTokenId.KW_CHAR,
+            FortranTokenId.KW_BOOL,
             // Keyword Operator
             FortranTokenId.KWOP_EQ,
             FortranTokenId.KWOP_NE,

@@ -79,13 +79,8 @@ class FortranBracesStack {
         parenDepth = clone.parenDepth;
     }
 
-    public void push(Token<FortranTokenId> token) {
-        FortranStackEntry newEntry = new FortranStackEntry(token);
-        pushImpl(newEntry);
-    }
-
-    public void push(FortranExtendedTokenSequence ts) {
-        FortranStackEntry newEntry = new FortranStackEntry(ts);
+    public void push(Token<FortranTokenId> token, FortranExtendedTokenSequence ts) {
+        FortranStackEntry newEntry = new FortranStackEntry(token, ts);
         pushImpl(newEntry);
     }
 

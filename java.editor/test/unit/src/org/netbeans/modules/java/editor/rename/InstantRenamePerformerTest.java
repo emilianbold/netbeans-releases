@@ -99,98 +99,103 @@ public class InstantRenamePerformerTest extends NbTestCase {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'a');
         performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 80 - 22, ke, "package test; public class Test { public void test() {int axxx = 0; int y = axxx; } }", true);
     }
-    
+
     public void testSimple2() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'a');
         performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 84 - 22 - 1, ke, "package test; public class Test { public void test() {int xxxa = 0; int y = xxxa; } }", true);
     }
-    
+
     public void testSimple3() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_BACK_SPACE, '\0');
         performTest("package test; public class Test { public void test() {int a|bc = 0; int y = abc; } }", 83 - 22 - 1, ke, "package test; public class Test { public void test() {int ac = 0; int y = ac; } }", true);
     }
-    
+
     public void testSimple4() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_BACK_SPACE, '\0');
         performTest("package test; public class Test { public void test() {int a|bc = 0; int y = abc; } }", 84 - 22 - 1, ke, "package test; public class Test { public void test() {int ab = 0; int y = ab; } }", true);
     }
-    
+
     public void testSimple5() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_DELETE, '\0');
         performTest("package test; public class Test { public void test() {int a|bc = 0; int y = abc; } }", 80 - 22, ke, "package test; public class Test { public void test() {int bc = 0; int y = bc; } }", true);
     }
-    
+
     public void testCancel1() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'a');
         performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 79 - 22, ke, "package test; public class Test { public void test() {inta xxx = 0; int y = xxx; } }", false);
     }
-    
+
     public void testCancel2() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'a');
         performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 85 - 22 - 1, ke, "package test; public class Test { public void test() {int xxx a= 0; int y = xxx; } }", false);
     }
-    
+
     public void testCancel3() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_BACK_SPACE, '\0');
         performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 79 - 22, ke, "package test; public class Test { public void test() {in xxx = 0; int y = xxx; } }", false);
     }
-    
+
     public void testCancel4() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_BACK_SPACE, '\0');
         performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 85 - 22 - 1, ke, "package test; public class Test { public void test() {int xxx= 0; int y = xxx; } }", false);
     }
-    
+
     public void testCancel5() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_DELETE, '\0');
         performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 79 - 22, ke, "package test; public class Test { public void test() {intxxx = 0; int y = xxx; } }", false);
     }
-    
+
     public void testCancel6() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_DELETE, '\0');
         performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 84 - 22 - 1, ke, "package test; public class Test { public void test() {int xxx= 0; int y = xxx; } }", false);
     }
-    
+
     //TODO:
 //    public void testUndoAndContinue1() throws Exception {
 //        KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_BACK_SPACE, '\0');
 //        performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 80 - 22, ke, "package test; public class Test { public void test() {int xxx = 0; int y = xxx; } }", true);
 //    }
-//    
+//
 //    public void testUndoAndContinue2() throws Exception {
 //        KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_DELETE, '\0');
 //        performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 84 - 22 - 1, ke, "package test; public class Test { public void test() {int xxx = 0; int y = xxx; } }", true);
 //    }
-    
+
     public void testSelection1() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'a');
         performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 80 - 22, ke, 84 - 22 - 1, "package test; public class Test { public void test() {int a = 0; int y = a; } }", true);
     }
-    
+
     public void testSelection2() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'a');
         performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 79 - 22, ke, 85 - 22 - 1, "package test; public class Test { public void test() {inta= 0; int y = xxx; } }", false);
     }
-    
+
     public void testSelection3() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'a');
         performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 81 - 22, ke, 85 - 22 - 1, "package test; public class Test { public void test() {int xa= 0; int y = xxx; } }", false);
     }
-    
+
     public void testSelection4() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'a');
         performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 79 - 22, ke, 83 - 22 - 1, "package test; public class Test { public void test() {intax = 0; int y = xxx; } }", false);
     }
-    
+
     public void testSelection126704a() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'a');
         performTest("package test; public class Test { public void test() {int x| = 0; int y = x; } }", 81 - 22, ke, 80 - 22, "package test; public class Test { public void test() {int a = 0; int y = a; } }", true);
     }
-    
+
     public void testSelection126704b() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'a');
         performTest("package test; public class Test { public void test() {int x| = 0; int y = x; } }", 80 - 22, ke, 82 - 22 - 1, "package test; public class Test { public void test() {int a = 0; int y = a; } }", true);
     }
     
+    public void testTypeParameters153337() throws Exception {
+        KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'R');
+        performTest("package test; public class Test { public <T|T> void test(TT t) { } }", 64 - 22, ke, - 1, "package test; public class Test { public <RTT> void test(RTT t) { } }", true);
+    }
+
     private void performTest(String sourceCode, int offset, KeyEvent ke, String golden, boolean stillInRename) throws Exception {
         performTest(sourceCode, offset, ke, -1, golden, stillInRename);
     }

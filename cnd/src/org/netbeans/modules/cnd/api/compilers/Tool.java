@@ -38,13 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.api.compilers;
 
 import java.io.File;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
@@ -52,7 +50,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class Tool {
-    
+
     // Compiler types
     public static final int CCompiler = 0;
     public static final int CCCompiler = 1;
@@ -61,7 +59,6 @@ public class Tool {
     public static final int Assembler = 4;
     public static final int MakeTool = 5;
     public static final int DebuggerTool = 6;
-
     private static final String[] TOOL_NAMES = {
         getString("CCompiler"), // NOI18N
         getString("CCCompiler"), // NOI18N
@@ -71,15 +68,13 @@ public class Tool {
         getString("MakeTool"), // NOI18N
         getString("DebuggerTool"), // NOI18N
     };
-    
     private static final String[] COMPILER_TOOL_NAMES = {
         getString("CCompiler"), // NOI18N
         getString("CCCompiler"), // NOI18N
         getString("FortranCompiler"), // NOI18N
-        //getString("Assembler"), // NOI18N // Noy yet
+        getString("Assembler"), // NOI18N // Noy yet
         getString("CustomBuildTool"), // NOI18N
     };
-    
     private String hkey;
     private CompilerFlavor flavor;
     private int kind;
@@ -87,7 +82,7 @@ public class Tool {
     private String displayName;
     private String path;
     private CompilerSet compilerSet = null;
-    
+
     /** Creates a new instance of GenericCompiler */
     public Tool(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         this.hkey = hkey;
@@ -108,45 +103,43 @@ public class Tool {
         copy.setName(getName());
         return copy;
     }
-    
+
     public String getHostKey() {
         return hkey;
     }
-    
+
     public CompilerFlavor getFlavor() {
         return flavor;
     }
-    
+
     public int getKind() {
         return kind;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public String getPath() {
         return path;
     }
-    
+
     public void setPath(String p) {
         if (p == null) {
-            
-        }
-        else {
+        } else {
             path = p;
             name = IpeUtils.getBaseName(path);
         }
     }
-    
+
     public static String[] getCompilerToolNames() {
         return COMPILER_TOOL_NAMES;
     }
-    
+
     public static int getTool(String name) {
         for (int i = 0; i < TOOL_NAMES.length; i++) {
             if (TOOL_NAMES[i].equals(name)) {
@@ -155,20 +148,19 @@ public class Tool {
         }
         return 0; // ????
     }
-    
+
     public static String getName(int kind) {
         if (kind >= 0 && kind <= TOOL_NAMES.length) {
             return TOOL_NAMES[kind];
-        }
-        else {
+        } else {
             return null;
         }
     }
-    
+
     public String getDisplayName() {
         return displayName;
     }
-    
+
 //    public String getGenericName() {
 //        String name = getName();
 //        if (name.length() > 0) {
@@ -177,11 +169,10 @@ public class Tool {
 //           return TOOL_NAMES[getKind()]; 
 //        }
 //    }
-    
     public static String getToolDisplayName(int kind) {
         return TOOL_NAMES[kind];
     }
-    
+
     @Override
     public String toString() {
         String n = getName();
@@ -191,7 +182,7 @@ public class Tool {
             return n;
         }
     }
-    
+
     public String getIncludeFilePathPrefix() {
         // TODO: someone put this here only because OutputWindowWriter in core
         // wants to get information about compilers which are defined in makeprojects.
@@ -206,12 +197,13 @@ public class Tool {
 
     @Deprecated
     public boolean exists() {
-        if (getPath() == null || getPath().length() == 0)
+        if (getPath() == null || getPath().length() == 0) {
             return false;
+        }
         return new File(getPath()).exists() || Path.findCommand(getPath()) != null;
     }
-    
     private static ResourceBundle bundle = null;
+
     protected static String getString(String s) {
         if (bundle == null) {
             bundle = NbBundle.getBundle(Tool.class);

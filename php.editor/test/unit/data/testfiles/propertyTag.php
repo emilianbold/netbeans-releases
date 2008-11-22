@@ -22,8 +22,8 @@ interface Shape {
 
 /**
  * Represent one 2d point
- * @property int x
- * @property int y
+ * @property int $x
+ * @property int $y
  */
 class Point implements Shape {
 
@@ -38,8 +38,8 @@ class Point implements Shape {
 }
 
 /**
- * @property Point point
- * @property int radius
+ * @property Point $point
+ * @property int $radius
  */
 class Circle implements Shape {
     public function draw() {

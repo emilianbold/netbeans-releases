@@ -11,12 +11,13 @@ package org.netbeans.test.cvsmodule;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
@@ -25,6 +26,7 @@ import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.modules.javacvs.VersioningOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -38,7 +40,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  */
 public class UpdateErrorTest extends JellyTestCase {
     
-    String os_name;
+    static String os_name;
     static String sessionCVSroot;
     final String projectName = "ForImport";
     final String pathToMain = "forimport|Main.java";
@@ -46,23 +48,32 @@ public class UpdateErrorTest extends JellyTestCase {
     String PROTOCOL_FOLDER = "protocol";
     Operator.DefaultStringComparator comOperator; 
     Operator.DefaultStringComparator oldOperator;
+    static Logger log;
     
     /**
      * Creates a new instance of UpdateErrorTest
      */
     public UpdateErrorTest(String name) {
         super(name);
-    }
-    
-    @Override
-    protected void setUp() throws Exception {        
-        os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
-        System.out.println("### " + getName() + " ###");
+        if (os_name == null) {
+            os_name = System.getProperty("os.name");
+        }
         try {
             TestKit.extractProtocol(getDataDir());
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    
+    @Override
+    protected void setUp() throws Exception {        
+        System.out.println("### " + getName() + " ###");
+        if (log == null) {
+            log = Logger.getLogger("org.netbeans.modules.versioning.system.cvss.t9y");
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
         }
     }
     
@@ -77,12 +88,17 @@ public class UpdateErrorTest extends JellyTestCase {
      }
     
     public void testCheckOutProject() throws Exception {
-        PROTOCOL_FOLDER = "protocol";
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        MessageHandler mh = new MessageHandler("Checking out");
+        log.addHandler(mh);
+
         TestKit.closeProject(projectName);
-        OutputOperator.invoke();
-        new ProjectsTabOperator().tree().clearSelection();
+        TestKit.showStatusLabels();
+//
+        if ((os_name !=null) && (os_name.indexOf("Mac") > -1))
+            NewProjectWizardOperator.invoke().close();
+
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -93,9 +109,9 @@ public class UpdateErrorTest extends JellyTestCase {
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
         //crso.setPassword("");
         //crso.setPassword("test");
-        
+
         //prepare stream for successful authentification and run PseudoCVSServer
-        InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");   
+        InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
         PseudoCvsServer cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         cvss.ignoreProbe();
@@ -105,10 +121,10 @@ public class UpdateErrorTest extends JellyTestCase {
         crso.setCVSRoot(CVSroot);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         crso.next();
-              
+
         //second step of checkoutwizard
         //2nd step of CheckOutWizard
-        
+
         File tmp = new File("/tmp"); // NOI18N
         File work = new File(tmp, "" + File.separator + System.currentTimeMillis());
         cacheFolder = new File(work, projectName + File.separator + "src" + File.separator + "forimport" + File.separator + "CVS" + File.separator + "RevisionCache");
@@ -118,36 +134,34 @@ public class UpdateErrorTest extends JellyTestCase {
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
         cvss.stop();
         in.close();
-        moduleCheck.setModule("ForImport");        
+        moduleCheck.setModule("ForImport");
         moduleCheck.setLocalFolder(work.getAbsolutePath()); // NOI18N
-        
+
         //Pseudo CVS server for finishing check out wizard
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "checkout_finish_2.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         CVSroot = cvss.getCvsRoot();
         //cvss.ignoreProbe();
-        
+
         //crso.setCVSRoot(CVSroot);
         //combo.setSelectedItem(CVSroot);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
-        
-        //OutputOperator oo = OutputOperator.invoke();
+
         //System.out.println(CVSroot);
-        
-        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot);
-        oto.waitText("Checking out finished");
+
+        TestKit.waitText(mh);
         cvss.stop();
         in.close();
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
-        
+
         ProjectSupport.waitScanFinished();
-//        TestKit.waitForQueueEmpty();
-//        ProjectSupport.waitScanFinished();
-        
+
+        //create new elements for testing
+        TestKit.createNewElements(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
     
@@ -158,18 +172,15 @@ public class UpdateErrorTest extends JellyTestCase {
         CommitOperator co;
         String CVSroot, color;
         JTableOperator table;
-        OutputOperator oo;
-        OutputTabOperator oto;
         VersioningOperator vo;
         String[] expected;
         String[] actual;
         String allCVSRoots;
         org.openide.nodes.Node nodeIDE;
         PROTOCOL_FOLDER = "protocol" + File.separator + "update_access_denied";
-        Thread.sleep(3000);
+        new EventTool().waitNoEvent(3000);
         vo = VersioningOperator.invoke();
-        oo = OutputOperator.invoke();
-        oto = new OutputTabOperator(sessionCVSroot);
+
         
         Node node = new Node(new SourcePackagesNode("ForImport"), "forimport|Main.java");
         node.performPopupAction("Open");
@@ -178,8 +189,9 @@ public class UpdateErrorTest extends JellyTestCase {
         eo.insert(" a", 3, 4);
         eo.save();      
         //
-        oto = new OutputTabOperator(sessionCVSroot);
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        MessageHandler mh = new MessageHandler("Refreshing");
+        log.addHandler(mh);
+
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_package.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
@@ -187,7 +199,8 @@ public class UpdateErrorTest extends JellyTestCase {
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         node = new Node(new SourcePackagesNode("ForImport"), "forimport");
         node.performPopupAction("CVS|Show Changes");
-        Thread.sleep(1000);
+        TestKit.waitText(mh);
+        new EventTool().waitNoEvent(1000);
 //        oto.waitText("Refreshing");
 //        oto.waitText("finished");
         cvss.stop();
@@ -206,19 +219,19 @@ public class UpdateErrorTest extends JellyTestCase {
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         node = ProjectsTabOperator.invoke().getProjectRootNode("ForImport");
         //oto = oo.getOutputTab(sessionCVSroot);
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        mh = new MessageHandler("Updating");
+        TestKit.removeHandlers(log);
+        log.addHandler(mh);
         node.performPopupAction("CVS|Update");
-        Thread.sleep(1000);
-        cvss.stop();
-//        oto = new OutputTabOperator(sessionCVSroot);
-//        oto.waitText("Updating");
-//        oto.waitText("finished");
-        
+         
         NbDialogOperator dialog = new NbDialogOperator("Command");
         JButtonOperator btn = new JButtonOperator(dialog, "Ok");
+
+        cvss.stop();
         btn.push();
         
-        Thread.sleep(1000);
+        new EventTool().waitNoEvent(1000);
+        TestKit.waitText(mh);
         node = new Node(new SourcePackagesNode("ForImport"), "forimport|Main.java");
         nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
         color = TestKit.getColor(nodeIDE.getHtmlDisplayName());

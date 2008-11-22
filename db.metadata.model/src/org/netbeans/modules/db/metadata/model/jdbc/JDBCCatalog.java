@@ -166,12 +166,6 @@ public class JDBCCatalog extends CatalogImplementation {
         return schemas;
     }
 
-    public final void refreshTable(String tableName) {
-        if (defaultSchema != null) {
-            ((JDBCSchema) MetadataAccessor.getDefault().getSchemaImpl(defaultSchema)).refreshTable(tableName);
-        }
-    }
-
     public final JDBCMetadata getJDBCMetadata() {
         return jdbcMetadata;
     }

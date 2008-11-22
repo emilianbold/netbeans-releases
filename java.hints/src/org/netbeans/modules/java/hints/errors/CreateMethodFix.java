@@ -44,8 +44,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -86,7 +88,13 @@ public final class CreateMethodFix implements Fix {
     
     public CreateMethodFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, TypeMirror returnType, List<? extends TypeMirror> argumentTypes, List<String> argumentNames, FileObject targetFile) {
         this.name = name;
-        this.inFQN = target.getQualifiedName().toString();
+        final Name qualifiedName = target.getQualifiedName(); //#130759
+        if (qualifiedName == null) {
+            this.inFQN = ""; //NOI18N
+            Logger.getLogger(CreateMethodFix.class.getName()).warning("Target qualified name could not be resolved."); //NOI18N
+        } else {
+            this.inFQN = qualifiedName.toString();
+        }
         this.cpInfo = info.getClasspathInfo();
         this.modifiers = modifiers;
         this.targetFile = targetFile;
