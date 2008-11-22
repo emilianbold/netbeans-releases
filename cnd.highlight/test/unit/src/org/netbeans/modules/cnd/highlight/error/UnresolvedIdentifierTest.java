@@ -98,7 +98,12 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
     public void testIZ144873() throws Exception {
         performStaticTest("iz_144873.cpp");
     }
-    
+
+
+    public void testIZ145118() throws Exception {
+        performStaticTest("iz_145118.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

@@ -294,7 +294,7 @@ implements ListModel, Runnable, javax.swing.event.ListDataListener {
     /** Initialize the bitsets to sizes of the listModel.
      */
     private void initialize () {
-        assert SwingUtilities.isEventDispatchThread() : "ListModel methods should be called form AWT event thread"; //NOI18N
+//        assert SwingUtilities.isEventDispatchThread() : "ListModel methods should be called form AWT event thread"; //NOI18N
         if (tested == null) {
             originalSize = listModel.getSize ();
             size = listModel.getSize ();

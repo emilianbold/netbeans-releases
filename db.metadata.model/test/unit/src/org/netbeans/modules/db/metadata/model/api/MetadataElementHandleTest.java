@@ -42,6 +42,7 @@ package org.netbeans.modules.db.metadata.model.api;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle.Kind;
 import org.netbeans.modules.db.metadata.model.jdbc.JDBCMetadata;
 import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
@@ -94,12 +95,31 @@ public class MetadataElementHandleTest extends MetadataTestBase {
     }
 
     public void testEquals() {
-        MetadataElementHandle<Table> handle1 = MetadataElementHandle.create(Table.class, "CATALOG", null, "TABLE");
-        MetadataElementHandle<Table> handle2 = MetadataElementHandle.create(Table.class, "CATALOG", null, "TABLE");
-        MetadataElementHandle<Table> handle3 = MetadataElementHandle.create(Table.class, "CATALOG", null, "TABLE");
+        String[] names = new String[] {"CATALOG", null, "TABLEORVIEW"};
 
-        MetadataElementHandle<Schema> fakeTableHandle = MetadataElementHandle.create(Schema.class, "CATALOG", null, "TABLE");
+        Kind[] tableKinds = new Kind[] {Kind.CATALOG, Kind.SCHEMA, Kind.TABLE};
+        Kind[] viewKinds = new Kind[] {Kind.CATALOG, Kind.SCHEMA, Kind.VIEW};
+        Kind[] schemaKinds = new Kind[] {Kind.CATALOG, Kind.SCHEMA};
 
+        MetadataElementHandle<? extends MetadataElement> handle1 = MetadataElementHandle.create(Table.class, names, tableKinds);
+        MetadataElementHandle<? extends MetadataElement> handle2 = MetadataElementHandle.create(Table.class, names, tableKinds);
+        MetadataElementHandle<? extends MetadataElement> handle3 = MetadataElementHandle.create(Table.class, names, tableKinds);
+
+        MetadataElementHandle<? extends MetadataElement> schemaHandle = MetadataElementHandle.create(Schema.class, names, schemaKinds);
+
+        checkHandles(handle1, handle2, handle3, schemaHandle);
+
+        handle1 = MetadataElementHandle.create(View.class, names, viewKinds);
+        handle2 = MetadataElementHandle.create(View.class, names, viewKinds);
+        handle3 = MetadataElementHandle.create(View.class, names, viewKinds);
+
+        checkHandles(handle1, handle2, handle3, schemaHandle);
+    }
+
+    private void checkHandles(MetadataElementHandle<? extends MetadataElement> handle1,
+            MetadataElementHandle<? extends MetadataElement> handle2,
+            MetadataElementHandle<? extends MetadataElement> handle3,
+            MetadataElementHandle<? extends MetadataElement> badHandle) {
         // Reflexivity.
         assertTrue(handle1.equals(handle1));
         assertTrue(handle1.hashCode() == handle2.hashCode());
@@ -109,8 +129,7 @@ public class MetadataElementHandleTest extends MetadataTestBase {
         // Transitivity.
         assertTrue(handle2.equals(handle3));
         assertTrue(handle1.equals(handle3));
-
         // Not of the same kind, so not equal.
-        assertFalse(handle1.equals(fakeTableHandle));
+        assertFalse(handle1.equals(badHandle));
     }
 }

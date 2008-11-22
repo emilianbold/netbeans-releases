@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -102,7 +102,6 @@ import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedField;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
-import org.netbeans.modules.ruby.elements.RubyElement;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.Call;
 import org.netbeans.modules.ruby.lexer.RubyCommentTokenId;
@@ -396,10 +395,14 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
 
                 Call call = Call.getCallType(doc, th, lexOffset);
 
+                Set<? extends String> types = Collections.emptySet();
                 String type = call.getType();
+                if (type != null) {
+                    types = Collections.singleton(type);
+                }
                 String lhs = call.getLhs();
 
-                if ((type == null) && (lhs != null) && (closest != null) &&
+                if ((types.isEmpty()) || (lhs != null) && (closest != null) &&
                         call.isSimpleIdentifier()) {
                     Node method = AstUtilities.findLocalScope(closest, path);
 
@@ -407,7 +410,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                         // TODO - if the lhs is "foo.bar." I need to split this
                         // up and do it a bit more cleverly
                         RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*info.getParserResult(),*/ index, method, closest, astOffset, lexOffset, doc, info.getFileObject());
-                        type = analyzer.getType(lhs);
+                        types = analyzer.getTypes(lhs);
                     }
                 }
 
@@ -416,7 +419,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                 // in which case I should show it, but that is discouraged and people
                 // SHOULD override initialize, which is what the default new method will
                 // call for initialization.
-                if (type == null) { // unknown type - search locally
+                if (types.isEmpty()) { // unknown type - search locally
 
                     if (name.equals("new")) { // NOI18N
                         name = "initialize"; // NOI18N
@@ -436,7 +439,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                     fqn = "Object";
                 }
 
-                return findMethod(name, fqn, type, call, info, astOffset, lexOffset, path, closest, index);
+                return findMethod(name, fqn, types, call, info, astOffset, lexOffset, path, closest, index);
             } else if (closest instanceof ConstNode || closest instanceof Colon2Node) {
                 // POSSIBLY a class usage.
                 String name = ((INameNode)closest).getName();
@@ -939,7 +942,13 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
     
     private DeclarationLocation findMethod(String name, String possibleFqn, String type, Call call,
         CompilationInfo info, int caretOffset, int lexOffset, AstPath path, Node closest, RubyIndex index) {
-        Set<IndexedMethod> methods = getApplicableMethods(name, possibleFqn, type, call, index);
+        return findMethod(name, possibleFqn, Collections.singleton(type), call,
+                info, caretOffset, lexOffset, path, closest, index);
+    }
+    
+    private DeclarationLocation findMethod(String name, String possibleFqn, Set<? extends String> types, Call call,
+        CompilationInfo info, int caretOffset, int lexOffset, AstPath path, Node closest, RubyIndex index) {
+        Set<IndexedMethod> methods = getApplicableMethods(name, possibleFqn, types, call, index);
 
         int astOffset = caretOffset;
         DeclarationLocation l = getMethodDeclaration(info, name, methods, 
@@ -947,13 +956,12 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
 
         return l;
     }
-        
 
     private Set<IndexedMethod> getApplicableMethods(String name, String possibleFqn, 
-            String type, Call call, RubyIndex index) {
+            Set<? extends String> types, Call call, RubyIndex index) {
         Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
         String fqn = possibleFqn;
-        if (type == null && possibleFqn != null && call.getLhs() == null && call != Call.UNKNOWN) {
+        if (types.isEmpty() && possibleFqn != null && call.getLhs() == null && call != Call.UNKNOWN) {
             fqn = possibleFqn;
 
             // Possibly a class on the left hand side: try searching with the class as a qualifier.
@@ -973,7 +981,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
             }
         }
 
-        if (type != null && methods.size() == 0) {
+        if (!types.isEmpty() && methods.size() == 0) {
             fqn = possibleFqn;
 
             // Possibly a class on the left hand side: try searching with the class as a qualifier.
@@ -981,7 +989,9 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
             // Test::Unit when there's a call to Foo.x, we'll try
             // Test::Unit::Foo, and Test::Foo
             while (methods.size() == 0 && fqn != null && (fqn.length() > 0)) {
-                methods = index.getInheritedMethods(fqn + "::" + type, name, NameKind.EXACT_NAME);
+                for (String type : types) {
+                    methods.addAll(index.getInheritedMethods(fqn + "::" + type, name, NameKind.EXACT_NAME));
+                }
 
                 int f = fqn.lastIndexOf("::");
 
@@ -994,22 +1004,28 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
 
             if (methods.size() == 0) {
                 // Add methods in the class (without an FQN)
-                methods = index.getInheritedMethods(type, name, NameKind.EXACT_NAME);
+                for (String type : types) {
+                    methods.addAll(index.getInheritedMethods(type, name, NameKind.EXACT_NAME));
+                }
                 
-                if (methods.size() == 0 && type.indexOf("::") == -1) {
-                    // Perhaps we specified a class without its FQN, such as "TableDefinition"
-                    // -- go and look for the full FQN and add in all the matches from there
-                    Set<IndexedClass> classes = index.getClasses(type, NameKind.EXACT_NAME, false, false, false);
-                    Set<String> fqns = new HashSet<String>();
-                    for (IndexedClass cls : classes) {
-                        String f = cls.getFqn();
-                        if (f != null) {
-                            fqns.add(f);
-                        }
-                    }
-                    for (String f : fqns) {
-                        if (!f.equals(type)) {
-                            methods.addAll(index.getInheritedMethods(f, name, NameKind.EXACT_NAME));
+                if (methods.size() == 0) {
+                    for (String type : types) {
+                        if (type.indexOf("::") == -1) {
+                            // Perhaps we specified a class without its FQN, such as "TableDefinition"
+                            // -- go and look for the full FQN and add in all the matches from there
+                            Set<IndexedClass> classes = index.getClasses(type, NameKind.EXACT_NAME, false, false, false);
+                            Set<String> fqns = new HashSet<String>();
+                            for (IndexedClass cls : classes) {
+                                String f = cls.getFqn();
+                                if (f != null) {
+                                    fqns.add(f);
+                                }
+                            }
+                            for (String f : fqns) {
+                                if (!f.equals(type)) {
+                                    methods.addAll(index.getInheritedMethods(f, name, NameKind.EXACT_NAME));
+                                }
+                            }
                         }
                     }
                 }
@@ -1019,23 +1035,31 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
             // Try looking at the libraries too
             if (methods.size() == 0) {
                 fqn = possibleFqn;
-                while ((methods.size() == 0) && fqn != null && (fqn.length() > 0)) {
-                    methods = index.getMethods(name, fqn + "::" + type, NameKind.EXACT_NAME);
+                WHILE: while ((methods.size() == 0) && fqn != null && (fqn.length() > 0)) {
+                    for (String type : types) {
+                        methods.addAll(index.getMethods(name, fqn + "::" + type, NameKind.EXACT_NAME));
 
-                    int f = fqn.lastIndexOf("::");
+                        int f = fqn.lastIndexOf("::");
 
-                    if (f == -1) {
-                        break;
-                    } else {
-                        fqn = fqn.substring(0, f);
+                        if (f == -1) {
+                            break WHILE;
+                        } else {
+                            fqn = fqn.substring(0, f);
+                        }
                     }
                 }
             }
         }
 
         if (methods.size() == 0) {
-            methods = index.getMethods(name, type, NameKind.EXACT_NAME);
-            if (methods.size() == 0 && type != null) {
+            if (types.isEmpty()) {
+                methods.addAll(index.getMethods(name, null, NameKind.EXACT_NAME));
+            } else {
+                for (String type : types) {
+                    methods.addAll(index.getMethods(name, type, NameKind.EXACT_NAME));
+                }
+            }
+            if (methods.size() == 0 && !types.isEmpty()) {
                 methods = index.getMethods(name, null, NameKind.EXACT_NAME);
             }
         }
@@ -1254,12 +1278,16 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
             boolean done = call.isMethodExpected();
             boolean skipInstanceMethods = call.isStatic();
 
-            String type = call.getType();
+            Set<? extends String> types = Collections.emptySet();
+            String callType = call.getType();
+            if (callType != null) {
+                types = Collections.singleton(callType);
+            }
             String lhs = call.getLhs();
             NameKind kind = NameKind.EXACT_NAME;
 
             Node node = callNode;
-            if ((type == null) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
+            if ((types.isEmpty()) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
                 Node method = AstUtilities.findLocalScope(node, path);
 
                 if (method != null) {
@@ -1267,15 +1295,15 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                     // up and do it a bit more cleverly
                     RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*info.getParserResult(),*/ index, method, node, astOffset, lexOffset, 
                             (BaseDocument)doc, info.getFileObject());
-                    type = analyzer.getType(lhs);
+                    types = analyzer.getTypes(lhs);
                 }
             }
 
             // I'm not doing any data flow analysis at this point, so
             // I can't do anything with a LHS like "foo.". Only actual types.
-            if ((type != null) && (type.length() > 0)) {
+            if (!types.isEmpty()) {
                 if ("self".equals(lhs)) {
-                    type = fqn;
+                    types = Collections.singleton(fqn);
                     skipPrivate = false;
                 } else if ("super".equals(lhs)) {
                     skipPrivate = false;
@@ -1283,17 +1311,17 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                     IndexedClass sc = index.getSuperclass(fqn);
 
                     if (sc != null) {
-                        type = sc.getFqn();
+                        types = Collections.singleton(sc.getFqn());
                     } else {
                         ClassNode cls = AstUtilities.findClass(path);
 
                         if (cls != null) {
-                            type = AstUtilities.getSuperclass(cls);
+                            types = Collections.singleton(AstUtilities.getSuperclass(cls));
                         }
                     }
 
-                    if (type == null) {
-                        type = "Object"; // NOI18N
+                    if (types.isEmpty()) {
+                        types = Collections.singleton("Object"); // NOI18N
                     }
                 }
             }
@@ -1301,11 +1329,11 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                 fqn = "Object";
             }
 
-            Set<IndexedMethod> methods = getApplicableMethods(name, fqn, type, call, index);
+            Set<IndexedMethod> methods = getApplicableMethods(name, fqn, types, call, index);
             
             if (name.equals("new")) { // NOI18N
                 // Also look for initialize
-                Set<IndexedMethod> initializeMethods = getApplicableMethods("initialize", fqn, type, call, index);
+                Set<IndexedMethod> initializeMethods = getApplicableMethods("initialize", fqn, types, call, index);
                 methods.addAll(initializeMethods);
             }
 

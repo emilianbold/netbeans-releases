@@ -87,7 +87,7 @@ public final class FortranCodeStyle {
     }
 
     public CodeStyle.PreprocessorIndent indentPreprocessorDirectives() {
-        return CodeStyle.PreprocessorIndent.PREPROCESSOR_INDENT;
+        return CodeStyle.PreprocessorIndent.START_LINE;
     }
 
     public int indentSize() {

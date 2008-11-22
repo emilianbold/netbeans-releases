@@ -64,7 +64,8 @@ import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.loaders.AsmDataLoader;
+import org.netbeans.modules.asm.core.dataobjects.AsmDataObject;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -335,6 +336,8 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 tool = Tool.CCompiler;
             } else if (FortranDataLoader.getInstance().getExtensions().isRegistered(path)) {
                 tool = Tool.FortranCompiler;
+            } else if (AsmDataLoader.getInstance().getExtensions().isRegistered(path)) {
+                tool = Tool.Assembler;
             } else {
                 tool = Tool.CustomTool;
             }
@@ -344,8 +347,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             tool = Tool.CustomTool;
         } else if (dataObject instanceof CCDataObject) {
             tool = Tool.CCCompiler;
-        } else if (CppSettings.getDefault().isFortranEnabled() && dataObject instanceof FortranDataObject) {
+        } else if (dataObject instanceof FortranDataObject) {
             tool = Tool.FortranCompiler;
+        } else if (dataObject instanceof AsmDataObject) {
+            tool = Tool.Assembler;
         } else {
             tool = Tool.CustomTool;
         }

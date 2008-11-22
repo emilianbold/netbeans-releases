@@ -48,6 +48,9 @@ import org.netbeans.modules.asm.base.syntax.*;
 
 }
 
+{
+@SuppressWarnings({"unchecked", "cast", "fallthrough"})
+}
 class IdentScanner extends Lexer;
 options {
     k = 3;   
