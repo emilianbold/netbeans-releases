@@ -10,20 +10,20 @@
 package org.netbeans.test.cvsmodule;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.modules.javacvs.VersioningOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -37,7 +37,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  */
 public class DeleteTest extends JellyTestCase {
     
-    String os_name;
+    static String os_name;
     static String sessionCVSroot;
     final String projectName = "ForImport";
     final String pathToMain = "forimport|Main.java";
@@ -45,10 +45,19 @@ public class DeleteTest extends JellyTestCase {
     static File cacheFolder;
     Operator.DefaultStringComparator comOperator; 
     Operator.DefaultStringComparator oldOperator;
+    static Logger log;
     
     /** Creates a new instance of DeleteTest */
     public DeleteTest(String name) {
         super(name);
+        if (os_name == null) {
+            os_name = System.getProperty("os.name");
+        }
+        try {
+            TestKit.extractProtocol(getDataDir());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     /**
@@ -68,14 +77,13 @@ public class DeleteTest extends JellyTestCase {
     
     @Override
     protected void setUp() throws Exception {
-        
-        os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
-        try {
-            TestKit.extractProtocol(getDataDir());
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (log == null) {
+            log = Logger.getLogger("org.netbeans.modules.versioning.system.cvss.t9y");
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
         }
     }
     
@@ -88,11 +96,15 @@ public class DeleteTest extends JellyTestCase {
     }
     
     public void testCheckOutProject() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        MessageHandler mh = new MessageHandler("Checking out");
+        log.addHandler(mh);
+
         TestKit.closeProject(projectName);
-        OutputOperator.invoke();
-        new ProjectsTabOperator().tree().clearSelection();
+        TestKit.showStatusLabels();
+//
+        if ((os_name !=null) && (os_name.indexOf("Mac") > -1))
+            NewProjectWizardOperator.invoke().close();
+
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -103,9 +115,9 @@ public class DeleteTest extends JellyTestCase {
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
         //crso.setPassword("");
         //crso.setPassword("test");
-        
+
         //prepare stream for successful authentification and run PseudoCVSServer
-        InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");   
+        InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
         PseudoCvsServer cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         cvss.ignoreProbe();
@@ -115,60 +127,47 @@ public class DeleteTest extends JellyTestCase {
         crso.setCVSRoot(CVSroot);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         crso.next();
-              
+
         //second step of checkoutwizard
         //2nd step of CheckOutWizard
 
         File tmp = new File("/tmp"); // NOI18N
         File work = new File(tmp, "" + File.separator + System.currentTimeMillis());
-        File _cacheFolder = new File(work, projectName + File.separator + "src" + File.separator + "forimport" + File.separator + "CVS" + File.separator + "RevisionCache");
+        cacheFolder = new File(work, projectName + File.separator + "src" + File.separator + "forimport" + File.separator + "CVS" + File.separator + "RevisionCache");
         tmp.mkdirs();
         work.mkdirs();
         tmp.deleteOnExit();
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
         cvss.stop();
-        try {
-            Thread.sleep(1000);
-            in.close();
-        } catch (IOException e) {
-            //
-        }
-        moduleCheck.setModule("ForImport");        
+        in.close();
+        moduleCheck.setModule("ForImport");
         moduleCheck.setLocalFolder(work.getAbsolutePath()); // NOI18N
-        
+
         //Pseudo CVS server for finishing check out wizard
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "checkout_finish_2.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         CVSroot = cvss.getCvsRoot();
         //cvss.ignoreProbe();
-        
+
         //crso.setCVSRoot(CVSroot);
         //combo.setSelectedItem(CVSroot);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
-        Thread.sleep(3000);
-        
-        //OutputOperator oo = OutputOperator.invoke();
-        //System.out.println(CVSroot);
 
-        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot);
-        oto.waitText("Checking out finished");
+        TestKit.waitText(mh);
         cvss.stop();
-        try {
-            Thread.sleep(1000);
-            in.close();
-        } catch (IOException e) {
-            //
-        }
+        in.close();
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
-        
+
         ProjectSupport.waitScanFinished();
 //        TestKit.waitForQueueEmpty();
 //        ProjectSupport.waitScanFinished();
-        
+
+        //create new elements for testing
+        TestKit.createNewElementsCommitCvs12(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
     
@@ -176,15 +175,10 @@ public class DeleteTest extends JellyTestCase {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss, cvss2, cvss3;
         InputStream in, in2, in3;
-        //OutputOperator oo;
-        OutputTabOperator oto;
         org.openide.nodes.Node nodeIDE;
         String color, CVSroot;
         VersioningOperator vo;
         JTableOperator table;
-        
-        oto = new OutputTabOperator(sessionCVSroot); 
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         
         Node nodeMain = new Node(new SourcePackagesNode(projectName), "forimport");
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_package_1.in");
@@ -193,7 +187,7 @@ public class DeleteTest extends JellyTestCase {
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         nodeMain.performPopupAction("CVS|Show Changes");
-        Thread.sleep(1000);
+        new EventTool().waitNoEvent(1000);
         vo = VersioningOperator.invoke();
         cvss.stop();
         
@@ -204,7 +198,7 @@ public class DeleteTest extends JellyTestCase {
 //        NbDialogOperator dialog = new NbDialogOperator("Safe Delete");
         JButtonOperator btn = new JButtonOperator(dialog, "OK");
         btn.push();
-        Thread.sleep(1000);
+        new EventTool().waitNoEvent(1000);
         Exception e = null;
         try {
             table = vo.tabFiles();

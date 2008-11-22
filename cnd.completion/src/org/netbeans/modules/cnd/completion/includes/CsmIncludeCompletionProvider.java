@@ -65,16 +65,16 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
                 typedText.equals(CsmIncludeCompletionItem.SLASH)) {
             int dot = component.getCaret().getDot();
             if (TRACE) {
-                System.out.println("offset " + dot); // NOI18N
+                System.err.println("offset " + dot); // NOI18N
             }
             if (CompletionSupport.isIncludeCompletionEnabled(component.getDocument(), dot)) {
                 if (TRACE) {
-                    System.out.println("include completion will be shown on " + dot); // NOI18N
+                    System.err.println("include completion will be shown on " + dot); // NOI18N
                 }
                 return COMPLETION_QUERY_TYPE;
             } else {
                 if (TRACE) {
-                    System.out.println("include completion will NOT be shown on " + dot); // NOI18N
+                    System.err.println("include completion will NOT be shown on " + dot); // NOI18N
                 }
             }
         }
@@ -83,19 +83,19 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
 
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (TRACE) {
-            System.out.println("queryType = " + queryType); // NOI18N
+            System.err.println("queryType = " + queryType); // NOI18N
         }
         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
             boolean all = (queryType == COMPLETION_ALL_QUERY_TYPE);
             int dot = component.getCaret().getDot();
             if (CompletionSupport.isIncludeCompletionEnabled(component.getDocument(), dot)) {
                 if (TRACE) {
-                    System.out.println("include completion task is created with offset " + dot); // NOI18N
+                    System.err.println("include completion task is created with offset " + dot); // NOI18N
                 }
                 return new AsyncCompletionTask(new Query(dot, all), component);
             } else {
                 if (TRACE) {
-                    System.out.println("include completion task is NOT created on " + dot); // NOI18N
+                    System.err.println("include completion task is NOT created on " + dot); // NOI18N
                 }
             }
         }
@@ -139,7 +139,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
         protected void preQueryUpdate(JTextComponent component) {
             int caretOffset = component.getCaretPosition();
             if (TRACE) {
-                System.out.println("preQueryUpdate on " + caretOffset + " created on " + creationCaretOffset); // NOI18N
+                System.err.println("preQueryUpdate on " + caretOffset + " created on " + creationCaretOffset); // NOI18N
             }
             Document doc = component.getDocument();
             if (creationCaretOffset > 0 && caretOffset >= creationCaretOffset) {
@@ -155,7 +155,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
 
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             if (TRACE) {
-                System.out.println("query on " + caretOffset + " anchor " + queryAnchorOffset); // NOI18N
+                System.err.println("query on " + caretOffset + " anchor " + queryAnchorOffset); // NOI18N
             }
             Collection<CsmIncludeCompletionItem> items = getItems((BaseDocument) doc, caretOffset);
             if (this.queryAnchorOffset > 0) {
@@ -195,7 +195,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
             }
             fixFilter();
             if (TRACE) {
-                System.out.println("canFilter INCINFO: usrInclude=" + usrInclude + // NOI18N
+                System.err.println("canFilter INCINFO: usrInclude=" + usrInclude + // NOI18N
                         " anchorOffset=" + queryAnchorOffset + " oldDir=" + oldDir + // NOI18N
                         " dirPrefix=" + dirPrefix + " filterPrefix=" + filterPrefix); // NOI18N
             }
@@ -295,7 +295,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
             }
             fixFilter();
             if (TRACE) {
-                System.out.println("INCINFO: usrInclude=" + usrInclude + // NOI18N
+                System.err.println("INCINFO: usrInclude=" + usrInclude + // NOI18N
                         " anchorOffset=" + queryAnchorOffset + // NOI18N
                         " dirPrefix=" + dirPrefix + " filterPrefix=" + filterPrefix); // NOI18N
             }

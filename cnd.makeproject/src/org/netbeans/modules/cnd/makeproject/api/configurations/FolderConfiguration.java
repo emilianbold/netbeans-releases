@@ -187,7 +187,7 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         return sheet;
     }
    
-    private class StringRONodeProp extends PropertySupport {
+    private static class StringRONodeProp extends PropertySupport {
         String value;
         public StringRONodeProp(String name, String value) {
             super(name, String.class, name, name, true, false);

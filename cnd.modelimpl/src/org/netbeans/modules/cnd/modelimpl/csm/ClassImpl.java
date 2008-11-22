@@ -342,21 +342,46 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                 return false;
             }
 
-            AST idAST = typeAST.getNextSibling();
-            if (idAST == null || idAST.getType() != CPPTokenTypes.ID) {
-                return false;
-            }
-
-            AST colonAST = idAST.getNextSibling();
-            if (colonAST == null || colonAST.getType() != CPPTokenTypes.COLON) {
-                return false;
-            }
-
+            // common type for all bit fields
             CsmType type = TypeFactory.createType(typeAST, getContainingFile(), null, 0);
-            FieldImpl field = new FieldImpl(token, getContainingFile(), type, idAST.getText(), ClassImpl.this, curentVisibility, !isRenderingLocalContext());
-            ClassImpl.this.addMember(field);
 
-            return true;
+            boolean cont = true;
+            boolean added = false;
+            AST start = token;
+            AST prev = typeAST;
+            while (cont) {
+                AST idAST = prev.getNextSibling();
+                if (idAST == null || idAST.getType() != CPPTokenTypes.ID) {
+                    break;
+                }
+
+                AST colonAST = idAST.getNextSibling();
+                if (colonAST == null || colonAST.getType() != CPPTokenTypes.COLON) {
+                    break;
+                }
+
+                AST expAST = colonAST.getNextSibling();
+                if (expAST == null || expAST.getType() != CPPTokenTypes.CSM_EXPRESSION) {
+                    break;
+                }
+                prev = expAST.getNextSibling();
+
+                // there could be next bit fields as well
+                if (prev != null && prev.getType() == CPPTokenTypes.COMMA) {
+                    // bit fields separated by comma
+                    // byte f:1, g:2, h:5;
+                    start = idAST;
+                } else {
+                    cont = false;
+                    if (added) {
+                        start = idAST;
+                    }
+                }
+                FieldImpl field = new FieldImpl(start, getContainingFile(), type, idAST.getText(), ClassImpl.this, curentVisibility, !isRenderingLocalContext());
+                ClassImpl.this.addMember(field);
+                added = true;
+            }
+            return added;
         }
 
         @Override

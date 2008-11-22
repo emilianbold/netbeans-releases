@@ -657,7 +657,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
         descriptions.add(createCCompilerDescription(project, compilerSetIdx, item, folder, isCompilerConfiguration));
         descriptions.add(createCCCompilerDescription(project, compilerSetIdx, item, folder, isCompilerConfiguration));
-        String nodeLabel = nodeLabel = getString("LBL_PARSER_NODE");
+        String nodeLabel = getString("LBL_PARSER_NODE");
 
         CustomizerNode rootDescription = new CustomizerNode(
                 "CodeAssistant", // NOI18N

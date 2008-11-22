@@ -451,7 +451,7 @@ public class FortranFormatterFixedTestCase extends FortranEditorBase {
                 "                              structure STR6\n" +
                 "                                  complex*16 s6\n" +
                 "                                  structure STR7\n" +
-                "                                      unsigned * 4 s7\n" +
+                "                                      unsigned*4 s7\n" +
                 "                                      structure STR8\n" +
                 "                                          complex*16 s8\n" +
                 "                                          structure STR9\n" +
@@ -490,5 +490,43 @@ public class FortranFormatterFixedTestCase extends FortranEditorBase {
                 "          print *, 'Printing of result values of outer structure: '\n" +
                 "          print *, example\n" +
                 "      end");
+    }
+
+    public void testDoNumFixed() {
+        setLoadDocumentText(
+                "      program Bug001\n" +
+                "      do 1 i = 1, 67\n" +
+                " 1    write ( 6, 100, advance = 'YES') i\n" +
+                " 100  format ( 1h, ' ', i2.2)\n" +
+                "      end program Bug001");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        reformat();
+        assertDocumentText("Incorrect function indent (fixed form)",
+                "      program Bug001\n" +
+                "          do 1 i = 1, 67\n" +
+                " 1            write ( 6, 100, advance = 'YES') i\n" +
+                " 100      format ( 1h, ' ', i2.2)\n" +
+                "      end program Bug001");
+    }
+
+    public void testDoDoNumFixed() {
+        setLoadDocumentText(
+                "      program Bug001\n" +
+                "      do 1 i = 1, 67\n" +
+                "      do 1 j = 1, 67\n" +
+                " 1    write ( 6, 100, advance = 'YES') i\n" +
+                " 100  format ( 1h, ' ', i2.2)\n" +
+                "      end program Bug001");
+        setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
+        reformat();
+        assertDocumentText("Incorrect function indent (fixed form)",
+                "      program Bug001\n" +
+                "          do 1 i = 1, 67\n" +
+                "              do 1 j = 1, 67\n" +
+                " 1                write ( 6, 100, advance = 'YES') i\n" +
+                " 100      format ( 1h, ' ', i2.2)\n" +
+                "      end program Bug001");
     }
 }

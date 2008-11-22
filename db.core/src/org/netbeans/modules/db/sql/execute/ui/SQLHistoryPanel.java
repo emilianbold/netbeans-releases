@@ -83,6 +83,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.db.sql.history.SQLHistory;
 import org.netbeans.modules.db.sql.history.SQLHistoryException;
 import org.netbeans.modules.db.sql.history.SQLHistoryModel;
@@ -251,7 +252,8 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
 
         searchTextField.setMinimumSize(new java.awt.Dimension(20, 22));
 
-        insertSQLButton.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Insert")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(insertSQLButton, org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Insert")); // NOI18N
+        insertSQLButton.setActionCommand("&Insert");
         insertSQLButton.setEnabled(false);
         insertSQLButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -270,7 +272,8 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         sqlLimitTextField.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_InitialLimit")); // NOI18N
         sqlLimitTextField.setMinimumSize(new java.awt.Dimension(18, 22));
 
-        sqlLimitButton.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ApplyButton")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(sqlLimitButton, org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ApplyButton")); // NOI18N
+        sqlLimitButton.setActionCommand("&Apply");
         sqlLimitButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sqlLimitButtonActionPerformed(evt);
@@ -291,11 +294,11 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE)
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 560, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(jLabel1)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(connectionUrlComboBox, 0, 212, Short.MAX_VALUE)
+                                .add(connectionUrlComboBox, 0, 203, Short.MAX_VALUE)
                                 .add(18, 18, 18)
                                 .add(jLabel2)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -368,6 +371,11 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             for (SQLHistory sqlHistory : sqlHistoryList) {
                 if (sqlHistoryTable.isRowSelected(i)) {
                     sqlToInsert = sqlHistory.getSql().trim();
+                    JEditorPane pane = (JEditorPane)EditorRegistry.lastFocusedComponent();
+                    String mime = pane.getContentType();
+                    if (mime.equals("text/x-sql")) {  // NOI18N
+                        editorPane = pane;
+                    }
                     insertUtility.insert(sqlToInsert, editorPane);
                 }
                 // increment for the next row
