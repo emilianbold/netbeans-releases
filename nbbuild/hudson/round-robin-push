@@ -59,10 +59,12 @@ else
 fi
 hg out $push_url
 
-if [ `hg out --template '{node|short}\n' $push_url | wc -l` > 0 ]; then
-    echo "Let the build starts..."
+OUT_COUNT=`hg out --template 'change: {node|short}\n' $push_url | grep '^change: ' | wc -l`
+
+if [ "$OUT_COUNT" > 0 ]; then
+    echo "Let the build start. There is $OUT_COUNT outgoing changes."
 else
-    echo "No outgoing changes"
+    echo "No outgoing changes. No reason to do build."
     exit 0
 fi
 
