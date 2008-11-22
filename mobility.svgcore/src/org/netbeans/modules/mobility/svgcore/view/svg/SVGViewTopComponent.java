@@ -582,7 +582,10 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         PerseusController perseus = getPerseusController();
 
         if (perseus != null) {
+            float stoppedTime = perseus.getAnimatorTime();
             perseus.stopAnimator();
+            perseus.setAnimatorTime(stoppedTime);
+            updateAnimationActions();
         }
     }
 

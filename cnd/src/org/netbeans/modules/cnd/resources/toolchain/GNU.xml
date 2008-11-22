@@ -28,7 +28,7 @@ Contributor(s):
 The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 2001-2006 Sun
 Microsystems, Inc. All Rights Reserved.
-
+/export/home/thp/netbeans-dev/main
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -132,9 +132,34 @@ made subject to such option by the copyright holder.
         </architecture>
         <strip flags="-s"/>
     </fortran>
+    <assembler>
+        <compiler name="as"/>
+        <version flags="-version"/>
+        <development_mode>
+            <fast_build flags=""/>
+            <debug flags="-g" default="true"/>
+            <performance_debug flags="-g"/>
+            <test_coverage flags="-g"/>
+            <diagnosable_release flags="-g"/>
+            <release flags=""/>
+            <performance_release flags=""/>
+        </development_mode>
+        <warning_level>
+            <no_warnings flags="-W"/>
+            <default flags="" default="true"/>
+            <more_warnings flags=""/>
+            <warning2error flags="--fatal-warnings"/>
+        </warning_level>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags="--32"/>
+            <bits_64 flags="--64"/>
+        </architecture>
+        <strip flags="-s"/>
+    </assembler>
     <scanner>
-        <error pattern="([a-zA-Z]:[^:\n]*|[^:\n]*):([^:\n]*):([^:\n]*):([^\n]*)" language="c,cpp,fortran"/>
-        <error pattern="([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*" language="c,cpp,fortran"/>
+        <error pattern="([a-zA-Z]:[^:\n]*|[^:\n]*):([^:\n]*):([^:\n]*):([^\n]*)" language="c,cpp,fortran,assembler"/>
+        <error pattern="([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*" language="c,cpp,fortran,assembler"/>
         <stack_header pattern="In file included from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"/>
         <stack_next pattern="                 from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"/>
         <change_directory pattern="cd\\s+([\\S]+)[\\s;]"/>

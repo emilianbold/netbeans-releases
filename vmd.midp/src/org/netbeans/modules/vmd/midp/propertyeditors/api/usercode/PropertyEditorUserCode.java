@@ -93,23 +93,6 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
     protected WeakReference<DesignComponent> component;
     private LinkedHashMap<PropertyEditorElement, Integer> elements;
 
-    @Override
-    public void cleanUp(DesignComponent component) {
-        super.cleanUp(component);
-        if (elements != null) {
-            elements.clear();
-            elements = null;
-        }
-        if (customEditor != null) {
-            customEditor.cleanUp();
-            customEditor = null;
-        }
-
-        userCodeRadioButton = null;
-        messageLabel = null;
-        this.component = null;
-    }
-
     protected PropertyEditorUserCode(String userCodeLabel) {
         this.userCodeLabel = userCodeLabel;
     }
@@ -125,6 +108,23 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
         for (PropertyEditorElement element : elements) {
             this.elements.put(element, i++);
         }
+    }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (elements != null) {
+            elements.clear();
+            elements = null;
+        }
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+
+        userCodeRadioButton = null;
+        messageLabel = null;
+        this.component = null;
     }
 
     /**

@@ -94,12 +94,8 @@ public class FilterParamsPanel extends DefaultTablePanel {
                 NbBundle.getMessage(FilterParamsPanel.class,"LBL_initParamValue"),
                 NbBundle.getMessage(FilterParamsPanel.class,"LBL_description")
             };
-            char[] mnem = new char[] {
-                NbBundle.getMessage(FilterParamsPanel.class,"LBL_initParamName_mnem").charAt(0),
-                NbBundle.getMessage(FilterParamsPanel.class,"LBL_initParamValue_mnem").charAt(0),
-                NbBundle.getMessage(FilterParamsPanel.class,"LBL_description_mnem").charAt(0)
-            };
-            SimpleDialogPanel.DialogDescriptor descriptor = new SimpleDialogPanel.DialogDescriptor(labels);
+            SimpleDialogPanel.DialogDescriptor descriptor =
+                    new SimpleDialogPanel.DialogDescriptor(labels, true);
             if (!add) {
                 String[] initValues = new String[] {
                     (String)model.getValueAt(row,0),
@@ -108,7 +104,6 @@ public class FilterParamsPanel extends DefaultTablePanel {
                 };
                 descriptor.setInitValues(initValues);
             }
-            descriptor.setMnemonics(mnem);
             descriptor.setTextField(new boolean[]{true,true,false});
             
             final SimpleDialogPanel dialogPanel = new SimpleDialogPanel(descriptor);

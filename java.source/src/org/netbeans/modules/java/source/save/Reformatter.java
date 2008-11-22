@@ -2916,7 +2916,8 @@ public class Reformatter implements ReformatTask {
             for (int i = 0; i < text.length(); i++) {
                 char c = text.charAt(i);
                 if (c == '\t') {
-                    col = col+tabSize & ~(tabSize-1);
+                    col += tabSize;
+                    col -= (col % tabSize);
                 } else {
                     col++;
                 }

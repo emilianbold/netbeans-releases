@@ -55,7 +55,7 @@ options {
 } 
 
 {
-@SuppressWarnings({"unchecked", "cast"})
+@SuppressWarnings({"unchecked", "cast", "fallthrough"})
 }
 class APTLexer extends Lexer;
 

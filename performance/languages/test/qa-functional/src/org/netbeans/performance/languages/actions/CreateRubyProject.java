@@ -52,7 +52,6 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
  *
@@ -149,7 +148,7 @@ public class CreateRubyProject  extends org.netbeans.modules.performance.utiliti
     public void close() {
         log("::close");
 
-        ProjectSupport.closeProject(project_name);
+//        ProjectSupport.closeProject(project_name);
     }    
     
     public void testCreateRubyProject() {

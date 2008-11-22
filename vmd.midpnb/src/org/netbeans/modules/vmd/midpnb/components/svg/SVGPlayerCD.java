@@ -59,10 +59,8 @@ import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.general.SVGFileAcceptPresenter;
-import org.netbeans.modules.vmd.midpnb.propertyeditors.SVGImageEditorElement;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGPlayerDisplayPresenter;
 import org.openide.util.NbBundle;
 import java.util.ArrayList;
@@ -70,6 +68,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.midpnb.actions.EditSVGFileAction;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorResourceLazyInitFactory;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -129,10 +128,7 @@ public class SVGPlayerCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_SVGImage"), //NOI18N
-                    PropertyEditorResource.createInstance(new SVGImageEditorElement(),
-                        NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NEW"), //NOI18N
-                        NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NONE"), //NOI18N
-                        NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_UCLABEL")), PROP_SVG_IMAGE) //NOI18N
+                    PropertyEditorResourceLazyInitFactory.createSVGImageEditorPropertyEditor(), PROP_SVG_IMAGE) //NOI18N
                 .addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_StartAnimationImmediately"), // NOI18N
                     PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(SVGPlayerCD.class, "LBL_SVGPlayer_StartAnimationImmediately")), PROP_START_ANIM_IMMEDIATELY) // NOI18N
                 .addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_AnimationTimeIncrement"), // NOI18N

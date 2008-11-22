@@ -65,6 +65,7 @@ import org.openide.util.ChangeSupport;
  *
  * @author Radek Matous
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-php-project", position=100)
 public class SourcesNodeFactory implements NodeFactory {
     private static final Logger LOGGER = Logger.getLogger(SourcesNodeFactory.class.getName());
 

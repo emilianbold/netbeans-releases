@@ -62,6 +62,7 @@ public class FortranReformatterImpl {
     private final int startOffset;
     private final int endOffset;
     private int tabSize;
+    private int indentAfterLabel;
 
     FortranReformatterImpl(TokenSequence<FortranTokenId> ts, int startOffset, int endOffset, FortranCodeStyle codeStyle){
         braces = new FortranBracesStack(codeStyle);
@@ -90,18 +91,21 @@ public class FortranReformatterImpl {
             FortranTokenId id = current.id();
             if (previous != null && previous.id() == PREPROCESSOR_DIRECTIVE && id != PREPROCESSOR_DIRECTIVE){
                 // indent afre preprocessor directive
-                if (doFormat()){
-                    indentNewLine(current);
-                }
+                analyzeLine(previous, current);
             }
-            if (isFirst) {
+            if (isFirst && current.id() != PREPROCESSOR_DIRECTIVE) {
                 analyzeLine(previous, current);
             }
             isFirst = false;
             switch(id){
+                case KW_CONTAINS:
+                {
+                    System.out.println("");
+                }
+                break;
                 case PREPROCESSOR_DIRECTIVE: //(null, "preprocessor"),
                 {
-                    preprocessorFormatter.indentPreprocessor(previous);
+                    preprocessorFormatter.indentPreprocessor(current);
                     break;
                 }
                 case NEW_LINE:
@@ -129,6 +133,9 @@ public class FortranReformatterImpl {
                     braces.parenDepth++;
                     if (doFormat()) {
                         formatLeftParen(previous, current);
+                        if (previous != null && previous.id() == RPAREN) {
+                            spaceBefore(current, true);
+                        }
                     }
                     break;
                 }
@@ -146,9 +153,23 @@ public class FortranReformatterImpl {
                 }
                 case IDENTIFIER:
                 {
-                    Token<FortranTokenId> next = ts.lookNextImportant();
-                    if (next != null && next.id() == COLON) {
-                        indentLabel(previous);
+                    if (doFormat()) {
+                        Token<FortranTokenId> next = ts.lookNextImportant();
+                        if (next != null && next.id() == COLON) {
+                            indentLabel(previous);
+                        }
+                        if (previous != null && previous.id() == RPAREN) {
+                            spaceBefore(current, true);
+                        }
+                    }
+                    break;
+                }
+                case STRING_LITERAL:
+                {
+                    if (doFormat()) {
+                        if (previous != null && previous.id() == RPAREN) {
+                            spaceBefore(current, true);
+                        }
                     }
                     break;
                 }
@@ -161,7 +182,9 @@ public class FortranReformatterImpl {
                     break;
                 }
                 case COLON:
-                    processColumn(previous, current);
+                    if (doFormat()) {
+                        processColumn(previous, current);
+                    }
                     break;
                 case KWOP_NOT:
                 {
@@ -185,6 +208,16 @@ public class FortranReformatterImpl {
                     break;
                 }
                 case OP_MUL:
+                    if (doFormat()) {
+                        OperatorKind kind = ts.getOperatorKind(current);
+                        if (kind == OperatorKind.BINARY){
+                            spaceBefore(previous, codeStyle.spaceAroundBinaryOps());
+                            spaceAfter(current, codeStyle.spaceAroundBinaryOps());
+                        } else if (kind == OperatorKind.UNARY){
+                            spaceAfter(current, codeStyle.spaceAroundUnaryOps());
+                        }
+                    }
+                    break;
                 case OP_CONCAT:
                 {
                     if (doFormat()) {
@@ -194,7 +227,6 @@ public class FortranReformatterImpl {
                     break;
                 }
                 case KWOP_GT:
-                case OP_GT:
                 case KWOP_GE:
                 case OP_GT_EQ:
                 case KWOP_LT:
@@ -205,6 +237,7 @@ public class FortranReformatterImpl {
                 case OP_LOG_EQ:
                 case KWOP_NE:
                 case OP_NOT_EQ:
+                case OP_LT_GT:
                 case PERCENT:
                 {
                     if (doFormat()) {
@@ -213,11 +246,24 @@ public class FortranReformatterImpl {
                     }
                     break;
                 }
+                case OP_GT:
+                {
+                    if (doFormat()) {
+                        if (previous == null || previous.id() != EQ) {
+                            spaceBefore(previous, codeStyle.spaceAroundBinaryOps());
+                        }
+                        spaceAfter(current, codeStyle.spaceAroundBinaryOps());
+                    }
+                    break;
+                }
                 case EQ: //("=", "operator"),
                 {
                     if (doFormat()) {
                         spaceBefore(previous, codeStyle.spaceAroundAssignOps());
-                        spaceAfter(current, codeStyle.spaceAroundAssignOps());
+                        Token<FortranTokenId> next = ts.lookNext();
+                        if (next == null || next.id() != OP_GT) {
+                            spaceAfter(current, codeStyle.spaceAroundAssignOps());
+                        }
                     }
                     break;
                 }
@@ -228,8 +274,16 @@ public class FortranReformatterImpl {
                     }
                     break;
                 }
-                case KW_ELSE:
                 case KW_ELSEIF:
+                {
+                    if (doFormat()) {
+                       formatElse(previous);
+                       spaceAfterBefore(current, codeStyle.spaceBeforeIfParen(), LPAREN);
+                    }
+                    break;
+                }
+                case KW_ELSEWHERE:
+                case KW_ELSE:
                 {
                     if (doFormat()) {
                        formatElse(previous);
@@ -249,20 +303,62 @@ public class FortranReformatterImpl {
                         spaceAfterBefore(current, codeStyle.spaceBeforeForParen(), LPAREN);
                     }
                     break;
-                case KW_SELECT: //("switch", "keyword-directive"),
+                case KW_SELECT:
+                case KW_SELECTCASE:
+                case KW_SELECTTYPE:
                 {
                     if (doFormat()) {
                         spaceAfterBefore(current, codeStyle.spaceBeforeSwitchParen(), LPAREN);
                     }
                     break;
                 }
-                case KW_DEFAULT: //("default", "keyword-directive"),
-                case KW_CASE: //("case", "keyword-directive"),
+                case KW_DEFAULT:
+                case KW_CASE:
                 {
                     break;
                 }
                 case KW_CONTINUE: //("continue", "keyword-directive"),
                 {
+                    break;
+                }
+                case NUM_LITERAL_INT:
+                {
+                    if (doFormat()) {
+                        if (!codeStyle.isFreeFormatFortran() && ts.isFirstLineToken()) {
+                            int space = indentAfterLabel - ts.getTokenPosition() - ts.token().length();
+                            if (space > 0){
+                                Token<FortranTokenId> next =ts.lookNext();
+                                if (next == null) {
+                                    ts.addAfterCurrent(current, 0, space, true);
+                                } else {
+                                    if (next.id() == WHITESPACE) {
+                                        ts.replaceNext(current, next, 0, space, true);
+                                        // !skip space
+                                        ts.moveNext();
+                                        current = ts.token();
+                                    } else {
+                                        ts.addAfterCurrent(current, 0, space, true);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+                case SEMICOLON:
+                {
+                    if (doFormat()) {
+                        spaceBefore(previous, false);
+                        spaceAfter(current, true);
+                    }
+                    break;
+                }
+                case DOUBLECOLON:
+                {
+                    if (doFormat()) {
+                        spaceBefore(previous, true);
+                        spaceAfter(current, true);
+                    }
                     break;
                 }
             }
@@ -294,7 +390,7 @@ public class FortranReformatterImpl {
 
     private void analyzeLine(Token<FortranTokenId> previous, Token<FortranTokenId> current) {
         Token<FortranTokenId> next = null;
-        if (previous == null) {
+        if (previous == null || previous.id() == PREPROCESSOR_DIRECTIVE) {
             switch (current.id()) {
                 case LINE_COMMENT_FIXED:
                 case LINE_COMMENT_FREE:
@@ -310,6 +406,7 @@ public class FortranReformatterImpl {
         } else {
             next = ts.lookNextLineImportant();
         }
+        boolean isEnd = false;
         if (next != null) {
             switch (next.id()) {
                 case KW_ENDASSOCIATE:
@@ -333,34 +430,79 @@ public class FortranReformatterImpl {
                 case KW_ENDWHERE:
                 case KW_END:
                     braces.pop(ts);
+                    isEnd = true;
+                    break;
             }
         }
         if (doFormat()) {
-            newLineFormat(previous, current);
+            newLineFormat(previous, current, next);
         }
         if (next != null) {
+            if (!codeStyle.isFreeFormatFortran() && next.id() == NUM_LITERAL_INT) {
+                Token<FortranTokenId> next2 = ts.lookNextLineImportant(2);
+                if (next2 != null) {
+                    next = next2;
+                }
+            }
             switch (next.id()) {
-                case KW_MODULE:
-                case KW_PROGRAM:
-                case KW_PROCEDURE:
-                case KW_SUBROUTINE:
-                case KW_FUNCTION:
-                case KW_BLOCK:
                 case KW_INTERFACE:
                 case KW_STRUCTURE:
                 case KW_UNION:
+                case KW_ENUM:
                 case KW_TYPE:
+                {
+                    Token<FortranTokenId> head = ts.lookNextLineImportantAfter(next.id());
+                    if (head != null && head.id() == LPAREN) {
+                        break;
+                    }
+                    braces.push(next);
+                    break;
+                }
+                case KW_PROCEDURE:
+                case KW_SUBROUTINE:
+                case KW_FUNCTION:
+                {
+                    Token<FortranTokenId> head = ts.lookNextLineImportantAfter(next.id());
+                    if (head != null && head.id() == IDENTIFIER) {
+                        braces.push(next);
+                    }
+                    break;
+                }
+                case KW_MODULE:
+                case KW_PROGRAM:
+                case KW_BLOCK:
                 case KW_BLOCKDATA:
                 case KW_MAP:
-//                case KW_FILE:
+                    braces.push(next);
+                    break;
                 case KW_IF:
+                {
+                    if(ts.hasLineToken(KW_THEN)){
+                        braces.push(next);
+                    }
+                    break;
+                }
+                case KW_WHERE:
                 case KW_DO:
                 case KW_ELSEIF:
                 case KW_ELSE:
                 case KW_WHILE:
                 case KW_FORALL:
                 case KW_SELECT:
+                case KW_SELECTCASE:
+                case KW_SELECTTYPE:
                     braces.push(next);
+                    break;
+                default:
+                {
+                    if (!isEnd) {
+                        FortranTokenId head = ts.hasLineToken(KW_FUNCTION, KW_SUBROUTINE);
+                        if (head != null){
+                            braces.push(head);
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
@@ -434,8 +576,9 @@ public class FortranReformatterImpl {
         }
     }
 
-    private void newLineFormat(Token<FortranTokenId> previous, Token<FortranTokenId> current) {
-        if (previous != null) {
+    private void newLineFormat(Token<FortranTokenId> previous, Token<FortranTokenId> current, Token<FortranTokenId> firstImportant) {
+        boolean fixedLabel = firstImportant != null && firstImportant.id() == NUM_LITERAL_INT && !codeStyle.isFreeFormatFortran();
+        if (previous != null && previous.id() != PREPROCESSOR_DIRECTIVE) {
             boolean done = false;
             DiffResult diff = diffs.getDiffs(ts, -1);
             if (diff != null) {
@@ -454,8 +597,11 @@ public class FortranReformatterImpl {
                 ts.replacePrevious(previous, 0, 0, false);
             }
         } else {
-            int space = -1;
-            if (space == -1) {
+            int space;
+            if (fixedLabel) {
+                space = 1;
+                indentAfterLabel = getIndent();
+            } else {
                 space = getIndent();
             }
             if (current.id() == WHITESPACE) {
@@ -473,17 +619,23 @@ public class FortranReformatterImpl {
                 return;
             }
             int space = -1;
-            Token<FortranTokenId> first = ts.lookNextLineImportant();
-            if (first != null) {
-                switch (first.id()) {
+            if (firstImportant != null) {
+                switch (firstImportant.id()) {
                     case KW_CASE:
                     case KW_DEFAULT:
                         space = getCaseIndent();
                         break;
+                    case KW_CONTAINS:
+                        space = getParentIndent();
                 }
             }
-            if (space == -1) {
-                space = getIndent();
+            if (space < 0) {
+                if (fixedLabel) {
+                    space = 1;
+                    indentAfterLabel = getIndent();
+                } else {
+                    space = getIndent();
+                }
             }
             if (next.id() == WHITESPACE) {
                 ts.replaceNext(current, next, 0, space, true);
@@ -516,22 +668,20 @@ public class FortranReformatterImpl {
     }
 
     private void processColumn(Token<FortranTokenId> previous, Token<FortranTokenId> current) {
-        if (doFormat()) {
-            Token<FortranTokenId> p = ts.lookPreviousImportant();
-            if (p != null && p.id() == KW_DEFAULT) {
-                // TODO use flase?
-                spaceBefore(previous, false);
-                return;
-            }
-            Token<FortranTokenId> p2 = ts.lookPreviousImportant(2);
-            if (p2 != null && p2.id() == KW_CASE) {
-                // TODO use flase?
-                spaceBefore(previous, false);
-                return;
-            }
+        Token<FortranTokenId> p = ts.lookPreviousImportant();
+        if (p != null && p.id() == KW_DEFAULT) {
+            // TODO use flase?
             spaceBefore(previous, false);
             return;
         }
+        Token<FortranTokenId> p2 = ts.lookPreviousImportant(2);
+        if (p2 != null && p2.id() == KW_CASE) {
+            // TODO use flase?
+            spaceBefore(previous, false);
+            return;
+        }
+        spaceBefore(previous, false);
+        return;
     }
 
     private void reformatBlockComment(Token<FortranTokenId> previous, Token<FortranTokenId> current) {
@@ -766,6 +916,7 @@ public class FortranReformatterImpl {
             Token<FortranTokenId> p = ts.lookPreviousStatement();
             if (p != null) {
                 switch(p.id()) {
+                    case KW_ELSEIF:
                     case KW_IF:
                         spaceAfter(current, codeStyle.spaceWithinIfParens());
                         return;
@@ -776,6 +927,8 @@ public class FortranReformatterImpl {
                         spaceAfter(current, codeStyle.spaceWithinWhileParens());
                         return;
                     case KW_SELECT:
+                    case KW_SELECTCASE:
+                    case KW_SELECTTYPE:
                         spaceAfter(current, codeStyle.spaceWithinSwitchParens());
                         return;
                 }
@@ -790,6 +943,7 @@ public class FortranReformatterImpl {
                 }
                 switch (entry.getKind()) {
                     case KW_TYPE:
+                    case KW_ENUM:
                     case KW_UNION:
                         spaceBefore(previous, codeStyle.spaceBeforeMethodDeclParen());
                         spaceAfter(current, codeStyle.spaceWithinMethodDeclParens());
@@ -816,6 +970,7 @@ public class FortranReformatterImpl {
             Token<FortranTokenId> p = ts.lookPreviousStatement();
             if (p != null) {
                 switch(p.id()) {
+                    case KW_ELSEIF:
                     case KW_IF:
                         spaceBefore(previous, codeStyle.spaceWithinIfParens());
                         return;
@@ -826,6 +981,8 @@ public class FortranReformatterImpl {
                         spaceBefore(previous, codeStyle.spaceWithinWhileParens());
                         return;
                     case KW_SELECT:
+                    case KW_SELECTCASE:
+                    case KW_SELECTTYPE:
                         spaceBefore(previous, codeStyle.spaceWithinSwitchParens());
                         return;
                 }

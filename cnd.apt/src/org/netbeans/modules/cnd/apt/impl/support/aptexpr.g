@@ -60,6 +60,9 @@ options {
 	language = "Java"; // NOI18N
 } 
 
+{
+@SuppressWarnings({"unchecked", "cast", "fallthrough"})
+}
 class APTExprParser extends Parser;
 
 options {

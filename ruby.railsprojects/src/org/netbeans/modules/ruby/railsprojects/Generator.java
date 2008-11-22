@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

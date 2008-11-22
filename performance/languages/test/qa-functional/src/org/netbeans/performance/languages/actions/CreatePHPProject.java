@@ -50,7 +50,6 @@ import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
  *
@@ -122,7 +121,7 @@ public class CreatePHPProject  extends org.netbeans.modules.performance.utilitie
     public void close(){
         log("::close");
 
-        ProjectSupport.closeProject(project_name);
+//        ProjectSupport.closeProject(project_name);
     }    
     
     public void testCreatePhpProject() {

@@ -67,7 +67,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
             if (TRACE) {
                 System.out.println("offset " + dot); // NOI18N
             }
-            if (sup.isIncludeCompletionEnabled(dot)) {
+            if (CompletionSupport.isIncludeCompletionEnabled(component.getDocument(), dot)) {
                 if (TRACE) {
                     System.out.println("include completion will be shown on " + dot); // NOI18N
                 }
@@ -88,8 +88,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
             boolean all = (queryType == COMPLETION_ALL_QUERY_TYPE);
             int dot = component.getCaret().getDot();
-            CompletionSupport sup = CompletionSupport.get(component);
-            if (sup.isIncludeCompletionEnabled(dot)) {
+            if (CompletionSupport.isIncludeCompletionEnabled(component.getDocument(), dot)) {
                 if (TRACE) {
                     System.out.println("include completion task is created with offset " + dot); // NOI18N
                 }

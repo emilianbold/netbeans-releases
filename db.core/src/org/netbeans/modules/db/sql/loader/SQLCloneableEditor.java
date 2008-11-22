@@ -603,17 +603,15 @@ public class SQLCloneableEditor extends CloneableEditor {
                         Object[] options = new Object[]{
                             DialogDescriptor.CLOSED_OPTION
                         };
-                        final DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(SQLCloneableEditor.class, "LBL_SQL_HISTORY_TITLE"), true, options,
+                        final DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(SQLCloneableEditor.class, "LBL_SQL_HISTORY_TITLE"), false, options,
                                 DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("sql_history"), null);  // NOI18N
                         dlg = DialogDisplayer.getDefault().createDialog(desc);
                         dlg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SQLCloneableEditor.class, "ACSD_DLG"));
                         panel.setSize(panel.getPreferredSize());
                         dlg.pack();
+                        dlg.setAlwaysOnTop(true);
                         dlg.setVisible(true);
                     } finally {
-                        if (dlg != null) {
-                            dlg.dispose();
-                        }
                         getComponent().setCursor(null);
                     }
                 }

@@ -334,7 +334,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     private static Collection<CsmReference> getPreprocReferences(AbstractDocument doc, CsmFile file, int searchOffset, Interrupter interrupter) {
         TokenSequence<CppTokenId> origPreprocTS = cppTokenSequence(doc, searchOffset, false);
         if (origPreprocTS == null || origPreprocTS.language() != CppTokenId.languagePreproc()) {
-            return null;
+            return Collections.<CsmReference>emptyList();
         }
         doc.readLock();
         try {
@@ -345,7 +345,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             ConditionalBlock offsetContainer = null;
             for (TokenSequence<?> ts : ppSequences) {
                 if (interrupter != null && interrupter.cancelled()) {
-                    return null;
+                    return Collections.<CsmReference>emptyList();
                 }
                 @SuppressWarnings("unchecked")
                 TokenSequence<CppTokenId> ppTS = (TokenSequence<CppTokenId>) ts;
@@ -410,19 +410,19 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         }
 
         public CsmReferenceKind getKind() {
-            throw new UnsupportedOperationException("Must not be called");
+            throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
         public CsmObject getReferencedObject() {
-            throw new UnsupportedOperationException("Must not be called");
+            throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
         public CsmObject getOwner() {
-            throw new UnsupportedOperationException("Must not be called");
+            throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
         public CsmFile getContainingFile() {
-            throw new UnsupportedOperationException("Must not be called");
+            throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
         public int getStartOffset() {
@@ -434,15 +434,15 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         }
 
         public Position getStartPosition() {
-            throw new UnsupportedOperationException("Must not be called");
+            throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
         public Position getEndPosition() {
-            throw new UnsupportedOperationException("Must not be called");
+            throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
         public CharSequence getText() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
         
     }
