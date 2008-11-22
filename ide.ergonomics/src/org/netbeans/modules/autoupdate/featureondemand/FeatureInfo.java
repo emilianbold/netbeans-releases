@@ -37,14 +37,18 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.autoupdate.featureondemand.api;
+package org.netbeans.modules.autoupdate.featureondemand;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.autoupdate.featureondemand.FeatureInfoAccessor;
 import org.netbeans.modules.autoupdate.featureondemand.FeatureInfoAccessor.Internal;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /** Description of <em>Feature On Demand</em> capabilities and a 
  * factory to create new instances.
@@ -57,6 +61,8 @@ public final class FeatureInfo {
     private final String delegateFilePath;
     private final Internal internal = new Internal(this);
     private final Set<String> cnbs;
+    final Map<String,String> nbproject = new HashMap<String,String>();
+    private final Map<String,String> files = new HashMap<String,String>();
 
     private FeatureInfo(Set<String> cnbs, URL delegateLayer) {
         this.cnbs = cnbs;
@@ -134,5 +140,50 @@ public final class FeatureInfo {
                 return info.internal;
             }
         };
+    }
+
+    boolean isProject(FileObject dir, boolean deepCheck) {
+        if (nbproject.isEmpty()) {
+            return false;
+        } else {
+            FileObject prj = dir.getFileObject("nbproject/project.xml");
+            if (prj == null) {
+                return false;
+            }
+            if (!deepCheck) {
+                return true;
+            }
+            byte[] arr = new byte[2048];
+            int len;
+            InputStream is = null;
+            try {
+                is = prj.getInputStream();
+                len = is.read(arr);
+            } catch (IOException ex) {
+                len = -1;
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            if (len == -1) {
+                return false;
+            }
+            String text = new String(arr, 0, len);
+            for (String t : nbproject.keySet()) {
+                if (text.indexOf("<type>" + t + "</type>") >= 0) { // NOI18N
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    final void nbproject(String prjType, String clazz) {
+        nbproject.put(prjType, clazz);
     }
 }

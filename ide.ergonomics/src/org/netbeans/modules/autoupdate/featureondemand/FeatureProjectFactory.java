@@ -46,7 +46,6 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.autoupdate.featureondemand.api.FeatureInfo;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -67,13 +66,9 @@ public class FeatureProjectFactory implements ProjectFactory {
 
     public boolean isProject(FileObject projectDirectory) {
         Lookup.Result<FeatureInfo> result = Feature2LayerMapping.featureTypesLookup().lookupResult(FeatureInfo.class);
-        for (FeatureInfo pt2m : result.allInstances ()) {
-            String pfp = FeatureInfoAccessor.DEFAULT.getDelegateFilePath(pt2m);
-            if (pfp != null) {
-                FileObject file = projectDirectory.getFileObject(pfp);
-                if (file != null) {
-                    return true;
-                }
+        for (FeatureInfo info : result.allInstances ()) {
+            if (info.isProject(projectDirectory, false)) {
+                return true;
             }
         }
         return false;
@@ -81,25 +76,9 @@ public class FeatureProjectFactory implements ProjectFactory {
 
     public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
         Lookup.Result<FeatureInfo> result = Feature2LayerMapping.featureTypesLookup().lookupResult(FeatureInfo.class);
-        for (FeatureInfo pt2m : result.allInstances ()) {
-            String pfp = FeatureInfoAccessor.DEFAULT.getDelegateFilePath(pt2m);
-            if (pfp != null) {
-                FileObject file = projectDirectory.getFileObject(pfp);
-                if (file != null) {
-                    Set<String> cnbs = FeatureInfoAccessor.DEFAULT.getCodeName(pt2m);
-                    for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-                        if (!cnbs.contains(info.getCodeNameBase())) {
-                            continue;
-                        }
-                        if (info.isEnabled()) {
-                            // do not create any proxy
-                            return null;
-                        } else {
-                            break;
-                        }
-                    }
-                    return new FeatureNonProject(projectDirectory, pt2m, state);
-                }
+        for (FeatureInfo info : result.allInstances ()) {
+            if (info.isProject(projectDirectory, true)) {
+                return new FeatureNonProject(projectDirectory, info, state);
             }
         }
         return null;

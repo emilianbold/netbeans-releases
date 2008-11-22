@@ -40,9 +40,11 @@
 package org.netbeans.modules.ide.ergonomics;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.autoupdate.featureondemand.Feature2LayerMapping;
 import org.netbeans.spi.project.ProjectFactory;
 import org.openide.util.Lookup;
 
@@ -67,38 +69,52 @@ public class VerifyFullIDETest extends NbTestCase {
     }
 
     public void testGetAllProjectFactories() throws Exception {
-        iterateRegistrations(ProjectFactory.class, null);
+        StringBuilder sb = new StringBuilder();
+        Map<String,String> all = Feature2LayerMapping.nbprojectTypes();
+        iterateRegistrations(sb, ProjectFactory.class, null, all);
     }
 
-    public void testGetAllAntProjects() throws Exception {
+    public void testGetAllNbProjects() throws Exception {
+        Map<String,String> all = Feature2LayerMapping.nbprojectTypes();
+        StringBuilder sb = new StringBuilder();
+
         Class<?> ant = Class.forName(
             "org.netbeans.spi.project.support.ant.AntBasedProjectType",
             true,
             Thread.currentThread().getContextClassLoader()
         );
-        iterateRegistrations(ant, ant.getDeclaredMethod("getType"));
-    }
-
-    public void testGetAllRakeProjects() throws Exception {
+        iterateRegistrations(sb, ant, ant.getDeclaredMethod("getType"), all);
         Class<?> rake = Class.forName(
             "org.netbeans.modules.ruby.spi.project.support.rake.RakeBasedProjectType",
             true,
             Thread.currentThread().getContextClassLoader()
         );
-        iterateRegistrations(rake, rake.getDeclaredMethod("getType"));
+        iterateRegistrations(sb, rake, rake.getDeclaredMethod("getType"), all);
+
+        if (!all.isEmpty()) {
+            fail("No all IDE projects are registered for ergonomics mode:\n" + sb);
+        }
     }
 
-    private void iterateRegistrations(Class<?> what, Method info) throws Exception {
-        StringBuilder sb = new StringBuilder();
+    private void iterateRegistrations(
+        StringBuilder sb, Class<?> what, Method info, Map<String,String> all
+    ) throws Exception {
         for (Object f : Lookup.getDefault().lookupAll(what)) {
             sb.append(f.getClass().getName());
             if (info != null) {
                 Object more = info.invoke(f);
                 sb.append(" info: ").append(more);
+                Object value = all.get(more);
+                if (f.getClass().getName().equals(value)) {
+                    sb.append(" OK");
+                    all.remove(more);
+                } else {
+                    sb.append(" not present");
+                    all.put("FAIL", more.toString());
+                }
             }
             sb.append('\n');
         }
-        fail("Factories:\n" + sb);
     }
 
 

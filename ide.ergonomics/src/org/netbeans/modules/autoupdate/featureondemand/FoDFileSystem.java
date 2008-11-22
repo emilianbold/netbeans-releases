@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.modules.autoupdate.featureondemand.FeatureInfoAccessor.Internal;
-import org.netbeans.modules.autoupdate.featureondemand.api.FeatureInfo;
+import org.netbeans.modules.autoupdate.featureondemand.FeatureInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.MultiFileSystem;

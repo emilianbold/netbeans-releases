@@ -44,7 +44,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
 import java.util.logging.Level;
-import org.netbeans.modules.autoupdate.featureondemand.api.FeatureInfo;
+import org.netbeans.modules.autoupdate.featureondemand.FeatureInfo;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;

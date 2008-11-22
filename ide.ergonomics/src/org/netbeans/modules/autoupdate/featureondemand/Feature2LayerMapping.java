@@ -45,11 +45,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import org.netbeans.modules.autoupdate.featureondemand.api.FeatureInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -66,6 +67,16 @@ public class Feature2LayerMapping {
     
     public static Feature2LayerMapping getInstance () {
         return INSTANCE;
+    }
+
+    public static Map<String,String> nbprojectTypes() {
+        Map<String,String> map = new HashMap<String, String>();
+
+        Lookup.Result<FeatureInfo> result = featureTypesLookup().lookupResult(FeatureInfo.class);
+        for (FeatureInfo info : result.allInstances()) {
+            map.putAll(info.nbproject);
+        }
+        return map;
     }
     
     public Collection<URL> getLayerURLs () {
@@ -121,7 +132,18 @@ public class Feature2LayerMapping {
                         assert cnbs != null : "Error loading from " + bundle; // NOI18N
                         TreeSet<String> s = new TreeSet<String>();
                         s.addAll(Arrays.asList(cnbs.split(",")));
-                        ic.add(FeatureInfo.create(s, layer));
+                        FeatureInfo info = FeatureInfo.create(s, layer);
+
+                        final String prefix = "nbproject.";
+                        for (String key : p.stringPropertyNames()) {
+                            if (key.startsWith(prefix)) {
+                                info.nbproject(
+                                    key.substring(prefix.length()),
+                                    p.getProperty(key)
+                                );
+                            }
+                        }
+                        ic.add(info);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
