@@ -46,10 +46,14 @@ import java.util.Collections;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreeScanner;
 import java.util.List;
+import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.ui.FmtOptions;
 import static org.netbeans.api.java.source.JavaSource.*;
 
 /**
@@ -73,6 +77,7 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new RefactoringRegressionsTest("test121181"));
 //        suite.addTest(new RefactoringRegressionsTest("test117913"));
 //        suite.addTest(new RefactoringRegressionsTest("testDefaultAnnotationAttributeValue121873"));
+//        suite.addTest(new RefactoringRegressionsTest("testSpaceAfterComma1"));
         return suite;
     }
 
@@ -419,11 +424,11 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
             "\n" +
             "public class Traktor {\n" +
             "\n" +
-            "    void zetor(String par0,String par3, String par1, String par2) {\n" +
+            "    void zetor(String par0, String par3, String par1, String par2) {\n" +
             "    }\n" +
             "\n" +
             "    public void zetorBrno() {\n" +
-            "        zetor(\"Crystal\", null, null,null);\n" +
+            "        zetor(\"Crystal\", null, null, null);\n" +
             "    }\n" +
             "}\n";
         JavaSource src = getJavaSource(testFile);
@@ -544,6 +549,80 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
                         return super.visitVariable(node, p);
                     }
                 }.scan(cut, null);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testSpaceAfterComma1() throws Exception {
+        doTestSpaceAfterComma(" ");
+    }
+
+    public void testSpaceAfterComma2() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        boolean old = preferences.getBoolean(FmtOptions.spaceAfterComma, FmtOptions.getDefaultAsBoolean(FmtOptions.spaceAfterComma));
+        
+        preferences.putBoolean(FmtOptions.spaceAfterComma, false);
+
+        try {
+            doTestSpaceAfterComma("");
+        } finally {
+            preferences.putBoolean(FmtOptions.spaceAfterComma, old);
+        }
+    }
+
+    private void doTestSpaceAfterComma(String space) throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Traktor {\n" +
+            "\n" +
+            "    void zetor(String par0, String par1) {\n" +
+            "    }\n" +
+            "\n" +
+            "    public void zetorBrno() {\n" +
+            "        zetor(\"Crystal\", null);\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Traktor {\n" +
+            "\n" +
+            "    void zetor(String par0, String par1," + space + "String par2) {\n" +
+            "    }\n" +
+            "\n" +
+            "    public void zetorBrno() {\n" +
+            "        zetor(\"Crystal\", null," + space + "null);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree var = make.Variable(
+                            make.Modifiers(Collections.<Modifier>emptySet()),
+                            "par2",
+                            make.Identifier("String"),
+                            null
+                        );
+                MethodTree copy = make.addMethodParameter(method, var);
+                workingCopy.rewrite(method, copy);
+
+                method = (MethodTree) clazz.getMembers().get(2);
+                ExpressionStatementTree est = (ExpressionStatementTree) method.getBody().getStatements().get(0);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                MethodInvocationTree copyT = make.addMethodInvocationArgument(mit, make.Literal(null));
+                workingCopy.rewrite(mit, copyT);
             }
         };
         src.runModificationTask(task).commit();
