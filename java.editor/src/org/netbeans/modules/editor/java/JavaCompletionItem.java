@@ -1177,6 +1177,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
             while(it.hasNext() && tIt.hasNext()) {
                 TypeMirror tm = tIt.next();
+                if (tm == null)
+                    break;
                 this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(tm, false, elem.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
             }
             TypeMirror retType = type.getReturnType();
@@ -1760,6 +1762,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
             while(it.hasNext() && tIt.hasNext()) {
                 TypeMirror tm = tIt.next();
+                if (tm == null)
+                    break;
                 this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(tm, false, elem.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
             }
             this.isAbstract = !insertName && elem.getEnclosingElement().getModifiers().contains(Modifier.ABSTRACT);
@@ -2187,6 +2191,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
             while(it.hasNext() && tIt.hasNext()) {
                 TypeMirror tm = tIt.next();
+                if (tm == null)
+                    break;
                 this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(tm, false, elem.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
             }
             TypeMirror retType = type.getReturnType();

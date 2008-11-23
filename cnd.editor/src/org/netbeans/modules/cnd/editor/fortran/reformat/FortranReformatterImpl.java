@@ -323,24 +323,32 @@ public class FortranReformatterImpl {
                 }
                 case NUM_LITERAL_INT:
                 {
-                    if (doFormat()) {
-                        if (!codeStyle.isFreeFormatFortran() && ts.isFirstLineToken()) {
-                            int space = indentAfterLabel - ts.getTokenPosition() - ts.token().length();
-                            if (space > 0){
-                                Token<FortranTokenId> next =ts.lookNext();
-                                if (next == null) {
-                                    ts.addAfterCurrent(current, 0, space, true);
-                                } else {
-                                    if (next.id() == WHITESPACE) {
-                                        ts.replaceNext(current, next, 0, space, true);
-                                        // !skip space
-                                        ts.moveNext();
-                                        current = ts.token();
-                                    } else {
+                    if (!codeStyle.isFreeFormatFortran() && ts.isFirstLineToken()) {
+                        while(true) {
+                            FortranStackEntry top = braces.peek();
+                            if (top != null && top.getKind() == KW_DO && top.getLabel() == Integer.parseInt(current.text().toString())) {
+                                braces.pop(ts);
+                                continue;
+                            }
+                            break;
+                        }
+                        if (doFormat()) {
+                                int space = indentAfterLabel - ts.getTokenPosition() - ts.token().length();
+                                if (space > 0){
+                                    Token<FortranTokenId> next =ts.lookNext();
+                                    if (next == null) {
                                         ts.addAfterCurrent(current, 0, space, true);
+                                    } else {
+                                        if (next.id() == WHITESPACE) {
+                                            ts.replaceNext(current, next, 0, space, true);
+                                            // !skip space
+                                            ts.moveNext();
+                                            current = ts.token();
+                                        } else {
+                                            ts.addAfterCurrent(current, 0, space, true);
+                                        }
                                     }
                                 }
-                            }
                         }
                     }
                     break;
@@ -428,6 +436,7 @@ public class FortranReformatterImpl {
                 case KW_ENDTYPE:
                 case KW_ENDUNION:
                 case KW_ENDWHERE:
+                case KW_ENDWHILE:
                 case KW_END:
                     braces.pop(ts);
                     isEnd = true;
@@ -455,7 +464,7 @@ public class FortranReformatterImpl {
                     if (head != null && head.id() == LPAREN) {
                         break;
                     }
-                    braces.push(next);
+                    braces.push(next, ts);
                     break;
                 }
                 case KW_PROCEDURE:
@@ -464,7 +473,7 @@ public class FortranReformatterImpl {
                 {
                     Token<FortranTokenId> head = ts.lookNextLineImportantAfter(next.id());
                     if (head != null && head.id() == IDENTIFIER) {
-                        braces.push(next);
+                        braces.push(next, ts);
                     }
                     break;
                 }
@@ -473,12 +482,12 @@ public class FortranReformatterImpl {
                 case KW_BLOCK:
                 case KW_BLOCKDATA:
                 case KW_MAP:
-                    braces.push(next);
+                    braces.push(next, ts);
                     break;
                 case KW_IF:
                 {
                     if(ts.hasLineToken(KW_THEN)){
-                        braces.push(next);
+                        braces.push(next, ts);
                     }
                     break;
                 }
@@ -491,7 +500,7 @@ public class FortranReformatterImpl {
                 case KW_SELECT:
                 case KW_SELECTCASE:
                 case KW_SELECTTYPE:
-                    braces.push(next);
+                    braces.push(next, ts);
                     break;
                 default:
                 {

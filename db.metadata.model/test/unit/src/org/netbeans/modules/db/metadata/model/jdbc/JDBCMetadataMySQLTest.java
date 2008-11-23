@@ -47,8 +47,13 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Parameter;
+import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.View;
+import org.netbeans.modules.db.metadata.model.api.Procedure;
+import org.netbeans.modules.db.metadata.model.api.SQLType;
 import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
 /**
@@ -86,6 +91,12 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
                 "foo_id INT NOT NULL, " +
                 "bar_name  VARCHAR(16), " +
                 "FOREIGN KEY (foo_id) REFERENCES foo(id))");
+        stmt.executeUpdate("CREATE VIEW barview AS SELECT * FROM bar");
+        // TODO - test precision, scale, radix
+        stmt.executeUpdate("CREATE PROCEDURE barproc(IN param1 INT, OUT result VARCHAR(255), INOUT param2 DECIMAL(5,2)) " +
+                "BEGIN SELECT * from bar; END");
+        stmt.executeUpdate("CREATE PROCEDURE fooproc(IN param1 INT) " +
+                "BEGIN SELECT * from foo; END");
         metadata = new JDBCMetadata(conn, null);
         defaultCatalogName = mysqlDatabase;
     }
@@ -119,5 +130,74 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         Column iPlusDColumn = barTable.getColumn("i+d");
         assertTrue(columns.contains(iPlusDColumn));
         assertSame(barTable, iPlusDColumn.getParent());
+    }
+
+    public void testViews() throws Exception {
+        Schema schema = metadata.getDefaultSchema();
+
+        Collection<View> views = schema.getViews();
+        assertNames(new HashSet<String>(Arrays.asList("barview")), views);
+        View barView = schema.getView("barview");
+        assertTrue(views.contains(barView));
+        assertSame(schema, barView.getParent());
+
+        Collection<Column> columns = barView.getColumns();
+        assertNames(Arrays.asList("i+d", "foo_id", "bar_name"), columns);
+        Column iPlusDColumn = barView.getColumn("i+d");
+        assertTrue(columns.contains(iPlusDColumn));
+        assertSame(barView, iPlusDColumn.getParent());
+    }
+
+    public void testProcedures() throws Exception {
+        Schema schema = metadata.getDefaultSchema();
+
+        Collection<Procedure> procs = schema.getProcedures();
+        assertNames(Arrays.asList("barproc", "fooproc"), procs);
+
+        Procedure barProc = schema.getProcedure("barproc");
+        Collection<Parameter> barParams = barProc.getParameters();
+        assertNames(Arrays.asList("param1", "result", "param2"), barParams);
+
+        // MySQL does not tell you what the result columns are - bummer
+        assertEquals(0, barProc.getColumns().size());
+        
+        Procedure fooProc = schema.getProcedure("fooproc");
+        Collection<Parameter> fooParams = fooProc.getParameters();
+        assertNames(Arrays.asList("param1"), fooParams);
+
+        // MySQL does not tell you what the result columns are - bummer
+        assertEquals(0, barProc.getColumns().size());
+
+        // MySQL *always* returns a length of 65535
+        // Email has been sent to MySQL about this...
+        Parameter param = barProc.getParameter("param1");
+        assertTrue(barParams.contains(param));
+        assertSame(barProc, param.getParent());
+        assertEquals(SQLType.INTEGER, param.getType());
+        assertEquals(65535, param.getLength());
+        assertEquals(Direction.IN, param.getDirection());
+        assertEquals(10, param.getPrecision());
+        assertEquals(0, param.getScale());
+        assertEquals(10, param.getRadix());
+
+        param = barProc.getParameter("result");
+        assertTrue(barParams.contains(param));
+        assertSame(barProc, param.getParent());
+        assertEquals(SQLType.VARCHAR, param.getType());
+        assertEquals(65535, param.getLength());
+        assertEquals(Direction.OUT, param.getDirection());
+        assertEquals(255, param.getPrecision());
+        assertEquals(0, param.getScale());
+        assertEquals(10, param.getRadix());
+
+        param = barProc.getParameter("param2");
+        assertTrue(barParams.contains(param));
+        assertSame(barProc, param.getParent());
+        assertEquals(SQLType.DECIMAL, param.getType());
+        assertEquals(65535, param.getLength());
+        assertEquals(Direction.INOUT, param.getDirection());
+        assertEquals(5, param.getPrecision());
+        assertEquals(2, param.getScale());
+        assertEquals(10, param.getRadix());
     }
 }

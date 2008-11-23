@@ -56,7 +56,9 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
-
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  *
  * @author mrkam@netbeans.org
@@ -82,6 +84,14 @@ public class GoToSourceTest extends org.netbeans.modules.performance.utilities.P
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;
         HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations             
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(GoToSourceTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
     @Override
@@ -165,9 +175,4 @@ public class GoToSourceTest extends org.netbeans.modules.performance.utilities.P
         doMeasurement();
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(GoToSourceTest.class)
-                .enableModules(".*").clusters(".*").reuseUserDir(true));
-    }
 }

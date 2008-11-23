@@ -119,7 +119,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         return data;
     }
     
-    private class CustomFileFilter extends SourceFileFilter {
+    private static class CustomFileFilter extends SourceFileFilter {
         String[] suffixes;
         CustomFileFilter(String suffixesString) {
             StringTokenizer st = new StringTokenizer(suffixesString);

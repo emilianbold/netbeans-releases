@@ -54,7 +54,9 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager.RegionFilter;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
-
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  *
  * @author Administrator
@@ -82,6 +84,14 @@ public class PHPNavigatorTest extends org.netbeans.modules.performance.utilities
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;
         HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations             
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(PHPNavigatorTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
     @Override
@@ -168,8 +178,4 @@ public class PHPNavigatorTest extends org.netbeans.modules.performance.utilities
         doMeasurement();
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(PHPNavigatorTest.class).enableModules(".*").clusters(".*").reuseUserDir(true));
-    }
 }
