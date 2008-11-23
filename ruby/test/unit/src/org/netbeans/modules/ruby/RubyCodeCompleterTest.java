@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -325,6 +325,14 @@ public class RubyCodeCompleterTest extends RubyTestBase {
 
     public void testIfWithFailingInferenceInBranchType() throws Exception {
         checkCompletion("testfiles/if_with_failing_inference_in_branch_type.rb", "var.to_i^");
+    }
+
+    public void testPredefConstantsComletionARGV() throws Exception {
+        checkCompletion("testfiles/predef_constants.rb", "ARGV.del^");
+    }
+
+    public void testPredefConstantsComletion__FILE__() throws Exception {
+        checkCompletion("testfiles/predef_constants.rb", "__FILE__.cho^");
     }
 
     // TODO - test more non-fc calls (e.g. x.foo)
