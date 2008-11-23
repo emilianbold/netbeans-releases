@@ -89,10 +89,12 @@ public final class Embedding {
         for (Embedding embedding : embeddings) {
             Snapshot snapshot = embedding.getSnapshot ();
             if (mimeType != null) {
-                if (!mimeType.equals (embedding.mimeType))
+                if (!mimeType.equals (embedding.mimeType)) {
                     throw new IllegalArgumentException ();
-                if (source != snapshot.getSource ())
+                }
+                if (source != snapshot.getSource ()) {
                     throw new IllegalArgumentException ();
+                }
             } else {
                 mimeType = embedding.mimeType;
                 source = snapshot.getSource ();
@@ -101,26 +103,27 @@ public final class Embedding {
             int[][] p = snapshot.currentToOriginal;
             for (int i = 0; i < p.length; i++) {
                 currentToOriginal.add (new int[] {p [i] [0] + offset, p [i] [1]});
-                if (p [i] [1] >= 0)
+                if (p [i] [1] >= 0) {
                     originalToCurrent.add (new int[] {p [i] [1], p [i] [0] + offset});
-                else
-                if (!originalToCurrent.isEmpty ())
+                } else if (!originalToCurrent.isEmpty ()) {
                     originalToCurrent.add (new int[] {
                         originalToCurrent.get (originalToCurrent.size () - 1) [0] + 
                             p [i] [0] + offset - 
                             originalToCurrent.get (originalToCurrent.size () - 1) [1], 
                         -1
                     });
+                }
             }
             offset +=snapshot.getText ().length ();
         }
-        if (originalToCurrent.get (originalToCurrent.size () - 1) [1] >= 0)
+        if (originalToCurrent.size() > 0 && originalToCurrent.get (originalToCurrent.size () - 1) [1] >= 0) {
             originalToCurrent.add (new int[] {
                 originalToCurrent.get (originalToCurrent.size () - 1) [0] + 
                     sb.length () - 
                     originalToCurrent.get (originalToCurrent.size () - 1) [1], 
                 -1
             });
+        }
         Snapshot snapshot = new Snapshot (
             sb,
             source,
