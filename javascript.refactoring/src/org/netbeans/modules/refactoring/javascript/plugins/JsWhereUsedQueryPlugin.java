@@ -48,12 +48,12 @@ import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.text.Document;
 import org.mozilla.nb.javascript.Node;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Severity;
+import org.netbeans.modules.csl.api.CancellableTask;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -155,7 +155,7 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
             }
             
             public void run(CompilationController info) throws Exception {
-                info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
+                info.toPhase(org.netbeans.modules.csl.api.Phase.RESOLVED);
                 //System.out.println("TODO - compute a full set of files to be checked... for now just lamely using the project files");
                 //set.add(info.getFileObject());
                 // (This currently doesn't need to run in a compilation controller since I'm not using parse results at all...)
@@ -352,7 +352,7 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
         public void run(WorkingCopy compiler) throws IOException {
             if (cancelled)
                 return ;
-            compiler.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
+            compiler.toPhase(org.netbeans.modules.csl.api.Phase.RESOLVED);
 
             Error error = null;
 
