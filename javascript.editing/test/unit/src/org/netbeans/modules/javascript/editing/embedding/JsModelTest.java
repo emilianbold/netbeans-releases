@@ -42,16 +42,12 @@
 package org.netbeans.modules.javascript.editing.embedding;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.csl.api.EmbeddingModel;
-import org.netbeans.modules.csl.api.TranslatedSource;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
@@ -59,8 +55,10 @@ import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.javascript.editing.JsTestBase;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -100,7 +98,7 @@ public class JsModelTest extends JsTestBase {
         super.tearDown();
     }
 
-    private TranslatedSource getTranslatedSource(String relFilePath) throws Exception {
+    private Snapshot getTranslatedSource(String relFilePath) throws Exception {
         File jsFile = new File(getDataDir(), relFilePath);
         if (!jsFile.exists()) {
             NbTestCase.fail("File " + jsFile + " not found.");
@@ -111,7 +109,7 @@ public class JsModelTest extends JsTestBase {
         return getTranslatedSource(doc, relFilePath);
     }
 
-    private TranslatedSource getTranslatedSource(BaseDocument doc, String relFilePath) throws Exception {
+    private Snapshot getTranslatedSource(BaseDocument doc, String relFilePath) throws Exception {
         String RHTML_MIME_TYPE = RhtmlTokenId.MIME_TYPE;
         String HTML_MIME_TYPE = HTMLKit.HTML_MIME_TYPE;
 
@@ -128,18 +126,30 @@ public class JsModelTest extends JsTestBase {
             return null;
         }
 
-        EmbeddingModel model = LanguageRegistry.getInstance().getEmbedding(JsTokenId.JAVASCRIPT_MIME_TYPE, mimeType);
-        assertNotNull(model);
-
         doc.putProperty("mimeType", mimeType);
         doc.putProperty(org.netbeans.api.lexer.Language.class, lexerLanguage);
 
-        Collection<? extends TranslatedSource> translations = model.translate(doc);
-        assertNotNull(translations);
-        assertEquals(1, translations.size());
-        TranslatedSource translatedSource = translations.iterator().next();
+        Source testSource = Source.create(doc);
+        final Snapshot [] result = new Snapshot [] { null };
+        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                int javascriptEmbeddings = 0;
+                for(Embedding e : resultIterator.getEmbeddings()) {
+                    if (JsTokenId.JAVASCRIPT_MIME_TYPE.equals(e.getMimeType())) {
+                        if (result[0] == null) {
+                            ResultIterator jri = resultIterator.getResultIterator(e);
+                            result[0] = jri.getSnapshot();
+                            assertNotNull("Embedded snapshot should not be null", result[0]);
+                        }
+                        javascriptEmbeddings++;
+                    }
+                }
 
-        return translatedSource;
+                assertEquals("Wrong number of javascript embeddings", 1, javascriptEmbeddings);
+            }
+        });
+
+        return result[0];
     }
 
     private void checkJavaScriptTranslation(String relFilePath) throws Exception {
@@ -147,8 +157,8 @@ public class JsModelTest extends JsTestBase {
     }
 
     private void checkJavaScriptTranslation(String relFilePath, boolean mustCompile) throws Exception {
-        TranslatedSource translatedSource = getTranslatedSource(relFilePath);
-        String generatedJs = translatedSource.getSource();
+        Snapshot translatedSource = getTranslatedSource(relFilePath);
+        String generatedJs = translatedSource.getText().toString();
 
         assertDescriptionMatches(relFilePath, generatedJs.toString(), false, ".js");
 
@@ -181,8 +191,7 @@ public class JsModelTest extends JsTestBase {
         // Translate source... then iterate through the source positions and assert
         // that everything in the source matches. Also make sure that the stuff that
         // doesn't match is properly placed...
-        TranslatedSource translatedSource = getTranslatedSource(relFilePath);
-        translatedSource.getSource(); // ensure initialized
+        Snapshot translatedSource = getTranslatedSource(relFilePath);
         String text = readFile(getTestFile(relFilePath));
 
         assertNotNull(checkBeginLine);
@@ -208,11 +217,11 @@ public class JsModelTest extends JsTestBase {
 
         // First, make sure that all positions that are defined work symmetrically
         for (int i = 0; i < text.length(); i++) {
-            int astOffset = translatedSource.getAstOffset(i);
+            int astOffset = translatedSource.getEmbeddedOffset(i);
             if (astOffset == -1) {
                 continue;
             }
-            int lexOffset = translatedSource.getLexicalOffset(astOffset);
+            int lexOffset = translatedSource.getOriginalOffset(astOffset);
             if (lexOffset == -1) {
                 fail("Ast offset " + astOffset + " (for lexical position " + i + ") didn't map back properly; " + getSourceWindow(text, i));
             }
@@ -224,12 +233,12 @@ public class JsModelTest extends JsTestBase {
         // Next check the provided region to make sure we actually define AST offsets there
 
         for (int i = checkBeginOffset; i < checkEndOffset; i++) {
-            int astOffset = translatedSource.getAstOffset(i);
+            int astOffset = translatedSource.getEmbeddedOffset(i);
             if (astOffset == -1) {
                 fail("Lexical offset " + i + " didn't map to an ast offset; " + getSourceWindow(text, i));
             }
             // Probably not needed, this should follow from the first check section
-            int lexOffset = translatedSource.getLexicalOffset(astOffset);
+            int lexOffset = translatedSource.getOriginalOffset(astOffset);
             if (lexOffset == -1) {
                 fail("Ast offset " + astOffset + " (for lexical position " + i + ") didn't map back properly; " + getSourceWindow(text, i));
             }

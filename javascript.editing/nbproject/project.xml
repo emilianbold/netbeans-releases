@@ -298,11 +298,10 @@
                 <friend>org.netbeans.modules.javascript.hints</friend>
                 <friend>org.netbeans.modules.javascript.refactoring</friend>
                 <friend>org.netbeans.modules.languages.ejs</friend>
-                <friend>org.netbeans.modules.web.client.tools.impl</friend>
                 <friend>org.netbeans.modules.php.prado</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
+                <friend>org.netbeans.modules.web.client.tools.impl</friend>
                 <package>org.netbeans.modules.javascript.editing</package>
-                <package>org.netbeans.modules.javascript.editing.embedding</package>
                 <package>org.netbeans.modules.javascript.editing.lexer</package>
                 <package>org.netbeans.modules.javascript.editing.spi</package>
             </friend-packages>

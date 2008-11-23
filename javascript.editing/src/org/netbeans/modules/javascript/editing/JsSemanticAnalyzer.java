@@ -49,7 +49,7 @@ import org.mozilla.nb.javascript.Token;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.javascript.editing.embedding.JsModel;
+import org.netbeans.modules.javascript.editing.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -165,7 +165,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer {
         for (Node node : globalVars) {
             String s = node.getString();
             //filter out generated code
-            if (JsModel.isGeneratedIdentifier(s)) {
+            if (JsEmbeddingProvider.isGeneratedIdentifier(s)) {
                 continue;
             }
             OffsetRange range = AstUtilities.getNameRange(node);
@@ -184,7 +184,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer {
         AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME }, regexps);
         for (Node node : regexps) {
             OffsetRange range = AstUtilities.getNameRange(node);
-            if (node.isStringNode() && JsModel.isGeneratedIdentifier(node.getString())) {
+            if (node.isStringNode() && JsEmbeddingProvider.isGeneratedIdentifier(node.getString())) {
                 continue;
             }
             final int type = node.getType();
