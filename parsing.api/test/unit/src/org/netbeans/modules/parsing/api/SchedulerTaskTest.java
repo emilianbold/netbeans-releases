@@ -715,7 +715,7 @@ public class SchedulerTaskTest extends NbTestCase {
         Source source = Source.create (testFile);
         MyScheduler.schedule2 (
             Collections.<Source>singleton (source), 
-            new CursorMovedSchedulerEvent (MyScheduler.class, 666) {}
+            new CursorMovedSchedulerEvent (MyScheduler.class, 666, 666) {}
         );
         assertEquals (null, counter.errorMessage (true));
         System.out.println("");

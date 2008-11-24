@@ -46,18 +46,25 @@ package org.netbeans.modules.parsing.spi;
  */
 public class CursorMovedSchedulerEvent extends SchedulerEvent {
 
-    private int             caretOffset;
+    private final int             caretOffset;
+    private final int             markOffset;
 
     protected CursorMovedSchedulerEvent (
         Object              source,
-        int                 _caretOffset
+        int                 _caretOffset,
+        int                 _markOffset
     ) {
         super (source);
         caretOffset = _caretOffset;
+        markOffset = _markOffset;
     }
 
     public int getCaretOffset () {
         return caretOffset;
+    }
+
+    public int getMarkOffset () {
+        return markOffset;
     }
 }
 
