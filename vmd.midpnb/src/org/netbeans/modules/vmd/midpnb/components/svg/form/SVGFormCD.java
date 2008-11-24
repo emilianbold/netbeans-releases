@@ -179,7 +179,7 @@ public class SVGFormCD extends ComponentDescriptor {
                 //other
                 new SVGFormFileChangePresneter(),
                 //flow
-                new SVGButtonEventSourceOrder(),
+                new SVGComponentEventSourceOrder(),
                 //delete
                 new DeleteDependencyPresenter() {
 
@@ -199,7 +199,7 @@ public class SVGFormCD extends ComponentDescriptor {
             }
         },
                 //inspector
-                MidpInspectorSVGButtonSupport.createCategory()
+                MidpInspectorSVGComponentSupport.createCategory()
                 );
     }
 
@@ -245,9 +245,9 @@ public class SVGFormCD extends ComponentDescriptor {
 
     }
 
-    final class SVGButtonEventSourceOrder extends FlowPinOrderPresenter {
+    final class SVGComponentEventSourceOrder extends FlowPinOrderPresenter {
 
-        static final String CATEGORY_ID = "SVGButton"; //NOI18N
+        static final String CATEGORY_ID = "SVGComponent"; //NOI18N
 
         @Override
         public String getCategoryID() {
@@ -256,7 +256,8 @@ public class SVGFormCD extends ComponentDescriptor {
 
         @Override
         public String getCategoryDisplayName() {
-            return NbBundle.getMessage(SVGFormCD.class, "DISP_FlowCategory_SVGButtons"); // NOI18N; 
+            return NbBundle.getMessage(SVGFormCD.class, 
+                    "DISP_FlowCategory_SVGComponents"); // NOI18N; 
         }
 
         @Override

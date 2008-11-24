@@ -77,10 +77,18 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
                 return new Assembler(hkey, flavor, kind, name, displayName, path);
             }
         } else /* if (flavor.isGnuCompiler()) */ { // Assume GNU (makeproject system doesn't handle Unknown)
-            if (kind == Tool.CCompiler) {
-                return new GNUCCompiler(hkey, flavor, kind, name, displayName, path);
-            } else if (kind == Tool.CCCompiler) {
-                return new GNUCCCompiler(hkey, flavor, kind, name, displayName, path);
+           if (kind == Tool.CCompiler) {
+               if ("MVC".equals(flavor.toString())) { // NOI18N
+                   return new MvcCompiler(hkey, flavor, kind, name, displayName, path);
+               } else {
+                   return new GNUCCompiler(hkey, flavor, kind, name, displayName, path);
+               }
+           } else if (kind == Tool.CCCompiler) {
+               if ("MVC".equals(flavor.toString())) { // NOI18N
+                   return new MvcCompiler(hkey, flavor, kind, name, displayName, path);
+               } else {
+                   return new GNUCCCompiler(hkey, flavor, kind, name, displayName, path);
+               }
             } else if (kind == Tool.FortranCompiler) {
                 return new GNUFortranCompiler(hkey, flavor, kind, name, displayName, path);
             } else if (kind == Tool.MakeTool) {

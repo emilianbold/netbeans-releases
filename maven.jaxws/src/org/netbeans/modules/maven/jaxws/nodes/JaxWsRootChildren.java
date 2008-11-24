@@ -82,7 +82,7 @@ public class JaxWsRootChildren extends Children.Keys<WebService> {
     }
 
     protected Node[] createNodes(final WebService key) {
-        Node wsNode = key.getNode();
+        Node wsNode = key.createNode();
         return wsNode == null ? new Node[0] : new Node[] {wsNode};
     }
     

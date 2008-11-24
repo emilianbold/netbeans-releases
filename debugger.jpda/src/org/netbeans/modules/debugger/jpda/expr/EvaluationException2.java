@@ -188,6 +188,8 @@ public class EvaluationException2 extends RuntimeException {
             msgParams = new String [] {  };
         else if (reason.equals("methOnArray"))
             msgParams = new String [] {  };
+        else if (reason.equals("forEachNotApplicable"))
+            msgParams = new String [] {  };
         else {
             msgParams = new String [] { reason };
             reason = "unknownInternalError";

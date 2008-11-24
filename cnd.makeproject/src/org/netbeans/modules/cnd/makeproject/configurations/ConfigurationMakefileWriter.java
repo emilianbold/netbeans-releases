@@ -422,7 +422,7 @@ public class ConfigurationMakefileWriter {
                                 command += compiler.getDescriptor().getPrecompiledHeaderFlags() + " "; // NOI18N
                             }
                         } else {
-                            command += "-o " + target + " "; // NOI18N
+                            command += compiler.getDescriptor().getOutputObjectFileFlags() + target + " "; // NOI18N
                         }
                         command += IpeUtils.escapeOddCharacters(items[i].getPath(true));
                     }

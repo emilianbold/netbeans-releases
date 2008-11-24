@@ -59,11 +59,11 @@ public final class WebService {
     }
 
     /**
-     * Returns Netbeans node that representing the web service
+     * Creates Netbeans node representing the web service
      * @return Node representing the web service.
      */
-    public Node getNode() {
-        return serviceImpl.getNode();
+    public Node createNode() {
+        return serviceImpl.createNode();
     }
 
     /**

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,31 +31,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.jaxws.light.spi;
+package org.netbeans.modules.cnd.makeproject.api.compilers;
 
-import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
-import org.netbeans.modules.websvc.jaxws.light.JAXWSLightSupportAccessor;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 
 /**
- * Most general way to create {@link JAXWSLightSupport} instances.
- * You are not permitted to create them directly; instead you implement
- * {@link JAXWSLightSupportImpl} and use this factory.
  *
- * @author Milan Kuchtiak
+ * @author Alexander Simon
  */
-public final class JAXWSLightSupportFactory {
+public class MvcCompiler extends GNUCCompiler {
+   /** Creates a new instance of GNUCCompiler */
+   public MvcCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+       super(hkey, flavor, kind, name, displayName, path);
+   }
 
-    private JAXWSLightSupportFactory() {
-    }
-    /** Create JAXWSLightSupport object from spi object
-     * 
-     * @param spiJAXWSSupport spi object for JAXWSSupport
-     * @return JAXWSLightSupport object
-     */
-    public static JAXWSLightSupport createJAXWSSupport(JAXWSLightSupportImpl spiJAXWSSupport) {
-        return JAXWSLightSupportAccessor.DEFAULT.createJAXWSSupport(spiJAXWSSupport);
-    }
-	
+   @Override
+   public MvcCompiler createCopy() {
+       MvcCompiler copy = new MvcCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath()); // NOI18N
+       copy.setName(getName());
+       return copy;
+   }
+
+   @Override
+   public List<String> getSystemIncludeDirectories() {
+       if (systemIncludeDirectoriesList != null){
+           return systemIncludeDirectoriesList;
+       }
+       systemIncludeDirectoriesList = new PersistentList<String>();
+       String list = System.getenv("INCLUDE"); // NOI18N
+       if (list != null) {
+           StringTokenizer st = new StringTokenizer(list,";"); // NOI18N
+           while(st.hasMoreTokens()){
+               systemIncludeDirectoriesList.add(st.nextToken());
+           }
+       }
+       return systemIncludeDirectoriesList;
+   }
+
+   @Override
+   public List<String> getSystemPreprocessorSymbols() {
+       if (systemPreprocessorSymbolsList != null){
+           return systemPreprocessorSymbolsList;
+       }
+       systemPreprocessorSymbolsList = new PersistentList<String>();
+       systemPreprocessorSymbolsList.add("WIN32"); // NOI18N
+       return systemPreprocessorSymbolsList;
+   }
 }

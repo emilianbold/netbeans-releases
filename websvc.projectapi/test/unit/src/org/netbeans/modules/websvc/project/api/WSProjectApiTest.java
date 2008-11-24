@@ -92,10 +92,6 @@ public class WSProjectApiTest extends NbTestCase {
                     return null;
                 }
             }
-
-            public String getIdentifier() {
-                return "Test";
-            }
         };
 
         WebServiceImplementation serviceImpl = new WebServiceImplementation() {
@@ -112,8 +108,12 @@ public class WSProjectApiTest extends NbTestCase {
                 return WebServiceFactory.createWebServiceDescriptor(desc);
             }
 
-            public Node getNode() {
+            public Node createNode() {
                 return null;
+            }
+
+            public String getIdentifier() {
+                return "TestService";
             }
 
         };
@@ -123,7 +123,7 @@ public class WSProjectApiTest extends NbTestCase {
         assertTrue(service.isServiceProvider());
         assertEquals("http://localhost:8080/HelloService/HelloService.wsdl",service.getServiceDescriptor().getRuntimeLocation().toString());
     }
-    
+        
     class SOAP {
     String runtime, relative;
     
