@@ -55,6 +55,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.openide.filesystems.FileObject;
@@ -85,7 +86,7 @@ class ClassParser extends Parser {
     }
 
     @Override
-    public void parse(final Snapshot snapshot, Task task, final SchedulerEvent event) throws ParseException {
+    public void parse(final Snapshot snapshot, Task task, final SourceModificationEvent event) throws ParseException {
         assert snapshot != null;
         final Source source = snapshot.getSource();
         assert source != null;
@@ -110,7 +111,7 @@ class ClassParser extends Parser {
     }
 
     @Override
-    public Result getResult(Task task, SchedulerEvent event) throws ParseException {
+    public Result getResult(Task task) throws ParseException {
         assert ciImpl != null;
         final boolean isParserResultTask = task instanceof ParserResultTask;
         final boolean isJavaParserResultTask = task instanceof JavaParserResultTask;
@@ -128,10 +129,10 @@ class ClassParser extends Parser {
             if (currentPhase.compareTo(requiredPhase)<0) {
                 ciImpl.setPhase(requiredPhase);
             }
-            result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl), event);
+            result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl));
         }
         else if (isUserTask) {
-            result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationController(ciImpl), event);
+            result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationController(ciImpl));
         }
         else {
             LOGGER.warning("Ignoring unknown task: " + task);                   //NOI18N

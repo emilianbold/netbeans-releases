@@ -37,41 +37,25 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl;
+package org.netbeans.modules.parsing.spi;
 
-import java.util.Collections;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.openide.util.lookup.ServiceProvider;
-
+import java.util.EventObject;
 
 /**
  *
- * @author Jan Jancura
+ * @author hanz
  */
-@ServiceProvider(service=Scheduler.class)
-public class CurrentDocumentScheduller extends CurrentEditorTaskScheduller {
-    
-    private Document        currentDocument;
-    private Source          source;
-    
-    protected void setEditor (JTextComponent editor) {
-        if (editor != null) {
-            Document document = editor.getDocument ();
-            if (currentDocument == document) return;
-            currentDocument = document;
-            source = Source.create (currentDocument);
-            schedule (Collections.singleton (source), new SchedulerEvent (this) {});
-        }
-        else {
-            currentDocument = null;
-            source = null;
-            schedule(Collections.<Source>emptySet(), null);
-        }
+public class SourceModificationEvent extends EventObject {
+
+    protected SourceModificationEvent (
+        Object              source
+    ) {
+        super (source);
+    }
+
+    @Override
+    public String toString () {
+        return "SourceModificationEvent " + hashCode () + "(source: " + source + ")";
     }
 }
 

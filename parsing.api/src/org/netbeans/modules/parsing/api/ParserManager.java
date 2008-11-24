@@ -165,13 +165,13 @@ public final class ParserManager {
             this.parser = parser;
         }
 
-        public Void run() throws Exception {
-            parser.parse(null, userTask, null);
-            Parser.Result result = parser.getResult(userTask, null);
+        public Void run () throws Exception {
+            parser.parse (null, userTask, null);
+            Parser.Result result = parser.getResult (userTask);
             try {
                 userTask.run (new ResultIterator (result));
             } finally {
-                ParserAccessor.getINSTANCE().invalidate(result);
+                ParserAccessor.getINSTANCE ().invalidate (result);
             }
             return null;
         }

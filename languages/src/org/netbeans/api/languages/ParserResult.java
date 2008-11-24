@@ -57,14 +57,12 @@ public class ParserResult extends Parser.Result {
     
     public static ParserResult create (
         Snapshot            snapshot,
-        SchedulerEvent      event,
         Document            document,
         ASTNode             rootNode, 
         List<SyntaxError>   syntaxErrors
     ) {
         return new ParserResult (
             snapshot,
-            event,
             document, 
             rootNode, 
             syntaxErrors
@@ -85,12 +83,11 @@ public class ParserResult extends Parser.Result {
 
     private ParserResult (
         Snapshot            snapshot,
-        SchedulerEvent      event,
         Document            document,
         ASTNode             rootNode, 
         List<SyntaxError>   syntaxErrors
     ) {
-        super (snapshot, event);
+        super (snapshot);
         this.document =     document;
         this.rootNode =     rootNode;
         this.syntaxErrors = syntaxErrors;

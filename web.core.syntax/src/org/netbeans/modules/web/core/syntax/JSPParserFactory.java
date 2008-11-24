@@ -46,7 +46,7 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 
 /**
  *
@@ -62,16 +62,16 @@ public class JSPParserFactory extends ParserFactory {
     private static final class FakeParser extends Parser {
         private Snapshot snapshot;
         @Override
-        public void parse(Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+        public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
             this.snapshot = snapshot;
         }
 
         @Override
-        public Result getResult(Task task, SchedulerEvent event) throws ParseException {
+        public Result getResult(Task task) throws ParseException {
             if (snapshot == null) {
                 return null;
             }
-            return new Result(snapshot, event) {
+            return new Result(snapshot) {
                 @Override
                 public void invalidate() {
                 }

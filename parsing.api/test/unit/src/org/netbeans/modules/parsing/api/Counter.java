@@ -73,7 +73,7 @@ class Counter {
                     ex.printStackTrace ();
                 }
             if (c != count) {
-                errorMessage = "expected " + count + ", but was " + c;
+                errorMessage = "expected " + c + ", but was " + count;
                 notifyAll ();
                 return;
             }

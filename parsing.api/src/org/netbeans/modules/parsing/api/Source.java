@@ -60,12 +60,15 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -114,7 +117,7 @@ public final class Source {
         if (!fileObject.isValid() || !fileObject.isData()) {
             return null;
         }
-
+        
         return _get(fileObject.getMIMEType(), fileObject);
     }
     
@@ -258,7 +261,7 @@ public final class Source {
                     } finally {
                         reader.close();
                     }
-                } finally {
+                    } finally {
                     is.close();
                 }
             } catch (IOException ioe) {
@@ -274,7 +277,7 @@ public final class Source {
                     } catch (BadLocationException ble) {
                         LOG.log(Level.WARNING, null, ble);
                     }
-                }
+                    }
             });
         }
 
@@ -283,7 +286,7 @@ public final class Source {
         );
     }
     
-
+    
     // ------------------------------------------------------------------------
     // private implementation
     // ------------------------------------------------------------------------
@@ -303,7 +306,8 @@ public final class Source {
     
     private int taskCount;
     private volatile Parser cachedParser;
-    private SchedulerEvent  schedulerEvent;
+    private ASourceModificationEvent  sourceModificationEvent;
+    private Map<Class<? extends Scheduler>,? extends SchedulerEvent> schedulerEvents;
     //GuardedBy(this)
     private SourceCache     cache;
     //GuardedBy(this)
@@ -494,20 +498,43 @@ public final class Source {
         }
 
         @Override
-        public void setEvent (Source source, SchedulerEvent event) {
+        public void setSourceModification (Source source, int startOffset, int endOffset) {
             assert source != null;
-            assert event != null;
             synchronized (source) {
-                if (event == null) {
-                    throw new IllegalStateException();
+                if (source.sourceModificationEvent == null) {
+                    source.sourceModificationEvent = new ASourceModificationEvent (this, startOffset, endOffset);
+                } else {
+                    source.sourceModificationEvent.startOffset = startOffset;
+                    source.sourceModificationEvent.endOffset = endOffset;
                 }
-                source.schedulerEvent = event;
             }
         }
 
         @Override
-        public SchedulerEvent getEvent(Source source) {
-            return source.schedulerEvent;
+        public SourceModificationEvent getSourceModificationEvent (Source source) {
+            if (source.sourceModificationEvent == null)
+                synchronized (source) {
+                    if (source.sourceModificationEvent == null)
+                        source.sourceModificationEvent = new ASourceModificationEvent (this, -1, -1);
+                }
+            return source.sourceModificationEvent;
+        }
+
+        @Override
+        public void setSchedulerEvents (Source source, Map<Class<? extends Scheduler>,? extends SchedulerEvent> events) {
+            assert source != null;
+            assert events != null;
+            synchronized (source) {
+                if (events == null) {
+                    throw new IllegalStateException();
+                }
+                source.schedulerEvents = events;
+            }
+        }
+
+        @Override
+        public SchedulerEvent getSchedulerEvent (Source source, Class<? extends Scheduler> schedulerType) {
+            return source.schedulerEvents.get (schedulerType);
         }
 
         @Override
@@ -538,4 +565,33 @@ public final class Source {
             }
         }
     } // End of MySourceAccessor class
+        
+    static class ASourceModificationEvent extends SourceModificationEvent {
+
+        private int         startOffset;
+        private int         endOffset;
+
+        ASourceModificationEvent (
+            Object          source,
+            int             _startOffset,
+            int             _endOffset
+        ) {
+            super (source);
+            startOffset = _startOffset;
+            endOffset = _endOffset;
+        }
+        
+        void add (
+            int             _startOffset,
+            int             _endOffset
+        ) {
+            startOffset = Math.min (startOffset, _startOffset);
+            endOffset = Math.min (endOffset, _endOffset);
+        }
+
+        @Override
+        public String toString () {
+            return "ASourceModificationEvent " + startOffset + ":" + endOffset;
+        }
+    }
 }

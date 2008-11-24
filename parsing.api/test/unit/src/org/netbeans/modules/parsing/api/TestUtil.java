@@ -55,7 +55,7 @@ public class TestUtil {
     public static void setReparseDelay (final Source src, final int reparseDelay, final boolean reset) {
         TaskProcessor.reparseDelay = reparseDelay;
         if (reset) {
-            SourceAccessor.getINSTANCE().getEventSupport(src).resetState(true);
+            SourceAccessor.getINSTANCE().getEventSupport(src).resetState(true, -1, -1);
         }
     }
 

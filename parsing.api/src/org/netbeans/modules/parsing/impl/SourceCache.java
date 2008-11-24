@@ -42,13 +42,12 @@ package org.netbeans.modules.parsing.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
 import java.util.Set;
+
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -59,12 +58,11 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserFactory;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 
@@ -104,15 +102,15 @@ public final class SourceCache {
     private Snapshot        snapshot;
 
     public Snapshot getSnapshot () {
-        boolean _isembedding;
+        boolean isEmbedding;
         synchronized (this) {
             if (snapshot != null) {
                 return snapshot;
             }
-            _isembedding = embedding != null;
+            isEmbedding = embedding != null;
         }
 
-        final Snapshot _snapshot = createSnapshot(_isembedding);
+        final Snapshot _snapshot = createSnapshot (isEmbedding);
         synchronized (this) {
             if (snapshot == null) {
                 snapshot = _snapshot;
@@ -124,12 +122,12 @@ public final class SourceCache {
     Snapshot createSnapshot (long[] idHolder) {
         assert idHolder != null;
         assert idHolder.length == 1;
-        boolean _isembedding;
+        boolean isEmbedding;
         synchronized (this) {
-            _isembedding = embedding != null;
+            isEmbedding = embedding != null;
         }
-        idHolder[0] = SourceAccessor.getINSTANCE().getLastEventId(this.source);
-        return createSnapshot(_isembedding);
+        idHolder[0] = SourceAccessor.getINSTANCE ().getLastEventId (this.source);
+        return createSnapshot (isEmbedding);
     }
 
     private Snapshot createSnapshot (boolean isEmbedding) {
@@ -142,14 +140,14 @@ public final class SourceCache {
     private Parser          parser;
     
     public Parser getParser () {
-        final Snapshot snapshot = getSnapshot ();
+        final Snapshot _snapshot = getSnapshot ();
         synchronized (this) {
             if (!parserInitialized) {
                 parserInitialized = true;
                 Lookup lookup = MimeLookup.getLookup (mimeType);
                 ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
                 if (parserFactory == null) return null;
-                final Collection<Snapshot> _tmp = Collections.singleton (snapshot);
+                final Collection<Snapshot> _tmp = Collections.singleton (_snapshot);
                 parser = parserFactory.createParser (_tmp);
             }
             return parser;
@@ -157,15 +155,14 @@ public final class SourceCache {
     }
     
     //@GuardedBy(this)
-    private boolean         parsed = false;
+    private boolean                     parsed = false;
     
     public Result getResult (
-        final Task                task,
-        final SchedulerEvent      event
+        final Task                      task
     ) throws ParseException {
         assert TaskProcessor.holdsParserLock();
-        Parser parser = getParser ();
-        if (parser == null) return null;
+        Parser _parser = getParser ();
+        if (_parser == null) return null;
         boolean _parsed;
         synchronized (this) {
             _parsed = this.parsed;
@@ -174,12 +171,13 @@ public final class SourceCache {
         if (!_parsed) {
             boolean parseSuccess = false;
             try {
-                final Snapshot snapshot = getSnapshot ();
-                final FileObject file = snapshot.getSource().getFileObject();
+                final Snapshot _snapshot = getSnapshot ();
+                final FileObject file = _snapshot.getSource().getFileObject();
                 if (file != null && !file.isValid()) {
                     return null;
                 }
-                parser.parse (snapshot, task, event);
+                SourceModificationEvent event = SourceAccessor.getINSTANCE ().getSourceModificationEvent (source);
+                _parser.parse (_snapshot, task, event);
                 parseSuccess = true;
             } finally {
                 if (!parseSuccess) {
@@ -189,7 +187,7 @@ public final class SourceCache {
                 }
             }
         }
-        return parser.getResult (task, event);
+        return _parser.getResult (task);
     }
     
     public synchronized void invalidate () {
@@ -221,14 +219,14 @@ public final class SourceCache {
                 if (schedulerTask instanceof EmbeddingProvider) {
                     EmbeddingProvider embeddingProvider = (EmbeddingProvider) schedulerTask;
                     if (upToDateEmbeddingProviders.contains (embeddingProvider)) {
-                        List<Embedding> embeddings = embeddingProviderToEmbedings.get (embeddingProvider);
-                        this.embeddings.addAll (embeddings);
+                        List<Embedding> _embeddings = embeddingProviderToEmbedings.get (embeddingProvider);
+                        this.embeddings.addAll (_embeddings);
                     } else {
-                        List<Embedding> embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
+                        List<Embedding> _embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
                         List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
-                        updateEmbeddings (embeddings, oldEmbeddings, false, null);
-                        embeddingProviderToEmbedings.put (embeddingProvider, embeddings);
-                        this.embeddings.addAll (embeddings);
+                        updateEmbeddings (_embeddings, oldEmbeddings, false, null);
+                        embeddingProviderToEmbedings.put (embeddingProvider, _embeddings);
+                        this.embeddings.addAll (_embeddings);
                     }
                 }
             }
@@ -241,10 +239,10 @@ public final class SourceCache {
 
     
     synchronized void refresh (EmbeddingProvider embeddingProvider, Class<? extends Scheduler> schedulerType) {
-        List<Embedding> embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
+        List<Embedding> _embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
         List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
-        updateEmbeddings (embeddings, oldEmbeddings, true, schedulerType);
-        embeddingProviderToEmbedings.put (embeddingProvider, embeddings);
+        updateEmbeddings (_embeddings, oldEmbeddings, true, schedulerType);
+        embeddingProviderToEmbedings.put (embeddingProvider, _embeddings);
         upToDateEmbeddingProviders.add (embeddingProvider);
     }
     
@@ -260,18 +258,21 @@ public final class SourceCache {
                 SourceCache cache = embeddingToCache.remove (oldEmbeddings.get (i));
                 cache.setEmbedding (embeddings.get (i));
                 embeddingToCache.put (embeddings.get (i), cache);
-                if (updateTasks)
+                if (updateTasks) {
+                    //S ystem.out.println ("\nSchedule embedded tasks (" + embeddings.get (i) + "):");
                     cache.scheduleTasks (schedulerType);
+                }
             }
         } else {
             if (oldEmbeddings != null)
-                for (Embedding embedding : oldEmbeddings) {
-                    SourceCache cache = embeddingToCache.remove (embedding);
+                for (Embedding _embedding : oldEmbeddings) {
+                    SourceCache cache = embeddingToCache.remove (_embedding);
                     cache.removeTasks ();
                 }
             if (updateTasks)
-                for (Embedding embedding : embeddings) {
-                    SourceCache cache = getCache (embedding);
+                for (Embedding _embedding : embeddings) {
+                    SourceCache cache = getCache (_embedding);
+                    //S ystem.out.println ("\nSchedule embedded tasks (" + _embedding + "):");
                     cache.scheduleTasks (schedulerType);
                 }
         }
@@ -311,6 +312,8 @@ public final class SourceCache {
                 if (newTasks != null) {
                     tasks.addAll (newTasks);
                     pendingTasks.addAll (newTasks);
+//                    for (SchedulerTask task : newTasks)
+//                        System.out.println("  createTask " + task);
                 }
             }
         }
@@ -331,8 +334,10 @@ public final class SourceCache {
                     }
                     else {
                         remove.add (task);
+                        //S ystem.out.println ("  remove: " + task);
                         add.add (task);
                     }
+                    //S ystem.out.println ("  add: " + task);
                 }
             }
         }
@@ -342,10 +347,22 @@ public final class SourceCache {
     }
     
     @Override
-    public String toString() {
-        final Source src = getSnapshot().getSource();
-        final FileObject file = src.getFileObject();
-        return file == null ? "<unknown>" : FileUtil.getFileDisplayName(file);  //NOI18N
+    public String toString () {
+        StringBuilder sb = new StringBuilder ("SourceCache ");
+        sb.append (hashCode ());
+        sb.append (": ");
+        Snapshot _snapshot = getSnapshot ();
+        Source _source = _snapshot.getSource ();
+        FileObject fileObject = _source.getFileObject ();
+        if (fileObject != null)
+            sb.append (fileObject.getNameExt ());
+        else
+            sb.append (mimeType).append (" ").append (_source.getDocument ());
+        if (!_snapshot.getMimeType ().equals (_source.getMimeType ())) {
+            sb.append ("( ").append (_snapshot.getMimeType ()).append (" ");
+            sb.append (_snapshot.getOriginalOffset (0)).append ("-").append (_snapshot.getOriginalOffset (_snapshot.getText ().length () - 1)).append (")");
+        }
+        return sb.toString ();
     }
     
     //@NotThreadSafe - has to be called in GuardedBy(this)

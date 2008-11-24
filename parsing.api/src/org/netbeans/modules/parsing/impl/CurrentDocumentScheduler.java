@@ -39,15 +39,12 @@
 
 package org.netbeans.modules.parsing.impl;
 
-import java.util.Collections;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.util.lookup.ServiceProvider;
 
 
@@ -56,37 +53,33 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Jancura
  */
 @ServiceProvider(service=Scheduler.class)
-public class CursorSensitiveScheduller extends CurrentEditorTaskScheduller {
+public class CurrentDocumentScheduler extends CurrentEditorTaskScheduler {
     
-    private JTextComponent  currentEditor;
-    private CaretListener   caretListener;
     private Document        currentDocument;
+    private Source          source;
     
     protected void setEditor (JTextComponent editor) {
-        if (currentEditor != null)
-            currentEditor.removeCaretListener (caretListener);
-        currentEditor = editor;
         if (editor != null) {
-            if (caretListener == null)
-                caretListener = new ACaretListener ();
-            editor.addCaretListener (caretListener);
             Document document = editor.getDocument ();
             if (currentDocument == document) return;
             currentDocument = document;
-            Source source = Source.create (currentDocument);
-            schedule (Collections.singleton (source), new CursorMovedSchedulerEvent (this, editor.getCaret ().getDot (), editor.getCaret().getMark()) {});
+            source = Source.create (currentDocument);
+            schedule (source, new SchedulerEvent (this) {});
         }
         else {
             currentDocument = null;
-            schedule(Collections.<Source>emptySet(), null);
+            source = null;
+            //schedule (null, null);
         }
     }
     
-    private class ACaretListener implements CaretListener {
-
-        public void caretUpdate (CaretEvent e) {
-            schedule (new CursorMovedSchedulerEvent (this, e.getDot (), e.getMark()) {});
-        }
+    void schedule (Source source) {
+        schedule (source, new SchedulerEvent (this) {});
+    }
+    
+    @Override
+    public String toString () {
+        return "CurrentDocumentScheduler";
     }
 }
 

@@ -37,35 +37,63 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.spi;
+package org.netbeans.modules.parsing.impl;
 
-import org.netbeans.api.lexer.TokenHierarchyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.openide.util.lookup.ServiceProvider;
+
 
 /**
  *
- * @author hanz
+ * @author Jan Jancura
  */
-public class TokenHierarchySchedulerEvent extends SchedulerEvent {
-
-    private TokenHierarchyEvent
-                            tokenHierarchyEvent;
+@ServiceProvider(service=Scheduler.class)
+public class SelectedNodesScheduler extends FileObjectsTaskScheduler {
     
-    
-    protected TokenHierarchySchedulerEvent (
-        Object              source,
-        TokenHierarchyEvent tokenHierarchyEvent
-    ) {
-        super (source);
-        this.tokenHierarchyEvent = tokenHierarchyEvent;
+    public SelectedNodesScheduler () {
+        TopComponent.getRegistry ().addPropertyChangeListener (new AListener ());
     }
     
-    public TokenHierarchyEvent getTokenHierarchyEvent () {
-        return tokenHierarchyEvent;
+    private void refresh () {
+        final Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
+        if (nodes.length == 1) {
+            final DataObject dataObject = nodes [0].getLookup ().lookup (DataObject.class);
+            if (dataObject != null) {
+                final FileObject fileObject = dataObject.getPrimaryFile ();
+                final Source source = Source.create (fileObject);
+                if (source != null) {
+                    schedule (source, new SchedulerEvent (this) {});
+                    return;
+                }
+            }
+        }
+        //schedule (null, null);
+    }
+    
+    @Override
+    public String toString () {
+        return "SelectedNodesScheduller";
+    }
+    
+    private class AListener implements PropertyChangeListener {
+    
+        public void propertyChange (PropertyChangeEvent evt) {
+            if (evt.getPropertyName () == null ||
+                evt.getPropertyName ().equals (TopComponent.Registry.PROP_ACTIVATED_NODES)
+            ) {
+                refresh ();
+            }
+        }
     }
 }
-
-
-
-
-
-

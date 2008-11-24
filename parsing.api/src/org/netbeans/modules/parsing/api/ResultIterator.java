@@ -112,7 +112,7 @@ public final class ResultIterator {
      */
     public Result getParserResult () throws ParseException {
         if (result == null)
-            result = sourceCache.getResult (task, null);
+            result = sourceCache.getResult (task);
         return result;
     }
     

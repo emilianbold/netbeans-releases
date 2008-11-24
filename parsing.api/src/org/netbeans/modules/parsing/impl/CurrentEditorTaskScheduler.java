@@ -39,25 +39,54 @@
 
 package org.netbeans.modules.parsing.impl;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
 
 
 /**
- * This implementation of {@link Scheduler} schedules tasks when some
- * file or document is chenged. This is helper class only, and it should
- * be extended by some real implementation of {@link Scheduler}.
- * 
+ *
  * @author Jan Jancura
  */
-public class FileObjectsTaskScheduller extends Scheduler {
-
+public abstract class CurrentEditorTaskScheduler extends Scheduler {
     
-    private Collection<FileObject> fileObjects = Collections.<FileObject>emptyList ();
+    private JTextComponent  currentEditor;
     
-    public void setFileObjects (Collection<FileObject> fileObject) {
+    public CurrentEditorTaskScheduler () {
+        currentEditor = EditorRegistry.focusedComponent ();
+        EditorRegistry.addPropertyChangeListener (new AListener ());
+    }
+    
+    protected abstract void setEditor (JTextComponent editor);
+    
+    private class AListener implements PropertyChangeListener {
+    
+        public void propertyChange (PropertyChangeEvent evt) {
+            if (evt.getPropertyName () == null ||
+                evt.getPropertyName ().equals (EditorRegistry.FOCUSED_DOCUMENT_PROPERTY) ||
+                evt.getPropertyName ().equals (EditorRegistry.FOCUS_GAINED_PROPERTY)
+            ) {
+                JTextComponent editor = EditorRegistry.focusedComponent ();
+                if (editor == currentEditor) return;
+                currentEditor = editor;
+                Document document = editor.getDocument ();
+                FileObject fileObject = NbEditorUtilities.getFileObject (document);
+                if (fileObject == null) {
+                    System.out.println("no file object for " + document);
+                    return;
+                }
+                setEditor (currentEditor);
+            }
+            else if (evt.getPropertyName().equals(EditorRegistry.LAST_FOCUSED_REMOVED_PROPERTY)) {
+                currentEditor = null;
+                setEditor(null);
+            }
+        }
     }
 }

@@ -57,6 +57,17 @@ public abstract class EmbeddingProvider extends SchedulerTask {
     
     
     /**
+     * Returns {@link Scheduler} class for this SchedulerTask. See
+     * {@link Scheduler} documentation for a list of default schedulers,
+     * or your your own implementation.
+     * 
+     * @return              {@link Scheduler} for this SchedulerTask.
+     */
+    public final Class<? extends Scheduler> getSchedulerClass () {
+        return null;
+    }
+
+    /**
      * Returns list of {@link Embedding}s based on lexical analyse.
      * 
      * @param snapshot      A snapshot that should be scanned for embeddings.
