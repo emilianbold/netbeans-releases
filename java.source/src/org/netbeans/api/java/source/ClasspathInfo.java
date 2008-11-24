@@ -199,6 +199,20 @@ public final class ClasspathInfo {
         }
     }
 
+    /**
+     * Creates a new instance of the ClasspathInfo for given Document.
+     * <div class="nonnormative">
+     * <p>
+     * It uses the {@link Document#StreamDescriptionProperty} to obtain the
+     * {@link DataObject} for the {@link Document} and creates a {@link ClasspathInfo}
+     * for the primary file of the {@link DataObject}
+     * </p>
+     * </div>
+     * @param doc a document for which the {@link ClasspathInfo} should be created
+     * @return a {@link ClasspathInfo} or null when the document source cannot be
+     * found.
+     * @since 0.42
+     */
     public static ClasspathInfo create(final Document doc) {
         Parameters.notNull("doc", doc);
         final Object source = doc.getProperty(Document.StreamDescriptionProperty);

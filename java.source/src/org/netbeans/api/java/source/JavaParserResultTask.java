@@ -40,22 +40,34 @@
 package org.netbeans.api.java.source;
 
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.openide.util.Parameters;
 
 /**
- *
+ * Java specific version of the {@link ParserResultTask}. In addition to the
+ * {@link ParserResultTask} it adds a support for javac phases.
+ * @see JavaSource
+ * @since 0.42
  * @author Tomas Zezula
  */
-public abstract class JavaParserResultTask extends ParserResultTask {
+public abstract class JavaParserResultTask<T extends Parser.Result> extends ParserResultTask<T> {
 
     private final JavaSource.Phase phase;
 
+    /**
+     * Creates a new JavaParserResultTask
+     * @param phase needed by the task.
+     */
     protected JavaParserResultTask (final JavaSource.Phase phase) {
         Parameters.notNull("phase", phase);
         this.phase = phase;
     }
-    
+
+    /**
+     * Returns the phase needed by task.
+     * @return the pahse
+     */
     public final JavaSource.Phase getPhase () {
         return this.phase;
     }

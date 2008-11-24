@@ -97,7 +97,17 @@ public class CompilationInfo {
         assert impl != null;
         this.impl = impl;
     }
-    
+
+    /**
+     * Returns an instance of the {@link CompilationInfo} for
+     * given {@link Parser.Result} if it is a result
+     * of a java parser.
+     * @param result for which the {@link CompilationInfo} should be
+     * returned.
+     * @return a {@link CompilationInfo} or null when the given result
+     * is not a result of java parsing.
+     * @since 0.42
+     */
     public static CompilationInfo get (final Parser.Result result) {
         Parameters.notNull("result", result);   //NOI18N
         CompilationInfo info = null;
@@ -171,6 +181,7 @@ public class CompilationInfo {
     /**
      * Returns the snapshot used by java parser
      * @return the snapshot
+     * @since 0.42
      */
     public Snapshot getSnapshot () {
         checkConfinement();

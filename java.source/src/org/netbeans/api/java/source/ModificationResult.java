@@ -97,6 +97,15 @@ public final class ModificationResult {
 
     // API of the class --------------------------------------------------------
 
+    /**
+     * Runs a task over given sources, the task has an access to the {@link WorkingCopy}
+     * using the {@link WorkingCopy#get(org.netbeans.modules.parsing.spi.Parser.Result)} method.
+     * @param sources on which the given task will be performed
+     * @param task to be performed
+     * @return the {@link ModificationResult}
+     * @throws org.netbeans.modules.parsing.spi.ParseException
+     * @since 0.42
+     */
     public static ModificationResult runModificationTask(final Collection<Source> sources, final UserTask task) throws ParseException {
         final ModificationResult result = new ModificationResult(sources);
         final JavacParser[] theParser = new JavacParser[1];

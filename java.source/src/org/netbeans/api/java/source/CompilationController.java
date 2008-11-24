@@ -64,7 +64,17 @@ public class CompilationController extends CompilationInfo {
         super(impl);
 
     }
-    
+
+    /**
+     * Returns an instance of the {@link CompilationController} for
+     * given {@link Parser.Result} if it is a result
+     * of a java parser.
+     * @param result for which the {@link CompilationController} should be
+     * returned.
+     * @return a {@link CompilationController} or null when the given result
+     * is not a result of java parsing.
+     * @since 0.42
+     */
     public static CompilationController get (final Parser.Result result) {
         Parameters.notNull("result", result);   //NOI18N
         CompilationController info = null;
