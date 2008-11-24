@@ -51,50 +51,75 @@ public class PhpInterpreterTest extends NbTestCase {
         super(name);
     }
 
-    public void testPhpInterpreter() {
+    public void testPhpInterpreter1() {
         PhpInterpreter phpInterpreter = new PhpInterpreter(null);
         assertEquals("", phpInterpreter.getInterpreter());
         assertEquals("", phpInterpreter.getFullCommand());
         assertEquals(0, phpInterpreter.getParameters().length);
+    }
 
-        phpInterpreter = new PhpInterpreter("C:\\Program Files\\php\\bin\\php");
+    public void testPhpInterpreter2() {
+        PhpInterpreter phpInterpreter = new PhpInterpreter("C:\\Program Files\\php\\bin\\php");
         assertEquals("C:\\Program Files\\php\\bin\\php", phpInterpreter.getInterpreter());
         assertEquals(0, phpInterpreter.getParameters().length);
+    }
 
-        phpInterpreter = new PhpInterpreter("C:\\Program Files\\php\\bin\\php /q");
+    public void testPhpInterpreter3() {
+        PhpInterpreter phpInterpreter = new PhpInterpreter("C:\\Program Files\\php\\bin\\php /q");
         assertEquals("C:\\Program Files\\php\\bin\\php", phpInterpreter.getInterpreter());
         String[] parameters = phpInterpreter.getParameters();
         assertEquals(1, parameters.length);
         assertEquals("/q", parameters[0]);
+    }
 
-        phpInterpreter = new PhpInterpreter("C:\\Program Files\\php\\bin\\php    -q     ");
+    public void testPhpInterpreter4() {
+        PhpInterpreter phpInterpreter = new PhpInterpreter("C:\\Program Files\\php\\bin\\php    -q     ");
         assertEquals("C:\\Program Files\\php\\bin\\php", phpInterpreter.getInterpreter());
-        parameters = phpInterpreter.getParameters();
+        String[] parameters = phpInterpreter.getParameters();
         assertEquals(1, parameters.length);
         assertEquals("-q", parameters[0]);
+    }
 
-        phpInterpreter = new PhpInterpreter("C:\\Program-Files\\php\\bin\\php   -q    -a");
+    public void testPhpInterpreter5() {
+        PhpInterpreter phpInterpreter = new PhpInterpreter("C:\\Program-Files\\php\\bin\\php   -q    -a");
         assertEquals("C:\\Program-Files\\php\\bin\\php", phpInterpreter.getInterpreter());
-        parameters = phpInterpreter.getParameters();
+        String[] parameters = phpInterpreter.getParameters();
         assertEquals(2, parameters.length);
         assertEquals("-q", parameters[0]);
         assertEquals("-a", parameters[1]);
+    }
 
-        phpInterpreter = new PhpInterpreter("/usr/bin/php");
+    public void testPhpInterpreter6() {
+        PhpInterpreter phpInterpreter = new PhpInterpreter("/usr/bin/php");
         assertEquals("/usr/bin/php", phpInterpreter.getInterpreter());
         assertEquals(0, phpInterpreter.getParameters().length);
+    }
 
-        phpInterpreter = new PhpInterpreter("/usr/bin/php -q");
+    public void testPhpInterpreter7() {
+        PhpInterpreter phpInterpreter = new PhpInterpreter("/usr/bin/php -q");
         assertEquals("/usr/bin/php", phpInterpreter.getInterpreter());
-        parameters = phpInterpreter.getParameters();
+        String[] parameters = phpInterpreter.getParameters();
         assertEquals(1, parameters.length);
         assertEquals("-q", parameters[0]);
+    }
 
-        phpInterpreter = new PhpInterpreter("/usr/b-i-n/php -q -a");
+    public void testPhpInterpreter8() {
+        PhpInterpreter phpInterpreter = new PhpInterpreter("/usr/b-i-n/php -q -a");
         assertEquals("/usr/b-i-n/php", phpInterpreter.getInterpreter());
-        parameters = phpInterpreter.getParameters();
+        String[] parameters = phpInterpreter.getParameters();
         assertEquals(2, parameters.length);
         assertEquals("-q", parameters[0]);
         assertEquals("-a", parameters[1]);
+    }
+
+    public void testPhpInterpreter9() {
+        PhpInterpreter phpInterpreter = new PhpInterpreter("/usr/bin/phpunit --repeat 3   \"--repeat 3\"  MyTest   ");
+        assertEquals("/usr/bin/phpunit", phpInterpreter.getInterpreter());
+        String[] parameters = phpInterpreter.getParameters();
+        assertEquals(4, parameters.length);
+        assertEquals("--repeat", parameters[0]);
+        assertEquals("3", parameters[1]);
+        assertEquals("--repeat 3", parameters[2]);
+        assertEquals("MyTest", parameters[3]);
     }
 }
