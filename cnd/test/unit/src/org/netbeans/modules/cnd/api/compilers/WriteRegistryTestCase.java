@@ -73,8 +73,8 @@ public class WriteRegistryTestCase extends NbTestCase {
 
     public void testWrtiteDescriptor() throws Exception {
         List<ToolchainDescriptor> original = ToolchainManager.getInstance().getAllToolchains();
-        ToolchainManager.getInstance().writeToolchains();
-        ToolchainManager.getInstance().reinitToolchainManager();
+        ((ToolchainManagerImpl)ToolchainManager.getInstance()).writeToolchains();
+        ((ToolchainManagerImpl)ToolchainManager.getInstance()).reinitToolchainManager();
         List<ToolchainDescriptor> restored = ToolchainManager.getInstance().getAllToolchains();
         for(int i = 0; i < original.size(); i++) {
            assertTrue("Tool chain "+original.get(i)+" not equals "+restored.get(i), deepObjectComparing(original.get(i),restored.get(i)));
@@ -91,8 +91,8 @@ public class WriteRegistryTestCase extends NbTestCase {
             try {
                 Object o1 = fields[i].get(original);
                 Object o2 = fields[i].get(restored);
-                if (o1 instanceof ToolchainManager.Compiler){
-                     if (!((ToolchainManager.Compiler)o1).isValid() && !((ToolchainManager.Compiler)o1).isValid()){
+                if (o1 instanceof ToolchainManagerImpl.Compiler){
+                     if (!((ToolchainManagerImpl.Compiler)o1).isValid() && !((ToolchainManagerImpl.Compiler)o1).isValid()){
                          continue;
                      }
                 }
