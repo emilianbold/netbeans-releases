@@ -255,7 +255,8 @@ public class ProviderUtil {
             DatabaseConnection connection, String tableGenerationStrategy){
         
         Parameters.notNull("persistenceUnit", persistenceUnit); //NOI18N
-        Parameters.notNull("connection", connection); //NOI18N
+        // See issue 123224 desc 12 and desc 15 - connection can be null
+        //Parameters.notNull("connection", connection); //NOI18N
         Parameters.notNull("provider", provider); //NOI18N
         
         removeProviderProperties(persistenceUnit);
@@ -346,7 +347,9 @@ public class ProviderUtil {
     public static void setDatabaseConnection(PersistenceUnit persistenceUnit, DatabaseConnection connection){
         
         Parameters.notNull("persistenceUnit", persistenceUnit); //NOI18N
-        Parameters.notNull("connection", connection); //NOI18N
+        // See issue 123224 desc 12 and desc 15 - connection can be null
+        //Parameters.notNull("connection", connection); //NOI18N
+        
         
         Provider provider = getProvider(persistenceUnit);
         Property[] properties = getProperties(persistenceUnit);
