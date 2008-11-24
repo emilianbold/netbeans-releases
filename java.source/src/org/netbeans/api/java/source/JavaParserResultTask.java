@@ -37,17 +37,27 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.java.source;
+package org.netbeans.api.java.source;
 
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Tomas Zezula
  */
 public abstract class JavaParserResultTask extends ParserResultTask {
+
+    private final JavaSource.Phase phase;
+
+    protected JavaParserResultTask (final JavaSource.Phase phase) {
+        Parameters.notNull("phase", phase);
+        this.phase = phase;
+    }
     
-    public abstract JavaSource.Phase getPhase ();
+    public final JavaSource.Phase getPhase () {
+        return this.phase;
+    }
 
 }
