@@ -162,6 +162,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
+import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.ScriptVariable;
@@ -295,6 +296,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             Mirror argValue = arg.accept(this, evaluationContext);
             if (argValue != null && !(argValue instanceof Value)) {
                 Assert2.error(arg, "Not a value");
+            }
+            if (argValue instanceof ArtificialMirror) {
+                argValue = ((ArtificialMirror)argValue).getVMMirror();
             }
             argVals.add((Value) argValue);
         }
@@ -771,7 +775,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v ^= e; break;
                 default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
             }
-            Value value = vm.mirrorOf(v);
+            Value value = mirrorOf(evaluationContext, v);
             setToMirror(arg0.getVariable(), value, evaluationContext);
             return value;
         }
@@ -789,7 +793,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v += e; break;
                 default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
             }
-            Value value = vm.mirrorOf(v);
+            Value value = mirrorOf(evaluationContext, v);
             setToMirror(arg0.getVariable(), value, evaluationContext);
             return value;
         }
@@ -807,7 +811,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v += e; break;
                 default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
             }
-            Value value = vm.mirrorOf(v);
+            Value value = mirrorOf(evaluationContext, v);
             setToMirror(arg0.getVariable(), value, evaluationContext);
             return value;
         }
@@ -839,7 +843,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v ^= e; break;
                 default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
             }
-            Value value = vm.mirrorOf(v);
+            Value value = mirrorOf(evaluationContext, v);
             setToMirror(arg0.getVariable(), value, evaluationContext);
             return value;
         }
@@ -871,7 +875,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v ^= e; break;
                 default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
             }
-            Value value = vm.mirrorOf(v);
+            Value value = mirrorOf(evaluationContext, v);
             setToMirror(arg0.getVariable(), value, evaluationContext);
             return value;
         }
@@ -899,9 +903,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         Tree.Kind kind = arg0.getKind();
         if ((left instanceof ObjectReference) && (right instanceof ObjectReference)) {
             if (kind == Tree.Kind.EQUAL_TO) {
-                return vm.mirrorOf(left.equals(right));
+                return mirrorOf(evaluationContext, left.equals(right));
             } else if (kind == Tree.Kind.NOT_EQUAL_TO) {
-                return vm.mirrorOf(!left.equals(right));
+                return mirrorOf(evaluationContext, !left.equals(right));
             }
         }
         if (left instanceof ObjectReference) {
@@ -925,7 +929,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 default:
                     throw new IllegalArgumentException("Unhandled binary tree: "+arg0);
             }
-            return vm.mirrorOf(res);
+            return mirrorOf(evaluationContext, res);
         }
         boolean isLeftNumeric = left instanceof PrimitiveValue && !(left instanceof BooleanValue);
         boolean isRightNumeric = right instanceof PrimitiveValue && !(right instanceof BooleanValue);
@@ -960,9 +964,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
                 }
                 if (isBoolean) {
-                    return vm.mirrorOf(b);
+                    return mirrorOf(evaluationContext, b);
                 } else {
-                    return vm.mirrorOf(v);
+                    return mirrorOf(evaluationContext, v);
                 }
             }
             if ((left instanceof FloatValue) || (right instanceof FloatValue)) {
@@ -995,9 +999,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
                 }
                 if (isBoolean) {
-                    return vm.mirrorOf(b);
+                    return mirrorOf(evaluationContext, b);
                 } else {
-                    return vm.mirrorOf(v);
+                    return mirrorOf(evaluationContext, v);
                 }
             }
             if ((left instanceof LongValue) || (right instanceof LongValue)) {
@@ -1044,9 +1048,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
                 }
                 if (isBoolean) {
-                    return vm.mirrorOf(b);
+                    return mirrorOf(evaluationContext, b);
                 } else {
-                    return vm.mirrorOf(v);
+                    return mirrorOf(evaluationContext, v);
                 }
             }
             //if ((left instanceof IntegerValue) || (right instanceof IntegerValue)) {
@@ -1094,9 +1098,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
                 }
                 if (isBoolean) {
-                    return vm.mirrorOf(b);
+                    return mirrorOf(evaluationContext, b);
                 } else {
-                    return vm.mirrorOf(v);
+                    return mirrorOf(evaluationContext, v);
                 }
             //}
         }
@@ -1117,9 +1121,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         switch (kind) {
             case EQUAL_TO:
-                return vm.mirrorOf(left == right || (left != null && left.equals(right)));
+                return mirrorOf(evaluationContext, left == right || (left != null && left.equals(right)));
             case NOT_EQUAL_TO:
-                return vm.mirrorOf(left == null && right != null || (left != null && !left.equals(right)));
+                return mirrorOf(evaluationContext, left == null && right != null || (left != null && !left.equals(right)));
             default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
         }
     }
@@ -1134,7 +1138,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (res != null) {
                     lastResult = res;
                 }
-                if (res instanceof ArtificialMirror) {
+                if (res instanceof CommandMirror) {
                     break;
                 }
             }
@@ -1327,7 +1331,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     }
                 } finally {
                     evaluationContext.popBlock();
-                    if ((value instanceof Continue) || !(value instanceof ArtificialMirror)) {
+                    if ((value instanceof Continue) || !(value instanceof CommandMirror)) {
                         for (Tree tree : updateList) {
                             tree.accept(this, evaluationContext);
                         } // for
@@ -1702,28 +1706,28 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (vm == null) return null;
         Object value = arg0.getValue();
         if (value instanceof Boolean) {
-            return vm.mirrorOf(((Boolean) value).booleanValue());
+            return mirrorOf(evaluationContext, value);
         }
         if (value instanceof Byte) {
-            return vm.mirrorOf(((Byte) value).byteValue());
+            return mirrorOf(evaluationContext, value);
         }
         if (value instanceof Character) {
-            return vm.mirrorOf(((Character) value).charValue());
+            return mirrorOf(evaluationContext, value);
         }
         if (value instanceof Double) {
-            return vm.mirrorOf(((Double) value).doubleValue());
+            return mirrorOf(evaluationContext, value);
         }
         if (value instanceof Float) {
-            return vm.mirrorOf(((Float) value).floatValue());
+            return mirrorOf(evaluationContext, value);
         }
         if (value instanceof Integer) {
-            return vm.mirrorOf(((Integer) value).intValue());
+            return mirrorOf(evaluationContext, value);
         }
         if (value instanceof Long) {
-            return vm.mirrorOf(((Long) value).longValue());
+            return mirrorOf(evaluationContext, value);
         }
         if (value instanceof Short) {
-            return vm.mirrorOf(((Short) value).shortValue());
+            return mirrorOf(evaluationContext, value);
         }
         if (value instanceof String) {
             StringReference str = vm.mirrorOf((String) value);
@@ -1813,8 +1817,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             ExpressionTree exp = initializerTrees.get(i);
             newArrayType = getSubArrayType(arg0, type);
             // might call visitNewArray()
-            Value element = (Value) exp.accept(this, evaluationContext);
-            elements.add(element);
+            Value elementValue = (Value) exp.accept(this, evaluationContext);
+            if (elementValue instanceof ArtificialMirror) {
+                elementValue = (Value)((ArtificialMirror)elementValue).getVMMirror();
+            }
+            elements.add(elementValue);
         }
         int depth = 1;
         ArrayReference array = getArrayType(arg0, type, depth).newInstance(n);
@@ -1927,6 +1934,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             Mirror argValue = arg.accept(this, evaluationContext);
             if ((argValue != null) && !(argValue instanceof Value)) {
                 Assert2.error(arg, "Not a value");
+            }
+            if (argValue instanceof ArtificialMirror) {
+                argValue = ((ArtificialMirror) argValue).getVMMirror();
             }
             argVals.add((Value) argValue);
         }
@@ -2299,12 +2309,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     @Override
     public Mirror visitTypeCast(TypeCastTree arg0, EvaluationContext evaluationContext) {
         ExpressionTree expTree = arg0.getExpression();
-        Mirror expression = expTree.accept(this, evaluationContext);
-        if (expression == null) return null;
+        Mirror expr = expTree.accept(this, evaluationContext);
+        if (expr == null) return null;
         Tree typeTree = arg0.getType();
         Mirror type = typeTree.accept(this, evaluationContext);
-        if (expression instanceof PrimitiveValue) {
-            PrimitiveValue primValue = (PrimitiveValue) expression;
+        if (expr instanceof PrimitiveValue) {
+            PrimitiveValue primValue = (PrimitiveValue) expr;
             if (primValue instanceof BooleanValue) {
                 Assert2.assertAssignable(type, BooleanType.class, arg0, "castToBooleanRequired", primValue, type);
                 return primValue;
@@ -2313,26 +2323,26 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
             if (vm == null) return null;
             if (type instanceof ByteType) {
-                return vm.mirrorOf(primValue.byteValue());
+                return mirrorOf(evaluationContext, primValue.byteValue());
             } else if (type instanceof CharType) {
-                return vm.mirrorOf(primValue.charValue());
+                return mirrorOf(evaluationContext, primValue.charValue());
             } else if (type instanceof DoubleType) {
-                return vm.mirrorOf(primValue.doubleValue());
+                return mirrorOf(evaluationContext, primValue.doubleValue());
             } else if (type instanceof FloatType) {
-                return vm.mirrorOf(primValue.floatValue());
+                return mirrorOf(evaluationContext, primValue.floatValue());
             } else if (type instanceof IntegerType) {
-                return vm.mirrorOf(primValue.intValue());
+                return mirrorOf(evaluationContext, primValue.intValue());
             } else if (type instanceof LongType) {
-                return vm.mirrorOf(primValue.longValue());
+                return mirrorOf(evaluationContext, primValue.longValue());
             } else {
-                return vm.mirrorOf(primValue.shortValue());
+                return mirrorOf(evaluationContext, primValue.shortValue());
             }
         }
-        if (!instanceOf(((ObjectReference) expression).type(), (Type) type)) {
-            Assert2.error(arg0, "castError", ((ObjectReference) expression).type(), type);
+        if (!instanceOf(((ObjectReference) expr).type(), (Type) type)) {
+            Assert2.error(arg0, "castError", ((ObjectReference) expr).type(), type);
         }
         subExpressionTypes.put(arg0, (Type) type);
-        return expression;
+        return expr;
     }
 
     @Override
@@ -2373,13 +2383,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         Mirror expr = arg0.getExpression().accept(this, evaluationContext);
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
         if (vm == null) return null;
-        if (expr == null) return vm.mirrorOf(false);
+        if (expr == null) return mirrorOf(evaluationContext, false);
         Assert2.assertAssignable(expr, ObjectReference.class, arg0, "instanceOfLeftOperandNotAReference", expr);
 
         ReferenceType expressionType = ((ObjectReference) expr).referenceType();
         Type type = (Type) arg0.getType().accept(this, evaluationContext);
 
-        return vm.mirrorOf(instanceOf(expressionType, type));
+        return mirrorOf(evaluationContext, instanceOf(expressionType, type));
     }
 
     @Override
@@ -2396,94 +2406,94 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     break;
                 default: throw new IllegalStateException("Tree = "+arg0);
             }
-            return vm.mirrorOf(v);
+            return mirrorOf(evaluationContext, v);
         }
         if (expr instanceof ByteValue) {
             byte v = ((ByteValue) expr).value();
             switch (kind) {
                 case BITWISE_COMPLEMENT:
                     int i = ~v;
-                    return vm.mirrorOf(i);
+                    return mirrorOf(evaluationContext, i);
                 case POSTFIX_DECREMENT:
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v - 1), evaluationContext);
                     break;
                 case POSTFIX_INCREMENT:
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v + 1), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v + 1), evaluationContext);
                     break;
                 case PREFIX_DECREMENT:
                     --v;
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v), evaluationContext);
                     break;
                 case PREFIX_INCREMENT:
                     ++v;
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v), evaluationContext);
                     break;
                 case UNARY_MINUS:
                     i = -v;
-                    return vm.mirrorOf(i);
+                    return mirrorOf(evaluationContext, i);
                 case UNARY_PLUS:
                     break;
                 default: throw new IllegalStateException("Tree = "+arg0);
             }
-            return vm.mirrorOf(v);
+            return mirrorOf(evaluationContext, v);
         }
         if (expr instanceof CharValue) {
             char v = ((CharValue) expr).value();
             switch (kind) {
                 case BITWISE_COMPLEMENT:
                     int i = ~v;
-                    return vm.mirrorOf(i);
+                    return mirrorOf(evaluationContext, i);
                 case POSTFIX_DECREMENT:
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v - 1), evaluationContext);
                     break;
                 case POSTFIX_INCREMENT:
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v + 1), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v + 1), evaluationContext);
                     break;
                 case PREFIX_DECREMENT:
                     --v;
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v), evaluationContext);
                     break;
                 case PREFIX_INCREMENT:
                     ++v;
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v), evaluationContext);
                     break;
                 case UNARY_MINUS:
                     i = -v;
-                    return vm.mirrorOf(i);
+                    return mirrorOf(evaluationContext, i);
                 case UNARY_PLUS:
                     break;
                 default: throw new IllegalStateException("Tree = "+arg0);
             }
-            return vm.mirrorOf(v);
+            return mirrorOf(evaluationContext, v);
         }
         if (expr instanceof ShortValue) {
             short v = ((ShortValue) expr).value();
             switch (kind) {
                 case BITWISE_COMPLEMENT:
                     int i = ~v;
-                    return vm.mirrorOf(i);
+                    return mirrorOf(evaluationContext, i);
                 case POSTFIX_DECREMENT:
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v - 1), evaluationContext);
                     break;
                 case POSTFIX_INCREMENT:
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v + 1), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v + 1), evaluationContext);
                     break;
                 case PREFIX_DECREMENT:
                     --v;
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v), evaluationContext);
                     break;
                 case PREFIX_INCREMENT:
                     ++v;
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v), evaluationContext);
                     break;
                 case UNARY_MINUS:
                     i = -v;
-                    return vm.mirrorOf(i);
+                    return mirrorOf(evaluationContext, i);
                 case UNARY_PLUS:
                     break;
                 default: throw new IllegalStateException("Tree = "+arg0);
             }
-            return vm.mirrorOf(v);
+            return mirrorOf(evaluationContext, v);
         }
         if (expr instanceof IntegerValue) {
             int v = ((IntegerValue) expr).value();
@@ -2492,18 +2502,18 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v = ~v;
                     break;
                 case POSTFIX_DECREMENT:
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v - 1), evaluationContext);
                     break;
                 case POSTFIX_INCREMENT:
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v + 1), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v + 1), evaluationContext);
                     break;
                 case PREFIX_DECREMENT:
                     --v;
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v), evaluationContext);
                     break;
                 case PREFIX_INCREMENT:
                     ++v;
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v), evaluationContext);
                     break;
                 case UNARY_MINUS:
                     v = -v;
@@ -2512,7 +2522,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     break;
                 default: throw new IllegalStateException("Tree = "+arg0);
             }
-            return vm.mirrorOf(v);
+            return mirrorOf(evaluationContext, v);
         }
         if (expr instanceof LongValue) {
             long v = ((LongValue) expr).value();
@@ -2521,18 +2531,18 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     v = ~v;
                     break;
                 case POSTFIX_DECREMENT:
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v - 1), evaluationContext);
                     break;
                 case POSTFIX_INCREMENT:
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v + 1), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v + 1), evaluationContext);
                     break;
                 case PREFIX_DECREMENT:
                     --v;
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v), evaluationContext);
                     break;
                 case PREFIX_INCREMENT:
                     ++v;
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v), evaluationContext);
                     break;
                 case UNARY_MINUS:
                     v = -v;
@@ -2541,24 +2551,24 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     break;
                 default: throw new IllegalStateException("Tree = "+arg0);
             }
-            return vm.mirrorOf(v);
+            return mirrorOf(evaluationContext, v);
         }
         if (expr instanceof DoubleValue) {
             double v = ((DoubleValue) expr).value();
             switch (kind) {
                 case POSTFIX_DECREMENT:
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v - 1), evaluationContext);
                     break;
                 case POSTFIX_INCREMENT:
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v + 1), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v + 1), evaluationContext);
                     break;
                 case PREFIX_DECREMENT:
                     --v;
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v), evaluationContext);
                     break;
                 case PREFIX_INCREMENT:
                     ++v;
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v), evaluationContext);
                     break;
                 case UNARY_MINUS:
                     v = -v;
@@ -2567,24 +2577,24 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     break;
                 default: throw new IllegalStateException("Tree = "+arg0);
             }
-            return vm.mirrorOf(v);
+            return mirrorOf(evaluationContext, v);
         }
         if (expr instanceof FloatValue) {
             float v = ((FloatValue) expr).value();
             switch (kind) {
                 case POSTFIX_DECREMENT:
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v - 1), evaluationContext);
                     break;
                 case POSTFIX_INCREMENT:
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v + 1), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v + 1), evaluationContext);
                     break;
                 case PREFIX_DECREMENT:
                     --v;
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v), evaluationContext);
                     break;
                 case PREFIX_INCREMENT:
                     ++v;
-                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    setToMirror(arg0.getExpression(), mirrorOf(evaluationContext, v), evaluationContext);
                     break;
                 case UNARY_MINUS:
                     v = -v;
@@ -2593,7 +2603,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     break;
                 default: throw new IllegalStateException("Tree = "+arg0);
             }
-            return vm.mirrorOf(v);
+            return mirrorOf(evaluationContext, v);
         }
         throw new IllegalStateException("Bad expression type: "+expr);
     }
@@ -2656,6 +2666,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             Assert2.error(var, "unknownVariable", var.toString());
             // EvaluationException will be thrown from the Assert
             throw new IllegalStateException("Unknown variable "+var);
+        }
+        if (value instanceof ArtificialMirror) {
+            value = (Value)((ArtificialMirror) value).getVMMirror();
         }
         varInfo.setValue(value);
     }
@@ -3086,6 +3099,27 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
     }
 
+    private Value mirrorOf(EvaluationContext context, Object value) {
+        if (value instanceof Boolean) {
+            return new BooleanVal(context, ((Boolean)value).booleanValue());
+        } else if (value instanceof Character) {
+            return new CharVal(context, ((Character)value).charValue());
+        } else if (value instanceof Byte) {
+            return new ByteVal(context, ((Byte)value).byteValue());
+        } else if (value instanceof Integer) {
+            return new IntVal(context, ((Integer)value).intValue());
+        } else if (value instanceof Short) {
+            return new ShortVal(context, ((Short)value).shortValue());
+        } else if (value instanceof Long) {
+            return new LongVal(context, ((Long)value).longValue());
+        } else if (value instanceof Float) {
+            return new FloatVal(context, ((Float)value).floatValue());
+        } else if (value instanceof Double) {
+            return new DoubleVal(context, ((Double)value).doubleValue());
+        }
+        return null;
+    }
+
     // *************************************************************************
     // inner classes
     // *************************************************************************
@@ -3104,8 +3138,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     }
 
+    private static abstract class CommandMirror extends ArtificialMirror {
+
+    }
+
     // used to drive code execution after 'break' statement is encountered
-    private static final class Break extends ArtificialMirror {
+    private static final class Break extends CommandMirror {
 
         @Override
         public String toString() {
@@ -3119,7 +3157,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     }
 
     // used to drive code execution after 'continue' statement is encountered
-    private static final class Continue extends ArtificialMirror {
+    private static final class Continue extends CommandMirror {
 
         @Override
         public String toString() {
@@ -3132,7 +3170,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     }
 
-    private static final class Return extends ArtificialMirror {
+    private static final class Return extends CommandMirror {
 
         private Mirror value;
 
