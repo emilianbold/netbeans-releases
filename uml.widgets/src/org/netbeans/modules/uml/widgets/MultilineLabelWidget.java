@@ -41,12 +41,10 @@ package org.netbeans.modules.uml.widgets;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -58,11 +56,6 @@ import org.netbeans.api.visual.widget.Scene;
  */
 public class MultilineLabelWidget extends LabelWidget
 {
-    private boolean useGlyphVector = false;
-    private GlyphVector cacheGlyphVector;
-    private String cacheLabel;
-    private Font cacheFont;
-    
     public MultilineLabelWidget (Scene scene)
     {
         this(scene, null);
@@ -86,57 +79,49 @@ public class MultilineLabelWidget extends LabelWidget
         }
         
         Rectangle rectangle;
-//        if (isUseGlyphVector() == true)
-//        {
-//            assureGlyphVector();
-//            rectangle = GeomUtil.roundRectangle(cacheGlyphVector.getVisualBounds());
-//            rectangle.grow(1, 1); // WORKAROUND - even text antialiasing is included into the boundary
-//        }
-//        else
+
+        Graphics2D gr = getGraphics();
+        FontMetrics fontMetrics = gr.getFontMetrics(getFont());
+
+        Rectangle2D union = new Rectangle2D.Double();
+        double x = 0;
+        double y = 0;
+        double width = 0;
+        double height = 0;
+
+        String[] lines = getLabel().split("\n");
+        for(int index = 0; index < lines.length; index++)
         {
-            Graphics2D gr = getGraphics();
-            FontMetrics fontMetrics = gr.getFontMetrics(getFont());
-            
-            Rectangle2D union = new Rectangle2D.Double();
-            double x = 0;
-            double y = 0;
-            double width = 0;
-            double height = 0;
-            
-            String[] lines = getLabel().split("\n");
-            for(int index = 0; index < lines.length; index++)
+            String line = lines[index];
+            Rectangle2D stringBounds = fontMetrics.getStringBounds(line, gr);
+
+            if(index == 0)
             {
-                String line = lines[index];
-                Rectangle2D stringBounds = fontMetrics.getStringBounds(line, gr);
-                
-                if(index == 0)
+                x = stringBounds.getX();
+                y = stringBounds.getY();
+                width = stringBounds.getWidth();
+            }
+            else
+            {
+                if(stringBounds.getX() < x)
                 {
                     x = stringBounds.getX();
+                }
+
+                if(stringBounds.getY() < y)
+                {
                     y = stringBounds.getY();
+                }
+
+                if(stringBounds.getWidth() > width)
+                {
                     width = stringBounds.getWidth();
                 }
-                else 
-                {
-                    if(stringBounds.getX() < x)
-                    {
-                        x = stringBounds.getX();
-                    }
-                    
-                    if(stringBounds.getY() < y)
-                    {
-                        y = stringBounds.getY();
-                    }
-                    
-                    if(stringBounds.getWidth() > width)
-                    {
-                        width = stringBounds.getWidth();
-                    }
-                }
-                
-                height += stringBounds.getHeight();
             }
-            rectangle = roundRectangle(new Rectangle2D.Double(x, y, width, height));
+
+            height += stringBounds.getHeight();
         }
+        rectangle = roundRectangle(new Rectangle2D.Double(x, y, width, height));
         
         switch (getOrientation())
         {
@@ -152,7 +137,6 @@ public class MultilineLabelWidget extends LabelWidget
     @Override
     protected void paintWidget()
     {
-        //System.out.println("MultilineLabelWidget: PaintWidget");
         Graphics2D g = getGraphics();
         
         g.setFont(getFont());
@@ -212,7 +196,6 @@ public class MultilineLabelWidget extends LabelWidget
         retVal = new LineDetails();
         
         int width = getClientArea().width;
-        //System.out.println("BreakupLine: node label: " + text);
         StringBuilder label = new StringBuilder(text);  
         
         int index = 0;
@@ -353,22 +336,7 @@ public class MultilineLabelWidget extends LabelWidget
         
         return retVal;
     }
-    
-//    private void assureGlyphVector () {
-//        Font font = getFont ();
-//        FontRenderContext fontRenderContext = getGraphics ().getFontRenderContext ();
-//        if (cacheGlyphVector != null  && 
-//            cacheFont == font  &&  
-//            cacheLabel == getLabel())
-//        {
-//            return;
-//        }
-//        
-//        cacheFont = font;
-//        cacheLabel = getLabel();
-//        cacheGlyphVector = font.createGlyphVector (new FontRenderContext (new AffineTransform (), fontRenderContext.isAntiAliased (), fontRenderContext.usesFractionalMetrics ()), cacheLabel);
-//    }
-    
+        
     /**
      * Rounds Rectangle2D to Rectangle.
      * @param rectangle the rectangle2D
@@ -401,7 +369,6 @@ public class MultilineLabelWidget extends LabelWidget
         {
             lines.add(line);
             heights.add((float)height);
-            //System.out.println("LineDetails.AddLine(): " + lines.toString());
         }
         
         public final String getLine(int index)
