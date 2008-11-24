@@ -65,7 +65,10 @@ public final class FakeWebFrameworkProvider {
 
         for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             if (codeNameBase.equals(mi.getCodeNameBase())) {
-                return null;
+                if (mi.isEnabled()) {
+                    return null;
+                }
+                break;
             }
         }
 
