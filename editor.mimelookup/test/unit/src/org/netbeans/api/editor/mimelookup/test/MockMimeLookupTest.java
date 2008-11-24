@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2008 Sun Microsystems, Inc.
  */
 package org.netbeans.api.editor.mimelookup.test;
 
@@ -31,7 +31,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -45,8 +44,6 @@ public class MockMimeLookupTest extends NbTestCase {
     }
 
     public void testSetInstances() {
-        MockServices.setServices(MockMimeLookup.class);
-        
         MimePath mimePath = MimePath.parse("text/x-whatever");
         MockMimeLookup.setInstances(mimePath, "hi!");
         assertEquals("setInstances works", "hi!", MimeLookup.getLookup(mimePath).lookup(String.class));
@@ -58,8 +55,6 @@ public class MockMimeLookupTest extends NbTestCase {
     }
     
     public void testComposition() {
-        MockServices.setServices(MockMimeLookup.class);
-        
         MimePath mimePath = MimePath.parse("text/x-whatever");
         MockMimeLookup.setInstances(mimePath, "inherited");
         
