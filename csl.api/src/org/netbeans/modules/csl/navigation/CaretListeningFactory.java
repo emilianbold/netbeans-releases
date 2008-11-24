@@ -43,6 +43,8 @@ package org.netbeans.modules.csl.navigation;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
@@ -55,10 +57,16 @@ public class CaretListeningFactory extends TaskFactory {
 
     @Override
     public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        if (snapshot.getSource().getMimeType().equals(snapshot.getMimeType())) {
-            return Collections.singleton(new CaretListeningTask());
+        String mimeType = snapshot.getMimeType();
+        Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+        if (l != null) {
+            if (snapshot.getSource().getMimeType().equals(snapshot.getMimeType())) {
+                return Collections.singleton(new CaretListeningTask());
+            } else {
+                return Collections.<SchedulerTask>emptyList();
+            }
         } else {
-            return Collections.<SchedulerTask>emptyList();
+            return null;
         }
     }
 }

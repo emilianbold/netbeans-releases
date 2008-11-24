@@ -42,6 +42,8 @@ package org.netbeans.modules.csl.hints;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
@@ -67,7 +69,13 @@ public class GsfHintsFactory extends TaskFactory {
 
     @Override
     public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        return Collections.singleton(new GsfHintsProvider(snapshot.getSource().getFileObject()));
+        String mimeType = snapshot.getMimeType();
+        Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+        if (l != null) {
+            return Collections.singleton(new GsfHintsProvider(snapshot.getSource().getFileObject()));
+        } else {
+            return null;
+        }
     }
 
 }

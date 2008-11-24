@@ -40,6 +40,18 @@
 
     <folder name="Editors">
         <file name="org-netbeans-modules-csl-core-GsfParserFactory.instance"/>
+        <file name="org-netbeans-modules-csl-hints-GsfHintsFactory.instance"/>
+        <file name="org-netbeans-modules-csl-hints-infrastructure-HintsTaskFactory.instance"/>
+        <file name="org-netbeans-modules-csl-hints-infrastructure-SelectionHintsTaskFactory.instance"/>
+        <file name="org-netbeans-modules-csl-hints-infrastructure-SuggestionsTaskFactory.instance"/>
+        <file name="org-netbeans-modules-csl-navigation-ClassMemberNavigatorSourceFactory.instance">
+            <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+            <attr name="instanceCreate" stringvalue="org.netbeans.modules.csl.navigation.ClassMemberNavigatorSourceFactory.getInstance"/>
+        </file>
+        <file name="org-netbeans-modules-csl-editor-semantic-SemanticHighlighterFactory.instance"/>
+        <file name="org-netbeans-modules-csl-editor-semantic-MarkOccurrencesHighlighterFactory.instance"/>
+        <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerTaskFactory.instance"/>
+        <file name="org-netbeans-modules-csl-navigation-CaretListeningFactory.instance"/>
     </folder>
 
 </filesystem>

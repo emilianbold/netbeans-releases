@@ -42,19 +42,17 @@ package org.netbeans.modules.csl.hints.infrastructure;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.swing.JEditorPane;
 import javax.swing.text.Document;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -82,7 +80,11 @@ public class SelectionHintsTask extends ParserResultTask<ParserResult> {
             return;
         }
         
-        int[] range = getSelectedTextRange(fileObject);
+        CursorMovedSchedulerEvent evt = (CursorMovedSchedulerEvent) result.getEvent();
+        int[] range = new int [] {
+            Math.min(evt.getMarkOffset(), evt.getCaretOffset()),
+            Math.max(evt.getMarkOffset(), evt.getCaretOffset())
+        };
         if (range == null || range.length != 2 || range[0] == -1 || range[1] == -1) {
             return;
         }
@@ -143,19 +145,5 @@ public class SelectionHintsTask extends ParserResultTask<ParserResult> {
 
     private synchronized boolean isCancelled() {
         return cancelled;
-    }
-
-    public static int[] getSelectedTextRange(FileObject fileObject) {
-        // XXX: fix this when Parsing API provides EDITOR_SELECTION_TASK_SCHEDULER
-        try {
-            EditorCookie ec = DataLoadersBridge.getDefault().getCookie(fileObject, EditorCookie.class);
-            JEditorPane [] panes = ec.getOpenedPanes();
-            if (panes.length > 0) {
-                return new int [] { panes[0].getSelectionStart(), panes[0].getSelectionEnd() };
-            }
-        } catch (Exception e) {
-            // ignore
-        }
-        return null;
     }
 }

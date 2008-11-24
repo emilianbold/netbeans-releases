@@ -41,7 +41,6 @@
 package org.netbeans.modules.csl.editor.semantic;
 
 import java.awt.Color;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,7 +51,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.ColoringAttributes;
@@ -65,11 +63,11 @@ import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.modules.csl.hints.infrastructure.Pair;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -111,8 +109,7 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
         
         long start = System.currentTimeMillis();
 
-        // XXX:
-        int caretPosition = getCaretOffset(info.getSnapshot().getSource().getFileObject());
+        int caretPosition = ((CursorMovedSchedulerEvent) info.getEvent()).getCaretOffset();
         
         if (isCancelled())
             return;
@@ -250,19 +247,5 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
         }
         
         return bag;
-    }
-
-    private static int getCaretOffset(FileObject file) {
-        try {
-            EditorCookie ec = DataLoadersBridge.getDefault().getCookie(file, EditorCookie.class);
-            JTextComponent [] panes = ec.getOpenedPanes();
-            if (panes.length > 0) {
-                return panes[0].getCaretPosition();
-            }
-        } catch (IOException ioe) {
-            // ignore
-        }
-
-        return -1;
     }
 }

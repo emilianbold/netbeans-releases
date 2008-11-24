@@ -42,6 +42,8 @@ package org.netbeans.modules.csl.editor.fold;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
@@ -65,11 +67,17 @@ public class GsfFoldManagerTaskFactory extends TaskFactory {
 
     @Override
     public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        FileObject file = snapshot.getSource().getFileObject();
-        if (file != null) {
-            return Collections.singleton(GsfFoldManager.JavaElementFoldTask.getTask(file));
+        String mimeType = snapshot.getMimeType();
+        Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+        if (l != null) {
+            FileObject file = snapshot.getSource().getFileObject();
+            if (file != null) {
+                return Collections.singleton(GsfFoldManager.JavaElementFoldTask.getTask(file));
+            } else {
+                return Collections.<SchedulerTask>emptySet();
+            }
         } else {
-            return Collections.<SchedulerTask>emptySet();
+            return null;
         }
     }
     

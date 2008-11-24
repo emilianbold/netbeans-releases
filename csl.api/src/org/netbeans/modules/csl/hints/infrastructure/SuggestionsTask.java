@@ -98,7 +98,11 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
         }
 
         // Do we have a selection? If so, don't do suggestions
-        int[] range = SelectionHintsTask.getSelectedTextRange(fileObject);
+        CursorMovedSchedulerEvent evt = (CursorMovedSchedulerEvent) result.getEvent();
+        int[] range = new int [] {
+            Math.min(evt.getMarkOffset(), evt.getCaretOffset()),
+            Math.max(evt.getMarkOffset(), evt.getCaretOffset())
+        };
         if (range != null && range.length == 2 && range[0] != -1 && range[1] != -1 && range[0] != range[1]) {
             HintsController.setErrors(fileObject, SuggestionsTask.class.getName(), Collections.<ErrorDescription>emptyList());
             return;

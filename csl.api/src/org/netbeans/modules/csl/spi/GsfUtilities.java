@@ -58,7 +58,6 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -563,21 +562,9 @@ public class GsfUtilities {
         }
 
         // Then editor pane, if it exists
-        FileObject file = snapshot.getSource().getFileObject();
-        if (file != null) {
-            EditorCookie ec;
-            try {
-                ec = DataLoadersBridge.getDefault().getCookie(file, EditorCookie.class);
-            } catch (IOException ioe) {
-                // ignore
-                ec = null;
-            }
-            if (ec != null) {
-                JTextComponent [] panes = ec.getOpenedPanes();
-                if (panes != null && panes.length > 0) {
-                    return panes[0].getCaretPosition();
-                }
-            }
+        JTextComponent pane = EditorRegistry.lastFocusedComponent();
+        if (pane != null) {
+            return pane.getCaretPosition();
         }
 
         Integer enforcedCaretOffset = enforcedCaretOffsets.get(snapshot.getSource());
