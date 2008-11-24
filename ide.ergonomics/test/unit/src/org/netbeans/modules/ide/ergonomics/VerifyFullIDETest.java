@@ -44,7 +44,7 @@ import java.util.Map;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.autoupdate.featureondemand.Feature2LayerMapping;
+import org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping;
 import org.netbeans.spi.project.ProjectFactory;
 import org.openide.util.Lookup;
 
@@ -74,8 +74,8 @@ public class VerifyFullIDETest extends NbTestCase {
 
         all.put("Fine", "org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton");
         all.put("OK", "org.netbeans.modules.ruby.modules.project.rake.RakeBasedProjectFactorySingleton");
-        all.put("skip", "org.netbeans.modules.autoupdate.featureondemand.FeatureProjectFactory");
-        all.put("test", "org.netbeans.modules.autoupdate.featureondemand.api.TestFactory");
+        all.put("skip", "org.netbeans.modules.ide.ergonomics.fod.FeatureProjectFactory");
+        all.put("test", "org.netbeans.modules.ide.ergonomics.fod.TestFactory");
 
         iterateRegistrations(sb, ProjectFactory.class, null, all);
 

@@ -63,7 +63,22 @@
         </subant>
     </target>
 
-    <target name="-proxy-one-cluster" depends="-init-clusters">
+    <target name="-init-one-cluster-propeties">
+        <pathconvert property="cluster.name">
+            <path location="."/>
+            <mapper type="regexp" from=".*/([a-z]*)[0-9\.]*" to="\1"/>
+        </pathconvert>
+
+        <property name="proxytmp" value="${ergonomicsdir}/build/proxies/${cluster.name}"/>
+        <property name="proxydir" value="${ergonomicsdir}/build/classes/org/netbeans/modules/ide/ergonomics/${cluster.name}"/>
+
+        <available property="proxy.already.generated" file="${proxytmp}/layers"/>
+    </target>
+    <target 
+        name="-proxy-one-cluster"
+        depends="-init-clusters,-init-one-cluster-propeties"
+        unless="proxy.already.generated"
+    >
         <taskdef name="layerindex"
              classname="org.netbeans.nbbuild.LayerIndex"
              classpath="${nb_all}/nbbuild/nbantext.jar"/>
@@ -76,13 +91,6 @@
              classname="org.netbeans.modules.ide.ergonomics.ant.ExtractLayer"
              classpath="${ergonomicsdir}/build/antclasses/"/>
 
-        <pathconvert property="cluster.name">
-            <path location="."/>
-            <mapper type="regexp" from=".*/([a-z]*)[0-9\.]*" to="\1"/>
-        </pathconvert>
-        
-        <property name="proxytmp" value="${ergonomicsdir}/build/proxies/${cluster.name}"/>
-        <property name="proxydir" value="${ergonomicsdir}/build/classes/org/netbeans/modules/ide/ergonomics/${cluster.name}"/>
         <mkdir dir="${proxytmp}/layers"/>
         <copy todir="${proxytmp}/layers">
             <resources refid="layers"/>

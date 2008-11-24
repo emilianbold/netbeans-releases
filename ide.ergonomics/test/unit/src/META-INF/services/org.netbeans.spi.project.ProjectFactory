@@ -1,1 +1,3 @@
-org.netbeans.modules.autoupdate.featureondemand.api.TestFactory
+org.netbeans.modules.ide.ergonomics.fod.TestFactory
+#position=29999
+

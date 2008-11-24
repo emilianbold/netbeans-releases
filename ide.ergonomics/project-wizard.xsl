@@ -22,13 +22,13 @@
     <xsl:template match="attr[@name='instantiatingIterator']" mode="project-wizard">
         <xsl:element name="attr">
             <xsl:attribute name="name">instantiatingIterator</xsl:attribute>
-            <xsl:attribute name="methodvalue">org.netbeans.modules.autoupdate.featureondemand.api.Factory.newProject</xsl:attribute>
+            <xsl:attribute name="methodvalue">org.netbeans.modules.ide.ergonomics.api.Factory.newProject</xsl:attribute>
         </xsl:element>
     </xsl:template>
     <xsl:template match="attr[@name='templateWizardIterator']" mode="project-wizard">
         <xsl:element name="attr">
             <xsl:attribute name="name">instantiatingIterator</xsl:attribute>
-            <xsl:attribute name="methodvalue">org.netbeans.modules.autoupdate.featureondemand.api.Factory.newProject</xsl:attribute>
+            <xsl:attribute name="methodvalue">org.netbeans.modules.ide.ergonomics.api.Factory.newProject</xsl:attribute>
         </xsl:element>
     </xsl:template>
     <xsl:template match="attr" mode="project-wizard">
