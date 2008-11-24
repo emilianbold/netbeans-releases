@@ -39,11 +39,14 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
+import javax.swing.Icon;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ProjectFactory;
@@ -51,6 +54,7 @@ import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -86,7 +90,8 @@ public class FeatureProjectFactory implements ProjectFactory {
     public void saveProject(Project project) throws IOException, ClassCastException {
     }
 
-    private static final class FeatureNonProject extends ProjectOpenedHook implements Project, Runnable {
+    private static final class FeatureNonProject extends ProjectOpenedHook
+    implements Project, Runnable, ProjectInformation {
         private final FileObject dir;
         private final FeatureInfo info;
         private final Lookup lookup;
@@ -145,6 +150,30 @@ public class FeatureProjectFactory implements ProjectFactory {
                 enabler.getEnableTask ().waitFinished ();
                 success = true;
             }
+        }
+
+        public String getName() {
+            return dir.getNameExt();
+        }
+
+        public String getDisplayName() {
+            return getName();
+        }
+
+        public Icon getIcon() {
+            return ImageUtilities.image2Icon(
+                ImageUtilities.loadImage("org/netbeans/modules/ide/ergonomics/fod/project.png") // NOI18N
+            );
+        }
+
+        public Project getProject() {
+            return this;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
         
     }
