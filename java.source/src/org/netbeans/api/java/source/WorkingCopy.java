@@ -125,6 +125,16 @@ public class WorkingCopy extends CompilationController {
     
     // API of the class --------------------------------------------------------
 
+    /**
+     * Returns an instance of the {@link WorkingCopy} for
+     * given {@link Parser.Result} if it is a result
+     * of a java parser.
+     * @param result for which the {@link WorkingCopy} should be
+     * returned.
+     * @return a {@link WorkingCopy} or null when the given result
+     * is not a result of java parsing.
+     * @since 0.42
+     */
     public static WorkingCopy get (final Parser.Result result) {
         Parameters.notNull("result", result); //NOI18N
         WorkingCopy copy = instance != null ? instance.get() : null;
