@@ -114,16 +114,8 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-<<<<<<< /home/hanz/Hanz/Dev/parsing/java.editor/src/org/netbeans/modules/java/editor/semantic/SemanticHighlighter.java.orig.934529990
-||||||| /tmp/SemanticHighlighter.java~base.759WUa
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-=======
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
->>>>>>> /tmp/SemanticHighlighter.java~other.FV5svO
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;

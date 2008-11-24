@@ -96,6 +96,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
+import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenChange;
@@ -129,15 +130,7 @@ import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-<<<<<<< /home/hanz/Hanz/Dev/parsing/java.source/src/org/netbeans/modules/java/source/parsing/JavacParser.java.orig.167211704
-import org.netbeans.api.java.source.JavaParserResultTask;
-||||||| /tmp/JavacParser.java~base.AgbZVU
-import org.netbeans.spi.java.source.JavaParserResultTask;
-=======
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.netbeans.spi.java.source.JavaParserResultTask;
->>>>>>> /tmp/JavacParser.java~other.V_00N3
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

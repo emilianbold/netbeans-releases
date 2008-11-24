@@ -51,6 +51,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.PositionConverter;
@@ -62,14 +63,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
-<<<<<<< /home/hanz/Hanz/Dev/parsing/java.source/src/org/netbeans/modules/java/source/JavaSourceAccessor.java.orig.21554477
-import org.netbeans.api.java.source.JavaParserResultTask;
-||||||| /tmp/JavaSourceAccessor.java~base.KqGAFK
-import org.netbeans.spi.java.source.JavaParserResultTask;
-=======
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.spi.java.source.JavaParserResultTask;
->>>>>>> /tmp/JavaSourceAccessor.java~other.DPDWtU
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
