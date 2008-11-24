@@ -768,5 +768,69 @@ public class BracketCompletionTestCase extends EditorBase  {
             "d|"
             );
     }
+    
+    // test line break
+    
+    public void testBreakLineInString1() throws Exception {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "char* a = \"|\"");
+        breakLine();
+        assertDocumentTextAndCaret("Incorrect identing of main",
+                "char* a = \"\"\n" +
+                "\"|\"");
+    }    
 
+    public void testBreakLineInString2() throws Exception {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "           char* a = \"\\|\"");
+        breakLine();
+        assertDocumentTextAndCaret("Incorrect identing of main",
+                "           char* a = \"\\\n" +
+                "|\"");
+    }     
+
+    public void testBreakLineInString2_1() throws Exception {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "           char* a = \"\\\\|\"");
+        breakLine();
+        // TODO: second line should be in the first column after fixing bug in indentation
+        assertDocumentTextAndCaret("Incorrect identing of main",
+                "           char* a = \"\\\\\"\n" +
+                "           \"|\"");
+    }
+
+    public void testBreakLineInString3() throws Exception {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "             char* a = \"\\|");
+        breakLine();
+        assertDocumentTextAndCaret("Incorrect identing of main",
+                "             char* a = \"\\\n" +
+                "|");
+    }    
+    
+    public void testBreakLineAfterLCurly() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "void foo() {|");
+        breakLine();
+        assertDocumentTextAndCaret("Incorrect identing of main",
+                "void foo() {\n" +
+                "    |\n" +
+                "}");
+    }
+    
+    public void testBreakLineAfterLCurly2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "struct A {|");
+        breakLine();
+        assertDocumentTextAndCaret("Incorrect identing of main",
+                "struct A {\n" +
+                "    |\n" +
+                "};");
+    }    
 }

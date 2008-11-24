@@ -53,6 +53,7 @@ import org.openide.nodes.Node;
  *
  * @author Lukas Jungmann
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-j2ee-earproject", position=300)
 public class ModuleNodeFactory implements NodeFactory {
 
     public ModuleNodeFactory() {

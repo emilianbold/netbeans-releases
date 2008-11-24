@@ -82,7 +82,10 @@ public class ConstructorPanel extends javax.swing.JPanel {
     private void initPanel(CGSGenerator.GenType genType) {
         String panelTitle = "";                     //NOI18N
         boolean customizeMethodGeneration = true;
-        String name = properties.get(0).getName();
+        String name = "";
+        if (properties.size() > 0) {
+            name = properties.get(0).getName();
+        }
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         switch (genType) {
             case CONSTRUCTOR:

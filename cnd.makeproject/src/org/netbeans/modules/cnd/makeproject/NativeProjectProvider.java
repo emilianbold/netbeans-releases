@@ -454,13 +454,13 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         boolean ccFiles = false;
         boolean libsChanged = false;
         boolean projectChanged = false;
-        VectorConfiguration cIncludeDirectories;
+        VectorConfiguration<String> cIncludeDirectories;
         BooleanConfiguration cInheritIncludes;
-        VectorConfiguration cPpreprocessorOption;
+        VectorConfiguration<String> cPpreprocessorOption;
         BooleanConfiguration cInheritMacros;
-        VectorConfiguration ccIncludeDirectories;
+        VectorConfiguration<String> ccIncludeDirectories;
         BooleanConfiguration ccInheritIncludes;
-        VectorConfiguration ccPreprocessorOption;
+        VectorConfiguration<String> ccPreprocessorOption;
         BooleanConfiguration ccInheritMacros;
         Item[] items;
 

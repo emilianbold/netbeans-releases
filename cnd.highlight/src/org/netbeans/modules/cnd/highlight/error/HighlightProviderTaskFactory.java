@@ -129,7 +129,7 @@ public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory 
             return false;
         }
 
-        protected class MyInterruptor implements Interrupter, Cancellable {
+        protected static class MyInterruptor implements Interrupter, Cancellable {
             private boolean canceled = false;
             public boolean cancelled() {
                 return canceled;

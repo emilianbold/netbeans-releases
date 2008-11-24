@@ -39,9 +39,7 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus;
 
-import java.util.List;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -74,17 +72,20 @@ public class CsmCodeTemplateFilter implements CodeTemplateFilter {
     }
 
     private CppTokenId getID(JTextComponent component, int offset) {
-        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(component, offset);
-        if (ts != null && ts.movePrevious()) {
-            Token<CppTokenId> token = ts.token();
-            return token.id();
+        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(component, offset, true, false);
+        if (ts != null) {
+            if (ts.offset() <= offset) {
+                if (!ts.movePrevious()) {
+                    return CppTokenId.ERROR;
+                }
+            }
+            return ts.token().id();
         } else {
             return CppTokenId.ERROR;
         }
     }
 
     private boolean isTemplateContext(CodeTemplate template) {
-        List<String> contexts = template.getContexts();
         boolean res = true;
         switch (this.id) {
             case DOT:

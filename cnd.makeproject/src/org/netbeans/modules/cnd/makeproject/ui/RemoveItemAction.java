@@ -71,7 +71,7 @@ public class RemoveItemAction extends NodeAction {
 	    Folder folder = (Folder)n.getValue("Folder"); // NOI18N
 	    Item item = (Item)n.getValue("Item"); // NOI18N
             
-            ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
             MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
             if (!makeConfigurationDescriptor.okToChange()) {
                 return;

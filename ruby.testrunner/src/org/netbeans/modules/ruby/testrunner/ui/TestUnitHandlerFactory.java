@@ -40,11 +40,10 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
 import org.openide.util.NbBundle;
@@ -55,11 +54,15 @@ import org.openide.util.NbBundle;
  *
  * @author Erno Mononen
  */
-public class TestUnitHandlerFactory {
+public class TestUnitHandlerFactory implements TestHandlerFactory {
 
     private static final Logger LOGGER = Logger.getLogger(TestUnitHandlerFactory.class.getName());
 
-    public static List<TestRecognizerHandler> getHandlers() {
+    public boolean printSummary() {
+        return true;
+    }
+
+    public List<TestRecognizerHandler> createHandlers() {
         List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
         result.add(new SuiteStartingHandler());
         result.add(new SuiteStartedHandler());
@@ -140,8 +143,8 @@ public class TestUnitHandlerFactory {
         }
 
         @Override
-        RecognizedOutput getRecognizedOutput() {
-            return new FilteredOutput(output.toArray(new String[output.size()]));
+        List<String> getRecognizedOutput() {
+            return new ArrayList<String>(output);
         }
     }
 
@@ -192,8 +195,8 @@ public class TestUnitHandlerFactory {
         }
 
         @Override
-        RecognizedOutput getRecognizedOutput() {
-            return new FilteredOutput(output.toArray(new String[output.size()]));
+        List<String> getRecognizedOutput() {
+            return new ArrayList<String>(output);
         }
     }
 
@@ -304,8 +307,8 @@ public class TestUnitHandlerFactory {
         }
 
         @Override
-        RecognizedOutput getRecognizedOutput() {
-            return new FilteredOutput(matcher.group(1));
+        List<String> getRecognizedOutput() {
+            return Collections.<String>singletonList(matcher.group(1));
         }
 
     }

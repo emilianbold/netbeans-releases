@@ -69,8 +69,8 @@ public class PackagingConfiguration {
     private MakeConfiguration makeConfiguration;    // Types
     private StringConfiguration type;
     private BooleanConfiguration verbose;
-    private VectorConfiguration info;
-    private VectorConfiguration files;
+    private VectorConfiguration<PackagerInfoElement> info;
+    private VectorConfiguration<PackagerFileElement> files;
     private StringConfiguration output;
     private StringConfiguration tool;
     private StringConfiguration options;
@@ -80,8 +80,8 @@ public class PackagingConfiguration {
         this.makeConfiguration = makeConfiguration;
         type = new StringConfiguration(null, "Tar"); // NOI18N // Fixup: better default...
         verbose = new BooleanConfiguration(null, true);
-        info = new VectorConfiguration(null); // NOI18N
-        files = new VectorConfiguration(null); // NOI18N
+        info = new VectorConfiguration<PackagerInfoElement>(null); // NOI18N
+        files = new VectorConfiguration<PackagerFileElement>(null); // NOI18N
         output = new StringConfiguration(null, ""); // NOI18N
         tool = new StringConfiguration(null, ""); // NOI18N
         options = new StringConfiguration(null, ""); // NOI18N
@@ -150,7 +150,7 @@ public class PackagingConfiguration {
         if (files.getValue().size() != 1) {
             return true;
         }
-        for (PackagerFileElement elem : (List<PackagerFileElement>)files.getValue()) {
+        for (PackagerFileElement elem : files.getValue()) {
             if (!elem.isDefaultValue()) {
                 return true;
             }
@@ -197,19 +197,19 @@ public class PackagingConfiguration {
         this.verbose = verbose;
     }
 
-    public VectorConfiguration getInfo() {
+    public VectorConfiguration<PackagerInfoElement> getInfo() {
         return info;
     }
 
-    public void setInfo(VectorConfiguration svr4Header) {
+    public void setInfo(VectorConfiguration<PackagerInfoElement> svr4Header) {
         this.info = svr4Header;
     }
 
-    public VectorConfiguration getFiles() {
+    public VectorConfiguration<PackagerFileElement> getFiles() {
         return files;
     }
 
-    public void setFiles(VectorConfiguration files) {
+    public void setFiles(VectorConfiguration<PackagerFileElement> files) {
         this.files = files;
     }
 
@@ -263,8 +263,8 @@ public class PackagingConfiguration {
         PackagingConfiguration clone = new PackagingConfiguration(getMakeConfiguration());
         clone.setType((StringConfiguration) getType().clone());
         clone.setVerbose((BooleanConfiguration) getVerbose().clone());
-        clone.setInfo((VectorConfiguration) getInfo().clone());
-        clone.setFiles((VectorConfiguration) getFiles().clone());
+        clone.setInfo(getInfo().cloneConf());
+        clone.setFiles(getFiles().cloneConf());
         clone.setOutput((StringConfiguration) getOutput().clone());
         clone.setTool((StringConfiguration) getTool().clone());
         clone.setOptions((StringConfiguration) getOptions().clone());
@@ -456,7 +456,7 @@ public class PackagingConfiguration {
         return packager.getDefaultOptions();
     }
 
-    private class OutputNodeProp extends StringNodeProp {
+    private static class OutputNodeProp extends StringNodeProp {
 
         public OutputNodeProp(StringConfiguration stringConfiguration, String def, String txt1, String txt2, String txt3) {
             super(stringConfiguration, def, txt1, txt2, txt3);

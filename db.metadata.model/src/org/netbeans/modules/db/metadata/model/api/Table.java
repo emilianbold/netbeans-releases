@@ -46,7 +46,7 @@ import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
  *
  * @author Andrei Badea
  */
-public class Table extends MetadataElement {
+public class Table extends Tuple {
 
     final TableImplementation impl;
 
@@ -72,25 +72,21 @@ public class Table extends MetadataElement {
         return impl.getName();
     }
 
-    /**
-     * Returns the columns in this table.
-     *
-     * @return the columns.
-     * @throws MetadataException if an error occurs while retrieving the metadata.
-     */
+    @Override
     public Collection<Column> getColumns() {
         return impl.getColumns();
     }
 
-    /**
-     * Returns the column with the given name.
-     *
-     * @param name a column name.
-     * @return a column named {@code name} or {@code null} if there is no such column.
-     * @throws MetadataException if an error occurs while retrieving the metadata.
-     */
+    @Override
     public Column getColumn(String name) {
         return impl.getColumn(name);
+    }
+
+    /**
+     * Refresh the table metadata from the database
+     */
+    public void refresh() {
+        impl.refresh();
     }
 
     @Override

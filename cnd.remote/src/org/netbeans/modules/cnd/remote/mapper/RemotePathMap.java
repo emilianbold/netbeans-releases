@@ -106,11 +106,15 @@ public class RemotePathMap implements PathMap {
                     if (file.exists() && file.canRead()) {
                         try {
                             BufferedReader in = new BufferedReader(new FileReader(file));
-                            while ((line = in.readLine()) != null) {
-                                int pos = line.indexOf(' ');
-                                if (pos > 0) {
-                                    map.put(line.substring(0, pos), line.substring(pos + 1).trim());
+                            try {
+                                while ((line = in.readLine()) != null) {
+                                    int pos = line.indexOf(' ');
+                                    if (pos > 0) {
+                                        map.put(line.substring(0, pos), line.substring(pos + 1).trim());
+                                    }
                                 }
+                            } finally {
+                                in.close();
                             }
                         } catch (IOException ioe) {
                         }
@@ -134,6 +138,7 @@ public class RemotePathMap implements PathMap {
             }
         }
     }
+
     // PathMap
     public String getRemotePath(String lpath) {
         String ulpath = unifySeparators(lpath);
@@ -230,9 +235,9 @@ public class RemotePathMap implements PathMap {
         synchronized( map ) {
             map.clear();
             StringBuilder sb = new StringBuilder();
-            for (String path : newPathMap.keySet()) {
-                String remotePath = fixEnding(newPathMap.get(path));
-                path = fixEnding(path);
+            for (Map.Entry<String, String> entry : newPathMap.entrySet()) {
+                String remotePath = fixEnding(entry.getValue());
+                String path = fixEnding(entry.getKey());
                 map.put(path, remotePath);
                 sb.append( fixEnding(path) );
                 sb.append(DELIMITER);

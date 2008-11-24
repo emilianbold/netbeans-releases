@@ -58,6 +58,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.queue.RepositoryQueue;
 import org.netbeans.modules.cnd.repository.queue.RepositoryThreadManager;
 import org.netbeans.modules.cnd.repository.queue.RepositoryWriter;
@@ -65,7 +66,6 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
-import org.netbeans.modules.cnd.repository.util.RepositoryExceptionImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 
 /**
@@ -141,7 +141,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
             queue.addLast(key, obj);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    key.getUnit().toString(),new RepositoryExceptionImpl(ex));
+                    key.getUnit().toString(), new RepositoryException(ex));
         }
     }
     
@@ -150,7 +150,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
             getCreateUnit(key).hang(key, obj);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    key.getUnit().toString(),new RepositoryExceptionImpl(ex));
+                    key.getUnit().toString(), new RepositoryException(ex));
         }
     }
 
@@ -165,18 +165,18 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
             }
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    key.getUnit().toString(), new RepositoryExceptionImpl(ex));
+                    key.getUnit().toString(), new RepositoryException(ex));
         }
     }    
     
-   public Persistent get(Key key) {
-       try {
+    public Persistent get(Key key) {
+        try {
             return getCreateUnit(key).get(key);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    key.getUnit().toString(),new RepositoryExceptionImpl(ex));
+                    key.getUnit().toString(), new RepositoryException(ex));
         }
-       return null;
+        return null;
     }
     
     public Persistent tryGet(Key key) {
@@ -184,7 +184,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
             return getCreateUnit(key).tryGet(key);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    key.getUnit().toString(),new RepositoryExceptionImpl(ex));
+                    key.getUnit().toString(), new RepositoryException(ex));
         }
        return null;
     }   
@@ -196,7 +196,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
             queue.addLast(key, removedObject);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    key.getUnit().toString(),new RepositoryExceptionImpl(ex));
+                    key.getUnit().toString(), new RepositoryException(ex));
         }
     }    
     
@@ -243,7 +243,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
                 }
             } catch (IOException ex) {
                 RepositoryListenersManager.getInstance().fireAnException(
-                        unitList[i].getName(), new RepositoryExceptionImpl(ex));
+                        unitList[i].getName(), new RepositoryException(ex));
             }
             timeout -= (System.currentTimeMillis() - start);
         }
@@ -257,7 +257,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
             }
         } catch (Throwable exc) {
             RepositoryListenersManager.getInstance().fireAnException(unitName, 
-                    new RepositoryExceptionImpl(exc));
+                    new RepositoryException(exc));
         }
     }
 
@@ -288,7 +288,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
                     unit.close();
                 } catch (Throwable exc) {
                     RepositoryListenersManager.getInstance().fireAnException(unitName, 
-                            new RepositoryExceptionImpl(exc));
+                            new RepositoryException(exc));
                 }
             }
             
@@ -385,7 +385,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
             return unit.getMaintenanceWeight();
         } catch (IOException ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    unit.getName(), new RepositoryExceptionImpl(ex));
+                    unit.getName(), new RepositoryException(ex));
         }
         return 0;
     }

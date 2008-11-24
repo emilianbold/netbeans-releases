@@ -40,8 +40,6 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.ruby.testrunner.RspecRunner;
 
@@ -51,9 +49,13 @@ import org.netbeans.modules.ruby.testrunner.RspecRunner;
  *
  * @author Erno Mononen
  */
-public class RspecHandlerFactory {
+public class RspecHandlerFactory implements TestHandlerFactory {
 
-    public static  List<TestRecognizerHandler> getHandlers() {
+    public boolean printSummary() {
+        return false;
+    }
+
+    public List<TestRecognizerHandler> createHandlers() {
         List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
         result.add(new SuiteStartingHandler());
         result.add(new SuiteStartedHandler());
@@ -91,8 +93,11 @@ public class RspecHandlerFactory {
         }
 
         @Override
-        RecognizedOutput getRecognizedOutput() {
-            return new FilteredOutput(matcher.group(3), matcher.group(4));
+        List<String> getRecognizedOutput() {
+            List<String> result = new ArrayList<String>(2);
+            result.add(matcher.group(3));
+            result.add(matcher.group(4));
+            return result;
         }
         
         private String[] filterStackTrace(String... stackTrace) {

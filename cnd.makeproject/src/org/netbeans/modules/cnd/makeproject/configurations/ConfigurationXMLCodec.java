@@ -103,11 +103,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private LinkerConfiguration currentLinkerConfiguration = null;
     private PackagingConfiguration currentPackagingConfiguration = null;
     private ArchiverConfiguration currentArchiverConfiguration = null;
-    private LibrariesConfiguration currentLibrariesConfiguration = null;
-    private RequiredProjectsConfiguration currentRequiredProjectsConfiguration = null;
+    private LibrariesConfiguration<LibraryItem> currentLibrariesConfiguration = null;
+    private RequiredProjectsConfiguration<LibraryItem> currentRequiredProjectsConfiguration = null;
     private List<String> currentList = null;
     private int defaultConf = 0;
-    private Stack /*<Folder>*/ currentFolderStack = new Stack();
+    private Stack<Folder> currentFolderStack = new Stack<Folder>();
     private Folder currentFolder = null;
     private String relativeOffset;
     private Map<String, String> cache = new HashMap<String, String>();
@@ -197,7 +197,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 }
             }
         } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
-            currentList = new ArrayList();
+            currentList = new ArrayList<String>();
         } else if (element.equals(ItemXMLCodec.ITEM_ELEMENT)) {
             String path = atts.getValue(0);
             path = getString(adjustOffset(path));
@@ -427,7 +427,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(LOGICAL_FOLDER_ELEMENT)) {
             currentFolderStack.pop();
             if (currentFolderStack.size() > 0) {
-                currentFolder = (Folder) currentFolderStack.peek();
+                currentFolder = currentFolderStack.peek();
             } else {
                 currentFolder = null;
             }

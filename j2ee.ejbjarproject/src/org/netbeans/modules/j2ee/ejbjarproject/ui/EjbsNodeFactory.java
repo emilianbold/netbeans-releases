@@ -57,6 +57,7 @@ import org.openide.nodes.Node;
  * 
  * @author gpatil
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-j2ee-ejbjarproject", position=100)
 public class EjbsNodeFactory implements NodeFactory {
 
     public EjbsNodeFactory() {

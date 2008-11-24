@@ -58,16 +58,13 @@ made subject to such option by the copyright holder.
      <li><a href="#class-path">Extensions using <code>Class-Path</code></a></li>
      <li><a href="#libs">Startup Libraries</a></li>
      <li><a href="#patches-l10n">Patches and Localizations</a></li>
-     <li><a href="#special-modules">Eager and Autoload Modules, Test-Mode Modules, and Manually Installed Modules</a></li>
      <li><a href="#prov-req">Provide-Require Dependencies</a></li>
      <li><a href="#public-packages">Dependencies and Package Restrictions</a></li>
     </ul>
    </li>
    <li><a href="#syscl">The System Class Loader, Thread Context Class Loading, and <code>nbres:</code></a></li>
-   <li><a href="#overlaps">Package Overlaps and "Parallel" Libraries</a></li>
-   <li><a href="#troubleshooting">Examining Your "Class Path" and Preresolving Classes</a></li>
+   <li><a href="#overlaps">"Parallel" Libraries</a></li>
    <li><a href="#q-and-a">Common Problems and Solutions</a></li>
-   <li><a href="#apologia">Why is This So Darn Complicated Anyway?</a></li>
   </ul>
 
   <h1><a name="intro">Introduction</a></h1>
@@ -207,10 +204,10 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.a
    to name extension JARs precisely (i.e., include the version number).
   </p>
   <p>
-   For example, a module <samp><i>$NBHOME</i>/modules/module.jar</samp> would
+   For example, a module <samp><i>$cluster</i>/modules/module.jar</samp> would
    refer to the extensions
-   <samp><i>$NBHOME</i>/modules/ext/library-a-1.0.jar</samp> and
-   <samp><i>$NBHOME</i>/modules/ext/library-b-1.1.jar</samp> this way:
+   <samp><i>$cluster</i>/modules/ext/library-a-1.0.jar</samp> and
+   <samp><i>$cluster</i>/modules/ext/library-b-1.1.jar</samp> this way:
   </p>
   <pre>
 Class-Path: ext/library-a-1.0.jar ext/library-b-1.1.jar
@@ -269,32 +266,10 @@ Class-Path: ext/library-a-1.0.jar ext/library-b-1.1.jar
 
   <p>
    In a given NetBeans release, there are several libraries placed in the
-   <samp>lib/</samp> and <samp>lib/ext/</samp> subdirectories of the NetBeans
-   installation. These are referred to as <em>startup libraries</em>. They fall
-   into a few categories in regard to how they may be used by modules.
+   <samp>lib/</samp> and <samp>core/</samp> subdirectories of the NetBeans
+   installation. These are referred to as <em>startup libraries</em>.
+   If you need to use classes from them, just declare regular module dependencies.
   </p>
-
-  <dl>
-
-   <dt>The Core</dt>
-
-   <dd>
-    <p>
-     <samp>lib/core*.jar</samp> and <samp>lib/ext/boot.jar</samp> contain various
-     pieces of the NetBeans core implementation. These are <em>not</em> available
-     for use by modules. A handful of NetBeans modules have special reasons to
-     interact directly with the core - for example, Auto Update sometimes needs
-     to cooperate with it in order to install new modules - but the mechanisms
-     for gaining access to core classes are not supported (subject to change
-     without notice).
-    </p>
-    <p>
-     <samp>lib/updater.jar</samp> is used only by the Auto Update module, and is
-     not accessible to other modules.
-    </p>
-   </dd>
-
-  </dl>
 
   <h2><a name="patches-l10n">Patches and Localizations</a></h2>
 
@@ -327,60 +302,23 @@ Class-Path: ext/library-a-1.0.jar ext/library-b-1.1.jar
    files, which must be named according to the locale and placed in a
    subdirectory named <samp>locale/</samp> beneath the directory in which the
    module JAR resides. For example, a Japanese localization of a module
-   <samp><i>$NBHOME</i>/modules/module.jar</samp> would be named
-   <samp><i>$NBHOME</i>/modules/locale/module_ja.jar</samp>.
+   <samp><i>$cluster</i>/modules/module.jar</samp> would be named
+   <samp><i>$cluster</i>/modules/locale/module_ja.jar</samp>.
   </p>
   <p>
    Analogously, a module may be <em>branded</em> to adjust it to use in a
    specific product, using essentially the same mechanism. The module just
    mentioned could have a few text changes made for a product branding named
    <samp>myapp</samp> by creating a file named
-   <samp><i>$NBHOME</i>/modules/locale/module_myapp.jar</samp>. Locales and
+   <samp><i>$cluster</i>/modules/locale/module_myapp.jar</samp>. Locales and
    brandings are orthogonal, so a Belgian French translation of text strings
    specific to MyApp Community Edition might be kept in
-   <samp><i>$NBHOME</i>/modules/locale/module_myapp_ce_fr_BE.jar</samp>.
+   <samp><i>$cluster</i>/modules/locale/module_myapp_ce_fr_BE.jar</samp>.
   </p>
   <p>
    All applicable locale and branding variants of module JARs are placed in the
    same classloader as the module itself. Only variant JARs which actually apply
    at runtime (according to the current locale and branding) will be loaded.
-  </p>
-
-  <h2><a name="special-modules">Eager and Autoload Modules, Test-Mode Modules, and Manually Installed Modules</a></h2>
-
-  <p>
-   While in many cases, modules live in the <samp><i>$NBHOME</i>/modules/</samp>
-   directory, or the matching <samp><i>$NBUSER</i>/modules/</samp> part of the
-   user directory, this is not always true, and it is worth mentioning how the
-   location of a module defines the locations of associated JARs.
-  </p>
-  <blockquote>
-   <p>
-    <em>
-     Extensions using <code>Class-Path</code>, patches, and locale and branding
-     variants of a module are always located relative to the actual position of
-     the module JAR, wherever that might be.
-    </em>
-   </p>
-  </blockquote>
-  <p>
-   The user of a NetBeans installation has the option of installing a module JAR
-   from any location on disk. Therefore, any extensions or locale variants must
-   be found in corresponding locations, <em>not</em> inside the NetBeans
-   installation.
-  </p>
-  <p>
-   Developers of NetBeans modules can additionally install them in <em>test
-   mode</em>, where they are loaded in such a way that it is safe to reload them
-   after making changes. (Currently this involves making a temporary copy of the
-   JAR which is loaded in its stead.) Again, any extensions must be found
-   relative to the actual position of the JAR, not placed in the NetBeans
-   installation. <strong>Note:</strong> reloading a test module will generally
-   <em>not</em> reload its extensions too. If you need to test changes to a
-   module's extensions as well as the module itself, it is recommended that the
-   test-mode JAR be built with all extension classes and resources directly
-   included; the extensions can still be kept in separate JARs at production
-   time.
   </p>
 
   <h2><a name="prov-req">Provide-Require Dependencies</a></h2>
@@ -517,7 +455,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.a = 1.0-alpha-2
    Finding the system class loader is easy using lookup:
   </p>
   <pre>
-<span class="type">ClassLoader</span> <span class="variable-name">syscl</span> = (<span class="type">ClassLoader</span>)Lookup.getDefault().lookup(ClassLoader.<span class="keyword">class</span>);
+<span class="type">ClassLoader</span> <span class="variable-name">syscl</span> = Lookup.getDefault().lookup(ClassLoader.<span class="keyword">class</span>);
   </pre>
   <p>
    This class loader is also the
@@ -620,13 +558,44 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.a = 1.0-alpha-2
    <code>nbresloc</code> in place of <code>nbres</code>.
   </p>
 
-  <h1><a name="overlaps">Package Overlaps and "Parallel" Libraries</a></h1>
+  <h1><a name="overlaps">"Parallel" Libraries</a></h1>
 
-  <p><strong>XXX</strong></p>
-
-  <h1><a name="troubleshooting">Examining Your "Class Path" and Preresolving Classes</a></h1>
-
-  <p><strong>XXX - also org.netbeans.core.modules=0, printing class loaders, code source, ...</strong></p>
+  <p>
+      It is possible for two modules to include classes with the same (fully-qualified) names, so long as the modules have distinct code name bases.
+      This can be useful in case you want to ship several versions of a third-party library.
+      For example, you could have modules <code>org.apache.log4j.v1</code> and <code>org.apache.log4j.v2</code>
+      both including <code>org.apache.log4j.**</code> classes and exposing these packages as public.
+      Some modules can depend on and use version 1 while other modules depend on and use version 2.
+      Potential problems you might run into:
+  </p>
+  <ul>
+      <li>
+          <p>
+              The <a href="#syscl">context class loader</a> will refuse to load <em>any</em> of the duplicated classes.
+              (It could not know which you meant to load.)
+              You would need to pass a specific <code>ClassLoader</code> to any code which needed it.
+          </p>
+      </li>
+      <li>
+          <p>
+              <code>nbres</code>-protocol URLs will similarly not work for duplicated resources.
+          </p>
+      </li>
+      <li>
+          <p>
+              Some third-party libraries, including Xerces, perversely use the thread context class loader
+              to load some classes which are in their own JARs, even though they could just use the class
+              loader which loaded the calling code. Such calls will fail. You can work around this by
+              temporarily setting the thread CCL to that of the desired library module, restoring it
+              in a <code>finally</code> block.
+          </p>
+      </li>
+      <li>
+          <p>
+              A given module cannot depend on both of these library modules at once - it would not know which to load.
+          </p>
+      </li>
+  </ul>
 
   <h1><a name="q-and-a">Common Problems and Solutions</a></h1>
 
@@ -636,31 +605,8 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.a = 1.0-alpha-2
    In some cases an error is caused by a simple mistake that can be corrected
    just as simply; in other cases, you may need to consider the design of your
    module and how it can work smoothly in NetBeans.
+   The developer's FAQ is likely to have more recent answers to your questions.
   </p>
-
-  <h2>I am confused by the difference between the module "class path" and the <b>Filesystems</b> tab in the Explorer</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>My module seems to run, but there is a warning message in the log file</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>My module compiles, but throws <code>NoClassDefFoundError</code> when I run it</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>I get a <code>ClassCastException</code>, but the "incorrect class" is actually the one I cast to</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>My module stopped working after I ran an obfuscator on it</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>I can only load some classes in a certain package that I have in two modules</h2>
-
-  <p><strong>XXX</strong></p>
 
   <h2><a name="default_package">I am getting warnings when trying to access resources from the default (root, unnamed) package</a></h2>
 
@@ -671,54 +617,6 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.a = 1.0-alpha-2
      You can suppress the warning using <code>-J-Dorg.netbeans.ProxyClassLoader.level=1000</code> command
      line switch.
   </p>
-
-  <h2>I tried to override a common library with my own version but I get the wrong copy of classes</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>I have a dependency on another module but still cannot access any/some classes in it</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>Patching someone else's module using <samp>lib/patches/</samp> gave me errors</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>I am trying to use internal execution and I get a strange warning in the status bar</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>I used <code>Class-Path</code> from my autoload module but it has no effect</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2><code>Class-Path</code> works in my module if I install it normally, but not in test mode</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>I want two or more of my modules to be able to refer to each other, but they cannot both do so</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>A little bit of one of my modules depends on another, but I do not want a dependency just for this</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>I need to supply two different versions of the same library</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>I made my own <code>ClassLoader</code> and now I just get <code>SecurityException</code>s when I try to use it</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>Users ought to be able to add JARs to my module's class path to extend it</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>Users should be able to compile and/or run their own apps with some of my JARs in the class path</h2>
-
-  <p><strong>XXX</strong></p>
 
   <h2>I would like to use <samp>%CLASSPATH%</samp> / <samp>$CLASSPATH</samp></h2>
 
@@ -731,7 +629,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.a = 1.0-alpha-2
      <code>--cp:a</code> or <code>--cp:p</code> options of launcher can be used.
  </p>
 
-  <h2>Using <samp>lib/ext/</samp> or <samp>-cp</samp> sounds much easier but someone told me not to do it</h2>
+  <h2>Using <samp>lib/*.jar</samp> or <samp>-cp</samp> sounds much easier but someone told me not to do it</h2>
 
   <p>The reason is similar to why JDK documentation about setting the class path for
      <a href="http://java.sun.com/j2se/1.5.0/docs/tooldocs/windows/classpath.html">Windows</a> or
@@ -742,22 +640,6 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.a = 1.0-alpha-2
      Use of <samp>--cp</samp> affects all modules and for example prevents the possibility 
      to have more modules depending on different version of the same library.
   </p>
-
-  <h2>I need to install a JDBC driver, JNDI provider, Logging implementation, Look &amp; Feel, XML parser, XSLT processor, ...</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>Some of my code uses JNI-based native libraries but I get <code>UnsatisfiedLinkError</code>s</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>I had problems reloading a module using JNI</h2>
-
-  <p><strong>XXX</strong></p>
-
-  <h2>I want a clean architecture to separate my API/SPI, one or more implementations, a GUI, and clients</h2>
-
-  <p><strong>XXX</strong></p>
 
   <h2>I need to add a library JAR from outside the NetBeans installation</h2>
   
@@ -868,10 +750,6 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.a = 1.0-alpha-2
 
   </ol>
     
-  <h1><a name="apologia">Why is This So Darn Complicated Anyway?</a></h1>
-
-  <p><strong>XXX</strong></p>
-
   <hr/><p>@FOOTER@</p>
  </body>
 </html>

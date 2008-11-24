@@ -88,7 +88,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
-import org.netbeans.modules.ruby.RubyMimeResolver;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.elements.IndexedClass;
@@ -180,7 +180,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                     String name = tph.getName();
                 
                     // Find overrides of the class
-                    RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
+                    RubyIndex index = RubyIndex.get(info.getIndex(RubyUtils.RUBY_MIME_TYPE), info.getFileObject());
                     String fqn = AstUtilities.getFqnName(tph.getPath());
                     Set<IndexedClass> classes = index.getSubClasses(null, fqn, name, isFindDirectSubclassesOnly());
 

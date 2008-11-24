@@ -142,7 +142,13 @@ made subject to such option by the copyright holder.
         </path>
     </target>
 
-    <target name="test-lib-init" depends="init,-delete-suite-masks">
+    <target name="test-lib-init" depends="init">
+        <!-- NbModuleSuite must be made to ignore disabled.modules during a test; see discussion in #136621: -->
+        <delete failonerror="false">
+            <fileset dir="${suite.dir}">
+                <include name="build/cluster/config/Modules/*.xml_hidden"/>
+            </fileset>
+        </delete>
         <path id="test.unit.lib.cp">
             <pathelement path="${test.unit.lib.cp}"/> <!-- for manual override -->
             <!-- As a fallback for old platforms which do not include the right modules: -->
@@ -153,15 +159,6 @@ made subject to such option by the copyright holder.
                 <include name="*/modules/ext/junit-*.jar"/>
             </fileset>
         </path>
-    </target>
-
-    <target name="-delete-suite-masks" if="suite.dir">
-        <!-- NbModuleSuite must be made to ignore disabled.modules during a test; see discussion in #136621: -->
-        <delete>
-            <fileset dir="${suite.dir}">
-                <include name="build/cluster/config/Modules/*.xml_hidden"/>
-            </fileset>
-        </delete>
     </target>
 
     <target name="javahelp" depends="init" if="has.javahelp">

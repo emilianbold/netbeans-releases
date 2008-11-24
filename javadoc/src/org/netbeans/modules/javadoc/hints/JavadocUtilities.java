@@ -512,6 +512,7 @@ public class JavadocUtilities {
                 }
                 
                 doc = searchInInterfaces(javac, class2query, overriderClass, overrider, exclude);
+                loadInheritedContext(javac, doc);
             } else {
                 break;
             }
@@ -547,6 +548,18 @@ public class JavadocUtilities {
             }
         }
         return null;
+    }
+
+    /**
+     * Resolves java types for inherited javadoc. It is necessary to call before
+     * invoking e.g. {@code ThrowsTag.exceptionType()}. The present implementation
+     * of JavadocEnv creates inherited javadocs in the separate javac instance
+     * (see method {@code JavadocEnv.getRawCommentFor()}).
+     * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=153352">Issue 153352</a>
+     */
+    private static void loadInheritedContext(CompilationInfo javac, MethodDoc doc) {
+        Element elm = javac.getElementUtilities().elementFor(doc);
+        Tree tree = javac.getTrees().getTree(elm);
     }
     
     public static void open(final FileObject fo, final int offset) {

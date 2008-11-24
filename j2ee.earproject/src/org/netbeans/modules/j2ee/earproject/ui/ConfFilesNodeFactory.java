@@ -54,7 +54,9 @@ import org.openide.nodes.Node;
 /**
  *
  * @author Lukas Jungmann
- */ public class ConfFilesNodeFactory implements NodeFactory {
+ */
+@NodeFactory.Registration(projectType="org-netbeans-modules-j2ee-earproject", position=100)
+public class ConfFilesNodeFactory implements NodeFactory {
 
     public ConfFilesNodeFactory() {
     }

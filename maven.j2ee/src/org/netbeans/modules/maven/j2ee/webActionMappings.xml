@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
         </properties>
     </action>
     <action>
-        <actionName>run.single</actionName>
+        <actionName>run.single.deploy</actionName>
         <packagings>
             <packaging>war</packaging>
         </packagings>
@@ -85,7 +85,7 @@ made subject to such option by the copyright holder.
         </properties>
     </action>
     <action>
-        <actionName>debug.single</actionName>
+        <actionName>debug.single.deploy</actionName>
         <packagings>
             <packaging>war</packaging>
         </packagings>

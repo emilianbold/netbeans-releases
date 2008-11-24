@@ -7,7 +7,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.xml.text.syntax.XMLKit;
 
 /**
  *
@@ -45,7 +44,7 @@ public class JSFEditorUtilitiesTest extends NbTestCase {
     }
 
     private BaseDocument createBaseDocument(File file){
-        BaseDocument doc = new BaseDocument(XMLKit.class, false);
+        BaseDocument doc = new BaseDocument(false, "text/xml");
         StringBuffer buffer = new StringBuffer();
         try {
             FileReader reader = new FileReader (file);

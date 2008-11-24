@@ -92,7 +92,7 @@ public class FFExtensionManager {
     private static final String PROFILE_LOCK_WINDOWS = "parent.lock";
     private static final String PROFILE_LOCK = "lock";
     
-    private static final String FIREBUG_1_2_MIN_VERSION = "1.2.1";
+    private static final String FIREBUG_1_2_MIN_VERSION = "1.3.0b3";
     
     private static final String EXTENSION_CACHE = "extensions.cache";
     private static final String UNINSTALL_KEYWORD = "needs-uninstall";
@@ -100,7 +100,7 @@ public class FFExtensionManager {
     
     private static final String FIREBUG_EXTENSION_ID = "firebug@software.joehewitt.com"; // NOI18N
     
-    private static final String FIREBUG_EXTENSION_PATH = "modules/ext/firebug-1.2.1-fx.xpi"; // NOI18N
+    private static final String FIREBUG_EXTENSION_PATH = "modules/ext/firebug-1.3.0b3.xpi"; // NOI18N
                
     private static final String FIREFOX_EXTENSION_ID = "netbeans-firefox-extension@netbeans.org"; // NOI18N
 
@@ -251,6 +251,7 @@ public class FFExtensionManager {
         // copy the archive
         boolean copySuccessful = false;
         try {
+            extensionDir.mkdirs();
             extractFiles(extensionXPI, extensionDir);
             copySuccessful = true;
         } catch (IOException ex) {

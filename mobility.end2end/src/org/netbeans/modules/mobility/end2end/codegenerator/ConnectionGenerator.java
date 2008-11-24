@@ -47,11 +47,15 @@
  */
 package org.netbeans.modules.mobility.end2end.codegenerator;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.AbstractAction;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.progress.ProgressHandle;
@@ -64,6 +68,7 @@ import org.netbeans.modules.mobility.e2e.mapping.JavonMappingImpl;
 import org.netbeans.modules.mobility.end2end.E2EDataObject;
 import org.netbeans.modules.mobility.end2end.client.config.ClassDescriptor;
 import org.netbeans.modules.mobility.end2end.client.config.Configuration;
+import org.netbeans.modules.mobility.end2end.output.OutputLogger;
 import org.netbeans.modules.mobility.end2end.util.Util;
 import org.netbeans.spi.mobility.end2end.ServiceGeneratorResult;
 import org.openide.DialogDisplayer;
@@ -89,14 +94,21 @@ public class ConnectionGenerator {
         //to avoid instantiation
     }
     
-    public static synchronized ServiceGeneratorResult generate( final E2EDataObject dataObject ) {        
+    public static synchronized ServiceGeneratorResult generate( 
+            final E2EDataObject dataObject ) 
+    {        
         if ( dataObject.getServerProject() == null ){
             final NotifyDescriptor.Message dd  =
                     new NotifyDescriptor.Message(
-                    NbBundle.getMessage( E2EDataObject.class, "ERR_ServerProjectNotOpened", // NOI18N
-                    dataObject.getConfiguration().getServerConfigutation().getProjectName()));
+                    NbBundle.getMessage( E2EDataObject.class, 
+                            "ERR_ServerProjectNotOpened", // NOI18N
+                    dataObject.getConfiguration().getServerConfigutation().
+                        getProjectName()));
             DialogDisplayer.getDefault().notify( dd );
-            if( Util.openProject(dataObject.getConfiguration().getServerConfigutation().getProjectPath()) == null ){
+            if( Util.openProject(dataObject.getConfiguration().
+                    getServerConfigutation().getProjectPath()) == null ){
+                // It is OK don't notify user here. All notifications 
+                // are already inside <code>openProject</code> method
                 return null;
             }
         }
@@ -115,24 +127,43 @@ public class ConnectionGenerator {
         final Configuration config = dataObject.getConfiguration();
         if( config == null ) {
             final NotifyDescriptor.Message dd  = new NotifyDescriptor.Message(
-                    NbBundle.getMessage( E2EDataObject.class, "ERR_ConfigurationFileCorrupted" )); // NOI18N
+                    NbBundle.getMessage( E2EDataObject.class, 
+                            "ERR_ConfigurationFileCorrupted" )); // NOI18N
             DialogDisplayer.getDefault().notify(dd);
             return null;
         }
         
         if( Configuration.WSDLCLASS_TYPE.equals( config.getServiceType())){
-            final FileObject fo = dataObject.getServerProject().getProjectDirectory().getFileObject( "build/generated/wsimport/" ); //NOI18N
+            final FileObject fo = dataObject.getServerProject().
+                getProjectDirectory().getFileObject( "build/generated/wsimport/" ); //NOI18N
             if( fo == null ) {
-                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( NbBundle.getMessage( ConnectionGenerator.class, "MSG_WebProjectNotBuilt" )));
+                DialogDisplayer.getDefault().notify( 
+                        new NotifyDescriptor.Message( 
+                                NbBundle.getMessage( ConnectionGenerator.class, 
+                                        "MSG_WebProjectNotBuilt" ))); //NOI18N
                 return null;
             }
         }
         
+        /*
+         * All failures notifications was done via dialog windows.
+         * Starting now logging will be done via  OutputLogger class.
+         */
+        
         final ProgressHandle ph = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage( ConnectionGenerator.class, "MSG_GeneratingJavonBridge" )); // NOI18N
+                NbBundle.getMessage( ConnectionGenerator.class, 
+                        "MSG_GeneratingJavonBridge" ), // NOI18N
+                        new AbstractAction(){
+                            public void actionPerformed( ActionEvent e ) {
+                                OutputLogger.getInstance().open();
+                            }
+                }); 
         ph.start();
         ph.switchToIndeterminate();
-        ph.progress( NbBundle.getMessage( ConnectionGenerator.class, "MSG_GeneratingProxyStubs" )); // NOI18N
+        String message = NbBundle.getMessage( ConnectionGenerator.class, 
+                "MSG_GeneratingProxyStubs" ); // NOI18N
+        ph.progress( message );
+        OutputLogger.getInstance().log( message);
         // FIXME: check for proper type
 //        config.getServices();
 //        
@@ -142,6 +173,8 @@ public class ConnectionGenerator {
             final String className = pg.generate();
             if( className == null ) {
                 ph.finish();
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage( ConnectionGenerator.class, "MSG_Failure" )); // NOI18N
                 return null;
             }
             config.getServices().get( 0 ).getData().get( 0 ).setProxyClassType( className );
@@ -154,7 +187,10 @@ public class ConnectionGenerator {
 //                , true);
 //        final OutputWriter ow = io.getOut();
         try {
-            ph.progress( NbBundle.getMessage( ConnectionGenerator.class, "MSG_ScanningDataStructures" )); // NOI18N
+            String scanning = NbBundle.getMessage( ConnectionGenerator.class, 
+                    "MSG_ScanningDataStructures" ); // NOI18N
+            ph.progress(  scanning ); 
+            OutputLogger.getInstance().log( scanning );
             
             final JavonMappingImpl mapping = dataObject.getMapping();
             if( Configuration.WSDLCLASS_TYPE.equals( config.getServiceType())) {
@@ -163,10 +199,27 @@ public class ConnectionGenerator {
                 mapping.setProperty( "serviceType", "CLASS" );
             }
 //            //ph.progress(70);
-            ph.progress( NbBundle.getMessage( ConnectionGenerator.class, "MSG_CreatingJavaFiles" )); // NOI18N
+            String creating = NbBundle.getMessage( ConnectionGenerator.class, 
+                    "MSG_CreatingJavaFiles" ); // NOI18N
+            ph.progress( creating ); 
+            OutputLogger.getInstance().log( creating );
 //            
             Javon javon = new Javon( mapping );
-            javon.generate( ph );
+            if ( javon.generate( ph ) ){
+                StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage( ConnectionGenerator.class,
+                            "MSG_SuccessGenerated" )); // NOI18N
+                OutputLogger.getInstance().log(NbBundle.getMessage(
+                    ConnectionGenerator.class,
+                    "TXT_GenerationSuccess" ));// NOI18N
+            }
+            else {
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage( ConnectionGenerator.class, "MSG_Failure" )); // NOI18N
+                OutputLogger.getInstance().log(NbBundle.getMessage(
+                    ConnectionGenerator.class,
+                    "TXT_GenerationUnsuccess" ));// NOI18N
+            }
 //            Streams.setOut(ow);
 //            Streams.setErr(ow);
 //            outputs = new Main().run( mapping, "" ); // NOI18N
@@ -199,12 +252,10 @@ public class ConnectionGenerator {
 //            } finally {
 //                JavaModel.getJavaRepository().endTrans();
 //            }
-        } catch( Exception e ) {
-//            ow.print(e.getMessage());
-//            io.select();
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
-        } finally {
+        } 
+        finally {
             ph.finish();
+            OutputLogger.getInstance().close();
         }
 //        if (type != null){
 //            //ow.println("Run / Redeploy Web Project to get changes reflected!");

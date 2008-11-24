@@ -47,6 +47,7 @@ import java.net.UnknownHostException;
 import java.util.prefs.Preferences;
 import org.apache.maven.model.Plugin;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
@@ -60,6 +61,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportIml;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -139,6 +141,7 @@ public class JaxWsClientCreator implements ClientCreator {
                 try {
                     ModelHandle mavenHandle = ModelHandleUtils.createModelHandle(project);
                     if (mavenHandle != null) {
+                        
                         Plugin jaxWsPlugin = MavenModelUtils.getJaxWSPlugin(mavenHandle);
                         if (jaxWsPlugin == null) {
                             // add jax-ws plugin
@@ -149,10 +152,16 @@ public class JaxWsClientCreator implements ClientCreator {
                             MavenModelUtils.addWsdlFile(mavenHandle, jaxWsPlugin, relativePath);
                         }
                         
-                        Plugin warPlugin = MavenModelUtils.getWarPlugin(mavenHandle);
-                        
-                        if (warPlugin == null) {
-                            warPlugin = MavenModelUtils.addWarlugin(mavenHandle);
+                        // adding resource to WEB-INF/ META-INF
+                        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+                        if (provider != null) { // expecting web project
+                            Plugin warPlugin = MavenModelUtils.getWarPlugin(mavenHandle);
+
+                            if (warPlugin == null) {
+                                warPlugin = MavenModelUtils.addWarlugin(mavenHandle);
+                            }
+                        } else { // J2SE Project
+                            MavenModelUtils.addWsdlResources(mavenHandle);
                         }
                         
                         ModelHandleUtils.writeModelHandle(mavenHandle, project);

@@ -74,25 +74,10 @@ made subject to such option by the copyright holder.
         </folder>     
         <folder name="PreviewExamples">
             <folder name="text">
-                <file name="x-fortran" url="fortran/FExample"/>
                 <file name="x-make" url="makefile/MakeExample"/>
             </folder>
         </folder>
 
-        <folder name="Editor">
-            <folder name="Formatting">
-                <attr name="position" intvalue="0"/>
-                <folder name="text">
-                    <folder name="x-fortran">
-                        <file name="TabsAndIndents.instance">
-                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.deprecated.fortran.options.FmtTabsIndents.getController"/>
-                            <attr name="position" intvalue="100"/>
-                        </file>
-                    </folder>
-                </folder>
-            </folder>
-        </folder>
     </folder>
 
     <folder name="Editors">
@@ -144,83 +129,15 @@ made subject to such option by the copyright holder.
             
             <folder name="x-fortran">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                
-                <folder name="FontsColors">
-                    <folder name="NetBeans">
-                        <folder name="Defaults">
-                            <file name="coloring.xml" url="fortran/Netbeans-Fortran-fontsColors.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.fortran.Bundle"/>
-                            </file>
-                        </folder>
-                    </folder>
-                </folder>
-                
-                <folder name="Keybindings">
-                    <folder name="NetBeans">
-                        <folder name="Defaults">
-                            <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
-                        </folder>
-                    </folder>
-                </folder>
-                
-                <folder name="CodeTemplates">
-                    <folder name="Defaults">
-                        <file name="codetemplates.xml" url="fortran/Fortran-DefaultAbbrevs.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.fortran.Bundle"/>
-                        </file>
-                    </folder>
-                </folder>
-                
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="org-netbeans-modules-cnd-editor-parser-NavigateAction.instance">
                             <attr name="position" intvalue="900"/>
                         </file>
-                        
-                        <file name="Separator-before-comment-fortran.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="19100"/>
-                        </file>
-                        
-                        <file name="comment">
-                            <attr name="position" intvalue="19200"/>
-                        </file>
-                        
-                        <file name="uncomment">
-                            <attr name="position" intvalue="19300"/>
-                        </file>                                                
                     </folder>
                 </folder>
-                
-                <folder name="Preferences">
-                    <folder name="Defaults">
-                        <file name="org-netbeans-modules-cnd-editor-fortran-preferences.xml" url="fortran/Fortran-editor-preferences.xml"/>
-                    </folder>
-                </folder>
-                
-                <file name="EditorKit.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.fortran.FKit"/>
-                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.fortran.FKit"/>
-                    <attr name="beaninfo" boolvalue="false"/>
-                </file>
-                
-                <folder name="Popup">
-                    <file name="format">
-                        <attr name="position" intvalue="1480"/>
-                    </file>                    
-                    <file name="SeparatorBeforeCut.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1960"/>
-                    </file>
-                    
-                    <file name="SeparatorAfterPaste.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="4100"/>
-                    </file>
-            
-                </folder>
-            </folder>
-            
+             </folder>
+
             <folder name="x-make">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 
@@ -276,10 +193,10 @@ made subject to such option by the copyright holder.
                 <attr name="instanceOf" stringvalue="org.openide.filesystems.MIMEResolver"/>
                 <attr name="position" intvalue="460"/>
             </file>  
-            <file name="org-netbeans-modules-cnd-loaders-CndSniffyMIMEResolver.instance">
-                <attr name="instanceOf" stringvalue="org.openide.filesystems.MIMEResolver"/>
+            <file name="cnd-mime-resolver-content-based.xml" url="mime-resolver-content-based.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="position" intvalue="470"/>
-            </file> 
+            </file>
             <file name="cnd-hex-based-mime-resolver.xml" url="mime-resolver-hex-based.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
@@ -292,13 +209,6 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="850"/>
             </file>
         </folder> <!-- JavaHelp -->
-
-        <folder name="IndentEngine">
-            <file name="org-netbeans-modules-cnd-editor-fortran-FIndentEngine.settings" url="FIndentEngine.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.fortran.Bundle"/>
-                <attr name="hidden" boolvalue="true"/>
-            </file>
-        </folder> <!-- IndentEngine -->
 
         <folder name="CndToolChain">
             <file name="SunStudio_8.xml" url="toolchain/SunStudio_8.xml">

@@ -126,7 +126,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
 
         CompilerSetPresenter toSelect = null;
         List<CompilerSetPresenter> allCS = new ArrayList<CompilerSetPresenter>();
-        ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
         if (serverList != null) {
             String[] servers = serverList.getServerNames();
             if (servers.length > 1) {
@@ -213,7 +213,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
         Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < openProjects.length; i++) {
-            NativeProjectProvider npv = (NativeProjectProvider) openProjects[i].getLookup().lookup(NativeProjectProvider.class);
+            NativeProjectProvider npv = openProjects[i].getLookup().lookup(NativeProjectProvider.class);
             if (npv != null) {
                 npv.fireFilesPropertiesChanged();
             }

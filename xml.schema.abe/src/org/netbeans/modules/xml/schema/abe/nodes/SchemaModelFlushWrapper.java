@@ -76,7 +76,9 @@ public class SchemaModelFlushWrapper extends Node.Property {
             IllegalArgumentException, InvocationTargetException {
         boolean transaction = true;
         try {
-            context.setUserInducedEventMode(true);
+            if (context != null) {
+                context.setUserInducedEventMode(true);
+            }
             if(object instanceof CompositorType)
                 transaction = false;
             if(transaction)

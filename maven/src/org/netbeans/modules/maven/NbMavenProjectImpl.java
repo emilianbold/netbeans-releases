@@ -66,7 +66,6 @@ import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
@@ -115,6 +114,7 @@ import org.netbeans.modules.maven.cos.CosChecker;
 import org.netbeans.modules.maven.debug.DebuggerChecker;
 import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
 import org.netbeans.modules.maven.execute.BackwardCompatibilityWithMevenideChecker;
+import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.PrereqCheckerMerger;
 import org.netbeans.modules.maven.queries.MavenBinaryForSourceQueryImpl;
 import org.netbeans.modules.maven.queries.MavenFileEncodingQueryImpl;
@@ -740,6 +740,7 @@ public final class NbMavenProjectImpl implements Project {
                     new OperationsImpl(this, state),
                     configEnabler,
                     new MavenDebuggerImpl(this),
+                    new DefaultReplaceTokenProvider(this),
 
                     // default mergers..        
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
@@ -924,8 +925,8 @@ public final class NbMavenProjectImpl implements Project {
             "Templates/Classes/Package", // NOI18N
             "Templates/Classes/Interface.java", // NOI18N
             "Templates/GUIForms/JPanel.java", // NOI18N
-            "Templates/GUIForms/JFrame.java" // NOI18N
-//            "Templates/WebServices/WebServiceClient"   // NOI18N
+            "Templates/GUIForms/JFrame.java", // NOI18N
+            "Templates/WebServices/WebServiceClient" // NOI18N
 
         };
         private static final String[] POM_APPLICATION_TYPES = new String[]{
@@ -951,7 +952,7 @@ public final class NbMavenProjectImpl implements Project {
             "ant-script", // NOI18N
             "ant-task", // NOI18N
             //            "web-services",         // NOI18N
-            //            "web-service-clients",  // NOI18N
+            "web-service-clients",  // NOI18N
             "wsdl", // NOI18N
             "servlet-types", // NOI18N
             "web-types", // NOI18N

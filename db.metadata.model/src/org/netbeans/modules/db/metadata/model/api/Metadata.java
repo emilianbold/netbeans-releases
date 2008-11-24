@@ -46,8 +46,11 @@ import org.netbeans.modules.db.metadata.model.MetadataModelImplementation;
 import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ParameterImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ProcedureImplementation;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ViewImplementation;
 
 /**
  * Encapsulates information about the metadata in a database. The meaning
@@ -114,10 +117,6 @@ public class Metadata {
         impl.refresh();
     }
 
-    public void refreshTable(String tablename) {
-        impl.refreshTable(tablename);
-    }
-
     private static final class MetadataAccessorImpl extends MetadataAccessor {
 
         @Override
@@ -145,24 +144,30 @@ public class Metadata {
             return new Table(impl);
         }
 
+
+        @Override
+        public View createView(ViewImplementation impl) {
+            return new View(impl);
+        }
+
         @Override
         public Column createColumn(ColumnImplementation impl) {
             return new Column(impl);
         }
 
         @Override
+        public Procedure createProcedure(ProcedureImplementation impl) {
+            return new Procedure(impl);
+        }
+
+        @Override
+        public Parameter createParameter(ParameterImplementation impl) {
+            return new Parameter(impl);
+        }
+
+        @Override
         public CatalogImplementation getCatalogImpl(Catalog catalog) {
             return catalog.impl;
-        }
-
-        @Override
-        public SchemaImplementation getSchemaImpl(Schema schema) {
-            return schema.impl;
-        }
-
-        @Override
-        public TableImplementation getTableImpl(Table table) {
-            return table.impl;
         }
     }
 }

@@ -215,8 +215,7 @@ made subject to such option by the copyright holder.
                 is activated or when the user finishes the work with the application.
                 In order to keep dependencies clean, it is strongly adviced 
                 to make modules that implement this API 
-                <a href="@org-openide-modules@/org/openide/modules/doc-files/classpath.html#special-modules">
-                eager</a>,
+                eager,
                 so they get enabled as soon as the UI logger module is enabled.
             </p>
         </usecase>

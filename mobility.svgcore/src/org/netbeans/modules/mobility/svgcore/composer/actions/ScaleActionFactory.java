@@ -68,14 +68,18 @@ public class ScaleActionFactory extends AbstractComposerActionFactory {
     
     protected static class ScaleAction extends AbstractComposerAction {
         protected final SVGObject m_scaled;
+        protected final SVGObject.ScalePivotPoint m_scalePtIdx;
         private final int       m_x;
         private final int       m_y;
+        private final float[] pt;
 
         public ScaleAction(ComposerActionFactory factory, SVGObject selected, MouseEvent me) {
             super(factory);
             m_scaled = selected;
             m_x = me.getX();
             m_y = me.getY();
+            pt = m_scaled.getOutline().getScalePivotPoint(m_x, m_y);
+            m_scalePtIdx = getScalePivotPoint(m_scaled, m_x, m_y);
         }
 
         @Override
@@ -85,11 +89,11 @@ public class ScaleActionFactory extends AbstractComposerActionFactory {
                 
                 //calculate area to repaint
                 Rectangle bBox = m_scaled.getScreenBBox();
-                m_scaled.scale(calculateScaleX(me.getX()), calculateScaleY(me.getY()));
+                m_scaled.scale(calculateScaleX(me.getX()), calculateScaleY(me.getY()), m_scalePtIdx);
                 bBox.add(m_scaled.getScreenBBox());
                 
                 m_factory.getSceneManager().getScreenManager().repaint(bBox, SVGObjectOutline.SELECTOR_OVERLAP);
-            } else {
+            } else if (evt.getID() == MouseEvent.MOUSE_RELEASED) {
                 actionCompleted();
                 m_scaled.commitChanges();
             }
@@ -106,30 +110,39 @@ public class ScaleActionFactory extends AbstractComposerActionFactory {
             m_scaled.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
             m_scaled.applyTextChanges();
             m_scaled.commitChanges();
+            if (getScreenManager().getShowAllArea()){
+                getScreenManager().refresh();
+            }
             super.actionCompleted();
         }
         
         protected float calculateScaleX( int x ) {
-            float[] pt = m_scaled.getOutline().getScalePivotPoint();
+            //float[] pt = m_scaled.getOutline().getScalePivotPoint();
             return calculateScale(pt[0], m_x, x);
         }
 
         protected float calculateScaleY( int y ) {
-            float[] pt = m_scaled.getOutline().getScalePivotPoint();
+            //float[] pt = m_scaled.getOutline().getScalePivotPoint();
             return calculateScale(pt[1], m_y, y);
         }
 
         private float calculateScale(float pivot, float from, float to){
-            float d1,d2;
-                    
-            d1 = pivot - from;
-            float dist1 = d1*d1;
-            d1 = pivot - to;
-            float dist2 = d1*d1;
+            float d1 = pivot - from;
+            float d2 = pivot - to;
             
-            return dist2 / dist1;
+            return d2 / d1;
         }
         
+        private SVGObject.ScalePivotPoint getScalePivotPoint(SVGObject selObj, float x, float y) {
+            SVGObjectOutline outline = selObj.getOutline();
+            if (outline.isAtScaleSEHandlePoint(x, y) ||
+                    outline.isAtScaleEHandlePoint(x, y) || outline.isAtScaleSHandlePoint(x, y)) {
+                return SVGObject.ScalePivotPoint.NW_CORNER;
+            } else {
+                return SVGObject.ScalePivotPoint.SE_CORNER;
+            }
+
+        }
     }
     
     public ScaleActionFactory(SceneManager sceneMgr) {

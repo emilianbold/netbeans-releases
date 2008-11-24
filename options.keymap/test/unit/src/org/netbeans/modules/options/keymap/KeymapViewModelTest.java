@@ -134,7 +134,50 @@ public class KeymapViewModelTest extends NbTestCase {
         checkShortcuts (model, shortcuts, false);
         checkShortcuts (new KeymapViewModel (), shortcuts, false);
     }
-    
+
+    public void testFindConflictingMultiKeyBinding0() {
+        KeymapViewModel model = new KeymapViewModel();
+        ShortcutAction sa0 = model.findActionForShortcut("F5");
+        ShortcutAction sa1 = model.findActionForShortcut("F6");
+        model.addShortcut(sa1, "Ctrl+J A");
+        model.addShortcut(sa0, "Ctrl+J B");
+        Set<ShortcutAction> orig = new HashSet<ShortcutAction>(2);
+        orig.add(sa0);
+        orig.add(sa1);
+        Set<ShortcutAction> found = model.findActionForShortcutPrefix("Ctrl+J");
+        assertTrue(found.containsAll(orig)); //both sa0, sa1 conflict with 'Ctrl+J'
+    }
+
+    public void testFindConflictingMultiKeyBinding1() {
+        KeymapViewModel model = new KeymapViewModel();
+        ShortcutAction sa0 = model.findActionForShortcut("F5");
+        model.addShortcut(sa0, "Ctrl+J");
+        Set<ShortcutAction> found = model.findActionForShortcutPrefix("Ctrl+J B");
+        assertTrue(found.contains(sa0)); //sa0 conflicts with 'Ctrl+J B'
+    }
+
+    public void testFindConflictingMultiKeyBinding2() {
+        KeymapViewModel model = new KeymapViewModel();
+        ShortcutAction sa0 = model.findActionForShortcut("F5");
+        ShortcutAction sa1 = model.findActionForShortcut("F6");
+        model.addShortcut(sa1, "Ctrl+J A");
+        model.addShortcut(sa0, "Ctrl+J B");
+        Set<ShortcutAction> orig = new HashSet<ShortcutAction>(2);
+        orig.add(sa0);
+        orig.add(sa1);
+        Set<ShortcutAction> found = model.findActionForShortcutPrefix("Ctrl+J C");
+        assertFalse(found.contains(sa0)); //these three shouldn't conflict
+        assertFalse(found.contains(sa1));
+    }
+
+    public void testFindConflictingMultiKeyBinding3() {
+        KeymapViewModel model = new KeymapViewModel();
+        ShortcutAction sa0 = model.findActionForShortcut("F5");
+        model.addShortcut(sa0, "Shift+Meta+F2");
+        Set<ShortcutAction> found = model.findActionForShortcutPrefix("Shift+Meta+F");
+        assertFalse(found.contains(sa0)); //these two shouldn't conflict
+    }
+
     /**
      * Sets random shortcuts and returns them in 
      * Map (Set (String (shortcut)) > String (action name)).
