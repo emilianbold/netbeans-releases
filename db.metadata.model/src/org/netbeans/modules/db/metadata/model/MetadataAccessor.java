@@ -43,13 +43,19 @@ import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.Parameter;
+import org.netbeans.modules.db.metadata.model.api.Procedure;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.View;
 import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ParameterImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ProcedureImplementation;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ViewImplementation;
 
 /**
  *
@@ -85,15 +91,17 @@ public abstract class MetadataAccessor {
 
     public abstract Catalog createCatalog(CatalogImplementation impl);
 
+    public abstract Parameter createParameter(ParameterImplementation impl);
+
+    public abstract Procedure createProcedure(ProcedureImplementation impl);
+
     public abstract Schema createSchema(SchemaImplementation impl);
 
     public abstract Table createTable(TableImplementation impl);
 
     public abstract Column createColumn(ColumnImplementation impl);
 
+    public abstract View createView(ViewImplementation impl);
+
     public abstract CatalogImplementation getCatalogImpl(Catalog catalog);
-
-    public abstract SchemaImplementation getSchemaImpl(Schema schema);
-
-    public abstract TableImplementation getTableImpl(Table table);
 }

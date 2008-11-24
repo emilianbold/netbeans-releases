@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.db.metadata.model.jdbc;
 
-import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.Tuple;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 
 /**
@@ -48,16 +48,16 @@ import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
  */
 public class JDBCColumn extends ColumnImplementation {
 
-    private final JDBCTable jdbcTable;
+    private final Tuple parent;
     private final String name;
 
-    public JDBCColumn(JDBCTable jdbcTable, String name) {
-        this.jdbcTable = jdbcTable;
+    public JDBCColumn(Tuple parent, String name) {
+        this.parent = parent;
         this.name = name;
     }
 
-    public final Table getParent() {
-        return jdbcTable.getTable();
+    public final Tuple getParent() {
+        return parent;
     }
 
     public final String getName() {

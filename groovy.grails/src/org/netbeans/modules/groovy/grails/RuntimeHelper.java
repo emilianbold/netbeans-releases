@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -64,6 +65,12 @@ public final class RuntimeHelper {
 
     public static final String NIX_EXECUTABLE = "/bin/" + NIX_EXECUTABLE_FILE; // NOI18N
 
+    public static final String DEB_EXECUTABLE = "/usr/bin/" + NIX_EXECUTABLE_FILE; // NOI18N
+
+    public static final String DEB_START_FILE = "/bin/startGrails"; // NOI18N
+
+    public static final String DEB_LOCATION = "/usr/share/grails"; // NOI18N
+
     private static final Logger LOGGER = Logger.getLogger(RuntimeHelper.class.getName());
 
     private RuntimeHelper() {
@@ -72,11 +79,17 @@ public final class RuntimeHelper {
 
     public static boolean isValidRuntime(File grailsBase) {
         String pathToBinary = Utilities.isWindows() ? WIN_EXECUTABLE : NIX_EXECUTABLE;
-        return new File(grailsBase, pathToBinary).isFile();
+        return new File(grailsBase, pathToBinary).isFile() || isDebian(grailsBase);
 // leave following for future
 //                && new File(grailsBase, "dist").isDirectory() // NOI18N
 //                && new File(grailsBase, "lib").isDirectory() // NOI18N
 //                && new File(grailsBase, "build.properties").isFile(); // NOI18N
+    }
+
+    public static boolean isDebian(File grailsBase) {
+        return new File(grailsBase, DEB_START_FILE).isFile()
+                && new File(DEB_EXECUTABLE).isFile()
+                && FileUtil.normalizeFile(grailsBase).equals(new File(DEB_LOCATION));
     }
 
     public static String getRuntimeVersion(File grailsBase) {

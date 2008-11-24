@@ -52,16 +52,21 @@ public class FortranFormatterSingleTestCase  extends FortranEditorBase {
     }
     public void testFunctionFixed() {
         setLoadDocumentText(
-                "      Module A\n" +
-                "          INTERFACE\n" +
-                "              FUNCTION EXT3 (P, Q)|");
+                "      program Bug001\n" +
+                "      do 1 i = 1, 67\n" +
+                "      do 1 j = 1, 67\n" +
+                " 1    write ( 6, 100, advance = 'YES') i\n" +
+                " 100  format ( 1h, ' ', i2.2)\n" +
+                "      end program Bug001");
         setDefaultsOptions();
         FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
-        indentNewLine();
-        assertDocumentTextAndCaret("Incorrect function indent (fixed form)",
-                "      Module A\n" +
-                "          INTERFACE\n" +
-                "              FUNCTION EXT3 (P, Q)\n" +
-                "                  |");
+        reformat();
+        assertDocumentText("Incorrect function indent (fixed form)",
+                "      program Bug001\n" +
+                "          do 1 i = 1, 67\n" +
+                "              do 1 j = 1, 67\n" +
+                " 1                write ( 6, 100, advance = 'YES') i\n" +
+                " 100      format ( 1h, ' ', i2.2)\n" +
+                "      end program Bug001");
     }
 }

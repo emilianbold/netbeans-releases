@@ -48,6 +48,7 @@ import java.awt.Window;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.netbeans.api.project.FileOwnerQuery;
@@ -574,5 +575,13 @@ public class Utils {
         }
         if (name.equals("HEAD") || name.equals("BASE")) return false;
         return true;
+    }
+
+    //T9Y logging
+    private static Logger T9Y_LOG = null;
+    public static void logT9Y(String msg) {
+        if(T9Y_LOG == null)
+            T9Y_LOG = Logger.getLogger("org.netbeans.modules.versioning.system.cvss.t9y");
+        T9Y_LOG.log(Level.FINEST, msg);
     }
 }

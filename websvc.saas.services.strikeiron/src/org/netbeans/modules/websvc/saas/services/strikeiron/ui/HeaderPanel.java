@@ -42,7 +42,6 @@
 package org.netbeans.modules.websvc.saas.services.strikeiron.ui;
 
 import java.awt.Color;
-import javax.swing.JLabel;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceData;
 import org.openide.util.NbBundle;
 
@@ -51,6 +50,8 @@ import org.openide.util.NbBundle;
  * @author  nam
  */
 public class HeaderPanel extends javax.swing.JPanel {
+    private static final long serialVersionUID = 1L;
+    private static final String TO_OVERRIDE = NbBundle.getMessage(HeaderPanel.class, "MSG_ClickToOverride");
     
     /** Creates new form HeaderPanel */
     public HeaderPanel() {
@@ -61,12 +62,17 @@ public class HeaderPanel extends javax.swing.JPanel {
     void setServiceData(WsdlServiceData service) {
         this.service = service;
     }
-    
-    JLabel getTitle() {
-        return jlTitle;
+
+    /**
+     * Set the title of the header panel. The title is backed by a JLabel
+     * so a subset of HTML text is allowable.
+     *
+     * @param  title  new title text.
+     */
+    void setTitle(String title) {
+        jlTitle.setText(title);
     }
     
-    private static final String TO_OVERRIDE = NbBundle.getMessage(HeaderPanel.class, "MSG_ClickToOverride");
     public String getPackageName() {
         String name = tfPackageName.getText().trim();
         if (name.equals(TO_OVERRIDE)) {
@@ -99,19 +105,21 @@ public class HeaderPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jlTitle = new javax.swing.JLabel();
+        jlPackageName = new javax.swing.JLabel();
         tfPackageName = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
 
-        jlTitle.setText(org.openide.util.NbBundle.getMessage(HeaderPanel.class, "HeaderPanel.jlTitle.text")); // NOI18N
+        jlTitle.setLabelFor(this);
+        jlTitle.setText("<dynamic>"); // NOI18N
 
-        tfPackageName.setText(org.openide.util.NbBundle.getMessage(HeaderPanel.class, "HeaderPanel.tfPackageName.text")); // NOI18N
+        jlPackageName.setDisplayedMnemonic('P');
+        jlPackageName.setLabelFor(tfPackageName);
+        jlPackageName.setText(org.openide.util.NbBundle.getMessage(HeaderPanel.class, "HeaderPanel.jlPackageName.text")); // NOI18N
+
         tfPackageName.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tfPackageNameMouseClicked(evt);
             }
         });
-
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(HeaderPanel.class, "HeaderPanel.jLabel1.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -120,24 +128,30 @@ public class HeaderPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jlTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
+                    .add(jlTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(jlPackageName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 98, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(tfPackageName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 302, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(tfPackageName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jlTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(jlTitle)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jlPackageName)
                     .add(tfPackageName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        jlTitle.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HeaderPanel.class, "HeaderPanel.jlTitle.AccessibleContext.accessibleDescription")); // NOI18N
+        jlPackageName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HeaderPanel.class, "HeaderPanel.jlPackageName.AccessibleContext.accessibleDescription")); // NOI18N
+        tfPackageName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HeaderPanel.class, "HeaderPanel.tfPackageName.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HeaderPanel.class, "HeaderPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void tfPackageNameMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tfPackageNameMouseClicked
@@ -148,7 +162,7 @@ public class HeaderPanel extends javax.swing.JPanel {
         
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jlPackageName;
     private javax.swing.JLabel jlTitle;
     private javax.swing.JTextField tfPackageName;
     // End of variables declaration//GEN-END:variables

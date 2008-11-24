@@ -281,7 +281,7 @@ public class FortranIndentTask extends FortranIndentSupport implements IndentTas
                             break;
 
                         case KW_WHILE:
-                            matchToken = findMatchingToken(token, KW_WHILE, KW_END);
+                            matchToken = findMatchingToken(token, KW_WHILE, KW_ENDWHILE);
                             break;
                     }// END SWITCH
                     if (matchToken != null) {
@@ -366,6 +366,10 @@ public class FortranIndentTask extends FortranIndentSupport implements IndentTas
                     case KW_ENDWHERE:
                     case KW_ELSEWHERE:
                         matchToken = findMatchingToken(token, KW_WHERE, KW_ENDWHERE);
+                        break;
+
+                    case KW_ENDWHILE:
+                        matchToken = findMatchingToken(token, KW_WHILE, KW_ENDWHILE);
                         break;
                 }//end second switch
                 if (matchToken != null) {

@@ -185,12 +185,6 @@ public final class JAXWSLightSupport {
     }
 
     /**
-     * Returns the directory that contains the deployment descriptor in the project
-     */    
-    public FileObject getDeploymentDescriptorFolder(){
-        return impl.getDeploymentDescriptorFolder();
-    }
-    /**
      * Returns a metadata model of a webservices deployment descriptor
      *
      * @return metadata model of a webservices deployment descriptor

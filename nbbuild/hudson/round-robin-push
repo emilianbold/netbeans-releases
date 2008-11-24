@@ -48,15 +48,23 @@ if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
 then
    hg up || exit 6
 else
-   hg merge || exit 7
+   if hg merge; then
+     echo Merge OK.
+   else
+     echo Merge failed.
+     hg heads
+     exit 7
+   fi
    hg ci -u "$push_username"@netbeans.org -m 'Automated merge' || exit 8
 fi
 hg out $push_url
 
-if [ `hg out --template '{node|short}\n' $push_url | wc -l` > 0 ]; then
-    echo "Let the build starts..."
+OUT_COUNT=`hg out --template 'change: {node|short}\n' $push_url | grep '^change: ' | wc -l`
+
+if [ "$OUT_COUNT" > 0 ]; then
+    echo "Let the build start. There is $OUT_COUNT outgoing changes."
 else
-    echo "No outgoing changes"
+    echo "No outgoing changes. No reason to do build."
     exit 0
 fi
 
@@ -69,15 +77,16 @@ testmodule() {
         echo Test OK: $1
     else
         echo $1 >>$RESULT
+        exit 5
     fi
 }
 
 ant clean $ANT_PARAM || exit 2
 ant build $ANT_PARAM || exit 2
-ant commit-validation $ANT_PARAM || echo commit-validation >$RESULT
-ant build-test-dist $ANT_PARAM || echo build-test-dist >>$RESULT
+ant commit-validation $ANT_PARAM || exit 3
+ant build-test-dist $ANT_PARAM || exit 4
 
-testmodule openide.util
+testmodule openide.awt || exit 5
 
 FAILED=`cat $RESULT | wc -l`
 if [ "$FAILED" -gt 0 ]; then

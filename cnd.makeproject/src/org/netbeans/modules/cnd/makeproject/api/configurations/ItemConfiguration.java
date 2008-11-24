@@ -452,7 +452,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         }
     }
 
-    private class StringRONodeProp extends PropertySupport {
+    private static class StringRONodeProp extends PropertySupport {
 
         String value;
 
