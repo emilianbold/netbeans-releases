@@ -567,12 +567,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
         if (!allOk) {
             String projectName = IpeUtils.getBaseName(getBaseDir());
-            String text = getString("CannotSaveTxt", projectName);
+            StringBuilder text = new StringBuilder();
+            text.append(getString("CannotSaveTxt", projectName)); // NOI18N
             for (int i = 0; i < notOkFiles.size(); i++) {
-                text += "\n" + notOkFiles.elementAt(i); // NOI18N
+                text.append("\n").append(notOkFiles.elementAt(i)); // NOI18N
             }
             if (extraMessage != null) {
-                text += "\n\n" + extraMessage; // NOI18N
+                text.append("\n\n").append(extraMessage); // NOI18N
             }
             NotifyDescriptor d = new NotifyDescriptor.Message(text, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);

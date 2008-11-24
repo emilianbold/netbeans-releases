@@ -131,7 +131,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             List<PackagerInfoElement> newList = new ArrayList<PackagerInfoElement>();
             // Copy all other types over
             for (PackagerInfoElement elem : oldList) {
-                if (elem.getPackager() != packagingConfiguration.getType().getValue()) {
+                if (!elem.getPackager().equals(packagingConfiguration.getType().getValue())) {
                     newList.add(elem);
                 }
             }

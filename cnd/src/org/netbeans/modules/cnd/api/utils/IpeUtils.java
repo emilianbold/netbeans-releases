@@ -847,18 +847,17 @@ public class IpeUtils {
                 down++;
             }
         }
-        String retpath = ""; // NOI18N
+        StringBuilder retpath = new StringBuilder();
         if (absPrefix != null) {
-            retpath = absPrefix; // NOI18N
+            retpath.append(absPrefix);
         }
         for (int i = 0; i < stack.size(); i++) {
-            retpath = retpath + stack.elementAt(i);
+            retpath.append(stack.elementAt(i));
             if (i < (stack.size() - 1)) {
-                retpath = retpath + "/"; // NOI18N
+                retpath.append('/'); // NOI18N
             }
         }
-
-        return retpath;
+        return retpath.toString();
     }
 
     public static String createUniqueFileName(String folder, String name, String ext) {
