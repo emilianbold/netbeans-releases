@@ -1568,7 +1568,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     an = ((CallNode)call).getArgsNode();
                 }
                 if (an != null && index < an.childNodes().size() &&
-                        ((Node)an.childNodes().get(index)).nodeId == NodeType.HASHNODE) {
+                        an.childNodes().get(index).nodeId == NodeType.HASHNODE) {
                     // We should stay within the hashnode, so counteract the
                     // index++ which follows this if-block
                     index--;
