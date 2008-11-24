@@ -64,16 +64,18 @@ public class ModulesActivator {
     private RequestProcessor.Task enableTask = null;
     private OperationContainer<OperationSupport> enableContainer;
     private ProgressHandle enableHandle;
+    private final ProgressMonitor progressMonitor;
 
-    public ModulesActivator (Collection<UpdateElement> modules) {
+    public ModulesActivator (Collection<UpdateElement> modules, ProgressMonitor progressMonitor) {
         if (modules == null || modules.isEmpty ()) {
             throw new IllegalArgumentException ("Cannot construct ModulesActivator with null or empty Collection " + modules);
         }
         modules4enable = modules;
-    }
-
-    public void assignEnableHandle (ProgressHandle handle) {
-        this.enableHandle = handle;
+        if (progressMonitor != null) {
+            this.progressMonitor = progressMonitor;
+        } else {
+            this.progressMonitor = ProgressMonitor.DEV_NULL_PROGRESS_MONITOR;
+        }
     }
 
     public RequestProcessor.Task getEnableTask () {
@@ -129,6 +131,7 @@ public class ModulesActivator {
                     getBundle ("ModulesActivator_Enable",
                     presentUpdateElements (FindComponentModules.getVisibleUpdateElements (modules4enable))));
             }
+        progressMonitor.onEnable(enableHandle);
         enableSupport.doOperation (enableHandle);
     }
 
