@@ -83,7 +83,7 @@ public class MavenJaxWsServicesProvider implements WebServiceDataProvider, Prope
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if ("service-added".equals(evt.getPropertyName())) { //NOI18N
+        if (JAXWSLightSupport.PROPERTY_SERVICE_ADDED.equals(evt.getPropertyName())) {
             MavenWebService mavenService = new MavenWebService((JaxWsService)evt.getNewValue(), prj);
             WebService webService = WebServiceFactory.createWebService(mavenService);
             if (webService.isServiceProvider()) {
@@ -91,7 +91,7 @@ public class MavenJaxWsServicesProvider implements WebServiceDataProvider, Prope
             } else {
                 consumers.add(webService);
             }
-        } else if ("service-removed".equals(evt.getPropertyName())) { //NOI18N
+        } else if (JAXWSLightSupport.PROPERTY_SERVICE_REMOVED.equals(evt.getPropertyName())) {
             JaxWsService jaxWsService = (JaxWsService)evt.getOldValue();
             if (jaxWsService.isServiceProvider()) {
                 String implClass = jaxWsService.getImplementationClass();

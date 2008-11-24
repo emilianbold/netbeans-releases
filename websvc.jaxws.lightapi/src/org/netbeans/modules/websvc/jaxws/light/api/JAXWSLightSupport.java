@@ -65,6 +65,12 @@ import org.openide.filesystems.FileObject;
  */
 public final class JAXWSLightSupport {
     
+    /**used to notify property change listeners when JAX-WS service is added */
+    public static final String PROPERTY_SERVICE_ADDED = "service-added"; //NOI18N
+    
+    /**used to notify property change listeners when JAX-WS service is removed */
+    public static final String PROPERTY_SERVICE_REMOVED = "service-removed"; //NOI18N
+    
     private JAXWSLightSupportImpl impl;
     private PropertyChangeSupport propertyChangeSupport;
     
@@ -113,7 +119,7 @@ public final class JAXWSLightSupport {
      */
     public void addService(JaxWsService service) {
         impl.addService(service);
-        propertyChangeSupport.firePropertyChange("service-added", null, service);
+        propertyChangeSupport.firePropertyChange(PROPERTY_SERVICE_ADDED, null, service);
     }
 
     /**
@@ -130,7 +136,7 @@ public final class JAXWSLightSupport {
      */
     public void removeService(JaxWsService service) {
         impl.removeService(service);
-        propertyChangeSupport.firePropertyChange("service-removed", service, null);
+        propertyChangeSupport.firePropertyChange(PROPERTY_SERVICE_REMOVED, service, null);
     }
 
     
