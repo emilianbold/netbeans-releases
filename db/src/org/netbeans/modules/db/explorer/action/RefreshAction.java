@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,71 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
 
-import java.sql.Connection;
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
-
-import org.netbeans.modules.db.explorer.node.ConnectionNode;
+import org.netbeans.api.db.explorer.node.BaseNode;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 
-
-public class DisconnectAction extends BaseAction {
-
+/**
+ *
+ * @author Rob
+ */
+public class RefreshAction extends BaseAction {
     @Override
     public String getName() {
-        return bundle().getString("Disconnect"); // NOI18N
+        return bundle().getString("Refresh"); // NOI18N
     }
 
     protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length == 0) { 
-            return false;
-        }
-        
-        for (int i = 0; i < activatedNodes.length; i++) {
-            Lookup lookup = activatedNodes[i].getLookup();
-            ConnectionNode node = lookup.lookup(ConnectionNode.class);
-            if (node != null) {
-                DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
-                Connection j = dbconn.getJDBCConnection();
-                try {
-                    if (j == null || j.isClosed()) {
-                        return false;
-                    }
-                } catch (Exception e) {
-                    
-                }
-            } else {
-                return false;
-            }
-        }
+        boolean enabled = false;
 
-        return true;
-    }
-    
-    public void performAction (Node[] activatedNodes) {
-        if (activatedNodes == null || activatedNodes.length == 0)
-            return;
-        
-        for (int i = 0; i < activatedNodes.length; i++) {
-            Lookup lookup = activatedNodes[i].getLookup();
-            ConnectionNode node = lookup.lookup(ConnectionNode.class);
-            if (node != null) {
-                DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
-                try {
-                    dbconn.disconnect();
-                } catch (DatabaseException dbe) {
-
+        if (activatedNodes.length > 0) {
+            enabled = true;
+            for (Node node : activatedNodes) {
+                BaseNode baseNode = node.getLookup().lookup(BaseNode.class);
+                if (baseNode == null || !baseNode.canRefresh()) {
+                    enabled = false;
+                    break;
                 }
             }
         }
+
+        return enabled;
     }
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+    }
+
 }

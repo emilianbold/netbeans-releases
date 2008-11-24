@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,71 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.explorer.action;
+package org.netbeans.modules.db.explorer.node;
 
-import java.sql.Connection;
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.node.BaseNode;
+import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 
-import org.netbeans.modules.db.explorer.node.ConnectionNode;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+/**
+ *
+ * @author rob
+ */
+public class ForeignKeyListNode extends BaseNode {
+    private static final String NAME = "Foreign Keys"; // NOI18N
+    private static final String DISPLAYNAME = "Foreign Keys"; // NOI18N
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
+    private static final String FOLDER = "ForeignKeyList"; //NOI18N
 
+    /**
+     * Create an instance of ForeignKeyListNode.
+     *
+     * @param dataLookup the lookup to use when creating node providers
+     * @return the ForeignKeyListNode instance
+     */
+    public static ForeignKeyListNode create(NodeDataLookup dataLookup) {
+        ForeignKeyListNode node = new ForeignKeyListNode(dataLookup);
+        node.setup();
+        return node;
+    }
 
-public class DisconnectAction extends BaseAction {
+    private ForeignKeyListNode(NodeDataLookup lookup) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    }
+
+    protected void initialize() {
+    }
 
     @Override
     public String getName() {
-        return bundle().getString("Disconnect"); // NOI18N
+        return NAME;
     }
 
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length == 0) { 
-            return false;
-        }
-        
-        for (int i = 0; i < activatedNodes.length; i++) {
-            Lookup lookup = activatedNodes[i].getLookup();
-            ConnectionNode node = lookup.lookup(ConnectionNode.class);
-            if (node != null) {
-                DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
-                Connection j = dbconn.getJDBCConnection();
-                try {
-                    if (j == null || j.isClosed()) {
-                        return false;
-                    }
-                } catch (Exception e) {
-                    
-                }
-            } else {
-                return false;
-            }
-        }
-
-        return true;
+    @Override
+    public String getDisplayName() {
+        return DISPLAYNAME;
     }
-    
-    public void performAction (Node[] activatedNodes) {
-        if (activatedNodes == null || activatedNodes.length == 0)
-            return;
-        
-        for (int i = 0; i < activatedNodes.length; i++) {
-            Lookup lookup = activatedNodes[i].getLookup();
-            ConnectionNode node = lookup.lookup(ConnectionNode.class);
-            if (node != null) {
-                DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
-                try {
-                    dbconn.disconnect();
-                } catch (DatabaseException dbe) {
 
-                }
-            }
-        }
+    @Override
+    public String getIconBase() {
+        return ICONBASE;
     }
 }
