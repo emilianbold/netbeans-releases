@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="j2ee">
+        <folder name="webtier">
+            <folder name="framework">
+                <file name="fake-visual-web.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.fake.frameworks.FakeWebFrameworkProvider.create" />
+                    <attr name="name" bundlevalue="org.netbeans.modules.web.fake.frameworks.Bundle#visualweb.name" />
+                    <attr name="codeNameBase" stringvalue="org.netbeans.modules.visualweb.kit" />
+                </file>
+                <file name="fake-struts.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.fake.frameworks.FakeWebFrameworkProvider.create" />
+                    <attr name="name" bundlevalue="org.netbeans.modules.web.fake.frameworks.Bundle#struts.name" />
+                    <attr name="codeNameBase" stringvalue="org.netbeans.modules.web.struts" />
+                    <attr name="position" intvalue="400"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
