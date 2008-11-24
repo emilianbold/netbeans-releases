@@ -79,13 +79,14 @@ import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaParserResultTask;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
@@ -98,12 +99,14 @@ import org.openide.text.NbDocument;
  * @author Jan Lahoda
  * @author leon chiver
  */
-public final class ErrorHintsProvider extends ParserResultTask {
+public final class ErrorHintsProvider extends JavaParserResultTask {
     
     public static ErrorManager ERR = ErrorManager.getDefault().getInstance("org.netbeans.modules.java.hints"); // NOI18N
     public static Logger LOG = Logger.getLogger("org.netbeans.modules.java.hints"); // NOI18N
     
-    ErrorHintsProvider() {}
+    ErrorHintsProvider() {
+        super(Phase.RESOLVED);
+    }
     
     private static final Map<Diagnostic.Kind, Severity> errorKind2Severity;
     
