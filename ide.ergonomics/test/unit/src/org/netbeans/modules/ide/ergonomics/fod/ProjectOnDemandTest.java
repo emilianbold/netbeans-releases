@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import junit.framework.Test;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbModuleSuite;
@@ -162,6 +163,10 @@ public class ProjectOnDemandTest extends NbTestCase {
         
         ProjectOpenedHook open = p.getLookup().lookup(ProjectOpenedHook.class);
         assertNotNull("Open hook found", open);
+
+        ProjectInformation info = p.getLookup().lookup(ProjectInformation.class);
+        assertNotNull("Info about icon", info);
+        assertNotNull("Icon provided", info.getIcon());
         
         TestFactory.recognize = root;
         OpenProjects.getDefault().open(new Project[] { p }, false);
