@@ -20,7 +20,7 @@ export ANT_OPTS
 HGMERGE=merge
 export HGMERGE
 
-hg up -C
+hg up -C tip
 hg --config extensions.purge= clean --all
 
 STATUS=$TMP/$$-status
