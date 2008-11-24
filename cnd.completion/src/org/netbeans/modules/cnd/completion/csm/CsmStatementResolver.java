@@ -147,13 +147,11 @@ public class CsmStatementResolver {
 
     private static boolean findInner(CsmTryCatchStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called";
-        if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getTryStatement())
-                && findInnerObject(stmt.getTryStatement(), offset, context)) {
+        if (findInnerObject(stmt.getTryStatement(), offset, context)) {
             return true;
         }
         for (CsmExceptionHandler handler : stmt.getHandlers()) {
-            if (!CsmOffsetUtilities.sameOffsets(stmt, handler)
-                    && findInnerObject(handler, offset, context)) {
+            if (findInnerObject(handler, offset, context)) {
                 return true;
             }
         }
@@ -174,14 +172,12 @@ public class CsmStatementResolver {
             CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
             return true;
         }
-        if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getThen())
-                && findInnerObject(stmt.getThen(), offset, context)) {
+        if (findInnerObject(stmt.getThen(), offset, context)) {
             print("in THEN: "); //NOI18N
             return true;
         }
-        if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getElse())
-                && findInnerObject(stmt.getElse(), offset, context)) {
-            print("in ELSE: ");     //NOI18N
+        if (findInnerObject(stmt.getElse(), offset, context)) {
+            print("in ELSE: "); //NOI18N
             return true;
         }
         return false;
@@ -244,11 +240,7 @@ public class CsmStatementResolver {
             CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
             return true;
         }
-        if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getBody())) {
-            return findInnerObject(stmt.getBody(), offset, context);
-        } else {
-            return false;
-        }
+        return findInnerObject(stmt.getBody(), offset, context);
     }
 
     private static boolean findInner(CsmForStatement stmt, int offset, CsmContext context) {
@@ -267,11 +259,7 @@ public class CsmStatementResolver {
             CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
             return true;
         }
-        if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getBody())) {
-            return findInnerObject(stmt.getBody(), offset, context);
-        } else {
-            return false;
-        }
+        return findInnerObject(stmt.getBody(), offset, context);
     }
 
     private static boolean findInner(CsmSwitchStatement stmt, int offset, CsmContext context) {
@@ -281,11 +269,7 @@ public class CsmStatementResolver {
             CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
             return true;
         }
-        if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getBody())) {
-            return findInnerObject(stmt.getBody(), offset, context);
-        } else {
-            return false;
-        }
+        return findInnerObject(stmt.getBody(), offset, context);
     }
 
     private static void print(String s) {
