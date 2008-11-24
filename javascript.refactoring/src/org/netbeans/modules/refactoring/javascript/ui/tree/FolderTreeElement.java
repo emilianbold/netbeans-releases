@@ -42,7 +42,7 @@
 package org.netbeans.modules.refactoring.javascript.ui.tree;
 
 import javax.swing.Icon;
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
