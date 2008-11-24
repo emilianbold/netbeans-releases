@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -60,12 +60,12 @@ public class MultilineLabelWidget extends LabelWidget
     {
         this(scene, null);
     }
-    
+
     public MultilineLabelWidget (Scene scene, String label)
     {
         super(scene, label);
     }
-    
+
     /**
      * Calculates a client area for the label.
      * @return the client area
@@ -77,13 +77,12 @@ public class MultilineLabelWidget extends LabelWidget
         {
             return super.calculateClientArea();
         }
-        
+
         Rectangle rectangle;
 
         Graphics2D gr = getGraphics();
         FontMetrics fontMetrics = gr.getFontMetrics(getFont());
 
-        Rectangle2D union = new Rectangle2D.Double();
         double x = 0;
         double y = 0;
         double width = 0;
@@ -122,7 +121,7 @@ public class MultilineLabelWidget extends LabelWidget
             height += stringBounds.getHeight();
         }
         rectangle = roundRectangle(new Rectangle2D.Double(x, y, width, height));
-        
+
         switch (getOrientation())
         {
             case NORMAL:
@@ -133,123 +132,125 @@ public class MultilineLabelWidget extends LabelWidget
                 throw new IllegalStateException();
         }
     }
-    
+
     @Override
     protected void paintWidget()
     {
         Graphics2D g = getGraphics();
-        
+
         g.setFont(getFont());
         FontMetrics fontMetrics = g.getFontMetrics(getFont());
-       
-        LineDetails lines = breakupLines(g, fontMetrics);
-        if ( lines != null)
+
+        String txt=getLabel();
+        if(txt!=null && txt.length()>0)
         {
-            // save the current color
-            Color currentColor = g.getColor();
-            g.setColor(this.getForeground());
-            
-            int x;
-            int y = (getSize().height - lines.getNumberOfLines() * fontMetrics.getHeight()) / 2;;
-
-            for(int index = 0; index < lines.getNumberOfLines(); index++)
+            String[] lines0 = getLabel().split("\n");
+            ArrayList<LineDetails> lineDeltails=new ArrayList<LineDetails>();
+            for(int i=0;i<lines0.length;i++)
             {
-                String line = lines.getLine(index);
-                if(line == null)
-                {
-                    line = new String();
-                }
-                switch (getAlignment())
-                {
-                    case LEFT:
-                        x = 0;
-                        break;
-                    case RIGHT:
-                        x = getSize().width- fontMetrics.stringWidth(line);
-                        break;
-                    case CENTER:
-                    default:
-                        x = (getSize().width- fontMetrics.stringWidth(line)) / 2;
-                }
-                g.drawString(line, x, y);
-
-                y += lines.getHeight(index);
+                String lineTxt=lines0[i];
+                if(lineTxt.length()==0)lineTxt=" ";//draw one space if empty line
+                LineDetails lines = breakupLinesInNoBreakLinedTxt(lineTxt,g, fontMetrics);
+                lineDeltails.add(lines);
             }
-
-            // reset to the original color
-            if ( !g.getColor().equals(currentColor))
+            LineDetails lines = new LineDetails();
+            if ( lineDeltails.size()>0)
             {
-                g.setColor(currentColor);
+                for(int i=0;i<lineDeltails.size();i++)
+                {
+                    for(int j=0;j<lineDeltails.get(i).getNumberOfLines();j++)
+                    {
+                        lines.addLine(lineDeltails.get(i).getLine(j), lineDeltails.get(i).getHeight(j));
+                    }
+                }
+                // save the current color
+                Color currentColor = g.getColor();
+                g.setColor(this.getForeground());
+
+
+                int x;
+                int y = (getSize().height - lines.getNumberOfLines() * fontMetrics.getHeight()) / 2;
+
+                for(int index = 0; index < lines.getNumberOfLines(); index++)
+                {
+                    String line = lines.getLine(index);
+                    if(line == null)
+                    {
+                        line = new String();
+                    }
+                    switch (getAlignment())
+                    {
+                        case LEFT:
+                            x = 0;
+                            break;
+                        case RIGHT:
+                            x = getSize().width- fontMetrics.stringWidth(line);
+                            break;
+                        case CENTER:
+                        default:
+                            x = (getSize().width- fontMetrics.stringWidth(line)) / 2;
+                    }
+                    g.drawString(line, x, y);
+
+                    y += lines.getHeight(index);
+                }
+
+                // reset to the original color
+                if ( !g.getColor().equals(currentColor))
+                {
+                    g.setColor(currentColor);
+                }
             }
         }
       }
-        
-    protected LineDetails breakupLines(Graphics2D g, FontMetrics metrics)
+
+    protected LineDetails breakupLinesInNoBreakLinedTxt(String text,Graphics2D g, FontMetrics metrics)
     {
         LineDetails retVal = null;
-        String text = getLabel();
-        if ( text == null ||  text.length() == 0) 
+        if ( text == null ||  text.length() == 0)
         {
             return retVal;
         }
-        
+
         retVal = new LineDetails();
-        
+
         int width = getClientArea().width;
-        StringBuilder label = new StringBuilder(text);  
-        
+        StringBuilder label = new StringBuilder(text);
+
         int index = 0;
         int startLine = 0;
         int previousEnd = 0;
         String previousLine = null;
         double previousHeight = 0;
-        
+
         while(index >= 0)
         {
-            
+
             index = findEndOfNextWord(label, index);
             if(index == -1)
             {
                 retVal.addLine(previousLine, previousHeight);
                 break;
             }
-            
+
             String line = label.substring(startLine, index);
             Rectangle2D strBounds = metrics.getStringBounds(line, g);
 
             if(strBounds.getWidth() <= width)
             {
-                previousLine = line;
-                previousHeight = strBounds.getHeight();
-                
-                if((index < label.length()) && (label.charAt(index) == '\n'))
-                {
-                    retVal.addLine(previousLine, previousHeight);
-                    
-                    // If the next character is a whitespace, then skip it.
-                    if(label.length() > (index + 1))
-                    {
-                        if((label.charAt(index + 1) != '\n') && 
-                           (Character.isWhitespace(label.codePointAt(index + 1)) == true))
-                        {
-                            index++;
-                        }
-                    }
-                    
-                    startLine = index;
-                }
-                
-                previousEnd = index;
-                index++;
+                    previousLine = line;
+                    previousHeight = strBounds.getHeight();
+                    previousEnd = index;
+                    index++;
             }
             else  // the width of the line is longer than the width of the Widget's client area.
             {
-                if ( previousLine != null) 
+                if ( previousLine != null)
                 {
                     retVal.addLine(previousLine, previousHeight);
                     previousLine = null;  //Already added; hence reset
                 }
-                else 
+                else
                 {
                     String subStr = null;
                     //int len = label.length();
@@ -259,7 +260,7 @@ public class MultilineLabelWidget extends LabelWidget
                     {
                         subStr = label.substring(startIndx, endIndx);
                         strBounds = metrics.getStringBounds(subStr, g);
-                        if (strBounds.getWidth() < width) 
+                        if (strBounds.getWidth() < width)
                         {
                             retVal.addLine(subStr, strBounds.getHeight());
                             // reset the subString' s start and end indices
@@ -270,33 +271,30 @@ public class MultilineLabelWidget extends LabelWidget
                     }
                     previousEnd = index;
                 }
-                
-                if((index < label.length()) && (label.charAt(index) == '\n'))
-                {
-                    // Since we are creating a new line, we should just move
-                    // past the new line char.
-                    index++;
-                    previousEnd = index;
-                    startLine = index;
-                }
-                
+
                 // Find the next non-whitespace, start from the previous end
                 // point, since that was the end of the line.
                 index = findFirstNonWhitespace(label, previousEnd);
                 startLine = index;
             }
         }
-        
+
         return retVal;
     }
-    
+
+    /**
+     *
+     * @param label
+     * @param start
+     * @return
+     */
     protected int findFirstNonWhitespace(StringBuilder label, int start)
     {
         int retVal = -1;
         for(int index = start; index < label.length(); index++)
         {
             int codePointAt = label.codePointAt(index);
-            if(Character.isWhitespace(codePointAt) == false)
+            if(!Character.isWhitespace(codePointAt))
             {
                 retVal = index;
                 break;
@@ -307,10 +305,17 @@ public class MultilineLabelWidget extends LabelWidget
                 break;
             }
         }
-        
+
         return retVal;
     }
-    
+
+    /**
+     * find end of word using whitespace separation(space, linebreak etc)
+     * consist from one whitespace symbol at least.
+     * @param label
+     * @param start
+     * @return
+     */
     protected int findEndOfNextWord(StringBuilder label, int start)
     {
         int retVal = -1;
@@ -318,69 +323,60 @@ public class MultilineLabelWidget extends LabelWidget
         if((start >= 0) && (start < label.length()))
         {
             retVal = label.length();
-            for (int index = start; index < label.length(); index++)
+            for (int index = start+1; index < label.length(); index++)
             {
                 int codePoint = label.codePointAt(index);
-                if(codePoint == '\n')
-                {
-                    retVal = index;
-                    break;
-                }
-                else if(Character.isWhitespace(label.codePointAt(index)) == true)
+                if(Character.isWhitespace(codePoint))//currently split only on whitespace, may be consider to split on any not letter-digit
                 {
                     retVal = index;
                     break;
                 }
             }
         }
-        
+
         return retVal;
     }
-        
+
     /**
      * Rounds Rectangle2D to Rectangle.
      * @param rectangle the rectangle2D
      * @return the rectangle
      */
     public Rectangle roundRectangle (Rectangle2D rectangle) {
-        int x1 = (int) Math.floor (rectangle.getX ());
-        int y1 = (int) Math.floor (rectangle.getY ());
-        int x2 = (int) Math.ceil (rectangle.getMaxX ());
-        int y2 = (int) Math.ceil (rectangle.getMaxY ());
-        return new Rectangle (x1, y1, x2 - x1, y2 - y1);
+        return rectangle.getBounds();
     }
-    
+
     protected Dimension getSize()
     {
         Insets labelInsets = getBorder().getInsets();
-        int width = getBounds().width - labelInsets.left - labelInsets.right;      
+        int width = getBounds().width - labelInsets.left - labelInsets.right;
         int height = getBounds().height - labelInsets.top - labelInsets.bottom;
-        
+
         return new Dimension(width, height);
     }
-            
-    
+
+
     protected class LineDetails
     {
         private ArrayList < String > lines = new ArrayList < String >();
         private ArrayList < Float > heights = new ArrayList < Float >();
-        
+
         public final void addLine(String line, double height)
         {
             lines.add(line);
             heights.add((float)height);
         }
-        
+
         public final String getLine(int index)
         {
             return lines.get(index);
         }
-        
+
         public final float getHeight(int index)
         {
             return heights.get(index);
         }
-        
+
         public int getNumberOfLines()
         {
             return lines.size();
