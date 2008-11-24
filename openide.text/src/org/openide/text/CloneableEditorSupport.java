@@ -227,7 +227,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      */
     private boolean revertingUndoOrReloading;
     private boolean justRevertedToNotModified;
-    private int documentStatus = DOCUMENT_NO;
+    private volatile int documentStatus = DOCUMENT_NO;
     private Throwable prepareDocumentRuntimeException;
 
     /** Reference to WeakHashMap that is used by all Line.Sets created
@@ -868,6 +868,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
         if (redirect != null) {
             return redirect.getDocument();
+        }
+        //#149717 Do not block when document is loading
+        if (documentStatus != DOCUMENT_READY) {
+            return null;
         }
         synchronized (getLock()) {
             StyledDocument doc = getDoc();
