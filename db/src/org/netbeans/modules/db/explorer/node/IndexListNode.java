@@ -41,59 +41,44 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
  *
  * @author rob
  */
-public class SchemaNode extends BaseNode {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/defaultFolder.gif";
-    private static final String FOLDER = "Schema"; //NOI18N
+public class IndexListNode extends BaseNode {
+    private static final String NAME = "Indexes"; // NOI18N
+    private static final String DISPLAYNAME = "Indexes"; // NOI18N
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
+    private static final String FOLDER = "IndexList"; //NOI18N
 
     /**
-     * Create an instance of SchemaNode.
+     * Create an instance of IndexListNode.
      *
      * @param dataLookup the lookup to use when creating node providers
-     * @return the SchemaNode instance
+     * @return the TableListNode instance
      */
-    public static SchemaNode create(NodeDataLookup dataLookup) {
-        SchemaNode node = new SchemaNode(dataLookup);
+    public static IndexListNode create(NodeDataLookup dataLookup) {
+        IndexListNode node = new IndexListNode(dataLookup);
         node.setup();
         return node;
     }
 
-    private DatabaseConnection connection;
-    private Schema schema;
-
-    private SchemaNode(NodeDataLookup lookup) {
+    private IndexListNode(NodeDataLookup lookup) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER);
     }
 
     protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
-        schema = getLookup().lookup(Schema.class);
     }
 
     @Override
     public String getName() {
-        return renderName();
+        return NAME;
     }
 
     @Override
     public String getDisplayName() {
-        return renderName();
-    }
-
-    private String renderName() {
-        String name = schema.getName();
-        if (name == null) {
-            name = schema.getParent().getName();
-        }
-
-        return name;
+        return DISPLAYNAME;
     }
 
     @Override

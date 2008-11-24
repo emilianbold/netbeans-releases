@@ -157,6 +157,21 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Table">
                 <folder name="NodeProviders">
+                    <file name="ColumnNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.ColumnNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="IndexListNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.IndexListNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="ForeignKeyListNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.ForeignKeyListNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="300"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                 </folder>
@@ -174,6 +189,11 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="View">
                 <folder name="NodeProviders">
+                    <file name="ColumnNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.ColumnNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                 </folder>
@@ -190,6 +210,30 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
             <folder name="Procedure">
+                <folder name="NodeProviders">
+                </folder>
+                <folder name="Actions">
+                </folder>
+            </folder>
+            <folder name="IndexList">
+                <folder name="NodeProviders">
+                </folder>
+                <folder name="Actions">
+                </folder>
+            </folder>
+            <folder name="Index">
+                <folder name="NodeProviders">
+                </folder>
+                <folder name="Actions">
+                </folder>
+            </folder>
+            <folder name="ForeignKeyList">
+                <folder name="NodeProviders">
+                </folder>
+                <folder name="Actions">
+                </folder>
+            </folder>
+            <folder name="ForeignKey">
                 <folder name="NodeProviders">
                 </folder>
                 <folder name="Actions">
@@ -228,13 +272,13 @@ made subject to such option by the copyright holder.
                <attr name="position" intvalue="100"/>
             </file>
             
-           <!-- uncomment this block to include the new explorer tree -->
+           <!-- uncomment this block to include the new explorer tree 
            <file name="org-netbeans-modules-db-explorer-node-RootNode.instance">
              <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.node.RootNode"/>
              <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.RootNode.instance"/>
                <attr name="position" intvalue="101"/>
             </file>
-            <!-- -->
+            -->
         </folder> <!-- Runtime -->
 
     </folder> <!-- UI -->

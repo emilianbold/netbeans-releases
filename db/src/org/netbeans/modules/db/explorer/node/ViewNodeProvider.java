@@ -39,65 +39,78 @@
 
 package org.netbeans.modules.db.explorer.node;
 
-import org.netbeans.api.db.explorer.node.BaseNode;
-import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.View;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author rob
  */
-public class SchemaNode extends BaseNode {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/defaultFolder.gif";
-    private static final String FOLDER = "Schema"; //NOI18N
+public class ViewNodeProvider extends NodeProvider {
 
-    /**
-     * Create an instance of SchemaNode.
-     *
-     * @param dataLookup the lookup to use when creating node providers
-     * @return the SchemaNode instance
-     */
-    public static SchemaNode create(NodeDataLookup dataLookup) {
-        SchemaNode node = new SchemaNode(dataLookup);
-        node.setup();
-        return node;
+    // lazy initialization holder class idiom for static fields is used
+    // for retrieving the factory
+    public static NodeProviderFactory getFactory() {
+        return FactoryHolder.FACTORY;
     }
 
-    private DatabaseConnection connection;
-    private Schema schema;
-
-    private SchemaNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private static class FactoryHolder {
+        static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            public ViewNodeProvider createInstance(Lookup lookup) {
+                ViewNodeProvider provider = new ViewNodeProvider(lookup);
+                provider.setup();
+                return provider;
+            }
+        };
     }
 
-    protected void initialize() {
-        // get the connection from the lookup
+    private final DatabaseConnection connection;
+    private final Schema schema;
+
+    private ViewNodeProvider(Lookup lookup) {
+        super(lookup, new ViewComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
         schema = getLookup().lookup(Schema.class);
     }
 
-    @Override
-    public String getName() {
-        return renderName();
+    private void setup() {
+        update();
     }
 
-    @Override
-    public String getDisplayName() {
-        return renderName();
-    }
+    private synchronized void update() {
+        List<Node> newList = new ArrayList<Node>();
 
-    private String renderName() {
-        String name = schema.getName();
-        if (name == null) {
-            name = schema.getParent().getName();
+        Collection<View> views = schema.getViews();
+        for (View view : views) {
+            Collection<Node> matches = getNodes(view);
+            if (matches.size() > 0) {
+                newList.addAll(matches);
+            } else {
+                NodeDataLookup lookup = new NodeDataLookup();
+                lookup.add(connection);
+                lookup.add(view);
+
+                newList.add(ViewNode.create(lookup));
+            }
         }
 
-        return name;
+        setNodes(newList);
     }
 
-    @Override
-    public String getIconBase() {
-        return ICONBASE;
+    static class ViewComparator implements Comparator<Node> {
+
+        public int compare(Node model1, Node model2) {
+            return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
+        }
+
     }
 }

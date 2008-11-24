@@ -118,7 +118,7 @@ public class SchemaNodeProvider extends NodeProvider {
         }
 
         if (connected) {
-            MetadataModel model = MetadataModels.get(connection.getConnection(), null);
+            MetadataModel model = MetadataModels.createModel(connection.getConnection(), null);
 
             try {
                 model.runReadAction(
@@ -156,7 +156,7 @@ public class SchemaNodeProvider extends NodeProvider {
             } catch (MetadataModelException e) {
             }
         } else {
-            setNodes(new ArrayList<Node>());
+            removeAllNodes();
         }
     }
 
