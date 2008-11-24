@@ -71,9 +71,8 @@ public final class PhpInterpreter {
             command = ""; // NOI18N
         }
 
-        // try to find parameters (search for " -" or " /" after space)
+        // try to find interpreter (search for " -" or " /" after space)
         String[] tokens = command.split(" * (?=\\-|/)", 2); // NOI18N
-
         switch (tokens.length) {
             case 0:
                 LOGGER.fine("No command given (null or empty string)");
