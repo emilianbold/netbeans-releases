@@ -1238,34 +1238,42 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitEnhancedForLoop(EnhancedForLoopTree arg0, EvaluationContext evaluationContext) {
-        if (!evaluationContext.canInvokeMethods()) {
-            Assert2.error(arg0, "calleeException", new UnsupportedOperationException(), evaluationContext);
-        }
         ExpressionTree exprTree = arg0.getExpression();
         Mirror exprValue = exprTree.accept(this, evaluationContext);
+        Method nextMethod = null, hasNextMethod = null;
+        ObjectReference iterator = null;
         if (!(exprValue instanceof ObjectReference)) {
             Assert2.error(arg0, "forEachNotApplicable");
         }
-        ObjectReference objRef = (ObjectReference)exprValue;
-        ReferenceType objType = objRef.referenceType();
-        VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
-        ReferenceType collType = vm.classesByName("java.util.Collection").get(0);
-        if (!instanceOf(objRef.type(), collType)) {
-            Assert2.error(arg0, "forEachNotApplicable");
-        }
-        Method iteratorMethod = null;
-        try {
-            iteratorMethod = getConcreteMethod(objType, "iterator", Collections.EMPTY_LIST);
-        } catch (UnsuitableArgumentsException ex) {
-        }
-        ObjectReference iterator = (ObjectReference)invokeMethod(arg0, iteratorMethod, Boolean.FALSE, (ClassType)objRef.type(),
-                objRef, Collections.EMPTY_LIST, evaluationContext, false);
-        Method nextMethod = null, hasNextMethod = null;
-        try {
-            ReferenceType iteratorType = iterator.referenceType();
-            nextMethod = getConcreteMethod(iteratorType, "next", Collections.EMPTY_LIST);
-            hasNextMethod = getConcreteMethod(iteratorType, "hasNext", Collections.EMPTY_LIST);
-        } catch (UnsuitableArgumentsException ex) {
+        boolean isArray = true;
+        int arrayLength = 0;
+        if (!(exprValue instanceof ArrayReference)) {
+            isArray = false;
+            if (!evaluationContext.canInvokeMethods()) {
+                Assert2.error(arg0, "calleeException", new UnsupportedOperationException(), evaluationContext);
+            }
+            ObjectReference objRef = (ObjectReference)exprValue;
+            ReferenceType objType = objRef.referenceType();
+            VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+            ReferenceType collType = vm.classesByName("java.util.Collection").get(0);
+            if (!instanceOf(objRef.type(), collType)) {
+                Assert2.error(arg0, "forEachNotApplicable");
+            }
+            Method iteratorMethod = null;
+            try {
+                iteratorMethod = getConcreteMethod(objType, "iterator", Collections.EMPTY_LIST);
+            } catch (UnsuitableArgumentsException ex) {
+            }
+            iterator = (ObjectReference)invokeMethod(arg0, iteratorMethod, Boolean.FALSE, (ClassType)objRef.type(),
+                    objRef, Collections.EMPTY_LIST, evaluationContext, false);
+            try {
+                ReferenceType iteratorType = iterator.referenceType();
+                nextMethod = getConcreteMethod(iteratorType, "next", Collections.EMPTY_LIST);
+                hasNextMethod = getConcreteMethod(iteratorType, "hasNext", Collections.EMPTY_LIST);
+            } catch (UnsuitableArgumentsException ex) {
+            }
+        } else {
+            arrayLength = ((ArrayReference) exprValue).length();
         }
 
         Mirror result = null;
@@ -1275,14 +1283,24 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             varTree.accept(this, evaluationContext); // declare variable
             ScriptVariable scriptVar = evaluationContext.getScriptVariableByName(varTree.getName().toString());
             StatementTree statementTree = arg0.getStatement();
+            int index = 0;
             do {
-                Value value = invokeMethod(arg0, hasNextMethod, Boolean.FALSE, (ClassType)iterator.type(),
-                    iterator, Collections.EMPTY_LIST, evaluationContext, false);
-                if (!((BooleanValue)value).value()) {
-                    break;
+                Value value;
+                if (isArray) {
+                    if (index >= arrayLength) {
+                        break;
+                    }
+                    value = ((ArrayReference)exprValue).getValue(index);
+                    index++;
+                } else {
+                    value = invokeMethod(arg0, hasNextMethod, Boolean.FALSE, (ClassType)iterator.type(),
+                        iterator, Collections.EMPTY_LIST, evaluationContext, false);
+                    if (!((BooleanValue)value).value()) {
+                        break;
+                    }
+                    value = invokeMethod(arg0, nextMethod, Boolean.FALSE, (ClassType)iterator.type(),
+                        iterator, Collections.EMPTY_LIST, evaluationContext, false);
                 }
-                value = invokeMethod(arg0, nextMethod, Boolean.FALSE, (ClassType)iterator.type(),
-                    iterator, Collections.EMPTY_LIST, evaluationContext, false);
                 scriptVar.setValue(value); // [TODO] check if value is assignable to variable
                 try {
                     evaluationContext.pushBlock();
