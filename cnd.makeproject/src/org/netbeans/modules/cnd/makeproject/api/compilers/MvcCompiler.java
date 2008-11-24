@@ -40,9 +40,9 @@
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 
 /**
  *
@@ -83,7 +83,11 @@ public class MvcCompiler extends GNUCCompiler {
            return systemPreprocessorSymbolsList;
        }
        systemPreprocessorSymbolsList = new PersistentList<String>();
-       systemPreprocessorSymbolsList.add("WIN32"); // NOI18N
+       systemPreprocessorSymbolsList.add("_MSC_VER=1500"); // NOI18N
+       if (getKind() == Tool.CCCompiler){
+            systemPreprocessorSymbolsList.add("__cplusplus=1"); // NOI18N
+       }
+       systemPreprocessorSymbolsList.add("__STDC__=1"); // NOI18N
        return systemPreprocessorSymbolsList;
    }
 }

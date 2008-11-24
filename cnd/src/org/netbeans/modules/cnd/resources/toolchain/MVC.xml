@@ -85,19 +85,19 @@ made subject to such option by the copyright holder.
         <user_include flags="/I"/>
         <user_macro flags="/D"/>
         <development_mode>
-            <fast_build flags=""/>
-            <debug flags="" default="true"/>
-            <performance_debug flags="-g -O"/>
+            <fast_build flags="/Od"/>
+            <debug flags="/Od" default="true"/>
+            <performance_debug flags="/Ox"/>
             <test_coverage flags=""/>
             <diagnosable_release flags=""/>
             <release flags=""/>
             <performance_release flags=""/>
         </development_mode>
         <warning_level>
-            <no_warnings flags=""/>
-            <default flags="" default="true"/>
-            <more_warnings flags=""/>
-            <warning2error flags=""/>
+            <no_warnings flags="/W0"/>
+            <default flags="/W3" default="true"/>
+            <more_warnings flags="/W4"/>
+            <warning2error flags="/W3 /WX"/>
         </warning_level>
         <architecture>
             <default flags="" default="true"/>
