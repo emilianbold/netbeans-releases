@@ -121,6 +121,9 @@ made subject to such option by the copyright holder.
                     <file name="org-openide-actions-DeleteAction.instance">  
                         <attr name="position" intvalue="200"/>  
                     </file>
+                    <file name="org-netbeans-modules-db-explorer-action-RefreshAction.instance">
+                        <attr name="position" intvalue="250"/>
+                    </file>
                 </folder>
             </folder>
             <folder name="Schema">
@@ -272,7 +275,7 @@ made subject to such option by the copyright holder.
                <attr name="position" intvalue="100"/>
             </file>
             
-           <!-- uncomment this block to include the new explorer tree 
+           <!-- uncomment this block to include the new explorer tree
            <file name="org-netbeans-modules-db-explorer-node-RootNode.instance">
              <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.node.RootNode"/>
              <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.RootNode.instance"/>
