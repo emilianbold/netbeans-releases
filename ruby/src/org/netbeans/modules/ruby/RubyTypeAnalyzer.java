@@ -553,6 +553,7 @@ public class RubyTypeAnalyzer {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static <T> T getLast(final Collection<? extends T> types) {
         if (types == null || types.isEmpty()) {
             return null;
