@@ -67,7 +67,7 @@ public class CaretListeningTask extends ParserResultTask<ParserResult> {
         
         boolean navigatorShouldUpdate = ClassMemberPanel.getInstance() != null; // XXX set by navigator visible
         
-        if (isCancelled() || (!navigatorShouldUpdate)) {
+        if (isCancelled() || (!navigatorShouldUpdate) || !(result.getEvent() instanceof CursorMovedSchedulerEvent)) {
             return;
         }
         

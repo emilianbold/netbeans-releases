@@ -79,6 +79,10 @@ public class SelectionHintsTask extends ParserResultTask<ParserResult> {
         if (fileObject == null) {
             return;
         }
+
+        if (!(result.getEvent() instanceof CursorMovedSchedulerEvent)) {
+            return;
+        }
         
         CursorMovedSchedulerEvent evt = (CursorMovedSchedulerEvent) result.getEvent();
         int[] range = new int [] {

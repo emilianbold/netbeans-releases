@@ -93,7 +93,7 @@ public final class ElementScanningTask extends ParserResultTask<ParserResult> {
     }
 
     public @Override void run(ParserResult result) {
-
+        
         resume();
 
         //System.out.println("The task is running" + info.getFileObject().getNameExt() + "=====================================" ) ;

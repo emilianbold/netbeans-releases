@@ -97,6 +97,10 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
             return;
         }
 
+        if (!(result.getEvent() instanceof CursorMovedSchedulerEvent)) {
+            return;
+        }
+
         // Do we have a selection? If so, don't do suggestions
         CursorMovedSchedulerEvent evt = (CursorMovedSchedulerEvent) result.getEvent();
         int[] range = new int [] {

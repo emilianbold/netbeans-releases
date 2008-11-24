@@ -107,6 +107,10 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
             return ;
         }
         
+        if (!(info.getEvent() instanceof CursorMovedSchedulerEvent)) {
+            return;
+        }
+
         long start = System.currentTimeMillis();
 
         int caretPosition = ((CursorMovedSchedulerEvent) info.getEvent()).getCaretOffset();
