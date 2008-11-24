@@ -44,9 +44,9 @@ package org.netbeans.modules.dbapi;
 import java.net.URL;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.db.api.explorer.MetaDataListener;
 import org.netbeans.modules.db.explorer.DbMetaDataListener;
+import org.netbeans.modules.db.test.DBTestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -56,7 +56,7 @@ import org.openide.filesystems.Repository;
  *
  * @author Andrei Badea
  */
-public class DbMetaDataListenerImplTest extends NbTestCase {
+public class DbMetaDataListenerImplTest extends DBTestBase {
 
     public DbMetaDataListenerImplTest(String testName) {
         super(testName);
@@ -67,8 +67,12 @@ public class DbMetaDataListenerImplTest extends NbTestCase {
      * methods of DbMetaDataListenerImpl are invoked.
      */
     public void testListenerFired() throws Exception {
+        /*
         JDBCDriver driver = JDBCDriver.create("foo", "Foo", "org.example.Foo", new URL[0]);
         DatabaseConnection dbconn = DatabaseConnection.create(driver, "url", "user", "schema", "pwd", false);
+        */
+        DatabaseConnection dbconn = getDatabaseConnection(true);
+        createTestTable();
 
         class TestListener implements MetaDataListener {
 
@@ -100,8 +104,8 @@ public class DbMetaDataListenerImplTest extends NbTestCase {
         listener.dbconn = null;
         assertNull(listener.dbconn);
         assertNull(listener.tableName);
-        dbListener.tableChanged(dbconn, "TABLE");
+        dbListener.tableChanged(dbconn, DBTestBase.getTestTableName());
         assertSame(dbconn, listener.dbconn);
-        assertEquals("TABLE", listener.tableName);
+        assertEquals(DBTestBase.getTestTableName(), listener.tableName);
     }
 }

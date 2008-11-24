@@ -79,7 +79,7 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
         projectTextField.setText(FileUtil.toFile(project.getProjectDirectory()).getPath());
         sourceRootPanel.add(sourceRootChooser = new SourceRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getSourceRootsAsArray()));
 
-        MakeCustomizerProvider makeCustomizerProvider = (MakeCustomizerProvider) project.getLookup().lookup(MakeCustomizerProvider.class);
+        MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
         makeCustomizerProvider.addActionListener(this);
         
         originalEncoding = ((MakeProject)project).getSourceEncoding();
@@ -200,10 +200,10 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
 
     public void actionPerformed(ActionEvent e) {
         if (sourceRootChooser.isChanged()) {
-            Vector list = sourceRootChooser.getListData();
-            makeConfigurationDescriptor.setSourceRootsList(new ArrayList(list));
+            Vector<String> list = sourceRootChooser.getListData();
+            makeConfigurationDescriptor.setSourceRootsList(new ArrayList<String>(list));
         }
-        MakeCustomizerProvider makeCustomizerProvider = (MakeCustomizerProvider) project.getLookup().lookup(MakeCustomizerProvider.class);
+        MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
         makeCustomizerProvider.removeActionListener(this);
     }
 

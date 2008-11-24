@@ -231,6 +231,11 @@ derby\.log
 ^visualweb.webui/library/gen$
 ^visualweb\.woodstock\.webui\.jsf/test/functional-compile\.mark$
 ^visualweb.xhtml/generated$
+^web\.client\.tools\.internetexplorer/nativesrc/(activescript|Debug)$
+^web\.client\.tools\.internetexplorer/nativesrc/(activescript|Release)$
+^web\.client\.tools\.internetexplorer/nativesrc/NetBeansExtension\.(h|ncb|suo|vcproj\..+)$
+^web\.client\.tools\.internetexplorer/nativesrc/NetBeansExtension_(i|p)\.c$
+^web\.client\.tools\.internetexplorer/nativesrc/dlldata\.c$
 ^web.core/src/org/netbeans/modules/web/taglib/model$
 ^web.jsf.navigation/\.externalToolBuilders$
 ^web.jsf.navigation/\.project$

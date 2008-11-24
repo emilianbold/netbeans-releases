@@ -209,10 +209,9 @@ public abstract class CCCCompiler extends BasicCompiler {
         if (tmpFile == null) {
             try {
                 tmpFile = File.createTempFile("xyz", ".c"); // NOI18N
-}
-            catch (IOException ioe) {
+                tmpFile.deleteOnExit();
+            } catch (IOException ioe) {
             }
-            tmpFile.deleteOnExit();
         }
         if (tmpFile != null) {
             return tmpFile.getAbsolutePath();

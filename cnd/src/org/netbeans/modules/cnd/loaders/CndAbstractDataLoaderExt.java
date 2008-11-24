@@ -48,8 +48,8 @@ import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -136,14 +136,12 @@ public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader {
                         }
                         doc.insertString(doc.getLength(), "\n", null); // NOI18N
                         offset++;
-                        if (doc instanceof BaseDocument) {
-                            BaseDocument bd = (BaseDocument) doc;
-                            bd.getFormatter().reformatLock();
-                            try {
-                                bd.getFormatter().reformat(bd, 0, offset);
-                            } finally {
-                                bd.getFormatter().reformatUnlock();
-                            }
+                        Reformat reformat = Reformat.get(doc);
+                        reformat.lock();
+                        try {
+                            reformat.reformat(0, doc.getLength());
+                        } finally {
+                            reformat.unlock();
                         }
                         w.write(doc.getText(0, doc.getLength()));
                     } catch (BadLocationException ex) {

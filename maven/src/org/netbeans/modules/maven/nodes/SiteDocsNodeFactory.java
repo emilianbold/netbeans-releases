@@ -56,6 +56,7 @@ import org.openide.nodes.Node;
  *
  * @author mkleint
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=600)
 public class SiteDocsNodeFactory implements NodeFactory {
     private static final String KEY_SITE = "SITE"; //NOI18N
     private static final String SITE = "src/site"; //NOI18N

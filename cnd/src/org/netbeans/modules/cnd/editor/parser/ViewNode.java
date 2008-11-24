@@ -38,8 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package  org.netbeans.modules.cnd.editor.parser;
+package org.netbeans.modules.cnd.editor.parser;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.AbstractNode;
@@ -54,6 +53,7 @@ import javax.swing.JEditorPane;
 import org.openide.text.NbDocument;
 
 public abstract class ViewNode extends AbstractNode {
+
     private Line line = null;
     private DataObject dao = null;
     private int lineno = 0;
@@ -63,7 +63,7 @@ public abstract class ViewNode extends AbstractNode {
     private int cluster;
     private String sortName;
     private int scopeLevels = 0;
-    
+
     public ViewNode(String name, DataObject dao, int lineno, char kind, String scope, int scopeCluster, int cluster) {
         super(Children.LEAF);
         this.dao = dao;
@@ -72,14 +72,13 @@ public abstract class ViewNode extends AbstractNode {
         this.scope = scope;
         this.scopeCluster = scopeCluster;
         this.cluster = cluster;
-	setName(name);
-	if (scope != null) {
-	    sortName = createSortScope(scope) + "::" + cluster + name; // NOI18N
-	    setDisplayName(name);
-	}
-	else {
-	    sortName = cluster + name;
-	    setDisplayName(name);
+        setName(name);
+        if (scope != null) {
+            sortName = createSortScope(scope) + "::" + cluster + name; // NOI18N
+            setDisplayName(name);
+        } else {
+            sortName = cluster + name;
+            setDisplayName(name);
         }
     }
 
@@ -100,27 +99,27 @@ public abstract class ViewNode extends AbstractNode {
      * variables come before methods
      */
     private String createSortScope(String scope) {
-	String sortScope = ""; // NOI18N
-	if (scope == null) {
-	    scopeLevels = 0;
-	    sortScope = ""; // NOI18N
-	}
-	else {
-	    scopeLevels = 1;
-	    int startIndex = 0;
-	    int index;
-	    while ((index = scope.indexOf("::", startIndex)) >= 0) { // NOI18N
-		sortScope = sortScope + scopeCluster + scope.substring(startIndex, index) + "::"; // NOI18N
-		scopeLevels++;
-		startIndex = index + 2;
-	    }
-	    sortScope = sortScope + scopeCluster + scope.substring(startIndex);
-	}
-	return sortScope;
+        StringBuilder sortScope = new StringBuilder();
+        if (scope == null) {
+            scopeLevels = 0;
+        } else {
+            scopeLevels = 1;
+            int startIndex = 0;
+            int index;
+            while ((index = scope.indexOf("::", startIndex)) >= 0) { // NOI18N
+                sortScope.append(scopeCluster);
+                sortScope.append(scope.substring(startIndex, index));
+                sortScope.append("::"); // NOI18N
+                scopeLevels++;
+                startIndex = index + 2;
+            }
+            sortScope.append(scopeCluster).append(scope.substring(startIndex));
+        }
+        return sortScope.toString();
     }
 
     public String getSortName() {
-	return sortName;
+        return sortName;
     }
 
     public int getScopeLevel() {
@@ -128,63 +127,64 @@ public abstract class ViewNode extends AbstractNode {
     }
 
     public String getScope() {
-	return scope;
+        return scope;
     }
 
     public int getScopeCluster() {
-	return scopeCluster;
+        return scopeCluster;
     }
 
     public int getCluster() {
-	return cluster;
+        return cluster;
     }
-    
+
     public Line getLine() {
-        if (line == null)
+        if (line == null) {
             line = lineNumberToLine();
-	if (line == null) {
-	    ErrorManager.getDefault().notify(new Exception("No Line info for line " + lineno + " in " + dao.getPrimaryFile().getNameExt())); // NOI18N
-	}
+        }
+        if (line == null) {
+            ErrorManager.getDefault().notify(new Exception("No Line info for line " + lineno + " in " + dao.getPrimaryFile().getNameExt())); // NOI18N
+        }
         return line;
     }
-    
+
     public int getLineNo() {
         return lineno;
     }
-    
+
     public void goToLine() {
         getLine().show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
     }
-    
+
     private Line lineNumberToLine() {
-        LineCookie lc = (LineCookie)dao.getCookie(LineCookie.class);
-	Line l = null;
+        LineCookie lc = dao.getCookie(LineCookie.class);
+        Line l = null;
         if (lc != null) {
             Line.Set ls = lc.getLineSet();
             if (ls != null) {
-                l = ls.getCurrent(lineno-1);
+                l = ls.getCurrent(lineno - 1);
             }
         }
         return l;
     }
 
     public int getLineOffset() {
-        EditorCookie editor = (EditorCookie) dao.getCookie(EditorCookie.class);
+        EditorCookie editor = dao.getCookie(EditorCookie.class);
         assert editor != null;
-	return NbDocument.findLineOffset(editor.getDocument(), lineno-1);
+        return NbDocument.findLineOffset(editor.getDocument(), lineno - 1);
     }
 
     public void goToOffset(JEditorPane jEditorPane) {
-	jEditorPane.getCaret().setDot(getLineOffset());
-	jEditorPane.requestFocus();
+        jEditorPane.getCaret().setDot(getLineOffset());
+        jEditorPane.requestFocus();
     }
 
     public char getKind() {
-	return kind;
+        return kind;
     }
 
     public DataObject getDataObject() {
-	return dao;
+        return dao;
     }
 }
 

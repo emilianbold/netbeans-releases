@@ -172,7 +172,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     public org.openide.nodes.Node findPath(Node root, Object target) {
         Node returnNode = null;
-        Project rootProject = (Project) root.getLookup().lookup(Project.class);
+        Project rootProject = root.getLookup().lookup(Project.class);
         if (rootProject == null) {
             return null;
         }
@@ -313,7 +313,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     public static void setVisible(Project project, Item[] items) {
         Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
-        List nodes = new ArrayList();
+        List<Node> nodes = new ArrayList<Node>();
         for (int i = 0; i < items.length; i++) {
             Node root = findProjectNode(rootNode, project);
 
@@ -322,7 +322,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             }
         }
         try {
-            ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes((Node[]) nodes.toArray(new Node[0]));
+            ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(nodes.toArray(new Node[0]));
         } catch (Exception e) {
             // skip
         }
@@ -472,7 +472,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         private void updateAnnotationFiles() {
-            HashSet set = new HashSet();
+            HashSet<FileObject> set = new HashSet<FileObject>();
             // Add project directory
             FileObject fo = project.getProjectDirectory();
             if (fo == null || !fo.isValid()) {
@@ -507,7 +507,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 }
             }
             setFiles(set);
-            List allFolders = new ArrayList();
+            List<Folder> allFolders = new ArrayList<Folder>();
             allFolders.add(folder);
             allFolders.addAll(folder.getAllFolders(true));
             Iterator iter = allFolders.iterator();
@@ -582,7 +582,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 getMakeConfigurationDescriptor().getLogicalFolders();
             }
 
-            List actions = new ArrayList();
+            List<Action> actions = new ArrayList<Action>();
             // Add standard actions
             Action[] standardActions = getAdditionalActions();
             for (int i = 0; i < standardActions.length; i++) {
@@ -599,7 +599,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             //actions.add(SystemAction.get(ToolsAction.class));
             //actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
-            return (Action[]) actions.toArray(new Action[actions.size()]);
+            return actions.toArray(new Action[actions.size()]);
         }
 
         @Override
@@ -619,7 +619,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         @Override
-        protected void createPasteTypes(Transferable transferable, List list) {
+        protected void createPasteTypes(Transferable transferable, List<PasteType> list) {
             DataFlavor[] flavors = transferable.getTransferDataFlavors();
             for (int i = 0; i < flavors.length; i++) {
                 if (flavors[i].getSubType().equals(SUBTYPE)) {
@@ -711,9 +711,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean context) {
-            List actions = new ArrayList();
+            List<Action> actions = new ArrayList<Action>();
             actions.add(CommonProjectActions.closeProjectAction());
-            return (Action[]) actions.toArray(new Action[actions.size()]);
+            return actions.toArray(new Action[actions.size()]);
         }
 
         @Override
@@ -831,7 +831,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             @Override
             public void run() {
                 setFiles(Collections.EMPTY_SET /*folder.getAllItemsAsFileObjectSet(true)*/); // See IZ 100394 for details
-                List allFolders = new ArrayList();
+                List<Folder> allFolders = new ArrayList<Folder>();
                 allFolders.add(folder);
                 allFolders.addAll(folder.getAllFolders(true));
                 Iterator iter = allFolders.iterator();
@@ -941,7 +941,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         @Override
-        protected void createPasteTypes(Transferable transferable, List list) {
+        protected void createPasteTypes(Transferable transferable, List<PasteType> list) {
             DataFlavor[] flavors = transferable.getTransferDataFlavors();
             for (int i = 0; i < flavors.length; i++) {
                 if (flavors[i].getSubType().equals(SUBTYPE)) {
@@ -1357,7 +1357,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             // Replace DeleteAction with Remove Action
             // Replace PropertyAction with customizeProjectAction
             Action[] oldActions = super.getActions(false);
-            List newActions = new ArrayList();
+            List<Action> newActions = new ArrayList<Action>();
             for (int i = 0; i < oldActions.length; i++) {
                 if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
                     newActions.add(oldActions[i]);
@@ -1377,7 +1377,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     newActions.add(oldActions[i]);
                 }
             }
-            return (Action[]) newActions.toArray(new Action[newActions.size()]);
+            return newActions.toArray(new Action[newActions.size()]);
         }
 
         @Override

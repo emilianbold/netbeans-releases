@@ -1793,7 +1793,6 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
    }
 
    /* (non-Javadoc)
-    * @see org.netbeans.modules.uml.ui.controls.editcontrol.IEditControl#displayList(boolean, com.embarcadero.describe.umlsupport.IStrings, int, java.lang.String)
     */
    public void displayList(boolean bList, IStrings pList, int nStart, String sInitialText)
    {

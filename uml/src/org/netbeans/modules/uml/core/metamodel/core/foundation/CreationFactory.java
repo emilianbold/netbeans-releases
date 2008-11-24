@@ -205,9 +205,7 @@ public class CreationFactory implements ICreationFactory {
 	 * Creates the COM wrapper to house the actual XML element.  The XML element
 	 * has not been initialized as a result of this call.
 	 * 
-	 * @param subKey[in] 	The registry sub-key where the typeName is found (i.e.,
-	 *					ReverseEngineering would equate to "Software\\Embarcadero\\
-						Describe\\ReverseEngineering\\
+	 * @param subKey[in] 	The registry sub-key where the typeName is found
 	 * @param typeName[in] The type to retrieve.  For example "Class" will retrieve
 	 *					the IUnknown of an implementation supporting the IClass interface
 	 * @param outer[in]	The controlling outer unknown.  Used when aggregating.  Can be 0.

@@ -41,7 +41,6 @@
 
 package org.netbeans.api.project;
 
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,8 +56,6 @@ import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
@@ -72,27 +69,6 @@ public final class TestUtil {
     private TestUtil() {}
     
     /**
-     * Set the global default lookup.
-     * Caution: if you don't include Lookups.metaInfServices, you may have trouble,
-     * e.g. {@link #makeScratchDir} will not work.
-     * @deprecated Use {@link MockLookup} instead.
-     */
-    @Deprecated
-    public static void setLookup(Lookup l) {
-        MockLookup.setLookup(l);
-    }
-    
-    /**
-     * Set the global default lookup with some fixed instances including META-INF/services/*.
-     * @deprecated Use {@link MockLookup} instead.
-     */
-    @Deprecated
-    public static void setLookup(Object... instances) {
-        MockLookup.setInstances(instances);
-    }
-    
-    private static boolean warned = false;
-    /**
      * Create a scratch directory for tests.
      * Will be in /tmp or whatever, and will be empty.
      * If you just need a java.io.File use clearWorkDir + getWorkDir.
@@ -104,27 +80,14 @@ public final class TestUtil {
         assert root.list().length == 0 : Arrays.toString(root.list());
         MockLookup.init(); // URLMapper asks for default lookup
         FileObject fo = FileUtil.toFileObject(root);
-        if (fo != null) {
-            return fo;
-        } else {
-            if (!warned) {
-                warned = true;
-                System.err.println("No FileObject for " + root + " found.\n" +
-                                    "Maybe you need ${openide/masterfs.dir}/modules/org-netbeans-modules-masterfs.jar\n" +
-                                    "in test.unit.run.cp.extra, or make sure Lookups.metaInfServices is included in Lookup.default, so that\n" +
-                                    "Lookup.default<URLMapper>=" + Lookup.getDefault().lookupAll(URLMapper.class) + " includes MasterURLMapper\n" +
-                                    "e.g. by using TestUtil.setLookup(Object[]) rather than TestUtil.setLookup(Lookup).");
-            }
-            // For the benefit of those not using masterfs.
-            LocalFileSystem lfs = new LocalFileSystem();
-            try {
-                lfs.setRootDirectory(root);
-            } catch (PropertyVetoException e) {
-                assert false : e;
-            }
-            Repository.getDefault().addFileSystem(lfs);
-            return lfs.getRoot();
-        }
+        Assert.assertNotNull(
+                "No FileObject for " + root + " found.\n" +
+                "Maybe you need ${openide/masterfs.dir}/modules/org-netbeans-modules-masterfs.jar\n" +
+                "in test.unit.run.cp.extra, or make sure Lookups.metaInfServices is included in Lookup.default, so that\n" +
+                "Lookup.default<URLMapper>=" + Lookup.getDefault().lookupAll(URLMapper.class) + " includes MasterURLMapper\n" +
+                "e.g. by using TestUtil.setLookup(Object[]) rather than TestUtil.setLookup(Lookup).",
+                fo);
+        return fo;
     }
     
     /**

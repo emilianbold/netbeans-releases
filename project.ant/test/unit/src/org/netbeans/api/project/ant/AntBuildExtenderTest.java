@@ -52,6 +52,7 @@ import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ant.AntBuildExtenderAccessor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.test.MockLookup;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -81,9 +82,7 @@ public class AntBuildExtenderTest extends NbTestCase {
         TestUtil.createFileFromContent(GeneratedFilesHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");
         extension1 = TestUtil.createFileFromContent(GeneratedFilesHelperTest.class.getResource("data/extension1.xml"), projdir, "nbproject/extension1.xml");
         extenderImpl = new ExtImpl();
-        TestUtil.setLookup(new Object[] {
-            AntBasedTestUtil.testAntBasedProjectType(extenderImpl),
-        });
+        MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType(extenderImpl));
         pm = ProjectManager.getDefault();
         p = pm.findProject(projdir);
         extenderImpl.project = p;

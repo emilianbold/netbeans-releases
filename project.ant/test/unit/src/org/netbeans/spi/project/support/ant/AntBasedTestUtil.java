@@ -43,7 +43,6 @@ package org.netbeans.spi.project.support.ant;
 
 import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
@@ -174,7 +173,7 @@ public class AntBasedTestUtil {
             refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator());
             Object extContent;
             if (ext !=null) {
-                AntBuildExtender e = AntBuildExtenderFactory.createAntExtender(ext);
+                AntBuildExtender e = AntBuildExtenderFactory.createAntExtender(ext, refHelper);
                 genFilesHelper = new GeneratedFilesHelper(helper, e);
                 extContent = e;
             } else {

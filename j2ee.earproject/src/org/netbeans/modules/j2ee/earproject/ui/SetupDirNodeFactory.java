@@ -56,6 +56,7 @@ import org.openide.nodes.Node;
  * 
  * @author gpatil
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-j2ee-earproject", position=200)
 public final class SetupDirNodeFactory implements NodeFactory {
     
     public SetupDirNodeFactory() {

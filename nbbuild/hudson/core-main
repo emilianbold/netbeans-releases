@@ -120,13 +120,16 @@ if [ "$action" = "build" ]; then
 fi
 
 if [ "$action" = "sync" ]; then
+    if [ -z "$push_repo" ]; then
+        push_repo="core-main"
+    fi
     HEADS=`hg heads --template "{node}\n" | wc -l`
     if [ $HEADS = 2 ]; then
       hg merge
       hg ci -u "$push_username"@netbeans.org -m "Automated merge"
       hg up -C
     fi
-    hg fetch -u "$push_username"@netbeans.org http://hg.netbeans.org/core-main
-    hg push https://"$push_username":"$push_password"@hg.netbeans.org/core-main
+    hg fetch -u "$push_username"@netbeans.org http://hg.netbeans.org/"$push_repo"
+    hg push https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo" || exit 9
     exit 0
 fi

@@ -1,10 +1,18 @@
 #!/bin/sh
 
 [ -n "$pop_url" ] || exit 101
-[ -n "$pop_build_info" ] || exit 102
+if [ -z "$pop_build_info" ]; then
+    pop_build_info="nbbuild/build/build_info"
+fi
+[ -n "$pop_job" ] || exit 103
 
 [ -n "$push_url" ] || exit 113
 [ -n "$push_username" ] || exit 114
+
+if [ -z "$TMP" ]; then
+  TMP="/tmp"
+fi
+
 
 
 ANT_OPTS="-Xmx512m -XX:MaxPermSize=128m"
@@ -12,10 +20,44 @@ export ANT_OPTS
 HGMERGE=merge
 export HGMERGE
 
+hg up -C
+hg --config extensions.purge= clean --all
+
+STATUS=$TMP/$$-status
+curl $pop_job/buildStatus -D "$STATUS"
+cat "$STATUS"
+
+if grep "Location:.*blue[_anime]*.gif.*" "$STATUS"; then
+    echo Build seems to be stable
+else
+    echo Build is not stable, exiting
+    rm "$STATUS"
+    exit 1
+fi
+rm "$STATUS"
+
+testresult() {
+    FILE="$1/TEST-hg.$2.xml"
+    echo '<?xml version="1.0" encoding="UTF-8" ?>' >$FILE
+    echo '<testsuite errors="0" failures="0" name="hg.'$2'" tests="1" time="1">' >>$FILE
+    echo '  <properties>' >>$FILE
+    echo '  </properties>' >>$FILE
+    echo '  <testcase classname="hg.'$2'" name="hg.'$2'" time="1" />' >>$FILE
+    echo '  <system-out>' >>$FILE
+    echo "$3" >>$FILE
+    echo '</system-out>' >>$FILE
+    echo '  <system-err></system-err>' >>$FILE
+    echo '</testsuite>' >>$FILE
+}
+
+TESTDIR="nbbuild/build/test/results/"
+mkdir -p $TESTDIR
+
 echo Getting Build Info
-HGINFO=`curl $pop_build_info`
-echo $HGINFO
-[ -n "$HGINFO" ] || (echo No Build Info; exit 1)
+HGINFO=`curl $pop_job/lastStableBuild/artifact/$pop_build_info`
+echo Build info: $HGINFO
+testresult "$TESTDIR" "check.build.stable" "$HGINFO"
+[ -n "$HGINFO" ] || exit 1
 
 HGID=`echo "$HGINFO" | grep "Hg ID"`
 echo Last build_info line: "$HGID"
@@ -27,15 +69,23 @@ if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
 then
    hg up || exit 6
 else
-   hg merge || exit 7
+   if hg merge; then
+     echo Merge OK.
+   else
+     echo Merge failed.
+     hg heads
+     exit 7
+   fi
    hg ci -u "$push_username"@netbeans.org -m 'Automated merge' || exit 8
 fi
-hg out $push_url
+HGOUT=`hg out $push_url`
+testresult "$TESTDIR" "outgoing.changes" "$HGOUT"
 
-if [ `hg out --template '{node|short}\n' $push_url | wc -l` > 0 ]; then
-    echo "Let the build starts..."
+OUT_COUNT=`hg out --template 'change: {node|short}\n' $push_url | grep '^change: ' | wc -l`
+if [ "$OUT_COUNT" -gt 0 ]; then
+    echo "Let the build start. There is $OUT_COUNT outgoing changes."
 else
-    echo "No outgoing changes"
+    echo "No outgoing changes. No reason to do build."
     exit 0
 fi
 
@@ -48,14 +98,15 @@ testmodule() {
         echo Test OK: $1
     else
         echo $1 >>$RESULT
+        exit 5
     fi
 }
 
-ant clean $ANT_PARAM || exit 2
 ant build $ANT_PARAM || exit 2
-ant commit-validation $ANT_PARAM || echo commit-validation >$RESULT
+ant commit-validation $ANT_PARAM || exit 3
+ant build-test-dist $ANT_PARAM || exit 4
 
-testmodule openide.util
+testmodule openide.awt || exit 5
 
 FAILED=`cat $RESULT | wc -l`
 if [ "$FAILED" -gt 0 ]; then

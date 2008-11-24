@@ -165,6 +165,7 @@ public final class FileUtil extends Object {
      */
     public static void refreshAll() {
         refreshFor(File.listRoots());
+        Repository.getDefault().getDefaultFileSystem().refresh(true);
     }         
     
     /**

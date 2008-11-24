@@ -54,7 +54,6 @@ public class AttributeEventsAdapter implements IAttributeEventsSink
 {
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IAttributeEventsSink#onDefaultPreModified(com.embarcadero.describe.coreinfrastructure.IAttribute, com.embarcadero.describe.foundation.IExpression, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onDefaultPreModified(
       IAttribute attr,
@@ -65,7 +64,6 @@ public class AttributeEventsAdapter implements IAttributeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IAttributeEventsSink#onDefaultModified(com.embarcadero.describe.coreinfrastructure.IAttribute, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onDefaultModified(IAttribute attr, IResultCell cell)
    {
@@ -73,7 +71,6 @@ public class AttributeEventsAdapter implements IAttributeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IAttributeEventsSink#onPreDefaultBodyModified(com.embarcadero.describe.coreinfrastructure.IAttribute, java.lang.String, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreDefaultBodyModified(
       IAttribute feature,
@@ -84,7 +81,6 @@ public class AttributeEventsAdapter implements IAttributeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IAttributeEventsSink#onDefaultBodyModified(com.embarcadero.describe.coreinfrastructure.IAttribute, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onDefaultBodyModified(IAttribute feature, IResultCell cell)
    {
@@ -92,7 +88,6 @@ public class AttributeEventsAdapter implements IAttributeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IAttributeEventsSink#onPreDefaultLanguageModified(com.embarcadero.describe.coreinfrastructure.IAttribute, java.lang.String, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreDefaultLanguageModified(
       IAttribute feature,
@@ -103,7 +98,6 @@ public class AttributeEventsAdapter implements IAttributeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IAttributeEventsSink#onDefaultLanguageModified(com.embarcadero.describe.coreinfrastructure.IAttribute, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onDefaultLanguageModified(IAttribute feature, IResultCell cell)
    {
@@ -111,7 +105,6 @@ public class AttributeEventsAdapter implements IAttributeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IAttributeEventsSink#onPreDerivedModified(com.embarcadero.describe.coreinfrastructure.IAttribute, boolean, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreDerivedModified(
       IAttribute feature,
@@ -122,7 +115,6 @@ public class AttributeEventsAdapter implements IAttributeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IAttributeEventsSink#onDerivedModified(com.embarcadero.describe.coreinfrastructure.IAttribute, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onDerivedModified(IAttribute feature, IResultCell cell)
    {
@@ -130,7 +122,6 @@ public class AttributeEventsAdapter implements IAttributeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IAttributeEventsSink#onPrePrimaryKeyModified(com.embarcadero.describe.coreinfrastructure.IAttribute, boolean, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPrePrimaryKeyModified(
       IAttribute feature,
@@ -141,7 +132,6 @@ public class AttributeEventsAdapter implements IAttributeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IAttributeEventsSink#onPrimaryKeyModified(com.embarcadero.describe.coreinfrastructure.IAttribute, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPrimaryKeyModified(IAttribute feature, IResultCell cell)
    {

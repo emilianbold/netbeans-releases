@@ -45,7 +45,9 @@ import java.awt.Component;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
@@ -70,9 +72,9 @@ public class PlatformInstallIteratorTest extends NbTestCase {
 
     public void testSinglePlatformInstall () throws IOException {
         InstallerRegistry regs = InstallerRegistryAccessor.prepareForUnitTest(new GeneralPlatformInstall[] {
-            new FileBasedPlatformInstall ("FileBased1", new WizardDescriptor.Panel[] {
+            new FileBasedPlatformInstall ("FileBased1", Collections.<WizardDescriptor.Panel<WizardDescriptor>>singletonList(
                 new Panel ("FileBased1_panel1")
-            })
+            ))
         });
         PlatformInstallIterator iterator = PlatformInstallIterator.create();
         WizardDescriptor wd = new WizardDescriptor (iterator);
@@ -94,9 +96,9 @@ public class PlatformInstallIteratorTest extends NbTestCase {
     
     public void testSingleCustomInstall () throws IOException {
         InstallerRegistry regs = InstallerRegistryAccessor.prepareForUnitTest(new GeneralPlatformInstall[] {
-            new OtherPlatformInstall ("Custom1", new WizardDescriptor.Panel[] {
+            new OtherPlatformInstall ("Custom1", Collections.<WizardDescriptor.Panel<WizardDescriptor>>singletonList(
                 new Panel ("Custom1_panel1")
-            })
+            ))
         });
         PlatformInstallIterator iterator = PlatformInstallIterator.create();
         WizardDescriptor wd = new WizardDescriptor (iterator);
@@ -110,12 +112,12 @@ public class PlatformInstallIteratorTest extends NbTestCase {
     
     public void testMultipleGenralPlatformInstalls () throws IOException {
         GeneralPlatformInstall[] installers = new GeneralPlatformInstall[] {
-            new FileBasedPlatformInstall ("FileBased1", new WizardDescriptor.Panel[] {
+            new FileBasedPlatformInstall ("FileBased1", Collections.<WizardDescriptor.Panel<WizardDescriptor>>singletonList(
                 new Panel ("FileBased1_panel1")
-            }),
-            new OtherPlatformInstall ("Custom1", new WizardDescriptor.Panel[] {
+            )),
+            new OtherPlatformInstall ("Custom1", Collections.<WizardDescriptor.Panel<WizardDescriptor>>singletonList(
                 new Panel ("Custom1_panel1")
-            })
+            ))
         };
         InstallerRegistry regs = InstallerRegistryAccessor.prepareForUnitTest (installers);
         PlatformInstallIterator iterator = PlatformInstallIterator.create();        
@@ -151,12 +153,12 @@ public class PlatformInstallIteratorTest extends NbTestCase {
     
     public void testMultipleFileBasedPlatformInstalls () throws IOException {
         GeneralPlatformInstall[] installers = new GeneralPlatformInstall[] {
-            new FileBasedPlatformInstall ("FileBased1", new WizardDescriptor.Panel[] {
+            new FileBasedPlatformInstall ("FileBased1", Collections.<WizardDescriptor.Panel<WizardDescriptor>>singletonList(
                 new Panel ("FileBased1_panel1")
-            }),
-            new FileBasedPlatformInstall ("FileBased2", new WizardDescriptor.Panel[] {
+            )),
+            new FileBasedPlatformInstall ("FileBased2", Collections.<WizardDescriptor.Panel<WizardDescriptor>>singletonList(
                 new Panel ("FileBased2_panel2")
-            }),
+            )),
         };
         InstallerRegistry regs = InstallerRegistryAccessor.prepareForUnitTest (installers);
         PlatformInstallIterator iterator = PlatformInstallIterator.create();        
@@ -186,11 +188,11 @@ public class PlatformInstallIteratorTest extends NbTestCase {
     }
     
     public void testIteratorWithMorePanels () throws IOException {
+        List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+        panels.add(new Panel("Custom1_panel1"));
+        panels.add(new Panel("Custom1_panel2"));
         InstallerRegistry regs = InstallerRegistryAccessor.prepareForUnitTest(new GeneralPlatformInstall[] {
-            new OtherPlatformInstall ("Custom1", new WizardDescriptor.Panel[] {
-                new Panel ("Custom1_panel1"),
-                new Panel ("Custom1_panel2"),
-            })
+            new OtherPlatformInstall("Custom1", panels)
         });
         PlatformInstallIterator iterator = PlatformInstallIterator.create();
         WizardDescriptor wd = new WizardDescriptor (iterator);
@@ -210,14 +212,14 @@ public class PlatformInstallIteratorTest extends NbTestCase {
     private static class FileBasedPlatformInstall extends PlatformInstall {
         
         private String name;
-        private WizardDescriptor.InstantiatingIterator iterator;
+        private WizardDescriptor.InstantiatingIterator<WizardDescriptor> iterator;
         
-        public FileBasedPlatformInstall (String name, WizardDescriptor.Panel[] panels) {
+        public FileBasedPlatformInstall (String name, List<WizardDescriptor.Panel<WizardDescriptor>> panels) {
             this.name = name;
             this.iterator = new Iterator (panels);
         }
 
-        public WizardDescriptor.InstantiatingIterator createIterator(FileObject baseFolder) {
+        public WizardDescriptor.InstantiatingIterator<WizardDescriptor> createIterator(FileObject baseFolder) {
             return this.iterator;
         }
 
@@ -233,9 +235,9 @@ public class PlatformInstallIteratorTest extends NbTestCase {
     private static class OtherPlatformInstall extends CustomPlatformInstall {
         
         private String name;
-        private WizardDescriptor.InstantiatingIterator iterator;
+        private WizardDescriptor.InstantiatingIterator<WizardDescriptor> iterator;
         
-        public OtherPlatformInstall (String name, WizardDescriptor.Panel[] panels) {
+        public OtherPlatformInstall (String name, List<WizardDescriptor.Panel<WizardDescriptor>> panels) {
             this.name = name;
             this.iterator = new Iterator (panels);
         }
@@ -244,18 +246,18 @@ public class PlatformInstallIteratorTest extends NbTestCase {
             return this.name;
         }
 
-        public WizardDescriptor.InstantiatingIterator createIterator () {
+        public WizardDescriptor.InstantiatingIterator<WizardDescriptor> createIterator () {
             return this.iterator;
         }
                         
     }
     
-    private static class Iterator implements WizardDescriptor.InstantiatingIterator {
+    private static class Iterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         
-        private WizardDescriptor.Panel[] panels;
+        private List<WizardDescriptor.Panel<WizardDescriptor>> panels;
         private int index;
         
-        public Iterator (WizardDescriptor.Panel[] panels) {
+        public Iterator (List<WizardDescriptor.Panel<WizardDescriptor>> panels) {
             this.panels = panels;
         }
         
@@ -293,16 +295,16 @@ public class PlatformInstallIteratorTest extends NbTestCase {
         }
 
         public boolean hasNext() {
-            return this.index < (this.panels.length - 1);
+            return this.index < (this.panels.size() - 1);
         }
 
-        public WizardDescriptor.Panel current() {
-            return this.panels[this.index];
+        public WizardDescriptor.Panel<WizardDescriptor> current() {
+            return this.panels.get(this.index);
         }
         
     }
     
-    private static class Panel implements WizardDescriptor.Panel {        
+    private static class Panel implements WizardDescriptor.Panel<WizardDescriptor> {
         
         private JPanel p;
         private String name;
@@ -317,10 +319,10 @@ public class PlatformInstallIteratorTest extends NbTestCase {
         public void addChangeListener(ChangeListener l) {
         }
 
-        public void storeSettings(Object settings) {
+        public void storeSettings(WizardDescriptor wiz) {
         }
 
-        public void readSettings(Object settings) {
+        public void readSettings(WizardDescriptor qiz) {
         }
 
         public boolean isValid() {

@@ -339,7 +339,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     public void mouseExited(MouseEvent e) {
     }
 
-    private class MyListModel extends AbstractListModel {
+    private static class MyListModel extends AbstractListModel {
         private List<MyListItem> objects;
         private MyListModel(List<MyListItem> objects){
             this.objects = objects;
@@ -354,7 +354,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         }
     }
     
-    private class MyListItem implements Comparable<MyListItem> {
+    private static class MyListItem implements Comparable<MyListItem> {
         private String id;
         private String name;
         

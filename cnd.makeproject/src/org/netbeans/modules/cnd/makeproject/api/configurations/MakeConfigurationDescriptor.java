@@ -241,7 +241,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         Iterator it;
 
         synchronized (projectItemsChangeListeners) {
-            it = new HashSet(projectItemsChangeListeners).iterator();
+            it = new HashSet<ChangeListener>(projectItemsChangeListeners).iterator();
         }
         ChangeEvent ev = new ProjectItemChangeEvent(this, item, action);
         while (it.hasNext()) {
@@ -545,8 +545,8 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
 
         // Check metadata files are writable
-        Vector metadataFiles = new Vector();
-        Vector notOkFiles = new Vector();
+        Vector<String> metadataFiles = new Vector<String>();
+        Vector<String> notOkFiles = new Vector<String>();
         metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "project.xml"); // NOI18N
         metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "configurations.xml"); // NOI18N
         metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "Makefile-impl.mk"); // NOI18N
@@ -556,7 +556,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         } // NOI18N
         boolean allOk = true;
         for (int i = 0; i < metadataFiles.size(); i++) {
-            File file = new File((String) metadataFiles.elementAt(i));
+            File file = new File(metadataFiles.elementAt(i));
             if (!file.exists()) {
                 continue;
             }
@@ -567,12 +567,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
         if (!allOk) {
             String projectName = IpeUtils.getBaseName(getBaseDir());
-            String text = getString("CannotSaveTxt", projectName);
+            StringBuilder text = new StringBuilder();
+            text.append(getString("CannotSaveTxt", projectName)); // NOI18N
             for (int i = 0; i < notOkFiles.size(); i++) {
-                text += "\n" + notOkFiles.elementAt(i); // NOI18N
+                text.append("\n").append(notOkFiles.elementAt(i)); // NOI18N
             }
             if (extraMessage != null) {
-                text += "\n\n" + extraMessage; // NOI18N
+                text.append("\n\n").append(extraMessage); // NOI18N
             }
             NotifyDescriptor d = new NotifyDescriptor.Message(text, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
@@ -670,7 +671,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
      * Returns project locations (rel or abs) or all subprojects in all configurations.
      */
     public Set<String> getSubprojectLocations() {
-        Set subProjects = new HashSet();
+        Set<String> subProjects = new HashSet<String>();
 
         Configuration[] confs = getConfs().getConfs();
         for (int i = 0; i < confs.length; i++) {
@@ -780,7 +781,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         return sourceRoots;
     }
     
-    public void setSourceRoots(List list) {
+    public void setSourceRoots(List<String> list) {
         synchronized (sourceRoots) {
             sourceRoots = list;
         }
@@ -793,7 +794,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 addSourceRoot(l);
             }
         }
-        MakeSources makeSources = (MakeSources) getProject().getLookup().lookup(MakeSources.class);
+        MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
         if (makeSources != null) {
             makeSources.sourceRootsChanged();
         }
@@ -886,7 +887,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             new AddFilesThread(sourceFileFoldersIterator, folder, notify).start();
         } else {
             while (sourceFileFoldersIterator.hasNext()) {
-                ArrayList filesAdded = new ArrayList();
+                ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
                 FolderEntry folderEntry = (FolderEntry) sourceFileFoldersIterator.next();
                 Folder top = folder.findFolderByName(folderEntry.getFile().getName());
                 if (top == null) {
@@ -923,7 +924,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
 
         public void run() {
-            ArrayList filesAdded = new ArrayList();
+            ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
             try {
                 handle.setInitialDelay(500);
                 handle.start();
@@ -951,7 +952,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
 
-    private void addFiles(Folder folder, File dir, boolean addSubFolders, FileFilter filter, ProgressHandle handle, ArrayList filesAdded, boolean notify) {
+    private void addFiles(Folder folder, File dir, boolean addSubFolders, FileFilter filter, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded, boolean notify) {
         File[] files = dir.listFiles();
         if (files == null) {
             return;

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.runprofiles.ui;
 
 import java.util.ArrayList;
@@ -55,120 +54,117 @@ import javax.swing.table.AbstractTableModel;
  */
 public class ListTableModel extends AbstractTableModel {
 
-    public ListTableModel() {
-	super();
-    }
-    
-    public ListTableModel(String h1, String h2) {
-	super();
-	if (h2 == null) {
-	    colCount = 1;
-	} else {
-	    colCount = 2;
-	}
-
-	header0 = h1;
-	header1 = h2;
-	column0 = new ArrayList(5);
-	column1 = new ArrayList(5);
-
-	// Start out with one empty row
-	column0.add(""); // NOI18N
-	column1.add(""); // NOI18N
-	rowCount = 1;
-    }
-
     int rowCount = 0;
-
     private JTable table = null;
     private String header0 = null;
     private String header1 = null;
     int colCount = 0;
+    private ArrayList<String> column0 = null;
+    private ArrayList<String> column1 = null;
+    
+    public ListTableModel() {
+        super();
+    }
 
-    private ArrayList column0 = null;
-    private ArrayList column1 = null;
+    public ListTableModel(String h1, String h2) {
+        super();
+        if (h2 == null) {
+            colCount = 1;
+        } else {
+            colCount = 2;
+        }
+
+        header0 = h1;
+        header1 = h2;
+        column0 = new ArrayList<String>(5);
+        column1 = new ArrayList<String>(5);
+
+        // Start out with one empty row
+        column0.add(""); // NOI18N
+        column1.add(""); // NOI18N
+        rowCount = 1;
+    }
 
     public int getRowCount() {
-	return rowCount;
+        return rowCount;
     }
 
     public int getColumnCount() {
-	return colCount;
+        return colCount;
     }
 
     public String getColumnName(int columnIndex) {
-	if (columnIndex == 0) {
-	    return header0;
-	} else {
-	    return header1;
-	}
+        if (columnIndex == 0) {
+            return header0;
+        } else {
+            return header1;
+        }
     }
 
     public Class getColumnClass(int columnIndex) {
-	return String.class;
+        return String.class;
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-	return true;
+        return true;
     }
-	
+
     public Object getValueAt(int rowIndex, int columnIndex) {
-	if (columnIndex == 0) {
-	    return column0.get(rowIndex);
-	} else {
-	    return column1.get(rowIndex);
-	}
+        if (columnIndex == 0) {
+            return column0.get(rowIndex);
+        } else {
+            return column1.get(rowIndex);
+        }
     }
 
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
-	//System.out.println("Setting value " + value + " at rowIndex " + rowIndex + " and columnIndex " + columnIndex + " where rowCount is " + rowCount);
-	if (columnIndex == 0) {
-	    column0.set(rowIndex, value);
-	} else {
-	    column1.set(rowIndex, value);
-	}
+        //System.out.println("Setting value " + value + " at rowIndex " + rowIndex + " and columnIndex " + columnIndex + " where rowCount is " + rowCount);
+        if (columnIndex == 0) {
+            column0.set(rowIndex, (String)value);
+        } else {
+            column1.set(rowIndex, (String)value);
+        }
     }
 
     public void addRow() {
-	// Create new row
-	column0.add(""); // NOI18N
-	if (colCount > 1) {
-	    column1.add(""); // NOI18N
-	}
-	rowCount++;
-	// XXX cha
-	fireTableRowsInserted(rowCount, rowCount);
-	//fireTableStructureChanged(); // XXX just rows inserted!
+        // Create new row
+        column0.add(""); // NOI18N
+        if (colCount > 1) {
+            column1.add(""); // NOI18N
+        }
+        rowCount++;
+        // XXX cha
+        fireTableRowsInserted(rowCount, rowCount);
+    //fireTableStructureChanged(); // XXX just rows inserted!
     }
 
     public void removeRows(int[] selectedRows) {
-	// Go in reverse array order since we don't want the deletion
-	// indices to shift underneath us...
-	for(int i = selectedRows.length-1; i >= 0; i--) {
-	    column0.remove(selectedRows[i]);
-	    if (colCount > 1) {
-		column1.remove(selectedRows[i]);
-	    }
-	    rowCount--;
-	    fireTableRowsDeleted(rowCount, rowCount);
-	}
-	//fireTableStructureChanged(); // XXX just rows inserted!
+        // Go in reverse array order since we don't want the deletion
+        // indices to shift underneath us...
+        for (int i = selectedRows.length - 1; i >= 0; i--) {
+            column0.remove(selectedRows[i]);
+            if (colCount > 1) {
+                column1.remove(selectedRows[i]);
+            }
+            rowCount--;
+            fireTableRowsDeleted(rowCount, rowCount);
+        }
+    //fireTableStructureChanged(); // XXX just rows inserted!
     }
 
-    public void setData(int rows, ArrayList col0, ArrayList col1) {
-	rowCount = rows;
-	column0 = col0;
-	column1 = col1;
-	fireTableRowsInserted(rowCount, rowCount);
+    public void setData(int rows, ArrayList<String> col0, ArrayList col1) {
+        rowCount = rows;
+        column0 = col0;
+        column1 = col1;
+        fireTableRowsInserted(rowCount, rowCount);
     }
-    
+
     /** Technically, the model object shouldn't know anything about
-	the table (other than indirectly through updatge listening).
-	This is however done for code convenience -- see finishEditing
-	function below. */
-
+    the table (other than indirectly through updatge listening).
+    This is however done for code convenience -- see finishEditing
+    function below. */
     public void setTable(JTable newTable) {
-	table = newTable;
-	table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
+        table = newTable;
+        table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
     }
 }

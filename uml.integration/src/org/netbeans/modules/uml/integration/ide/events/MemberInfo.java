@@ -174,7 +174,6 @@ public class MemberInfo extends ElementInfo
     }
 
     /* (non-Javadoc)
-     * @see com.embarcadero.integration.events.ElementInfo#getOwningProject()
      */
     public IProject getOwningProject() {
         return attribute != null?

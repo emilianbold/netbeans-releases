@@ -45,17 +45,21 @@ import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.JAXWSLightSupportAccessor;
 
 /**
- * Most general way to create {@link WebServicesSupport} instances.
+ * Most general way to create {@link JAXWSLightSupport} instances.
  * You are not permitted to create them directly; instead you implement
- * {@link WebServicesSupportImpl} and use this factory.
+ * {@link JAXWSLightSupportImpl} and use this factory.
  *
- * @author Milan Kuchtiak, Peter Wiliams
+ * @author Milan Kuchtiak
  */
 public final class JAXWSLightSupportFactory {
 
     private JAXWSLightSupportFactory() {
     }
-
+    /** Create JAXWSLightSupport object from spi object
+     * 
+     * @param spiJAXWSSupport spi object for JAXWSSupport
+     * @return JAXWSLightSupport object
+     */
     public static JAXWSLightSupport createJAXWSSupport(JAXWSLightSupportImpl spiJAXWSSupport) {
         return JAXWSLightSupportAccessor.DEFAULT.createJAXWSSupport(spiJAXWSSupport);
     }

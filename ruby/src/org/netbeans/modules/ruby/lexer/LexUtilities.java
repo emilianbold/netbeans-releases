@@ -59,7 +59,6 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
-import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -121,7 +120,7 @@ public class LexUtilities {
 
     /** For a possibly generated offset in an AST, return the corresponding lexing/true document offset */
     public static int getLexerOffset(CompilationInfo info, int astOffset) {
-        ParserResult result = info.getEmbeddedResult(RubyMimeResolver.RUBY_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(RubyInstallation.RUBY_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -136,7 +135,7 @@ public class LexUtilities {
         if (astRange == OffsetRange.NONE) {
             return OffsetRange.NONE;
         }
-        ParserResult result = info.getEmbeddedResult(RubyMimeResolver.RUBY_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(RubyInstallation.RUBY_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {

@@ -516,6 +516,27 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ147632.cc", 12, 25, "IZ147632.cc", 3, 5);
     }
 
+    public void testIZ152875() throws Exception {
+        // IZ#152875 : No mark occurrences in macros actual parameters
+        performTest("IZ152875.cc", 12, 26, "IZ152875.cc", 9, 24);
+        performTest("IZ152875.cc", 12, 43, "IZ152875.cc", 9, 39);
+        performTest("IZ152875.cc", 12, 53, "IZ152875.cc", 10, 5);
+    }
+
+    public void testIZ153761() throws Exception {
+        // IZ#153761 : regression in python
+        performTest("IZ153761.cc", 16, 18, "IZ153761.cc", 16, 13);
+        performTest("IZ153761.cc", 19, 18, "IZ153761.cc", 19, 13);
+        performTest("IZ153761.cc", 22, 18, "IZ153761.cc", 22, 13);
+        performTest("IZ153761.cc", 25, 18, "IZ153761.cc", 25, 13);
+        performTest("IZ153761.cc", 28, 18, "IZ153761.cc", 28, 13);
+        performTest("IZ153761.cc", 31, 18, "IZ153761.cc", 31, 13);
+        performTest("IZ153761.cc", 35, 18, "IZ153761.cc", 35, 13);
+        performTest("IZ153761.cc", 38, 18, "IZ153761.cc", 38, 13);
+        performTest("IZ153761.cc", 41, 18, "IZ153761.cc", 41, 13);
+        performTest("IZ153761.cc", 44, 14, "IZ153761.cc", 43, 9);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

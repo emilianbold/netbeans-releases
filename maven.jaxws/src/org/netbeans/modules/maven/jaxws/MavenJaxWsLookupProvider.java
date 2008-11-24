@@ -61,7 +61,9 @@ import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportFactory;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportProvider;
+import org.netbeans.modules.websvc.project.spi.LookupMergerSupport;
 import org.netbeans.modules.websvc.project.spi.WebServiceDataProvider;
+import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
@@ -195,8 +197,9 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
 
             }
         };
-        WebServiceDataProvider servicedataProvider = new MavenWebServicesProvider(prj, jaxWsSupport); 
-        return Lookups.fixed(openhook, jaxWsSupportProvider, servicedataProvider);
+        WebServiceDataProvider jaxWsServiceDataProvider = new MavenJaxWsServicesProvider(prj, jaxWsSupport);
+        LookupMerger<WebServiceDataProvider> wsDataProviderMerger = LookupMergerSupport.createWebServiceDataProviderMerger();
+        return Lookups.fixed(openhook, jaxWsSupportProvider, jaxWsServiceDataProvider, wsDataProviderMerger);
     }
 
     private class WebservicesChangeListener implements PropertyChangeListener {

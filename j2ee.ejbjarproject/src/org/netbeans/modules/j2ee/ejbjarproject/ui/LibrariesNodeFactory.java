@@ -76,6 +76,7 @@ import org.openide.util.NbBundle;
  * 
  * @author gpatil
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-j2ee-ejbjarproject", position=500)
 public final class LibrariesNodeFactory implements NodeFactory {
     
     /** Creates a new instance of LibrariesNodeFactory */

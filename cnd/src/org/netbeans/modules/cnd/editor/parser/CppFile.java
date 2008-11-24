@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.editor.parser;
 
 import java.io.File;
@@ -79,51 +78,43 @@ public class CppFile {
     public final static int CONSTRUCTOR_FOLD = 8;
     public final static int DESTRUCTOR_FOLD = 9;
     public static final int NAMESPACE_FOLD = 10;
-
     /** parsing state information */
     private int state;
-
     /** the file being parsed */
     //private String filename;
 
     //private File file;
 
     //private long mtime;
-
     /** start of file parse. Track for never ending parses */
     //private long parsingStartTime;
 
     //private Document doc;
 
     //private int next = 0;
-
     /** record of initial comment fold information */
     private CppFoldRecord initialCommentFoldRecord;
-
     /** record of includes block fold information */
-    private List<CppFoldRecord> includesFoldRecords = new ArrayList();
-
+    private List<CppFoldRecord> includesFoldRecords = new ArrayList<CppFoldRecord>();
     /** record of class/struct/union definition fold information */
 //    private ArrayList/*<CppFoldRecord>*/ classFoldRecords;
-
     /** record of function/method/class/#ifdef/comments fold information */
-    private List/*<CppFoldRecord>*/ blockFoldRecords;
-    
+    private List<CppFoldRecord> blockFoldRecords;
 
     public CppFile(String filename) {
-	//file = new File(filename);
-	state = PARSING_INITIALIZED;
-	//this.filename = filename;
+        //file = new File(filename);
+        state = PARSING_INITIALIZED;
+        //this.filename = filename;
 
 //	classFoldRecords = new ArrayList();
-	blockFoldRecords = new ArrayList();
+        blockFoldRecords = new ArrayList<CppFoldRecord>();
     }
-
     private int parseCount = 0;
+
     private synchronized int getCount() {
         return ++parseCount;
     }
-    
+
     public void startParsing(Document doc) {
 //        int curCount = getCount();
 //        System.out.println("CppFile.startParsing: Parsing " + curCount);
@@ -131,7 +122,7 @@ public class CppFile {
                 " [" + Thread.currentThread().getName() + "]"); // NOI18N
         state = PARSING_STARTED;
         //this.doc = doc;
-        
+
         try {
             if (startParsing(Integer.getInteger("CppFoldFlags", 0).intValue(), doc)) { // NOI18N
                 state = FOLD_PARSING_COMPLETE;
@@ -147,13 +138,13 @@ public class CppFile {
 //          System.out.println("CppFile.startParsing: Finished " + curCount);            
         }
     }
-    
+
     public boolean isParsingFailed() {
         return state == PARSING_FAILED;
     }
-        
+
     private boolean startParsing(int flags, Document doc) {
-        FoldingParser p = (FoldingParser)Lookup.getDefault().lookup(FoldingParser.class);
+        FoldingParser p = Lookup.getDefault().lookup(FoldingParser.class);
         if (p != null) {
 //            classFoldRecords.clear();
             blockFoldRecords.clear();
@@ -171,14 +162,14 @@ public class CppFile {
                 ex.printStackTrace();
                 return false;
             }
-            
+
             for (CppFoldRecord fold : folds) {
-                addNewFold((StyledDocument)doc, fold);  
+                addNewFold((StyledDocument) doc, fold);
             }
         }
         return true;
     }
-    
+
     public void waitScanFinished(int type) {
         while (state == PARSING_STARTED) {
 //            System.out.println("Waiting for scan of CppFile: " + getShortName(doc));
@@ -188,23 +179,23 @@ public class CppFile {
             }
         }
     }
- 
+
     /** Does the CppFile record need updating? */
     public boolean needsUpdate() {
         // in the current model files only asked for needUpdate() if it was
         // modified. Should be changed after folding refactoring
-	return true;
+        return true;
     }
 
     private String getShortName(Document doc) {
-	String longname = (String) doc.getProperty(Document.TitleProperty);
-	int slash = longname.lastIndexOf(File.separatorChar);
+        String longname = (String) doc.getProperty(Document.TitleProperty);
+        int slash = longname.lastIndexOf(File.separatorChar);
 
-	if (slash != -1) {
-	    return longname.substring(slash + 1);
-	} else {
-	    return longname;
-	}
+        if (slash != -1) {
+            return longname.substring(slash + 1);
+        } else {
+            return longname;
+        }
     }
 
     /**
@@ -221,29 +212,26 @@ public class CppFile {
 //	}
 //	return s;
 //    }
-
-
     public CppFoldRecord getInitialCommentFold() {
         return this.initialCommentFoldRecord;
     }
-    
+
     public List<CppFoldRecord> getIncludesFolds() {
-	return includesFoldRecords;
+        return includesFoldRecords;
     }
-    
+
     public List<CppFoldRecord> getBlockFolds() {
-	return blockFoldRecords;
+        return blockFoldRecords;
     }
 
 //    public ArrayList getClassFolds() {
 //	return classFoldRecords;
 //    }   
-
     /**
      *  Note that we don't do folds if '{' and '}' are on the same
      *  line with less than 5 characters between them. We also decrement startOffset by one
      *  to move the offset before the opening brace (otherwise its following the brace).
-     */    
+     */
     private void addNewFold(StyledDocument doc, CppFoldRecord fold) {
         log.log(Level.FINEST, "CppFile.addNewFold: " + fold.toString());
         int startOffset = fold.getStartOffset();
@@ -273,16 +261,15 @@ public class CppFile {
                     case CONSTRUCTOR_FOLD:
                     case DESTRUCTOR_FOLD:
                     case FUNCTION_FOLD:
-                    blockFoldRecords.add(fold);
-                    break;
+                        blockFoldRecords.add(fold);
+                        break;
                 }
             } else {
                 log.log(Level.FINE, "CppFile.addNewFold: Skipping fold record on line " + startLine);
             }
         } catch (IndexOutOfBoundsException ex) {
             log.log(Level.FINE, "CppFile.addNewFold: fold was created for old size of document - ignored");
-            // fold was created for old size of document => skip the problem
+        // fold was created for old size of document => skip the problem
         }
-    }    
-
+    }
 }

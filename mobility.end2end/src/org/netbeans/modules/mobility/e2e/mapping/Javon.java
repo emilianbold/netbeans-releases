@@ -73,7 +73,7 @@ public class Javon {
     /**
      * Generate output
      */
-    public void generate( ProgressHandle ph ) {
+    public boolean generate( ProgressHandle ph ) {
         // Get providers
         Lookup.Result<JavonProfileProvider> providersResult = 
                 Lookup.getDefault().lookup( new Lookup.Template<JavonProfileProvider>(
@@ -84,22 +84,26 @@ public class Javon {
         }
         if( providers.size() == 0 ) {
             // No providers
-            return;
+            return true;
         }
         
         // TODO: Hack for default provider. Name should be set from the dialog
         JavonProfileProvider provider = providers.get( "default" ); // NOI18N
         
         List<JavonTemplate> templates = provider.getTemplates( mapping );
-        
+
+        boolean success = true;
         // Run templates
         for( JavonTemplate template : templates ) {
             Set<String> targets = template.getTargets();
             for( String target : targets ) {
-                template.generateTarget( ph, target );
+                if ( !template.generateTarget( ph, target ) ){
+                    success = false;
+                }
             }
         }
         
-        ph.finish();        
+        ph.finish();
+        return success;
     }    
 }

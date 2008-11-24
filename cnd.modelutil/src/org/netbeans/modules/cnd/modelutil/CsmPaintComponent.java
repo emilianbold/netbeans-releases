@@ -378,7 +378,7 @@ public abstract class CsmPaintComponent extends JPanel {
         }        
     }
     
-    private class DrawState {
+    private static class DrawState {
         int drawX, drawY;
         int drawHeight;    
                

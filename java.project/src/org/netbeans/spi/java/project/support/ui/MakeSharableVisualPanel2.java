@@ -78,6 +78,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 
 
 final class MakeSharableVisualPanel2 extends JPanel {
@@ -113,8 +114,8 @@ final class MakeSharableVisualPanel2 extends JPanel {
         String loc = (String) wiz.getProperty(SharableLibrariesUtils.PROP_LOCATION);
         helper = (AntProjectHelper) wiz.getProperty(SharableLibrariesUtils.PROP_HELPER);
         refhelper = (ReferenceHelper) wiz.getProperty(SharableLibrariesUtils.PROP_REFERENCE_HELPER);
-        List<String> libraries = (List<String>) wiz.getProperty(SharableLibrariesUtils.PROP_LIBRARIES);
-        List<String> jars = (List<String>) wiz.getProperty(SharableLibrariesUtils.PROP_JAR_REFS);
+        List<String> libraries = NbCollections.checkedListByCopy((List) wiz.getProperty(SharableLibrariesUtils.PROP_LIBRARIES), String.class, true);
+        List<String> jars = NbCollections.checkedListByCopy((List) wiz.getProperty(SharableLibrariesUtils.PROP_JAR_REFS), String.class, true);
         if (!loc.equals(location)) {
             location = loc;
             populateTable(helper, libraries, jars);

@@ -33,6 +33,13 @@
                             <attr name="position" intvalue="100"/>
                         </file>
                     </folder>
+                    <folder name="x-fortran">
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.fortran.options.FmtTabsIndents.getController"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                    </folder>
                 </folder>
             </folder>
         </folder>
@@ -40,6 +47,7 @@
             <folder name="text">
                 <file name="x-c++" url="resources/cplusplus/CCExample"/>
                 <file name="x-c" url="resources/cplusplus/CExample"/>
+                <file name="x-fortran" url="resources/fortran/FExample"/>
             </folder>
         </folder>
     </folder>
@@ -138,6 +146,11 @@
                         <attr name="position" intvalue="0"/>
                     </file>
                 </folder>
+
+                <file name="Reformatter.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.reformat.Reformatter$Factory"/>
+                </file>
+                <file name="org-netbeans-modules-cnd-editor-indent-CppIndentFactory.instance"/>
             </folder>
 
             <folder name="x-c">
@@ -224,38 +237,96 @@
                         <attr name="position" intvalue="0"/>
                     </file>
                 </folder>
+
+                <file name="Reformatter.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.reformat.Reformatter$Factory"/>
+                </file>
+                <file name="org-netbeans-modules-cnd-editor-indent-CppIndentFactory.instance"/>
              </folder>
+
+            <folder name="x-fortran">
+                 <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="fortran-preferences.xml" url="fortran-preferences.xml"/>
+                    </folder>
+                </folder>
+
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.fortran.FKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.fortran.FKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
+                </file>
+
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/fortran/Netbeans-Fortran-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.fortran.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="keybindings.xml" url="resources/DefaultKeyBindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="codetemplates.xml" url="resources/fortran/Fortran-DefaultAbbrevs.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.fortran.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+
+                <folder name="Popup">
+                    <file name="format">
+                        <attr name="position" intvalue="1480"/>
+                    </file>
+                    <file name="SeparatorBeforeCut.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1960"/>
+                    </file>
+
+                    <file name="SeparatorAfterPaste.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
+                    </file>
+
+                </folder>
+
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="Separator-before-comment-fortran.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="19100"/>
+                        </file>
+
+                        <file name="comment">
+                            <attr name="position" intvalue="19200"/>
+                        </file>
+
+                        <file name="uncomment">
+                            <attr name="position" intvalue="19300"/>
+                        </file>
+                    </folder>
+                </folder>
+
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-cnd-editor-fortran-FortranBracesMatcher.instance">
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                </folder>
+
+                <file name="Reformatter.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter$Factory"/>
+                </file>
+                <file name="org-netbeans-modules-cnd-editor-fortran-indent-FortranIndentFactory.instance"/>
+            </folder>
         </folder>
     </folder>
-
-    <folder name="Services">
-        <folder name="IndentEngine">
-            <file name="org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine.settings" url="resources/CCIndentEngine.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
-                <attr name="hidden" boolvalue="true"/>
-            </file>
-            <file name="org-netbeans-modules-cnd-editor-cplusplus-CIndentEngine.settings" url="resources/CIndentEngine.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
-                <attr name="hidden" boolvalue="true"/>
-            </file>
-        </folder> <!-- IndentEngine -->
-    </folder>	<!-- Services -->
-
-    <folder name="Editors">
-        <folder name="text">
-            <folder name="x-c">
-                <file name="Reformatter.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.reformat.Reformatter$Factory"/>
-                </file>
-            </folder>
-            <folder name="x-c++">
-                <file name="Reformatter.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.reformat.Reformatter$Factory"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-
 </filesystem>

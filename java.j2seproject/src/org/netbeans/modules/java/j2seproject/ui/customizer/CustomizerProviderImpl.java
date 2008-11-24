@@ -88,7 +88,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
 
     public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-java-j2seproject/Customizer"; //NO18N
     
-    private static Map /*<Project,Dialog>*/project2Dialog = new HashMap(); 
+    private static Map<Project,Dialog> project2Dialog = new HashMap<Project,Dialog>();
     
     public CustomizerProviderImpl(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper, GeneratedFilesHelper genFileHelper) {
         this.project = project;
@@ -109,7 +109,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
     
     public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
         
-        Dialog dialog = (Dialog)project2Dialog.get (project);
+        Dialog dialog = project2Dialog.get(project);
         if ( dialog != null ) {            
             dialog.setVisible(true);
             return;
@@ -174,7 +174,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
             //Show warning when modified
             uiProperties.checkModified ();
             // Close & dispose the the dialog
-            Dialog dialog = (Dialog)project2Dialog.get( project );
+            Dialog dialog = project2Dialog.get(project);
             if ( dialog != null ) {
                 dialog.setVisible(false);
                 dialog.dispose();
@@ -190,7 +190,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
         public void windowClosing (WindowEvent e) {
             //Dispose the dialog otherwsie the {@link WindowAdapter#windowClosed}
             //may not be called
-            Dialog dialog = (Dialog)project2Dialog.get( project );
+            Dialog dialog = project2Dialog.get(project);
             if ( dialog != null ) {
                 dialog.setVisible(false);
                 dialog.dispose();

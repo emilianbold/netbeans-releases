@@ -69,10 +69,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.netbeans.modules.ruby.RubyFormatter;
-import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -301,7 +301,7 @@ public class FmtOptions {
                 previewPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(FmtOptions.class, "AN_Preview")); //NOI18N
                 previewPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FmtOptions.class, "AD_Preview")); //NOI18N
                 previewPane.putClientProperty("HighlightsLayerIncludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.SyntaxHighlighting$"); //NOI18N
-                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(RubyMimeResolver.RUBY_MIME_TYPE));
+                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(RubyInstallation.RUBY_MIME_TYPE));
                 previewPane.setEditable(false);
             }
             return previewPane;

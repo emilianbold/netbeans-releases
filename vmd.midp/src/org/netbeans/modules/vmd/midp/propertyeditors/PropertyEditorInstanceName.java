@@ -78,7 +78,6 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
 
     private PropertyEditorInstanceName(TypeID typeID) {
         this.typeID = typeID;
-        customEditor = new CustomEditor();
     }
 
     public static final DesignPropertyEditor createInstance(TypeID typeID) {
@@ -87,6 +86,9 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
 
     @Override
     public Component getCustomEditor() {
+        if (customEditor == null) {
+            customEditor = new CustomEditor();
+        }
         PropertyValue value = (PropertyValue) super.getValue();
         if (value != null) {
             customEditor.setText(MidpTypes.getString(value));
@@ -103,8 +105,6 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         }
         typeID = null;
     }
-
-
 
     @Override
     public String getAsText() {

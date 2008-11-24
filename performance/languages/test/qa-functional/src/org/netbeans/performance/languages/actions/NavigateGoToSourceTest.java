@@ -57,7 +57,9 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
-
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 /**
  *
  * @author mrkam@netbeans.org
@@ -82,7 +84,15 @@ public class NavigateGoToSourceTest extends org.netbeans.modules.performance.uti
     public NavigateGoToSourceTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(NavigateGoToSourceTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
             projectsTab = ScriptingUtilities.invokePTO();
@@ -157,12 +167,4 @@ public class NavigateGoToSourceTest extends org.netbeans.modules.performance.uti
         repaintManager().resetRegionFilters();
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(NavigateGoToSourceTest.class)
-            .enableModules(".*")
-            .clusters(".*")
-            .reuseUserDir(true)
-        );
-    }
 }

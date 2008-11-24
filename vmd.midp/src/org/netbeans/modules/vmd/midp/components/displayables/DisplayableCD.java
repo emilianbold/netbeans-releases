@@ -67,13 +67,13 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.injector.TickerInjectorPresenter;
 import org.openide.util.NbBundle;
 
 import java.util.*;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResourceLazyInit;
 
 
 /**
@@ -127,7 +127,7 @@ public final class DisplayableCD extends ComponentDescriptor {
                 .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty (NbBundle.getMessage(DisplayableCD.class, "DISP_Displayable_Title"), // NOI18N
                         PropertyEditorString.createTextFieldInstance(NbBundle.getMessage(DisplayableCD.class, "LBL_Displayable_Title")), PROP_TITLE) // NOI18N
-                    .addProperty (NbBundle.getMessage(DisplayableCD.class, "DISP_Displayable_Ticker"), PropertyEditorResource.createTickerPropertyEditor(), PROP_TICKER); // NOI18N
+                    .addProperty (NbBundle.getMessage(DisplayableCD.class, "DISP_Displayable_Ticker"), PropertyEditorResourceLazyInit.createTickerPropertyEditor(), PROP_TICKER); // NOI18N
     }
 
     private static Presenter createSetterPresenter () {

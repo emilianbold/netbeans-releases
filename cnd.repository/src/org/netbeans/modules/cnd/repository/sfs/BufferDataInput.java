@@ -50,100 +50,93 @@ import java.nio.*;
  */
 public class BufferDataInput implements DataInput {
     
-    public static class NotImplementedException extends Error {
-	public NotImplementedException() {
-	    super("Not implemented"); // NOI18N
-	}
-    }
-    
     private ByteBuffer buffer;
     
     public BufferDataInput(ByteBuffer buffer) {
-	this.buffer = buffer;
+        this.buffer = buffer;
     }
 
     public byte readByte() throws IOException {
-	return buffer.get();
+        return buffer.get();
     }
     
     public char readChar() throws IOException {
-	return buffer.getChar();
+        return buffer.getChar();
     }
     
     public int readInt() throws IOException {
-	return buffer.getInt();
+        return buffer.getInt();
     }
-    
+
     public int readUnsignedShort() throws IOException {
-	short result = buffer.getShort();
-	return ((int) result) & 0x0000FFFF;
+        short result = buffer.getShort();
+        return ((int) result) & 0x0000FFFF;
     }
-    
+
     public boolean readBoolean() throws IOException {
-	return buffer.get() != 0;
+        return buffer.get() != 0;
     }
-    
-    
+
     public double readDouble() throws IOException {
-	return buffer.getDouble();
+        return buffer.getDouble();
     }
     
     public float readFloat() throws IOException {
-	return buffer.getFloat();
+        return buffer.getFloat();
     }
-    
-    
+
     public String readLine() throws IOException {
-	StringBuilder sb = new StringBuilder();
-	byte b;
-	read: while( buffer.hasRemaining() ) {
-	    switch( b = buffer.get() ) {
-		case '\r':
-		    if( buffer.hasRemaining() ) {
-			byte next = buffer.get();
-			if( next != '\n') {
-			    buffer.position(buffer.position()-1);
-			}
-		    }
-		    break read;
-		case '\n':
-		    break read;
-		default:
-		    sb.append((char) b);
-		    break;
-	    }
-	}
-	return sb.toString();
+        StringBuilder sb = new StringBuilder();
+        byte b;
+        read:
+        while (buffer.hasRemaining()) {
+            switch (b = buffer.get()) {
+                case '\r':
+                    if (buffer.hasRemaining()) {
+                        byte next = buffer.get();
+                        if (next != '\n') {
+                            buffer.position(buffer.position() - 1);
+                        }
+                    }
+                    break read;
+                case '\n':
+                    break read;
+                default:
+                    sb.append((char) b);
+                    break;
+            }
+        }
+        return sb.toString();
     }
     
     public long readLong() throws IOException {
-	return buffer.getLong();
+        return buffer.getLong();
     }
-    
+
     public short readShort() throws IOException {
-	return buffer.getShort();
+        return buffer.getShort();
     }
-    
+
     public String readUTF() throws IOException {
-	return UTF.readUTF(this);
+        return UTF.readUTF(this);
     }
-    
+
     public int readUnsignedByte() throws IOException {
-	byte b = buffer.get();
-	return ((short) b) & 0x00FF;
+        byte b = buffer.get();
+        return ((short) b) & 0x00FF;
     }
-    
+
     public int skipBytes(int n) throws IOException {
-	int skip = Math.min(n, buffer.remaining());
-	buffer.position(buffer.position() + skip);
-	return skip;
+        int skip = Math.min(n, buffer.remaining());
+        buffer.position(buffer.position() + skip);
+        return skip;
     }
-    
+
     public void readFully(byte[] b, int off, int len) throws IOException {
-	buffer.get(b, off, len);
+        buffer.get(b, off, len);
     }
-    
+
     public void readFully(byte[] b) throws IOException {
-	buffer.get(b);
+        buffer.get(b);
     }
 }

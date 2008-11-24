@@ -78,5 +78,10 @@ made subject to such option by the copyright holder.
             <attr name="instanceOf" stringvalue="org.openide.awt.CNFCompo"/>
         </file>
     </folder>
+    <folder name="ReturnsNull">
+        <file name="null.instance">
+            <attr name="instanceCreate" methodvalue="org.openide.awt.MenuBarTest$NullOnlyAction.getNull"/>
+        </file>
+    </folder>
     
 </filesystem>

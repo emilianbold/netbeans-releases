@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor;
 
+import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -46,11 +47,15 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletion;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionContext;
 import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionResultSet;
 import org.netbeans.modules.db.sql.editor.api.completion.SubstitutionHandler;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -58,7 +63,7 @@ import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
-import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 
 /**
@@ -68,6 +73,36 @@ import org.openide.text.NbDocument;
 public class PHPSQLCompletion implements CompletionProvider {
 
     private static final Boolean NO_COMPLETION = Boolean.getBoolean("netbeans.php.nosqlcompletion"); // NOI18N
+    private static final String PROP_DBCONN = "dbconn"; // NOI18N
+
+    public static DatabaseConnection getDatabaseConnection(Project project) {
+        String name = getProjectPreferences(project).get(PROP_DBCONN, null);
+        if (name != null) {
+            return ConnectionManager.getDefault().getConnection(name);
+        }
+        return null;
+    }
+
+    public static void setDatabaseConnection(Project project, DatabaseConnection dbconn) {
+        Preferences prefs = getProjectPreferences(project);
+        if (dbconn != null) {
+            prefs.put(PROP_DBCONN, dbconn.getName());
+        } else {
+            prefs.remove(PROP_DBCONN);
+        }
+    }
+
+    private static Preferences getProjectPreferences(Project project) {
+        return ProjectUtils.getPreferences(project, PHPSQLCompletion.class, false);
+    }
+
+    private static Project getProject(Document doc) {
+        FileObject fo = NbEditorUtilities.getFileObject(doc);
+        if (fo != null) {
+            return FileOwnerQuery.getOwner(fo);
+        }
+        return null;
+    }
 
     public CompletionTask createTask(int queryType, JTextComponent component) {
         return new AsyncCompletionTask(new Query(), component);
@@ -154,34 +189,49 @@ public class PHPSQLCompletion implements CompletionProvider {
 
     private static final class Query extends AsyncCompletionQuery {
 
-        private static final String DERBY_CONNECTION = "jdbc:derby://localhost/sample [app on APP]"; // NOI18N
-
         @Override
         protected void query(CompletionResultSet resultSet, Document document, int caretOffset) {
-            if (!NO_COMPLETION) {
-                SubstitutionHandlerImpl substHandler = compute(document, caretOffset);
-                if (substHandler != null) {
-                    int statementCaretOffset = caretOffset - substHandler.getStatementOffset();
-                    if (statementCaretOffset >= 0) { // Just in case.
-                        DatabaseConnection dbconn = ConnectionManager.getDefault().getConnection(DERBY_CONNECTION);
-                        if (dbconn != null) {
-                            SQLCompletionContext context = SQLCompletionContext.create(dbconn, substHandler.getStatement(), statementCaretOffset);
-                            SQLCompletion completion = SQLCompletion.create(context);
-                            SQLCompletionResultSet sqlResultSet = SQLCompletionResultSet.create();
-                            completion.query(sqlResultSet, substHandler);
-                            resultSet.addAllItems(sqlResultSet.getItems());
-                            resultSet.setAnchorOffset(substHandler.getStatementOffset() + sqlResultSet.getAnchorOffset());
-                        } else {
-                            StatusDisplayer.getDefault().setStatusText("Connection not found: " + DERBY_CONNECTION); // NOI18N
-                        }
-                    }
-                }
-            }
+            doQuery(resultSet, document, caretOffset);
             resultSet.finish();
         }
 
-        private SubstitutionHandlerImpl compute(final Document document, final int caretOffset) {
-            final SubstitutionHandlerImpl[] result = { null };
+        private void doQuery(CompletionResultSet resultSet, Document document, int caretOffset) {
+            if (NO_COMPLETION) {
+                return;
+            }
+            EmbeddedSQLStatement substHandler = computeSQLStatement(document, caretOffset);
+            if (substHandler == null) {
+                return;
+            }
+            int statementCaretOffset = caretOffset - substHandler.getStatementOffset();
+            if (statementCaretOffset < 0) { // Just in case.
+                return;
+            }
+            SQLCompletionContext context = SQLCompletionContext.empty();
+            context = context.setStatement(substHandler.getStatement());
+            if (!SQLCompletion.canComplete(context)) {
+                return;
+            }
+            context = context.setOffset(statementCaretOffset);
+            Project project = getProject(document);
+            if (project == null) {
+                return;
+            }
+            DatabaseConnection dbconn = getDatabaseConnection(project);
+            if (dbconn == null) {
+                resultSet.addItem(new SelectConnectionItem(project));
+            } else {
+                context = context.setDatabaseConnection(dbconn);
+                SQLCompletion completion = SQLCompletion.create(context);
+                SQLCompletionResultSet sqlResultSet = SQLCompletionResultSet.create();
+                completion.query(sqlResultSet, substHandler);
+                resultSet.addAllItems(sqlResultSet.getItems());
+                resultSet.setAnchorOffset(substHandler.getStatementOffset() + sqlResultSet.getAnchorOffset());
+            }
+        }
+
+        private EmbeddedSQLStatement computeSQLStatement(final Document document, final int caretOffset) {
+            final EmbeddedSQLStatement[] result = { null };
             document.render(new Runnable() {
                 public void run() {
                     TokenSequence<PHPTokenId> seq = LexUtilities.getPHPTokenSequence(document, caretOffset);
@@ -213,19 +263,19 @@ public class PHPSQLCompletion implements CompletionProvider {
                     if (contentEnd <= contentStart || caretOffset < contentStart || caretOffset > contentEnd) {
                         return;
                     }
-                    result[0] = new SubstitutionHandlerImpl(document, contentStart, contentEnd);
+                    result[0] = new EmbeddedSQLStatement(document, contentStart, contentEnd);
                 }
             });
             return result[0];
         }
     }
 
-    private static final class SubstitutionHandlerImpl implements SubstitutionHandler {
+    private static final class EmbeddedSQLStatement implements SubstitutionHandler {
 
         private final String statement;
         private final int statementOffset;
 
-        public SubstitutionHandlerImpl(Document document, int statementOffset, int statementEnd) {
+        public EmbeddedSQLStatement(Document document, int statementOffset, int statementEnd) {
             try {
                 this.statement = document.getText(statementOffset, statementEnd - statementOffset);
             } catch (BadLocationException e) {

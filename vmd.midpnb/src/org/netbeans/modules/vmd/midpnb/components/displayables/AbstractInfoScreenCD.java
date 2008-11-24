@@ -58,13 +58,13 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midpnb.screen.display.AbstractInfoDisplayPresenter;
 import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResourceLazyInit;
 
 /**
  *
@@ -114,9 +114,9 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
                     PropertyEditorString.createInstance(NbBundle.getMessage(AbstractInfoScreenCD.class,
                         "LBL_AbstractInfoScreen_text")), PROP_TEXT) // NOI18N
                 .addProperty(NbBundle.getMessage(AbstractInfoScreenCD.class, "DISP_AbstractInfoScreen_image"), // NOI18N
-                    PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE)
+                    PropertyEditorResourceLazyInit.createImagePropertyEditor(), PROP_IMAGE)
                 .addProperty(NbBundle.getMessage(AbstractInfoScreenCD.class, "DISP_AbstractInfoScreen_textFont"), // NOI18N
-                    PropertyEditorResource.createFontPropertyEditor(), PROP_TEXT_FONT);
+                    PropertyEditorResourceLazyInit.createFontPropertyEditor(), PROP_TEXT_FONT);
     }
 
     private Presenter createSetterPresenter () {

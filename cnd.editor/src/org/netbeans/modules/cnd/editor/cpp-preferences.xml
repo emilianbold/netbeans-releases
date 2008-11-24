@@ -44,9 +44,6 @@ made subject to such option by the copyright holder.
 
 <editor-preferences>
     <entry javaType="java.lang.Integer" name="tab-size" value="8" />
-    <entry name="token-context-list"
-           value="org.netbeans.modules.cnd.editor.cplusplus.CCSettingsDefaults.getTokenContext" 
-           javaType="methodvalue" />
     <entry name="abbrev-reset-acceptor"
            value="org.netbeans.modules.cnd.editor.cplusplus.CCSettingsDefaults.getDefaultAbbrevResetAcceptor"
            javaType="methodvalue" />
@@ -54,16 +51,7 @@ made subject to such option by the copyright holder.
     <entry name="identifier-acceptor"
            value="org.netbeans.modules.cnd.editor.cplusplus.CCSettingsDefaults.getDefaultIdentifierAcceptor"
            javaType="methodvalue" />
-    <entry name="word-match-static-words"
-           value="org.netbeans.modules.cnd.editor.cplusplus.CCSettingsDefaults.getDefaultWordMatchStaticWords"
-           javaType="methodvalue" />
-    <entry name="indent-hot-chars-acceptor"
-           value="org.netbeans.modules.cnd.editor.cplusplus.CCSettingsDefaults.getDefaultIndentHotCharsAcceptor"
-           javaType="methodvalue" />
     <entry name="code-folding-enable" value="true" javaType="java.lang.Boolean" />
     <entry name="pair-characters-completion" value="true" javaType="java.lang.Boolean" />
     <entry name="javadoc-auto-popup" value="false" javaType="java.lang.Boolean" />
-    <entry name="indentEngine" 
-           value="org.netbeans.modules.cnd.editor.cplusplus.CCIndentEngine.getIndentEngine" 
-           javaType="methodvalue" />
 </editor-preferences>

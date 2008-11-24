@@ -298,20 +298,6 @@ made subject to such option by the copyright holder.
     <folder name="Projects">
         <folder name="org-netbeans-modules-apisupport-project">
             <folder name="Lookup"/>
-            <folder name="Nodes">
-                <file name="org-netbeans-modules-apisupport-project-ui-SourcesNodeFactory.instance">
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="org-netbeans-modules-apisupport-project-ui-TestDataDirsNodeFactory.instance">
-                    <attr name="position" intvalue="150"/>
-                </file>
-                <file name="org-netbeans-modules-apisupport-project-ui-ImportantFilesNodeFactory.instance">
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <file name="org-netbeans-modules-apisupport-project-ui-LibrariesNodeFactory.instance">
-                    <attr name="position" intvalue="300"/>
-                </file>
-            </folder>
             <folder name="Customizer">
                 <file name="org-netbeans-modules-apisupport-project-ui-customizer-CustomizerSourcesFactory.instance">
                     <attr name="position" intvalue="100"/>
@@ -345,14 +331,6 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="org-netbeans-modules-apisupport-project-suite">
             <folder name="Lookup"/>
-            <folder name="Nodes">
-                <file name="org-netbeans-modules-apisupport-project-ui-ModulesNodeFactory.instance">
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="org-netbeans-modules-apisupport-project-ui-ImportantFilesNodeFactory.instance">
-                    <attr name="position" intvalue="200"/>
-                </file>
-            </folder>
             <folder name="Customizer">
                 <file name="org-netbeans-modules-apisupport-project-ui-customizer-SuiteCustomizerSourcesFactory.instance">
                     <attr name="position" intvalue="100"/>

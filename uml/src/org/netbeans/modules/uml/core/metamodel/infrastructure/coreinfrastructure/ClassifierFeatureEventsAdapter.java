@@ -56,7 +56,6 @@ public class ClassifierFeatureEventsAdapter
 {
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onFeaturePreAdded(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.coreinfrastructure.IFeature, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onFeaturePreAdded(
       IClassifier classifier,
@@ -67,7 +66,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onFeatureAdded(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.coreinfrastructure.IFeature, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onFeatureAdded(
       IClassifier classifier,
@@ -78,7 +76,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onFeaturePreRemoved(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.coreinfrastructure.IFeature, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onFeaturePreRemoved(
       IClassifier classifier,
@@ -89,7 +86,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onFeatureRemoved(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.coreinfrastructure.IFeature, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onFeatureRemoved(
       IClassifier classifier,
@@ -100,7 +96,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onFeaturePreMoved(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.coreinfrastructure.IFeature, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onFeaturePreMoved(
       IClassifier classifier,
@@ -111,7 +106,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onFeatureMoved(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.coreinfrastructure.IFeature, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onFeatureMoved(
       IClassifier classifier,
@@ -122,7 +116,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onFeaturePreDuplicatedToClassifier(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.coreinfrastructure.IFeature, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onFeaturePreDuplicatedToClassifier(
       IClassifier classifier,
@@ -133,7 +126,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onFeatureDuplicatedToClassifier(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.coreinfrastructure.IFeature, com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.coreinfrastructure.IFeature, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onFeatureDuplicatedToClassifier(
       IClassifier pOldClassifier,
@@ -146,7 +138,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onPreAbstractModified(com.embarcadero.describe.coreinfrastructure.IClassifier, boolean, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreAbstractModified(
       IClassifier feature,
@@ -157,7 +148,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onAbstractModified(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onAbstractModified(IClassifier feature, IResultCell cell)
    {
@@ -165,7 +155,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onPreLeafModified(com.embarcadero.describe.coreinfrastructure.IClassifier, boolean, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreLeafModified(
       IClassifier feature,
@@ -176,7 +165,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onLeafModified(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onLeafModified(IClassifier feature, IResultCell cell)
    {
@@ -184,7 +172,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onPreTransientModified(com.embarcadero.describe.coreinfrastructure.IClassifier, boolean, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreTransientModified(
       IClassifier feature,
@@ -195,7 +182,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onTransientModified(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onTransientModified(IClassifier feature, IResultCell cell)
    {
@@ -203,7 +189,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onPreTemplateParameterAdded(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.coreinfrastructure.IParameterableElement, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreTemplateParameterAdded(
       IClassifier pClassifier,
@@ -214,7 +199,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onTemplateParameterAdded(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.coreinfrastructure.IParameterableElement, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onTemplateParameterAdded(
       IClassifier pClassifier,
@@ -225,7 +209,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onPreTemplateParameterRemoved(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.coreinfrastructure.IParameterableElement, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onPreTemplateParameterRemoved(
       IClassifier pClassifier,
@@ -236,7 +219,6 @@ public class ClassifierFeatureEventsAdapter
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.coreinfrastructure.IClassifierFeatureEventsSink#onTemplateParameterRemoved(com.embarcadero.describe.coreinfrastructure.IClassifier, com.embarcadero.describe.coreinfrastructure.IParameterableElement, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onTemplateParameterRemoved(
       IClassifier pClassifier,

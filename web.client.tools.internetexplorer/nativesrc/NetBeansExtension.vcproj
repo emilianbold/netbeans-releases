@@ -20,7 +20,7 @@
 			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			UseOfATL="2"
+			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
 			>
@@ -55,8 +55,8 @@
 				AdditionalIncludeDirectories="activescript"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL"
 				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				BasicRuntimeChecks="0"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
@@ -109,6 +109,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy $(TargetDir)$(TargetName).dll ..\..\nbbuild\netbeans\webcommon1\native"
 			/>
 		</Configuration>
 		<Configuration
@@ -116,7 +117,7 @@
 			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			UseOfATL="2"
+			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
 			>
@@ -150,7 +151,7 @@
 				Optimization="2"
 				AdditionalIncludeDirectories="activescript"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
@@ -205,6 +206,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy $(TargetDir)$(TargetName).dll ..\..\nbbuild\netbeans\webcommon1\native&#x0D;&#x0A;copy $(TargetDir)$(TargetName).dll ..\release\native"
 			/>
 		</Configuration>
 	</Configurations>
@@ -229,7 +231,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\DbgpResponse.cpp"
+				RelativePath=".\DebugDocument.cpp"
 				>
 			</File>
 			<File
@@ -304,6 +306,10 @@
 			</File>
 			<File
 				RelativePath=".\DbgpTags.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DebugDocument.h"
 				>
 			</File>
 			<File

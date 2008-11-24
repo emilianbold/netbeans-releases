@@ -310,9 +310,9 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
 
     public static class FieldsFromTagProperty extends GSFPHPElementHandle {
 
-        private PHPDocPropertyTag declaration;
+        private PHPDocVarTypeTag declaration;
 
-        public FieldsFromTagProperty (CompilationInfo info, PHPDocPropertyTag declaration) {
+        public FieldsFromTagProperty (CompilationInfo info, PHPDocVarTypeTag declaration) {
             super (info);
             this.declaration = declaration;
         }
@@ -323,7 +323,11 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
         }
 
         public String getName() {
-            return "$" + declaration.getFieldName(); //NOI18N
+            String name = declaration.getVariable().getValue();
+            if (name.charAt(0) != '$') {
+                name = '$' + name;
+            }
+            return name; //NOI18N
         }
 
         public ElementKind getKind() {

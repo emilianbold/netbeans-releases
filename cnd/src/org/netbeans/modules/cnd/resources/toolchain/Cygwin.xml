@@ -58,6 +58,10 @@ made subject to such option by the copyright holder.
         <recognizer pattern=".*[\\/].*cygwin.*[\\/]bin[\\/]?$"/>
         <compiler name="gfortran,g95,g90,g77"/>
     </fortran>
+    <assembler>
+        <recognizer pattern=".*[\\/].*cygwin.*[\\/]bin[\\/]?$"/>
+        <compiler name="as"/>
+    </assembler>
     <linker>
         <library_prefix stringvalue="cyg"/>
         <dynamic_library_basic flags="-mno-cygwin -shared "/>

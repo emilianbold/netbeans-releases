@@ -81,7 +81,7 @@ import org.netbeans.modules.uml.integration.ide.events.MethodInfo;
 
 /**
  * The class NBSourceNavigator implements the interface
- * {@link com.embarcadero.integration.SourceNavigator SourceNavigator} to
+ * SourceNavigator to
  * give the NetBeans (FFJ) integration the ability to navigate source code
  * elements.  When the integration navigate to a source code element the editor
  * window will not gain focus.

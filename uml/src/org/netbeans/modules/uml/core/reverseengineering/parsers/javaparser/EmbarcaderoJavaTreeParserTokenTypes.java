@@ -41,10 +41,6 @@
 
 package org.netbeans.modules.uml.core.reverseengineering.parsers.javaparser;
 
-import java.util.HashMap;
-import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ParserEventController;
-// $ANTLR 2.7.2: "EmbarcaderoJava.tree.g" -> "EmbarcaderoJavaTreeParser.java"$
-
 public interface EmbarcaderoJavaTreeParserTokenTypes {
 	int EOF = 1;
 	int NULL_TREE_LOOKAHEAD = 3;

@@ -257,13 +257,13 @@ public final class AntBuildExtender {
                     if (savedPropVal != null) {
                         libIDs = savedPropVal.split(",");
                     }
-                    Set libIDSet = new TreeSet(Arrays.asList(libIDs));
+                    Set<String> libIDSet = new TreeSet<String>(Arrays.asList(libIDs));
                     if (add) {
                         libIDSet.add(value);
                     } else {
                         libIDSet.remove(value);
                     }
-                    String newLibIDs[] = (String[]) libIDSet.toArray(new String[libIDSet.size()]);
+                    String newLibIDs[] = libIDSet.toArray(new String[libIDSet.size()]);
                     StringBuilder propValue = new StringBuilder();
                     for (String newLibID : newLibIDs) {
                         propValue.append(newLibID);

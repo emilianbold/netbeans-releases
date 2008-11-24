@@ -49,7 +49,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.io.File;
@@ -63,11 +62,12 @@ import org.netbeans.modules.refactoring.api.WhereUsedQuery;
  * @author Vladimir Voskresensky
  */
 public class WhereUsedInQuoteTestCase extends CsmWhereUsedQueryPluginTestCaseBase {
+
     public WhereUsedInQuoteTestCase(String testName) {
         super(testName);
         System.setProperty("cnd.repository.hardrefs", "true");
     }
-    
+
     @Override
     protected File getTestCaseDataDir() {
         return getQuoteDataDir();
@@ -82,7 +82,7 @@ public class WhereUsedInQuoteTestCase extends CsmWhereUsedQueryPluginTestCaseBas
     }
 
     public void testComputeSupportMetric() throws Exception {
-        Map props = new HashMap();
+        Map<Object, Boolean> props = new HashMap<Object, Boolean>();
         props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
         props.put(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, true);
         props.put(WhereUsedQuery.FIND_REFERENCES, true);
@@ -90,7 +90,7 @@ public class WhereUsedInQuoteTestCase extends CsmWhereUsedQueryPluginTestCaseBas
     }
 
     public void testCustomerGetName() throws Exception {
-        Map props = new HashMap();
+        Map<Object, Boolean> props = new HashMap<Object, Boolean>();
         props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
         props.put(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, true);
         props.put(WhereUsedQuery.FIND_REFERENCES, true); // NOW we have zero usages, but this should be fixed soon
@@ -98,32 +98,32 @@ public class WhereUsedInQuoteTestCase extends CsmWhereUsedQueryPluginTestCaseBas
     }
 
     public void testModuleAllSubtypes() throws Exception {
-        Map props = new HashMap();
+        Map<Object, Boolean> props = new HashMap<Object, Boolean>();
         props.put(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
         props.put(WhereUsedQuery.FIND_REFERENCES, false);
         performWhereUsed("memory.h", 46, 25, props);
     }
-    
+
     public void testModuleGetTypeNoOverriden() throws Exception {
-        Map props = new HashMap();
+        Map<Object, Boolean> props = new HashMap<Object, Boolean>();
         props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, false);
         props.put(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, true);
         props.put(WhereUsedQuery.FIND_REFERENCES, true);
         performWhereUsed("module.h", 68, 25, props);
     }
-    
+
     public void testModuleGetTypeOverriden() throws Exception {
-        Map props = new HashMap();
+        Map<Object, Boolean> props = new HashMap<Object, Boolean>();
         props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
         props.put(WhereUsedQuery.FIND_REFERENCES, false);
         performWhereUsed("module.h", 68, 25, props);
     }
-    
+
     public void testMemoryGetTypeNoOverriden() throws Exception {
-        Map props = new HashMap();
+        Map<Object, Boolean> props = new HashMap<Object, Boolean>();
         props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, false);
         props.put(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, true);
         props.put(WhereUsedQuery.FIND_REFERENCES, true);
         performWhereUsed("memory.h", 52, 25, props);
-    }    
+    }
 }

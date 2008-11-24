@@ -44,7 +44,14 @@ package org.netbeans.modules.openide.filesystems.declmime;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -54,21 +61,36 @@ import org.openide.filesystems.XMLFileSystem;
 public class MIMEResolverImplTest extends NbTestCase {
     List<MIMEResolver> resolvers;
     FileObject root;
+    FileObject resolversRoot;
            
     public MIMEResolverImplTest(String testName) {
         super(testName);
     }
-    
+
+    public static Test suite() {
+        Test suite = null;
+        //suite = new MIMEResolverImplTest("testPatternElement");
+        if (suite == null) {
+            suite = new NbTestSuite(MIMEResolverImplTest.class);
+        }
+        return suite;
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.OFF;
+    }
+
     @SuppressWarnings("deprecation")
     @Override
     protected void setUp() throws Exception {
         URL u = this.getClass().getResource ("code-fs.xml");        
         FileSystem fs = new XMLFileSystem(u);
         
-        FileObject coderoot = fs.getRoot().getFileObject("root");
-        coderoot.refresh();
+        resolversRoot = fs.getRoot().getFileObject("root");
+        resolversRoot.refresh();
         
-        FileObject fos[] = coderoot.getChildren();
+        FileObject fos[] = resolversRoot.getChildren();
         resolvers = new ArrayList<MIMEResolver>();
         for (int i = 0; i<fos.length; i++) {
             resolvers.add(createResolver(fos[i]));
@@ -94,7 +116,7 @@ public class MIMEResolverImplTest extends NbTestCase {
         }
         return null;
     }
-    
+
     public void testMultithreading() throws Exception {
         
         Object tl1 = new Object();
@@ -192,4 +214,101 @@ public class MIMEResolverImplTest extends NbTestCase {
         assertEquals("illegal-encoding.xml recognized as a XML file", "text/x-springconfig+xml", resolve(root.getFileObject("illegal-encoding", "xml")));
     }
 
+    /** Test possible cascading of pattern elements. */
+    public void testPatternElementValidity() {
+        MIMEResolver declarativeResolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("pattern-resolver-valid.xml"));
+        final AtomicBoolean failed = new AtomicBoolean(false);
+        Handler handler = new Handler() {
+
+            @Override
+            public void publish(LogRecord record) {
+                if (record.getThrown().getMessage().startsWith("Second pattern element on the same level not allowed")) {
+                    failed.set(true);
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        Logger.getLogger(DefaultParser.class.getName()).setLevel(Level.ALL);
+        Logger.getLogger(DefaultParser.class.getName()).addHandler(handler);
+        declarativeResolver.findMIMEType(root.getFileObject("empty.dtd"));
+        assertFalse("Pattern elements in patternValid.xml not parsed.", failed.get());
+
+        failed.set(false);
+        declarativeResolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("pattern-resolver-invalid1.xml"));
+        declarativeResolver.findMIMEType(root.getFileObject("empty.dtd"));
+        assertTrue("Pattern elements in patternInvalid1.xml should not be parsed.", failed.get());
+
+        failed.set(false);
+        declarativeResolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("pattern-resolver-invalid2.xml"));
+        declarativeResolver.findMIMEType(root.getFileObject("empty.dtd"));
+        assertTrue("Pattern elements in patternInvalid2.xml should not be parsed.", failed.get());
+    }
+
+    private void assertMimeType(MIMEResolver resolver, String expectedMimeType, String... filenames) {
+        for (String filename : filenames) {
+            String mimeType = resolver.findMIMEType(root.getFileObject(filename));
+            assertEquals("File " + filename + " not properly resolved by " + resolver +".", expectedMimeType, mimeType);
+        }
+    }
+
+    /** Test pattern element in declarative MIME resolver. */
+    public void testPatternElement() {
+        MIMEResolver resolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("php-resolver1.xml"));
+        assertMimeType(resolver, "text/x-php5", "php.txt");
+        assertMimeType(resolver, null, "not-php.txt");
+        assertMimeType(resolver, "text/x-php5", "html-php.txt");
+
+        resolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("php-resolver2.xml"));
+        assertMimeType(resolver, null, "php.txt");
+        assertMimeType(resolver, "text/x-php5", "html-php.txt");
+
+        resolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("php-resolver3.xml"));
+        assertMimeType(resolver, null, "php.txt");
+        assertMimeType(resolver, null, "html-php.txt");
+    }
+
+    /** Test name element in declarative MIME resolver. */
+    public void testNameElement() {
+        MIMEResolver resolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("makefile-resolver.xml"));
+        assertMimeType(resolver, "text/x-make", "makefile", "Makefile", "MaKeFiLe", "mymakefile", "gnumakefile", "makefile1", "makefileRakefile", "makefile.Rakefile");
+
+        assertMimeType(resolver, null, "empty.dtd", "rakefile", "Rakefile");
+
+        resolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("rakefile-resolver.xml"));
+        assertMimeType(resolver, "text/x-ruby", "rakefile", "Rakefile");
+        assertMimeType(resolver, null, "empty.dtd", "makefile", "makefileRakefile", "makefile.Rakefile");
+    }
+
+    /** Test ruby declarative MIME resolver. */
+    public void testRubyResolver() {
+        MIMEResolver resolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("ruby-resolver.xml"));
+        assertMimeType(resolver, "text/x-ruby", "ruby.cgi");
+    }
+
+    /** Test empty extension MIME resolver. */
+    public void testEmptyExtensionResolver() {
+        MIMEResolver resolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("empty-extension-resolver.xml"));
+        assertMimeType(resolver, "empty/extension", "empty-extension");
+        assertMimeType(resolver, null, "empty.dtd");
+    }
+
+    /** Test cpp declarative MIME resolver. */
+    public void testCppResolver() {
+        MIMEResolver resolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("cpp-resolver.xml"));
+        assertMimeType(resolver, "text/x-c++", "cpp");
+        assertMimeType(resolver, null, "cpp.not");
+    }
+
+    /** Test exit element in MIME resolver. */
+    public void testExitResolver() {
+        MIMEResolver resolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("exit-resolver.xml"));
+        assertMimeType(resolver, null, "php.txt");
+    }
 }

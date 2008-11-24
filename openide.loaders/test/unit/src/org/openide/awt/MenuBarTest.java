@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
+import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.actions.OpenAction;
@@ -81,10 +82,10 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
     public MenuBarTest(String testName) {
         super(testName);
     }
-    
+
     @Override
     protected Level logLevel() {
-        return Level.FINE;
+        return Level.WARNING;
     }
 
     @Override
@@ -262,6 +263,14 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         doActionIsCreatedOnlyOnce_13195("MenuWithNew");
     }
 
+    public void testActionFactoryCanReturnNull() throws Exception {
+        CharSequence log = Log.enable("", Level.WARNING);
+        doActionIsCreatedOnlyOnce_13195("ReturnsNull");
+        if (log.length() > 0) {
+            fail("No warnings please:\n" + log);
+        }
+    }
+
     private void doActionIsCreatedOnlyOnce_13195(String name) throws Exception {
         // crate XML FS from data
         String[] stringLayers = new String [] { "/org/openide/awt/data/testActionOnlyOnce.xml" };
@@ -307,8 +316,19 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         public HelpCtx getHelpCtx() {
             return HelpCtx.DEFAULT_HELP;
         }
-        
-        
+    }
+
+    public static class NullOnlyAction extends AbstractAction {
+        private NullOnlyAction() {}
+
+        public static synchronized NullOnlyAction getNull() {
+            CreateOnlyOnceAction.instancesCount++;
+            return null;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     public static class CreateOnlyOnceAction extends AbstractAction {

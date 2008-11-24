@@ -64,7 +64,7 @@ import java.util.List;
  *
  * @author Karol Harezlak
  */
-public class TextBoxCD extends ComponentDescriptor{
+public class TextBoxCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "javax.microedition.lcdui.TextBox"); // NOI18N
 

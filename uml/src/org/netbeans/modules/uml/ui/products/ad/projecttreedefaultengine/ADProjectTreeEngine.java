@@ -2420,7 +2420,6 @@ public class ADProjectTreeEngine
 
    /**
     * Handles the end drag event.  The transfer type ADTransferable.ADTransferData
-    * is Embarcadero's proprietary data flavor.
     *
     * @param transfer The drops transerfable object.
     * @param action The drag action to perform.  The value is one of the
@@ -2924,14 +2923,6 @@ public class ADProjectTreeEngine
                   //retVal = object.getClass().getName().equals(name);//Dispatch.isType(object, guidID);
                   retVal = classType.isAssignableFrom(object.getClass());
                }
-
-
-//               Class[] params = {com.embarcadero.com.Dispatch.class};
-//               Constructor constructor = classType.getConstructor(params);
-//
-//               Object[] paramInstances = {object};
-//               constructor.newInstance(paramInstances);
-//               retVal = true;
             }
             catch(Throwable e)
             {
@@ -4172,29 +4163,6 @@ public class ADProjectTreeEngine
          }
       }
    }
-   
-//   public class EngineWSElementEventsSink extends WSElementEventsAdapter
-//   {
-//      public long onWSElementNameChanged(IWSElement element,
-//                                         com.embarcadero.describe.umlsupport.IResultCell cell)
-//      {
-//         WSTreeItemComparator comparator = new WSTreeItemComparator(element);
-//         ETList < ITreeItem > items = getTreeModel().findNodes(comparator);
-//         notifyElementChanged()items, element.getNameWithAlias());
-//
-//         return 0;
-//      }
-//
-//      public long onWSElementAliasChanged(IWSElement element,
-//                                          com.embarcadero.describe.umlsupport.IResultCell cell)
-//      {
-//         WSTreeItemComparator comparator = new WSTreeItemComparator(element);
-//         ETList < ITreeItem > items = getTreeModel().findNodes(comparator);
-//         notifyElementChanged()items, element.getNameWithAlias());
-//
-//         return 0;
-//      }
-//   }
 
    public class EngineTypedElementEventsSink extends TypedElementEventsAdapter
    {

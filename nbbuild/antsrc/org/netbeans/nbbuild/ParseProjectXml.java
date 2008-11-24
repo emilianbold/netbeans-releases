@@ -305,8 +305,6 @@ public final class ParseProjectXml extends Task {
             if (getProjectFile() == null) {
                 throw new BuildException("You must set 'project' or 'projectfile'", getLocation());
             }
-            // XXX validate against nbm-project{,2}.xsd; does this require JDK 1.5?
-            // Cf.: ant/project/eg/ValidateAllBySchema.java
             // XXX share parse w/ ModuleListParser
             Document pDoc = XMLUtil.parse(new InputSource(getProjectFile ().toURI().toString()),
                                           false, true, /*XXX*/null, null);
@@ -1340,6 +1338,10 @@ public final class ParseProjectXml extends Task {
         for (TestDeps testDeps : testDepsList) {
             if (testDeps.fullySpecified) {
                 continue;
+            }
+            if (new File(moduleProject, "test/" + testDeps.testtype + "/src").isDirectory()) {
+                log("Warning: " + testCnb + " lacks a " + testDeps.testtype +
+                        " test dependency on org.netbeans.libs.junit4; using default dependencies for compatibility", Project.MSG_WARN);
             }
             for (String library : new String[]{"org.netbeans.libs.junit4", "org.netbeans.modules.nbjunit", "org.netbeans.insane"}) {
                 testDeps.addOptionalDependency(new TestDep(library, modules, false, false, true, testDeps));

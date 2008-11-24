@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -91,6 +91,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
@@ -220,13 +221,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     /** Default name values for ATTR_UNUSEDLOCAL and friends */
     private static final String ATTR_DEFAULTS = "defaults"; // NOI18N
 
-    private static final String[] RUBY_BUILTIN_VARS =
-        new String[] {
-            // Predefined variables
-            "__FILE__", "__LINE__", "STDIN", "STDOUT", "STDERR", "ENV", "ARGF", "ARGV", "DATA",
-            "RUBY_VERSION", "RUBY_RELEASE_DATE", "RUBY_PLATFORM",
-        };
-    
     private static final String[] RUBY_REGEXP_WORDS =
         new String[] {
             "^", "Start of line",
@@ -673,7 +667,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             }
         }
 
-        for (String keyword : RUBY_BUILTIN_VARS) {
+        for (String keyword : RubyUtils.RUBY_PREDEF_VAR) {
             if (startsWith(keyword, prefix)) {
                 KeywordItem item = new KeywordItem(keyword, null, anchor, request);
 
@@ -863,7 +857,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
      */
     private boolean completeObjectMethod(List<CompletionProposal> proposals, CompletionRequest request, String fqn,
         Call call) {
-        
+
         RubyIndex index = request.index;
         String prefix = request.prefix;
         int astOffset = request.astOffset;
@@ -893,29 +887,33 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             // If we're not sure we're only looking for a method, don't abort after this
             boolean done = call.isMethodExpected();
 
+            String lhs = call.getLhs();
             boolean skipInstanceMethods = call.isStatic();
 
-            Set<IndexedMethod> methods = Collections.emptySet();
+            Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
 
-            String type = call.getType();
-            String lhs = call.getLhs();
+            Set<? extends String> types = Collections.emptySet();
+            String callType = call.getType();
+            if (callType != null) {
+                types = Collections.singleton(callType);
+            }
 
-            if ((type == null) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
+            if ((types.isEmpty()) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
                 Node method = AstUtilities.findLocalScope(node, path);
 
                 if (method != null) {
                     // TODO - if the lhs is "foo.bar." I need to split this
                     // up and do it a bit more cleverly
-                    RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
-                    type = analyzer.getType(lhs);
+                    RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*request.info.getParserResult(),*/index, method, node, astOffset, lexOffset, doc, fileObject);
+                    types = analyzer.getTypes(lhs);
                 }
             }
 
             // I'm not doing any data flow analysis at this point, so
             // I can't do anything with a LHS like "foo.". Only actual types.
-            if ((type != null) && (type.length() > 0)) {
+            if (!types.isEmpty()) {
                 if ("self".equals(lhs)) { // NOI18N
-                    type = fqn;
+                    types = Collections.singleton(fqn);
                     skipPrivate = true;
                 } else if ("super".equals(lhs)) { // NOI18N
                     skipPrivate = true;
@@ -923,27 +921,29 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     IndexedClass sc = index.getSuperclass(fqn);
 
                     if (sc != null) {
-                        type = sc.getFqn();
+                        types = Collections.singleton(sc.getFqn());
                     } else {
                         ClassNode cls = AstUtilities.findClass(path);
 
                         if (cls != null) {
-                            type = AstUtilities.getSuperclass(cls);
+                            types = Collections.singleton(AstUtilities.getSuperclass(cls));
                         }
                     }
 
-                    if (type == null) {
-                        type = "Object"; // NOI18N
+                    if (types.isEmpty()) {
+                        types = Collections.singleton("Object"); // NOI18N
                     }
                 }
 
-                if ((type != null) && (type.length() > 0)) {
+                if (!types.isEmpty()) {
                     // Possibly a class on the left hand side: try searching with the class as a qualifier.
                     // Try with the LHS + current FQN recursively. E.g. if we're in
                     // Test::Unit when there's a call to Foo.x, we'll try
                     // Test::Unit::Foo, and Test::Foo
                     while (methods.isEmpty()) {
-                        methods = index.getInheritedMethods(fqn + "::" + type, prefix, kind);
+                        for (String type : types) {
+                            methods.addAll(index.getInheritedMethods(fqn + "::" + type, prefix, kind));
+                        }
 
                         int f = fqn.lastIndexOf("::");
 
@@ -955,17 +955,19 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     }
 
                     // Add methods in the class (without an FQN)
-                    Set<IndexedMethod> m = index.getInheritedMethods(type, prefix, kind);
+                    for (String type : types) {
+                        Set<IndexedMethod> m = index.getInheritedMethods(type, prefix, kind);
 
-                    if (!m.isEmpty()) {
-                        methods.addAll(m);
+                        if (!m.isEmpty()) {
+                            methods.addAll(m);
+                        }
                     }
                 }
             }
 
             // Try just the method call (e.g. across all classes). This is ignoring the 
             // left hand side because we can't resolve it.
-            if ((methods.isEmpty())) {
+            if ((methods.isEmpty()) || types.contains(null)) {
                 methods = index.getMethods(prefix, null, kind);
             }
 
@@ -1566,7 +1568,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     an = ((CallNode)call).getArgsNode();
                 }
                 if (an != null && index < an.childNodes().size() &&
-                        ((Node)an.childNodes().get(index)).nodeId == NodeType.HASHNODE) {
+                        an.childNodes().get(index).nodeId == NodeType.HASHNODE) {
                     // We should stay within the hashnode, so counteract the
                     // index++ which follows this if-block
                     index--;
@@ -2073,7 +2075,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         anchor = lexOffset - prefix.length();
 
-        final RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
+        final RubyIndex index = RubyIndex.get(info.getIndex(RubyInstallation.RUBY_MIME_TYPE), info.getFileObject());
 
         final Document document = info.getDocument();
         if (document == null) {
@@ -2153,7 +2155,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         if (root == null) {
             completeKeywords(proposals, request, showSymbols);
-
             return completionResult;
         }
 
@@ -3146,7 +3147,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }
 
     public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
-        if (link.indexOf('#') != -1 && elementHandle.getMimeType().equals(RubyMimeResolver.RUBY_MIME_TYPE)) {
+        if (link.indexOf('#') != -1 && elementHandle.getMimeType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
             if (link.startsWith("#")) {
                 // Put the current class etc. in front of the method call if necessary
                 Element surrounding = RubyParser.resolveHandle(null, elementHandle);
@@ -3393,7 +3394,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             ClassNode node = AstUtilities.findClass(path);
 
             if (node != null) {
-                Index idx = info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE);
+                Index idx = info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
                 if (idx != null) {
                     RubyIndex index = RubyIndex.get(idx, info.getFileObject());
                     IndexedClass cls = index.getSuperclass(AstUtilities.getFqnName(path));

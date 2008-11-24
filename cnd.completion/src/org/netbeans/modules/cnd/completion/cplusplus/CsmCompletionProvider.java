@@ -54,13 +54,11 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmSyntaxSupport;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.MethodParamsTipPaintComponent;
@@ -78,14 +76,14 @@ public class CsmCompletionProvider implements CompletionProvider {
     private static final boolean TRACE = false;
 
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        CsmSyntaxSupport sup = (CsmSyntaxSupport) Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
+        CompletionSupport sup = CompletionSupport.get(component);
         if (sup == null) {
             return 0;
         }
         final int dot = component.getCaret().getDot();
-        if (CsmCompletionQuery.checkCondition(sup, dot)) {
+        if (CsmCompletionQuery.checkCondition(component.getDocument(), dot)) {
             try {
-                if (sup.needShowCompletionOnText(component, typedText)) {
+                if (CompletionSupport.needShowCompletionOnText(component, typedText)) {
                     return COMPLETION_QUERY_TYPE;
                 }
             } catch (BadLocationException ex) {
@@ -96,7 +94,6 @@ public class CsmCompletionProvider implements CompletionProvider {
     }
 
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        CsmSyntaxSupport sup = (CsmSyntaxSupport) Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
         final int dot = component.getCaret().getDot();
         // disable code templates for smart mode of completion
         //CsmCodeTemplateFilter.enableAbbreviations(((queryType & COMPLETION_ALL_QUERY_TYPE) == COMPLETION_ALL_QUERY_TYPE));
@@ -105,7 +102,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             System.err.println("createTask called on " + dot); // NOI18N
         }
         // do not work together with include completion
-        if (CsmCompletionQuery.checkCondition(sup, dot)) {
+        if (CsmCompletionQuery.checkCondition(component.getDocument(), dot)) {
             if ((queryType & COMPLETION_QUERY_TYPE) == COMPLETION_QUERY_TYPE) {
                 return new AsyncCompletionTask(new Query(dot, queryType), component);
             } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
@@ -246,40 +243,36 @@ public class CsmCompletionProvider implements CompletionProvider {
             boolean hide = (caretOffset <= queryAnchorOffset) && (filterPrefix == null);
             if (!hide) {
                 creationCaretOffset = caretOffset;
-                SyntaxSupport syntSupp = Utilities.getSyntaxSupport(component);
-                if (syntSupp != null) {
-                    CsmSyntaxSupport sup = (CsmSyntaxSupport) syntSupp.get(CsmSyntaxSupport.class);
-                    NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
-                    NbCsmCompletionQuery.CsmCompletionResult res = query.query(component, caretOffset, sup);
-                    if (res == null || (res.getItems().isEmpty() && (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY))) {
-                        // switch to global context
-                        if (TRACE) {
-                            System.err.println("query switch to global" + getTestState()); // NOI18N
-                        }
+                NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
+                NbCsmCompletionQuery.CsmCompletionResult res = query.query(component, caretOffset);
+                if (res == null || (res.getItems().isEmpty() && (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY))) {
+                    // switch to global context
+                    if (TRACE) {
+                        System.err.println("query switch to global" + getTestState()); // NOI18N
+                    }
+                    queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
+                    if (res == null || res.isSimpleVariableExpression()) {
+                        // try once more for non dereferenced expressions
+                        query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
+                        res = query.query(component, caretOffset);
+                    }
+                    if (TRACE) {
+                        System.err.println("query switched to global" + getTestState()); // NOI18N
+                    }
+                }
+                if (res != null) {
+                    if (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY &&
+                            !res.isSimpleVariableExpression()) {
+                        // change to global mode
                         queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
-                        if (res == null || res.isSimpleVariableExpression()) {
-                            // try once more for non dereferenced expressions
-                            query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
-                            res = query.query(component, caretOffset, sup);
-                        }
-                        if (TRACE) {
-                            System.err.println("query switched to global" + getTestState()); // NOI18N
-                        }
                     }
-                    if (res != null) {
-                        if (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY &&
-                                !res.isSimpleVariableExpression()) {
-                            // change to global mode
-                            queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
-                        }
-                        queryAnchorOffset = res.getSubstituteOffset();
-                        Collection<CompletionItem> items = res.getItems();
-                        // no more title in NB 6 in completion window
-                        //resultSet.setTitle(res.getTitle());
-                        resultSet.setAnchorOffset(queryAnchorOffset);
-                        queryResult = res;
-                        addItems(resultSet, items);
-                    }
+                    queryAnchorOffset = res.getSubstituteOffset();
+                    Collection<CompletionItem> items = res.getItems();
+                    // no more title in NB 6 in completion window
+                    //resultSet.setTitle(res.getTitle());
+                    resultSet.setAnchorOffset(queryAnchorOffset);
+                    queryResult = res;
+                    addItems(resultSet, items);
                 }
             } else {
                 if (TRACE) {
@@ -408,7 +401,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             BaseDocument bdoc = (BaseDocument) doc;
             //NbCsmCompletionQuery.CsmCompletionResult res = null;// (NbCsmCompletionQuery.CsmCompletionResult)query.tipQuery(component, caretOffset, bdoc.getSyntaxSupport(), false);
 //            NbCsmCompletionQuery query = new NbCsmCompletionQuery();
-            NbCsmCompletionQuery.CsmCompletionResult res = query.query(component, caretOffset, bdoc.getSyntaxSupport(), true, false);
+            NbCsmCompletionQuery.CsmCompletionResult res = query.query(component, caretOffset, true, false);
             if (res != null) {
                 queryCaretOffset = caretOffset;
                 List<List<String>> list = new ArrayList<List<String>>();

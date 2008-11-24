@@ -173,12 +173,6 @@ public class JDBCMetadata extends MetadataImplementation {
         return catalogs;
     }
 
-    public final void refreshTable(String tableName) {
-        if (defaultCatalog != null) {
-            ((JDBCCatalog) MetadataAccessor.getDefault().getCatalogImpl(defaultCatalog)).refreshTable(tableName);
-        }
-    }
-
     public final Connection getConnection() {
         return conn;
     }

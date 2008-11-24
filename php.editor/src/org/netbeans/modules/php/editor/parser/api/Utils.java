@@ -46,15 +46,7 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Comment;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocPropertyTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
@@ -249,14 +241,16 @@ public class Utils {
         return name;
     }
 
-    public static List<PHPDocPropertyTag> getPropertyTags(Program root, ClassDeclaration node) {
-        List<PHPDocPropertyTag> tags = new ArrayList<PHPDocPropertyTag>();
+    public static List<PHPDocVarTypeTag> getPropertyTags(Program root, ClassDeclaration node) {
+        List<PHPDocVarTypeTag> tags = new ArrayList<PHPDocVarTypeTag>();
         Comment comment = Utils.getCommentForNode(root, node);
         if (comment != null && (comment instanceof PHPDocBlock)) {
             PHPDocBlock phpDoc = (PHPDocBlock) comment;
             for (PHPDocTag tag : phpDoc.getTags()) {
-                if (tag instanceof PHPDocPropertyTag) {
-                    tags.add((PHPDocPropertyTag) tag);
+                if (tag.getKind() == PHPDocTag.Type.PROPERTY
+                        || tag.getKind() == PHPDocTag.Type.PROPERTY_READ
+                        || tag.getKind() == PHPDocTag.Type.PROPERTY_WRITE) {
+                    tags.add((PHPDocVarTypeTag) tag);
                 }
             }
         }

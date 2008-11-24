@@ -47,12 +47,11 @@ import org.netbeans.performance.j2se.Utilities.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
  
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.io.File;
 import java.io.IOException;
 import junit.framework.Assert;
 import org.openide.util.Lookup;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+
 
 /**
  *
@@ -60,8 +59,7 @@ import org.openide.util.Lookup;
  */
 public class RenameClassPerfTest extends RefPerfTestCase {
 
-    private static int size = 0;
-    
+  
     static {
         RenameClassPerfTest.class.getClassLoader().setDefaultAssertionStatus(true);
         System.setProperty("org.openide.util.Lookup", TestLkp.class.getName());
@@ -103,67 +101,16 @@ public class RenameClassPerfTest extends RefPerfTestCase {
         d.value = prepare;
         d.unit = "ms";
         d.runOrder = 0;
+        CommonUtilities.processUnitTestsResults(RenameClassPerfTest.class.getCanonicalName(), d);
         data.add(d);
         d.name = "refactoringSession.doRefactoring";
         d.value = doIt;
         d.unit = "ms";
         d.runOrder = 0;
+        CommonUtilities.processUnitTestsResults(RenameClassPerfTest.class.getCanonicalName(), d);
         System.err.println("usages collection: " + prepare);
         System.err.println("do refactoring: " + doIt);
 
-      File resGlobal=new File(this.getWorkDirPath()+File.separator+"../../allPerformance.xml");
-      FileOutputStream fos=null;
-      FileInputStream fis=null;
-      if (!resGlobal.exists()) {
-          try {
-
-          fos = new FileOutputStream(resGlobal, true);
-          fos.write("<TestResults>\n".getBytes());
-          fos.write("   </Suite>\n".getBytes());
-          fos.write("</TestResults>".getBytes());
-          fos.close();
-
-            } catch (IOException ex) {
-
-            }
-      }
-
-
-        try {
-            fis= new FileInputStream(resGlobal);
-            size=(int)(resGlobal.length()-25);
-
-            byte[] array=new byte[size];
-            fis.read(array, 0, size);
-            fis.close();
-
-            fos= new FileOutputStream(resGlobal, false);
-
-            fos.write(array);
-
-
-            if (!new String(array).contains("<Suite suitename=\"J2SE Refactoring\" name=\"org.netbeans.performance.j2se.refactoring.RenameClassPerfTest\">")) {
-                if (new String(array).contains("<Suite suitename=")) fos.write("   </Suite>\n".getBytes());
-                fos.write(("   <Suite suitename=\"J2SE Refactoring\" name=\"org.netbeans.performance.j2se.refactoring.RenameClassPerfTest\">\n").getBytes());
-            }
-            
-            fos.write(("      <Test name=\"Refactoring Rename: usages collection\" unit=\"ms\" results=\"passed\" threshold=\"0\" classname=\"org.netbeans.performance.j2se.refactoring.RenameClassPerfTest\">\n").getBytes());
-            fos.write(("         <PerformanceData runOrder=\"1\" value=\""+prepare+"\"/>\n").getBytes());
-            fos.write(("      </Test>\n").getBytes());
-
-            fos.write(("      <Test name=\"Refactoring Rename: do refactoring\" unit=\"ms\" results=\"passed\" threshold=\"0\" classname=\"org.netbeans.performance.j2se.refactoring.RenameClassPerfTest\">\n").getBytes());
-            fos.write(("         <PerformanceData runOrder=\"1\" value=\""+doIt+"\"/>\n").getBytes());
-            fos.write(("      </Test>\n").getBytes());
-
-            fos.write("   </Suite>\n".getBytes());
-            fos.write("</TestResults>".getBytes());
-            fos.close();
-
-        } catch (IOException ex) {
-            System.err.println("Exception:"+ex);
-        }
-
     }
-
 
 }

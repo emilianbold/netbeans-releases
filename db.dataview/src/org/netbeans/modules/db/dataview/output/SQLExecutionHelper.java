@@ -229,7 +229,7 @@ class SQLExecutionHelper {
                     int rows = dataView.getUpdateCount();
                     if (rows == 0) {
                         error = true;
-                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_match_to_delete");
+                        errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_Warning_Deletion");//"MSG_no_match_to_delete");
                     } else if (rows > 1) {
                         error = true;
                         errorMsg = errorMsg + NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_unique_row_for_match");

@@ -61,12 +61,11 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresent
 import org.netbeans.modules.vmd.midp.flow.FlowAlertViaPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.general.AbstractEventHandlerCreatorPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.*;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.display.AlertDisplayPresenter;
 import org.openide.util.NbBundle;
 
 import java.util.*;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResourceRE;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResourceLazyInit;
 
 /**
  * @author Karol Harezlak
@@ -119,7 +118,7 @@ public final class AlertCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Image"), PropertyEditorResourceRE.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
+                    .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Image"), PropertyEditorResourceLazyInit.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
                     .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_String"), // NOI18N
                         PropertyEditorString.createInstance(NbBundle.getMessage(AlertCD.class, "LBL_Alert_String")), PROP_STRING) // NOI18N
                     .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Type"), // NOI18N

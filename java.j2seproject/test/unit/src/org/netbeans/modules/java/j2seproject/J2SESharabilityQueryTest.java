@@ -49,7 +49,6 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Document;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
@@ -58,6 +57,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.util.test.MockLookup;
 
 public class J2SESharabilityQueryTest extends NbTestCase {
 
@@ -77,10 +77,10 @@ public class J2SESharabilityQueryTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(new Object[] {
+        MockLookup.setInstances(
             new J2SEProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
-        });
+        );
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
@@ -104,7 +104,6 @@ public class J2SESharabilityQueryTest extends NbTestCase {
         pm = null;
         pp = null;
         helper = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
 

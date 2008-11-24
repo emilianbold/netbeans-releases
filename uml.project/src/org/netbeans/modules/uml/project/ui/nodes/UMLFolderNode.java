@@ -160,7 +160,6 @@ public class UMLFolderNode extends UMLElementNode implements ITreeFolder
      * Sets the element that this tree folder represents.
      *
      * @param newVal The element that this folder represents
-     * @see org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeFolder#setElement(com.embarcadero.describe.foundation.IElement)
      */
     public void setElement(IElement newVal)
     {

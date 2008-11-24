@@ -100,7 +100,7 @@ public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
         
         CommonUtilities.openFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java", false);
         CommonUtilities.editFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java");
-        CommonUtilities.buildproject(j2seproject);
+        CommonUtilities.buildProject(j2seproject);
         //runProject(j2seproject,true);
         //debugProject(j2seproject,true);
         //testProject(j2seproject);

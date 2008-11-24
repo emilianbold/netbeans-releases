@@ -176,7 +176,7 @@ public class ErrorExpressionEditor extends PropertyEditorSupport {
     }
 
 
-    Collection getExpressionsVector() {
+    Collection<ErrorExpression> getExpressionsVector() {
 	       return list;
     }
 }

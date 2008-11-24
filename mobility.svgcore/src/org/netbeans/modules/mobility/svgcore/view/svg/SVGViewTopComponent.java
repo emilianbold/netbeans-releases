@@ -131,7 +131,6 @@ import org.netbeans.modules.mobility.svgcore.items.form.SVGComponentDrop;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.modules.mobility.svgcore.navigator.SVGNavigatorContent;
 import org.netbeans.modules.mobility.svgcore.palette.SVGPaletteItemDataObject;
-import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGToggleAction;
 import org.netbeans.modules.xml.multiview.XmlMultiViewEditorSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -583,7 +582,10 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         PerseusController perseus = getPerseusController();
 
         if (perseus != null) {
+            float stoppedTime = perseus.getAnimatorTime();
             perseus.stopAnimator();
+            perseus.setAnimatorTime(stoppedTime);
+            updateAnimationActions();
         }
     }
 
@@ -917,9 +919,12 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         if (pc != null) {
             int state = pc.getAnimatorState();
             boolean isReadOnly = getSceneManager().isReadOnly();
-            enableComponentsInToolbar(animationToolbar, isReadOnly && state != PerseusController.ANIMATION_NOT_AVAILABLE, startAnimationButton, pauseAnimationButton);
+            boolean isAnimAvailable = state != PerseusController.ANIMATION_NOT_AVAILABLE;
+            enableComponentsInToolbar(animationToolbar, 
+                    isReadOnly && isAnimAvailable,
+                    startAnimationButton, pauseAnimationButton);
 
-            startAnimationAction.setEnabled(state != PerseusController.ANIMATION_NOT_AVAILABLE);
+            startAnimationAction.setEnabled(isAnimAvailable);
 
             boolean isActive = isReadOnly && pc.isAnimatorStarted();
             startAnimationAction.setIsSelected(isActive);
@@ -931,7 +936,9 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
     }
     
     private void disableAnimationActions() {
-        enableComponentsInToolbar(animationToolbar, false);
+        enableComponentsInToolbar(animationToolbar, false, startAnimationButton, pauseAnimationButton);
+        startAnimationAction.setEnabled(false);
+        pauseAnimationAction.setEnabled(false);
     }
 
     private static JSeparator createToolBarSeparator() {
@@ -1097,11 +1104,13 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         if ( dObj instanceof XMLDataObject) {
             Document doc = ((XMLDataObject) dObj).getDocument();
 
+            // class was specified in editor-palette-item xml
             SVGComponentDrop dropSupport = getAEDClass(doc);
             if (dropSupport != null){
                 return dropSupport.handleTransfer(m_svgDataObject, point);
             } 
             
+            // xml snipped was specified in editor-palette-item xml
             String snippet = getSnippetBody(doc);
             if (snippet != null){
                 return SVGComponentDrop.getDefault(snippet)

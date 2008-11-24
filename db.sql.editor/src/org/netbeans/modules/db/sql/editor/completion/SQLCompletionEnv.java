@@ -47,7 +47,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.db.api.sql.execute.SQLScript;
 import org.netbeans.modules.db.api.sql.execute.SQLScriptStatement;
-import org.netbeans.modules.db.sql.editor.StringUtils;
 import org.netbeans.modules.db.sql.editor.api.completion.SubstitutionHandler;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
@@ -58,13 +57,10 @@ import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 public class SQLCompletionEnv {
 
     private final String statement;
-    private int statementOffset;
+    private final int statementOffset;
     private final int caretOffset;
     private final SubstitutionHandler substitutionHandler;
-
-    private TokenSequence<SQLTokenId> seq;
-    private boolean selectStatement;
-    private Context context;
+    private final TokenSequence<SQLTokenId> seq;
 
     public static SQLCompletionEnv forDocument(Document doc, int caretOffset) {
         String documentText = getDocumentText(doc);
@@ -93,14 +89,8 @@ public class SQLCompletionEnv {
         this.statementOffset = statementOffset;
         this.caretOffset = caretOffset;
         this.substitutionHandler = substitutionHandler;
-        if (statement != null) {
-            TokenHierarchy<String> hi = TokenHierarchy.create(statement, SQLTokenId.language());
-            seq = hi.tokenSequence(SQLTokenId.language());
-            computeStatementType();
-            if (selectStatement) {
-                computeContext();
-            }
-        }
+        TokenHierarchy<String> hi = TokenHierarchy.create(statement, SQLTokenId.language());
+        seq = hi.tokenSequence(SQLTokenId.language());
     }
 
     /**
@@ -132,14 +122,6 @@ public class SQLCompletionEnv {
         return seq;
     }
 
-    public boolean isSelect() {
-        return selectStatement;
-    }
-
-    public Context getContext() {
-        return context;
-    }
-
     private static String getDocumentText(final Document doc) {
         final String[] result = { null };
         doc.render(new Runnable() {
@@ -152,92 +134,6 @@ public class SQLCompletionEnv {
             }
         });
         return result[0];
-    }
-
-    private void computeStatementType() {
-        seq.moveStart();
-        for (;;) {
-            if (!seq.moveNext()) {
-                return;
-            }
-            switch (seq.token().id()) {
-                case WHITESPACE:
-                case LINE_COMMENT:
-                case BLOCK_COMMENT:
-                    break;
-                case KEYWORD:
-                    if (StringUtils.textEqualsIgnoreCase("SELECT", seq.token().text())) { // NOI18N
-                        selectStatement = true;
-                    }
-                    return;
-                default:
-                    return;
-            }
-        }
-    }
-
-    /**
-     * Walks the token sequence backwards from the caret offset trying
-     * to find the SQL clause at the caret offset.
-     */
-    private void computeContext() {
-        int offset = seq.move(caretOffset);
-        if (offset > 0) {
-            seq.moveNext();
-        }
-        boolean wasBy = false;
-        for (;;) {
-            if (!seq.movePrevious()) {
-                return;
-            }
-            if (seq.token().id() == SQLTokenId.KEYWORD) {
-                CharSequence keyword = seq.token().text();
-                if (!wasBy) {
-                    if (StringUtils.textEqualsIgnoreCase("FROM", keyword)) { // NOI18N
-                        context = Context.FROM;
-                        return;
-                    } else if (StringUtils.textEqualsIgnoreCase("ON", keyword)) { // NOI18N
-                        context = Context.JOIN_CONDITION;
-                        return;
-                    } else if (StringUtils.textEqualsIgnoreCase("SELECT", keyword)) { // NOI18N
-                        context = Context.SELECT;
-                        return;
-                    } else if (StringUtils.textEqualsIgnoreCase("WHERE", keyword)) { // NOI18N
-                        context = Context.WHERE;
-                        return;
-                    } else if (StringUtils.textEqualsIgnoreCase("HAVING", keyword)) { // NOI18N
-                        context = Context.HAVING;
-                        return;
-                    } else if (StringUtils.textEqualsIgnoreCase("BY", keyword)) { // NOI18N
-                        wasBy = true;
-                        continue;
-                    } else if (StringUtils.textEqualsIgnoreCase("GROUP", keyword)) { // NOI18N
-                        // After GROUP, but before BY.
-                        return;
-                    } else if (StringUtils.textEqualsIgnoreCase("ORDER", keyword)) { // NOI18N
-                        // After ORDER, but before BY.
-                        return;
-                    }
-                } else {
-                    if (StringUtils.textEqualsIgnoreCase("GROUP", keyword)) { // NOI18N
-                        context = Context.GROUP_BY;
-                    } else if (StringUtils.textEqualsIgnoreCase("ORDER", keyword)) { // NOI18N
-                        context = Context.ORDER_BY;
-                    }
-                    return;
-                }
-            } else if (wasBy) {
-                switch (seq.token().id()) {
-                    case WHITESPACE:
-                    case LINE_COMMENT:
-                    case BLOCK_COMMENT:
-                        continue;
-                    default:
-                        // Expected a keyword before BY, such as GROUP or ORDER.
-                        return;
-                }
-            }
-        }
     }
 
     private static final class ScriptSubstitutionHandler implements SubstitutionHandler {
@@ -263,16 +159,5 @@ public class SQLCompletionEnv {
                 }
             });
         }
-    }
-
-    public enum Context {
-
-        SELECT,
-        FROM,
-        JOIN_CONDITION,
-        WHERE,
-        GROUP_BY,
-        HAVING,
-        ORDER_BY
     }
 }

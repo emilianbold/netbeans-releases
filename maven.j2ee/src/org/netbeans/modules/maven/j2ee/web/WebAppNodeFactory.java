@@ -61,6 +61,7 @@ import org.openide.nodes.Node;
  *
  * @author mkleint
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=50)
 public class WebAppNodeFactory implements NodeFactory {
     private static final String KEY_WEBAPP = "webapp"; //NOI18N
     

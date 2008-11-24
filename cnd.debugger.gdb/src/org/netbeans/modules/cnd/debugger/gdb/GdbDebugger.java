@@ -72,7 +72,6 @@ import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
@@ -507,9 +506,9 @@ public class GdbDebugger implements PropertyChangeListener {
         String csdirs = cs.getCompilerSetManager().getCompilerSet(csname).getDirectory();
 
         if (cs.getCompilerSetManager().getCompilerSet(csname).getCompilerFlavor().isMinGWCompiler()) {
-            String msysBase = CppUtils.getMSysBase();
+            String msysBase = CompilerSetManager.getMSysBase();
             if (msysBase != null && msysBase.length() > 0) {
-                csdirs += File.pathSeparator + msysBase + File.separator + "bin"; // NOI18N;
+                csdirs += File.pathSeparator + msysBase + "/bin"; // NOI18N;
             }
         }
 
@@ -1617,10 +1616,10 @@ public class GdbDebugger implements PropertyChangeListener {
                     map = GdbUtils.createMapFromString(frame);
                     String fullname = map.get("fullname"); // NOI18N
                     if (platform == PlatformTypes.PLATFORM_WINDOWS && isCygwin() && fullname != null && fullname.charAt(0) == '/') {
-                        if (fullname.startsWith("/usr")) { // NOI18N
-                            fullname = CppUtils.getCygwinBase().replace('\\', '/') + fullname.substring(4);
+                        if (fullname.length() >= 5 && fullname.startsWith("/usr/")) { // NOI18N
+                            fullname = CompilerSetManager.getCygwinBase() + fullname.substring(4);
                         } else {
-                            fullname = CppUtils.getCygwinBase().replace('\\', '/') + fullname;
+                            fullname = CompilerSetManager.getCygwinBase() + fullname;
                         }
                     }
                     String line = map.get("line"); // NOI18N
@@ -1852,9 +1851,10 @@ public class GdbDebugger implements PropertyChangeListener {
                 impl.addError((String) o);
             } else if (o instanceof Map || o == null) {
                 pendingBreakpointMap.remove(token);
-                impl.completeValidation((Map<String, String>) o);
-                if (o != null && impl.getBreakpoint().getValidity() == Breakpoint.VALIDITY.VALID && impl.getBreakpoint().isEnabled()) {
-                    Map<String, String> map = (Map) o;
+                @SuppressWarnings("unchecked")
+                Map<String, String> map = (Map<String, String>)o;
+                impl.completeValidation(map);
+                if (map != null && impl.getBreakpoint().getValidity() == Breakpoint.VALIDITY.VALID && impl.getBreakpoint().isEnabled()) {
                     String fullname = map.get("fullname"); // NOI18N
                     String file = map.get("file"); // NOI18N
                     String line = map.get("line"); // NOI18N
@@ -1876,7 +1876,8 @@ public class GdbDebugger implements PropertyChangeListener {
             }
             return true;
         } else if (o instanceof Map) { // temporary breakpoints aren't NetBeans breakpoints...
-            Map<String, String> map = (Map) o;
+            @SuppressWarnings("unchecked")
+            Map<String, String> map = (Map<String, String>) o;
             String number = map.get("number"); // NOI18N
             String fullname = map.get("fullname"); // NOI18N
             String file = map.get("file"); // NOI18N
@@ -1901,39 +1902,69 @@ public class GdbDebugger implements PropertyChangeListener {
      */
     public static void attach(String pid, ProjectInformation pinfo) throws DebuggerStartException {
         Project project = pinfo.getProject();
-        ConfigurationDescriptorProvider cdp =
-                project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        if (cdp != null) {
-            MakeConfigurationDescriptor mcd =
-                    (MakeConfigurationDescriptor) cdp.getConfigurationDescriptor();
+        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        MakeConfigurationDescriptor mcd = (MakeConfigurationDescriptor) cdp.getConfigurationDescriptor();
+        
+        if (mcd != null) {
             MakeConfiguration conf = (MakeConfiguration) mcd.getConfs().getActive();
-            MakeArtifact ma = new MakeArtifact(mcd, conf);
-            String runDirectory = conf.getProfile().getRunDirectory();
-            String path = IpeUtils.toAbsolutePath(runDirectory, ma.getOutput());
-            if (isExecutableOrSharedLibrary(conf, path)) {
-                ProjectActionEvent pae = new ProjectActionEvent(
-                        project,
-                        DEBUG_ATTACH,
-                        pinfo.getDisplayName(),
-                        path,
-                        conf,
-                        null,
-                        false);
+            String path = getExecutableOrSharedLibrary(mcd, conf);
+
+            if (path != null) {
+                ProjectActionEvent pae = new ProjectActionEvent(project, DEBUG_ATTACH, pinfo.getDisplayName(), path, conf, null, false);
                 DebuggerEngine[] es = DebuggerManager.getDebuggerManager().startDebugging(
                         DebuggerInfo.create(SESSION_PROVIDER_ID, new Object[] { pae, Long.valueOf(pid) }));
                 if (es == null) {
                     throw new DebuggerStartException(new InternalError());
                 }
             } else {
-                final String msg = NbBundle.getMessage(GdbDebugger.class, "ERR_AttachValidationFailure"); // NOI18N
-                SwingUtilities.invokeLater(new Runnable() {
+                MakeArtifact ma = new MakeArtifact(mcd, conf);
+                String buildResult = ma.getOutput();
+                if (buildResult != null && buildResult.length() > 0) {
+                    final String msg = NbBundle.getMessage(GdbDebugger.class, "ERR_AttachValidationFailure"); // NOI18N
+                    SwingUtilities.invokeLater(new Runnable() {
 
-                    public void run() {
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-                    }
-                });
+                        public void run() {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+                        }
+                    });
+                } else {
+                    // We've already displayed an error...
+                }
             }
         }
+    }
+
+    private static String getExecutableOrSharedLibrary(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {
+        MakeArtifact ma = new MakeArtifact(mcd, conf);
+        String buildResult = ma.getOutput();
+
+        if (buildResult == null || buildResult.length() == 0) {
+            buildResult = getBuildResult();
+            if (buildResult == null) {
+                return null;
+            }
+        }
+        if (buildResult.charAt(0) == '/') {
+            if (isExecutableOrSharedLibrary(conf, buildResult)) {
+                return buildResult;
+            } else {
+                return null;
+            }
+        } else {
+            List<String> paths = new ArrayList<String>();
+            paths.add(conf.getBaseDir());
+            paths.addAll(mcd.getSourceRoots());
+
+            for (String dir : paths) {
+                dir = dir.replace("\\", "/");  // NOI18N
+                String path = IpeUtils.toAbsolutePath(dir, buildResult);
+                if (isExecutableOrSharedLibrary(conf, path)) {
+                    return path;
+                }
+            }
+
+        }
+        return null;
     }
 
     /**
@@ -1976,6 +2007,18 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     /**
+     * Returning null because there is no MakeProject API allowing me to handle this well. See IZ#153482
+     * for an API change request.
+     *
+     * @return Always currently null
+     */
+    private static String getBuildResult() {
+        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class, "ERR_NoBuildResult"));
+        DialogDisplayer.getDefault().notify(nd);
+        return null;
+    }
+
+    /**
      *  Called when GdbProxy receives the results of a -stack-list-frames command.
      */
     private void stackUpdate(List<String> stack) {
@@ -2001,10 +2044,10 @@ public class GdbDebugger implements PropertyChangeListener {
                     }
                 }
                 if (platform == PlatformTypes.PLATFORM_WINDOWS && isCygwin() && fullname != null && fullname.charAt(0) == '/') {
-                    if (fullname.startsWith("/usr")) { // NOI18N
-                        fullname = CppUtils.getCygwinBase().replace('\\', '/') + fullname.substring(4);
+                    if (fullname.length() >= 5 && fullname.startsWith("/usr/")) { // NOI18N
+                        fullname = CompilerSetManager.getCygwinBase() + fullname.substring(4);
                     } else {
-                        fullname = CppUtils.getCygwinBase().replace('\\', '/') + fullname;
+                        fullname = CompilerSetManager.getCygwinBase() + fullname;
                     }
                 }
 
@@ -2084,10 +2127,6 @@ public class GdbDebugger implements PropertyChangeListener {
         return ticache;
     }
 
-    /**
-     * @deprecated use requestValueEx instead
-     */
-    @Deprecated
     public String requestValue(String name) {
         try {
             return requestValueEx(name);

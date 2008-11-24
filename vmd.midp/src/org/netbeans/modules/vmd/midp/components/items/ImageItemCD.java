@@ -55,13 +55,13 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresent
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.display.ImageItemDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.injector.ImageItemInjectorPresenter;
 import org.openide.util.NbBundle;
 
 import java.util.*;
 import org.netbeans.modules.vmd.midp.codegen.MidpDatabindingCodeSupport;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResourceLazyInit;
 
 /**
  *
@@ -117,7 +117,7 @@ public class ImageItemCD extends ComponentDescriptor {
                     PropertyEditorComboBox.createInstance(getAppearanceValues(), TYPEID,
                         NbBundle.getMessage(ImageItemCD.class, "DISP_ImageItem_Appearance_RB_LABEL"), // NOI18N
                         NbBundle.getMessage(ImageItemCD.class, "DISP_ImageItem_Appearance_UCLABEL")), ItemCD.PROP_APPEARANCE_MODE) // NOI18N
-                .addProperty(NbBundle.getMessage(ImageItemCD.class, "DISP_ImageItem_Image"), PropertyEditorResource.createImagePropertyEditorWithDatabinding(), PROP_IMAGE); // NOI18N
+                .addProperty(NbBundle.getMessage(ImageItemCD.class, "DISP_ImageItem_Image"), PropertyEditorResourceLazyInit.createImagePropertyEditorWithDatabinding(), PROP_IMAGE); // NOI18N
     }
     
     private static Presenter createSetterPresenter() {

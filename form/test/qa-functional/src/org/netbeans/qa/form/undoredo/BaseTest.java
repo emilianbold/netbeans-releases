@@ -71,13 +71,29 @@ public class BaseTest extends ExtJellyTestCase {
     EditorWindowOperator ewo;
     String fileName;
 
+    /** Test suite
+     * @param args arguments from command line
+     */
+    public static Test suite() {
+
+        if (OS.equals("sunos")) {
+            System.out.println("Solaris is not supported");
+        } else {
+
+            return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class).addTest("testScenario").enableModules(".*").gui(true).clusters(".*"));
+        }
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class).addTest("testNoScenario"));
+
+    }
+
     /** */
     public BaseTest(String testName) {
         super(testName);
     }
 
+    @Override
     public void setUp() throws IOException {
-        openProject(DATA_PROJECT_NAME);
+        openDataProjects(DATA_PROJECT_NAME);
     }
 
     /*
@@ -110,11 +126,11 @@ public class BaseTest extends ExtJellyTestCase {
     }
 
     //method which avoid testing on solaris platform
-    public void testNoScenario(){
+    public void testNoScenario() {
         System.out.println("Solaris platform was detected");
     }
-    
-    public void testScenario() {        
+
+    public void testScenario() {
         mainWindow = MainWindowOperator.getDefault();
         pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(DATA_PROJECT_NAME);
@@ -381,7 +397,7 @@ public class BaseTest extends ExtJellyTestCase {
         //OpenAction openAction = new OpenAction();
         //openAction.perform(formnode);
 
-        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
+        mainWindow = MainWindowOperator.getDefault();
         //inspector.selectComponent("[JFrame]");
         for (int i = 0; i < n; i++) {
             sleep(1000);
@@ -435,21 +451,6 @@ public class BaseTest extends ExtJellyTestCase {
         }
         System.out.println("Result: " + result);
         return result;
-    }
-
-    /** Test could be executed internaly in Forte without Tonga
-     * @param args arguments from command line
-     */
-    public static Test suite() {
-
-        if (OS.equals("sunos")) {
-            System.out.println("Solaris is not supported");
-        } else {
-
-            return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class).addTest("testScenario").enableModules(".*").gui(true).clusters(".*"));
-        }
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class).addTest("testNoScenario"));
-
     }
 }
 

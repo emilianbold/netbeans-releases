@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
-import java.util.*;
 import javax.swing.Action;
 import javax.swing.text.Caret;
 import javax.swing.text.Position;
@@ -52,36 +51,31 @@ import javax.swing.text.TextAction;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 
 import org.netbeans.cnd.api.lexer.TokenItem;
-import org.openide.util.Lookup;
+import org.openide.util.Exceptions;
 
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseKit.InsertBreakAction;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.Syntax;
-import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.SyntaxUpdateTokens;
-import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.TokenID;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.cnd.editor.indent.HotCharIndent;
 import org.netbeans.modules.editor.NbEditorKit;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.Reformat;
 
 /** C++ editor kit with appropriate document */
 public class CCKit extends NbEditorKit {
@@ -94,11 +88,6 @@ public class CCKit extends NbEditorKit {
         return MIMENames.CPLUSPLUS_MIME_TYPE;
     }
 
-// Work-in-progress...
-//    public HelpCtx getHelpCtx() {
-//        System.err.println("CCKit.getHelpCts: Using JavaKit help ID");
-//        return new HelpCtx("org.netbeans.modules.editor.java.JavaKit");
-//    }
     @Override
     public Document createDefaultDocument() {
         Document doc = super.createDefaultDocument();
@@ -111,25 +100,6 @@ public class CCKit extends NbEditorKit {
         super.initDocument(doc);
         doc.putProperty(InputAttributes.class, getLexerAttributes());
         doc.putProperty(Language.class, getLanguage());
-        doc.putProperty(SyntaxUpdateTokens.class,
-                new SyntaxUpdateTokens() {
-
-                    private List<TokenInfo> tokenList = new ArrayList<TokenInfo>();
-
-                    public void syntaxUpdateStart() {
-                        tokenList.clear();
-                    }
-
-                    public List syntaxUpdateEnd() {
-                        return tokenList;
-                    }
-
-                    public void syntaxUpdateToken(TokenID id, TokenContextPath contextPath, int offset, int length) {
-                        if (CCTokenContext.LINE_COMMENT == id) {
-                            tokenList.add(new TokenInfo(id, contextPath, offset, length));
-                        }
-                    }
-                });
     }
 
     protected Language<CppTokenId> getLanguage() {
@@ -148,35 +118,6 @@ public class CCKit extends NbEditorKit {
 
     protected Filter<CppTokenId> getFilter() {
         return CndLexerUtilities.getGccCppFilter();
-    }
-
-    /** Create new instance of syntax coloring scanner
-     * @param doc document to operate on. It can be null in the cases the syntax
-     *   creation is not related to the particular document
-     */
-    @Override
-    public Syntax createSyntax(Document doc) {
-        return new CCSyntax();
-    }
-
-    /** Create syntax support */
-    @Override
-    public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
-        SyntaxSupportProvider ss = (SyntaxSupportProvider) Lookup.getDefault().lookup(SyntaxSupportProvider.class);
-        SyntaxSupport sup = null;
-        if (ss != null) {
-            sup = ss.createSyntaxSupport(doc);
-        }
-        if (sup == null) {
-            sup = new CCSyntaxSupport(doc);
-        }
-        return sup;
-    }
-
-    /** Create the formatter appropriate for this kit */
-    @Override
-    public Formatter createFormatter() {
-        return new CCFormatter(this.getClass());
     }
 
     protected Action getCommentAction() {
@@ -206,10 +147,6 @@ public class CCKit extends NbEditorKit {
             new InsertSemicolonAction(true),
             new InsertSemicolonAction(false),};
         ccActions = TextAction.augmentList(super.createActions(), ccActions);
-        Action[] extra = CndEditorActionsProvider.getDefault().getActions(getContentType());
-        if (extra.length > 0) {
-            ccActions = TextAction.augmentList(ccActions, extra);
-        }
 
         return ccActions;
     }
@@ -265,7 +202,7 @@ public class CCKit extends NbEditorKit {
                 Cursor origCursor = target.getCursor();
                 target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-                doc.runAtomic(new Runnable() {
+                doc.runAtomicAsUser(new Runnable() {
 
                     public void run() {
                         try {
@@ -284,16 +221,12 @@ public class CCKit extends NbEditorKit {
                             }
 
                             int pos = startPos;
-                            Formatter formatter = doc.getFormatter();
-                            formatter.reformatLock();
+                            Reformat reformat = Reformat.get(doc);
+                            reformat.lock();
                             try {
-                                while (pos < endPosition.getOffset()) {
-                                    int stopPos = endPosition.getOffset();
-                                    int reformattedLen = formatter.reformat(doc, pos, stopPos);
-                                    pos = pos + reformattedLen;
-                                }
+                                reformat.reformat(pos, endPosition.getOffset());
                             } finally {
-                                formatter.reformatUnlock();
+                                reformat.unlock();
                             }
 
                             // Restore the line
@@ -317,18 +250,18 @@ public class CCKit extends NbEditorKit {
         @Override
         protected void checkIndentHotChars(JTextComponent target, String typedText) {
             BaseDocument doc = Utilities.getDocument(target);
-            if (doc != null) {
-                // To fix IZ#130504 we need to differ different reasons line indenting request,
-                // but ATM there is no way to transfer this info from here to FormatSupport 
-                // correctly over FormatWriter because it's final class for some reasons.
-                // But java editor has the same bug, so one day we may have such possibility 
-                doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, Boolean.TRUE);
-                doc.putProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY, Boolean.TRUE);
-                super.checkIndentHotChars(target, typedText);
-                doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, null);
-                doc.putProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY, null);
+            int offset = target.getCaretPosition();
+            if (HotCharIndent.INSTANCE.getKeywordBasedReformatBlock(doc, offset, typedText)) {
+                Indent indent = Indent.get(doc);
+                indent.lock();
+                try {
+                    indent.reindent(offset);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally{
+                    indent.unlock();
+                }
             }
-
         }
 
         @Override
@@ -350,10 +283,14 @@ public class CCKit extends NbEditorKit {
             int dotPos = caret.getDot();
             if (BracketCompletion.posWithinString(doc, dotPos)) {
                 try {
-                    doc.insertString(dotPos, "\"\"", null); //NOI18N
-                    dotPos += 1;
-                    caret.setDot(dotPos);
-                    return dotPos;
+                    if ((dotPos >= 1 && DocumentUtilities.getText(doc).charAt(dotPos-1) != '\\')
+                        || (dotPos >= 2 && DocumentUtilities.getText(doc).charAt(dotPos-2) == '\\')) {
+                        // not line continuation
+                        doc.insertString(dotPos, "\"\"", null); //NOI18N
+                        dotPos += 1;
+                        caret.setDot(dotPos);
+                        return dotPos;
+                    }
                 } catch (BadLocationException ex) {
                 }
             } else {
@@ -367,31 +304,32 @@ public class CCKit extends NbEditorKit {
                         // XXX: vv159170 simplest hack
                         // insert "};" for "{" when in "enum", "class", "struct" and union completion
                         TokenItem<CppTokenId> firstNonWhiteBwd = CndTokenUtilities.getFirstNonWhiteBwd(doc, end);
-                        CCSyntaxSupport sup = (CCSyntaxSupport) Utilities.getSyntaxSupport(target);
                         if (firstNonWhiteBwd == null || firstNonWhiteBwd.id() != CppTokenId.LBRACE) {
                             return Boolean.FALSE;
                         }
                         int lBracePos = firstNonWhiteBwd.offset();
-                        int lastSepOffset = BracketCompletion.getLastCommandSeparator(doc, lBracePos - 1);
+                        int lastSepOffset = CndTokenUtilities.getLastCommandSeparator(doc, lBracePos - 1);
                         if (lastSepOffset == -1 && lBracePos > 0) {
                             lastSepOffset = 0;
                         }
                         if (lastSepOffset != -1 && lastSepOffset < dotPos) {
-                            org.netbeans.editor.TokenItem keyword = sup.getTokenChain(lastSepOffset, lBracePos);
-                            while (keyword != null && keyword.getOffset() < lBracePos) {
-                                if (keyword.getTokenID() == CCTokenContext.CLASS ||
-                                        keyword.getTokenID() == CCTokenContext.UNION ||
-                                        keyword.getTokenID() == CCTokenContext.STRUCT ||
-                                        keyword.getTokenID() == CCTokenContext.ENUM) {
-                                    insString = "};"; // NOI18N
-                                    break;
+                            TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, lBracePos, false, false);
+                            loop:
+                            while (cppTokenSequence.movePrevious() && cppTokenSequence.offset() >= lastSepOffset) {
+                                switch (cppTokenSequence.token().id()) {
+                                    case CLASS:
+                                    case UNION:
+                                    case STRUCT:
+                                    case ENUM:
+                                        insString = "};"; // NOI18N
+                                        break loop;
                                 }
-                                keyword = keyword.getNext();
                             }
                         }
-                        doc.insertString(end, insString, null); // NOI18N
+                        doc.insertString(end, "\n" + insString, null); // NOI18N
                         // Lock does not need because method is invoked from BaseKit that already lock indent.
-                        doc.getFormatter().indentNewLine(doc, end);
+                        Indent indent = Indent.get(doc);
+                        indent.reindent(end + 1);
                         caret.setDot(dotPos);
                         return Boolean.TRUE;
                     }

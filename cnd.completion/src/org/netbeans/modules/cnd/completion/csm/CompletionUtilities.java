@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.completion.csm;
 
 import java.util.ArrayList;
@@ -48,11 +47,11 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.SyntaxSupport;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -70,8 +69,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
  */
 public class CompletionUtilities {
 
-
-    public static List/*<CsmDeclaration*/ findFunctionLocalVariables(BaseDocument doc, int offset, FileReferencesContext fileReferncesContext) {
+    public static List/*<CsmDeclaration*/ findFunctionLocalVariables(Document doc, int offset, FileReferencesContext fileReferncesContext) {
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
         if (file == null || !file.isValid()) {
             return Collections.<CsmDeclaration>emptyList();
@@ -79,8 +77,8 @@ public class CompletionUtilities {
         CsmContext context = CsmOffsetResolver.findContext(file, offset, fileReferncesContext);
         return CsmContextUtilities.findFunctionLocalVariables(context);
     }
-    
-    public static List/*<CsmDeclaration*/ findClassFields(BaseDocument doc, int offset) {
+
+    public static List/*<CsmDeclaration*/ findClassFields(Document doc, int offset) {
         CsmClass clazz = findClassOnPosition(doc, offset);
         List res = null;
         if (clazz != null) {
@@ -88,17 +86,17 @@ public class CompletionUtilities {
         }
         return res;
     }
-    
-    public static List/*<CsmDeclaration*/ findFileVariables(BaseDocument doc, int offset) {
+
+    public static List/*<CsmDeclaration*/ findFileVariables(Document doc, int offset) {
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
         if (file == null || !file.isValid()) {
             return Collections.<CsmDeclaration>emptyList();
-        }        
+        }
         CsmContext context = CsmOffsetResolver.findContext(file, offset, null);
         return CsmContextUtilities.findFileLocalVariables(context);
     }
-    
-    public static List/*<CsmDeclaration*/ findGlobalVariables(BaseDocument doc, int offset) {
+
+    public static List/*<CsmDeclaration*/ findGlobalVariables(Document doc, int offset) {
         CsmProject prj = CsmUtilities.getCsmProject(doc);
         if (prj == null) {
             return null;
@@ -107,20 +105,21 @@ public class CompletionUtilities {
     }
 
     // TODO: think if we need it?
-    public static CsmClass findClassOnPosition(BaseDocument doc, int offset) {
+    public static CsmClass findClassOnPosition(Document doc, int offset) {
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
         if (file == null || !file.isValid()) {
             return null;
-        }        
+        }
         CsmContext context = CsmOffsetResolver.findContext(file, offset, null);
         CsmClass clazz = CsmContextUtilities.getClass(context, true, false);
         return clazz;
     }
-    public static CsmOffsetableDeclaration findFunDefinitionOrClassOnPosition(BaseDocument doc, int offset) {
+
+    public static CsmOffsetableDeclaration findFunDefinitionOrClassOnPosition(Document doc, int offset) {
         return findFunDefinitionOrClassOnPosition(doc, offset, null);
     }
 
-    public static CsmOffsetableDeclaration findFunDefinitionOrClassOnPosition(BaseDocument doc, int offset, FileReferencesContext fileReferncesContext) {
+    public static CsmOffsetableDeclaration findFunDefinitionOrClassOnPosition(Document doc, int offset, FileReferencesContext fileReferncesContext) {
         CsmOffsetableDeclaration out = null;
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
         if (file != null) {
@@ -132,36 +131,35 @@ public class CompletionUtilities {
         }
         return out;
     }
-    
-    public static CsmObject findItemAtCaretPos(JTextComponent target, int dotPos){
+
+    public static CsmObject findItemAtCaretPos(JTextComponent target, int dotPos) {
         return findItemAtCaretPos(target, null, CsmCompletionProvider.getCompletionQuery(), dotPos);
     }
 
-    public static CsmObject findItemAtCaretPos(JTextComponent target, Document doc, CsmCompletionQuery query, int dotPos){
+    public static CsmObject findItemAtCaretPos(JTextComponent target, Document doc, CsmCompletionQuery query, int dotPos) {
         try {
             BaseDocument baseDoc = null;
             if (doc instanceof BaseDocument) {
-                baseDoc = (BaseDocument)doc;
+                baseDoc = (BaseDocument) doc;
             }
-            baseDoc = baseDoc != null ? baseDoc : (BaseDocument)target.getDocument();
-            SyntaxSupport sup = baseDoc.getSyntaxSupport();
+            baseDoc = baseDoc != null ? baseDoc : (BaseDocument) target.getDocument();
             int[] idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock(baseDoc, dotPos);
-            
+
             if (idFunBlk == null) {
-                idFunBlk = new int[] { dotPos, dotPos };
+                idFunBlk = new int[]{dotPos, dotPos};
             }
-            
+
             boolean searchFuncsOnly = (idFunBlk.length == 3);
             for (int ind = idFunBlk.length - 1; ind >= 1; ind--) {
-                CsmCompletionResult result = query.query(target, baseDoc, idFunBlk[ind], sup, true, false);
+                CsmCompletionResult result = query.query(target, baseDoc, idFunBlk[ind], true, false);
                 if (result != null && result.getItems().size() > 0) {
                     List<CsmObject> filter = getAssociatedObjects(result.getItems(), searchFuncsOnly);
                     CsmObject itm = filter.size() > 0 ? filter.get(0) : getAssociatedObject(result.getItems().get(0));
                     if (filter.size() > 1 && searchFuncsOnly) {
                         // It is overloaded method, lets check for the right one
-                        int endOfMethod = findEndOfMethod(baseDoc, idFunBlk[ind]-1);
-                        if (endOfMethod > -1){
-                            CsmCompletionResult resultx = query.query(target, baseDoc, endOfMethod, sup, true, false);
+                        int endOfMethod = findEndOfMethod(baseDoc, idFunBlk[ind] - 1);
+                        if (endOfMethod > -1) {
+                            CsmCompletionResult resultx = query.query(target, baseDoc, endOfMethod, true, false);
                             if (resultx != null && resultx.getItems().size() > 0) {
                                 return getAssociatedObject(resultx.getItems().get(0));
                             }
@@ -174,13 +172,13 @@ public class CompletionUtilities {
         }
         return null;
     }
-    
+
     private static List<CsmObject> getAssociatedObjects(List items, boolean wantFuncsOnly) {
         List<CsmObject> out = new ArrayList<CsmObject>();
         List<CsmObject> funcs = new ArrayList<CsmObject>();
-        
+
         for (Object item : items) {
-            if (item instanceof CsmResultItem){
+            if (item instanceof CsmResultItem) {
                 CsmObject ret = getAssociatedObject(item);
                 boolean isFunc = CsmKindUtilities.isFunction(ret);
                 if (isFunc) {
@@ -195,12 +193,12 @@ public class CompletionUtilities {
         } else {
             out = funcs;
         }
-        return out;        
-    }    
-    
+        return out;
+    }
+
     private static CsmObject getAssociatedObject(Object item) {
-        if (item instanceof CsmResultItem){
-            CsmObject ret = (CsmObject) ((CsmResultItem)item).getAssociatedObject();
+        if (item instanceof CsmResultItem) {
+            CsmObject ret = (CsmObject) ((CsmResultItem) item).getAssociatedObject();
             if (ret != null) {
                 return ret;
             }
@@ -208,25 +206,24 @@ public class CompletionUtilities {
         return null;
     }
 
-    static int findEndOfMethod(BaseDocument doc, int startPos){
-        try{
-            int level = 0;
-            for(int i = startPos;  i<doc.getLength(); i++){
-                char ch = doc.getChars(i, 1)[0];
-                if (ch == ';') return -1;
-                if (ch == '(') level++;
-                if (ch == ')'){
-                    level--;
-                    if (level == 0){
-                        return i+1;
-                    }
+    static int findEndOfMethod(Document doc, int startPos) {
+        int level = 0;
+        CharSequence text = DocumentUtilities.getText(doc);
+        for (int i = startPos; i < doc.getLength(); i++) {
+            char ch = text.charAt(i);
+            if (ch == ';') {
+                return -1;
+            }
+            if (ch == '(') {
+                level++;
+            }
+            if (ch == ')') {
+                level--;
+                if (level == 0) {
+                    return i + 1;
                 }
             }
-            return -1;
-        } catch (BadLocationException e) {
-            return -1;
         }
-    }    
-   
-
+        return -1;
+    }
 }

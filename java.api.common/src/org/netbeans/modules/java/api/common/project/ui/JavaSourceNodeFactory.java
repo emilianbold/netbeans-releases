@@ -75,7 +75,7 @@ public final class JavaSourceNodeFactory implements NodeFactory {
     }
     
     public NodeList createNodes(Project p) {
-        Project project = (Project)p.getLookup().lookup(Project.class);
+        Project project = p.getLookup().lookup(Project.class);
         assert project != null;
         return new SourcesNodeList(project);
     }
@@ -236,11 +236,11 @@ public final class JavaSourceNodeFactory implements NodeFactory {
         }
         
         public void actionPerformed(ActionEvent e) {
-            CustomizerProvider2 cp2 = (CustomizerProvider2) project.getLookup().lookup(CustomizerProvider2.class);
+            CustomizerProvider2 cp2 = project.getLookup().lookup(CustomizerProvider2.class);
             if (cp2 != null) {
                 cp2.showCustomizer(nodeName, panelName);
             } else {
-                CustomizerProvider cp = (CustomizerProvider) project.getLookup().lookup(CustomizerProvider.class);
+                CustomizerProvider cp = project.getLookup().lookup(CustomizerProvider.class);
                 if (cp != null) {
                     cp.showCustomizer();
                 }

@@ -42,51 +42,20 @@
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 
-import java.util.Collections;
-import java.util.List;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
-import org.netbeans.editor.TokenContext;
 
-/** Default settings values for C and C++ */
+/** Default settings values for C and C++ 
+ *  registered in cpp-preferences.xml and cpp-preferences.xml
+ */
 public class CCSettingsDefaults {
 
     public static Acceptor getDefaultAbbrevResetAcceptor() {
         return AcceptorFactory.NON_JAVA_IDENTIFIER;
     }
 
-    public static List<? extends TokenContext> getTokenContext() {
-        return Collections.singletonList(CCTokenContext.context);
-    }
-
     public static Acceptor getDefaultIdentifierAcceptor() {
         return AcceptorFactory.JAVA_IDENTIFIER;
     }
 
-    public static Acceptor getDefaultIndentHotCharsAcceptor() {
-        return defaultIndentHotCharsAcceptor;
-    }
-
-    public static String getDefaultWordMatchStaticWords() {
-        return defaultWordMatchStaticWords;
-    }
-    
-    // DO WE NEED IT ?
-    public static final String defaultWordMatchStaticWords = 
-            "Exception IntrospectionException FileNotFoundException IOException" //NOI18N
-          + " ArrayIndexOutOfBoundsException ClassCastException ClassNotFoundException" //NOI18N
-          + " CloneNotSupportedException NullPointerException NumberFormatException" //NOI18N
-          + " SQLException IllegalAccessException IllegalArgumentException"; //NOI18N
-
-    public static final Acceptor defaultIndentHotCharsAcceptor = new Acceptor() {
-            public boolean accept(char ch) {
-                switch (ch) {
-                case '{':
-                case '}':
-                    return true;
-                }
-
-                return false;
-            }
-        };
 }

@@ -65,8 +65,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.RubyExecution;
-import org.netbeans.modules.ruby.platform.execution.ExecutionService;
+import org.netbeans.modules.ruby.platform.execution.ExecutionUtils;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.CopyAction;
@@ -305,11 +304,11 @@ public final class RakeSupport {
     private static String dumpRakeTasksInfo(RubyPlatform platform, File pwd) {
         List<String> argList = new ArrayList<String>();
         File cmd = platform.getInterpreterFile();
-        if (!cmd.getName().startsWith("jruby") || RubyExecution.LAUNCH_JRUBY_SCRIPT) { // NOI18N
+        if (!cmd.getName().startsWith("jruby") || ExecutionUtils.launchJRubyScript()) { // NOI18N
             argList.add(cmd.getPath());
         }
 
-        argList.addAll(RubyExecution.getRubyArgs(platform));
+        argList.addAll(ExecutionUtils.getRubyArgs(platform));
 
         File rakeTaskInfoScript = InstalledFileLocator.getDefault().locate(
                 "rake_tasks_info.rb", "org.netbeans.modules.ruby.project", false);  // NOI18N
@@ -325,14 +324,14 @@ public final class RakeSupport {
         pb.redirectErrorStream(false);
 
         // PATH additions for JRuby etc.
-        RubyExecution.setupProcessEnvironment(pb.environment(), cmd.getParent(), false);
+        ExecutionUtils.setupProcessEnvironment(pb.environment(), cmd.getParent(), false);
         GemManager.adjustEnvironment(platform, pb.environment());
 
         int exitCode = -1;
 
         String stdout = null;
         try {
-            ExecutionService.logProcess(pb);
+            ExecutionUtils.logProcess(pb);
             Process process = pb.start();
 
             stdout = readInputStream(process.getInputStream(), false);

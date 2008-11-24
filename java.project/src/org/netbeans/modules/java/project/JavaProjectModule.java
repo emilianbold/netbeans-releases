@@ -65,6 +65,13 @@ public class JavaProjectModule {
                        NbBundle.getMessage( JavaProjectModule.class, "LBL_RunFile_Action" ), // NOI18N
                        null );
     }
+
+    public static Action test() {
+        return FileSensitiveActions.fileCommandAction(
+                       ActionProvider.COMMAND_TEST_SINGLE,
+                       NbBundle.getMessage( JavaProjectModule.class, "LBL_TestFile_Action" ), // NOI18N
+                       null );
+    }
     
     public static Action debug() {
         return FileSensitiveActions.fileCommandAction( 

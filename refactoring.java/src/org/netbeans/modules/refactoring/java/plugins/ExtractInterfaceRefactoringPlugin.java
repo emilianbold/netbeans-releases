@@ -421,7 +421,11 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
                     if (wc.getTypes().isSameType(origParam, newParam)) {
                         Tree t = wc.getTrees().getTree(typeParam);
                         if (t.getKind() == Tree.Kind.TYPE_PARAMETER) {
-                            newTypeParams.add((TypeParameterTree) t);
+                            TypeParameterTree typeParamTree = (TypeParameterTree) t;
+                            if (!typeParamTree.getBounds().isEmpty()) {
+                                typeParamTree = (TypeParameterTree) genUtils.importFQNs(t);
+                            }
+                            newTypeParams.add(typeParamTree);
                         }
                     }
                 }
