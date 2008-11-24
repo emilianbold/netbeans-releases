@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,87 +31,86 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.sql.Connection;
-import java.sql.SQLException;
-import org.netbeans.api.db.explorer.node.BaseNode;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.View;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
- * ConnectedNodeprovider serves as a base class for all node providers
- * that work with a database connection.
  *
- * @author Rob Englander
+ * @author rob
  */
-public abstract class ConnectedNodeProvider  extends NodeProvider {
+public class ViewNodeProvider extends NodeProvider {
+
+    // lazy initialization holder class idiom for static fields is used
+    // for retrieving the factory
+    public static NodeProviderFactory getFactory() {
+        return FactoryHolder.FACTORY;
+    }
+
+    private static class FactoryHolder {
+        static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            public ViewNodeProvider createInstance(Lookup lookup) {
+                ViewNodeProvider provider = new ViewNodeProvider(lookup);
+                provider.setup();
+                return provider;
+            }
+        };
+    }
 
     private final DatabaseConnection connection;
+    private final Schema schema;
 
-    protected ConnectedNodeProvider(Lookup lookup) {
-        super(lookup);
+    private ViewNodeProvider(Lookup lookup) {
+        super(lookup, new ViewComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
+        schema = getLookup().lookup(Schema.class);
     }
 
-    /**
-     * Create a BaseNode instance.
-     *
-     * @param lookup the lookup to use to create the node
-     * @return the created baseNode
-     */
-    protected abstract BaseNode createNode(NodeDataLookup lookup);
-    
-    protected void setup() {
-        connection.addPropertyChangeListener(
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals("connected") ||
-                            evt.getPropertyName().equals("failed")) {
-                        updateState();
-                    }
-                }
-            }
-        );
-
-        updateState();
+    private void setup() {
+        update();
     }
-    
-    private void updateState() {
-        Connection conn = connection.getConnection();
-        boolean disconnected = true;
 
-        if (conn != null) {
-            try {
-                disconnected = conn.isClosed();
-            } catch (SQLException e) {
+    private synchronized void update() {
+        List<Node> newList = new ArrayList<Node>();
 
+        Collection<View> views = schema.getViews();
+        for (View view : views) {
+            Collection<Node> matches = getNodes(view);
+            if (matches.size() > 0) {
+                newList.addAll(matches);
+            } else {
+                NodeDataLookup lookup = new NodeDataLookup();
+                lookup.add(connection);
+                lookup.add(view);
+
+                newList.add(ViewNode.create(lookup));
             }
         }
 
-        if (disconnected) {
-            removeAllNodes();
-        } else {
-            removeAllNodes();
-            NodeDataLookup lookup = new NodeDataLookup();
-            lookup.add(connection);
+        setNodes(newList);
+    }
 
-            Schema schema = getLookup().lookup(Schema.class);
-            if (schema != null) {
-                lookup.add(schema);
-            }
-            
-            addNode(createNode(lookup));
+    static class ViewComparator implements Comparator<Node> {
+
+        public int compare(Node model1, Node model2) {
+            return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
         }
+
     }
 }

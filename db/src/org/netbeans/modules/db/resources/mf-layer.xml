@@ -105,6 +105,26 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Connection">
                 <folder name="NodeProviders">
+                    <file name="SchemaNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.SchemaNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                </folder>
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-db-explorer-action-ConnectAction.instance">  
+                        <attr name="position" intvalue="100"/>  
+                    </file>
+                    <file name="org-netbeans-modules-db-explorer-action-DisconnectAction.instance">  
+                        <attr name="position" intvalue="150"/>  
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">  
+                        <attr name="position" intvalue="200"/>  
+                    </file>
+                </folder>
+            </folder>
+            <folder name="Schema">
+                <folder name="NodeProviders">
                     <file name="TableListNodeProviderFactory.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.TableListNodeProvider.getFactory"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
@@ -122,30 +142,98 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="Actions">
-                    <file name="org-netbeans-modules-db-explorer-action-ConnectAction.instance">  
-                        <attr name="position" intvalue="100"/>  
-                    </file>
-                    <file name="org-netbeans-modules-db-explorer-action-DisconnectAction.instance">  
-                        <attr name="position" intvalue="150"/>  
-                    </file>
-                    <file name="org-openide-actions-DeleteAction.instance">  
-                        <attr name="position" intvalue="200"/>  
-                    </file>
                 </folder>
             </folder>
             <folder name="TableList">
                 <folder name="NodeProviders">
+                    <file name="TableNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.TableNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                </folder>
+                <folder name="Actions">
+                </folder>
+            </folder>
+            <folder name="Table">
+                <folder name="NodeProviders">
+                    <file name="ColumnNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.ColumnNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="IndexListNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.IndexListNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="ForeignKeyListNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.ForeignKeyListNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="300"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                 </folder>
             </folder>
             <folder name="ViewList">
                 <folder name="NodeProviders">
+                    <file name="ViewNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.ViewNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                </folder>
+                <folder name="Actions">
+                </folder>
+            </folder>
+            <folder name="View">
+                <folder name="NodeProviders">
+                    <file name="ColumnNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.ColumnNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                 </folder>
             </folder>
             <folder name="ProcedureList">
+                <folder name="NodeProviders">
+                    <file name="ProcedureNodeProviderFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.ProcedureNodeProvider.getFactory"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.api.db.explorer.node.NodeProviderFactory"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                </folder>
+                <folder name="Actions">
+                </folder>
+            </folder>
+            <folder name="Procedure">
+                <folder name="NodeProviders">
+                </folder>
+                <folder name="Actions">
+                </folder>
+            </folder>
+            <folder name="IndexList">
+                <folder name="NodeProviders">
+                </folder>
+                <folder name="Actions">
+                </folder>
+            </folder>
+            <folder name="Index">
+                <folder name="NodeProviders">
+                </folder>
+                <folder name="Actions">
+                </folder>
+            </folder>
+            <folder name="ForeignKeyList">
+                <folder name="NodeProviders">
+                </folder>
+                <folder name="Actions">
+                </folder>
+            </folder>
+            <folder name="ForeignKey">
                 <folder name="NodeProviders">
                 </folder>
                 <folder name="Actions">
@@ -184,7 +272,7 @@ made subject to such option by the copyright holder.
                <attr name="position" intvalue="100"/>
             </file>
             
-           <!-- uncomment this block to include the new explorer tree
+           <!-- uncomment this block to include the new explorer tree 
            <file name="org-netbeans-modules-db-explorer-node-RootNode.instance">
              <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.node.RootNode"/>
              <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.node.RootNode.instance"/>
