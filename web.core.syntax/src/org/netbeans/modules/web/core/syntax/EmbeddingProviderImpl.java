@@ -91,11 +91,6 @@ public class EmbeddingProviderImpl extends EmbeddingProvider {
     }
 
     @Override
-    public Class<? extends Scheduler> getSchedulerClass() {
-        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
-    }
-
-    @Override
     public void cancel() {
         //well...
     }

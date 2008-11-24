@@ -68,25 +68,26 @@ public abstract class Parser {
      * is changed, and a new {@link org.netbeans.modules.parsing.api.Snapshot}
      * has been created for it. 
      * 
-     * @param snapshot      A snapshot that should be parsed.
-     * @param task          A task asking for parsing result.
-     * @param event         A scheduler event.
+     * @param snapshot          A snapshot that should be parsed.
+     * @param task              A task asking for parsing result.
+     * @param event             A scheduler event.
      */
     public abstract void parse (
-        Snapshot            snapshot,
-        Task                task,
-        SchedulerEvent      event
+        Snapshot                snapshot,
+        Task                    task,
+        SourceModificationEvent event
     ) throws ParseException;
     
     /**
-     * Called when some task needs some result of parsing.
+     * Called when some task needs some result of parsing. Task parameter 
+     * contains {@link org.netbeans.modules.parsing.api.UserTask}, or 
+     * {@link SchedulerTask} instance, that requests {@link Parser.Result}.
      * 
-     * @param task          A task asking for parsing result.
-     * @return              Result of parsing or null.
+     * @param task              A task asking for parsing result.
+     * @return                  Result of parsing or null.
      */
     public abstract Result getResult (
-        Task                task,
-        SchedulerEvent      event
+        Task                    task
     ) throws ParseException;
         
     
@@ -99,20 +100,20 @@ public abstract class Parser {
      * Registers new listener.
      * 
      * @param changeListener
-     *                      A change listener to be regiserred.
+     *                          A change listener to be regiserred.
      */
     public abstract void addChangeListener (
-        ChangeListener      changeListener
+        ChangeListener          changeListener
     );
     
     /**
      * Unregisters listener.
      * 
      * @param changeListener
-     *                      A change listener to be unregiserred.
+     *                          A change listener to be unregiserred.
      */
     public abstract void removeChangeListener (
-        ChangeListener      changeListener
+        ChangeListener          changeListener
     );
     
     /**
@@ -123,19 +124,16 @@ public abstract class Parser {
      */
     public abstract static class Result {
         
-        private final Snapshot          snapshot;
-        private final SchedulerEvent    event;
+        private final Snapshot  snapshot;
         
         /**
          * Creates a {@link Result} for given snapshot
          * @param snapshot
          */
         protected Result (
-            final Snapshot              _snapshot,
-            final SchedulerEvent        _event
+            final Snapshot      _snapshot
         ) {
             snapshot = _snapshot;
-            event = _event;
         }
         
         /**
@@ -145,15 +143,6 @@ public abstract class Parser {
         public Snapshot getSnapshot () {
             return this.snapshot;
         }
-
-        /**
-         * Returns a {@link SchedulerEvent} represented by this {@link Result}
-         * @return
-         */
-        public SchedulerEvent getEvent () {
-            return event;
-        }
-        
         
         /**
          * This method is called by Parsing API, when {@link Task} is finished.
@@ -166,7 +155,8 @@ public abstract class Parser {
     private static class MyAccessor extends ParserAccessor {
 
         @Override
-        public void invalidate(final Result result) {
+        public void invalidate (
+            final Result        result) {
             assert result != null;
             result.invalidate();
         }        

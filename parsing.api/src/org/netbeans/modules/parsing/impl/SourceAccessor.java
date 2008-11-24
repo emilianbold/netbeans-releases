@@ -39,12 +39,15 @@
 
 package org.netbeans.modules.parsing.impl;
 
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.util.Exceptions;
 
 /**
@@ -120,9 +123,13 @@ public abstract class SourceAccessor {
      */
     public abstract boolean invalidate (Source source, long id, Snapshot snapshot);
 
-    public abstract void setEvent (Source source, SchedulerEvent event);
+    public abstract SourceModificationEvent getSourceModificationEvent (Source source);
+
+    public abstract void setSourceModification (Source source, int startOffset, int endOffset);
+
+    public abstract void setSchedulerEvents (Source source, Map<Class<? extends Scheduler>,? extends SchedulerEvent> events);
     
-    public abstract SchedulerEvent getEvent (Source source);
+    public abstract SchedulerEvent getSchedulerEvent (Source source, Class<? extends Scheduler> schedulerType);
     
     /**
      * Returns cached {@link Parser} when available

@@ -177,6 +177,11 @@ public final class Embedding {
     public final boolean containsOriginalOffset (int originalOffset) {
 	return snapshot.getEmbeddedOffset (originalOffset) >= 0;
     }
+
+    @Override
+    public String toString () {
+        return "Embedding (" + getMimeType () + ", " + getSnapshot () + ")";
+    }
 }
 
 

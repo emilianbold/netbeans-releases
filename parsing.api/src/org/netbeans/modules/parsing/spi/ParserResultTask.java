@@ -55,7 +55,7 @@ public abstract class ParserResultTask<T extends Parser.Result> extends Schedule
      * 
      * @param result        A result of parsing.
      */
-    public abstract void run (T result);
+    public abstract void run (T result, SchedulerEvent event);
 
     /**
      * A priority. Less number wins.

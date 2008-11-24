@@ -56,10 +56,10 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.CurrentDocumentScheduller;
-import org.netbeans.modules.parsing.impl.CurrentEditorTaskScheduller;
-import org.netbeans.modules.parsing.impl.CursorSensitiveScheduller;
-import org.netbeans.modules.parsing.impl.SelectedNodesScheduller;
+import org.netbeans.modules.parsing.impl.CurrentDocumentScheduler;
+import org.netbeans.modules.parsing.impl.CurrentEditorTaskScheduler;
+import org.netbeans.modules.parsing.impl.CursorSensitiveScheduler;
+import org.netbeans.modules.parsing.impl.SelectedNodesScheduler;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
@@ -132,11 +132,16 @@ public final class EventSupport {
         }
     }   
     
-    public void resetState (final boolean invalidate) {
+    public void resetState (
+        final boolean           invalidate,
+        final int               startOffset,
+        final int               endOffset
+    ) {
         final Set<SourceFlags> flags = EnumSet.of(SourceFlags.CHANGE_EXPECTED);
         if (invalidate) {
             flags.add(SourceFlags.INVALID);
             flags.add(SourceFlags.RESCHEDULE_FINISHED_TASKS);
+            SourceAccessor.getINSTANCE().setSourceModification (source, startOffset, endOffset);
         }
         SourceAccessor.getINSTANCE().setFlags(this.source, flags);
         TaskProcessor.resetState (this.source,invalidate,true);
@@ -155,10 +160,10 @@ public final class EventSupport {
             //todo: threading flags cleaned in the TaskProcessor.resetStateImpl
             final boolean reschedule = SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.RESCHEDULE_FINISHED_TASKS);
             if (reschedule) {
-                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CurrentEditorTaskScheduller.class);
-                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CurrentDocumentScheduller.class);
-                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(SelectedNodesScheduller.class);
-                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CursorSensitiveScheduller.class);
+                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CurrentEditorTaskScheduler.class);
+                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CurrentDocumentScheduler.class);
+                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(SelectedNodesScheduler.class);
+                SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CursorSensitiveScheduler.class);
             }
             TaskProcessor.resetStateImpl (this.source);
         }
@@ -202,7 +207,7 @@ public final class EventSupport {
                     TokenHierarchy th = TokenHierarchy.get(doc);
                     th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
                     this.document = doc;    //set before rescheduling task to avoid race condition
-                    resetState(true);
+                    resetState(true, -1, -1);
                 }
                 else {
                     //reset document
@@ -212,14 +217,14 @@ public final class EventSupport {
         }
         
         public void tokenHierarchyChanged(final TokenHierarchyEvent evt) {
-            resetState(true);
+            resetState (true, evt.affectedStartOffset (), evt.affectedEndOffset ());
         }
     }
     
     private class ParserListener implements ChangeListener {
         
         public void stateChanged(final ChangeEvent e) {
-            resetState(true);
+            resetState(true, -1, -1);
         }
     }
     
@@ -227,12 +232,12 @@ public final class EventSupport {
         
         @Override
         public void fileChanged(final FileEvent fe) {
-            resetState(true);
+            resetState(true, -1, -1);
         }        
 
         @Override
         public void fileRenamed(final FileRenameEvent fe) {
-            resetState(true);
+            resetState(true, -1, -1);
         }
     }
     
@@ -283,7 +288,7 @@ public final class EventSupport {
                         dobj.addPropertyChangeListener(wlistener);
                     }
                     assignDocumentListener(dobjNew);
-                    resetState(true);
+                    resetState(true, -1, -1);
                 } catch (DataObjectNotFoundException e) {
                     //Ignore - invalidated after fobj.isValid () was called
                 } catch (IOException ex) {
@@ -337,7 +342,7 @@ public final class EventSupport {
                 if (doc != null) {
                     Source source = Source.create(doc);
                     if (source != null) {
-                        SourceAccessor.getINSTANCE().getEventSupport(source).resetState(false);
+                        SourceAccessor.getINSTANCE().getEventSupport(source).resetState(false, -1, -1);
                     }
                 }
             }

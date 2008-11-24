@@ -62,7 +62,14 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
+<<<<<<< /home/hanz/Hanz/Dev/parsing/java.source/src/org/netbeans/modules/java/source/JavaSourceAccessor.java.orig.21554477
 import org.netbeans.api.java.source.JavaParserResultTask;
+||||||| /tmp/JavaSourceAccessor.java~base.KqGAFK
+import org.netbeans.spi.java.source.JavaParserResultTask;
+=======
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.spi.java.source.JavaParserResultTask;
+>>>>>>> /tmp/JavaSourceAccessor.java~other.DPDWtU
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
@@ -113,7 +120,7 @@ public abstract class JavaSourceAccessor {
         final int tp = translatePriority(priority);
         final ParserResultTask wrapper = new ParserResultTask() {            
             @Override
-            public void run(Result _null) {
+            public void run(Result _null, SchedulerEvent event) {
                 try {
                     task.run();
                 } catch (Exception e) {
@@ -273,7 +280,7 @@ public abstract class JavaSourceAccessor {
         }
 
         @Override
-        public void run(Result result) {
+        public void run(Result result, SchedulerEvent event) {
             final CompilationInfo info = CompilationInfo.get(result);
             assert info != null;
             try {

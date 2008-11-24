@@ -1,6 +1,5 @@
 package org.netbeans.modules.parsing.api;
 
-import java.util.Collection;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.Scheduler;
 
@@ -8,12 +7,9 @@ public class MyScheduler extends Scheduler {
 
     private static MyScheduler myScheduler;
 
-    public MyScheduler() {
-        super();
-        myScheduler = this;
-    }
-
-    public static void schedule2 (Collection<Source> sources, SchedulerEvent event) {
-        myScheduler.schedule(sources, event);
+    public static void schedule2 (Source source, SchedulerEvent event) {
+        if (myScheduler == null)
+            myScheduler = new MyScheduler ();
+        myScheduler.schedule(source, event);
     }
 }

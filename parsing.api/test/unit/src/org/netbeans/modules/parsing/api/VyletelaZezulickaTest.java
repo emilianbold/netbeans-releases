@@ -57,6 +57,7 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
@@ -73,8 +74,6 @@ public class VyletelaZezulickaTest extends NbTestCase {
         super (testName);
     }
 
-    private static final MyScheduler SCHEDULER = new MyScheduler ();
-
     public void testEmbedding () throws Exception {
         
         // 1) register tasks and parsers
@@ -88,12 +87,12 @@ public class VyletelaZezulickaTest extends NbTestCase {
                         
                         private Snapshot last;
 
-                        public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+                        public void parse (Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
                             last = snapshot;
                         }
 
-                        public Result getResult (Task task, SchedulerEvent event) throws ParseException {
-                            return new Result (last, event) {
+                        public Result getResult (Task task) throws ParseException {
+                            return new Result (last) {
                                 public void invalidate () {
                                 }
                             };
@@ -121,7 +120,7 @@ public class VyletelaZezulickaTest extends NbTestCase {
 
                             boolean done = false;
                             
-                            public void run (Result result) {
+                            public void run (Result result, SchedulerEvent event) {
                                 if (!done) {
                                     counter.check ("text/foo", result.getSnapshot().getMimeType ());
                                     counter.check (1);
@@ -177,10 +176,7 @@ public class VyletelaZezulickaTest extends NbTestCase {
         writer.close ();
         Source source = Source.create (testFile);
 
-        MyScheduler.schedule2 (
-            Collections.<Source>singleton (source), 
-            new ASchedulerEvent ()
-        );
+        MyScheduler.schedule2 (source, new ASchedulerEvent ());
 
         counter.wait (2);
 
