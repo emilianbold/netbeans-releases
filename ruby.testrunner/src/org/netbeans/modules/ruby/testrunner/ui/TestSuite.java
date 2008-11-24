@@ -36,44 +36,40 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.ruby.testrunner.ui;
 
-import java.awt.event.ActionEvent;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.ruby.RubyDeclarationFinder;
-import org.netbeans.modules.ruby.platform.execution.ExecutionUtils.FileLocation;
-import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
-import org.openide.filesystems.FileObject;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Action for running all tests in a file.
+ * Represents a single test suite.
  *
  * @author Erno Mononen
  */
-final class RunTestSuiteAction extends BaseTestMethodNodeAction {
+final class TestSuite {
 
-    private final boolean debug;
+    private final String name;
+    private final List<Testcase> testcases = new ArrayList<Testcase>();
 
-    public RunTestSuiteAction(Testcase testcase, Project project, String name, boolean debug) {
-        super(testcase, project, name);
-        this.debug = debug;
+    TestSuite(String name) {
+        this.name = name;
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if (TestRunner.TestType.RSPEC == testcase.getType()) {
-            runRspec();
-            return;
-        }
-        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), true);
-        if (!(DeclarationLocation.NONE == location)) {
-            getTestRunner(testcase.getType()).runTest(location.getFileObject(), debug);
-        }
-
+    void addTestcase(Testcase testcase) {
+        testcases.add(testcase);
     }
 
-    protected void doRspecRun(FileObject testFile, FileLocation location) {
-        getTestRunner(testcase.getType()).runTest(testFile, debug);
-
+    List<Testcase> getTestcases() {
+        return testcases;
     }
+
+    String getName() {
+        return name;
+    }
+
+    Testcase getLastTestCase() {
+        return testcases.isEmpty() ? null : testcases.get(testcases.size() -1);
+    }
+
 }

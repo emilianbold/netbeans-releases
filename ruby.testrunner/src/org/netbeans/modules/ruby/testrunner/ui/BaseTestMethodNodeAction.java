@@ -50,7 +50,6 @@ import org.netbeans.modules.ruby.platform.execution.ExecutionUtils.FileLocation;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
-import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -82,7 +81,7 @@ abstract class BaseTestMethodNodeAction extends AbstractAction {
     }
 
     protected String getTestMethod() {
-        return testcase.className + "/" + testcase.name; //NOI18N
+        return testcase.getClassName() + "/" + testcase.getName(); //NOI18N
     }
 
     protected FileObject getTestSourceRoot() {

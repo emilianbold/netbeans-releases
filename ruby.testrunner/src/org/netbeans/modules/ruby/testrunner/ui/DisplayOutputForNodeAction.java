@@ -39,41 +39,35 @@
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.event.ActionEvent;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.ruby.RubyDeclarationFinder;
-import org.netbeans.modules.ruby.platform.execution.ExecutionUtils.FileLocation;
-import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
-import org.openide.filesystems.FileObject;
+import java.util.List;
+import javax.swing.AbstractAction;
 
 /**
- * Action for running all tests in a file.
  *
  * @author Erno Mononen
  */
-final class RunTestSuiteAction extends BaseTestMethodNodeAction {
+final class DisplayOutputForNodeAction extends AbstractAction {
 
-    private final boolean debug;
+    private final List<OutputLine> output;
+    private final TestSession session;
 
-    public RunTestSuiteAction(Testcase testcase, Project project, String name, boolean debug) {
-        super(testcase, project, name);
-        this.debug = debug;
+    public DisplayOutputForNodeAction(List<OutputLine> output, TestSession session) {
+        this.output = output;
+        this.session = session;
+    }
+
+
+    public Object getValue(String key) {
+        if (NAME.equals(key)) {
+            return "display";
+        }
+        return super.getValue(key);
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (TestRunner.TestType.RSPEC == testcase.getType()) {
-            runRspec();
-            return;
+        Manager manager = Manager.getInstance();
+        for (OutputLine ol : output) {
+            manager.displayOutput(session, ol.getLine(), ol.isError());
         }
-        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), true);
-        if (!(DeclarationLocation.NONE == location)) {
-            getTestRunner(testcase.getType()).runTest(location.getFileObject(), debug);
-        }
-
-    }
-
-    protected void doRspecRun(FileObject testFile, FileLocation location) {
-        getTestRunner(testcase.getType()).runTest(testFile, debug);
-
     }
 }
