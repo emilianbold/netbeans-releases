@@ -253,9 +253,9 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
                 public void run() {
                     progressPanel.removeAll();
                     progressPanel.add(tmpErrorLabel);
-                    progressPanel.add(Box.createRigidArea(new Dimension(0,5)));
+                    progressPanel.add(Box.createRigidArea(new Dimension(0, 5)));
                     progressPanel.add(tmpMainLabel);
-                    progressPanel.add(Box.createRigidArea(new Dimension(0,5)));
+                    progressPanel.add(Box.createRigidArea(new Dimension(0, 5)));
                     progressPanel.add(tmpProgressPanel);
                     progressPanel.revalidate();
                     progressPanel.repaint();
