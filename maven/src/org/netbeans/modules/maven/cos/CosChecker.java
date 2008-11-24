@@ -283,21 +283,23 @@ public class CosChecker implements PrerequisitesChecker {
                 if (checkImportantFiles(stamp, config)) {
                     return true;
                 }
-
-                //TODO check the COS timestamp against resources etc.
+                //check the COS timestamp against resources etc.
                 //if changed, perform part of the maven build. (or skip COS)
                 if (!checkAndCopyResources(false, stamp, config)) {
-                    //we have some filtered resources modified, skip CoS
+                    //we have some filtered resources modified or encountered other problem,
+                    //skip CoS
                     return true;
                 }
 
                 Map<String, Object> params = new HashMap<String, Object>();
                 params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
                 params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
-                if (ActionProvider.COMMAND_RUN_SINGLE.equals(actionName) ||
-                    ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName)) {
+                if (RUN_MAIN.equals(actionName) ||
+                    DEBUG_MAIN.equals(actionName)) {
                     params.put(JavaRunner.PROP_EXECUTE_FILE, config.getSelectedFileObject());
                 } else {
+                    //only for the case of running the project itself, relevant for the run/debug-project action and
+                    //jar packaging
                     params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, createRuntimeClassPath(config.getMavenProject(), false));
                 }
                 //exec:exec property
@@ -369,7 +371,7 @@ public class CosChecker implements PrerequisitesChecker {
                 return true;
             }
 
-            //TODO check the COS timestamp against resources etc.
+            //check the COS timestamp against resources etc.
             //if changed, perform part of the maven build. (or skip COS)
             if (!checkAndCopyResources(true, stamp, config)) {
                 //we have some filtered resources modified, skip CoS
