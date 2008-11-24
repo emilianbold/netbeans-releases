@@ -1807,11 +1807,21 @@ public class ChildrenKeysTest extends NbTestCase {
             }
         }
 
+        class HoldingListener extends Listener {
+            List<Node> hold = new ArrayList<Node>();
+
+            @Override
+            public void childrenAdded(NodeMemberEvent ev) {
+                super.childrenAdded(ev);
+                hold.addAll(ev.getSnapshot());
+            }
+        }
+
         K ch = new K(lazy(), "a", "b", "c");
         Node root = createNode(ch);
         List<Node> snapshot = root.getChildren().snapshot();
         assertEquals(3, snapshot.size());
-        Listener listener = new Listener();
+        Listener listener = new HoldingListener();
 
         root.addNodeListener(listener);
         ch.app = "_2";
