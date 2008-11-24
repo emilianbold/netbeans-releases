@@ -50,7 +50,7 @@ import org.netbeans.modules.vmd.api.model.DesignEventFilter;
 import org.netbeans.modules.vmd.api.model.PresenterEvent;
 import org.netbeans.modules.vmd.api.model.TypeID;
 
-final class InspectorSVGButtonFolderCategoryPresenter extends InspectorFolderPresenter {
+final class InspectorSVGComponentFolderCategoryPresenter extends InspectorFolderPresenter {
 
     private CategoryFolder folder;
     private TypeID typeID;
@@ -60,7 +60,7 @@ final class InspectorSVGButtonFolderCategoryPresenter extends InspectorFolderPre
     private String displayName;
     private TypeID parentTypeID;
 
-    InspectorSVGButtonFolderCategoryPresenter(String displayName, TypeID typeID, Image icon, TypeID[] filtersTypeID, TypeID parentTypeID, InspectorOrderingController... orderingControllers) {
+    InspectorSVGComponentFolderCategoryPresenter(String displayName, TypeID typeID, Image icon, TypeID[] filtersTypeID, TypeID parentTypeID, InspectorOrderingController... orderingControllers) {
         this.displayName = displayName;
         this.typeID = typeID;
         this.icon = icon;
