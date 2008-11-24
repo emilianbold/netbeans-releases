@@ -101,7 +101,7 @@ public class JsParser extends Parser {
 
     public @Override Result getResult(Task task, SchedulerEvent event) throws ParseException {
         assert lastResult != null : "getResult() called prior parse()"; //NOI18N
-        return lastResult;
+        return createParseResult(lastResult.getSnapshot(), event, lastResult.getRootNode());
     }
 
     public @Override void cancel() {
