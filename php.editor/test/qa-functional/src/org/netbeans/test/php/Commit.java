@@ -352,18 +352,41 @@ public class Commit extends GeneralPHP
     Sleep( 1000 );
 
     // Check code completion list
+<<<<<<< local
+<<<<<<< local
+=======
+>>>>>>> other
     try
     {
       CompletionInfo completionInfo = GetCompletion( );
       if( null == completionInfo )
+<<<<<<< local
+        fail( "Null pointer instead of completion info." );
+=======
         fail( "NPE instead of competion info." );
+>>>>>>> other
       // Magic CC number for complete list
       if(
           ( bInclass ? COMPLETION_LIST_INCLASS : COMPLETION_LIST_THRESHOLD )
           > completionInfo.listItems.size( )
         )
       {
+<<<<<<< local
+        fail( "CC list looks too small, there are only: " + completionInfo.listItems.size( ) + " items in." );
+=======
+    try {
+      final CompletionInfo completionInfo = GetCompletion();
+      if (null == completionInfo) {
+          fail("NPE instead of competion info.");
+          // Magic CC number for complete list
+
+      }
+      if ((bInclass ? COMPLETION_LIST_INCLASS : COMPLETION_LIST_THRESHOLD) > completionInfo.listItems.size()) {
+          fail("CC list looks to small, there are only: " + completionInfo.listItems.size() + " items in.");
+>>>>>>> other
+=======
         fail( "CC list looks to small, there are only: " + completionInfo.listItems.size( ) + " items in." );
+>>>>>>> other
       }
 
       if( !bInclass )
