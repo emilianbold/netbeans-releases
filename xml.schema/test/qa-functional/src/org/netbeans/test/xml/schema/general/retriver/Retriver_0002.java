@@ -184,8 +184,8 @@ public class Retriver_0002 extends Retriver {
       String[] asIdeal =
       {
         //"List of files retrieved :",
-        " : Retrieving Location: file:/" + sPathSrc.replaceAll( "\\\\", "/" ) + "/" + SCHEMA_NAME,
-        "Retrieved :    file:/" + sPathSrc.replaceAll( "\\\\", "/" ) + "/" + SCHEMA_NAME,
+        " : Retrieving Location: file:/" + sPathSrc.replaceAll( "\\\\", "/" ).replaceAll( "^/", "" ) + "/" + SCHEMA_NAME,
+        "Retrieved :    file:/" + sPathSrc.replaceAll( "\\\\", "/" ).replaceAll( "^/", "" ) + "/" + SCHEMA_NAME,
         "Saved at: " + sPathDst + File.separator + SCHEMA_NAME
       };
 

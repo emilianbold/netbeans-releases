@@ -181,14 +181,14 @@ public class SourceView_0002 extends SourceView {
 
       code.clickForPopup( );
       JPopupMenuOperator popup = new JPopupMenuOperator( );
-      popup.pushMenuNoBlock( "Check XML" );
+      popup.pushMenu( "Check XML" );
 
       CheckCheckXMLOutput( );
 
       // Validate
       code.clickForPopup( );
       popup = new JPopupMenuOperator( );
-      popup.pushMenuNoBlock( "Validate XML" );
+      popup.pushMenu( "Validate XML" );
 
       CheckValidateXMLOutput( );
 

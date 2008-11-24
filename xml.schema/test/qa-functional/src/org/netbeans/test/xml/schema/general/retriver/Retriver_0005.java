@@ -182,8 +182,8 @@ public class Retriver_0005 extends Retriver {
         //"From: " + sPathSrc + File.separator + SCHEMA_NAME,
         //"Copied To: " + sPathDst + File.separator + SCHEMA_NAME 
 
-        " : Retrieving Location: file:/" + sPathSrc.replaceAll( "\\\\", "/" ) + "/" + SCHEMA_NAME,
-        "Retrieved :    file:/" + sPathSrc.replaceAll( "\\\\", "/" ) + "/" + SCHEMA_NAME,
+        " : Retrieving Location: file:/" + sPathSrc.replaceAll( "\\\\", "/" ).replaceAll( "^/", "" ) + "/" + SCHEMA_NAME,
+        "Retrieved :    file:/" + sPathSrc.replaceAll( "\\\\", "/" ).replaceAll( "^/", "" ) + "/" + SCHEMA_NAME,
         "Saved at: " + sPathDst + File.separator + SCHEMA_NAME
       };
 

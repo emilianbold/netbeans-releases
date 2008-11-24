@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.cc;
+package org.netbeans.test.php.notes;
 
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -59,6 +59,8 @@ import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JTableOperator;
+import javax.swing.table.TableModel;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
@@ -68,11 +70,11 @@ import java.util.List;
  * @author michaelnazarov@netbeans.org
  */
 
-public class Issue141873 extends cc
+public class notes_0001 extends notes
 {
-  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141873";
+  static final String TEST_PHP_NAME = "PhpProject_notes_0001";
 
-  public Issue141873( String arg0 )
+  public notes_0001( String arg0 )
   {
     super( arg0 );
   }
@@ -80,9 +82,9 @@ public class Issue141873 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue141873.class ).addTest(
+      NbModuleSuite.createConfiguration( notes_0001.class ).addTest(
           "CreateApplication",
-          "Issue141873"
+          "Notes"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -99,48 +101,36 @@ public class Issue141873 extends cc
     endTest( );
   }
 
-  public void Issue141873( ) throws Exception
+  public void Notes( ) throws Exception
   {
     startTest( );
 
+    try
+    {
     // Get editor
     EditorOperator eoPHP = new EditorOperator( "index.php" );
-    Sleep( 1000 );
     // Locate comment
     eoPHP.setCaretPosition( "// put your code here", false );
     // Add new line
-    eoPHP.insert( "\nclass a\n{\n" );
-    Sleep( 1000 );
-
-    // Check constructor
-    String sCode = "function __con";
-    String sIdeal = "function __construct() {";
-    TypeCode( eoPHP, sCode );
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    WaitCompletionScanning( );
-
-    // Get code
-    String sText = eoPHP.getText( eoPHP.getLineNumber( ) - 1 );
-
-    // Check code completion list
-    if( -1 == sText.indexOf( sIdeal ) )
-      fail( "Invalid completion: \"" + sText + "\", should be: \"" + sIdeal + "\"" );
-
-    // Check destructor
-    eoPHP.insert( ";\n" );
-    Sleep( 1000 );
-    sCode = "function __des";
-    sIdeal = "function __destruct()";
-    TypeCode( eoPHP, sCode );
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    WaitCompletionScanning( );
-
-    // Get code
-    sText = eoPHP.getText( eoPHP.getLineNumber( ) );
-
-    // Check code completion list
-    if( -1 == sText.indexOf( sIdeal ) )
-      fail( "Invalid completion: \"" + sText + "\", should be: \"" + sIdeal + "\"" );
+    eoPHP.insert( "\n" );
+    System.out.println( "===X" );
+    TypeCode( eoPHP, "class a extends 1" );
+    System.out.println( "===A" );
+    Sleep( 30000 );
+    System.out.println( "===B" );
+    Object[] oo = eoPHP.getAnnotations( );
+    System.out.println( "===C" );
+    System.out.println( "+++" + oo.length );
+    for( Object o : oo )
+    {
+      System.out.println( "***" + eoPHP.getAnnotationType( o ) + " : " + eoPHP.getAnnotationShortDescription( o ) );
+    }
+    Sleep( 10000 );
+    }
+    catch( Exception ex )
+    {
+      System.out.println( "!!!" );
+    }
 
     endTest( );
   }

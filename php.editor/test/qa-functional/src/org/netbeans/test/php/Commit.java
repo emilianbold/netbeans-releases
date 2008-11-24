@@ -318,7 +318,8 @@ public class Commit extends GeneralPHP
       boolean bInitialWait,
       String sCodeLocator,
       boolean bInclass,
-      boolean bFormat
+      boolean bFormat,
+      int iAnnotations
     )
   {
     // Check file in tree
@@ -424,6 +425,7 @@ public class Commit extends GeneralPHP
     CompletePairCheck( eoPHP, sRandom, CreatePair( sRandom ) );
 
     // Formatting
+    /*
     if( bFormat )
     {
       TypeCode( eoPHP, "class a{function aa(){return;}}" );
@@ -432,14 +434,16 @@ public class Commit extends GeneralPHP
       // CheckResult( eoPHP, "some staff"
       // TODO
     }
+    */
 
     // Completion
     if( bInclass )
     {
       // start constructor
       TypeCode( eoPHP, "function __con" );
+      Sleep( 1500 );
       eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-      Sleep( 500 );
+      Sleep( 1500 );
       CheckResult( eoPHP, "function  __construct() {", -1 );
       int i = eoPHP.getLineNumber( ) - 1;
       eoPHP.deleteLine( i );
@@ -450,8 +454,9 @@ public class Commit extends GeneralPHP
     {
       // start class declaration
       TypeCode( eoPHP, "class a ext" );
+      Sleep( 1500 );
       eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-      Sleep( 500 );
+      Sleep( 1500 );
       CheckResult( eoPHP, "class a extends" );
     }
 
@@ -463,8 +468,24 @@ public class Commit extends GeneralPHP
     }
     TypeCode( eoPHP, "public $a, $b;\nprotected $c, $d;\nprivate $e, $f;\n" );
 
+    // Check existing notes
+    Sleep( 5000 );
+    Object[] oo = eoPHP.getAnnotations( );
+    if( iAnnotations != oo.length )
+    {
+      fail( "Invalid number of detected errors. Found: " + oo.length + ", expected: " + iAnnotations );
+    }
+    /*
+    for( Object o : oo )
+    {
+      System.out.println( "***" + eoPHP.getAnnotationType( o ) + " : " + eoPHP.getAnnotationShortDescription( o ) );
+    }
+    */
+
     // Insert constructor
+    Sleep( 1500 );
     eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
+    Sleep( 1500 );
 
     JDialogOperator jdInsetter = new JDialogOperator( );
     JListOperator jlList = new JListOperator( jdInsetter );
@@ -500,9 +521,11 @@ public class Commit extends GeneralPHP
     eoPHP.deleteLine( il );
     eoPHP.deleteLine( il );
     eoPHP.deleteLine( il );
+    Sleep( 1500 );
 
     // Insert get
     eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
+    Sleep( 1500 );
 
     jdInsetter = new JDialogOperator( );
     jlList = new JListOperator( jdInsetter );
@@ -569,7 +592,8 @@ public class Commit extends GeneralPHP
         true,
         "// put your code here",
         false,
-        true
+        true,
+        4
       );
 
     endTest( );
@@ -628,7 +652,8 @@ public class Commit extends GeneralPHP
         false,
         "*/",
         false,
-        true
+        true,
+        4
       );
 
     endTest( );
@@ -654,7 +679,8 @@ public class Commit extends GeneralPHP
         false,
         "//put your code here",
         true,
-        false
+        false,
+        0
       );
 
     endTest( );
@@ -747,7 +773,8 @@ public class Commit extends GeneralPHP
         false,
         "<?",
         false,
-        false
+        false,
+        4
       );
 
     endTest( );
