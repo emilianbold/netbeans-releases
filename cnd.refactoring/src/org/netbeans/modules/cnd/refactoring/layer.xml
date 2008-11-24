@@ -12,7 +12,13 @@
                             <file name="refactoring-keybindings.xml" url="DefaultKeyBindings.xml"/>
                         </folder>
                     </folder>
-                </folder>                  
+                </folder>
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-cnd-refactoring-actions-InstantRenameAction.instance">
+                        <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.refactoring.actions.InstantRenameAction"/>
+                    </file>
+                </folder>
                 <folder name="Popup">
                     <!--
                     <attr name="goto/org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow" boolvalue="true"/>
@@ -40,7 +46,13 @@
                             <file name="refactoring-keybindings.xml" url="DefaultKeyBindings.xml"/>
                         </folder>
                     </folder>
-                </folder>                  
+                </folder>
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-cnd-refactoring-actions-InstantRenameAction.instance">
+                        <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.refactoring.actions.InstantRenameAction"/>
+                    </file>
+                </folder>
                 <folder name="Popup">                  
                     <!--
                     <attr name="goto/org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow" boolvalue="true"/>
