@@ -56,7 +56,7 @@
                     <code-name-base>org.netbeans.modules.options.api</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.5</specification-version>
+                        <specification-version>1.10.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

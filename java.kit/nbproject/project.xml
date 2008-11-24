@@ -204,6 +204,12 @@
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.javacimpl</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.9.2</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages/>
         </data>
