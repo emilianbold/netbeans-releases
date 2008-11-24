@@ -62,7 +62,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.spi.java.source.JavaParserResultTask;
+import org.netbeans.api.java.source.JavaParserResultTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
@@ -244,17 +244,15 @@ public abstract class JavaSourceAccessor {
         
         private final JavaSource javaSource;
         private final int priority;
-        private final Phase phase;
         private final CancellableTask<CompilationInfo> task;
         
         public CancelableTaskWrapper (final CancellableTask<CompilationInfo> task,
                 final int priority, final Phase phase,
                 final JavaSource javaSource) {
-            assert task != null;
+            super (phase);
             assert phase != null;
             assert javaSource != null;
             this.task = task;
-            this.phase = phase;
             this.priority = priority;
             this.javaSource = javaSource;
         }
@@ -284,12 +282,7 @@ public abstract class JavaSourceAccessor {
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-        }
-
-        @Override
-        public Phase getPhase() {
-            return phase;
-        }
+        }        
         
         public ClasspathInfo getClasspathInfo () {
             return javaSource.getClasspathInfo();
@@ -298,7 +291,7 @@ public abstract class JavaSourceAccessor {
         @Override
         public String toString () {
             return this.getClass().getSimpleName()+"[task: "+ task +    //NOI18N
-                    ", phase: "+phase+", priority: "+priority+"]";      //NOI18N
+                    ", phase: "+getPhase()+", priority: "+priority+"]";      //NOI18N
         }
     }
 }
