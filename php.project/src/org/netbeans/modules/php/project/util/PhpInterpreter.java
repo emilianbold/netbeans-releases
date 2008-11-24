@@ -46,9 +46,6 @@ import org.openide.util.Utilities;
 
 /**
  * @author Tomas Mysik
- * @todo do not parse individual arguments, just split interpreter and "the rest";
- *       to the Execution API, add method "addRawArgument(String)" (non-escaped string
- *       is passed to the process).
  */
 public final class PhpInterpreter {
     private static final Logger LOGGER = Logger.getLogger(PhpInterpreter.class.getName());
