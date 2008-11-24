@@ -50,6 +50,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
@@ -72,10 +73,10 @@ import org.openide.util.TaskListener;
  * @author Tomas Mysik
  */
 public class FakeWebFrameworkConfigurationPanel extends JPanel {
-    private static final long serialVersionUID = 2793723169621508L;
+    private static final long serialVersionUID = 27938464212508L;
 
     final ProgressMonitor progressMonitor = new DownloadProgressMonitor();
-    private final FakeWebModuleExtender fakeExtender;
+    final FakeWebModuleExtender fakeExtender;
     private final String name;
     private final String codeNameBase;
     private JComponent panel;
@@ -103,6 +104,12 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
 
         infoLabel.setText(lblMsg);
         downloadButton.setText(btnMsg);
+        setError(" "); // NOI18N
+    }
+
+    void setError(String msg) {
+        assert SwingUtilities.isEventDispatchThread ();
+        errorLabel.setText(msg);
     }
 
     /** This method is called from within the constructor to
@@ -115,9 +122,14 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
     private void initComponents() {
 
 
+
+        errorLabel = new JLabel();
         infoLabel = new JLabel();
         downloadButton = new JButton();
         progressPanel = new JPanel();
+
+        errorLabel.setForeground(UIManager.getDefaults().getColor("nb.errorForeground"));
+        Mnemonics.setLocalizedText(errorLabel, "dummy");
         Mnemonics.setLocalizedText(infoLabel, "dummy");
         Mnemonics.setLocalizedText(downloadButton, "dummy");
         downloadButton.addActionListener(new ActionListener() {
@@ -137,18 +149,21 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(progressPanel, GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
                     .add(infoLabel)
-                    .add(downloadButton))
+                    .add(downloadButton)
+                    .add(errorLabel))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(errorLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
                 .add(infoLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(downloadButton)
                 .add(18, 18, 18)
-                .add(progressPanel, GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
+                .add(progressPanel, GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -164,7 +179,7 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
         task.addTaskListener(new TaskListener() {
             public void taskFinished(org.openide.util.Task task) {
                 if (success[0]) {
-                    // XXX remove this nasty hack
+                    // XXX to jarda tulach: remove this nasty hack
                     try {
                         Thread.sleep(10000);
                     } catch (InterruptedException ex) {
@@ -173,17 +188,21 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
                     setRealWebFrameworkProvider();
                     setRealWebFrameworkConfigurationPanel();
                 } else {
-                    String msg = null;
-                    if (fakeExtender.isModulePresent()) {
-                        msg = NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "MSG_EnableFailed");
-                    } else {
-                        msg = NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "MSG_DownloadFailed");
-                    }
-                    progressPanel.removeAll();
-                    progressPanel.add(new JLabel(msg), BorderLayout.NORTH);
-                    progressPanel.revalidate();
-                    progressPanel.repaint();
-                    downloadButton.setEnabled(true);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            String msg = null;
+                            if (fakeExtender.isModulePresent()) {
+                                msg = NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "MSG_EnableFailed");
+                            } else {
+                                msg = NbBundle.getMessage(FakeWebFrameworkConfigurationPanel.class, "MSG_DownloadFailed");
+                            }
+                            setError(msg);
+                            downloadButton.setEnabled(true);
+                            progressPanel.removeAll();
+                            progressPanel.revalidate();
+                            progressPanel.repaint();
+                        }
+                    });
                 }
             }
         });
@@ -199,8 +218,7 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
 
     private WebFrameworkProvider getWebFrameworkProvider() {
         for (WebFrameworkProvider provider : WebFrameworks.getFrameworks()) {
-            // consider comparison of class.getName() instead of names (but see FakeWebFrameworkProvider.getName() first)
-            if (name.equals(provider.getName())) {
+            if (provider.getClass().getName().equals(fakeExtender.getFrameworkProviderClassName())) {
                 return provider;
             }
         }
@@ -223,6 +241,7 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton downloadButton;
+    private JLabel errorLabel;
     private JLabel infoLabel;
     private JPanel progressPanel;
     // End of variables declaration//GEN-END:variables

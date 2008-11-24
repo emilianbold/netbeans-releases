@@ -60,8 +60,10 @@ public final class FakeWebFrameworkProvider {
     public  static  WebFrameworkProvider create(Map<Object, Object> attrs) {
         final String name = (String) attrs.get("name"); // NOI18N
         final String codeNameBase = (String) attrs.get("codeNameBase"); // NOI18N
+        final String frameworkProviderClassName = (String) attrs.get("frameworkProviderClassName"); // NOI18N
         assert name != null;
         assert codeNameBase != null;
+        assert frameworkProviderClassName != null;
 
         boolean modulePresent = false;
         for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
@@ -74,23 +76,26 @@ public final class FakeWebFrameworkProvider {
             }
         }
 
-        return new FakeWebFrameworkProviderImpl(name, codeNameBase, modulePresent);
+        return new FakeWebFrameworkProviderImpl(name, codeNameBase, frameworkProviderClassName, modulePresent);
     }
 
     static final class FakeWebFrameworkProviderImpl extends WebFrameworkProvider {
         private final String name;
         private final String codeNameBase;
+        private final String frameworkProviderClassName;
         private final boolean modulePresent;
         private volatile WebFrameworkProvider delegate;
 
-        FakeWebFrameworkProviderImpl(String name, String codeNameBase, boolean modulePresent) {
+        FakeWebFrameworkProviderImpl(String name, String codeNameBase, String frameworkProviderClassName, boolean modulePresent) {
             super(name, null);
 
             assert name != null;
             assert codeNameBase != null;
+            assert frameworkProviderClassName != null;
 
             this.name = name;
             this.codeNameBase = codeNameBase;
+            this.frameworkProviderClassName = frameworkProviderClassName;
             this.modulePresent = modulePresent;
         }
 
@@ -105,10 +110,13 @@ public final class FakeWebFrameworkProvider {
         @Override
         public String getName() {
             if (delegate != null) {
-                assert name.equals(delegate.getName()) : String.format("names must be the same %s vs. %s", name, delegate.getName());
                 return delegate.getName();
             }
             return name;
+        }
+
+        public String getFrameworkProviderClassName() {
+            return frameworkProviderClassName;
         }
 
         @Override
