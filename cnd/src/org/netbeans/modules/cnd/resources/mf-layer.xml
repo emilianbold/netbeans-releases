@@ -288,6 +288,9 @@ made subject to such option by the copyright holder.
             <file name="GNU.xml" url="toolchain/GNU.xml">
                 <attr name="position" intvalue="3000"/>
             </file>
+            <file name="MVC.xml" url="toolchain/MVC.xml">
+               <attr name="position" intvalue="4000"/>
+            </file>
         </folder>
 
     </folder>	<!-- Services -->

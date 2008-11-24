@@ -264,7 +264,11 @@ public class LinkerConfiguration implements AllOptionsProvider {
                 }
             }
         }
-        options += getOutputOptions() + " "; // NOI18N
+        if (cs != null) {
+            options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getOutputFileFlag() + getOutputValue() + " "; // NOI18N
+        } else {
+            options += "-o " + getOutputValue() + " "; // NOI18N
+        }
         options += getStripOption().getOption() + " "; // NOI18N
         if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
             // FIXUP: should move to Platform
@@ -403,10 +407,6 @@ public class LinkerConfiguration implements AllOptionsProvider {
         } else {
             return ""; // NOI18N
         }
-    }
-
-    private String getOutputOptions() {
-        return "-o " + getOutputValue() + " "; // NOI18N
     }
 
     public String getOutputValue() {

@@ -90,6 +90,7 @@ made subject to such option by the copyright holder.
             <default flags="" default="true"/>
             <all flags=""/>
         </language_extension>
+        <output_object_file flags="-o " />
         <!--<dependency_generation flags="-xMMD -xMF $@.d" />-->
     </c>
     <cpp>
@@ -145,6 +146,7 @@ made subject to such option by the copyright holder.
             <binary_standard flags="" default="true"/>
             <conforming_standard flags="-library=stlport4,no%Cstd"/>
         </library>
+        <output_object_file flags="-o " />
         <!--<dependency_generation flags="-xMMD -xMF $@.d" />-->
     </cpp>
     <fortran>
@@ -172,6 +174,7 @@ made subject to such option by the copyright holder.
             <bits_64 flags="-xarch=generic64"/>
         </architecture>
         <strip flags="-s"/>
+        <output_object_file flags="-o " />
     </fortran>
     <scanner>
         <error pattern="^\&quot;(.*)\&quot;, line ([0-9]+):" language="c"/>
@@ -191,6 +194,7 @@ made subject to such option by the copyright holder.
         <static_library flags="-Bstatic"/>
         <dynamic_library flags="-Bdynamic"/>
         <dynamic_library_basic flags="-G "/>
+        <output_file flags="-o "/>
     </linker>
     <make>
         <tool name="dmake"/>
