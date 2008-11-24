@@ -20,7 +20,8 @@ export ANT_OPTS
 HGMERGE=merge
 export HGMERGE
 
-ant clean $ANT_PARAM || exit 2
+hg up -C
+hg --config extensions.purge= clean --all
 
 STATUS=$TMP/$$-status
 curl $pop_job/buildStatus -D "$STATUS"
