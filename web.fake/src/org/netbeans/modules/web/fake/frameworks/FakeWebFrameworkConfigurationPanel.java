@@ -246,11 +246,14 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
         }
 
         private void updateProgress(final ProgressHandle progressHandle) {
+            final JLabel tmpErrorLabel = ProgressHandleFactory.createDetailLabelComponent(progressHandle);
             final JLabel tmpMainLabel = ProgressHandleFactory.createMainLabelComponent(progressHandle);
             final JComponent tmpProgressPanel = ProgressHandleFactory.createProgressComponent(progressHandle);
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     progressPanel.removeAll();
+                    progressPanel.add(tmpErrorLabel);
+                    progressPanel.add(Box.createRigidArea(new Dimension(0,5)));
                     progressPanel.add(tmpMainLabel);
                     progressPanel.add(Box.createRigidArea(new Dimension(0,5)));
                     progressPanel.add(tmpProgressPanel);
