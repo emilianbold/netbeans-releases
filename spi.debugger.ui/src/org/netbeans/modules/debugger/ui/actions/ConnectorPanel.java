@@ -100,6 +100,12 @@ public class ConnectorPanel extends JPanel implements ActionListener {
         attachTypes = DebuggerManager.getDebuggerManager ().lookup (
             null, AttachType.class
         );
+        for (Object t : attachTypes.toArray()) {
+            AttachType att = (AttachType) t;
+            if (att.getTypeDisplayName() == null) {
+                attachTypes.remove(t);
+            }
+        }
         String defaultAttachTypeName =
                 Properties.getDefault ().getProperties ("debugger").getString ("last_attach_type", null);
         int defaultIndex = 0;

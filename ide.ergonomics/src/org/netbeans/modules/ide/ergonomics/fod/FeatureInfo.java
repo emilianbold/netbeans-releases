@@ -64,6 +64,7 @@ public final class FeatureInfo {
     private final Set<String> cnbs;
     final Map<String,String> nbproject = new HashMap<String,String>();
     final Map<String,String> files = new HashMap<String,String>();
+    private String attachTypeName;
 
     private FeatureInfo(Set<String> cnbs, URL delegateLayer) {
         this.cnbs = cnbs;
@@ -80,6 +81,7 @@ public final class FeatureInfo {
         s.addAll(Arrays.asList(cnbs.split(",")));
 
         FeatureInfo info = new FeatureInfo(s, delegateLayer);
+        info.attachTypeName = p.getProperty("attachTypeName");
         final String prefix = "nbproject.";
         final String prefFile = "project.file.";
         for (Object k : p.keySet()) {
@@ -116,6 +118,10 @@ public final class FeatureInfo {
                 return info.internal;
             }
         };
+    }
+
+    public String getAttachTypeName() {
+        return attachTypeName;
     }
 
     boolean isProject(FileObject dir, boolean deepCheck) {

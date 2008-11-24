@@ -40,8 +40,9 @@
 package org.netbeans.modules.ide.ergonomics.debugger;
 
 import javax.swing.JComponent;
-import javax.swing.JPanel;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ui.AttachType;
+import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.util.NbBundle;
 
 /**
@@ -49,15 +50,63 @@ import org.openide.util.NbBundle;
  * @author Pavel Flaska
  */
 public class GdbAttachTypeProxy extends AttachType {
+    private static final String NAME = NbBundle.getMessage(GdbAttachTypeProxy.class, "CTL_GdbAttachPanel_name"); // NOI18N
+    private AttachType delegate;
+    private boolean isVisible;
+    
+    public GdbAttachTypeProxy() {
+        this.delegate = null;
+        this.isVisible = true;
+    }
 
     @Override
     public String getTypeDisplayName() {
-        return NbBundle.getMessage(GdbAttachTypeProxy.class, "CTL_GdbAttachPanel_name"); // NOI18N
+        if (!isVisible) {
+            return null;
+        } else {
+            if (getAttachType() != null) {
+                isVisible = false;
+                return null;
+            }
+        }
+        if (delegate != null) {
+            return delegate.getTypeDisplayName();
+        }
+        return NAME;
     }
 
     @Override
     public JComponent getCustomizer() {
-        return new JPanel();
+        if (delegate == null) {
+            return new DebuggerConfigurationPanel(this);
+        } else {
+            return delegate.getCustomizer();
+        }
+    }
+
+    @Override
+    public Controller getController() {
+        if (delegate == null) {
+            return super.getController();
+        } else {
+            return delegate.getController();
+        }
+    }
+
+    public void invalidate() {
+        isVisible = false;
+        delegate = getAttachType();
+    }
+
+    AttachType getAttachType() {
+        for (AttachType type : DebuggerManager.getDebuggerManager().lookup(null, AttachType.class)) {
+            if (type.getClass().equals(GdbAttachTypeProxy.class)) {
+                continue;
+            } else if (type.getTypeDisplayName().equals(NAME)) {
+                return type;
+            }
+        }
+        return null;
     }
 
 }

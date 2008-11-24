@@ -125,7 +125,7 @@ public class Feature2LayerMapping {
     }
 
     private static Lookup featureTypesLookup;
-    static synchronized Lookup featureTypesLookup() {
+    public static synchronized Lookup featureTypesLookup() {
         if (featureTypesLookup != null) {
             return featureTypesLookup;
         }
