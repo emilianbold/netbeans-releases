@@ -202,7 +202,12 @@ public class LicensesPanel extends WizardPanel {
                     }                    
                 }
             }
-            licensePane.setText(text);
+            if(System.getProperty(OVERALL_LICENSE_CONTENT_TYPE_PROPERTY)!=null) {
+                licensePane.setContentType(System.getProperty(
+                        OVERALL_LICENSE_CONTENT_TYPE_PROPERTY));
+            }
+            
+            licensePane.setText(text);            
             licensePane.setCaretPosition(0);
             licensePane.requestFocus();
 
@@ -306,6 +311,8 @@ public class LicensesPanel extends WizardPanel {
             "error.cannot.get.logic";//NOI18N
     public static final String OVERALL_LICENSE_RESOURCE_PROPERTY =
             "nbi.overall.license.resource";//NOI18N
+    public static final String OVERALL_LICENSE_CONTENT_TYPE_PROPERTY =
+            "nbi.overall.license.content.type";//NOI18N
     public static final String APPEND_LICENSE_FORMAT_PROPERTY =
             "append.license.format";//NOI18N
     public static final String OVERALL_LICENSE_FORMAT_PROPERTY =
