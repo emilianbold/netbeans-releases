@@ -41,6 +41,7 @@ package org.netbeans.modules.parsing.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -275,6 +276,24 @@ public final class Snapshot {
      */
     public Source getSource () {
         return source;
+    }
+    
+    @Override
+    public String toString () {
+        StringBuilder sb = new StringBuilder ("Snapshot ");
+        sb.append (hashCode ());
+        sb.append (": ");
+        Source _source = getSource ();
+        FileObject fileObject = _source.getFileObject ();
+        if (fileObject != null)
+            sb.append (fileObject.getNameExt ());
+        else
+            sb.append (mimeType).append (" ").append (_source.getDocument ());
+        if (!getMimeType ().equals (_source.getMimeType ())) {
+            sb.append ("( ").append (getMimeType ()).append (" ");
+            sb.append (getOriginalOffset (0)).append ("-").append(getOriginalOffset (getText ().length () - 1)).append (")");
+        }
+        return sb.toString ();
     }
 }
 

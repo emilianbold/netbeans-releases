@@ -57,6 +57,7 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -218,7 +219,7 @@ public class ParserManagerTest extends NbTestCase {
         }
 
         @Override
-        public void run(Result result) {
+        public void run(Result result, SchedulerEvent event) {
             finished = false;
         }
 
@@ -233,14 +234,14 @@ public class ParserManagerTest extends NbTestCase {
 
         private Snapshot last;
 
-        public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+        public void parse (Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
             parseCount++;
             last = snapshot;
         }
 
-        public Result getResult (Task task, SchedulerEvent event) throws ParseException {
+        public Result getResult (Task task) throws ParseException {
             getResultCount++;
-            return new Result (last, event) {
+            return new Result (last) {
                 public void invalidate () {
                 }
             };

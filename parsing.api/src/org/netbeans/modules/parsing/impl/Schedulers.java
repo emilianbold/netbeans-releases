@@ -56,7 +56,14 @@ public class Schedulers {
     static void init () {
         taskSchedulers = Lookup.getDefault ().lookupAll (Scheduler.class);
     }
-    
+
+    /**
+     * For tests only.
+     */
+    static Collection<? extends Scheduler> getSchedulers () {
+        if (taskSchedulers == null) init();
+        return taskSchedulers;
+    }
 }
 
 

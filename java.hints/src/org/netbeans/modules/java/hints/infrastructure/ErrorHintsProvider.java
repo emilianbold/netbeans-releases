@@ -59,6 +59,7 @@ import javax.swing.text.StyledDocument;
 import javax.tools.Diagnostic;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
@@ -439,7 +440,7 @@ public final class ErrorHintsProvider extends ParserResultTask {
     }
     
     @Override
-    public void run(Result result) {
+    public void run(Result result, SchedulerEvent event) {
         resume();
 
         CompilationInfo info = CompilationInfo.get(result);

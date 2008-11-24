@@ -97,11 +97,6 @@ public final class DialogBindingEmbeddingProvider extends EmbeddingProvider {
     }
 
     @Override
-    public Class<? extends Scheduler> getSchedulerClass() {
-        return null;
-    }
-
-    @Override
     public void cancel() {
     }
 

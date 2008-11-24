@@ -29,7 +29,7 @@
  * your version of this file under either the CDDL, the GPL Version 2 or
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
+ * Version 2 licenCurrentEditorTaskSchedulerse, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  * 
  * Contributor(s):
@@ -39,17 +39,14 @@
 
 package org.netbeans.modules.parsing.impl;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.util.Collections;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -59,36 +56,44 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Jancura
  */
 @ServiceProvider(service=Scheduler.class)
-public class SelectedNodesScheduller extends FileObjectsTaskScheduller {
+public class CursorSensitiveScheduler extends CurrentEditorTaskScheduler {
     
-    public SelectedNodesScheduller () {
-        TopComponent.getRegistry ().addPropertyChangeListener (new AListener ());
-    }
+    private JTextComponent  currentEditor;
+    private CaretListener   caretListener;
+    private Document        currentDocument;
     
-    private void refresh () {
-        final List<Source> sources = new ArrayList<Source> ();
-        final Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
-        for (final Node node : nodes) {
-            final DataObject dataObject = node.getLookup ().lookup (DataObject.class);
-            if (dataObject != null) {
-                final FileObject fileObject = dataObject.getPrimaryFile ();
-                final Source source = Source.create (fileObject);
-                if (source != null) {
-                    sources.add (source);
-                }
-            }
+    protected void setEditor (JTextComponent editor) {
+        if (currentEditor != null)
+            currentEditor.removeCaretListener (caretListener);
+        currentEditor = editor;
+        if (editor != null) {
+            if (caretListener == null)
+                caretListener = new ACaretListener ();
+            editor.addCaretListener (caretListener);
+            Document document = editor.getDocument ();
+            if (currentDocument == document) return;
+            currentDocument = document;
+            Source source = Source.create (currentDocument);
+            schedule (source, new CursorMovedSchedulerEvent (this, editor.getCaret ().getDot (), editor.getCaret ().getMark ()) {});
         }
-        schedule (sources, new SchedulerEvent (this) {});
+        else {
+            currentDocument = null;
+            schedule(null, null);
+        }
     }
     
-    private class AListener implements PropertyChangeListener {
+    @Override
+    public String toString () {
+        return "CursorSensitiveScheduller";
+    }
     
-        public void propertyChange (PropertyChangeEvent evt) {
-            if (evt.getPropertyName () == null ||
-                evt.getPropertyName ().equals (TopComponent.Registry.PROP_ACTIVATED_NODES)
-            ) {
-                refresh ();
-            }
+    private class ACaretListener implements CaretListener {
+
+        public void caretUpdate (CaretEvent e) {
+            schedule (new CursorMovedSchedulerEvent (this, e.getDot (), e.getMark ()) {});
         }
     }
 }
+
+
+

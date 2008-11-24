@@ -60,6 +60,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -107,10 +108,6 @@ public class RunUserActionTaskTest extends NbTestCase {
                                 return 10;
                             }
 
-                            public Class<? extends Scheduler> getSchedulerClass () {
-                                return null;
-                            }
-
                             public void cancel () {
                             }
                         }
@@ -132,15 +129,15 @@ public class RunUserActionTaskTest extends NbTestCase {
                         
                         private Snapshot last;
 
-                        public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+                        public void parse (Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
                             assertEquals (snapshot, snapshots [0]);
                             counter.check (5);
                             last = snapshot;
                         }
 
-                        public Result getResult (Task task, SchedulerEvent event) throws ParseException {
+                        public Result getResult (Task task) throws ParseException {
                             counter.check (6);
-                            return new Result (last, event) {
+                            return new Result (last) {
                                 public void invalidate () {
                                     counter.check (8);
                                 }
@@ -205,7 +202,7 @@ public class RunUserActionTaskTest extends NbTestCase {
                         
                         private Snapshot last;
 
-                        public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+                        public void parse (Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
                             assertEquals (snapshot, snapshots [0]);
                             assertEquals (parser [0], this);
                             counter.check (3);
@@ -218,10 +215,10 @@ public class RunUserActionTaskTest extends NbTestCase {
                         Stack<Integer> s2 = new Stack<Integer> ();
                         {s2.push (10);s2.push (6);}
 
-                        public Result getResult (Task task, SchedulerEvent event) throws ParseException {
+                        public Result getResult (Task task) throws ParseException {
                             assertEquals (parser [0], this);
                             counter.check (s1.pop ());
-                            return new Result (last, event) {
+                            return new Result (last) {
                                 public void invalidate () {
                                     counter.check (s2.pop ());
                                 }
@@ -304,10 +301,6 @@ public class RunUserActionTaskTest extends NbTestCase {
                                 return 10;
                             }
 
-                            public Class<? extends Scheduler> getSchedulerClass () {
-                                return null;
-                            }
-
                             public void cancel () {
                             }
                         }
@@ -329,7 +322,7 @@ public class RunUserActionTaskTest extends NbTestCase {
                         
                         private Snapshot last;
 
-                        public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+                        public void parse (Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
                             assertEquals (snapshot, snapshots [0]);
                             counter.check (4);
                         }
@@ -340,9 +333,9 @@ public class RunUserActionTaskTest extends NbTestCase {
                         Stack<Integer> s2 = new Stack<Integer> ();
                         {s2.push (11);s2.push (7);}
                         
-                        public Result getResult (Task task, SchedulerEvent event) throws ParseException {
+                        public Result getResult (Task task) throws ParseException {
                             counter.check (s1.pop ());
-                            return new Result (last, event) {
+                            return new Result (last) {
                                 public void invalidate () {
                                     counter.check (s2.pop ());
                                 }
@@ -427,10 +420,6 @@ public class RunUserActionTaskTest extends NbTestCase {
                                 return 10;
                             }
 
-                            public Class<? extends Scheduler> getSchedulerClass () {
-                                return null;
-                            }
-
                             public void cancel () {
                             }
                         }
@@ -457,7 +446,7 @@ public class RunUserActionTaskTest extends NbTestCase {
                         Stack<String> s4 = new Stack<String> ();
                         {s4.push ("stovaci2 f");s4.push ("stovaci fi");}
                         
-                        public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+                        public void parse (Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
                             counter.check (s3.pop ());
                             last = snapshot;
                         }
@@ -468,9 +457,9 @@ public class RunUserActionTaskTest extends NbTestCase {
                         Stack<Integer> s2 = new Stack<Integer> ();
                         {s2.push (17);s2.push (11);s2.push (7);}
                         
-                        public Result getResult (Task task, SchedulerEvent event) throws ParseException {
+                        public Result getResult (Task task) throws ParseException {
                             counter.check (s1.pop ());
-                            return new Result (last, event) {
+                            return new Result (last) {
                                 public void invalidate () {
                                     counter.check (s2.pop ());
                                 }

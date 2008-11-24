@@ -115,6 +115,7 @@ import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
@@ -171,7 +172,7 @@ public class SemanticHighlighter extends ParserResultTask {
     }
 
     @Override
-    public void run(Result result) {
+    public void run(Result result, SchedulerEvent event) {
         CompilationInfo info = CompilationInfo.get(result);
         
         if (info == null) {

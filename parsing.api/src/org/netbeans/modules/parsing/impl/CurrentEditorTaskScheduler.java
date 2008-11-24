@@ -39,41 +39,54 @@
 
 package org.netbeans.modules.parsing.impl;
 
-import java.util.Collections;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.filesystems.FileObject;
 
 
 /**
  *
  * @author Jan Jancura
  */
-@ServiceProvider(service=Scheduler.class)
-public class CurrentDocumentScheduller extends CurrentEditorTaskScheduller {
+public abstract class CurrentEditorTaskScheduler extends Scheduler {
     
-    private Document        currentDocument;
-    private Source          source;
+    private JTextComponent  currentEditor;
     
-    protected void setEditor (JTextComponent editor) {
-        if (editor != null) {
-            Document document = editor.getDocument ();
-            if (currentDocument == document) return;
-            currentDocument = document;
-            source = Source.create (currentDocument);
-            schedule (Collections.singleton (source), new SchedulerEvent (this) {});
-        }
-        else {
-            currentDocument = null;
-            source = null;
-            schedule(Collections.<Source>emptySet(), null);
+    public CurrentEditorTaskScheduler () {
+        currentEditor = EditorRegistry.focusedComponent ();
+        EditorRegistry.addPropertyChangeListener (new AListener ());
+    }
+    
+    protected abstract void setEditor (JTextComponent editor);
+    
+    private class AListener implements PropertyChangeListener {
+    
+        public void propertyChange (PropertyChangeEvent evt) {
+            if (evt.getPropertyName () == null ||
+                evt.getPropertyName ().equals (EditorRegistry.FOCUSED_DOCUMENT_PROPERTY) ||
+                evt.getPropertyName ().equals (EditorRegistry.FOCUS_GAINED_PROPERTY)
+            ) {
+                JTextComponent editor = EditorRegistry.focusedComponent ();
+                if (editor == currentEditor) return;
+                currentEditor = editor;
+                Document document = editor.getDocument ();
+                FileObject fileObject = NbEditorUtilities.getFileObject (document);
+                if (fileObject == null) {
+                    System.out.println("no file object for " + document);
+                    return;
+                }
+                setEditor (currentEditor);
+            }
+            else if (evt.getPropertyName().equals(EditorRegistry.LAST_FOCUSED_REMOVED_PROPERTY)) {
+                currentEditor = null;
+                setEditor(null);
+            }
         }
     }
 }
-
-
-

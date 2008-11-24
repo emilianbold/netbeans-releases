@@ -90,6 +90,7 @@ import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -111,7 +112,8 @@ public class MarkOccurrencesHighlighter extends ParserResultTask {
 
     public static final Color ES_COLOR = new Color( 175, 172, 102 ); // new Color(244, 164, 113);
 
-    public void run(Result parseResult) {
+    @Override
+    public void run (Result parseResult, SchedulerEvent event) {
         resume();
 
         CompilationInfo info = CompilationInfo.get(parseResult);
@@ -137,8 +139,8 @@ public class MarkOccurrencesHighlighter extends ParserResultTask {
 
         long start = System.currentTimeMillis();
 
-        int caretPosition = parseResult.getEvent () instanceof CursorMovedSchedulerEvent ? 
-            ((CursorMovedSchedulerEvent) parseResult.getEvent ()).getCaretOffset () :
+        int caretPosition = event instanceof CursorMovedSchedulerEvent ? 
+            ((CursorMovedSchedulerEvent) event).getCaretOffset () :
             CaretAwareJavaSourceTaskFactory.getLastPosition(file);//XXX
 
         if (isCancelled())

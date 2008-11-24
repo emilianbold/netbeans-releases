@@ -744,7 +744,7 @@ public final class JavaSource {
                 }
             };
             parser.parse(snapshot,dummy, null);            
-            return CompilationController.get(parser.getResult(dummy, null));
+            return CompilationController.get(parser.getResult(dummy));
         }
         
         public long createTaggedCompilationController (JavaSource js, long currentTag, Object[] out) throws IOException {

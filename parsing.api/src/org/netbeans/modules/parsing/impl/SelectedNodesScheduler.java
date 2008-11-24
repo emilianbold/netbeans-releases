@@ -39,25 +39,61 @@
 
 package org.netbeans.modules.parsing.impl;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
-import org.netbeans.modules.parsing.spi.Scheduler;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /**
- * This implementation of {@link Scheduler} schedules tasks when some
- * file or document is chenged. This is helper class only, and it should
- * be extended by some real implementation of {@link Scheduler}.
- * 
+ *
  * @author Jan Jancura
  */
-public class FileObjectsTaskScheduller extends Scheduler {
-
+@ServiceProvider(service=Scheduler.class)
+public class SelectedNodesScheduler extends FileObjectsTaskScheduler {
     
-    private Collection<FileObject> fileObjects = Collections.<FileObject>emptyList ();
+    public SelectedNodesScheduler () {
+        TopComponent.getRegistry ().addPropertyChangeListener (new AListener ());
+    }
     
-    public void setFileObjects (Collection<FileObject> fileObject) {
+    private void refresh () {
+        final Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
+        if (nodes.length == 1) {
+            final DataObject dataObject = nodes [0].getLookup ().lookup (DataObject.class);
+            if (dataObject != null) {
+                final FileObject fileObject = dataObject.getPrimaryFile ();
+                final Source source = Source.create (fileObject);
+                if (source != null) {
+                    schedule (source, new SchedulerEvent (this) {});
+                    return;
+                }
+            }
+        }
+        //schedule (null, null);
+    }
+    
+    @Override
+    public String toString () {
+        return "SelectedNodesScheduller";
+    }
+    
+    private class AListener implements PropertyChangeListener {
+    
+        public void propertyChange (PropertyChangeEvent evt) {
+            if (evt.getPropertyName () == null ||
+                evt.getPropertyName ().equals (TopComponent.Registry.PROP_ACTIVATED_NODES)
+            ) {
+                refresh ();
+            }
+        }
     }
 }

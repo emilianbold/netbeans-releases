@@ -37,35 +37,51 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.spi;
+package org.netbeans.modules.parsing.impl;
 
-import org.netbeans.api.lexer.TokenHierarchyEvent;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.openide.util.lookup.ServiceProvider;
+
 
 /**
  *
- * @author hanz
+ * @author Jan Jancura
  */
-public class TokenHierarchySchedulerEvent extends SchedulerEvent {
-
-    private TokenHierarchyEvent
-                            tokenHierarchyEvent;
+@ServiceProvider(service=Scheduler.class)
+public class CurrentDocumentScheduler extends CurrentEditorTaskScheduler {
     
+    private Document        currentDocument;
+    private Source          source;
     
-    protected TokenHierarchySchedulerEvent (
-        Object              source,
-        TokenHierarchyEvent tokenHierarchyEvent
-    ) {
-        super (source);
-        this.tokenHierarchyEvent = tokenHierarchyEvent;
+    protected void setEditor (JTextComponent editor) {
+        if (editor != null) {
+            Document document = editor.getDocument ();
+            if (currentDocument == document) return;
+            currentDocument = document;
+            source = Source.create (currentDocument);
+            schedule (source, new SchedulerEvent (this) {});
+        }
+        else {
+            currentDocument = null;
+            source = null;
+            //schedule (null, null);
+        }
     }
     
-    public TokenHierarchyEvent getTokenHierarchyEvent () {
-        return tokenHierarchyEvent;
+    void schedule (Source source) {
+        schedule (source, new SchedulerEvent (this) {});
+    }
+    
+    @Override
+    public String toString () {
+        return "CurrentDocumentScheduler";
     }
 }
-
-
-
 
 
 

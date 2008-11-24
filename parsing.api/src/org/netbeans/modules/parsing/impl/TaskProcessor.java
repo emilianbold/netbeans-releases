@@ -79,6 +79,7 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -294,17 +295,17 @@ public class TaskProcessor {
         Parameters.notNull("task", tasks);   //NOI18N
         Parameters.notNull("source", source);   //NOI18N
         Parameters.notNull("cache", cache);   //NOI18N
-        List<Request> requests = new ArrayList<Request> ();
+        List<Request> _requests = new ArrayList<Request> ();
         for (SchedulerTask task : tasks) {
             final String taskClassName = task.getClass().getName();
             if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
                 if (includedTasks == null || !includedTasks.matcher(taskClassName).matches())
                     continue;
             }
-            requests.add (new Request (task, cache, true, bridge, schedulerType));
+            _requests.add (new Request (task, cache, true, bridge, schedulerType));
         }
-        if (!requests.isEmpty ()) {
-            handleAddRequests (source, requests);
+        if (!_requests.isEmpty ()) {
+            handleAddRequests (source, _requests);
         }
     }
     
@@ -601,7 +602,8 @@ public class TaskProcessor {
                                     parserLock.lock ();
                                     try {
                                         try {
-                                            ((ParserResultTask)r.task).run (null);
+                                            // needs some description!!!! (tzezula)
+                                            ((ParserResultTask) r.task).run (null, null);
                                         } finally {
                                             currentRequest.clearCurrentTask();
                                             boolean cancelled = requests.contains(r);
@@ -664,9 +666,8 @@ public class TaskProcessor {
                                                     sourceCache.refresh ((EmbeddingProvider) r.task, r.schedulerType);
                                                 }
                                                 else {
-                                                    SchedulerEvent event = SourceAccessor.getINSTANCE().getEvent (source);
                                                     currentRequest.setCurrentParser(sourceCache.getParser());
-                                                    final Parser.Result currentResult = sourceCache.getResult (r.task, event);
+                                                    final Parser.Result currentResult = sourceCache.getResult (r.task);
                                                     if (currentResult != null) {
                                                         try {
                                                             boolean shouldCall = !SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID);
@@ -677,7 +678,9 @@ public class TaskProcessor {
                                                                         if (LOGGER.isLoggable(Level.FINE)) {
                                                                             LOGGER.fine("Running Task: " + r.toString());
                                                                         }
-                                                                        ((ParserResultTask)r.task).run (currentResult);                                                                        
+                                                                        ParserResultTask parserResultTask = (ParserResultTask) r.task;
+                                                                        SchedulerEvent schedulerEvent = SourceAccessor.getINSTANCE ().getSchedulerEvent (source, parserResultTask.getSchedulerClass ());
+                                                                        parserResultTask.run (currentResult, schedulerEvent);                                                                        
                                                                     }
                                                                     else {
                                                                         assert false : "Unknown task type: " + r.task.getClass();   //NOI18N
@@ -780,7 +783,7 @@ public class TaskProcessor {
             public void cancel() {
             }
             @Override
-            public void run(Result result) {
+            public void run(Result result, SchedulerEvent event) {
             }
         },null, false, false, null);
         

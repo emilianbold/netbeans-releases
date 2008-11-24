@@ -130,6 +130,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.spi.java.source.JavaParserResultTask;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -282,7 +283,7 @@ public class JavacParser extends Parser {
     }
         
     @Override
-    public void parse(final Snapshot snapshot, final Task task, SchedulerEvent event) throws ParseException {
+    public void parse(final Snapshot snapshot, final Task task, SourceModificationEvent event) throws ParseException {
         assert task != null;
         assert privateParser || Utilities.holdsParserLock();
         parseId++;
@@ -332,7 +333,7 @@ public class JavacParser extends Parser {
     }
     
     @Override
-    public JavacParserResult getResult (final Task task, SchedulerEvent event) throws ParseException {
+    public JavacParserResult getResult (final Task task) throws ParseException {
         assert ciImpl != null;
         assert privateParser || Utilities.holdsParserLock();
         LOGGER.fine ("getResult: task:" + task.toString());                     //NOI18N
@@ -341,7 +342,7 @@ public class JavacParser extends Parser {
             LOGGER.fine ("\t:invalid, reparse");                                //NOI18N
             invalid = false;
             if (cachedSnapShot != null) {
-                parse (cachedSnapShot, task, event);
+                parse (cachedSnapShot, task, null);
             }            
         }
         final boolean isJavaParserResultTask = task instanceof JavaParserResultTask;
@@ -358,7 +359,7 @@ public class JavacParser extends Parser {
                     LOGGER.fine ("Task "+task+" has changed ClasspathInfo form: " + cpInfo +" to:" + providedInfo); //NOI18N
                 }
                 assert cachedSnapShot != null;
-                parse (cachedSnapShot, task, event);
+                parse (cachedSnapShot, task, null);
             }
         }
         JavacParserResult result = null;
@@ -379,11 +380,11 @@ public class JavacParser extends Parser {
             }
             if (reachedPhase.compareTo(requiredPhase)>=0) {
                 Index.cancel.set(canceled);
-                result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl), event);
+                result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl));
             }
         }
         else if (isUserTask) {
-            result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationController(ciImpl), event);
+            result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationController(ciImpl));
         }
         else {
             LOGGER.warning("Ignoring unknown task: " + task);                   //NOI18N

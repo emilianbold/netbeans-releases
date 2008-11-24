@@ -62,6 +62,7 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
@@ -179,12 +180,12 @@ public class SnapshotTest extends NbTestCase {
                     
                     private Snapshot last;
                     
-                    public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+                    public void parse (Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
                         last = snapshot;
                     }
 
-                    public Result getResult (Task task, SchedulerEvent event) throws ParseException {
-                        return new Result (last, event) {
+                    public Result getResult (Task task) throws ParseException {
+                        return new Result (last) {
                             protected void invalidate (){}
                         };
                     }
@@ -220,7 +221,7 @@ public class SnapshotTest extends NbTestCase {
 
         final Source src = Source.create(testFile);
         final ParserResultTask<Parser.Result> pr = new ParserResultTask<Parser.Result>() {
-            public void run (Parser.Result r) {
+            public void run (Parser.Result r, SchedulerEvent event) {
 
             }
 

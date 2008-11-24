@@ -66,6 +66,11 @@ public class CursorMovedSchedulerEvent extends SchedulerEvent {
     public int getMarkOffset () {
         return markOffset;
     }
+
+    @Override
+    public String toString () {
+        return "CursorMovedSchedulerEvent " + hashCode () + "(source: " + source + ", cursor: " + caretOffset + ")";
+    }
 }
 
 

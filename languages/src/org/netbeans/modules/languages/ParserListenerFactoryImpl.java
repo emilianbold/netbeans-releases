@@ -56,6 +56,7 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -120,7 +121,7 @@ public class ParserListenerFactoryImpl extends TaskFactory {
         }
 
         @Override
-        public void run (ParserResult parserResult) {
+        public void run (ParserResult parserResult, SchedulerEvent event) {
             Iterator<Set<ASTEvaluator>> it = evaluators.values ().iterator ();
             while (it.hasNext ()) {
                 Iterator<ASTEvaluator> it2 = it.next ().iterator ();

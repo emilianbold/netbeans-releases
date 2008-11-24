@@ -52,6 +52,11 @@ public class SchedulerEvent extends EventObject {
     ) {
         super (source);
     }
+
+    @Override
+    public String toString () {
+        return "SchedulerEvent " + hashCode () + "(source: " + source + ")";
+    }
 }
 
 

@@ -39,12 +39,13 @@
 
 package org.netbeans.modules.parsing.spi;
 
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.CurrentDocumentScheduller;
-import org.netbeans.modules.parsing.impl.CursorSensitiveScheduller;
-import org.netbeans.modules.parsing.impl.SelectedNodesScheduller;
+import org.netbeans.modules.parsing.impl.CurrentDocumentScheduler;
+import org.netbeans.modules.parsing.impl.CursorSensitiveScheduler;
+import org.netbeans.modules.parsing.impl.SelectedNodesScheduler;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
 import org.openide.util.RequestProcessor;
@@ -76,8 +77,7 @@ public abstract class Scheduler {
      */
     int                     reparseDelay = DEFAULT_REPARSE_DELAY;
     
-    private Collection<Source> 
-                            sources;
+    private Source          source;
     
     /**
      * This implementations of {@link Scheduler} reschedules all tasks when:
@@ -88,7 +88,7 @@ public abstract class Scheduler {
      * </ol>
      */
     public static final Class<? extends Scheduler>
-                            CURSOR_SENSITIVE_TASK_SCHEDULER = CursorSensitiveScheduller.class;
+                            CURSOR_SENSITIVE_TASK_SCHEDULER = CursorSensitiveScheduler.class;
     
     /**
      * This implementations of {@link Scheduler} reschedules all tasks when:
@@ -98,14 +98,14 @@ public abstract class Scheduler {
      * </ol>
      */
     public static final Class<? extends Scheduler>
-                            EDITOR_SENSITIVE_TASK_SCHEDULER = CurrentDocumentScheduller.class;
+                            EDITOR_SENSITIVE_TASK_SCHEDULER = CurrentDocumentScheduler.class;
     
     /**
      * This implementations of {@link Scheduler} reschedules all tasks when
      * nodes selected in editor are changed.
      */
     public static final Class<? extends Scheduler>
-                            SELECTED_NODES_SENSITIVE_TASK_SCHEDULER = SelectedNodesScheduller.class;
+                            SELECTED_NODES_SENSITIVE_TASK_SCHEDULER = SelectedNodesScheduler.class;
 
     /**
      * Reschedule all tasks registered for <code>this</code> Scheduler (see
@@ -114,7 +114,7 @@ public abstract class Scheduler {
     protected final void schedule (
         SchedulerEvent      event
     ) {
-        schedule (sources, event);
+        schedule (source, event);
     }
 
     private RequestProcessor 
@@ -130,25 +130,26 @@ public abstract class Scheduler {
     //tzezula: really unclear usages of sources field (synchronization, live cycle, may it be called twice with different set of sources?).
     //tzezula: should set CHANGE_EXPECTED flag on the sources.
     protected final synchronized void schedule (
-        Collection<Source>  sources,
+        final Source        source,
         final SchedulerEvent
                             event
     ) {
-        assert notNull (sources);
+        assert source != null;
         if (task != null)
             task.cancel ();
         task = null;
-        this.sources = sources;
+        this.source = source;
         //if (task == null) {
             if (requestProcessor == null)
                 requestProcessor = new RequestProcessor ();
             task = requestProcessor.create (new Runnable () {
                 public void run () {
-                    for (Source source : Scheduler.this.sources) {
-                        SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);
-                        SourceAccessor.getINSTANCE ().setEvent (source, event);
-                        cache.scheduleTasks (Scheduler.this.getClass ());
-                    }
+                    SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);
+                    Map<Class<? extends Scheduler>,SchedulerEvent> events = new HashMap<Class<? extends Scheduler>,SchedulerEvent> ();
+                    events.put (Scheduler.this.getClass (), event);
+                    SourceAccessor.getINSTANCE ().setSchedulerEvents (source, events);
+                    //S ystem.out.println ("\nSchedule tasks (" + Scheduler.this + "):");
+                    cache.scheduleTasks (Scheduler.this.getClass ());
                 }
             });
         //}
