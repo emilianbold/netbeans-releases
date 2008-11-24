@@ -112,7 +112,7 @@ public class WSProjectApiTest extends NbTestCase {
                 return WebServiceFactory.createWebServiceDescriptor(desc);
             }
 
-            public Node getNode() {
+            public Node createNode() {
                 return null;
             }
 

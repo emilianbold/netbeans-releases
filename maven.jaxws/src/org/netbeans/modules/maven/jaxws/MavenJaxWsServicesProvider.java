@@ -54,13 +54,13 @@ import org.netbeans.modules.websvc.project.spi.WebServiceFactory;
  *
  * @author mkuchtiak
  */
-public class MavenWebServicesProvider implements WebServiceDataProvider, PropertyChangeListener {
+public class MavenJaxWsServicesProvider implements WebServiceDataProvider, PropertyChangeListener {
     private JAXWSLightSupport jaxWsSupport;
     private Project prj;
     private List<WebService> providers = new LinkedList<WebService>();
     private List<WebService> consumers = new LinkedList<WebService>();
     
-    public MavenWebServicesProvider(Project prj, JAXWSLightSupport jaxWsSupport) {
+    public MavenJaxWsServicesProvider(Project prj, JAXWSLightSupport jaxWsSupport) {
         this.jaxWsSupport=jaxWsSupport;
         this.prj = prj;
         jaxWsSupport.addPropertyChangeListener(this);
