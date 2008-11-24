@@ -204,6 +204,16 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
     // other methods ...........................................................
 
     void update() {
+        boolean caseSensitiveSearch = false;
+        String searchTxt;
+
+        if (searchText.matches(".*[A-Z].*")) { //NOI18N
+            caseSensitiveSearch = true;
+            searchTxt = searchText;
+        } else {
+            searchTxt = searchText.toLowerCase();
+        }
+
         getDataVector().removeAllElements();
         for (String category : getCategories().get("")) {
             for (Object o : getItems(category)) {
@@ -212,7 +222,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
                     String[] shortcuts = getShortcuts(sca);
                     String displayName = sca.getDisplayName();
 //                    System.out.println("### " + sca.getDisplayName() + " " + searched(displayName.toLowerCase()));
-                    if (searched(displayName.toLowerCase(), searchText)) {
+                    if (searched(caseSensitiveSearch ? displayName : displayName.toLowerCase(), searchTxt)) {
                         if (shortcuts.length == 0)
                             addRow(new Object[]{new ActionHolder(sca, false), new ShortcutCell(), category, ""});
                         else
