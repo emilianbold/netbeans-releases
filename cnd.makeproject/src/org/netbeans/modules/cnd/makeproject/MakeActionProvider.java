@@ -1014,7 +1014,8 @@ public class MakeActionProvider implements ActionProvider {
         ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
         boolean cRequired = conf.hasCFiles(pd);
         boolean cppRequired = conf.hasCPPFiles(pd);
-        boolean fRequired = CppSettings.getDefault().isFortranEnabled() && conf.hasFortranFiles(pd);
+        boolean fRequired = conf.hasFortranFiles(pd);
+        boolean asRequired = conf.hasAssemblerFiles(pd);
         boolean runBTA = false;
 
         if (validated) {
@@ -1063,6 +1064,7 @@ public class MakeActionProvider implements ActionProvider {
         Tool cTool = cs.getTool(Tool.CCompiler);
         Tool cppTool = cs.getTool(Tool.CCCompiler);
         Tool fTool = cs.getTool(Tool.FortranCompiler);
+        Tool asTool = cs.getTool(Tool.Assembler);
         Tool makeTool = cs.getTool(Tool.MakeTool);
 
         // Check for a valid make program
@@ -1095,6 +1097,10 @@ public class MakeActionProvider implements ActionProvider {
             errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
+        if (asRequired && !exists(asTool.getPath(), pi)) {
+            //errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
+            runBTA = true;
+        }
 
         if (conf.getDevelopmentHost().isLocalhost() && Boolean.getBoolean("netbeans.cnd.always_show_bta")) { // NOI18N
             runBTA = true;
@@ -1114,6 +1120,7 @@ public class MakeActionProvider implements ActionProvider {
                 model.setCRequired(cRequired);
                 model.setCppRequired(cppRequired);
                 model.setFortranRequired(fRequired);
+                model.setAsRequired(asRequired);
                 model.setShowRequiredBuildTools(true);
                 model.setShowRequiredDebugTools(false);
                 model.SetEnableRequiredCompilerCB(conf.isMakefileConfiguration());
@@ -1123,6 +1130,7 @@ public class MakeActionProvider implements ActionProvider {
                     conf.getCRequired().setValue(model.isCRequired());
                     conf.getCppRequired().setValue(model.isCppRequired());
                     conf.getFortranRequired().setValue(model.isFortranRequired());
+                    conf.getAssemblerRequired().setValue(model.isAsRequired());
                     conf.getCompilerSet().setValue(name);
                     pd.setModified();
                     pd.save();

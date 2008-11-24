@@ -116,14 +116,15 @@ public class MakeProjectOptions {
      * @Deprecated
      */
     public static void setFortranSupport(boolean fortran) {
-        CppSettings.getDefault().setFortranEnabled(fortran);
+        //CppSettings.getDefault().setFortranEnabled(fortran);
     }
 
     /**
      * @Deprecated
      */
     public static boolean getFortranSupport() {
-        return CppSettings.getDefault().isFortranEnabled();
+        return true;
+        //return CppSettings.getDefault().isFortranEnabled();
     }
     
     public static void setDepencyChecking(boolean val) {
