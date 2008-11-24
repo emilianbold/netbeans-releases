@@ -37,24 +37,52 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.profiler.tests.jfluid;
+package org.netbeans.modules.db.explorer.node;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.api.db.explorer.node.BaseNode;
+import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 
 /**
  *
- * @author tester
+ * @author rob
  */
-public class ProfilerStableTestSuite {
-    public static Test suite() {
-    return NbModuleSuite.create(
-      NbModuleSuite.emptyConfiguration()
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.BasicTest.class)
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.wireio.BasicTest.class)
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.monitor.BasicTest.class)
-    );
-  }
+public class IndexListNode extends BaseNode {
+    private static final String NAME = "Indexes"; // NOI18N
+    private static final String DISPLAYNAME = "Indexes"; // NOI18N
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
+    private static final String FOLDER = "IndexList"; //NOI18N
 
+    /**
+     * Create an instance of IndexListNode.
+     *
+     * @param dataLookup the lookup to use when creating node providers
+     * @return the TableListNode instance
+     */
+    public static IndexListNode create(NodeDataLookup dataLookup) {
+        IndexListNode node = new IndexListNode(dataLookup);
+        node.setup();
+        return node;
+    }
 
+    private IndexListNode(NodeDataLookup lookup) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    }
+
+    protected void initialize() {
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return DISPLAYNAME;
+    }
+
+    @Override
+    public String getIconBase() {
+        return ICONBASE;
+    }
 }

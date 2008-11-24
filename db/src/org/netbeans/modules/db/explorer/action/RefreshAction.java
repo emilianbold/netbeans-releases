@@ -37,24 +37,40 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.profiler.tests.jfluid;
+package org.netbeans.modules.db.explorer.action;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.api.db.explorer.node.BaseNode;
+import org.openide.nodes.Node;
 
 /**
  *
- * @author tester
+ * @author Rob
  */
-public class ProfilerStableTestSuite {
-    public static Test suite() {
-    return NbModuleSuite.create(
-      NbModuleSuite.emptyConfiguration()
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.BasicTest.class)
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.wireio.BasicTest.class)
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.monitor.BasicTest.class)
-    );
-  }
+public class RefreshAction extends BaseAction {
+    @Override
+    public String getName() {
+        return bundle().getString("Refresh"); // NOI18N
+    }
 
+    protected boolean enable(Node[] activatedNodes) {
+        boolean enabled = false;
+
+        if (activatedNodes.length > 0) {
+            enabled = true;
+            for (Node node : activatedNodes) {
+                BaseNode baseNode = node.getLookup().lookup(BaseNode.class);
+                if (baseNode == null || !baseNode.canRefresh()) {
+                    enabled = false;
+                    break;
+                }
+            }
+        }
+
+        return enabled;
+    }
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+    }
 
 }

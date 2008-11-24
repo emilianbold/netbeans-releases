@@ -37,24 +37,52 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.profiler.tests.jfluid;
+package org.netbeans.modules.db.explorer.node;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.api.db.explorer.node.BaseNode;
+import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 
 /**
  *
- * @author tester
+ * @author rob
  */
-public class ProfilerStableTestSuite {
-    public static Test suite() {
-    return NbModuleSuite.create(
-      NbModuleSuite.emptyConfiguration()
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.BasicTest.class)
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.wireio.BasicTest.class)
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.monitor.BasicTest.class)
-    );
-  }
+public class ForeignKeyListNode extends BaseNode {
+    private static final String NAME = "Foreign Keys"; // NOI18N
+    private static final String DISPLAYNAME = "Foreign Keys"; // NOI18N
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
+    private static final String FOLDER = "ForeignKeyList"; //NOI18N
 
+    /**
+     * Create an instance of ForeignKeyListNode.
+     *
+     * @param dataLookup the lookup to use when creating node providers
+     * @return the ForeignKeyListNode instance
+     */
+    public static ForeignKeyListNode create(NodeDataLookup dataLookup) {
+        ForeignKeyListNode node = new ForeignKeyListNode(dataLookup);
+        node.setup();
+        return node;
+    }
 
+    private ForeignKeyListNode(NodeDataLookup lookup) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    }
+
+    protected void initialize() {
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return DISPLAYNAME;
+    }
+
+    @Override
+    public String getIconBase() {
+        return ICONBASE;
+    }
 }

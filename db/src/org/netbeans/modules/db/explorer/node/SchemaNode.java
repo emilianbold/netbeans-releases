@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,87 +31,73 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.sql.Connection;
-import java.sql.SQLException;
 import org.netbeans.api.db.explorer.node.BaseNode;
-import org.netbeans.api.db.explorer.node.NodeProvider;
+import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.openide.util.Lookup;
 
 /**
- * ConnectedNodeprovider serves as a base class for all node providers
- * that work with a database connection.
  *
- * @author Rob Englander
+ * @author rob
  */
-public abstract class ConnectedNodeProvider  extends NodeProvider {
-
-    private final DatabaseConnection connection;
-
-    protected ConnectedNodeProvider(Lookup lookup) {
-        super(lookup);
-        connection = getLookup().lookup(DatabaseConnection.class);
-    }
+public class SchemaNode extends BaseNode {
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/defaultFolder.gif";
+    private static final String FOLDER = "Schema"; //NOI18N
 
     /**
-     * Create a BaseNode instance.
+     * Create an instance of SchemaNode.
      *
-     * @param lookup the lookup to use to create the node
-     * @return the created baseNode
+     * @param dataLookup the lookup to use when creating node providers
+     * @return the SchemaNode instance
      */
-    protected abstract BaseNode createNode(NodeDataLookup lookup);
-    
-    protected void setup() {
-        connection.addPropertyChangeListener(
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals("connected") ||
-                            evt.getPropertyName().equals("failed")) {
-                        updateState();
-                    }
-                }
-            }
-        );
-
-        updateState();
+    public static SchemaNode create(NodeDataLookup dataLookup) {
+        SchemaNode node = new SchemaNode(dataLookup);
+        node.setup();
+        return node;
     }
-    
-    private void updateState() {
-        Connection conn = connection.getConnection();
-        boolean disconnected = true;
 
-        if (conn != null) {
-            try {
-                disconnected = conn.isClosed();
-            } catch (SQLException e) {
+    private DatabaseConnection connection;
+    private Schema schema;
 
-            }
+    private SchemaNode(NodeDataLookup lookup) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    }
+
+    protected void initialize() {
+        // get the connection from the lookup
+        connection = getLookup().lookup(DatabaseConnection.class);
+        schema = getLookup().lookup(Schema.class);
+    }
+
+    @Override
+    public String getName() {
+        return renderName();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return renderName();
+    }
+
+    private String renderName() {
+        String name = schema.getName();
+        if (name == null) {
+            name = schema.getParent().getName();
         }
 
-        if (disconnected) {
-            removeAllNodes();
-        } else {
-            removeAllNodes();
-            NodeDataLookup lookup = new NodeDataLookup();
-            lookup.add(connection);
+        return name;
+    }
 
-            Schema schema = getLookup().lookup(Schema.class);
-            if (schema != null) {
-                lookup.add(schema);
-            }
-            
-            addNode(createNode(lookup));
-        }
+    @Override
+    public String getIconBase() {
+        return ICONBASE;
     }
 }

@@ -37,24 +37,40 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.profiler.tests.jfluid;
+package org.netbeans.modules.db.explorer.node;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.api.db.explorer.node.BaseNode;
+import org.netbeans.api.db.explorer.node.NodeProviderFactory;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author tester
+ * @author rob
  */
-public class ProfilerStableTestSuite {
-    public static Test suite() {
-    return NbModuleSuite.create(
-      NbModuleSuite.emptyConfiguration()
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.BasicTest.class)
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.wireio.BasicTest.class)
-        .addTest(org.netbeans.lib.profiler.tests.jfluid.monitor.BasicTest.class)
-    );
-  }
+public class IndexListNodeProvider extends ConnectedNodeProvider {
 
+    // lazy initialization holder class idiom for static fields is used
+    // for retrieving the factory
+    public static NodeProviderFactory getFactory() {
+        return FactoryHolder.FACTORY;
+    }
 
+    private static class FactoryHolder {
+        static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            public IndexListNodeProvider createInstance(Lookup lookup) {
+                IndexListNodeProvider provider = new IndexListNodeProvider(lookup);
+                provider.setup();
+                return provider;
+            }
+        };
+    }
+
+    private IndexListNodeProvider(Lookup lookup) {
+        super(lookup);
+    }
+
+    @Override
+    protected BaseNode createNode(NodeDataLookup lookup) {
+        return IndexListNode.create(lookup);
+    }
 }
