@@ -82,7 +82,8 @@ public final class FeatureInfo {
         FeatureInfo info = new FeatureInfo(s, delegateLayer);
         final String prefix = "nbproject.";
         final String prefFile = "project.file.";
-        for (String key : p.stringPropertyNames()) {
+        for (Object k : p.keySet()) {
+            String key = (String) k;
             if (key.startsWith(prefix)) {
                 info.nbproject(
                     key.substring(prefix.length()),
