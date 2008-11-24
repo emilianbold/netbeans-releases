@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,28 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.highlight.semantic.actions;
 
-import javax.swing.Action;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider;
+package org.netbeans.modules.db.explorer.node;
+
+import org.netbeans.api.db.explorer.node.BaseNode;
+import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 
 /**
  *
- * @author Sergey Grinev
+ * @author rob
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider.class)
-public class GotoOccurrenceActionsProviderImpl extends CndEditorActionsProvider {
+public class ForeignKeyListNode extends BaseNode {
+    private static final String NAME = "Foreign Keys"; // NOI18N
+    private static final String DISPLAYNAME = "Foreign Keys"; // NOI18N
+    private static final String ICONBASE = "org/netbeans/modules/db/resources/folder.gif";
+    private static final String FOLDER = "ForeignKeyList"; //NOI18N
 
-    @Override
-    public Action[] getActions(String mime) {
-        if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime) ||
-                MIMENames.C_MIME_TYPE.equals(mime)) {
-            return new Action[] { GotoNextOccurrenceAction.getInstance(), GotoPrevOccurrenceAction.getInstance() };
-        } else {
-            return new Action[0];
-        }        
+    /**
+     * Create an instance of ForeignKeyListNode.
+     *
+     * @param dataLookup the lookup to use when creating node providers
+     * @return the ForeignKeyListNode instance
+     */
+    public static ForeignKeyListNode create(NodeDataLookup dataLookup) {
+        ForeignKeyListNode node = new ForeignKeyListNode(dataLookup);
+        node.setup();
+        return node;
     }
 
+    private ForeignKeyListNode(NodeDataLookup lookup) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    }
+
+    protected void initialize() {
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return DISPLAYNAME;
+    }
+
+    @Override
+    public String getIconBase() {
+        return ICONBASE;
+    }
 }

@@ -20,6 +20,9 @@ export ANT_OPTS
 HGMERGE=merge
 export HGMERGE
 
+hg up -C
+hg --config extensions.purge= clean --all
+
 STATUS=$TMP/$$-status
 curl $pop_job/buildStatus -D "$STATUS"
 cat "$STATUS"
@@ -33,9 +36,27 @@ else
 fi
 rm "$STATUS"
 
+testresult() {
+    FILE="$1/TEST-hg.$2.xml"
+    echo '<?xml version="1.0" encoding="UTF-8" ?>' >$FILE
+    echo '<testsuite errors="0" failures="0" name="hg.'$2'" tests="1" time="1">' >>$FILE
+    echo '  <properties>' >>$FILE
+    echo '  </properties>' >>$FILE
+    echo '  <testcase classname="hg.'$2'" name="hg.'$2'" time="1" />' >>$FILE
+    echo '  <system-out>' >>$FILE
+    echo "$3" >>$FILE
+    echo '</system-out>' >>$FILE
+    echo '  <system-err></system-err>' >>$FILE
+    echo '</testsuite>' >>$FILE
+}
+
+TESTDIR="nbbuild/build/test/results/"
+mkdir -p $TESTDIR
+
 echo Getting Build Info
 HGINFO=`curl $pop_job/lastStableBuild/artifact/$pop_build_info`
 echo Build info: $HGINFO
+testresult "$TESTDIR" "check.build.stable" "$HGINFO"
 [ -n "$HGINFO" ] || exit 1
 
 HGID=`echo "$HGINFO" | grep "Hg ID"`
@@ -57,11 +78,11 @@ else
    fi
    hg ci -u "$push_username"@netbeans.org -m 'Automated merge' || exit 8
 fi
-hg out $push_url
+HGOUT=`hg out $push_url`
+testresult "$TESTDIR" "outgoing.changes" "$HGOUT"
 
 OUT_COUNT=`hg out --template 'change: {node|short}\n' $push_url | grep '^change: ' | wc -l`
-
-if [ "$OUT_COUNT" > 0 ]; then
+if [ "$OUT_COUNT" -gt 0 ]; then
     echo "Let the build start. There is $OUT_COUNT outgoing changes."
 else
     echo "No outgoing changes. No reason to do build."
@@ -81,7 +102,6 @@ testmodule() {
     fi
 }
 
-ant clean $ANT_PARAM || exit 2
 ant build $ANT_PARAM || exit 2
 ant commit-validation $ANT_PARAM || exit 3
 ant build-test-dist $ANT_PARAM || exit 4

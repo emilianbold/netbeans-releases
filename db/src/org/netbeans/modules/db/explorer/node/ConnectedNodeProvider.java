@@ -46,9 +46,12 @@ import java.sql.SQLException;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.util.Lookup;
 
 /**
+ * ConnectedNodeprovider serves as a base class for all node providers
+ * that work with a database connection.
  *
  * @author Rob Englander
  */
@@ -60,14 +63,23 @@ public abstract class ConnectedNodeProvider  extends NodeProvider {
         super(lookup);
         connection = getLookup().lookup(DatabaseConnection.class);
     }
-    
+
+    /**
+     * Create a BaseNode instance.
+     *
+     * @param lookup the lookup to use to create the node
+     * @return the created baseNode
+     */
     protected abstract BaseNode createNode(NodeDataLookup lookup);
     
     protected void setup() {
         connection.addPropertyChangeListener(
             new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    updateState();
+                    if (evt.getPropertyName().equals("connected") ||
+                            evt.getPropertyName().equals("failed")) {
+                        updateState();
+                    }
                 }
             }
         );
@@ -90,8 +102,15 @@ public abstract class ConnectedNodeProvider  extends NodeProvider {
         if (disconnected) {
             removeAllNodes();
         } else {
+            removeAllNodes();
             NodeDataLookup lookup = new NodeDataLookup();
             lookup.add(connection);
+
+            Schema schema = getLookup().lookup(Schema.class);
+            if (schema != null) {
+                lookup.add(schema);
+            }
+            
             addNode(createNode(lookup));
         }
     }
