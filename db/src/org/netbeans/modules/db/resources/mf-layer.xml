@@ -158,6 +158,11 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Runtimes"/>
     </folder>
+    <folder name="MetaDataListeners">
+        <file name="org-netbeans-modules-db.api.metadata.DBConnMetadataModelManager$Listener.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.metadata.MetadataModelManager$Listener.create"/>
+        </file>
+    </folder>
 
     <folder name="Services">
         <file name="org-netbeans-modules-db-explorer-DatabaseOption.settings" url="DatabaseOption.settings">

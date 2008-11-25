@@ -79,6 +79,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.db</friend>
                 <friend>org.netbeans.modules.db.sql.editor</friend>
                 <friend>org.netbeans.modules.dbapi</friend>
                 <package>org.netbeans.modules.db.metadata.model.api</package>
