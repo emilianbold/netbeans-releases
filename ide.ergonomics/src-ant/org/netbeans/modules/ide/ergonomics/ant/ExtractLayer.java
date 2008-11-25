@@ -269,7 +269,7 @@ public final class ExtractLayer extends Task {
                                 urlresource = urlresource.substring(1);
                             }
                         }
-                        urlresource = urlresource.replaceFirst("\\.[^\\.]+$*", ".*");
+                        urlresource = urlresource.replaceFirst("(\\.[^\\.])+$*", ".*$1");
 
                         copy.add(urlresource);
                     }

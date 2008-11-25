@@ -43,6 +43,7 @@ import java.util.Enumeration;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 
@@ -74,8 +75,19 @@ public class VerifyProjectWizardsTest extends NbTestCase {
         while (en.hasMoreElements()) {
             FileObject fo = en.nextElement();
             if (Boolean.TRUE.equals(fo.getAttribute("template"))) {
+                boolean ok;
+
                 sb.append(fo);
-                if (fo.getAttribute("instantiatingIterator") == null) {
+                Object value = fo.getAttribute("instantiatingIterator");
+                if (value == null) {
+                    ok = false;
+                } else if (value instanceof WizardDescriptor.InstantiatingIterator) {
+                    ok = true;
+                } else {
+                    ok = false;
+                }
+
+                if (!ok) {
                     error++;
                     sb.append(" - failure\n");
                     Enumeration<String> names = fo.getAttributes();
