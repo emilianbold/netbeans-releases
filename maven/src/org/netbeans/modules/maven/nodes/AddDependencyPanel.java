@@ -209,7 +209,12 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     }
 
     public String getScope() {
-        return comScope.getSelectedItem().toString();
+        String scope = comScope.getSelectedItem().toString();
+        if ("compile".equals(scope)) { //NOI18N
+            //compile is the default scope, no need to explicitly define.
+            scope = null;
+        }
+        return scope;
     }
 
     private void checkValidState() {
