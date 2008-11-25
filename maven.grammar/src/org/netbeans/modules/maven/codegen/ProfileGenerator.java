@@ -111,8 +111,8 @@ public class ProfileGenerator implements CodeGenerator {
             Profile prof = model.getProject().findProfileById(id);
             boolean pomPackaging = "pom".equals(model.getProject().getPackaging()); //NOI18N
             if (prof == null) {
-                prof = model.getFactory().createProfile();
                 model.startTransaction();
+                prof = model.getFactory().createProfile();
                 prof.setId(id);
                 if (panel.generateDependencies()) {
                     Dependency dep = model.getFactory().createDependency();

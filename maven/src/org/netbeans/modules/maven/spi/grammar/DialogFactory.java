@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,25 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.model.pom;
+
+package org.netbeans.modules.maven.spi.grammar;
+
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.nodes.AddDependencyPanel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
- *
+ * A factory class that creates dialogs to add/edit stuff,
+ * eg. dependency, primarily for use by the maven.grammar module
+ * in code generators
  * @author mkleint
  */
-public interface DependencyManagement extends POMComponent, DependencyContainer {
+public final class DialogFactory {
 
-//  <!--xs:complexType name="DependencyManagement">
-//    <xs:all>
-//      <xs:element name="dependencies" minOccurs="0">
-//            <xs:element name="dependency" minOccurs="0" maxOccurs="unbounded" type="Dependency"/>
-//    </xs:all>
-//  </xs:complexType-->
-    
-
+    /**
+     * 
+     * @param prj
+     * @return null, if dialog was cancelled, or string array
+     * [0] - groupId
+     * [1] - artifactId
+     * [2] - version
+     * [3] - scope
+     * [4] - type
+     * [5] - classifier
+     *
+     *
+     */
+    public static String[] showDependencyDialog(Project prj) {
+            AddDependencyPanel pnl = new AddDependencyPanel();
+            DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(DialogFactory.class, "TIT_Add_Library"));
+            dd.setClosingOptions(new Object[] {
+                pnl.getOkButton(),
+                DialogDescriptor.CANCEL_OPTION
+            });
+            dd.setOptions(new Object[] {
+                pnl.getOkButton(),
+                DialogDescriptor.CANCEL_OPTION
+            });
+            Object ret = DialogDisplayer.getDefault().notify(dd);
+            if (pnl.getOkButton() == ret) {
+                return new String[] {
+                    pnl.getGroupId(),
+                    pnl.getArtifactId(),
+                    pnl.getVersion(),
+                    pnl.getScope(),
+                    null,
+                    null
+                };
+            }
+            return null;
+    }
 }

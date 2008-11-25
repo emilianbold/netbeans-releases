@@ -44,7 +44,7 @@ import java.util.*;
  *
  * @author mkleint
  */
-public interface Profile extends IdPOMComponent {
+public interface Profile extends IdPOMComponent, DependencyContainer {
 
 //  <!--xs:complexType name="Profile">
 //    <xs:all>
@@ -86,11 +86,6 @@ public interface Profile extends IdPOMComponent {
     public List<Repository> getPluginRepositories();
     public void addPluginRepository(Repository pluginRepository);
     public void removePluginRepository(Repository pluginRepository);
-
-    public List<Dependency> getDependencies();
-    public void addDependency(Dependency dependency);
-    public void removeDependency(Dependency dependency);
-    Dependency findDependencyById(String groupId, String artifactId, String classifier);
 
     public Reporting getReporting();
     public void setReporting(Reporting reporting);
