@@ -12,5 +12,5 @@ enterprise5/modules/ext/rest/jdom-1.0.jar mobility8/modules/ext/jdom-1.0.jar
 
 # Struts framework needs to bundle the official Struts release together
 # for well maintained and assure the compatibility issue. 
-enterprise5/modules/ext/struts/oro-2.0.8.jar
-enterprise5/modules/ext/struts/bsf-2.3.0.jar
+enterprise5/modules/ext/struts/oro-2.0.8.jar ide10/modules/ext/jakarta-oro-2.0.8.jar
+enterprise5/modules/ext/struts/bsf-2.3.0.jar ruby2/jruby-1.1.4/lib/bsf.jar
