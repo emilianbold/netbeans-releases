@@ -40,16 +40,20 @@
  */
 package org.netbeans.modules.maven.codegen;
 
-import java.awt.Dialog;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.maven.model.pom.Dependency;
+import org.netbeans.modules.maven.model.pom.DependencyContainer;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.spi.grammar.DialogFactory;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.Exceptions;
+import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -64,18 +68,20 @@ public class DependencyGenerator implements CodeGenerator {
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> toRet = new ArrayList<CodeGenerator>();
             POMModel model = context.lookup(POMModel.class);
+            JTextComponent component = context.lookup(JTextComponent.class);
             if (model != null) {
-                toRet.add(new DependencyGenerator(model));
+                toRet.add(new DependencyGenerator(model, component));
             }
             return toRet;
         }
     }
 
     private POMModel model;
+    private JTextComponent component;
     
-    /** Creates a new instance of DependencyGenerator */
-    private DependencyGenerator(POMModel model) {
+    private DependencyGenerator(POMModel model, JTextComponent component) {
         this.model = model;
+        this.component = component;
     }
 
     public String getDisplayName() {
@@ -83,6 +89,55 @@ public class DependencyGenerator implements CodeGenerator {
     }
 
     public void invoke() {
-        System.out.println("TODO");
+        if (!model.getState().equals(State.VALID)) {
+            //TODO report somehow, status line?
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DependencyGenerator.class, "MSG_Cannot_Parse"));
+            return;
+        }
+
+        FileObject fo = model.getModelSource().getLookup().lookup(FileObject.class);
+        assert fo != null;
+        org.netbeans.api.project.Project prj = FileOwnerQuery.getOwner(fo);
+        assert prj != null;
+        String[] ret = DialogFactory.showDependencyDialog(prj);
+        if (ret != null) {
+            String groupId = ret[0];
+            String artifactId = ret[1];
+            String version = ret[2];
+            String scope = ret[3];
+            String type = ret[4];
+            String classifier = ret[5];
+            try {
+                model.startTransaction();
+                int pos = component.getCaretPosition();
+                DependencyContainer container = findContainer(pos, model);
+                Dependency dep = container.findDependencyById(groupId, artifactId, classifier);
+                if (dep == null) {
+                    dep = model.getFactory().createDependency();
+                    dep.setGroupId(groupId);
+                    dep.setArtifactId(artifactId);
+                    dep.setVersion(version);
+                    dep.setScope(scope);
+                    dep.setType(type);
+                    dep.setClassifier(classifier);
+                    container.addDependency(dep);
+                }
+                pos = dep.getModel().getAccess().findPosition(dep.getPeer());
+                component.setCaretPosition(pos);
+            } finally {
+                model.endTransaction();
+            }
+        }
+    }
+
+    private DependencyContainer findContainer(int pos, POMModel model) {
+        Component dc = model.findComponent(pos);
+        while (dc != null) {
+            if (dc instanceof DependencyContainer) {
+                return (DependencyContainer) dc;
+            }
+            dc = dc.getParent();
+        }
+        return model.getProject();
     }
 }
