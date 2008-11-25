@@ -53,6 +53,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -102,7 +103,7 @@ public class JsOccurrenceFinder extends OccurrencesFinder<JsParseResult> {
         this.caretPosition = position;
     }
     
-    public void run(JsParseResult info) {
+    public void run(JsParseResult info, SchedulerEvent event) {
         resume();
 
         if (isCancelled()) {

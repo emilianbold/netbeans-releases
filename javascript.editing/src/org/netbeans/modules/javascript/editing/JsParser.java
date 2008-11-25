@@ -56,7 +56,6 @@ import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.util.Exceptions;
 import org.mozilla.nb.javascript.CompilerEnvirons;
 import org.mozilla.nb.javascript.ScriptOrFnNode;
@@ -71,6 +70,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
 
 
@@ -94,14 +94,14 @@ public class JsParser extends Parser {
     // o.n.m.p.spi.Parser implementation
     // ------------------------------------------------------------------------
 
-    public @Override void parse(Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+    public @Override void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         Context context = new Context(snapshot, event);
         lastResult = parseBuffer(context, Sanitize.NONE);
     }
 
-    public @Override Result getResult(Task task, SchedulerEvent event) throws ParseException {
+    public @Override Result getResult(Task task) throws ParseException {
         assert lastResult != null : "getResult() called prior parse()"; //NOI18N
-        return createParseResult(lastResult.getSnapshot(), event, lastResult.getRootNode());
+        return lastResult;
     }
 
     public @Override void cancel() {
@@ -542,7 +542,7 @@ public class JsParser extends Parser {
             //AstRootElement rootElement = new AstRootElement(context.file.getFileObject(), root, result);
 
             AstNodeAdapter ast = new AstNodeAdapter(null, previousRoot);
-            JsParseResult r = createParseResult(context.snapshot, context.event, previousRoot);
+            JsParseResult r = createParseResult(context.snapshot, previousRoot);
 
             JsParseResult.IncrementalParse incrementalInfo =
                     new JsParseResult.IncrementalParse(oldFunction, newFunction,
@@ -649,7 +649,7 @@ public class JsParser extends Parser {
 
         switch (sanitizing) {
         case NEVER:
-            return createParseResult(context.snapshot, context.event, null);
+            return createParseResult(context.snapshot, null);
 
         case NONE:
 
@@ -699,7 +699,7 @@ public class JsParser extends Parser {
         case MISSING_END:
         default:
             // We're out of tricks - just return the failed parse result
-            return createParseResult(context.snapshot, context.event, null);
+            return createParseResult(context.snapshot, null);
         }
     }
 
@@ -818,7 +818,7 @@ public class JsParser extends Parser {
             //AstRootElement rootElement = new AstRootElement(context.file.getFileObject(), root, result);
 
             AstNodeAdapter ast = new AstNodeAdapter(null, root);
-            JsParseResult r = createParseResult(context.snapshot, context.event, root);
+            JsParseResult r = createParseResult(context.snapshot, root);
             r.setSanitized(context.sanitized, context.sanitizedRange, context.sanitizedContents);
             r.setSource(source);
             return r;
@@ -898,11 +898,11 @@ public class JsParser extends Parser {
         }
     }
     
-    private JsParseResult createParseResult(Snapshot file, SchedulerEvent event, Node rootNode) {
+    private JsParseResult createParseResult(Snapshot file, Node rootNode) {
         if (rootNode != null) {
-            return new JsParseResult(this, file, event, rootNode);
+            return new JsParseResult(this, file, rootNode);
         } else {
-            return new JsParseResult(this, file, event, null);
+            return new JsParseResult(this, file, null);
         }
     }
     
@@ -1025,7 +1025,7 @@ public class JsParser extends Parser {
     /** Parsing context */
     public static class Context {
         private final Snapshot snapshot;
-        private final SchedulerEvent event;
+        private final SourceModificationEvent event;
         private /*final*/ String source;
         private /*final*/ int caretOffset;
         
@@ -1037,7 +1037,7 @@ public class JsParser extends Parser {
         private String sanitizedContents;
         private Sanitize sanitized = Sanitize.NONE;
         
-        public Context(Snapshot snapshot, SchedulerEvent event) {
+        public Context(Snapshot snapshot, SourceModificationEvent event) {
             this.snapshot = snapshot;
             this.event = event;
             this.source = asString(snapshot.getText());

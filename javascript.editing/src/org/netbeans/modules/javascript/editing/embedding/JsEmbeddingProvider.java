@@ -57,7 +57,6 @@ import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
-import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 
@@ -85,11 +84,6 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     @Override
     public int getPriority() {
         return Integer.MAX_VALUE;
-    }
-
-    @Override
-    public Class<? extends Scheduler> getSchedulerClass() {
-        return null;
     }
 
     @Override

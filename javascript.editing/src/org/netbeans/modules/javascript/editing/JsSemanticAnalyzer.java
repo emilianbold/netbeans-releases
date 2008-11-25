@@ -53,6 +53,7 @@ import org.netbeans.modules.javascript.editing.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
  * Semantically analyze a given JavaScript buffer
@@ -82,7 +83,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer {
         cancelled = true;
     }
 
-    public @Override void run(Result result) {
+    public @Override void run(Result result, SchedulerEvent event) {
         resume();
 
         if (isCancelled()) {
