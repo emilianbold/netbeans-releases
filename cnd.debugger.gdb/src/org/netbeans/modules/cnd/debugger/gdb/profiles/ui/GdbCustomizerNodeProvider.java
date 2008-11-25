@@ -44,11 +44,14 @@ package org.netbeans.modules.cnd.debugger.gdb.profiles.ui;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Sheet;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
+import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
+import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandlerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.PrioritizedCustomizerNode;
 import org.openide.util.HelpCtx;
 
@@ -66,7 +69,7 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
 	return customizerNode;
     }
 
-    static class GdbCustomizerNode extends CustomizerNode implements PrioritizedCustomizerNode {
+    static class GdbCustomizerNode extends CustomizerNode implements PrioritizedCustomizerNode, CustomProjectActionHandlerProvider {
 
         public GdbCustomizerNode(String name, String displayName) {
 	    super(name, displayName, null);
@@ -86,6 +89,10 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
 
         public int getPriority() {
             return GDB_PRIORITY;
+        }
+
+        public CustomProjectActionHandler factoryCreate() {
+            return new GdbActionHandler();
         }
     }
 }

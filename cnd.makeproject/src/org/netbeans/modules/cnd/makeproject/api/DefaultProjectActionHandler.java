@@ -128,8 +128,6 @@ public class DefaultProjectActionHandler implements ActionListener {
         // Then try DebuggerChooserConfiguriation
         if (conf != null) {
             DebuggerChooserConfiguration chooser = conf.getDebuggerChooserConfiguration();
-            String ahname = chooser.getName();
-            System.err.println("DPAH: Debugger name is " + ahname);
             CustomizerNode node = chooser.getNode();
             if (node instanceof CustomProjectActionHandlerProvider) {
                 return (CustomProjectActionHandlerProvider) node;

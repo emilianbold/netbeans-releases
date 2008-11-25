@@ -130,6 +130,9 @@ public class GdbProfile implements ConfigurationAuxObject {
     }
     
     public String getGdbPath(MakeConfiguration conf, boolean canAskUser) {
+        if (getClass().getName().contains("gd" + "b2")) {
+            return "/usr/local/bin/gd" + "b2"; // DEBUG tool for debugger co-existance development
+        }
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         CompilerSet cs;
         String csname;
