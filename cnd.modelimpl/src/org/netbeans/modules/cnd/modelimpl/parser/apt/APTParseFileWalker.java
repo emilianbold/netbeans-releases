@@ -151,10 +151,10 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     private MacroImpl createMacro(APTDefine define) {
         
         List<String> params = null;
-        Collection<Token> paramTokens = define.getParams();
+        Collection<APTToken> paramTokens = define.getParams();
         if( paramTokens != null ) {
             params = new ArrayList<String>();
-            for (Token elem : paramTokens) {
+            for (APTToken elem : paramTokens) {
                 if( APTUtils.isID(elem) ) {
                     params.add(elem.getText());
                 }
