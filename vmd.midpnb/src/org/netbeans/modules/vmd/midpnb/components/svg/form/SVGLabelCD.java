@@ -42,7 +42,6 @@ package org.netbeans.modules.vmd.midpnb.components.svg.form;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
-import org.netbeans.modules.vmd.api.codegen.CodeSupport;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
