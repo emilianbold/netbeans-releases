@@ -534,6 +534,9 @@ public final class Source {
 
         @Override
         public SchedulerEvent getSchedulerEvent (Source source, Class<? extends Scheduler> schedulerType) {
+            if (schedulerType == null) {
+                return null;
+            }
             return source.schedulerEvents.get (schedulerType);
         }
 
