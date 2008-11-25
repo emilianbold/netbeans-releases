@@ -49,7 +49,6 @@ import org.openide.util.Utilities;
  */
 public final class PhpInterpreter {
     private static final Logger LOGGER = Logger.getLogger(PhpInterpreter.class.getName());
-    private static final String NO_INTERPRETER = ""; // NOI18N
     private static final String[] NO_PARAMETERS = new String[0];
 
     private final String interpreter;
