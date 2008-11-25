@@ -928,11 +928,11 @@ public class MakeActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_RUN)) {
             return !conf.isLibraryConfiguration();
         } else if (command.equals(COMMAND_DEBUG)) {
-            return hasDebugger(conf) && !conf.isLibraryConfiguration();
+            return conf.hasDebugger() && !conf.isLibraryConfiguration();
         } else if (command.equals(COMMAND_DEBUG_STEP_INTO)) {
-            return hasDebugger(conf) && !conf.isLibraryConfiguration();
+            return conf.hasDebugger() && !conf.isLibraryConfiguration();
         } else if (command.equals(COMMAND_DEBUG_LOAD_ONLY)) {
-            return hasDebugger(conf) && !conf.isLibraryConfiguration();
+            return conf.hasDebugger() && !conf.isLibraryConfiguration();
         } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
             boolean enabled = true;
             Iterator<? extends Node> it = context.lookupAll(Node.class).iterator();
@@ -985,10 +985,6 @@ public class MakeActionProvider implements ActionProvider {
             }
         }
         return item;
-    }
-
-    private static boolean hasDebugger(MakeConfiguration conf) {
-        return DefaultProjectActionHandler.getInstance().getCustomDebugActionHandlerProvider(conf) != null;
     }
 
     private static String getMakeCommand(MakeConfigurationDescriptor pd, MakeConfiguration conf) {

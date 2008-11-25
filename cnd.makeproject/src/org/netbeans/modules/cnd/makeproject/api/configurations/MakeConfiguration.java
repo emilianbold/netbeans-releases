@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
@@ -719,6 +720,10 @@ public class MakeConfiguration extends Configuration {
             output = FilePathAdaptor.normalize(output);
         }
         return expandMacros(output);
+    }
+
+    public boolean hasDebugger() {
+        return DefaultProjectActionHandler.getInstance().getCustomDebugActionHandlerProvider(this) != null;
     }
 
     public String expandMacros(String val) {
