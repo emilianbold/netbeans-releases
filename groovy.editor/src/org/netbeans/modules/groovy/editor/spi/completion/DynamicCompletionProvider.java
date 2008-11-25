@@ -37,48 +37,25 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion;
+package org.netbeans.modules.groovy.editor.spi.completion;
 
-import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Map;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionType;
+import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
+import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author schmidtm
+ * @author Petr Hejl
  */
-public class ConstructorsTest extends GroovyTestBase {
+public abstract class DynamicCompletionProvider {
 
-    String TEST_BASE = "testfiles/completion/constructors/";
+    // FIXME access levels, context
+    public abstract Map<MethodSignature, String> getMethods(FileObject source, String className, CompletionType completionType);
 
-    public ConstructorsTest(String testName) {
-        super(testName);
-        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
-    }
+    // FIXME access levels, context
+    public abstract Map<FieldSignature, String> getFields(FileObject source, String className, CompletionType completionType);
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
-    }
-
-    // testing proper creation of constructor-call proposals
-
-    //     * groovy.lang.*
-    //     * groovy.util.*
-
-    public void testConstructors1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors1.groovy", "StringBuffer sb = new StringBuffer^", false);
-    }
-
-    public void testConstructors2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors2.groovy", "StringBuffer sb = new stringbuffer^", false);
-    }
-
-    public void testConstructors3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors3.groovy", "FileOutputStream fos = new fileoutputstr^", false);
-    }
+    // FIXME type analyzer method
 }
