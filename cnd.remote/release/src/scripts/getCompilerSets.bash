@@ -38,7 +38,7 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-VERSION=0.9
+VERSION=0.95
 
 # Prepend /usr/bin and /bin so we're ensured that standard Unix commands
 # don't get replaced by a non-standard version
@@ -140,6 +140,11 @@ do
 	then
 	    line="$line;f90"
 	fi
+	as=$(type -p as)
+	if [ -n "$as" ]
+	then
+		line="$line;as=$as"
+	fi
 	if [ -x "$f/dmake" ]
 	then
 	    line="$line;dmake"
@@ -167,6 +172,13 @@ do
 	elif [ -x "$f/g77" ]
 	then
 	    line="$line;g77"
+	fi
+	if [ -x "$f/gas" ]
+	then
+		line="$line;gas"
+	elif [ -x "$f/as" ]
+	then
+		line="$line;as"
 	fi
 	if [ -x "$f/gdb" ]
 	then
