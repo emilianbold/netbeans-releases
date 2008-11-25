@@ -38,22 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.uid;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.api.model.CsmBuiltIn;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -76,20 +71,20 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
  * @author Vladimir Voskresensky
  */
 public class UIDUtilities {
-    
+
     /** Creates a new instance of UIDUtilities */
     private UIDUtilities() {
     }
- 
+
     @SuppressWarnings("unchecked")
     public static CsmUID<CsmProject> createProjectUID(ProjectBase prj) {
         return UIDManager.instance().getSharedUID(new ProjectUID(prj));
-    } 
-    
+    }
+
     @SuppressWarnings("unchecked")
     public static CsmUID<CsmFile> createFileUID(FileImpl file) {
         return UIDManager.instance().getSharedUID(new FileUID(file));
-    } 
+    }
 
     @SuppressWarnings("unchecked")
     public static CsmUID<CsmNamespace> createNamespaceUID(CsmNamespace ns) {
@@ -98,14 +93,14 @@ public class UIDUtilities {
 
     @SuppressWarnings("unchecked")
     public static <T extends CsmOffsetableDeclaration> CsmUID<T> createDeclarationUID(T declaration) {
-        assert (! (declaration instanceof CsmBuiltIn)) : "built-in have own UIDs";
+        assert (!(declaration instanceof CsmBuiltIn)) : "built-in have own UIDs";
         CsmUID<T> uid;
         //if (!ProjectBase.canRegisterDeclaration(declaration)) {
         if (!namedDeclaration(declaration)) {
-            uid = handleUnnamedDeclaration((CsmOffsetableDeclaration)declaration);
+            uid = handleUnnamedDeclaration((CsmOffsetableDeclaration) declaration);
         } else {
             if (declaration instanceof CsmTypedef) {
-                uid = new TypedefUID((CsmTypedef)declaration);
+                uid = new TypedefUID((CsmTypedef) declaration);
             } else if (declaration instanceof CsmClassifier) {
                 uid = new ClassifierUID(declaration);
             } else {
@@ -114,41 +109,41 @@ public class UIDUtilities {
         }
         return UIDManager.instance().getSharedUID(uid);
     }
-    
-    private static <T extends CsmOffsetableDeclaration> boolean namedDeclaration(T declaration){
+
+    private static <T extends CsmOffsetableDeclaration> boolean namedDeclaration(T declaration) {
         assert declaration != null;
         assert declaration.getName() != null;
         return declaration.getName().length() > 0;
     }
-    
+
     @SuppressWarnings("unchecked")
     public static CsmUID<CsmMacro> createMacroUID(CsmMacro macro) {
         return UIDManager.instance().getSharedUID(new MacroUID(macro));
-    }    
+    }
 
     @SuppressWarnings("unchecked")
     public static CsmUID<CsmInclude> createIncludeUID(CsmInclude incl) {
         return UIDManager.instance().getSharedUID(new IncludeUID(incl));
-    }    
+    }
+
     @SuppressWarnings("unchecked")
-    
     public static CsmUID<CsmClass> createUnresolvedClassUID(String name, CsmProject project) {
-	return UIDManager.instance().getSharedUID(new UnresolvedClassUID(name, project));
+        return UIDManager.instance().getSharedUID(new UnresolvedClassUID(name, project));
     }
 
     @SuppressWarnings("unchecked")
     public static CsmUID<CsmFile> createUnresolvedFileUID(CsmProject project) {
-	return UIDManager.instance().getSharedUID(new UnresolvedFileUID(project));
+        return UIDManager.instance().getSharedUID(new UnresolvedFileUID(project));
     }
 
     @SuppressWarnings("unchecked")
     public static CsmUID<CsmNamespace> createUnresolvedNamespaceUID(CsmProject project) {
-	return UIDManager.instance().getSharedUID(new UnresolvedNamespaceUID(project));
+        return UIDManager.instance().getSharedUID(new UnresolvedNamespaceUID(project));
     }
 
-    public static CsmDeclaration.Kind getKind(CsmUID<CsmOffsetableDeclaration> uid){
+    public static CsmDeclaration.Kind getKind(CsmUID<CsmOffsetableDeclaration> uid) {
         if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID)uid).getKey();
+            Key key = ((KeyBasedUID) uid).getKey();
             return KeyUtilities.getKeyKind(key);
         }
         return null;
@@ -156,39 +151,39 @@ public class UIDUtilities {
 
     public static CharSequence getFileName(CsmUID<CsmFile> uid) {
         if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID)uid).getKey();
-            return KeyUtilities.getKeyName(key);
-        }
-        return null;
-    }
-    
-    public static CharSequence getProjectName(CsmUID<CsmProject> uid) {
-        if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID)uid).getKey();
-            return KeyUtilities.getKeyName(key);
-        }
-        return null;
-    }
-    
-    public static <T extends CsmOffsetableDeclaration> CharSequence getName(CsmUID<T> uid){
-        if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID)uid).getKey();
+            Key key = ((KeyBasedUID) uid).getKey();
             return KeyUtilities.getKeyName(key);
         }
         return null;
     }
 
-    public static <T extends CsmOffsetableDeclaration> int getStartOffset(CsmUID<T> uid){
+    public static CharSequence getProjectName(CsmUID<CsmProject> uid) {
         if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID)uid).getKey();
+            Key key = ((KeyBasedUID) uid).getKey();
+            return KeyUtilities.getKeyName(key);
+        }
+        return null;
+    }
+
+    public static <T extends CsmOffsetableDeclaration> CharSequence getName(CsmUID<T> uid) {
+        if (uid instanceof KeyBasedUID) {
+            Key key = ((KeyBasedUID) uid).getKey();
+            return KeyUtilities.getKeyName(key);
+        }
+        return null;
+    }
+
+    public static <T extends CsmOffsetableDeclaration> int getStartOffset(CsmUID<T> uid) {
+        if (uid instanceof KeyBasedUID) {
+            Key key = ((KeyBasedUID) uid).getKey();
             return KeyUtilities.getKeyStartOffset(key);
         }
         return -1;
     }
 
-    public static <T extends CsmOffsetableDeclaration> int getEndOffset(CsmUID<T> uid){
+    public static <T extends CsmOffsetableDeclaration> int getEndOffset(CsmUID<T> uid) {
         if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID)uid).getKey();
+            Key key = ((KeyBasedUID) uid).getKey();
             return KeyUtilities.getKeyEndOffset(key);
         }
         return -1;
@@ -201,7 +196,6 @@ public class UIDUtilities {
 //            }
 //        });
 //    }
-    
     /**
      * Compares UIDs of the two declarationds within the same file
      * @return a negative integer, zero, or a positive integer as the
@@ -209,7 +203,7 @@ public class UIDUtilities {
      *         than the second.
      */
     public static <T extends CsmOffsetableDeclaration> int compareWithinFile(CsmUID<T> d1, CsmUID<T> d2) {
-        
+
         // by start offset
         int offset1 = getStartOffset(d1);
         int offset2 = getStartOffset(d2);
@@ -226,15 +220,17 @@ public class UIDUtilities {
         CharSequence name1 = getName(d1);
         CharSequence name2 = getName(d1);
         if (name1 instanceof Comparable) {
-            return ((Comparable) name1).compareTo(name2);
+            @SuppressWarnings("unchecked")
+            Comparable<CharSequence> o1 = (Comparable<CharSequence>) name1;
+            return o1.compareTo(name2);
         }
-        if (name1 != null ) {
-            return  (name2 == null) ? 1 : 0;
+        if (name1 != null) {
+            return (name2 == null) ? 1 : 0;
         } else { // name1 == null
-            return  (name2 == null) ? 0 : -1;
+            return (name2 == null) ? 0 : -1;
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     private static CsmUID handleUnnamedDeclaration(CsmOffsetableDeclaration decl) {
         if (TraceFlags.TRACE_UNNAMED_DECLARATIONS) {
@@ -247,63 +243,66 @@ public class UIDUtilities {
             return new UnnamedOffsetableDeclarationUID(decl, UnnamedID.incrementAndGet());
         }
     }
-    
     private static AtomicInteger UnnamedID = new AtomicInteger(0);
     //////////////////////////////////////////////////////////////////////////
     // impl details
-    
+
     /**
      * UID for CsmProject
      */
     /* package */ static final class ProjectUID extends KeyBasedUID<CsmProject> {
+
         public ProjectUID(ProjectBase project) {
             super(KeyUtilities.createProjectKey(project));
         }
-        
-        /* package */ ProjectUID (DataInput aStream) throws IOException {
+
+        /* package */ ProjectUID(DataInput aStream) throws IOException {
             super(aStream);
         }
-    }    
-  
+    }
+
     /**
      * UID for CsmNamespace
      */
     /* package */ static final class NamespaceUID extends KeyBasedUID<CsmNamespace> {
+
         public NamespaceUID(CsmNamespace ns) {
             super(KeyUtilities.createNamespaceKey(ns));
         }
-        
-        /* package */ NamespaceUID (DataInput aStream) throws IOException {
+
+        /* package */ NamespaceUID(DataInput aStream) throws IOException {
             super(aStream);
         }
-    }    
-    
+    }
+
     /**
      * UID for CsmFile
      */
     /* package */ static final class FileUID extends KeyBasedUID<CsmFile> {
+
         public FileUID(FileImpl file) {
             super(KeyUtilities.createFileKey(file));
         }
-        
-        /* package */ FileUID (DataInput aStream) throws IOException {
-             super(aStream);
+
+        /* package */ FileUID(DataInput aStream) throws IOException {
+            super(aStream);
         }
     }
-    
+
     /**
      * base UID for CsmDeclaration
      */
     private static abstract class OffsetableDeclarationUIDBase<T extends CsmOffsetableDeclaration> extends KeyBasedUID<T> {
+
         public OffsetableDeclarationUIDBase(T declaration) {
-            this(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase)declaration));       
+            this(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase) declaration));
         }
-        
+
         protected OffsetableDeclarationUIDBase(Key key) {
             super(key);
         }
-        
-        /* package */ OffsetableDeclarationUIDBase (DataInput aStream) throws IOException {
+
+        /* package */ OffsetableDeclarationUIDBase(DataInput aStream) throws IOException {
             super(aStream);
         }
 
@@ -312,16 +311,17 @@ public class UIDUtilities {
             String retValue = getToStringPrefix() + ":" + super.toString(); // NOI18N
             return retValue;
         }
-        
+
         protected String getToStringPrefix() {
             return "UID for OffsDecl"; // NOI18N
         }
-    }  
-    
+    }
+
     /**
      * UID for CsmTypedef
      */
     /* package */ static final class TypedefUID<T extends CsmTypedef> extends OffsetableDeclarationUIDBase<T> {
+
         public TypedefUID(T typedef) {
             super(typedef);
 //            assert typedef instanceof RegistarableDeclaration;
@@ -331,202 +331,204 @@ public class UIDUtilities {
 //            }
 //            assert ((RegistarableDeclaration)typedef).isRegistered();            
         }
-        
-        /* package */ TypedefUID (DataInput aStream) throws IOException {
+
+        /* package */ TypedefUID(DataInput aStream) throws IOException {
             super(aStream);
         }
-        
+
         @Override
         protected String getToStringPrefix() {
             return "TypedefUID"; // NOI18N
         }
-        
     }
-    
+
     /**
      * UID for CsmMacro
      */
     /* package */ static final class MacroUID extends KeyBasedUID<CsmMacro> {
+
         public MacroUID(CsmMacro macro) {
             super(KeyUtilities.createMacroKey(macro));
         }
-        
-        /* package */ MacroUID (DataInput aStream) throws IOException {
+
+        /* package */ MacroUID(DataInput aStream) throws IOException {
             super(aStream);
         }
     }
-    
+
     /**
      * UID for CsmInclude
      */
     /* package */ static final class IncludeUID extends KeyBasedUID<CsmInclude> {
+
         public IncludeUID(CsmInclude incl) {
             super(KeyUtilities.createIncludeKey(incl));
         }
-        
-        /* package */ IncludeUID (DataInput aStream) throws IOException {
+
+        /* package */ IncludeUID(DataInput aStream) throws IOException {
             super(aStream);
         }
     }
-    
+
     /**
      * UID for CsmClassifier
      */
     /* package */ static final class DeclarationUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
+
         public DeclarationUID(T decl) {
             super(decl);
         }
-        
-        /* package */ DeclarationUID( DataInput aStream) throws IOException {
+
+        /* package */ DeclarationUID(DataInput aStream) throws IOException {
             super(aStream);
         }
-        
+
         @Override
         protected String getToStringPrefix() {
             return "DeclarationUID"; // NOI18N
         }
-        
-    } 
-    
+    }
+
     /**
      * UID for CsmClassifier
      */
     /* package */ static final class ClassifierUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
+
         public ClassifierUID(T classifier) {
             super(classifier);
         }
-        
-        /* package */ ClassifierUID( DataInput aStream) throws IOException {
+
+        /* package */ ClassifierUID(DataInput aStream) throws IOException {
             super(aStream);
         }
-        
+
         @Override
         protected String getToStringPrefix() {
             return "ClassifierUID"; // NOI18N
         }
-        
-    }     
-    
+    }
+
     /**
      * UID for CsmClassifier with empty getName()
-     */    
+     */
     /* package */ static final class UnnamedClassifierUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
+
         public UnnamedClassifierUID(T classifier, int index) {
-            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase)classifier, index));
+            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase) classifier, index));
         }
 
-        /* package */ UnnamedClassifierUID (DataInput aStream) throws IOException {
+        /* package */ UnnamedClassifierUID(DataInput aStream) throws IOException {
             super(aStream);
         }
-        
+
         @Override
         protected String getToStringPrefix() {
             return "<UNNAMED CLASSIFIER UID>"; // NOI18N
-        }        
+        }
     }
-    
+
     /**
      * UID for CsmDeclaration with empty getName()
-     */    
+     */
     /* package */ static final class UnnamedOffsetableDeclarationUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
+
         public UnnamedOffsetableDeclarationUID(T decl, int index) {
-            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase)decl, index));
+            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase) decl, index));
         }
 
-        /* package */ UnnamedOffsetableDeclarationUID (DataInput aStream) throws IOException {
+        /* package */ UnnamedOffsetableDeclarationUID(DataInput aStream) throws IOException {
             super(aStream);
         }
-        
+
         @Override
         protected String getToStringPrefix() {
             return "<UNNAMED OFFS-DECL UID>"; // NOI18N
-        }        
-    } 
-    
+        }
+    }
+
     /**
      * Abstract base class for Unresolved* UIDs.
-     */    
+     */
     /* package */ static abstract class UnresolvedUIDBase<T> implements CsmUID<T>, SelfPersistent {
-	
-	private CsmUID<CsmProject> projectUID;
-	
+
+        private CsmUID<CsmProject> projectUID;
+
         public UnresolvedUIDBase(CsmProject project) {
             projectUID = project.getUID();
         }
-	
-	protected ProjectBase getProject() {
-	    return (ProjectBase) projectUID.getObject();
-	}
+
+        protected ProjectBase getProject() {
+            return (ProjectBase) projectUID.getObject();
+        }
 
         @SuppressWarnings("unchecked")
-        /* package */ UnresolvedUIDBase (DataInput aStream) throws IOException {
+        /* package */ UnresolvedUIDBase(DataInput aStream) throws IOException {
             projectUID = UIDObjectFactory.getDefaultFactory().readUID(aStream);
         }
 
-	public abstract T getObject();
+        public abstract T getObject();
 
-	public void write(DataOutput output) throws IOException {
-	    UIDObjectFactory.getDefaultFactory().writeUID(projectUID, output);
-	}
-	
+        public void write(DataOutput output) throws IOException {
+            UIDObjectFactory.getDefaultFactory().writeUID(projectUID, output);
+        }
+
         protected String getToStringPrefix() {
             return "<UNRESOLVED UID>"; // NOI18N
-        }        
+        }
     }
-    
-    /* package */ static final class UnresolvedClassUID<T> extends UnresolvedUIDBase<CsmClass> {
-	
-	private String name;
-	
-	public UnresolvedClassUID(String name, CsmProject project) {
-	    super(project);
-	    this.name = name;
-	}
-	
-	public CsmClass getObject() {
-            return getProject().getDummyForUnresolved(name);
-	}
 
-	public UnresolvedClassUID(DataInput input) throws IOException {
-	    super(input);
-	    name = PersistentUtils.readUTF(input);
-	}
-	
-	@Override
-	public void write(DataOutput output) throws IOException {
-	    super.write(output);
+    /* package */ static final class UnresolvedClassUID<T> extends UnresolvedUIDBase<CsmClass> {
+
+        private String name;
+
+        public UnresolvedClassUID(String name, CsmProject project) {
+            super(project);
+            this.name = name;
+        }
+
+        public CsmClass getObject() {
+            return getProject().getDummyForUnresolved(name);
+        }
+
+        public UnresolvedClassUID(DataInput input) throws IOException {
+            super(input);
+            name = PersistentUtils.readUTF(input);
+        }
+
+        @Override
+        public void write(DataOutput output) throws IOException {
+            super.write(output);
             PersistentUtils.writeUTF(name, output);
-	}
-	
+        }
     }
-    
+
     /* package */ static final class UnresolvedNamespaceUID extends UnresolvedUIDBase<CsmNamespace> {
-	
+
         public UnresolvedNamespaceUID(CsmProject project) {
             super(project);
-	}
-	
-	public UnresolvedNamespaceUID(DataInput input) throws IOException {
-	    super(input);
-	}
+        }
 
-	public CsmNamespace getObject() {
-	    return getProject().getUnresolvedNamespace();
-	}
+        public UnresolvedNamespaceUID(DataInput input) throws IOException {
+            super(input);
+        }
+
+        public CsmNamespace getObject() {
+            return getProject().getUnresolvedNamespace();
+        }
     }
-	
+
     /* package */ static final class UnresolvedFileUID extends UnresolvedUIDBase<CsmFile> {
-	
+
         public UnresolvedFileUID(CsmProject project) {
             super(project);
-	}
-	
-	public UnresolvedFileUID(DataInput input) throws IOException {
-	    super(input);
-	}
+        }
 
-	public CsmFile getObject() {
-	    return getProject().getUnresolvedFile();
-	}
+        public UnresolvedFileUID(DataInput input) throws IOException {
+            super(input);
+        }
+
+        public CsmFile getObject() {
+            return getProject().getUnresolvedFile();
+        }
     }
 }
