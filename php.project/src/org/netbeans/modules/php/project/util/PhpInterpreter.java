@@ -39,17 +39,18 @@
 
 package org.netbeans.modules.php.project.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.Utilities;
 
 /**
  * @author Tomas Mysik
  */
 public final class PhpInterpreter {
     private static final Logger LOGGER = Logger.getLogger(PhpInterpreter.class.getName());
+    private static final String NO_INTERPRETER = ""; // NOI18N
+    private static final String[] NO_PARAMETERS = new String[0];
 
     private final String interpreter;
     private final String[] parameters;
@@ -67,24 +68,34 @@ public final class PhpInterpreter {
             command = ""; // NOI18N
         }
 
-        // try to find parameters (search for " -" or " /")
-        String[] tokens = command.split(" * (?=\\-|/)"); // NOI18N
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.format("%s => %s", command, Arrays.asList(tokens)));
-        }
+        // try to find interpreter (search for " -" or " /" after space)
+        String[] tokens = command.split(" * (?=\\-|/)", 2); // NOI18N
+        switch (tokens.length) {
+            case 0:
+                LOGGER.fine("No command given (null or empty string)");
 
-        interpreter = tokens[0].trim();
-        if (tokens.length == 1) {
-            parameters = new String[0];
-        } else {
-            // we have some parameters
-            List<String> params = new ArrayList<String>(tokens.length - 1);
-            for (int i = 1; i < tokens.length; ++i) {
-                params.add(tokens[i].trim());
-            }
-            parameters = params.toArray(new String[params.size()]);
+                interpreter = NO_INTERPRETER;
+                parameters = NO_PARAMETERS;
+                fullCommand = NO_INTERPRETER;
+                break;
+
+            case 1:
+                LOGGER.fine("Only interpreter given (no parameters)");
+
+                interpreter = tokens[0].trim();
+                parameters = NO_PARAMETERS;
+                fullCommand = interpreter;
+                break;
+
+            default:
+                interpreter = tokens[0].trim();
+                parameters = Utilities.parseParameters(tokens[1].trim());
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(String.format("Parameters parsed: %s => %s", tokens[1], Arrays.asList(parameters)));
+                }
+                fullCommand = command.trim();
+                break;
         }
-        fullCommand = command.trim();
     }
 
     /**
