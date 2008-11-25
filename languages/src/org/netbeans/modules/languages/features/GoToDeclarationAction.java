@@ -140,7 +140,7 @@ public class GoToDeclarationAction extends BaseAction {
         Line.Set lineSet = lc.getLineSet();
         Line line = lineSet.getCurrent(NbDocument.findLineNumber(docToGo, offset));
         int column = NbDocument.findLineColumn (docToGo, offset);
-        line.show (Line.SHOW_GOTO, column);
+        line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
     }
     
     public boolean isEnabled() {
