@@ -857,7 +857,7 @@ public class CompilerSetManager {
         if (path == null) {
             String dir = getMSysBase();
             if (dir != null) {
-                path = findCommand(name, dir+"/bin");
+                path = findCommand(name, dir+"/bin"); // NOI18N
             }
         }
         return path;
