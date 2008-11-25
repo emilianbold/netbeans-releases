@@ -746,41 +746,60 @@ public class CompilerSetManager {
     }
 
     private static Tool autoComplete(String hkey, CompilerSet cs, List<CompilerSet> sets, ToolDescriptor descriptor, int tool){
-        AlternativePath[] paths = descriptor.getAlternativePath();
-        if (paths != null && paths.length > 0) {
-            for(AlternativePath p : paths){
-                switch(p.getKind()){
-                    case PATH:
-                    {
-                        StringTokenizer st = new StringTokenizer(p.getPath(),";,");
-                        while(st.hasMoreTokens()){
-                            String method = st.nextToken();
-                            if ("$PATH".equals(method)){
-                                for(String name : descriptor.getNames()){
-                                    String path = Path.findCommand(name); // NOI18N
-                                    if (path != null) {
-                                        return cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.Assembler);
+        if (descriptor != null) {
+            AlternativePath[] paths = descriptor.getAlternativePath();
+            if (paths != null && paths.length > 0) {
+                for(AlternativePath p : paths){
+                    switch(p.getKind()){
+                        case PATH:
+                        {
+                            StringTokenizer st = new StringTokenizer(p.getPath(),";,");
+                            while(st.hasMoreTokens()){
+                                String method = st.nextToken();
+                                if ("$PATH".equals(method)){
+                                    for(String name : descriptor.getNames()){
+                                        String path = Path.findCommand(name); // NOI18N
+                                        if (path != null) {
+                                            return cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.Assembler);
+                                        }
                                     }
-                                }
-                            } else {
-                                for(String name : descriptor.getNames()){
-                                    String path = findCommand(name, method); // NOI18N
-                                    if (path != null) {
-                                        return cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.Assembler);
+                                } else {
+                                    for(String name : descriptor.getNames()){
+                                        String path = findCommand(name, method); // NOI18N
+                                        if (path != null) {
+                                            return cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.Assembler);
+                                        }
                                     }
                                 }
                             }
+                            break;
                         }
-                        break;
-                    }
-                    case TOOL_FAMILY:
-                    {
-                        StringTokenizer st = new StringTokenizer(p.getPath(),";,");
-                        while(st.hasMoreTokens()){
-                            String method = st.nextToken();
-                            for(CompilerSet s : sets){
-                                for(String family : s.getCompilerFlavor().getToolchainDescriptor().getFamily()){
-                                    if (family.equals(method)){
+                        case TOOL_FAMILY:
+                        {
+                            StringTokenizer st = new StringTokenizer(p.getPath(),";,");
+                            while(st.hasMoreTokens()){
+                                String method = st.nextToken();
+                                for(CompilerSet s : sets){
+                                    for(String family : s.getCompilerFlavor().getToolchainDescriptor().getFamily()){
+                                        if (family.equals(method)){
+                                            Tool other = s.findTool(tool);
+                                            if (other != null){
+                                                return cs.addNewTool(hkey, other.getName(), other.getPath(), tool);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                        case TOOL_NAME:
+                        {
+                            StringTokenizer st = new StringTokenizer(p.getPath(),";,");
+                            while(st.hasMoreTokens()){
+                                String method = st.nextToken();
+                                for(CompilerSet s : sets){
+                                    String name = s.getCompilerFlavor().getToolchainDescriptor().getName();
+                                    if (name.equals(method) || "*".equals(method)){
                                         Tool other = s.findTool(tool);
                                         if (other != null){
                                             return cs.addNewTool(hkey, other.getName(), other.getPath(), tool);
@@ -788,25 +807,8 @@ public class CompilerSetManager {
                                     }
                                 }
                             }
+                            break;
                         }
-                        break;
-                    }
-                    case TOOL_NAME:
-                    {
-                        StringTokenizer st = new StringTokenizer(p.getPath(),";,");
-                        while(st.hasMoreTokens()){
-                            String method = st.nextToken();
-                            for(CompilerSet s : sets){
-                                String name = s.getCompilerFlavor().getToolchainDescriptor().getName();
-                                if (name.equals(method) || "*".equals(method)){
-                                    Tool other = s.findTool(tool);
-                                    if (other != null){
-                                        return cs.addNewTool(hkey, other.getName(), other.getPath(), tool);
-                                    }
-                                }
-                            }
-                        }
-                        break;
                     }
                 }
             }
