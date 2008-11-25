@@ -51,7 +51,6 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 
@@ -81,10 +80,6 @@ public class EmbeddingTest extends NbTestCase {
 
                     public @Override int getPriority() {
                         return Integer.MAX_VALUE;
-                    }
-
-                    public @Override Class<? extends Scheduler> getSchedulerClass() {
-                        return null;
                     }
 
                     public @Override void cancel() {
