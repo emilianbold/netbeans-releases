@@ -332,7 +332,7 @@ public class DependenciesNode extends AbstractNode {
             putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependenciesNode.class, "BTN_Add_Library"));
         }
         public void actionPerformed(ActionEvent event) {
-            AddDependencyPanel pnl = new AddDependencyPanel();
+            AddDependencyPanel pnl = new AddDependencyPanel(project.getOriginalMavenProject());
         
             DialogDescriptor dd = new DialogDescriptor(pnl, org.openide.util.NbBundle.getMessage(DependenciesNode.class, "TIT_Add_Library"));
             dd.setClosingOptions(new Object[] {
@@ -345,8 +345,12 @@ public class DependenciesNode extends AbstractNode {
             });
             Object ret = DialogDisplayer.getDefault().notify(dd);
             if (pnl.getOkButton() == ret) {
-               ModelUtils. addDependency(project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
-                       pnl.getGroupId(), pnl.getArtifactId(), pnl.getVersion(),
+                String version = pnl.getVersion();
+                if (version != null && version.trim().length() == 0) {
+                    version = null;
+                }
+                ModelUtils.addDependency(project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
+                       pnl.getGroupId(), pnl.getArtifactId(), version,
                        null, pnl.getScope(), null,false);
             }
         }
