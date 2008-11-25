@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -62,6 +62,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -84,7 +85,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -98,6 +98,12 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -177,33 +183,30 @@ public class GoToSupport {
         }
     }
 
-    private static String performGoToImpl(final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc, final Action<Boolean> atStart) {
+    private static String performGoToImpl (final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc, final Action<Boolean> atStart) {
         try {
             final FileObject fo = getFileObject(doc);
             
             if (fo == null)
                 return null;
             
-            final JavaSource js = JavaSource.forFileObject(fo);
-            
-            if (js == null) { //#123488
-                return null;
-            }
-            
             final String[] result = new String[1];
             final int[] offsetToOpen = new int[] {-1};
             final ElementHandle[] elementToOpen = new ElementHandle[1];
             final String[] displayNameForError = new String[1];
             final boolean[] tryToOpen = new boolean[1];
+            final ClasspathInfo[] cpInfo = new ClasspathInfo[1];
             
-            js.runUserActionTask(new Task<CompilationController>() {
-                public void run(CompilationController controller) throws Exception {
+            ParserManager.parse(Collections.singleton (Source.create(doc)), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result res = resultIterator.getParserResult (offset);
                     if (atStart != null && atStart.run() == Boolean.FALSE)
                         return ;
-                    
-                    if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
+                    CompilationController controller = CompilationController.get(res);
+                    if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
                         return;
-                    
+                    cpInfo[0] = controller.getClasspathInfo();
                     Token<JavaTokenId>[] token = new Token[1];
                     int[] span = getIdentifierSpan(doc, offset, token);
                     
@@ -387,7 +390,7 @@ public class GoToSupport {
                         }
                     }
                 }
-            },true);
+            });
             
             if (tryToOpen[0]) {
                 assert result[0] == null;
@@ -400,7 +403,7 @@ public class GoToSupport {
                             openSucceeded = CALLER.open(fo, offsetToOpen[0]);
                         } else {
                             if (elementToOpen[0] != null) {
-                                openSucceeded = CALLER.open(js.getClasspathInfo(), elementToOpen[0]);
+                                openSucceeded = CALLER.open(cpInfo[0], elementToOpen[0]);
                             }
                         }
                         if (!openSucceeded) {
@@ -411,8 +414,8 @@ public class GoToSupport {
             }
             
             return result[0];
-        } catch (IOException ioe) {
-            throw new IllegalStateException(ioe);
+        } catch (ParseException ex) {
+            throw new IllegalStateException(ex);
         }
     }
     
