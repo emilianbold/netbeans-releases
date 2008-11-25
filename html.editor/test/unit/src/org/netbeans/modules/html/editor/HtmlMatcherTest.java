@@ -94,7 +94,7 @@ public class HtmlMatcherTest extends TestBase {
     }
     
     public void testMatchingOnEmptyFile() throws Exception {
-        setDocumentText("");
+        setDocumentText(" ");
         BracesMatcher matcher = createMatcher(0, false, 1);
         
         assertNull(matcher.findOrigin());
@@ -135,11 +135,11 @@ public class HtmlMatcherTest extends TestBase {
         //               0         1         2         3
         BracesMatcher matcher = createMatcher(28, false, 1);
         assertOrigin(28, 35, matcher);
-        assertMatch(0, 6, matcher);
+        assertMatch(0, 5, 5, 6, matcher);
         
         matcher = createMatcher(20, false, 1);
         assertOrigin(20, 27, matcher);        
-        assertMatch(6, 12, matcher);
+        assertMatch(6, 11, 11, 12, matcher);
         
     }
 
@@ -149,11 +149,11 @@ public class HtmlMatcherTest extends TestBase {
         //               0         1         2         3
         BracesMatcher matcher = createMatcher(12, false, 1);
         assertOrigin(12, 19, matcher);
-        assertMatch(6, 12, matcher);
+        assertMatch(6, 11, 11, 12, matcher);
         
         matcher = createMatcher(19, false, 1);
         assertOrigin(19, 26, matcher);
-        assertMatch(0, 6, matcher);
+        assertMatch(0, 5, 5, 6, matcher);
         
     }
     
@@ -187,6 +187,15 @@ public class HtmlMatcherTest extends TestBase {
         assertEquals("Incorrect match block end:", expectedEnd, match[1]);
     }
     
+    private void assertMatch(int expectedStart1, int expectedEnd1, int expectedStart2, int expectedEnd2, BracesMatcher matcher) throws InterruptedException, BadLocationException {
+        int[] match = matcher.findMatches();
+        assertNotNull(match);
+        assertEquals("Incorrect match block start:", expectedStart1, match[0]);
+        assertEquals("Incorrect match block end:", expectedEnd1, match[1]);
+        assertEquals("Incorrect match block start:", expectedStart2, match[2]);
+        assertEquals("Incorrect match block end:", expectedEnd2, match[3]);
+    }
+
     private BracesMatcher createMatcher(int offset, boolean searchBackward, int lookahead) {
         MatcherContext context = BracesMatchingTestUtils.createMatcherContext(document, offset, searchBackward, lookahead);
         BracesMatcher matcher = MATCHER_FACTORY.createMatcher(context);
