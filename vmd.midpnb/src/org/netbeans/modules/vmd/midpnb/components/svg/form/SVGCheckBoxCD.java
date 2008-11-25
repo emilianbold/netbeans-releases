@@ -58,6 +58,10 @@ import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 public class SVGCheckBoxCD extends ComponentDescriptor{
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGCheckBox"); // NOI18N
+    
+    static {
+        SVGComponentCD.addPairType( TYPEID, SVGCheckBoxEventSourceCD.TYPEID );
+    }
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);

@@ -64,6 +64,10 @@ import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 public class SVGButtonCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGButton"); //NOI18N
+    
+    static {
+        SVGComponentCD.addPairType( TYPEID, SVGButtonEventSourceCD.TYPEID );
+    }
 
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(SVGComponentCD.TYPEID, TYPEID, true, false);
@@ -102,7 +106,8 @@ public class SVGButtonCD extends ComponentDescriptor {
                 if (!component.getType().equals(SVGButtonEventSourceCD.TYPEID)) {
                     continue;
                 }
-                if (component.readProperty(SVGButtonEventSourceCD.PROP_SVGBUTTON).getComponent() != getComponent()) {
+                if (component.readProperty(SVGComponentEventSourceCD.PROP_SVGCOMPONENT).
+                        getComponent() != getComponent()) {
                     continue;
                 }
                 eventHandler = component.readProperty(EventSourceCD.PROP_EVENT_HANDLER).getComponent();
