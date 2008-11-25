@@ -1,0 +1,29 @@
+Code completion result for source line:
+n|o
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+CLASS      NegativeArraySizeException                 null
+CLASS      NetPermission                              null
+CLASS      NetworkInterface                           null
+CLASS      NoClassDefFoundError                       null
+CLASS      NoRouteToHostException                     null
+CLASS      NoSuchElementException                     null
+CLASS      NoSuchFieldError                           null
+CLASS      NoSuchFieldException                       null
+CLASS      NoSuchMethodError                          null
+CLASS      NoSuchMethodException                      null
+CLASS      Node                                       null
+CLASS      NodeBuilder                                null
+CLASS      NodeList                                   null
+CLASS      NodePrinter                                null
+CLASS      NonEmptySequence                           null
+CLASS      NotActiveException                         null
+CLASS      NotSerializableException                   null
+CLASS      NullPointerException                       null
+CLASS      Number                                     null
+CLASS      NumberFormatException                      null
+METHOD     notify()                                   void
+METHOD     notifyAll()                                void
+VARIABLE   no                                         Object
+KEYWORD    native                                     null
+KEYWORD    new                                        null

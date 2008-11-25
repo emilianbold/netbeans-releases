@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
@@ -50,7 +51,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -101,6 +101,22 @@ final class TestsuiteNode extends AbstractNode {
                 "org/netbeans/modules/ruby/testrunner/ui/res/class.gif");     //NOI18N
     }
 
+    /**
+     * @return the given lines appropriately formatted for a tooltip.
+     */
+    static String toTooltipText(List<OutputLine> lines) {
+        StringBuilder result = new StringBuilder();
+        result.append("<html>"); //NOI18N
+        for (Iterator<OutputLine> it = lines.iterator(); it.hasNext(); ) {
+            result.append(it.next().getLine());
+            if (it.hasNext()) {
+                result.append("<br>"); //NOI18N
+            }
+        }
+        result.append("</html>"); //NOI18N
+        return result.toString();
+    }
+
     @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
@@ -128,6 +144,7 @@ final class TestsuiteNode extends AbstractNode {
         
         setDisplayName();
         setChildren(new TestsuiteNodeChildren(report, filtered));
+        setShortDescription(toTooltipText(getOutput()));
     }
     
     /**
@@ -230,13 +247,13 @@ final class TestsuiteNode extends AbstractNode {
         return (report != null) && (report.failures + report.errors != 0);
     }
 
-    private Report.Testcase getFirstTestCase() {
+    private Testcase getFirstTestCase() {
         return report.getTests().isEmpty() ? null : report.getTests().iterator().next();
     }
 
     @Override
     public Action getPreferredAction() {
-        Report.Testcase testcase = getFirstTestCase();
+        Testcase testcase = getFirstTestCase();
         if (testcase == null) {
             // need to have at least one test case to locate the test file
             return null;
@@ -258,13 +275,22 @@ final class TestsuiteNode extends AbstractNode {
         if (preferred != null) {
             actions.add(preferred);
         }
-        Report.Testcase testcase = getFirstTestCase();
+        Testcase testcase = getFirstTestCase();
         // these actions are enable only if the suite had at least one test (otherwise
         // we can't reliably locate the test file)
         if (testcase != null) {
             actions.add(new RunTestSuiteAction(testcase, report.getProject(), NbBundle.getMessage(TestMethodNode.class, "LBL_RerunTest"), false));
             actions.add(new RunTestSuiteAction(testcase, report.getProject(), NbBundle.getMessage(TestMethodNode.class, "LBL_DebugTest"), true));
+//            actions.add(new DisplayOutputForNodeAction(getOutput(), testcase.getSession()));
         }
         return actions.toArray(new Action[actions.size()]);
+    }
+
+    private List<OutputLine> getOutput() {
+        List<OutputLine> result = new ArrayList<OutputLine>();
+        for (Testcase testcase : report.getTests()) {
+            result.addAll(testcase.getOutput());
+        }
+        return result;
     }
 }

@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
-import org.netbeans.modules.groovy.editor.api.completion.GroovyCompletionHandler;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,14 +48,14 @@ import java.util.logging.Logger;
  *
  * @author schmidtm
  */
-public class GroovyCodeCompletionTest extends GroovyTestBase {
+public class CodeCompletionTest extends GroovyTestBase {
 
     String TEST_BASE = "testfiles/completion/";
     String CLOSURE_BASE = "testfiles/completion/closures/";
 
-    public GroovyCodeCompletionTest(String testName) {
+    public CodeCompletionTest(String testName) {
         super(testName);
-        Logger.getLogger(GroovyCompletionHandler.class.getName()).setLevel(Level.FINEST);
+        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
     // uncomment this to have logging from GroovyLexer

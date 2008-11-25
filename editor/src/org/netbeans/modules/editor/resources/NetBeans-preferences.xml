@@ -215,7 +215,7 @@ made subject to such option by the copyright holder.
         <value><![CDATA[700]]></value>
     </entry>
     <entry category="private" javaType="java.lang.Integer" name="tab-size" xml:space="preserve">
-        <value><![CDATA[4]]></value>
+        <value><![CDATA[8]]></value>
     </entry>
     <entry category="private" javaType="java.lang.Integer" name="text-left-margin-width" xml:space="preserve">
         <value><![CDATA[2]]></value>

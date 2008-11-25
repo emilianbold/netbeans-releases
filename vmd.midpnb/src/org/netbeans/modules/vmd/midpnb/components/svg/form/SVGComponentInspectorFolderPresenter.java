@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,59 +38,46 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
-package org.netbeans.modules.ruby.debugger;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignEvent;
+import org.netbeans.modules.vmd.api.model.DesignEventFilter;
+import org.netbeans.modules.vmd.api.model.PresenterEvent;
 
-import java.awt.Dialog;
-import junit.framework.Assert;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+class SVGComponentInspectorFolderPresenter extends InspectorFolderPresenter {
 
-/** 
- * Copy-pasted from APISupport. Test ready implementation of DialogDisplayer.
- *
- * @author Jaroslav Tulach
- */
-public class DialogDisplayerImpl extends DialogDisplayer {
-    
-    private static Object toReturn;
-    private NotifyDescriptor lastNotifyDescriptor;
-    private Dialog dialog;
-    
-    public static void returnFromNotify(Object value) {
-        Object o = DialogDisplayer.getDefault();
-        Assert.assertEquals("My class", DialogDisplayerImpl.class, o.getClass());
+
+    @Override
+    public InspectorFolder getFolder() {
+       return new SVGComponentInspectorFolder(true, getComponent());
+    }
+
+    @Override
+    protected void notifyAttached(DesignComponent component) {
         
-        Assert.assertNull("No previous value", toReturn);
-        toReturn = value;
-    }
-    
-    public Object notify(NotifyDescriptor descriptor) {
-        lastNotifyDescriptor = descriptor;
-        Object r = toReturn;
-        toReturn = null;
-        Assert.assertNotNull("We are supposed to return a value: " + descriptor.getMessage(), r);
-        return r;
-    }
-    
-    public Dialog createDialog(DialogDescriptor descriptor) {
-        if (dialog == null) {
-            Assert.fail("Not implemented");
-        }
-        return dialog;
-    }
-    
-    public NotifyDescriptor getLastNotifyDescriptor() {
-        return lastNotifyDescriptor;
-    }
-    
-    public void reset() {
-        this.lastNotifyDescriptor = null;
     }
 
-    public void setDialog(Dialog dialog) {
-        this.dialog = dialog;
+    @Override
+    protected void notifyDetached(DesignComponent component) {
+        
+    }
+
+    @Override
+    protected DesignEventFilter getEventFilter() {
+        return null;
+    }
+
+    @Override
+    protected void designChanged(DesignEvent event) {
+        
+    }
+
+    @Override
+    protected void presenterChanged(PresenterEvent event) {
+        
     }
     
 }

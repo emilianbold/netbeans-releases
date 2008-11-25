@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,64 +31,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
-package org.netbeans.modules.groovy.editor.completion;
+import java.awt.Image;
 
-import java.util.Arrays;
+import org.netbeans.modules.vmd.api.model.TypeID;
+import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Petr Hejl
+ * @author ads
  */
-public final class MethodSignature {
+public class SVGTextFieldEventSourceCD extends SVGComponentEventSourceCD {
 
-    private final String name;
-
-    private final String[] parameters;
-
-    public MethodSignature(String name, String[] parameters) {
-        this.name = name;
-        this.parameters = parameters;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String[] getParameters() {
-        return parameters;
-    }
-
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, 
+            "#SVGTextFieldEventEventSource"); // NOI18
+    
+    private static final String ICON_PATH = 
+        "org/netbeans/modules/mobility/svgcore/resources/palette/form/text_field_16.png"; // NOI18N                                                
+    private static final Image ICON = ImageUtilities.loadImage(ICON_PATH);
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentEventSourceCD#getIcon()
+     */
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final MethodSignature other = (MethodSignature) obj;
-        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
-            return false;
-        }
-        if (this.parameters != other.parameters && (this.parameters == null
-                || !Arrays.equals(this.parameters, other.parameters))) {
-            return false;
-        }
-        return true;
+    protected Image getIcon() {
+        return ICON;
     }
-
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentEventSourceCD#getPairTypeId()
+     */
     @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 41 * hash + (this.name != null ? this.name.hashCode() : 0);
-        hash = 41 * hash + (this.parameters != null ? Arrays.hashCode(this.parameters) : 0);
-        return hash;
+    protected TypeID getPairTypeId() {
+        return SVGTextFieldCD.TYPEID;
+    }
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentEventSourceCD#getTypeId()
+     */
+    @Override
+    protected TypeID getTypeId() {
+        return TYPEID;
     }
 
 }

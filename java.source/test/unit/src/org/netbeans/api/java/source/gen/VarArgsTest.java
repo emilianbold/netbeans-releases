@@ -87,7 +87,7 @@ public class VarArgsTest extends GeneratorTestMDRCompat {
             "\n" +
             "public class Test {\n" +
             "\n" +
-            "    void method(Object[] a,Object... varArg) {\n" +
+            "    void method(Object[] a, Object... varArg) {\n" +
             "    }\n" +
             "\n" +
             "}\n";

@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -172,6 +173,16 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
             }
         } finally {
             lock.releaseLock();
+        }
+    }
+
+    protected void dumpRakefile(final String rakefileContent, final RubyProject project) throws IOException {
+        FileObject script = FileUtil.createData(project.getProjectDirectory(), "Rakefile");
+        PrintWriter pw = new PrintWriter(script.getOutputStream());
+        try {
+            pw.print(rakefileContent);
+        } finally {
+            pw.close();
         }
     }
 
