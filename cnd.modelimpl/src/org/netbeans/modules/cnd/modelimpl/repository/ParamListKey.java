@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,21 +31,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.apt.support;
+package org.netbeans.modules.cnd.modelimpl.repository;
 
-import antlr.TokenStream;
-import java.util.Collection;
-
+import java.io.DataInput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.CsmParameterList;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 /**
- * macros for APT macro map
+ * A key for CsmParameterList objects (file and offset -based)
  * @author Vladimir Voskresensky
  */
-public interface APTMacro {
-    public boolean isSystem();
-    public boolean isFunctionLike();
-    public APTToken getName();
-    public Collection<APTToken> getParams();
-    public TokenStream getBody();
+/*package*/final class ParamListKey extends OffsetableKey {
+    public ParamListKey(CsmParameterList obj) {
+        super(obj, Utils.getCsmParamListKindKey(), CharSequenceKey.empty()); // NOI18N
+    }
+
+    /*package*/ ParamListKey(DataInput aStream) throws IOException {
+        super(aStream);
+    }
+
+    public PersistentFactory getPersistentFactory() {
+        return CsmObjectFactory.instance();
+    }
+
+    @Override
+    public String toString() {
+        String retValue;
+
+        retValue = "ParamListKey: " + super.toString(); // NOI18N
+        return retValue;
+    }
+
+    @Override
+    public int getSecondaryDepth() {
+        return super.getSecondaryDepth() + 1;
+    }
+
+    @Override
+    public int getSecondaryAt(int level) {
+        if (level == 0) {
+            return KeyObjectFactory.KEY_PARAM_LIST_KEY;
+        } else {
+            return super.getSecondaryAt(level - 1);
+        }
+    }
 }
