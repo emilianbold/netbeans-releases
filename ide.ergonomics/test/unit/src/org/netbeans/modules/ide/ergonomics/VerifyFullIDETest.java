@@ -68,6 +68,7 @@ public class VerifyFullIDETest extends NbTestCase {
         return NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
             addTest(VerifyFullIDETest.class).
+            addTest(ProjectTemplatesCheck.class).
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").

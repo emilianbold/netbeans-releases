@@ -40,35 +40,25 @@
 package org.netbeans.modules.ide.ergonomics;
 
 import java.util.Enumeration;
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ide.ergonomics.newproject.EnableStep;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.TemplateWizard;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class VerifyProjectWizardsTest extends NbTestCase {
-    public VerifyProjectWizardsTest(String n) {
+public class ProjectTemplatesCheck extends NbTestCase {
+    public ProjectTemplatesCheck(String n) {
         super(n);
     }
-
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.emptyConfiguration().
-            addTest(VerifyProjectWizardsTest.class).
-            gui(false).
-            clusters("ergonomics.*").
-            clusters(".*")
-        );
-    }
-
+    
     public void testCanGetWizardIteratorsForAllProjects() {
         FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Project");
-        assertNotNull("project is available", root);
+        assertNotNull("project is available (need to run in NbModuleTest mode)", root);
         Enumeration<? extends FileObject> en = root.getChildren(true);
         StringBuilder sb = new StringBuilder();
         int error = 0;
@@ -78,16 +68,9 @@ public class VerifyProjectWizardsTest extends NbTestCase {
                 boolean ok;
 
                 sb.append(fo);
-                Object value = fo.getAttribute("instantiatingIterator");
-                if (value == null) {
-                    ok = false;
-                } else if (value instanceof WizardDescriptor.InstantiatingIterator) {
-                    ok = true;
-                } else {
-                    ok = false;
-                }
+                Object value = EnableStep.readWizard(fo);
 
-                if (!ok) {
+                if (value == null) {
                     error++;
                     sb.append(" - failure\n");
                     Enumeration<String> names = fo.getAttributes();
@@ -104,6 +87,4 @@ public class VerifyProjectWizardsTest extends NbTestCase {
             fail(sb.toString());
         }
     }
-
-
 }
