@@ -53,6 +53,12 @@ import org.netbeans.api.languages.LanguagesManager;
  */
 public class MakefileParserHelper {
 
+    /**
+     * Constructor is private to prevent instantiation.
+     */
+    private MakefileParserHelper() {
+    }
+
     private static final String MIME_TYPE = "text/x-make"; // NOI18N
     private static final String MACRO_TOKEN = "macro"; // NOI18N
     private static final String ERROR_TOKEN = "error"; // NOI18N
