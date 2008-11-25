@@ -2936,7 +2936,7 @@ assignment_expression
 	:	
         lazy_expression[false, false]
 		(options {greedy=true;}:	
-            ( ASSIGNEQUAL
+            ( ASSIGNEQUAL              
             | TIMESEQUAL
             | DIVIDEEQUAL
             | MINUSEQUAL
@@ -2948,7 +2948,12 @@ assignment_expression
 			| BITWISEXOREQUAL
 			| BITWISEOREQUAL
             )
-			assignment_expression
+            (
+                // IZ#152872: parser error in VLC on cast expression
+                (LPAREN ID RPAREN LCURLY) => ((LPAREN ID RPAREN) LCURLY (initializer (COMMA initializer)*)? RCURLY)
+            |
+                assignment_expression
+            )
         )?
     ;
 

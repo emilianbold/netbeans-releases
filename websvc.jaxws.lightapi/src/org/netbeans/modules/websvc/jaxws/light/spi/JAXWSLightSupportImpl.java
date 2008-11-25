@@ -58,38 +58,30 @@ import org.openide.filesystems.FileObject;
 public interface JAXWSLightSupportImpl {
     
     /**
-     * Add web service to jax-ws.xml intended for web services from java
-     * @param serviceName service display name (name of the node ws will be presented in Netbeans), e.g. "SearchService"
-     * @param serviceImpl package name of the implementation class, e.g. "org.netbeans.SerchServiceImpl"
-     * @param isJsr109 Indicates if the web service is being created in a project that supports a JSR 109 container
+     * Add web service/client to project
+     * @param service service or client
      */
     public void addService(JaxWsService service);
     
     /**
-     * Returns the list of web services in the project
+     * Returns the list of services and clients the project
      * @return list of web services
      */
     public List<JaxWsService> getServices();    
     
     /**
      * Remove the web service entries from the project properties
-     * @param serviceName service IDE name 
-     * project.xml files
+     * @param service service
      */
     public void removeService(JaxWsService service);
 
-    /** Determine if the web service was created from WSDL
-     * @param serviceName service name 
-     */
-    public boolean isFromWSDL(JaxWsService service);
-    
     /** Get WSDL folder for the project (folder containing wsdl files)
      *  The folder is used to save remote or local wsdl files to be available within the jar/war files.
      *  it is usually META-INF/wsdl folder (or WEB-INF/wsdl for web application)
      *  @param createFolder if (createFolder==true) the folder will be created (if not created before)
      *  @return the file object (folder) where wsdl files are located in project 
      */
-    public FileObject getWsdlFolder(boolean create) throws java.io.IOException;
+    public FileObject getWsdlFolder(boolean createFolder) throws java.io.IOException;
     
     /** Get folder for local WSDL and XML artifacts for given service
      * This is the location where wsdl/xml files are downloaded to the project.
@@ -111,12 +103,6 @@ public interface JAXWSLightSupportImpl {
      */
     public URL getCatalog();
     
-    /** Get wsdlLocation information
-     * Useful for web service from wsdl (the @WebService wsdlLocation attribute)
-     * @param serviceName service "display" name
-     */
-    public JaxWsService getService(String implClass);
-
     /**
      * Returns a metadata model of a webservices deployment descriptor
      *

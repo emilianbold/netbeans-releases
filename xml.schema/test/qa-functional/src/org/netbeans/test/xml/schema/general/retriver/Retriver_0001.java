@@ -135,7 +135,7 @@ public class Retriver_0001 extends Retriver {
       // Check tree
       pto = new ProjectsTabOperator( );
       prn = pto.getProjectRootNode(
-          TEST_JAVA_APP_NAME + "|Source Packages|www.springsource.org.schema.beans|spring-beans-2.5.xsd"
+          TEST_JAVA_APP_NAME + "|Source Packages|www.springframework.org.schema.beans|spring-beans-2.5.xsd"
         );
       prn.select( );
 
@@ -146,7 +146,7 @@ public class Retriver_0001 extends Retriver {
       String[] asIdeal =
       {
         "Retrieving Location: http://www.springframework.org/schema/beans/spring-beans-2.5.xsd ",
-        "Retrieved :    http://www.springsource.org/schema/beans/spring-beans-2.5.xsd ",
+        "Retrieved :    http://www.springframework.org/schema/beans/spring-beans-2.5.xsd ",
         "Saved at:"
       };
 

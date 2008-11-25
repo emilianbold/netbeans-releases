@@ -173,10 +173,11 @@ public class CndTokenUtilities {
     public static boolean moveToPreprocKeyword(TokenSequence<CppTokenId> ts) {
         if (ts != null && ts.language() == CppTokenId.languagePreproc()) {
             ts.moveStart();
+            ts.moveNext();
             if (!ts.moveNext()) {// skip start #
                 return false;
             }
-            if (shiftToNonWhite(ts, true)) {
+            if (shiftToNonWhite(ts, false)) {
                 switch (ts.token().id()) {
                     case PREPROCESSOR_DEFINE:
                     case PREPROCESSOR_ELIF:

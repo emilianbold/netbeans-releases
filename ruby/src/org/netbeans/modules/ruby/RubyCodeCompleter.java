@@ -221,13 +221,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     /** Default name values for ATTR_UNUSEDLOCAL and friends */
     private static final String ATTR_DEFAULTS = "defaults"; // NOI18N
 
-    private static final String[] RUBY_BUILTIN_VARS =
-        new String[] {
-            // Predefined variables
-            "__FILE__", "__LINE__", "STDIN", "STDOUT", "STDERR", "ENV", "ARGF", "ARGV", "DATA",
-            "RUBY_VERSION", "RUBY_RELEASE_DATE", "RUBY_PLATFORM",
-        };
-    
     private static final String[] RUBY_REGEXP_WORDS =
         new String[] {
             "^", "Start of line",
@@ -674,7 +667,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             }
         }
 
-        for (String keyword : RUBY_BUILTIN_VARS) {
+        for (String keyword : RubyUtils.RUBY_PREDEF_VAR) {
             if (startsWith(keyword, prefix)) {
                 KeywordItem item = new KeywordItem(keyword, null, anchor, request);
 
@@ -864,7 +857,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
      */
     private boolean completeObjectMethod(List<CompletionProposal> proposals, CompletionRequest request, String fqn,
         Call call) {
-        
+
         RubyIndex index = request.index;
         String prefix = request.prefix;
         int astOffset = request.astOffset;
@@ -894,6 +887,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             // If we're not sure we're only looking for a method, don't abort after this
             boolean done = call.isMethodExpected();
 
+            String lhs = call.getLhs();
             boolean skipInstanceMethods = call.isStatic();
 
             Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
@@ -903,7 +897,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             if (callType != null) {
                 types = Collections.singleton(callType);
             }
-            String lhs = call.getLhs();
 
             if ((types.isEmpty()) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
                 Node method = AstUtilities.findLocalScope(node, path);
@@ -1575,7 +1568,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     an = ((CallNode)call).getArgsNode();
                 }
                 if (an != null && index < an.childNodes().size() &&
-                        ((Node)an.childNodes().get(index)).nodeId == NodeType.HASHNODE) {
+                        an.childNodes().get(index).nodeId == NodeType.HASHNODE) {
                     // We should stay within the hashnode, so counteract the
                     // index++ which follows this if-block
                     index--;
@@ -2162,7 +2155,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         if (root == null) {
             completeKeywords(proposals, request, showSymbols);
-
             return completionResult;
         }
 

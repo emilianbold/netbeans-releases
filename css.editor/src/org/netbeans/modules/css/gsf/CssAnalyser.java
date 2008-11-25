@@ -64,6 +64,8 @@ public class CssAnalyser {
 
     private static final String UNKNOWN_PROPERTY = "unknown_property";
     private static final String INVALID_PROPERTY_VALUE = "invalid_property_value";
+    private static final String INVALID_CONTENT = "invalid_content";
+
     
     private CSSParserResult result;
 
@@ -128,6 +130,13 @@ public class CssAnalyser {
 
                     }
 
+                } else if(node.kind() == CSSParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE && node.image().length() > 0) {
+                    Error error =
+                            new DefaultError(INVALID_CONTENT,
+                            NbBundle.getMessage(CssAnalyser.class, INVALID_CONTENT),
+                            null, result.getFile().getFileObject(),
+                            node.startOffset(), node.endOffset(), Severity.ERROR);
+                    errors.add(error);
                 }
             }
         };

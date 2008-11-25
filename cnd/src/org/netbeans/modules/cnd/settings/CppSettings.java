@@ -419,6 +419,7 @@ public class CppSettings extends SharedClassObject {
      *
      * @return true if its enabled
      */
+    @Deprecated
     public boolean isFortranEnabled() {
         //Boolean b = (Boolean) getProperty(PROP_FORTRAN_ENABLED);
         boolean b = getPreferences().getBoolean(PROP_FORTRAN_ENABLED, DEFAULT_FORTRAN_ENABLED);
@@ -430,6 +431,7 @@ public class CppSettings extends SharedClassObject {
      *
      * @param enabled Value to set property to
      */
+    @Deprecated
     public void setFortranEnabled(boolean enabled) {
         //putProperty(PROP_FORTRAN_ENABLED, Boolean.valueOf(enabled), true);
         boolean oldValue = isFortranEnabled();

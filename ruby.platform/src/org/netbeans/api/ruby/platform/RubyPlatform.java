@@ -698,12 +698,15 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
                 assert rubyStubs.exists() && rubyStubs.isDirectory();
                 stubsFO = FileUtil.toFileObject(rubyStubs);
             } else {
-                // During test?
-                String r = RubyPlatformManager.getDefaultPlatform().getInterpreter();
-                if (r != null) {
-                    FileObject fo = FileUtil.toFileObject(new File(r));
-                    if (fo != null) {
-                        stubsFO = fo.getParent().getParent().getParent().getFileObject("rubystubs/" + RUBYSTUBS_VERSION); // NOI18N
+                // Language registry polls us for some reason (see #153595 stacktrace)
+                RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+                if (platform != null) { // there does not need to be default platform
+                    String interpreter = platform.getInterpreter();
+                    if (interpreter != null) {
+                        FileObject fo = FileUtil.toFileObject(new File(interpreter));
+                        if (fo != null) {
+                            stubsFO = fo.getParent().getParent().getParent().getFileObject("rubystubs/" + RUBYSTUBS_VERSION); // NOI18N
+                        }
                     }
                 }
             }

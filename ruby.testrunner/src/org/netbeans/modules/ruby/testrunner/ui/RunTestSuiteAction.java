@@ -44,7 +44,6 @@ import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.ruby.RubyDeclarationFinder;
 import org.netbeans.modules.ruby.platform.execution.ExecutionUtils.FileLocation;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
-import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
 import org.openide.filesystems.FileObject;
 
 /**

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
+import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;

@@ -166,7 +166,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
         echannel.setCommand(theCommand);
         echannel.setInputStream(null);
-        echannel.setErrStream(System.err);
+        //echannel.setErrStream(System.err);
         echannel.connect();
         return echannel;
     }

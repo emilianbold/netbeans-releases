@@ -114,32 +114,33 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase(TestType.TEST_UNIT);
-            testcase.timeMillis = toMillis(matcher.group(1));
-            testcase.name = matcher.group(2);
-            testcase.className = matcher.group(3);
-            testcase.trouble = new Report.Trouble(false);
+            Testcase testcase = new Testcase(TestType.TEST_UNIT, session);
+            testcase.setTimeMillis(toMillis(matcher.group(1)));
+            testcase.setName(matcher.group(2));
+            testcase.setClassName(matcher.group(3));
+            testcase.setTrouble(new Trouble(false));
             String message = matcher.group(4);
             String location = matcher.group(5);
-            testcase.trouble.stackTrace = getStackTrace(message, location);
+            testcase.getTrouble().stackTrace = getStackTrace(message, location);
             session.addTestCase(testcase);
 
             String failureMsg = failureMsg(session.incrementFailuresCount());
-            String testCase = testcase.name + "(" + testcase.className + "):";
+            String testCase = testcase.getName() + "(" + testcase.getClassName() + "):";
             output = new ArrayList<String>();
             output.add("");
             output.add(failureMsg);
             output.add(testCase);
-            output.addAll(Arrays.asList(testcase.trouble.stackTrace));
+            output.addAll(Arrays.asList(testcase.getTrouble().stackTrace));
             output.add("");
             
             manager.displayOutput(session, "", false);
             manager.displayOutput(session, failureMsg, false);
             manager.displayOutput(session, testCase, false); //NOI18N
-            for (String line : testcase.trouble.stackTrace) {
+            for (String line : testcase.getTrouble().stackTrace) {
                 manager.displayOutput(session, line, false);
             }
             manager.displayOutput(session, "", false);
+            testcase.addOutputLines(output);
         }
 
         @Override
@@ -168,30 +169,31 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase(TestType.TEST_UNIT);
-            testcase.timeMillis = toMillis(matcher.group(1));
-            testcase.className = matcher.group(3);
-            testcase.name = matcher.group(2);
-            testcase.trouble = new Report.Trouble(true);
-            testcase.trouble.stackTrace = getStackTrace(matcher.group(4), matcher.group(5));
+            Testcase testcase = new Testcase(TestType.TEST_UNIT, session);
+            testcase.setTimeMillis(toMillis(matcher.group(1)));
+            testcase.setClassName(matcher.group(3));
+            testcase.setName(matcher.group(2));
+            testcase.setTrouble(new Trouble(true));
+            testcase.getTrouble().stackTrace = getStackTrace(matcher.group(4), matcher.group(5));
             session.addTestCase(testcase);
 
             String errorMsg = errorMsg(session.incrementFailuresCount());
-            String testCase = testcase.name + "(" + testcase.className + "):";
+            String testCase = testcase.getName() + "(" + testcase.getClassName() + "):";
             output = new ArrayList<String>();
             output.add("");
             output.add(errorMsg);
             output.add(testCase);
-            output.addAll(Arrays.asList(testcase.trouble.stackTrace));
+            output.addAll(Arrays.asList(testcase.getTrouble().stackTrace));
             output.add("");
 
             manager.displayOutput(session, "", false);
             manager.displayOutput(session, errorMsg, false);
             manager.displayOutput(session, testCase, false); //NOI18N
-            for (String line : testcase.trouble.stackTrace) {
+            for (String line : testcase.getTrouble().stackTrace) {
                 manager.displayOutput(session, line, true);
             }
             manager.displayOutput(session, "", false);
+            testcase.addOutputLines(output);
         }
 
         @Override
@@ -237,10 +239,10 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase(TestType.TEST_UNIT);
-            testcase.timeMillis = toMillis(matcher.group(1));
-            testcase.className = matcher.group(3);
-            testcase.name = matcher.group(2);
+            Testcase testcase = new Testcase(TestType.TEST_UNIT, session);
+            testcase.setTimeMillis(toMillis(matcher.group(1)));
+            testcase.setClassName(matcher.group(3));
+            testcase.setName(matcher.group(2));
             session.addTestCase(testcase);
         }
     }
@@ -328,7 +330,7 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
                 manager.testStarted(session);
             }
             String suiteName = matcher.group(1);
-            session.setSuiteName(suiteName);
+            session.addSuite(new TestSuite(suiteName));
             manager.displaySuiteRunning(session, suiteName);
         }
     }

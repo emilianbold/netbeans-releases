@@ -41,7 +41,11 @@ package org.netbeans.modules.java.hints.analyzer.ui;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -86,6 +90,15 @@ public class FixDescription {
     }
     
     public void implement() throws Exception {
+        final FileObject file = err.getFile();
+        if (!file.canWrite()) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(FixDescription.class, "CTL_File_Not_Writable", file.getNameExt()), //NOI18N
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+            return ;
+        }
+
         fix.implement();
         fixed = true;
         cs.fireChange();
