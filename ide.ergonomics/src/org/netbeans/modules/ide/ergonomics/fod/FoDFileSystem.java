@@ -48,9 +48,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -67,6 +69,7 @@ implements Runnable {
     public FoDFileSystem() {
         assert INSTANCE == null;
         INSTANCE = this;
+        setPropagateMasks(true);
         refresh();
     }
 
@@ -86,12 +89,22 @@ implements Runnable {
     
     public void run() {
         Lookup.Result<FeatureInfo> result = Feature2LayerMapping.featureTypesLookup().lookupResult(FeatureInfo.class);
+        boolean empty = true;
         
         List<XMLFileSystem> delegate = new ArrayList<XMLFileSystem>();
-        for (FeatureInfo pt2m : result.allInstances ()) {
-            Internal internal = FeatureInfoAccessor.DEFAULT.getInternal(pt2m);
+        for (FeatureInfo info : result.allInstances ()) {
+            Internal internal = FeatureInfoAccessor.DEFAULT.getInternal(info);
             if (!internal.isEnabled()) {
                 delegate.add(internal.getXMLFileSystem());
+            } else {
+                empty = false;
+            }
+        }
+        if (empty) {
+            try {
+                delegate.add(0, new XMLFileSystem(FoDFileSystem.class.getResource("default.xml"))); // NOI18N
+            } catch (SAXException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         
