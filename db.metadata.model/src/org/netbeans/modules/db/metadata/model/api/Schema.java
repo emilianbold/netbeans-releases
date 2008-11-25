@@ -112,6 +112,35 @@ public class Schema extends MetadataElement {
         return impl.getTable(name);
     }
 
+    /**
+     * Returns the views in this schema.
+     *
+     * @return the views.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
+     */
+    public Collection<View> getViews() {
+        return impl.getViews();
+    }
+
+    /**
+     * Returns the table with the given name.
+     *
+     * @param name a view name.
+     * @return a view named {@code view} or {@code null} if there is no such view.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
+     */
+    public View getView(String name) {
+        return impl.getView(name);
+    }
+
+    public Collection<Procedure> getProcedures() {
+        return impl.getProcedures();
+    }
+
+    public Procedure getProcedure(String name) {
+        return impl.getProcedure(name);
+    }
+
     @Override
     public String toString() {
         return "Schema[name='" + impl.getName() + "',default=" + isDefault() + ",synthetic=" + isSynthetic() + "]"; // NOI18N

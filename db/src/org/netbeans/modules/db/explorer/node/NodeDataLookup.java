@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -63,18 +65,34 @@ public class NodeDataLookup extends AbstractLookup {
      * Constructor
      */
     public NodeDataLookup() {
-        this(new InstanceContent());
+        this(new InstanceContent(), null);
     }
     
+    /**
+     * Constructor
+     */
+    public NodeDataLookup(Lookup lookup) {
+        this(new InstanceContent(), lookup);
+    }
+
     /**
      * This private constructor is used by the public constructor
      * so that the InstanceContent can be captured.
      * 
      * @param content the InstanceContent to construct the object with
      */
-    private NodeDataLookup(InstanceContent content) {
+    private NodeDataLookup(InstanceContent content, Lookup lookup) {
         super(content);
         this.content = content;
+
+        if (lookup != null) {
+            Collection<? extends Object> objects = lookup.lookupAll(Object.class);
+            for (Object obj : objects) {
+                dataInstances.add(obj);
+            }
+            
+            content.set(dataInstances, null);
+        }
     }
     
     /**

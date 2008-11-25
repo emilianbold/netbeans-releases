@@ -73,8 +73,11 @@ public class GsfDataLoader extends UniFileLoader {
     @Override
     protected void initialize() {
         super.initialize();
+        initExtensions();
+    }
 
-        ExtensionList list = getExtensions();
+    final void initExtensions() {
+        ExtensionList list = new ExtensionList();
 
         for (Language language : LanguageRegistry.getInstance()) {
             
@@ -85,6 +88,7 @@ public class GsfDataLoader extends UniFileLoader {
             
             list.addMimeType(language.getMimeType());
         }
+        setExtensions(list);
 
         initialized = true;
     }

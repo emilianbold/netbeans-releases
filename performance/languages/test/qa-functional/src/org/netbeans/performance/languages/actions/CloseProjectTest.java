@@ -41,22 +41,27 @@
 
 package org.netbeans.performance.languages.actions;
 
-import junit.framework.Test;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.languages.Projects;
+import org.netbeans.performance.languages.ScriptingUtilities;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+
+import java.io.IOException;
+import org.openide.util.Exceptions;
+
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.performance.languages.Projects;
-import org.netbeans.performance.languages.ScriptingUtilities;
 
 /**
  *
  * @author mrkam@netbeans.org
  */
-public class CloseProjectTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Actions suite";
+public class CloseProjectTest extends PerformanceTestCase {
+
     private static String projectName; 
     protected static ProjectsTabOperator projectsTab = null;
     
@@ -67,10 +72,17 @@ public class CloseProjectTest extends org.netbeans.modules.performance.utilities
     public CloseProjectTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
     }
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(CloseProjectTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
     @Override
     public void initialize() {
-        log("::initialize::");
         closeAllModal();
     }
     
@@ -88,36 +100,23 @@ public class CloseProjectTest extends org.netbeans.modules.performance.utilities
         if (projectsTab == null) {
             projectsTab = ScriptingUtilities.invokePTO();
         }
-
         return projectsTab.getProjectRootNode(projectName);
     }
 
     @Override
     public void close() {
-        log("::close");
         closeAllModal();
-        openProject(projectName);
+        try {
+            this.openDataProjects(projectName);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
-    public void openProject(String projectPath) {
-        String projectsDir = CommonUtilities.getProjectsDir() + projectPath;
-       // Object prj = ProjectSupport.openProject(projectsDir);
-        //assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
-    }
     public void testClosePHPProject() {
         projectName = Projects.PHP_PROJECT;
         expectedTime = 1000;
         doMeasurement();
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(CloseProjectTest.class)
-            .enableModules(".*")
-            .clusters(".*")
-            .reuseUserDir(true)
-
-        );
-    }
 }

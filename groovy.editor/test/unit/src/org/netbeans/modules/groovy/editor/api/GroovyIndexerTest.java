@@ -76,8 +76,8 @@ public class GroovyIndexerTest extends GroovyTestBase {
     public void testQueryPath() throws Exception {
         GroovyIndexer indexer = new GroovyIndexer();
         assertTrue(indexer.acceptQueryPath("/foo/bar/baz"));
-        assertFalse(indexer.acceptQueryPath("/foo/jruby/lib/ruby/gems/1.8/gems"));
-        assertFalse(indexer.acceptQueryPath("/foo/netbeans/ruby2/rubystubs/0.2"));
+        assertFalse(indexer.acceptQueryPath("/foo/target/bar"));
+        assertFalse(indexer.acceptQueryPath("/foo/art/bar"));
     }
 
     public void testIndex1() throws Exception {

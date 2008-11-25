@@ -64,11 +64,11 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 for TEST_SUITE in soa.kit xml.schema mobility.project ide.kit php.editor; do
-    ant -f ${TEST_SUITE}/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$NB_ALL/nbbuild/build/test/results -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/space/glassfish test
+    ant -f ${TEST_SUITE}/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$NB_ALL/nbbuild/build/test/results -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/space/glassfish -Dtest-qa-functional-sys-prop.wtk.dir=/space test
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         echo "ERROR: $ERROR_CODE - ${TEST_SUITE}  failed"
-        TEST_CODE=1;
+        #TEST_CODE=1;
     fi
 done
 # Init application server for tests

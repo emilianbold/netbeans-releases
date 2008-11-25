@@ -328,7 +328,10 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
         
         PersistenceScope[] persistenceScopes = PersistenceUtils.getPersistenceScopes(project);
         for (int i = 0; i < persistenceScopes.length; i++) {
-            result.add(persistenceScopes[i].getPersistenceXml());
+            FileObject persistenceXmlFo = persistenceScopes[i].getPersistenceXml();
+            if(persistenceXmlFo != null) {
+                result.add(persistenceXmlFo);
+            }
         }
         
         return result;

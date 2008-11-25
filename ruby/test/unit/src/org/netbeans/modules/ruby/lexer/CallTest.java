@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,7 +42,6 @@
 package org.netbeans.modules.ruby.lexer;
 
 import javax.swing.text.Document;
-import junit.framework.TestCase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.RubyTestBase;
@@ -400,5 +399,17 @@ public class CallTest extends RubyTestBase {
     public void testNotConstructorCal4() throws Exception {
         Call call = getCall("foo.new.^");
         assertNull(call.getType());
+    }
+
+    public void testARGV() {
+        Call call = getCall("ARGV.cho^");
+        assertEquals("Array", call.getType());
+        assertFalse(call.isStatic());
+    }
+
+    public void test__FILE_() {
+        Call call = getCall("__FILE__.cho^");
+        assertEquals("String", call.getType());
+        assertFalse(call.isStatic());
     }
 }

@@ -43,8 +43,8 @@ package org.netbeans.modules.cnd.repository.queue;
 
 import java.io.IOException;
 import java.util.concurrent.locks.ReadWriteLock;
+import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
-import org.netbeans.modules.cnd.repository.util.RepositoryExceptionImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 
 /**
@@ -69,7 +69,7 @@ public class RepositoryWritingThread implements Runnable {
                 (++numOfSpareCycles >= NUM_SPARE_TIMES_TO_ALLOW_MAINTENANCE)
                 && maintenanceIsNeeded) {
 
-                if( Stats.queueTrace ) System.err.printf("%s: maintenance %n ms...\n", getName(), Stats.maintenanceInterval); // NOI18N
+                if (Stats.queueTrace) { System.err.printf("%s: maintenance %d ms...\n", getName(), Stats.maintenanceInterval); } // NOI18N
                 long time = System.currentTimeMillis();
                 
                 // there should be no maintenance if the writing is blocked
@@ -90,14 +90,14 @@ public class RepositoryWritingThread implements Runnable {
                 }
 
             } else {
-                if( Stats.queueTrace ) System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.maintenanceInterval); // NOI18N
+                if( Stats.queueTrace ) { System.err.printf("%s: sleeping %d ms...\n", getName(), Stats.maintenanceInterval); } // NOI18N
                 Thread.sleep(Stats.maintenanceInterval);
             }
             
             queue.onIdle();
         } else {
-            if( Stats.queueTrace ) System.err.printf("%s: waiting...\n", getName()); // NOI18N
-                queue.waitReady();
+            if( Stats.queueTrace ) { System.err.printf("%s: waiting...\n", getName()); } // NOI18N
+            queue.waitReady();
         }
     }
     
@@ -106,7 +106,7 @@ public class RepositoryWritingThread implements Runnable {
     private boolean maintenanceIsNeeded = true;
     
     public void run() {
-        if( Stats.queueTrace ) System.err.printf("%s: started.\n", getName());
+        if (Stats.queueTrace) { System.err.printf("%s: started.\n", getName()); }
         
         while( true ) {
             RepositoryQueue.Entry entry;
@@ -117,7 +117,7 @@ public class RepositoryWritingThread implements Runnable {
                         entry = queue.poll();
                         numOfSpareCycles = 0;
                         maintenanceIsNeeded = true;
-                        if( Stats.queueTrace ) System.err.printf("%s: writing %s\n", getName(), entry.getKey()); // NOI18N
+                        if (Stats.queueTrace) { System.err.printf("%s: writing %s\n", getName(), entry.getKey()); } // NOI18N
                         writer.write(entry.getKey(), entry.getValue());
                     }
                 }  finally {
@@ -127,12 +127,12 @@ public class RepositoryWritingThread implements Runnable {
                 if( RepositoryThreadManager.proceed() ) {
                     waitReady();
                 } else {
-                    if( Stats.queueTrace ) System.err.printf("%s: exiting\n", getName()); // NOI18N
+                    if (Stats.queueTrace) { System.err.printf("%s: exiting\n", getName()); } // NOI18N
                     break;
                 }
             } catch( Throwable e ) {
                 RepositoryListenersManager.getInstance().fireAnException(null, 
-                        new RepositoryExceptionImpl(e));
+                        new RepositoryException(e));
             }
         }
     }

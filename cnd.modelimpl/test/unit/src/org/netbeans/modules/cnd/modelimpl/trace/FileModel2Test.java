@@ -68,6 +68,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ136887() throws Exception {
+        // IZ136887: Model do not support bit fields
+        performTest("iz136887.cc");
+    }
+
     public void testIZ149505() throws Exception {
         // IZ#149505: special handling of __VA_ARGS__ with preceding comma
         performTest("iz149505.cc");

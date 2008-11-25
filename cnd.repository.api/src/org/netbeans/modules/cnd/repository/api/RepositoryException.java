@@ -45,9 +45,29 @@ package org.netbeans.modules.cnd.repository.api;
  *
  * @author Nickolay Dalmatov
  */
-public interface RepositoryException {
+public class RepositoryException extends Exception {
 
-    public Throwable getCause(); 
-    
-    public boolean isFatal(); 
+    private final boolean fatal;
+
+    public RepositoryException(Throwable cause, boolean fatal) {
+        super(cause);
+        this.fatal = fatal;
+    }
+
+    public RepositoryException(Throwable cause) {
+        this(cause, true);
+    }
+
+    public RepositoryException(boolean fatal) {
+        this(null, fatal);
+    }
+
+    public RepositoryException() {
+        this(null, true);
+    }
+
+    public boolean isFatal() {
+        return fatal;
+    }
+
 }

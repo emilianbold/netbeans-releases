@@ -59,6 +59,10 @@ public class SVGComboBoxCD extends ComponentDescriptor{
     
     private static final String FCN = "org.netbeans.microedition.svg.SVGComboBox"; //NOI18N
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, FCN); 
+    
+    static {
+        SVGComponentCD.addPairType( TYPEID, SVGComboBoxEventSourceCD.TYPEID );
+    }
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);

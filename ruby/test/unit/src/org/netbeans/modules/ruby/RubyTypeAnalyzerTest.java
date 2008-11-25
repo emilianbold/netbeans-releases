@@ -100,7 +100,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     }
     
     private void assertTypes(final String message, final Set<? extends String> actualTypes, final String... expectedTypes) {
-        HashSet<String> expectedTypesHash = new HashSet(Arrays.asList(expectedTypes));
+        Set<String> expectedTypesHash = new HashSet<String>(Arrays.asList(expectedTypes));
         assertTrue(message + ":" +
                 "\n  actualTypes:   " + actualTypes +
                 "\n  expectedTypes: " + expectedTypesHash, actualTypes.equals(expectedTypesHash));

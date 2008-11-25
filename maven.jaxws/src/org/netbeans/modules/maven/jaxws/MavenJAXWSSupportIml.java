@@ -101,14 +101,6 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
         }
     }
 
-    public JaxWsService getService(String implClass) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public boolean isFromWSDL(JaxWsService service) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public FileObject getWsdlFolder(boolean create) throws IOException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -139,10 +131,6 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
         } catch (MalformedURLException ex) {
             return null;
         }
-    }
-
-    public FileObject getDeploymentDescriptorFolder() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {

@@ -53,6 +53,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
+import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
 
 /**
  * IMPORTANT NOTE:
@@ -198,47 +199,44 @@ public abstract class BaseTestCase extends NbTestCase {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Remote tests support
     // <editor-fold defaultstate="collapsed" desc="Remote tests support">
 
     private static Boolean isRemoteSupported = null;
+    private static String remoteHKey = null;
 
     protected boolean canTestRemote()  {
         if (isRemoteSupported == null) {
-            isRemoteSupported = new Boolean(getUserName()!=null && getHostName()!=null);
+            isRemoteSupported = new Boolean(initRemoteUserInfo());
         }
         return isRemoteSupported.booleanValue();
     }
 
     protected String getHKey(){
-        return getUserName() + "@" + getHostName();
+        assert isRemoteSupported != null : "Run canTestRemote() before any remote development tests logic."; //NOI18N
+        return remoteHKey;
     }
 
-    private static String userName = null;
-
-    protected String getUserName() {
-        //TODO: add password for automatization
-        if (userName == null) {
-            String name = System.getProperty("cnd.remote.testuserinfo");
-            if( name == null ) {
-                name = System.getenv("CND_REMOTE_USER_NAME");
-            }
-            userName = name;
+    /*
+     * Format: user:password@server
+     */
+    private boolean initRemoteUserInfo() {
+        String ui = System.getProperty("cnd.remote.testuserinfo");
+        if( ui == null ) {
+            ui = System.getenv("CND_REMOTE_TESTUSERINFO");
         }
-        return userName;
-    }
-
-    private static String hostName = null;
-
-    protected String getHostName() {
-        if (hostName == null) {
-            String host = System.getProperty("cnd.remote.host.name");
-            if( host == null ) {
-                host = System.getenv("CND_REMOTE_HOST_NAME");
+        if (ui != null) {
+            int m = ui.indexOf(':');
+            if (m>-1) {
+                int n = ui.indexOf('@');
+                String remotePassword = ui.substring(m+1, n);
+                remoteHKey = ui.substring(0,m) + ui.substring(n);
+                RemoteUserInfo.getUserInfo(remoteHKey, false).setPassword(remotePassword, false);
+            } else {
+                remoteHKey = ui;
             }
-            hostName = host;
+            return true;
         }
-        return hostName;
+        return false;
     }
 
     //</editor-fold>

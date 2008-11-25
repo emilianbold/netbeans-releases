@@ -43,17 +43,17 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.Image;
 import java.io.CharConversionException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -70,14 +70,14 @@ final class TestMethodNode extends AbstractNode {
             Boolean.valueOf(System.getProperty("ruby.testrunner.inline_result", "true")); // NOI18N
 
     /** */
-    private final Report.Testcase testcase;
+    private final Testcase testcase;
     private final Project project;
 
     /**
      * Creates a new instance of TestcaseNode
      */
-    TestMethodNode(final Report.Testcase testcase, Project project) {
-        super(testcase.trouble != null
+    TestMethodNode(final Testcase testcase, Project project) {
+        super(testcase.getTrouble() != null
               ? new TestMethodNodeChildren(testcase)
               : Children.LEAF);
 
@@ -87,17 +87,18 @@ final class TestMethodNode extends AbstractNode {
         setDisplayName();
         setIconBaseWithExtension(
                 "org/netbeans/modules/ruby/testrunner/ui/res/method.gif");    //NOI18N
+        setShortDescription(TestsuiteNode.toTooltipText(testcase.getOutput()));
     }
-    
+
     /**
      */
     private void setDisplayName() {
-        final int status = (testcase.trouble == null)
+        final int status = (testcase.getTrouble() == null)
                            ? 0
-                           : testcase.trouble.isError() ? 1 : 2;
+                           : testcase.getTrouble().isError() ? 1 : 2;
         
-        if ((status == 0) && (testcase.timeMillis < 0)) {
-            setDisplayName(testcase.name);
+        if ((status == 0) && (testcase.getTimeMillis() < 0)) {
+            setDisplayName(testcase.getName());
             return;
         }
         
@@ -110,34 +111,31 @@ final class TestMethodNode extends AbstractNode {
                                       "MSG_TestMethodError_time",       //NOI18N
                                       "MSG_TestMethodFailed_time"};     //NOI18N
         setDisplayName(
-                testcase.timeMillis < 0
+                testcase.getTimeMillis() < 0
                 ? NbBundle.getMessage(getClass(),
-                                      noTimeKeys[status],
-                                      testcase.name)
+                                      noTimeKeys[status],testcase.getName())
                 : NbBundle.getMessage(getClass(),
-                                      timeKeys[status],
-                                      testcase.name,
-                                      new Float(testcase.timeMillis/1000f)));
+                                      timeKeys[status],testcase.getName(),
+                                      new Float(testcase.getTimeMillis()/1000f)));
     }
     
     /**
      */
     @Override
     public String getHtmlDisplayName() {
-
         Status status = testcase.getStatus();
 
         StringBuffer buf = new StringBuffer(60);
-        buf.append(testcase.name);
+        buf.append(testcase.getName());
         buf.append("&nbsp;&nbsp;");                                     //NOI18N
         buf.append("<font color='#");                                   //NOI18N
         buf.append(status.getHtmlDisplayColor() + "'>"); //NOI18N
 
         String cause = null;
-        if (INLINE_RESULTS && testcase.trouble != null && testcase.trouble.stackTrace != null &&
-                testcase.trouble.stackTrace.length > 0) {
+        if (INLINE_RESULTS && testcase.getTrouble() != null && testcase.getTrouble().stackTrace != null &&
+                testcase.getTrouble().stackTrace.length > 0) {
             try {
-                cause = XMLUtil.toElementContent(testcase.trouble.stackTrace[0]);
+                cause = XMLUtil.toElementContent(testcase.getTrouble().stackTrace[0]);
             } catch (CharConversionException ex) {
                 // We're messing with user testoutput - always risky. Don't complain
                 // here, simply fall back to the old behavior of the test runner -
@@ -150,12 +148,12 @@ final class TestMethodNode extends AbstractNode {
             buf.append(NbBundle.getMessage(getClass(),
                     DisplayNameMapper.getCauseKey(status), cause));
         } else {
-            buf.append(testcase.timeMillis < 0
+            buf.append(testcase.getTimeMillis() < 0
                     ? NbBundle.getMessage(getClass(),
                     DisplayNameMapper.getNoTimeKey(status))
                     : NbBundle.getMessage(getClass(),
                     DisplayNameMapper.getTimeKey(status),
-                    new Float(testcase.timeMillis / 1000f)));
+                    new Float(testcase.getTimeMillis() / 1000f)));
         }
 
         buf.append("</font>");                                          //NOI18N
@@ -178,7 +176,7 @@ final class TestMethodNode extends AbstractNode {
                 : new JumpToCallStackAction(this, jumpToLocation);
     }
     
-    static String getTestLocation(Report.Testcase testcase, Project project) {
+    static String getTestLocation(Testcase testcase, Project project) {
         if (testcase.getLocation() == null) {
             return null;
         }
@@ -196,12 +194,12 @@ final class TestMethodNode extends AbstractNode {
         if (context) {
             return new Action[0];
         }
-        Action[] actions = new Action[3];
-        actions[0] = getPreferredAction();
-        actions[1] = new RunTestMethodAction(testcase, project, NbBundle.getMessage(TestMethodNode.class, "LBL_RerunTest"), false);
-        actions[2] = new RunTestMethodAction(testcase, project, NbBundle.getMessage(TestMethodNode.class, "LBL_DebugTest"), true);
-//        actions[1] = new JumpToTestMethodAction(testcase, project);
-        return actions;
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(getPreferredAction());
+        actions.add(new RunTestMethodAction(testcase, project, NbBundle.getMessage(TestMethodNode.class, "LBL_RerunTest"), false));
+        actions.add(new RunTestMethodAction(testcase, project, NbBundle.getMessage(TestMethodNode.class, "LBL_DebugTest"), true));
+//        actions.add(new DisplayOutputForNodeAction(testcase.getOutput(), testcase.getSession()));
+        return actions.toArray(new Action[actions.size()]);
     }
     
     @Override
@@ -220,7 +218,7 @@ final class TestMethodNode extends AbstractNode {
     }
 
     boolean failed() {
-        return testcase.trouble != null;
+        return testcase.getTrouble() != null;
     }
     
     

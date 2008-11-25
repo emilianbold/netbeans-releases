@@ -53,7 +53,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -82,7 +81,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
@@ -110,6 +108,7 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
+import org.netbeans.modules.groovy.editor.api.GroovyTypeAnalyzer;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.TypeVisitor;
 import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
@@ -119,10 +118,7 @@ import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
 import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler.CompletionType;
 import org.netbeans.modules.groovy.editor.completion.CompletionItem;
-import org.netbeans.modules.groovy.editor.completion.GroovyElementHandler;
-import org.netbeans.modules.groovy.editor.completion.JavaElementHandler;
 import org.netbeans.modules.groovy.editor.completion.JavaElementHandler.ClassType;
-import org.netbeans.modules.groovy.editor.completion.MetaElementHandler;
 import org.netbeans.modules.groovy.editor.completion.MethodSignature;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
@@ -2150,20 +2146,16 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
 
         request.beforeDotPath = dotCompletionContext.getAstPath();
 
-        ASTNode closest = request.beforeDotPath.leaf();
-
         ClassNode declClass = null;
 
         // experimental type inference
-        if (closest instanceof VariableExpression) {
-            ModuleNode moduleNode = (ModuleNode) dotCompletionContext.getAstPath().root();
-            TypeVisitor typeVisitor = new TypeVisitor(moduleNode.getContext(),
-                    dotCompletionContext.getAstPath(), request.doc, dotCompletionContext.getAstOffset());
-            typeVisitor.collect();
-            ClassNode guessedType = typeVisitor.getGuessedType();
-            if (guessedType != null) {
-                return guessedType;
-            }
+        GroovyTypeAnalyzer typeAnalyzer = new GroovyTypeAnalyzer(request.doc);
+        Set<ClassNode> infered = typeAnalyzer.getTypes(dotCompletionContext.getAstPath(),
+                dotCompletionContext.getAstOffset());
+        // FIXME multiple types
+        // FIXME is there any test (?)
+        if (!infered.isEmpty()) {
+            return infered.iterator().next();
         }
 
         // type inferred
