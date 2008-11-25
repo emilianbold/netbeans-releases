@@ -2127,7 +2127,7 @@ public class CompletionHandler implements CodeCompletionHandler {
      */
     private ClassNode getBeforeDotDeclaringClass(CompletionRequest request) {
 
-        assert request.isBehindDot();
+        assert request.isBehindDot() || request.ctx.before1 == null;
 
         if (request.declaringClass != null && request.declaringClass instanceof ClassNode) {
             LOG.log(Level.FINEST, "returning declaringClass from request."); // NOI18N
@@ -2136,6 +2136,14 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         // FIXME move this up
         DotCompletionContext dotCompletionContext = getDotCompletionContext(request);
+
+        // FIXME static/script context...
+        if (!request.isBehindDot() && request.ctx.before1 == null
+                && (request.location == CaretLocation.INSIDE_CLOSURE || request.location == CaretLocation.INSIDE_METHOD)) {
+            request.declaringClass = getSurroundingClassNode(request);
+            request.completionType = CompletionType.THIS;
+            return request.declaringClass;
+        }
 
         if (dotCompletionContext == null || dotCompletionContext.getAstPath() == null
                 || dotCompletionContext.getAstPath().leaf() == null) {
@@ -2296,7 +2304,7 @@ public class CompletionHandler implements CodeCompletionHandler {
             return false;
         }
 
-        if (request == null || request.ctx == null || request.ctx.before1 == null) {
+        if (request == null || request.ctx == null/* || request.ctx.before1 == null*/) {
             return false;
         }
 
@@ -2312,7 +2320,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         // 1.) Test if this is a Constructor-call?
         // FIXME move this to separate method completeConstructors()
-        if (request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
+        if (request.ctx.before1 != null && request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
             LOG.log(Level.FINEST, "This looks like a constructor ...");
             // look for all imported types starting with prefix, which have public constructors
             final List<String> defaultImports = new ArrayList<String>();
@@ -2383,7 +2391,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         // 2.2  static/instance method on class or object
 
-        if (!request.isBehindDot()) {
+        if (!request.isBehindDot() && request.ctx.before1 != null) {
             LOG.log(Level.FINEST, "I'm not invoked behind a dot."); // NOI18N
             return false;
         }

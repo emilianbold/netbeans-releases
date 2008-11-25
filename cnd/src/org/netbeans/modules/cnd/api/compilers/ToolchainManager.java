@@ -131,6 +131,8 @@ public abstract class ToolchainManager {
 
         String getVersionPattern();
 
+        boolean skipSearch();
+
         AlternativePath[] getAlternativePath();
     }
 

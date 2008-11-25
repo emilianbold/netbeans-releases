@@ -1,0 +1,8 @@
+Code completion result for source line:
+x|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+CLASS      XmlNodePrinter                             null
+CLASS      XmlParser                                  null
+CLASS      XmlSlurper                                 null
+METHOD     x()                                        
