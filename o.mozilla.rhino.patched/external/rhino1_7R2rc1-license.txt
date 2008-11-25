@@ -1,10 +1,13 @@
 Name: Rhino
-Version: 1.6R7
+Version: 1.7R2
 Description: Rhino is an open-source implementation of JavaScript
 License: MPL-1.1
 OSR: 7973
 Origin: http://www.mozilla.org/rhino/
 Source: http://www.mozilla.org/rhino/
+
+Got the bits from ftp://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R2-RC1.zip
+
 
 
                           MOZILLA PUBLIC LICENSE
