@@ -44,7 +44,7 @@ testresult() {
     echo '  <testcase classname="hg.'$2'" name="hg.'$2'" time="1" />' >>$FILE
     echo '  <system-out><![CDATA[' >>$FILE
     echo "$3" >>$FILE
-    echo ']]</system-out>' >>$FILE
+    echo ']]></system-out>' >>$FILE
     echo '  <system-err></system-err>' >>$FILE
     echo '</testsuite>' >>$FILE
 }
