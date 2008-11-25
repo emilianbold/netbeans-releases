@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,57 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.editor.test;
+package org.netbeans.modules.css.gsf;
 
-import org.netbeans.junit.MockServices;
-import org.netbeans.modules.css.editor.Css;
-import org.netbeans.modules.css.gsf.CSSFormatter;
-import org.netbeans.modules.css.gsf.CSSLanguage;
-import org.netbeans.modules.gsf.GsfTestBase;
-import org.netbeans.modules.gsf.api.Formatter;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.css.editor.test.TestBase;
 
 /**
- * Common ancestor for all test classes.
  */
-public class TestBase extends GsfTestBase {
+public class CSSFormatterTest extends TestBase {
 
-//    static {
-//        MockServices.setServices(new Class[] {RepositoryImpl.class});
-//    }
-//
-//    private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
-    
-    public TestBase(String name) {
+    public CSSFormatterTest(String name) {
         super(name);
     }
 
     @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new CSSLanguage();
+    protected boolean runInEQ() {
+        return true;
     }
 
-    @Override
-    protected String getPreferredMimeType() {
-        return Css.CSS_MIME_TYPE;
+    public void testFormatting() throws Exception {
+        format("a{\nbackground: red;\n  }\n",
+               "a{\n    background: red;\n}\n", null);
     }
 
-    @Override
-    public Formatter getFormatter(IndentPrefs preferences) {
-        if (preferences == null) {
-            preferences = new IndentPrefs(4,4);
-        }
+    public void XXXtestIndentation() throws Exception {
 
-//        Preferences prefs = MimeLookup.getLookup(MimePath.get(Css.CSS_MIME_TYPE)).lookup(Preferences.class);
-//        prefs.putInt(SimpleValueNames.SPACES_PER_TAB, preferences.getIndentation());
-        // TODO: XXXX
-
-        CSSFormatter formatter = new CSSFormatter();
-
-        return formatter;
+        // TODO: CSS indentation has to be fixed before these tests can be enabled
+        
+        insertNewline("a{^background: red;\n  }\n", "a{\n    ^background: red;\n  }\n", null);
+        insertNewline("a{\n    background:^red;\n  }\n", "a{\n    background:\n        ^red;\n  }\n", null);
+        insertNewline("a{\n    background: red;^\n  }\n", "a{\n    background: red;\n    ^\n  }\n", null);
+        insertNewline("a{\n    background: red;\n  }^", "a{\n    background: red;\n  }\n  ^", null);
     }
+
+
 }
