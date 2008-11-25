@@ -118,6 +118,7 @@ import org.sonatype.nexus.index.creator.JarFileContentsIndexCreator;
 import org.sonatype.nexus.index.creator.MinimalArtifactInfoIndexCreator;
 import org.sonatype.nexus.index.search.SearchEngine;
 import org.sonatype.nexus.index.updater.IndexUpdater;
+import sun.nio.cs.ext.ISCII91;
 
 /**
  *
@@ -273,7 +274,10 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
             if (context != null) {
                 toRet.add(context);
             } else {
-                LOGGER.info("The context '" + info.getId() + "' isn't loaded. Please file under component: maven in NetBeans issue tracking system");
+                if (info.isLocal() || info.isRemoteDownloadable()) {
+                    LOGGER.info("The context '" + info.getId() + "' isn't loaded. Please file under component: maven in NetBeans issue tracking system");
+                }
+                //else ignore, is not a real nexus repo, is missing any indexing properties..
             }
         }
         return toRet;
