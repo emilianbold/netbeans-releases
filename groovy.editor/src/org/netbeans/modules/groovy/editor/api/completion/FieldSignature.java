@@ -39,46 +39,42 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
-import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  *
- * @author schmidtm
+ * @author Petr Hejl
  */
-public class ConstructorsTest extends GroovyTestBase {
+public final class FieldSignature {
 
-    String TEST_BASE = "testfiles/completion/constructors/";
+    private final String name;
 
-    public ConstructorsTest(String testName) {
-        super(testName);
-        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
+    public FieldSignature(String name) {
+        this.name = name;
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
+    public String getName() {
+        return name;
     }
 
-    // testing proper creation of constructor-call proposals
-
-    //     * groovy.lang.*
-    //     * groovy.util.*
-
-    public void testConstructors1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors1.groovy", "StringBuffer sb = new StringBuffer^", false);
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final FieldSignature other = (FieldSignature) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        return true;
     }
 
-    public void testConstructors2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors2.groovy", "StringBuffer sb = new stringbuffer^", false);
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + (this.name != null ? this.name.hashCode() : 0);
+        return hash;
     }
-
-    public void testConstructors3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors3.groovy", "FileOutputStream fos = new fileoutputstr^", false);
-    }
+    
 }

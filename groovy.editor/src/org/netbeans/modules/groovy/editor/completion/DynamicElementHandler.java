@@ -37,48 +37,54 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion;
+package org.netbeans.modules.groovy.editor.completion;
 
-import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
+import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionType;
+import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author schmidtm
+ * @author Petr Hejl
  */
-public class ConstructorsTest extends GroovyTestBase {
+public final class DynamicElementHandler {
 
-    String TEST_BASE = "testfiles/completion/constructors/";
+    private static final Logger LOG = Logger.getLogger(DynamicElementHandler.class.getName());
 
-    public ConstructorsTest(String testName) {
-        super(testName);
-        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
+    private final CompilationInfo info;
+
+    private DynamicElementHandler(CompilationInfo info) {
+        this.info = info;
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
+    public static DynamicElementHandler forCompilationInfo(CompilationInfo info) {
+        return new DynamicElementHandler(info);
     }
 
-    // testing proper creation of constructor-call proposals
+    // FIXME ideally there should be something like nice CompletionRequest once public and stable
+    // then this class could implement some common interface
+    // FIXME SPI to plug here for Grails dynamic methods
+    public Map<MethodSignature, ? extends CompletionItem> getMethods(CompletionType completionType,
+            String className, String prefix, int anchor) {
 
-    //     * groovy.lang.*
-    //     * groovy.util.*
+        Map<MethodSignature, CompletionItem.DynamicMethodItem> resultDynamic =
+                new HashMap<MethodSignature, CompletionItem.DynamicMethodItem>();
 
-    public void testConstructors1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors1.groovy", "StringBuffer sb = new StringBuffer^", false);
+        for (DynamicCompletionProvider provider : Lookup.getDefault().lookupAll(DynamicCompletionProvider.class)) {
+            for (Map.Entry<MethodSignature, String> entry : provider.getMethods(info.getFileObject(), className, completionType).entrySet()) {
+                if (entry.getKey().getName().startsWith(prefix)) {
+                    resultDynamic.put(entry.getKey(), new CompletionItem.DynamicMethodItem(
+                            anchor, entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue()));
+                }
+            }
+        }
+
+        return resultDynamic;
     }
 
-    public void testConstructors2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors2.groovy", "StringBuffer sb = new stringbuffer^", false);
-    }
-
-    public void testConstructors3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors3.groovy", "FileOutputStream fos = new fileoutputstr^", false);
-    }
 }

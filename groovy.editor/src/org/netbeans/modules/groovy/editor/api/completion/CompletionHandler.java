@@ -110,16 +110,14 @@ import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.GroovyTypeAnalyzer;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
-import org.netbeans.modules.groovy.editor.api.TypeVisitor;
 import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
-import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler.CompletionType;
 import org.netbeans.modules.groovy.editor.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.completion.JavaElementHandler.ClassType;
-import org.netbeans.modules.groovy.editor.completion.MethodSignature;
+import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
@@ -130,9 +128,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class GroovyCompletionHandler implements CodeCompletionHandler {
+public class CompletionHandler implements CodeCompletionHandler {
 
-    private static final Logger LOG = Logger.getLogger(GroovyCompletionHandler.class.getName());
+    private static final Logger LOG = Logger.getLogger(CompletionHandler.class.getName());
 
     private final List<String> dfltImports = new ArrayList<String>();
 
@@ -146,7 +144,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
 
     private Set<GroovyKeyword> keywords;
 
-    public GroovyCompletionHandler() {
+    public CompletionHandler() {
         JavaPlatformManager platformMan = JavaPlatformManager.getDefault();
         JavaPlatform platform = platformMan.getDefaultPlatform();
         List<URL> docfolder = platform.getJavadocFolders();
@@ -2744,7 +2742,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
     public String document(CompilationInfo info, ElementHandle element) {
         LOG.log(Level.FINEST, "document(), ElementHandle : {0}", element);
 
-        String ERROR = "<h2>" + NbBundle.getMessage(GroovyCompletionHandler.class, "GroovyCompletion_NoJavaDocFound") + "</h2>";
+        String ERROR = "<h2>" + NbBundle.getMessage(CompletionHandler.class, "GroovyCompletion_NoJavaDocFound") + "</h2>";
         String doctext = null;
 
         if (element instanceof AstMethodElement) {
