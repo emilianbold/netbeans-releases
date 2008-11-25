@@ -183,8 +183,7 @@ Microsystems, Inc. All Rights Reserved.
     embedding. So task implementator can recognize blocks of embedded languages.
     
     Parsing API contains support for high priority 
-    <api name="ParsingAPI" type="export" category="official" group="java" url="@TOP@index.html"/>
-    <api name="ParsingSPI" type="import" category="official" group="java" url="@TOP@index.html"/>
+    <api name="ParsingAPI" type="export" category="devel" group="java" url="@TOP@index.html"/>
   </p>
   <p>
       

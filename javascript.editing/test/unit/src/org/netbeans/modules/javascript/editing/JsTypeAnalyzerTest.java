@@ -41,10 +41,13 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.util.Collections;
 import org.mozilla.nb.javascript.Node;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -58,42 +61,52 @@ public class JsTypeAnalyzerTest extends JsTestBase {
         super(testName);
     }
 
-    private JsTypeAnalyzer getAnalyzer(String file, String caretLine, boolean findMethod) throws Exception {
+    private JsTypeAnalyzer getAnalyzer(String file, final String caretLine, final boolean findMethod) throws Exception {
         FileObject fo = getTestFile(file);
-        BaseDocument doc = getDocument(fo);
-        GsfTestCompilationInfo info = getInfo(fo);
-        Node root = AstUtilities.getRoot(info);
-        initializeRegistry();
-        JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+        Source source = Source.create(fo);
 
-        int caretOffset = -1;
+        final int caretOffset;
         if (caretLine != null) {
-            int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
-            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-            int lineOffset = info.getText().indexOf(caretLine);
-            assertTrue(lineOffset != -1);
-            caretOffset = lineOffset + caretDelta;
+            caretOffset = getCaretOffset(source.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(source, caretOffset);
+        } else {
+            caretOffset = -1;
         }
-        
-        AstPath path = new AstPath(root, caretOffset);
-        Node node = path.leaf();
-        
-        if (findMethod) {
-            Node method = AstUtilities.findMethodAtOffset(root, caretOffset);
-            assertNotNull(method);
-            
-            root = method;
-        }
-        
-        JsTypeAnalyzer instance = new JsTypeAnalyzer(info, index, root, node, caretOffset, caretOffset, doc, fo);
 
-        return instance;
+        final JsTypeAnalyzer [] result = new JsTypeAnalyzer [] { null };
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result r = resultIterator.getParserResult();
+                JsParseResult jspr = AstUtilities.getParseResult(r);
+                assertNotNull("Expecting JsParseResult, but got " + r, jspr);
+
+                Node root = jspr.getRootNode();
+                initializeRegistry();
+// XXX: parsingapi
+//                JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+
+                AstPath path = new AstPath(root, caretOffset);
+                Node node = path.leaf();
+
+                if (findMethod) {
+                    Node method = AstUtilities.findMethodAtOffset(root, caretOffset);
+                    assertNotNull(method);
+
+                    root = method;
+                }
+
+// XXX: parsingapi
+//                result[0] = new JsTypeAnalyzer(jspr, index, root, node, caretOffset, caretOffset);
+            }
+        });
+
+        return result[0];
     }
 
     public void testGetType() throws Exception {
         JsTypeAnalyzer instance = getAnalyzer("testfiles/types1.js", "// E^ND", false);
 
+        assertNotNull(instance);
         assertEquals("String", instance.getType("a"));
         assertEquals("Number", instance.getType("b"));
         assertEquals("Number", instance.getType("c"));
@@ -115,6 +128,7 @@ public class JsTypeAnalyzerTest extends JsTestBase {
     public void testGetType2() throws Exception {
         JsTypeAnalyzer instance = getAnalyzer("testfiles/types2.js", "// I^nitial", true);
 
+        assertNotNull(instance);
         assertEquals("Mixed", instance.getType("el"));
         assertEquals("Object|Array", instance.getType("values"));
         assertEquals("Boolean", instance.getType("returnElement"));
