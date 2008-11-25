@@ -540,8 +540,10 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             btBaseDirectory.setEnabled(!isRemoteHostSelected());
             cbFamily.removeAllItems();
             List<CompilerFlavor> list = CompilerFlavor.getFlavors(csm.getPlatform());
-            for (CompilerFlavor cf : list)
+            for (CompilerFlavor cf : list) {
                 cbFamily.addItem(cf);
+            }
+            cbFamily.addItem(CompilerFlavor.getUnknown(csm.getPlatform()));
             cbFamily.setSelectedItem(cs.getCompilerFlavor());
         } else {
             cbFamily.removeAllItems();

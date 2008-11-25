@@ -132,21 +132,21 @@ public final class ToolchainManager {
     }
 
     ToolchainDescriptor getToolchain(String name, int platform){
-        ToolchainDescriptor nonePlatform = null;
-        for (ToolchainDescriptor d : descriptors){
-            if (isPlatforSupported(platform, d)){
-                if (name.equals(d.getName())){
-                    return d;
-                }
-            } 
-            if (nonePlatform == null && isPlatforSupported(PlatformTypes.PLATFORM_NONE, d)) {
-                nonePlatform = d;
+        for (ToolchainDescriptor d : descriptors) {
+            if (name.equals(d.getName()) && (isPlatforSupported(platform, d)
+                        || isPlatforSupported(PlatformTypes.PLATFORM_NONE, d))) {
+                return d;
             }
         }
-        return nonePlatform;
+        for (ToolchainDescriptor d : descriptors) {
+            if (isPlatforSupported(PlatformTypes.PLATFORM_NONE, d)) {
+                return d;
+            }
+        }
+        return null;
     }
 
-    List<ToolchainDescriptor> getAllToolchains(){
+    List<ToolchainDescriptor> getAllToolchains() {
         return new ArrayList<ToolchainDescriptor>(descriptors);
     }
 
