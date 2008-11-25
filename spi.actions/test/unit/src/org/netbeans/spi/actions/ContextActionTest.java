@@ -908,6 +908,8 @@ public class ContextActionTest extends NbTestCase {
         setContent (otherThing1);
         assertTrue (m.isEnabled());
         setContent (thing1, otherThing1);
+        assertTrue (f.isEnabled());
+        assertTrue (g.isEnabled());
         assertFalse (m.isEnabled());
         setContent (thing1, otherBadThing);
         assertTrue (m.isEnabled());

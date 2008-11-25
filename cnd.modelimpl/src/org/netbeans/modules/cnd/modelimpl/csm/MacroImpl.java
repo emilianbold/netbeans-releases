@@ -222,6 +222,6 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     }
 
     public CsmParameterList<CsmParameterList, CsmMacroParameter> getParameterList() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); //NOI18N
     }
 }

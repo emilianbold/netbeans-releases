@@ -39,11 +39,7 @@
 package org.netbeans.spi.actions;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.Action;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -56,11 +52,9 @@ import org.openide.util.Mutex;
 * ContextAction instances
 * @author Tim Boudreau
 */
-class ActionStub<T> implements Action, LookupListener, ContextAwareAction {
+class ActionStub<T> extends NbAction implements LookupListener, ContextAwareAction {
 
     private final Lookup.Result<T> lkpResult;
-    private final Map<String, Object> pairs = new ConcurrentHashMap<String, Object>();
-    private final PropertyChangeSupport supp = new PropertyChangeSupport(this);
     private final Lookup context;
     protected final ContextAction<T> parent;
     protected boolean enabled;
@@ -78,6 +72,7 @@ class ActionStub<T> implements Action, LookupListener, ContextAwareAction {
         }
     }
 
+    @Override
     public Object getValue(String key) {
         Object result = _getValue(key);
         if (result == null) {
@@ -87,7 +82,7 @@ class ActionStub<T> implements Action, LookupListener, ContextAwareAction {
     }
 
     Object _getValue(String key) {
-        if (supp.getPropertyChangeListeners().length == 0) {
+        if (!attached()) {
             //Make sure any code that updates the name runs - we are not
             //listening to the lookup
             resultChanged(null);
@@ -98,58 +93,13 @@ class ActionStub<T> implements Action, LookupListener, ContextAwareAction {
     Collection<? extends T> collection() {
         return lkpResult.allInstances();
     }
-
-    public void putValue(String key, Object value) {
-        Object old = pairs.put(key, value);
-        boolean fire = (old == null) != (value == null);
-        if (fire) {
-            fire = value != null && !value.equals(old);
-            if (fire) {
-                supp.firePropertyChange(key, old, value);
-            }
-        }
-    }
-
-    public void setEnabled(boolean b) {
-        //Will throw exception
-        parent.setEnabled(b);
-    }
-
+    
     public boolean isEnabled() {
         Collection<? extends T> targets = collection();
         assert targets != null;
         assert parent != null;
         return targets.isEmpty() ? false : parent.checkQuantity(targets) &&
                 parent.isEnabled(targets);
-    }
-
-    volatile boolean attached;
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        supp.addPropertyChangeListener(listener);
-        if (supp.getPropertyChangeListeners().length == 1) {
-            attached = true;
-            addNotify();
-        }
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        supp.removePropertyChangeListener(listener);
-        if (supp.getPropertyChangeListeners().length == 0) {
-            attached = false;
-            removeNotify();
-        }
-    }
-
-    protected void addNotify() {
-        //used in subclasses
-    }
-
-    protected void removeNotify() {
-        //used in subclasses
-    }
-
-    Object lock() {
-        return parent.STATE_LOCK;
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -162,7 +112,7 @@ class ActionStub<T> implements Action, LookupListener, ContextAwareAction {
     void enabledChanged(final boolean enabled) {
         Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
-                firePropertyChange("enabled", !enabled, enabled); //NOI18N
+                firePropertyChange(PROP_ENABLED, !enabled, enabled); //NOI18N
                 if (ContextAction.unitTest) {
                     synchronized (parent) {
                         parent.notifyAll();
@@ -175,21 +125,13 @@ class ActionStub<T> implements Action, LookupListener, ContextAwareAction {
         });
     }
 
-    void firePropertyChange (final String prop, final Object old, final Object nue) {
-        Mutex.EVENT.readAccess (new Runnable() {
-            public void run() {
-                supp.firePropertyChange(prop, old, nue);
-            }
-        });
-    }
-
     public void resultChanged(LookupEvent ev) {
         if (ContextAction.unitTest) {
             synchronized (parent) {
                 parent.notifyAll();
             }
         }
-        synchronized(parent.STATE_LOCK) {
+        synchronized(parent.lock()) {
             parent.change (collection(), this == parent.stub ? parent : this);
         }
         boolean old = enabled;
@@ -206,7 +148,8 @@ class ActionStub<T> implements Action, LookupListener, ContextAwareAction {
                 context + "]"; //NOI18N
     }
 
-    public Action createContextAwareInstance(Lookup actionContext) {
+    @Override
+    protected NbAction internalCreateContextAwareInstance(Lookup actionContext) {
         return parent.createStub(actionContext);
     }
 }

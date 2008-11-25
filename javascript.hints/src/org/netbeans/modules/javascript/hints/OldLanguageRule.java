@@ -47,6 +47,7 @@ import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.mozilla.nb.javascript.Context;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -113,8 +114,9 @@ public class OldLanguageRule extends JsErrorRule {
                     result.add(desc);
 
                     OffsetRange range = new OffsetRange(rowStart, rowEnd);
-                    List<HintFix> fixList = new ArrayList<HintFix>(1);
+                    List<HintFix> fixList = new ArrayList<HintFix>(2);
                     fixList.add(new ChangeLanguageFix(context));
+                    fixList.add(new ChangeTargetFix());
                     //SupportedBrowsers browsers = SupportedBrowsers.getInstance();
                     //String oldVer = SupportedBrowsers.getLanguageVersionString(browsers.getLanguageVersion());
                     String keyword = isYield ? "yield" : "let"; // NOI18N
@@ -193,6 +195,27 @@ public class OldLanguageRule extends JsErrorRule {
 
         public boolean isSafe() {
             return true;
+        }
+
+        public boolean isInteractive() {
+            return true;
+        }
+    }
+
+    private static class ChangeTargetFix implements HintFix {
+        ChangeTargetFix() {
+        }
+
+        public String getDescription() {
+            return NbBundle.getMessage(OldLanguageRule.class, "ChangeJsLanguages");
+        }
+
+        public void implement() throws Exception {
+            OptionsDisplayer.getDefault().open("Advanced/JsOptions"); // NOI18N
+        }
+
+        public boolean isSafe() {
+            return false;
         }
 
         public boolean isInteractive() {
