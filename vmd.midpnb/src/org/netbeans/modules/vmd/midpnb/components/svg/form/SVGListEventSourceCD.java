@@ -36,55 +36,46 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
+import java.awt.Image;
+
 import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
-import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
-import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author avk
+ * @author ads
  */
-public class SVGTextFieldCD extends ComponentDescriptor{
+public class SVGListEventSourceCD extends SVGComponentEventSourceCD {
 
-    public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGTextField"); // NOI18N
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, 
+            "#SVGListEventEventSource"); // NOI18
     
+    private static final String ICON_PATH = 
+        "org/netbeans/modules/mobility/svgcore/resources/palette/form/list_16.png"; // NOI18N                                                
+    private static final Image ICON = ImageUtilities.loadImage(ICON_PATH);
     
-    public TypeDescriptor getTypeDescriptor () {
-        return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, true);
-    }
-    
-    static {
-        SVGComponentCD.addPairType( TYPEID, SVGTextFieldEventSourceCD.TYPEID );
-    }
-
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentEventSourceCD#getIcon()
+     */
     @Override
-    public VersionDescriptor getVersionDescriptor() {
-        return MidpVersionDescriptor.MIDP_2;
+    protected Image getIcon() {
+        return ICON;
+    }
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentEventSourceCD#getPairTypeId()
+     */
+    @Override
+    protected TypeID getPairTypeId() {
+        return SVGListCD.TYPEID;
+    }
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentEventSourceCD#getTypeId()
+     */
+    @Override
+    protected TypeID getTypeId() {
+        return TYPEID;
     }
 
-    public List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
-        return null;
-    }
-    
-    @Override
-    protected List<? extends Presenter> createPresenters () {
-        return Arrays.asList(
-                //code
-                MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
-                MidpCodePresenterSupport.createAddImportPresenter()
-        );
-    }
-    
-    
 }

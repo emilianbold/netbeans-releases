@@ -62,6 +62,10 @@ public class SVGSpinnerCD extends ComponentDescriptor{
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);
     }
+    
+    static {
+        SVGComponentCD.addPairType( TYPEID, SVGSpinnerEventSourceCD.TYPEID );
+    }
 
     @Override
     public VersionDescriptor getVersionDescriptor() {
