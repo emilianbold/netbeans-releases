@@ -761,10 +761,10 @@ public class CompilerSetManager {
                     switch(p.getKind()){
                         case PATH:
                         {
-                            StringTokenizer st = new StringTokenizer(p.getPath(),";,");
+                            StringTokenizer st = new StringTokenizer(p.getPath(),";,"); // NOI18N
                             while(st.hasMoreTokens()){
                                 String method = st.nextToken();
-                                if ("$PATH".equals(method)){
+                                if ("$PATH".equals(method)){ // NOI18N
                                     for(String name : descriptor.getNames()){
                                         String path = findCommand(name);
                                         if (path != null) {
@@ -773,11 +773,11 @@ public class CompilerSetManager {
                                             }
                                         }
                                     }
-                                } else if ("$MSYS".equals(method)){
+                                } else if ("$MSYS".equals(method)){ // NOI18N
                                     for(String name : descriptor.getNames()){
                                         String dir = getMSysBase();
                                         if (dir != null) {
-                                            String path = findCommand(name, dir+"/bin");
+                                            String path = findCommand(name, dir+"/bin"); // NOI18N
                                             if (path != null) {
                                                 if (notSkipedName(cs, descriptor, path, name)) {
                                                     return cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, tool);
@@ -798,7 +798,7 @@ public class CompilerSetManager {
                         }
                         case TOOL_FAMILY:
                         {
-                            StringTokenizer st = new StringTokenizer(p.getPath(),";,");
+                            StringTokenizer st = new StringTokenizer(p.getPath(),";,"); // NOI18N
                             while(st.hasMoreTokens()){
                                 String method = st.nextToken();
                                 for(CompilerSet s : sets){
@@ -818,13 +818,13 @@ public class CompilerSetManager {
                         }
                         case TOOL_NAME:
                         {
-                            StringTokenizer st = new StringTokenizer(p.getPath(),";,");
+                            StringTokenizer st = new StringTokenizer(p.getPath(),";,"); // NOI18N
                             while(st.hasMoreTokens()){
                                 String method = st.nextToken();
                                 for(CompilerSet s : sets){
                                     if (s != cs) {
                                         String name = s.getCompilerFlavor().getToolchainDescriptor().getName();
-                                        if (name.equals(method) || "*".equals(method)){
+                                        if (name.equals(method) || "*".equals(method)){ // NOI18N
                                             Tool other = s.findTool(tool);
                                             if (other != null){
                                                 return cs.addNewTool(hkey, other.getName(), other.getPath(), tool);
@@ -846,7 +846,7 @@ public class CompilerSetManager {
         if (!descriptor.skipSearch()) {
             return true;
         }
-        String s = cs.getDirectory()+"/"+name;
+        String s = cs.getDirectory()+"/"+name; // NOI18N
         s = s.replaceAll("\\\\", "/"); // NOI18N
         path = path.replaceAll("\\\\", "/"); // NOI18N
         return !path.startsWith(s);
