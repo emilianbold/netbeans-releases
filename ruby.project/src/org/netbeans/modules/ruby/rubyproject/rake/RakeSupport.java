@@ -94,8 +94,10 @@ import org.openide.util.actions.SystemAction;
 public final class RakeSupport {
 
     private static final Logger LOGGER = Logger.getLogger(RakeSupport.class.getName());
+
     /** File storing the 'rake -D' output. */
     static final String RAKE_D_OUTPUT = "nbproject/private/rake-d.txt"; // NOI18N
+    
     /** Standard names used for Rakefile. */
     static final String[] RAKEFILE_NAMES = new String[] {
         "rakefile", "Rakefile", "rakefile.rb", "Rakefile.rb" // NOI18N
@@ -190,13 +192,17 @@ public final class RakeSupport {
         return false;
     }
 
+    public static void refreshTasks(final Project project) {
+        refreshTasks(project, true);
+    }
+
     /**
      * Runs 'rake -D' and writes the output into the {@link #RAKE_D_OUTPUT} if
      * succeed.
      * 
      * @param project project for which tasks are read
      */
-    public static void refreshTasks(final Project project) {
+    public static void refreshTasks(final Project project, final boolean warn) {
         final FileObject projectDir = project.getProjectDirectory();
 
         try {
@@ -217,7 +223,7 @@ public final class RakeSupport {
             return;
         }
 
-        String rakeOutput = readRakeTasksOutput(project);
+        String rakeOutput = readRakeTasksOutput(project, warn);
         if (rakeOutput != null) {
             writeRakeTasks(project, rakeOutput);
         }
@@ -227,9 +233,9 @@ public final class RakeSupport {
      * Runs 'rake -D' and returns the output.
      *
      * @param project project for which tasks are read
-     * @return rake output; might be <tt>null</tt> when underlaying rake command fails.
+     * @return rake output; might be <tt>null</tt> when underlying rake command fails.
      */
-    private static String readRakeTasksOutput(final Project project) {
+    private static String readRakeTasksOutput(final Project project, boolean warn) {
         File pwd;
         FileObject rakeFile = RakeSupport.findRakeFile(project);
         if (rakeFile == null) {
@@ -241,7 +247,7 @@ public final class RakeSupport {
         // Install the given gem
         RubyPlatform platform = RubyPlatform.platformFor(project);
 
-        return dumpRakeTasksInfo(platform, pwd);
+        return dumpRakeTasksInfo(platform, pwd, warn);
         // TODO: we are not able to parse complex Rakefile (e.g. rails'), using -P argument, yet
         // sb.append(hiddenRakeRunner(cmd, rakeCmd, pwd, "-P"));
     }
@@ -301,7 +307,7 @@ public final class RakeSupport {
         return null;
     }
 
-    private static String dumpRakeTasksInfo(RubyPlatform platform, File pwd) {
+    private static String dumpRakeTasksInfo(RubyPlatform platform, File pwd, boolean warn) {
         List<String> argList = new ArrayList<String>();
         File cmd = platform.getInterpreterFile();
         if (!cmd.getName().startsWith("jruby") || ExecutionUtils.launchJRubyScript()) { // NOI18N
@@ -339,7 +345,7 @@ public final class RakeSupport {
             
             exitCode = process.waitFor();
 
-            if (exitCode != 0) {
+            if (warn && exitCode != 0) {
                 LOGGER.severe("rake process failed (workdir: " + pwd + "):\nstdout:\n\n" + stdout + // NOI18N
                         "stderr:\n" + stderr); // NOI18N
                 Util.notifyLocalized(RakeSupport.class, "RakeSupport.rake.task.fetching.fails", // NOI18N

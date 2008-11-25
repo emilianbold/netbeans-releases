@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,54 +37,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion;
+package org.netbeans.api.ruby.platform;
 
-import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.Dialog;
+import junit.framework.Assert;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
-/**
+/** 
+ * Copy-pasted from APISupport. Test ready implementation of DialogDisplayer.
  *
- * @author schmidtm
+ * @author Jaroslav Tulach
  */
-public class ConstructorsTest extends GroovyTestBase {
-
-    String TEST_BASE = "testfiles/completion/constructors/";
-
-    public ConstructorsTest(String testName) {
-        super(testName);
-        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
+public class DialogDisplayerImpl extends DialogDisplayer {
+    
+    private static Object toReturn;
+    private NotifyDescriptor lastNotifyDescriptor;
+    private Dialog dialog;
+    
+    public static void returnFromNotify(Object value) {
+        Object o = DialogDisplayer.getDefault();
+        Assert.assertEquals("My class", DialogDisplayerImpl.class, o.getClass());
+        
+        Assert.assertNull("No previous value", toReturn);
+        toReturn = value;
+    }
+    
+    public Object notify(NotifyDescriptor descriptor) {
+        lastNotifyDescriptor = descriptor;
+        Object r = toReturn;
+        toReturn = null;
+        Assert.assertNotNull("We are supposed to return a value: " + descriptor.getMessage(), r);
+        return r;
+    }
+    
+    public Dialog createDialog(DialogDescriptor descriptor) {
+        if (dialog == null) {
+            Assert.fail("Not implemented");
+        }
+        return dialog;
+    }
+    
+    public NotifyDescriptor getLastNotifyDescriptor() {
+        return lastNotifyDescriptor;
+    }
+    
+    public void reset() {
+        this.lastNotifyDescriptor = null;
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
+    public void setDialog(Dialog dialog) {
+        this.dialog = dialog;
     }
-
-    // testing proper creation of constructor-call proposals
-
-    //     * groovy.lang.*
-    //     * groovy.util.*
-
-    public void testConstructors1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors1.groovy", "StringBuffer sb = new StringBuffer^", false);
-    }
-
-    public void testConstructors2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors2.groovy", "StringBuffer sb = new stringbuffer^", false);
-    }
-
-    public void testConstructors3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors3.groovy", "FileOutputStream fos = new fileoutputstr^", false);
-    }
+    
 }

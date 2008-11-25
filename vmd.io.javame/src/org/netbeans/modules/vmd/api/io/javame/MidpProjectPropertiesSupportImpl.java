@@ -68,6 +68,11 @@ public class MidpProjectPropertiesSupportImpl {
     private static final HashMap<DeviceListener, AntProjectListener> deviceListeners = new HashMap<DeviceListener, AntProjectListener> ();
 
     static Dimension getDeviceScreenSizeFromProject (DataObjectContext context) {
+        //start Issue 116639 bug fix, If for some reasone sombody from non Java ME module ask for screen size
+        if (!(ProjectUtils.getProject(context) instanceof J2MEProject)) {
+            return new Dimension();
+        }
+        //end Issue 116639
         return getDeviceScreenSizeFromProject ((J2MEProject) ProjectUtils.getProject(context));
     }
     

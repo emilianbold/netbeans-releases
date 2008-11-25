@@ -446,7 +446,11 @@ public class JaxWsUtils {
                         while (exceptions.hasNext()) {
                             String exception = exceptions.next();
                             TypeElement excEl = workingCopy.getElements().getTypeElement(exception);
-                            exc.add(make.QualIdent(excEl));
+                            if (excEl != null) {
+                                exc.add(make.QualIdent(excEl));
+                            } else {
+                                exc.add(make.Identifier(exception));
+                            }
                         }
 
                         // create method

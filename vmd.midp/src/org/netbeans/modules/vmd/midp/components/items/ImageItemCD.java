@@ -150,7 +150,7 @@ public class ImageItemCD extends ComponentDescriptor {
     }
     
     public static Map<String, PropertyValue> getAppearanceValues() {
-        if (appearanceValues == null) {
+        if (appearanceValues == null || appearanceValues.isEmpty()) {
             appearanceValues = new TreeMap<String, PropertyValue>();
             appearanceValues.put("PLAIN", MidpTypes.createIntegerValue(ItemCD.VALUE_PLAIN)); // NOI18N
             appearanceValues.put("HYPERLINK", MidpTypes.createIntegerValue(ItemCD.VALUE_HYPERLINK)); // NOI18N
