@@ -13,7 +13,7 @@ if [ -z "$TMP" ]; then
   TMP="/tmp"
 fi
 
-
+t
 
 ANT_OPTS="-Xmx512m -XX:MaxPermSize=128m"
 export ANT_OPTS
@@ -43,9 +43,9 @@ testresult() {
     echo '  <properties>' >>$FILE
     echo '  </properties>' >>$FILE
     echo '  <testcase classname="hg.'$2'" name="hg.'$2'" time="1" />' >>$FILE
-    echo '  <system-out>' >>$FILE
+    echo '  <system-out><![CDATA[' >>$FILE
     echo "$3" >>$FILE
-    echo '</system-out>' >>$FILE
+    echo ']]</system-out>' >>$FILE
     echo '  <system-err></system-err>' >>$FILE
     echo '</testsuite>' >>$FILE
 }
