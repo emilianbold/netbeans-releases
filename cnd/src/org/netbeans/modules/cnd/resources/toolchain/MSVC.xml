@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="MVC" display="Microsoft Compiler Collection" family="MVC"/>
+    <toolchain name="MSVC" display="Microsoft Compiler Collection" family="MSVC"/>
     <platforms stringvalue="windows"/>
     <drive_letter_prefix stringvalue="/"/>
     <base_folder regestry="hklm\software\Microsoft\VisualStudio\SxS\VC7"  pattern=".*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]VC7[\\/]bin[\\/]?$"/>

@@ -49,15 +49,15 @@ import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescripto
  *
  * @author Alexander Simon
  */
-public class MvcCompiler extends GNUCCompiler {
+public class MsvcCompiler extends GNUCCompiler {
    /** Creates a new instance of GNUCCompiler */
-   public MvcCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+   public MsvcCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
        super(hkey, flavor, kind, name, displayName, path);
    }
 
    @Override
-   public MvcCompiler createCopy() {
-       MvcCompiler copy = new MvcCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath()); // NOI18N
+   public MsvcCompiler createCopy() {
+       MsvcCompiler copy = new MsvcCompiler(getHostKey(), getFlavor(), getKind(), "", getDisplayName(), getPath()); // NOI18N
        copy.setName(getName());
        return copy;
    }
