@@ -2524,7 +2524,7 @@ template_parameter_list
  */
 template_parameter
 	:
-	(options{generateAmbigWarnings = false;}:
+	(   ((LITERAL_class|LITERAL_typename) (ID)? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
 		(LITERAL_class|LITERAL_typename) 
 		(id:ID  (ASSIGNEQUAL assigned_type_name)? )?
 		{templateTypeParameter((id == null) ? "" : id.getText());}
