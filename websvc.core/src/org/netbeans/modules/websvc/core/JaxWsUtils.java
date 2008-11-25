@@ -992,70 +992,72 @@ public class JaxWsUtils {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                if (genUtils != null) {
-                    TreeMaker make = workingCopy.getTreeMaker();
+                Element methodEl = method.resolve(workingCopy);
+                if (methodEl != null) {
+                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                    if (genUtils != null) {
+                        TreeMaker make = workingCopy.getTreeMaker();
 
-                    ExpressionTree attrExpr =
-                            (attrValue == null ? null : genUtils.createAnnotationArgument(attrName, attrValue));
+                        ExpressionTree attrExpr =
+                                (attrValue == null ? null : genUtils.createAnnotationArgument(attrName, attrValue));
 
-                    Element methodEl = method.resolve(workingCopy);
-                    MethodTree methodTree = (MethodTree) workingCopy.getTrees().getTree(methodEl);
+                        MethodTree methodTree = (MethodTree) workingCopy.getTrees().getTree(methodEl);
 
-                    ModifiersTree modif = methodTree.getModifiers();
-                    List<? extends AnnotationTree> annotations = modif.getAnnotations();
-                    List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>();
+                        ModifiersTree modif = methodTree.getModifiers();
+                        List<? extends AnnotationTree> annotations = modif.getAnnotations();
+                        List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>();
 
-                    boolean foundWebMethodAn = false;
+                        boolean foundWebMethodAn = false;
 
-                    for (AnnotationTree an : annotations) {
-                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
-                        TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
-                        TypeElement anElement = (TypeElement) workingCopy.getTrees().getElement(anTreePath);
-                        if (anElement != null && anElement.getQualifiedName().contentEquals("javax.jws.WebMethod")) { //NOI18N
-                            foundWebMethodAn = true;
-                            List<? extends ExpressionTree> expressions = an.getArguments();
-                            List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
-                            boolean attrFound = false;
-                            for (ExpressionTree expr : expressions) {
-                                AssignmentTree as = (AssignmentTree) expr;
-                                IdentifierTree id = (IdentifierTree) as.getVariable();
-                                if (id.getName().contentEquals(attrName)) {
-                                    attrFound = true;
-                                    if (attrExpr != null) {
-                                        newExpressions.add(attrExpr);
+                        for (AnnotationTree an : annotations) {
+                            IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
+                            TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
+                            TypeElement anElement = (TypeElement) workingCopy.getTrees().getElement(anTreePath);
+                            if (anElement != null && anElement.getQualifiedName().contentEquals("javax.jws.WebMethod")) { //NOI18N
+                                foundWebMethodAn = true;
+                                List<? extends ExpressionTree> expressions = an.getArguments();
+                                List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
+                                boolean attrFound = false;
+                                for (ExpressionTree expr : expressions) {
+                                    AssignmentTree as = (AssignmentTree) expr;
+                                    IdentifierTree id = (IdentifierTree) as.getVariable();
+                                    if (id.getName().contentEquals(attrName)) {
+                                        attrFound = true;
+                                        if (attrExpr != null) {
+                                            newExpressions.add(attrExpr);
+                                        }
+
+                                    } else {
+                                        newExpressions.add(expr);
                                     }
 
-                                } else {
-                                    newExpressions.add(expr);
+                                }
+                                if (!attrFound) {
+                                    newExpressions.add(attrExpr);
                                 }
 
-                            }
-                            if (!attrFound) {
-                                newExpressions.add(attrExpr);
+                                TypeElement webMethodEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
+                                AnnotationTree webMethodAn = make.Annotation(make.QualIdent(webMethodEl), newExpressions);
+                                newAnnotations.add(webMethodAn);
+                            } else {
+                                newAnnotations.add(an);
                             }
 
-                            TypeElement webMethodEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
-                            AnnotationTree webMethodAn = make.Annotation(make.QualIdent(webMethodEl), newExpressions);
-                            newAnnotations.add(webMethodAn);
-                        } else {
-                            newAnnotations.add(an);
                         }
 
+                        if (!foundWebMethodAn && attrExpr != null) {
+                            TypeElement webMethodEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
+                            AnnotationTree webMethodAn = make.Annotation(
+                                    make.QualIdent(webMethodEl),
+                                    Collections.<ExpressionTree>singletonList(attrExpr));
+                            newAnnotations.add(webMethodAn);
+                        }
+
+                        ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
+                        workingCopy.rewrite(modif, newModifier);
                     }
 
-                    if (!foundWebMethodAn && attrExpr != null) {
-                        TypeElement webMethodEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
-                        AnnotationTree webMethodAn = make.Annotation(
-                                make.QualIdent(webMethodEl),
-                                Collections.<ExpressionTree>singletonList(attrExpr));
-                        newAnnotations.add(webMethodAn);
-                    }
-
-                    ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
-                    workingCopy.rewrite(modif, newModifier);
                 }
-
             }
 
             public void cancel() {
@@ -1081,76 +1083,78 @@ public class JaxWsUtils {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                if (genUtils != null) {
-                    TreeMaker make = workingCopy.getTreeMaker();
+                Element methodEl = methodHandle.resolve(workingCopy);
+                if (methodEl != null) {
+                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                    if (genUtils != null) {
+                        TreeMaker make = workingCopy.getTreeMaker();
 
-                    ExpressionTree attrExpr =
-                            (attrValue == null ? null : genUtils.createAnnotationArgument(attrName, attrValue));
+                        ExpressionTree attrExpr =
+                                (attrValue == null ? null : genUtils.createAnnotationArgument(attrName, attrValue));
 
-                    Element methodEl = methodHandle.resolve(workingCopy);
-                    MethodTree methodTree = (MethodTree) workingCopy.getTrees().getTree(methodEl);
-                    List<? extends VariableTree> parameters = methodTree.getParameters();
+                        MethodTree methodTree = (MethodTree) workingCopy.getTrees().getTree(methodEl);
+                        List<? extends VariableTree> parameters = methodTree.getParameters();
 
-                    for (VariableTree paramTree : parameters) {
-                        if (paramTree.getName().contentEquals(paramName)) {
-                            ModifiersTree modif = paramTree.getModifiers();
-                            List<? extends AnnotationTree> annotations = modif.getAnnotations();
-                            List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>();
+                        for (VariableTree paramTree : parameters) {
+                            if (paramTree.getName().contentEquals(paramName)) {
+                                ModifiersTree modif = paramTree.getModifiers();
+                                List<? extends AnnotationTree> annotations = modif.getAnnotations();
+                                List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>();
 
-                            boolean foundWebParamAn = false;
+                                boolean foundWebParamAn = false;
 
-                            for (AnnotationTree an : annotations) {
-                                IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
-                                TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
-                                TypeElement anElement = (TypeElement) workingCopy.getTrees().getElement(anTreePath);
-                                if (anElement != null && anElement.getQualifiedName().contentEquals("javax.jws.WebParam")) { //NOI18N
-                                    foundWebParamAn = true;
-                                    List<? extends ExpressionTree> expressions = an.getArguments();
-                                    List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
-                                    boolean attrFound = false;
-                                    for (ExpressionTree expr : expressions) {
-                                        AssignmentTree as = (AssignmentTree) expr;
-                                        IdentifierTree id = (IdentifierTree) as.getVariable();
-                                        if (id.getName().contentEquals(attrName)) {
-                                            attrFound = true;
-                                            if (attrExpr != null) {
-                                                newExpressions.add(attrExpr);
+                                for (AnnotationTree an : annotations) {
+                                    IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
+                                    TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
+                                    TypeElement anElement = (TypeElement) workingCopy.getTrees().getElement(anTreePath);
+                                    if (anElement != null && anElement.getQualifiedName().contentEquals("javax.jws.WebParam")) { //NOI18N
+                                        foundWebParamAn = true;
+                                        List<? extends ExpressionTree> expressions = an.getArguments();
+                                        List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
+                                        boolean attrFound = false;
+                                        for (ExpressionTree expr : expressions) {
+                                            AssignmentTree as = (AssignmentTree) expr;
+                                            IdentifierTree id = (IdentifierTree) as.getVariable();
+                                            if (id.getName().contentEquals(attrName)) {
+                                                attrFound = true;
+                                                if (attrExpr != null) {
+                                                    newExpressions.add(attrExpr);
+                                                }
+
+                                            } else {
+                                                newExpressions.add(expr);
                                             }
 
-                                        } else {
-                                            newExpressions.add(expr);
+                                        }
+                                        if (!attrFound) {
+                                            newExpressions.add(attrExpr);
                                         }
 
-                                    }
-                                    if (!attrFound) {
-                                        newExpressions.add(attrExpr);
+                                        TypeElement webParamEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
+                                        AnnotationTree webParamAn = make.Annotation(make.QualIdent(webParamEl), newExpressions);
+                                        newAnnotations.add(webParamAn);
+                                    } else {
+                                        newAnnotations.add(an);
                                     }
 
-                                    TypeElement webParamEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
-                                    AnnotationTree webParamAn = make.Annotation(make.QualIdent(webParamEl), newExpressions);
-                                    newAnnotations.add(webParamAn);
-                                } else {
-                                    newAnnotations.add(an);
                                 }
 
+                                if (!foundWebParamAn && attrExpr != null) {
+                                    TypeElement webParamEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
+                                    AnnotationTree webParamAn = make.Annotation(
+                                            make.QualIdent(webParamEl),
+                                            Collections.<ExpressionTree>singletonList(attrExpr));
+                                    newAnnotations.add(webParamAn);
+                                }
+
+                                ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
+                                workingCopy.rewrite(modif, newModifier);
+                                break;
+
                             }
 
-                            if (!foundWebParamAn && attrExpr != null) {
-                                TypeElement webParamEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
-                                AnnotationTree webParamAn = make.Annotation(
-                                        make.QualIdent(webParamEl),
-                                        Collections.<ExpressionTree>singletonList(attrExpr));
-                                newAnnotations.add(webParamAn);
-                            }
-
-                            ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
-                            workingCopy.rewrite(modif, newModifier);
-                            break;
 
                         }
-
-
                     }
                 }
             }
