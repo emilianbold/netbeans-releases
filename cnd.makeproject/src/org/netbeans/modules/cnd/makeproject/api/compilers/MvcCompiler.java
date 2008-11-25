@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 
 /**
  *
@@ -60,6 +61,15 @@ public class MvcCompiler extends GNUCCompiler {
        copy.setName(getName());
        return copy;
    }
+
+    @Override
+    public CompilerDescriptor getDescriptor() {
+        if (getKind() == Tool.CCCompiler) {
+            return getFlavor().getToolchainDescriptor().getCpp();
+        } else {
+            return getFlavor().getToolchainDescriptor().getC();
+        }
+    }
 
    @Override
    public List<String> getSystemIncludeDirectories() {
@@ -90,4 +100,9 @@ public class MvcCompiler extends GNUCCompiler {
        systemPreprocessorSymbolsList.add("__STDC__=1"); // NOI18N
        return systemPreprocessorSymbolsList;
    }
+
+    @Override
+   protected String getUniqueID() {
+       return ""+getKind()+super.getUniqueID();
+    }
 }
