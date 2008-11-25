@@ -49,6 +49,8 @@ package org.netbeans.modules.mobility.end2end.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
+
 import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -59,7 +61,9 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.ui.OpenProjects;
 //import org.netbeans.jmi.javamodel.JavaClass;
 //import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.modules.mobility.e2e.mapping.ServerJavonTemplate;
 import org.netbeans.modules.mobility.end2end.client.config.Configuration;
+import org.netbeans.modules.mobility.end2end.output.OutputLogger;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
@@ -217,6 +221,10 @@ public final class Util {
             
             if( !servlet ){
                 servletName = findFreeName(servletName, webApp);
+                OutputLogger.getInstance().log(MessageFormat.format(
+                        NbBundle.getMessage(ServerJavonTemplate.class,
+                            "MSG_AddServlet" ) , servletName,
+                            FileUtil.toFile(project.getProjectDirectory())));//NOI18N
                 final Servlet newServlet = (Servlet) webApp.createBean( "Servlet" ); //NOI18N
                 newServlet.setServletName( servletName );
                 newServlet.setServletClass( servletClassFQN );

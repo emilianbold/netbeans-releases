@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.memory;
 
 import java.lang.management.ManagementFactory;
@@ -60,45 +59,45 @@ import javax.management.NotificationListener;
 
 // package-local
 class LowMemoryNotifierImpl extends LowMemoryNotifier implements NotificationListener {
-    
+
     private Logger logger;
-    
+
     public LowMemoryNotifierImpl() {
-	
-	logger = Logger.getLogger(getClass().getPackage().getName());
-	String level = System.getProperty(logger.getName());
-	if( level != null ) {
-	    try {
-		logger.setLevel(Level.parse(level));
-	    } catch( IllegalArgumentException e ) {}
-	}
-	else {
-	    logger.setLevel(Level.SEVERE);
-	}
-	
+
+        logger = Logger.getLogger(getClass().getPackage().getName());
+        String level = System.getProperty(logger.getName());
+        if (level != null) {
+            try {
+                logger.setLevel(Level.parse(level));
+            } catch (IllegalArgumentException e) {
+            }
+        } else {
+            logger.setLevel(Level.SEVERE);
+        }
+
         MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
-        if( mbean instanceof NotificationEmitter ) {
+        if (mbean instanceof NotificationEmitter) {
             NotificationEmitter emitter = (NotificationEmitter) mbean;
             emitter.addNotificationListener(this, null, null);
         }
     }
-    
+
     public void addListener(LowMemoryListener listener) {
-        synchronized( listeners ) {
+        synchronized (listeners) {
             listeners.add(listener);
         }
     }
-    
+
     public void removeListener(LowMemoryListener listener) {
-	logger.info("LowMemoryNotifierImpl.removeListener " + listener); // NOI18N
-        synchronized( listeners ) {
+        logger.info("LowMemoryNotifierImpl.removeListener " + listener); // NOI18N
+        synchronized (listeners) {
             listeners.remove(listener);
         }
     }
-    
+
     public void setThresholdPercentage(double percentage) {
-	logger.info("LowMemoryNotifierImpl.setThresholdPercentage " + percentage); // NOI18N
-        assert(0 < percentage && percentage < 1.0);
+        logger.info("LowMemoryNotifierImpl.setThresholdPercentage " + percentage); // NOI18N
+        assert (0 < percentage && percentage < 1.0);
         long maxMemory = pool.getUsage().getMax();
         long threshold = (long) (maxMemory * percentage);
         pool.setUsageThreshold(threshold);
@@ -115,19 +114,19 @@ class LowMemoryNotifierImpl extends LowMemoryNotifier implements NotificationLis
      * should not use or modify the object.
      */
     public void handleNotification(Notification notification, Object hb) {
-	logger.info("LowMemoryNotifierImpl.handleNotification " + notification); // NOI18N
+        logger.info("LowMemoryNotifierImpl.handleNotification " + notification); // NOI18N
         if (MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED.equals(notification.getType())) {
             long maxMemory = pool.getUsage().getMax();
             long usedMemory = pool.getUsage().getUsed();
-	    logger.info("LowMemoryNotifierImpl.handleNotification " + maxMemory + '/' + usedMemory); // NOI18N
+            logger.info("LowMemoryNotifierImpl.handleNotification " + maxMemory + '/' + usedMemory); // NOI18N
             fireMemoryLow(maxMemory, usedMemory);
         }
     }
-    
+
     private static MemoryPoolMXBean findHeapPool() {
-        for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
-            if (pool.getType() == MemoryType.HEAP && pool.isUsageThresholdSupported()) {
-                return pool;
+        for (MemoryPoolMXBean memPool : ManagementFactory.getMemoryPoolMXBeans()) {
+            if (memPool.getType() == MemoryType.HEAP && memPool.isUsageThresholdSupported()) {
+                return memPool;
             }
         }
         return null;
@@ -140,17 +139,14 @@ class LowMemoryNotifierImpl extends LowMemoryNotifier implements NotificationLis
             la[i].memoryLow(event);
         }
     }
-    
+
     private LowMemoryListener[] getListeners() {
-        synchronized( listeners ) {
+        synchronized (listeners) {
             LowMemoryListener[] result = new LowMemoryListener[listeners.size()];
             listeners.toArray(result);
             return result;
         }
     }
-    
-    private Collection/*<LowMemoryListener>*/ listeners = new  LinkedList/*<LowMemoryListener>*/();
-    
+    private final Collection<LowMemoryListener> listeners = new LinkedList<LowMemoryListener>();
     private static final MemoryPoolMXBean pool = findHeapPool();
-
 }

@@ -45,8 +45,12 @@ import org.netbeans.modules.mobility.javon.JavonSerializer;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
+import javax.lang.model.element.VariableElement;
 
 /**
  *
@@ -69,6 +73,9 @@ public class ClassData {
     private ClassData componentType;
     private List<ClassData> typeParameters = new ArrayList<ClassData>();
     
+    private List<MethodData> myInvalidMethods;
+    private Map<String,String> myInvalidFields ;
+    
     public static final ClassData java_lang_Object = new ClassData( "java.lang", "Object", false, false );
     
     private ClassData( String packageName, String className, boolean primitive, boolean array ) {
@@ -78,6 +85,7 @@ public class ClassData {
         this.array = array;
 
         parent = java_lang_Object;
+        myInvalidFields = new HashMap<String, String>();
     }
 
     public ClassData( ClassData cd) {
@@ -92,6 +100,7 @@ public class ClassData {
         this.fields=cd.getFields();
         this.methods=cd.getMethods();
         this.typeParameters=cd.getParameterTypes();
+        myInvalidFields = new HashMap<String, String>();
     }
 
     public ClassData( String packageName, String className, boolean primitive, boolean array, JavonSerializer serializer ) {
@@ -107,6 +116,14 @@ public class ClassData {
         this.generics = false;
         this.fields = fields;
         this.methods = methods;
+    }
+    
+    public ClassData( String packageName, String className, boolean array, 
+            List<FieldData> fields, List<MethodData> methods, 
+            JavonSerializer serializer , List<MethodData> invalidMethods )
+    {
+        this( packageName, className, array, fields, methods , serializer ); 
+        myInvalidMethods = invalidMethods;
     }
 
     public ClassData( String packageName, String className, boolean array, List<ClassData> typeParams, JavonSerializer serializer ) {
@@ -214,6 +231,23 @@ public class ClassData {
         return Collections.unmodifiableList( methods );
     }
     
+    public List<MethodData> getInvalidMethods() {
+        if ( myInvalidMethods == null ) {
+            return Collections.EMPTY_LIST;
+        }
+        return Collections.unmodifiableList( myInvalidMethods );
+    }
+    
+
+    public void addInvalidField( VariableElement e ) {
+        String name = e.getSimpleName().toString();
+        String type = e.asType().toString();
+        myInvalidFields.put( name , type );
+    }
+    
+    public Map<String,String> getInvaidFields(){
+        return new HashMap<String, String>( myInvalidFields );
+    }
 
     /**
      * Returns all parameter type specified for this class

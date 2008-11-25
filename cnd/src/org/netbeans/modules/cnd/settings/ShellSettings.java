@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.settings;
 
 import java.util.ResourceBundle;
@@ -51,61 +50,57 @@ import org.openide.util.SharedClassObject;
  * Once a file has been created its options may diverge from the defaults. A
  * files options do not change if these default options are changed.
  */
-
 public class ShellSettings extends SharedClassObject {
 
     /** The singleton instance */
     //static ShellSettings cppSettings;
-
     /** serial uid */
     static final long serialVersionUID = -2942465353463577336L;
 
     // Option labels
     public static final String PROP_DEFSHELLCOMMAND = "defaultShellCommand";//NOI18N
-    public static final String PROP_SAVE_ALL        = "saveAll";        //NOI18N
-    
+    public static final String PROP_SAVE_ALL = "saveAll";        //NOI18N
     /** The resource bundle for the form editor */
     public static ResourceBundle bundle;
 
     /**
      *  Initialize each property.
      */
+    @Override
     protected void initialize() {
-	super.initialize();
+        super.initialize();
     }
-
 
     /** Return the signleton cppSettings */
     public static ShellSettings getDefault() {
-	return (ShellSettings) findObject(ShellSettings.class, true);
+        return findObject(ShellSettings.class, true);
     }
-
 
     /**
      * Get the display name.
      *
      *  @return value of OPTION_CPP_SETTINGS_NAME
      */
-    public String displayName () {
-	return getString("OPTION_SHELL_SETTINGS_NAME");		        //NOI18N
+    public String displayName() {
+        return getString("OPTION_SHELL_SETTINGS_NAME");		        //NOI18N
     }
-    
-    public HelpCtx getHelpCtx () {
-	return new HelpCtx ("Welcome_opt_shell_settings");	        //NOI18N // FIXUP
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("Welcome_opt_shell_settings");	        //NOI18N // FIXUP
     }
 
     /** 
-    * Default Shell Command
-    */
+     * Default Shell Command
+     */
     public void setDefaultShellCommand(String dsc) {
         putProperty(PROP_DEFSHELLCOMMAND, dsc, true);
     }
 
     /**
-    * Default Shell Command
-    */
+     * Default Shell Command
+     */
     public String getDefaultShellCommand() {
-        String dsc = (String)getProperty(PROP_DEFSHELLCOMMAND);
+        String dsc = (String) getProperty(PROP_DEFSHELLCOMMAND);
         if (dsc == null) {
             return "/bin/sh"; // NOI18N
         } else {
@@ -114,24 +109,24 @@ public class ShellSettings extends SharedClassObject {
     }
 
     /** Getter for the SaveAll property */
-    public boolean getSaveAll () {
-        Boolean dsc = (Boolean)getProperty(PROP_SAVE_ALL);
+    public boolean getSaveAll() {
+        Boolean dsc = (Boolean) getProperty(PROP_SAVE_ALL);
         if (dsc == null) {
             return true;
         }
         return dsc.booleanValue();
     }
-    
+
     /** Setter for the SaveAll property */
-    public void setSaveAll (boolean sa) {
+    public void setSaveAll(boolean sa) {
         putProperty(PROP_SAVE_ALL, sa ? Boolean.TRUE : Boolean.FALSE, true);
     }
 
     /** @return localized string */
     static String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(ShellSettings.class);
-	}
-	return bundle.getString(s);
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(ShellSettings.class);
+        }
+        return bundle.getString(s);
     }
 }

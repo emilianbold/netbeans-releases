@@ -77,10 +77,10 @@ import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
@@ -97,7 +97,7 @@ import org.openidex.search.SearchInfoFactory;
  */
 final class PackageRootNode extends AbstractNode implements Runnable, FileStatusListener {
 
-    static Image PACKAGE_BADGE = Utilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" ); // NOI18N
+    static Image PACKAGE_BADGE = ImageUtilities.loadImage("org/netbeans/spi/java/project/support/ui/packageBadge.gif"); // NOI18N
         
     private static Action actions[]; 
 
@@ -360,10 +360,10 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
         if ( icon == null ) {
             image = opened ? getDataFolderNodeDelegate().getOpenedIcon( type ) : 
                              getDataFolderNodeDelegate().getIcon( type );
-            image = Utilities.mergeImages( image, PACKAGE_BADGE, 7, 7 );
+            image = ImageUtilities.mergeImages(image, PACKAGE_BADGE, 7, 7);
         }
         else {
-            image = Utilities.icon2Image(icon);
+            image = ImageUtilities.icon2Image(icon);
         }
         
         return image;        

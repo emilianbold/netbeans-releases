@@ -250,6 +250,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         
         private List<TokenSequence<?>> sequences;
         private int state = -1;
+        private LogHelper logHelper;
         
         public HSImpl(long version, TokenHierarchy<? extends Document> scanner, int startOffset, int endOffset) {
             this.version = version;
@@ -257,6 +258,10 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             this.startOffset = startOffset;
             this.endOffset = endOffset;
             this.sequences = null;
+            if (LOG.isLoggable(Level.FINE)) {
+                logHelper = new LogHelper();
+                logHelper.startTime = System.currentTimeMillis();
+            }
         }
         
         public boolean moveNext() {
@@ -328,6 +333,17 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                     attribsCache.clear();
                 }
 
+                if (LOG.isLoggable(Level.FINE)) {
+                    if (state != S_DONE) {
+                        logHelper.tokenCount++;
+                    } else {
+                        LOG.fine("SyntaxHighlighting for " + scanner.inputSource() +
+                                ":\n-> returned " + logHelper.tokenCount + " token highlights for <" +
+                                startOffset + "," + endOffset +
+                                "> in " +
+                                (System.currentTimeMillis() - logHelper.startTime) + " ms.\n");
+                    }
+                }
                 return state != S_DONE;
             }
         }
@@ -564,5 +580,13 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         private boolean checkVersion() {
             return this.version == SyntaxHighlighting.this.version;
         }
+
     } // End of HSImpl class
+
+    private static final class LogHelper {
+
+        int tokenCount;
+        long startTime;
+    }
+
 }

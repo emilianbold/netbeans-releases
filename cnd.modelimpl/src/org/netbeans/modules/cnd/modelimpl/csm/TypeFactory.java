@@ -190,6 +190,13 @@ public class TypeFactory {
         
         ///// INIT CLASSFIER stuff
         AST typeStart = AstRenderer.getFirstSiblingSkipQualifiers(ast);
+        if( typeStart != null) {
+            if (typeStart.getType() == CPPTokenTypes.LITERAL_struct ||
+                    typeStart.getType() == CPPTokenTypes.LITERAL_class ||
+                    typeStart.getType() == CPPTokenTypes.LITERAL_union) {
+                typeStart = typeStart.getNextSibling();
+            }            
+        }
         if( typeStart == null)
             /*(tokType.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN &&
             tokType.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND) &&
@@ -220,7 +227,7 @@ public class TypeFactory {
                             tokFirstId = tokFirstId.getNextSibling();
                         }
                         //TODO: we have AstRenderer.getNameTokens, it is better to use it here
-                        List l = new ArrayList();
+                        List<String> l = new ArrayList<String>();
                         int templateDepth = 0;
                         StringBuilder sb = new StringBuilder();
                         for( AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling() ) {
@@ -240,7 +247,7 @@ public class TypeFactory {
                                     if (namePart.getType() == CPPTokenTypes.SCOPE) {
                                         // We're done here, start filling nested type
                                         type.classifierText = sb;
-                                        type.qname = (String[]) l.toArray(new String[l.size()]);
+                                        type.qname = l.toArray(new String[l.size()]);
                                         type = createType(namePart.getNextSibling(), file, ptrOperator, arrayDepth, TemplateUtils.checkTemplateType(type, scope), scope);
                                         break;
                                     } else {
@@ -267,7 +274,7 @@ public class TypeFactory {
                         }
                         if (type.classifierText == null) {
                             type.classifierText = sb;
-                            type.qname = (String[]) l.toArray(new String[l.size()]);
+                            type.qname = l.toArray(new String[l.size()]);
                         }
                     }
                 } catch( Exception e ) {

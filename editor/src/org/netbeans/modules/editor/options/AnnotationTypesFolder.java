@@ -42,7 +42,8 @@
 package org.netbeans.modules.editor.options;
 
 import java.io.OutputStream;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.loaders.FolderInstance;
 import org.openide.cookies.InstanceCookie;
 import java.lang.ClassNotFoundException;
@@ -56,6 +57,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.editor.AnnotationType;
 import java.util.Iterator;
 import org.netbeans.editor.AnnotationTypes;
+import org.openide.util.Exceptions;
 import org.w3c.dom.*;
 import org.openide.xml.XMLUtil;
 import org.openide.filesystems.FileLock;
@@ -130,7 +132,7 @@ public class AnnotationTypesFolder extends FolderInstance{
             if (df != null)
                 folder = new AnnotationTypesFolder(f, df);
         } catch (org.openide.loaders.DataObjectNotFoundException ex) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO,null, ex);
             return null;
         }
         return folder;
@@ -225,19 +227,19 @@ public class AnnotationTypesFolder extends FolderInstance{
                 os = fo.getOutputStream(lock);
                 XMLUtil.write(doc, os, "UTF-8"); // NOI18N
             } catch (Exception ex){
-                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO,null, ex);
             } finally {
                 if (os != null) {
                     try {
                         os.close();
                     } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
+                        Exceptions.printStackTrace(e);
                     }
                 }
                 lock.releaseLock();
             }
         }catch (IOException ex){
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO,null, ex);
         }
         
     }

@@ -52,6 +52,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,6 +85,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -129,6 +132,13 @@ public class Jsr172Generator {
             config.setWSDLFileName( wsdlUrl );
             config.setOutputDirectory( FileUtil.toFile( sg.getRootFolder()).getAbsolutePath());
             config.setPackageName( cd.getPackageName());
+            try {
+                config.setOriginalWSDLUrl( new URL( service.getUrl()) );
+            }
+            catch (MalformedURLException e ){
+                Exceptions.printStackTrace( e );
+                return null;
+            }
             WSDL2Java wsdl2java = WSDL2JavaFactory.getWSDL2Java( config );
             
             final Properties properties = configuration.getProperties();

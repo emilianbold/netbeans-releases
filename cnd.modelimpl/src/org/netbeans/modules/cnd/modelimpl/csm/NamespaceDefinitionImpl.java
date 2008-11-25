@@ -85,9 +85,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         assert namespaceUID != null;
         this.namespaceRef = null;
         
-        if( nsImpl instanceof NamespaceImpl ) {
-            nsImpl.addNamespaceDefinition(this);
-        }
+        nsImpl.addNamespaceDefinition(this);
     }
 
     public static NamespaceDefinitionImpl findNamespaceDefionition(MutableDeclarationsContainer container, AST ast) {
@@ -126,6 +124,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     }
 
     public void addDeclaration(CsmOffsetableDeclaration decl) {
+        @SuppressWarnings("unchecked")
         CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
         assert uid != null;
         insertIntoSortedDeclArray(uid);
@@ -265,6 +264,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         }
     }  
 
+    @SuppressWarnings("unchecked")
     public NamespaceDefinitionImpl(DataInput input) throws IOException {
         super(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();

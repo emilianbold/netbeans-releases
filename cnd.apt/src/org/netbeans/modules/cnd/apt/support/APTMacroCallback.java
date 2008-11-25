@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import antlr.Token;
-
 /**
  * callback interface to get information about macros
  * @author Vladimir Voskresensky
@@ -50,12 +48,12 @@ import antlr.Token;
 public interface APTMacroCallback {
 
     /** @return true if the macro is defined, otherwise false      */
-    public boolean isDefined(Token token);
+    public boolean isDefined(APTToken token);
     
     /** @return true if the macro is defined, otherwise false      */
     public boolean isDefined(CharSequence token);
     
-    public APTMacro getMacro(Token token);
+    public APTMacro getMacro(APTToken token);
     
 
     /**
@@ -63,7 +61,7 @@ public interface APTMacroCallback {
      * used to prevent recurse in macro expandings
      * @return false if macro already in expanding state
      */   
-    public boolean pushExpanding(Token token);
+    public boolean pushExpanding(APTToken token);
     
     /**
      * remove last expanded macro from expanding stack
@@ -73,5 +71,5 @@ public interface APTMacroCallback {
     /**
      * check if macro is already somewhere in macro expanding stack
      */    
-    public boolean isExpanding(Token token);    
+    public boolean isExpanding(APTToken token);
 }

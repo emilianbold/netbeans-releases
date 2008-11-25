@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject;
 
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
@@ -51,6 +50,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -95,6 +95,7 @@ import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -145,46 +146,43 @@ public class MakeActionProvider implements ActionProvider {
         COMMAND_COPY,
         COMMAND_MOVE,
         COMMAND_RENAME,
-        COMMAND_CUSTOM_ACTION,
-    };
+        COMMAND_CUSTOM_ACTION,};
 
     // Project
     MakeProject project;
 
     // Project Descriptor
     ConfigurationDescriptor projectDescriptor = null;
-
     /** Map from commands to ant targets */
-    Map<String,String[]> commands;
-    Map<String,String[]> commandsNoBuild;
-
+    Map<String, String[]> commands;
+    Map<String, String[]> commandsNoBuild;
     private boolean lastValidation = false;
 
-    public MakeActionProvider( MakeProject project) {
+    public MakeActionProvider(MakeProject project) {
 
-        commands = new HashMap<String,String[]>();
-        commands.put(COMMAND_BUILD, new String[] {"save", "build"}); // NOI18N
-        commands.put(COMMAND_BUILD_PACKAGE, new String[] {"save", "build", "build-package"}); // NOI18N
-        commands.put(COMMAND_CLEAN, new String[] {"save", "clean"}); // NOI18N
-        commands.put(COMMAND_REBUILD, new String[] {"save", "clean", "build"}); // NOI18N
-        commands.put(COMMAND_RUN, new String[] {"save", "build", "run"}); // NOI18N
-        commands.put(COMMAND_DEBUG, new String[] {"save", "build", "debug"}); // NOI18N
-        commands.put(COMMAND_DEBUG_STEP_INTO, new String[] {"save", "build", "debug-stepinto"}); // NOI18N
-        commands.put(COMMAND_DEBUG_LOAD_ONLY, new String[] {"save", "build", "debug-load-only"}); // NOI18N
-        commands.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
-        commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
-        commands.put(COMMAND_COMPILE_SINGLE, new String[] {"save", "compile-single"}); // NOI18N
-        commands.put(COMMAND_CUSTOM_ACTION, new String[] {"save", "build", "custom-action"}); // NOI18N
-        commandsNoBuild = new HashMap<String,String[]>();
-        commandsNoBuild.put(COMMAND_BUILD, new String[] {"save", "build-package"}); // NOI18N
-        commandsNoBuild.put(COMMAND_BUILD_PACKAGE, new String[] {"save", "build"}); // NOI18N
-        commandsNoBuild.put(COMMAND_CLEAN, new String[] {"save", "clean"}); // NOI18N
-        commandsNoBuild.put(COMMAND_REBUILD, new String[] {"save", "clean", "build"}); // NOI18N
-        commandsNoBuild.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
-        commandsNoBuild.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
-        commandsNoBuild.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug-stepinto"}); // NOI18N
-        commandsNoBuild.put(COMMAND_DEBUG_LOAD_ONLY, new String[] {"debug-load-only"}); // NOI18N
-        commandsNoBuild.put(COMMAND_CUSTOM_ACTION, new String[] {"save", "custom-action"}); // NOI18N
+        commands = new HashMap<String, String[]>();
+        commands.put(COMMAND_BUILD, new String[]{"save", "build"}); // NOI18N
+        commands.put(COMMAND_BUILD_PACKAGE, new String[]{"save", "build", "build-package"}); // NOI18N
+        commands.put(COMMAND_CLEAN, new String[]{"save", "clean"}); // NOI18N
+        commands.put(COMMAND_REBUILD, new String[]{"save", "clean", "build"}); // NOI18N
+        commands.put(COMMAND_RUN, new String[]{"save", "build", "run"}); // NOI18N
+        commands.put(COMMAND_DEBUG, new String[]{"save", "build", "debug"}); // NOI18N
+        commands.put(COMMAND_DEBUG_STEP_INTO, new String[]{"save", "build", "debug-stepinto"}); // NOI18N
+        commands.put(COMMAND_DEBUG_LOAD_ONLY, new String[]{"save", "build", "debug-load-only"}); // NOI18N
+        commands.put(COMMAND_RUN_SINGLE, new String[]{"run-single"}); // NOI18N
+        commands.put(COMMAND_DEBUG_SINGLE, new String[]{"debug-single"}); // NOI18N
+        commands.put(COMMAND_COMPILE_SINGLE, new String[]{"save", "compile-single"}); // NOI18N
+        commands.put(COMMAND_CUSTOM_ACTION, new String[]{"save", "build", "custom-action"}); // NOI18N
+        commandsNoBuild = new HashMap<String, String[]>();
+        commandsNoBuild.put(COMMAND_BUILD, new String[]{"save", "build-package"}); // NOI18N
+        commandsNoBuild.put(COMMAND_BUILD_PACKAGE, new String[]{"save", "build"}); // NOI18N
+        commandsNoBuild.put(COMMAND_CLEAN, new String[]{"save", "clean"}); // NOI18N
+        commandsNoBuild.put(COMMAND_REBUILD, new String[]{"save", "clean", "build"}); // NOI18N
+        commandsNoBuild.put(COMMAND_RUN, new String[]{"run"}); // NOI18N
+        commandsNoBuild.put(COMMAND_DEBUG, new String[]{"debug"}); // NOI18N
+        commandsNoBuild.put(COMMAND_DEBUG_STEP_INTO, new String[]{"debug-stepinto"}); // NOI18N
+        commandsNoBuild.put(COMMAND_DEBUG_LOAD_ONLY, new String[]{"debug-load-only"}); // NOI18N
+        commandsNoBuild.put(COMMAND_CUSTOM_ACTION, new String[]{"save", "custom-action"}); // NOI18N
 
         this.project = project;
     }
@@ -201,37 +199,38 @@ public class MakeActionProvider implements ActionProvider {
             return true;
         }
     }
+
     private MakeConfigurationDescriptor getProjectDescriptor() {
         if (projectDescriptor == null) {
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             projectDescriptor = pdp.getConfigurationDescriptor();
         }
-        return (MakeConfigurationDescriptor)projectDescriptor;
+        return (MakeConfigurationDescriptor) projectDescriptor;
     }
 
     public String[] getSupportedActions() {
         return supportedActions;
     }
 
-    public void invokeAction( final String command, final Lookup context) throws IllegalArgumentException {
+    public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
-            return ;
+            return;
         }
 
         if (COMMAND_COPY.equals(command)) {
             DefaultProjectOperations.performDefaultCopyOperation(project);
-            return ;
+            return;
         }
 
         if (COMMAND_MOVE.equals(command)) {
             DefaultProjectOperations.performDefaultMoveOperation(project);
-            return ;
+            return;
         }
 
         if (COMMAND_RENAME.equals(command)) {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
-            return ;
+            return;
         }
 
         if (COMMAND_RUN_SINGLE.equals(command)) {
@@ -251,16 +250,18 @@ public class MakeActionProvider implements ActionProvider {
         // vv: leaving all logic to be later called from EDT
         // (although I'm not sure all of below need to be done in EDT)
         Runnable actionWorker = new Runnable() {
+
             public void run() {
                 // Add actions to do
-                ArrayList actionEvents = new ArrayList();
+                ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
                 if (command.equals(COMMAND_BATCH_BUILD)) {
                     BatchConfigurationSelector batchConfigurationSelector = new BatchConfigurationSelector(pd.getConfs().getConfs());
                     String batchCommand = batchConfigurationSelector.getCommand();
                     Configuration[] confs = batchConfigurationSelector.getSelectedConfs();
                     if (batchCommand != null && confs != null) {
-                        for (int i = 0; i < confs.length; i++)
-                            addAction(actionEvents, projectName, pd, (MakeConfiguration)confs[i], batchCommand, context);
+                        for (int i = 0; i < confs.length; i++) {
+                            addAction(actionEvents, projectName, pd, (MakeConfiguration) confs[i], batchCommand, context);
+                        }
                     } else {
                         // Close button
                         return;
@@ -271,7 +272,7 @@ public class MakeActionProvider implements ActionProvider {
 
                 // Execute actions
                 if (actionEvents.size() > 0) {
-                    ProjectActionSupport.fireActionPerformed((ProjectActionEvent[])actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
+                    ProjectActionSupport.fireActionPerformed(actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
                 }
             }
         };
@@ -292,10 +293,11 @@ public class MakeActionProvider implements ActionProvider {
 
     public void invokeCustomAction(final String projectName, final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final CustomProjectActionHandler customProjectActionHandler) {
         Runnable actionWorker = new Runnable() {
+
             public void run() {
-                ArrayList actionEvents = new ArrayList();
+                ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
                 addAction(actionEvents, projectName, pd, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null);
-                ActionEvent ae = new ActionEvent((ProjectActionEvent[])actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]), 0, null);
+                ActionEvent ae = new ActionEvent(actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]), 0, null);
                 DefaultProjectActionHandler defaultProjectActionHandler = new DefaultProjectActionHandler();
                 defaultProjectActionHandler.setCustomActionHandlerProvider(customProjectActionHandler);
                 defaultProjectActionHandler.actionPerformed(ae);
@@ -326,18 +328,20 @@ public class MakeActionProvider implements ActionProvider {
                 // start validation phase
                 final Frame mainWindow = WindowManager.getDefault().getMainWindow();
                 Runnable csmWorker = new Runnable() {
+
                     public void run() {
                         try {
                             record.validate(true);
                             // initialize compiler sets for remote host if needed
                             CompilerSetManager csm = CompilerSetManager.getDefault(record.getName());
                             csm.initialize(true);
-                        } catch(Exception e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
                 };
                 Runnable edtWorker = new Runnable() {
+
                     public void run() {
                         if (record.isOnline()) {
                             actionWorker.run();
@@ -351,6 +355,7 @@ public class MakeActionProvider implements ActionProvider {
     }
 
     class BatchConfigurationSelector implements ActionListener {
+
         private JButton buildButton = new JButton(getString("BuildButton"));
         private JButton rebuildButton = new JButton(getString("CleanBuildButton"));
         private JButton cleanButton = new JButton(getString("CleanButton"));
@@ -360,10 +365,10 @@ public class MakeActionProvider implements ActionProvider {
         private Dialog dialog = null;
 
         BatchConfigurationSelector(Configuration[] confs) {
-            confSelectorPanel = new ConfSelectorPanel(getString("CheckLabel"), getString("CheckLabelMn").charAt(0), confs, new JButton[] {buildButton, rebuildButton, cleanButton});
+            confSelectorPanel = new ConfSelectorPanel(getString("CheckLabel"), getString("CheckLabelMn").charAt(0), confs, new JButton[]{buildButton, rebuildButton, cleanButton});
 
             String dialogTitle = MessageFormat.format(getString("BatchBuildTitle"), // NOI18N
-                    new Object[] { ProjectUtils.getInformation(project).getDisplayName()});
+                    new Object[]{ProjectUtils.getInformation(project).getDisplayName()});
 
             buildButton.setMnemonic(getString("BuildButtonMn").charAt(0));
             buildButton.getAccessibleContext().setAccessibleDescription(getString("BuildButtonAD"));
@@ -376,7 +381,7 @@ public class MakeActionProvider implements ActionProvider {
             cleanButton.getAccessibleContext().setAccessibleDescription(getString("CleanButtonAD"));
             closeButton.getAccessibleContext().setAccessibleDescription(getString("CloseButtonAD"));
             // Show the dialog
-            DialogDescriptor dd = new DialogDescriptor(confSelectorPanel, dialogTitle, true, new Object[] {closeButton}, closeButton, 0, null, null);
+            DialogDescriptor dd = new DialogDescriptor(confSelectorPanel, dialogTitle, true, new Object[]{closeButton}, closeButton, 0, null, null);
             //DialogDisplayer.getDefault().notify(dd);
             dialog = DialogDisplayer.getDefault().createDialog(dd);
             dialog.getAccessibleContext().setAccessibleDescription(getString("BatchBuildDialogAD"));
@@ -392,19 +397,20 @@ public class MakeActionProvider implements ActionProvider {
         }
 
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == buildButton)
+            if (evt.getSource() == buildButton) {
                 command = COMMAND_BUILD;
-            else if (evt.getSource() == rebuildButton)
+            } else if (evt.getSource() == rebuildButton) {
                 command = COMMAND_REBUILD;
-            else if (evt.getSource() == cleanButton)
+            } else if (evt.getSource() == cleanButton) {
                 command = COMMAND_CLEAN;
-            else
+            } else {
                 assert false;
+            }
             dialog.dispose();
         }
     }
 
-    public void addAction(ArrayList actionEvents, String projectName, MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context) throws IllegalArgumentException {
+    public void addAction(ArrayList<ProjectActionEvent> actionEvents, String projectName, MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context) throws IllegalArgumentException {
         String[] targetNames;
         boolean validated = false;
         lastValidation = false;
@@ -449,10 +455,12 @@ public class MakeActionProvider implements ActionProvider {
 
             if (targetName.equals("save")) { // NOI18N
                 // Save all files and projects
-                if (MakeOptions.getInstance().getSave())
+                if (MakeOptions.getInstance().getSave()) {
                     LifecycleManager.getDefault().saveAll();
-                if (!ProjectSupport.saveAllProjects(getString("NeedToSaveAllText"))) // NOI18N
+                }
+                if (!ProjectSupport.saveAllProjects(getString("NeedToSaveAllText"))) { // NOI18N
                     return;
+                }
             } else if (targetName.equals("run") || targetName.equals("debug") || targetName.equals("debug-stepinto") || targetName.equals("debug-load-only")) { // NOI18N
                 if (!validateBuildSystem(pd, conf, validated)) {
                     return;
@@ -493,39 +501,90 @@ public class MakeActionProvider implements ActionProvider {
                         runProfile = conf.getProfile().cloneProfile();
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
                         String path = ""; // NOI18N
+                        // Add paths from subprojetcs
                         Iterator iter = subProjectOutputLocations.iterator();
                         while (iter.hasNext()) {
-                            String location = FilePathAdaptor.naturalize((String)iter.next());
+                            String location = FilePathAdaptor.naturalize((String) iter.next());
+                            path = location + ";" + path; // NOI18N
+                        }
+                        // Add paths from -L option
+                        List list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
+                        iter = list.iterator();
+                        while (iter.hasNext()) {
+                            String location = FilePathAdaptor.naturalize((String) iter.next());
                             path = location + ";" + path; // NOI18N
                         }
                         String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
-                        if (userPath == null)
+                        if (userPath == null) {
                             userPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get(pi.getPathName());
+                        }
                         path = path + ";" + userPath; // NOI18N
                         runProfile.getEnvironment().putenv(pi.getPathName(), path);
                     } else if (Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_MACOSX) {
                         // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
+                        StringBuffer path = new StringBuffer();
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
+                        // Add paths from subprojetcs
                         Iterator iter = subProjectOutputLocations.iterator();
-                        if (iter.hasNext()) {
-                            String extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DYLD_LIBRARY_PATH"); // NOI18N
-                            runProfile = conf.getProfile().cloneProfile();
-                            StringBuffer path = new StringBuffer();
-                            while (iter.hasNext()) {
-                                String location = FilePathAdaptor.naturalize((String)iter.next());
-                                if (path.length() > 0)
-                                    path.append(":"); // NOI18N
-                                path.append(location);
+                        while (iter.hasNext()) {
+                            String location = FilePathAdaptor.naturalize((String) iter.next());
+                            if (path.length() > 0) {
+                                path.append(":"); // NOI18N
                             }
-                            if (extPath != null)
+                            path.append(location);
+                        }
+                        // Add paths from -L option
+                        List list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
+                        iter = list.iterator();
+                        while (iter.hasNext()) {
+                            String location = FilePathAdaptor.naturalize((String) iter.next());
+                            if (path.length() > 0) {
+                                path.append(":"); // NOI18N
+                            }
+                            path.append(location);
+                        }
+                        if (path.length() > 0) {
+                            runProfile = conf.getProfile().cloneProfile();
+                            String extPath = runProfile.getEnvironment().getenv("DYLD_LIBRARY_PATH"); // NOI18N
+                            if (extPath == null) {
+                                extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DYLD_LIBRARY_PATH"); // NOI18N
+                            }
+                            if (extPath != null) {
                                 path.append(":" + extPath); // NOI18N
+                            }
                             runProfile.getEnvironment().putenv("DYLD_LIBRARY_PATH", path.toString()); // NOI18N
+                        }
+                    } else if (Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_SOLARIS_INTEL ||
+                            Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_SOLARIS_SPARC ||
+                            Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_LINUX) {
+                        // Add paths from -L option
+                        StringBuffer path = new StringBuffer();
+                        List list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
+                        Iterator iter = list.iterator();
+                        while (iter.hasNext()) {
+                            String location = FilePathAdaptor.naturalize((String) iter.next());
+                            if (path.length() > 0) {
+                                path.append(":"); // NOI18N
+                            }
+                            path.append(location);
+                        }
+                        if (path.length() > 0) {
+                            runProfile = conf.getProfile().cloneProfile();
+                            String extPath = runProfile.getEnvironment().getenv("LD_LIBRARY_PATH"); // NOI18N
+                            if (extPath == null) {
+                                extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("LD_LIBRARY_PATH"); // NOI18N
+                            }
+                            if (extPath != null) {
+                                path.append(":" + extPath); // NOI18N
+                            }
+                            runProfile.getEnvironment().putenv("LD_LIBRARY_PATH", path.toString()); // NOI18N
                         }
                         // Make sure DISPLAY variable has been set
                         if (HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
-                            if (runProfile == null)
+                            if (runProfile == null) {
                                 runProfile = conf.getProfile().cloneProfile();
+                            }
                             runProfile.getEnvironment().putenv("DISPLAY", ":0.0"); // NOI18N
                         }
                     }
@@ -565,8 +624,7 @@ public class MakeActionProvider implements ActionProvider {
             } else if (targetName.equals("run-single") || targetName.equals("debug-single")) { // NOI18N
                 // FIXUP: not sure this is used...
                 if (conf.isMakefileConfiguration()) {
-                    Iterator it = context.lookup(new Lookup.Template(DataObject.class)).allInstances().iterator();
-                    DataObject d = (DataObject)it.next();
+                    DataObject d = context.lookup(DataObject.class);
                     String path = FileUtil.toFile(d.getPrimaryFile()).getPath();
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
@@ -591,7 +649,7 @@ public class MakeActionProvider implements ActionProvider {
                     String args = "";
                     int index = buildCommand.indexOf(' ');
                     if (index > 0) {
-                        args = buildCommand.substring(index+1);
+                        args = buildCommand.substring(index + 1);
                         buildCommand = buildCommand.substring(0, index);
                     }
                     RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
@@ -605,8 +663,7 @@ public class MakeActionProvider implements ActionProvider {
                             profile,
                             true);
                     actionEvents.add(projectActionEvent);
-                }
-                else {
+                } else {
                     return; // Stop here
                 }
                 validated = true;
@@ -649,7 +706,7 @@ public class MakeActionProvider implements ActionProvider {
                     String args = ""; // NOI18N
                     int index = buildCommand.indexOf(' '); // NOI18N
                     if (index > 0) {
-                        args = buildCommand.substring(index+1);
+                        args = buildCommand.substring(index + 1);
                         buildCommand = buildCommand.substring(0, index);
                     }
                     RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
@@ -663,86 +720,91 @@ public class MakeActionProvider implements ActionProvider {
                             profile,
                             true);
                     actionEvents.add(projectActionEvent);
-                }
-                else {
+                } else {
                     return; // Stop here
                 }
                 validated = true;
             } else if (targetName.equals("compile-single")) { // NOI18N
                 if (validateBuildSystem(pd, conf, validated)) {
-                    Iterator it = context.lookup(new Lookup.Template(Node.class)).allInstances().iterator();
+                    Iterator<? extends Node> it = context.lookupAll(Node.class).iterator();
                     while (it.hasNext()) {
-                        Node node = (Node)it.next();
+                        Node node = it.next();
                         Item item = getNoteItem(node); // NOI18N
-                        if (item == null)
+                        if (item == null) {
                             return;
+                        }
                         ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);//ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
-                        if (itemConfiguration == null)
+                        if (itemConfiguration == null) {
                             return;
-                        if (itemConfiguration.getExcluded().getValue())
+                        }
+                        if (itemConfiguration.getExcluded().getValue()) {
                             return;
-                            if (itemConfiguration.getTool() == Tool.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified())
-                                return;
-                            MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                            String outputFile = null;
-                            if (itemConfiguration.getTool() == Tool.CCompiler) {
-                                CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
-                                outputFile = cCompilerConfiguration.getOutputFile(item, conf, true);
-                            } else if (itemConfiguration.getTool() == Tool.CCCompiler) {
-                                CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
-                                outputFile = ccCompilerConfiguration.getOutputFile(item, conf, true);
-                            } else if (itemConfiguration.getTool() == Tool.FortranCompiler) {
-                                FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
-                                outputFile = fortranCompilerConfiguration.getOutputFile(item, conf, true);
-                            } else if (itemConfiguration.getTool() == Tool.CustomTool) {
-                                CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
-                                outputFile = customToolConfiguration.getOutputs().getValue();
-                            }
-                            outputFile = conf.expandMacros(outputFile);
-                            // Clean command
-                            String commandLine;
-                            String args;
-                            if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
-                                commandLine = "cmd.exe"; // NOI18N
-                                args = "/c rm -rf " + outputFile; // NOI18N
-                            } else {
-                                commandLine = "rm"; // NOI18N
-                                args = "-rf " + outputFile; // NOI18N
-                            }
-                            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
-                            profile.setArgs(args);
-                            ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                                    project,
-                                    ProjectActionEvent.CLEAN,
-                                    getActionName(projectName, "clean", conf), // NOI18N
-                                    commandLine,
-                                    conf,
-                                    profile,
-                                    true);
-                            actionEvents.add(projectActionEvent);
-                            // Build commandLine
-                            commandLine = getMakeCommand(pd, conf) + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
-                            args = ""; // NOI18N
-                            int index = commandLine.indexOf(' '); // NOI18N
-                            if (index > 0) {
-                                args = commandLine.substring(index+1);
-                                commandLine = commandLine.substring(0, index);
-                            }
-                            // Add the build commandLine
-                            profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
-                            profile.setArgs(args);
-                            projectActionEvent = new ProjectActionEvent(
-                                    project,
-                                    actionEvent,
-                                    getActionName(projectName, targetName, conf),
-                                    commandLine,
-                                    conf,
-                                    profile,
-                                    true);
-                            actionEvents.add(projectActionEvent);
+                        }
+                        if (itemConfiguration.getTool() == Tool.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
+                            return;
+                        }
+                        MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+                        String outputFile = null;
+                        if (itemConfiguration.getTool() == Tool.CCompiler) {
+                            CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
+                            outputFile = cCompilerConfiguration.getOutputFile(item, conf, true);
+                        } else if (itemConfiguration.getTool() == Tool.CCCompiler) {
+                            CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
+                            outputFile = ccCompilerConfiguration.getOutputFile(item, conf, true);
+                        } else if (itemConfiguration.getTool() == Tool.FortranCompiler) {
+                            FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
+                            outputFile = fortranCompilerConfiguration.getOutputFile(item, conf, true);
+                        } else if (itemConfiguration.getTool() == Tool.Assembler) {
+                            AssemblerConfiguration assemblerConfiguration = itemConfiguration.getAssemblerConfiguration();
+                            outputFile = assemblerConfiguration.getOutputFile(item, conf, true);
+                        } else if (itemConfiguration.getTool() == Tool.CustomTool) {
+                            CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
+                            outputFile = customToolConfiguration.getOutputs().getValue();
+                        }
+                        outputFile = conf.expandMacros(outputFile);
+                        // Clean command
+                        String commandLine;
+                        String args;
+                        if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
+                            commandLine = "cmd.exe"; // NOI18N
+                            args = "/c rm -rf " + outputFile; // NOI18N
+                        } else {
+                            commandLine = "rm"; // NOI18N
+                            args = "-rf " + outputFile; // NOI18N
+                        }
+                        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
+                        profile.setArgs(args);
+                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                                project,
+                                ProjectActionEvent.CLEAN,
+                                getActionName(projectName, "clean", conf), // NOI18N
+                                commandLine,
+                                conf,
+                                profile,
+                                true);
+                        actionEvents.add(projectActionEvent);
+                        // Build commandLine
+                        commandLine = getMakeCommand(pd, conf) + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
+                        args = ""; // NOI18N
+                        int index = commandLine.indexOf(' '); // NOI18N
+                        if (index > 0) {
+                            args = commandLine.substring(index + 1);
+                            commandLine = commandLine.substring(0, index);
+                        }
+                        // Add the build commandLine
+                        profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getPlatform().getValue());
+                        profile.setArgs(args);
+                        projectActionEvent = new ProjectActionEvent(
+                                project,
+                                actionEvent,
+                                getActionName(projectName, targetName, conf),
+                                commandLine,
+                                conf,
+                                profile,
+                                true);
+                        actionEvents.add(projectActionEvent);
                     }
-                }
-                else {
+                } else {
                     return; // Stop here
                 }
                 validated = true;
@@ -755,8 +817,9 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 exe = conf.expandMacros(exe);
                 // Always absolute
-                if (exe.length() > 0)
+                if (exe.length() > 0) {
                     exe = IpeUtils.toAbsolutePath(conf.getBaseDir(), exe);
+                }
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                         project,
                         actionEvent,
@@ -774,12 +837,11 @@ public class MakeActionProvider implements ActionProvider {
         StringBuilder actionName = new StringBuilder(projectName);
         actionName.append(" (").append(targetName); // NOI18N
         if (!conf.getDevelopmentHost().isLocalhost()) {
-            actionName.append(" - ").append( conf.getDevelopmentHost().getName() ); // NOI18N
+            actionName.append(" - ").append(conf.getDevelopmentHost().getName()); // NOI18N
         }
         actionName.append(")"); // NOI18N
         return actionName.toString();
     }
-
 
     private boolean validateProject(MakeConfiguration conf) {
         boolean ret = false;
@@ -791,15 +853,16 @@ public class MakeActionProvider implements ActionProvider {
                 Item item = getProjectDescriptor().getProjectItems()[i];
                 ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);
                 if (!itemConfiguration.getExcluded().getValue() &&
-                        (itemConfiguration.getTool() !=  Tool.CustomTool || itemConfiguration.getCustomToolConfiguration().getCommandLine().getValue().length() > 0)) {
+                        (itemConfiguration.getTool() != Tool.CustomTool || itemConfiguration.getCustomToolConfiguration().getCommandLine().getValue().length() > 0)) {
                     ret = true;
                     break;
                 }
             }
         }
 
-        if (!ret)
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("ERR_EMPTY_PROJECT"), NotifyDescriptor.ERROR_MESSAGE));
+        if (!ret) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("ERR_EMPTY_PROJECT"), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+        }
 
         return ret;
     }
@@ -809,7 +872,7 @@ public class MakeActionProvider implements ActionProvider {
      */
     String[] getTargetNames(String command, Lookup context) throws IllegalArgumentException {
         String[] targetNames = new String[0];
-        if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
+        if (command.equals(COMMAND_COMPILE_SINGLE)) {
             targetNames = commands.get(command);
         } else if (command.equals(COMMAND_RUN) ||
                 command.equals(COMMAND_DEBUG) ||
@@ -817,14 +880,16 @@ public class MakeActionProvider implements ActionProvider {
                 command.equals(COMMAND_DEBUG_LOAD_ONLY) ||
                 command.equals(COMMAND_CUSTOM_ACTION)) {
             ConfigurationDescriptor pd = getProjectDescriptor();
-            MakeConfiguration conf = (MakeConfiguration)pd.getConfs().getActive();
+            MakeConfiguration conf = (MakeConfiguration) pd.getConfs().getActive();
             RunProfile profile = (RunProfile) conf.getAuxObject(RunProfile.PROFILE_ID);
-            if (profile == null) // See IZ 89349
+            if (profile == null) { // See IZ 89349
                 return null;
-            if (profile.getBuildFirst())
+            }
+            if (profile.getBuildFirst()) {
                 targetNames = commands.get(command);
-            else
+            } else {
                 targetNames = commandsNoBuild.get(command);
+            }
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
@@ -842,15 +907,14 @@ public class MakeActionProvider implements ActionProvider {
         return targetNames;
     }
 
-
-    public boolean isActionEnabled( String command, Lookup context ) {
+    public boolean isActionEnabled(String command, Lookup context) {
         if (!isProjectDescriptorLoaded()) {
             return false;
         }
         if (!(getProjectDescriptor().getConfs().getActive() instanceof MakeConfiguration)) {
             return false;
         }
-        MakeConfiguration conf = (MakeConfiguration)getProjectDescriptor().getConfs().getActive();
+        MakeConfiguration conf = (MakeConfiguration) getProjectDescriptor().getConfs().getActive();
         if (command.equals(COMMAND_CLEAN)) {
             return true;
         } else if (command.equals(COMMAND_BUILD)) {
@@ -864,28 +928,33 @@ public class MakeActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_RUN)) {
             return !conf.isLibraryConfiguration();
         } else if (command.equals(COMMAND_DEBUG)) {
-            return hasDebugger() && !conf.isLibraryConfiguration();
+            return conf.hasDebugger() && !conf.isLibraryConfiguration();
         } else if (command.equals(COMMAND_DEBUG_STEP_INTO)) {
-            return hasDebugger() && !conf.isLibraryConfiguration();
+            return conf.hasDebugger() && !conf.isLibraryConfiguration();
         } else if (command.equals(COMMAND_DEBUG_LOAD_ONLY)) {
-            return hasDebugger() && !conf.isLibraryConfiguration();
+            return conf.hasDebugger() && !conf.isLibraryConfiguration();
         } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
             boolean enabled = true;
-            Iterator it = context.lookup(new Lookup.Template(Node.class)).allInstances().iterator();
+            Iterator<? extends Node> it = context.lookupAll(Node.class).iterator();
             while (it.hasNext()) {
-                Node node = (Node)it.next();
+                Node node = it.next();
                 Item item = getNoteItem(node);
-                if (item == null)
+                if (item == null) {
                     return false;
+                }
                 ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);//ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
-                if (itemConfiguration == null)
+                if (itemConfiguration == null) {
                     return false;
-                if (itemConfiguration.getExcluded().getValue())
+                }
+                if (itemConfiguration.getExcluded().getValue()) {
                     return false;
-                if (itemConfiguration.getTool() == Tool.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified())
+                }
+                if (itemConfiguration.getTool() == Tool.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
                     return false;
-                if (conf.isMakefileConfiguration())
+                }
+                if (conf.isMakefileConfiguration()) {
                     return false;
+                }
             }
             return enabled;
         } else if (command.equals(COMMAND_DELETE) ||
@@ -918,10 +987,6 @@ public class MakeActionProvider implements ActionProvider {
         return item;
     }
 
-    private static boolean hasDebugger() {
-        return DefaultProjectActionHandler.getInstance().getCustomDebugActionHandlerProvider() != null;
-    }
-
     private static String getMakeCommand(MakeConfigurationDescriptor pd, MakeConfiguration conf) {
         String cmd = null;
         CompilerSet cs = conf.getCompilerSet().getCompilerSet();
@@ -945,7 +1010,8 @@ public class MakeActionProvider implements ActionProvider {
         ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
         boolean cRequired = conf.hasCFiles(pd);
         boolean cppRequired = conf.hasCPPFiles(pd);
-        boolean fRequired = CppSettings.getDefault().isFortranEnabled() && conf.hasFortranFiles(pd);
+        boolean fRequired = conf.hasFortranFiles(pd);
+        boolean asRequired = conf.hasAssemblerFiles(pd);
         boolean runBTA = false;
 
         if (validated) {
@@ -961,7 +1027,7 @@ public class MakeActionProvider implements ActionProvider {
                 lastValidation = false;
                 runBTA = true;
             }
-            // TODO: all validation below works, but it may be more efficient to make a verifying script
+        // TODO: all validation below works, but it may be more efficient to make a verifying script
         }
 
         boolean unknownCompilerSet = false;
@@ -994,6 +1060,7 @@ public class MakeActionProvider implements ActionProvider {
         Tool cTool = cs.getTool(Tool.CCompiler);
         Tool cppTool = cs.getTool(Tool.CCCompiler);
         Tool fTool = cs.getTool(Tool.FortranCompiler);
+        Tool asTool = cs.getTool(Tool.Assembler);
         Tool makeTool = cs.getTool(Tool.MakeTool);
 
         // Check for a valid make program
@@ -1003,9 +1070,9 @@ public class MakeActionProvider implements ActionProvider {
                 runBTA = true;
             }
         } else {
-            if(serverList != null && !unknownCompilerSet) {
+            if (serverList != null && !unknownCompilerSet) {
                 if (!serverList.isValidExecutable(hkey, makeTool.getPath())) {
-                    runBTA=true;
+                    runBTA = true;
                 }
             }
         }
@@ -1024,6 +1091,10 @@ public class MakeActionProvider implements ActionProvider {
         }
         if (fRequired && !exists(fTool.getPath(), pi)) {
             errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
+            runBTA = true;
+        }
+        if (asRequired && !exists(asTool.getPath(), pi)) {
+            //errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
 
@@ -1045,6 +1116,7 @@ public class MakeActionProvider implements ActionProvider {
                 model.setCRequired(cRequired);
                 model.setCppRequired(cppRequired);
                 model.setFortranRequired(fRequired);
+                model.setAsRequired(asRequired);
                 model.setShowRequiredBuildTools(true);
                 model.setShowRequiredDebugTools(false);
                 model.SetEnableRequiredCompilerCB(conf.isMakefileConfiguration());
@@ -1054,6 +1126,7 @@ public class MakeActionProvider implements ActionProvider {
                     conf.getCRequired().setValue(model.isCRequired());
                     conf.getCppRequired().setValue(model.isCppRequired());
                     conf.getFortranRequired().setValue(model.isFortranRequired());
+                    conf.getAssemblerRequired().setValue(model.isAsRequired());
                     conf.getCompilerSet().setValue(name);
                     pd.setModified();
                     pd.save();
@@ -1081,7 +1154,7 @@ public class MakeActionProvider implements ActionProvider {
         if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
             errormsg = getString("ERR_EMPTY_PACKAGE");
         }
-        
+
         if (PackagerManager.getDefault().getPackager(conf.getPackagingConfiguration().getType().getValue()) == null) {
             errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL4", conf.getPackagingConfiguration().getType().getValue()); // NOI18N
         }
@@ -1091,14 +1164,13 @@ public class MakeActionProvider implements ActionProvider {
             if (conf.getDevelopmentHost().isLocalhost()) {
                 if (!IpeUtils.isPathAbsolute(tool) && Path.findCommand(tool) == null) {
                     errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL1", tool); // NOI18N
-                }
-                else if (IpeUtils.isPathAbsolute(tool) && !(new File(tool).exists())) {
+                } else if (IpeUtils.isPathAbsolute(tool) && !(new File(tool).exists())) {
                     errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL2", tool); // NOI18N
                 }
             } else {
                 String hkey = conf.getDevelopmentHost().getName();
                 ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
-                if(serverList != null) {
+                if (serverList != null) {
                     if (!serverList.isValidExecutable(hkey, tool)) {
                         errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL3", tool, hkey); // NOI18N
                     }
@@ -1121,12 +1193,13 @@ public class MakeActionProvider implements ActionProvider {
     }
 
     private static boolean exists(String path, PlatformInfo pi) {
-        return pi.fileExists(path) || pi.findCommand(path)!=null;
+        return pi.fileExists(path) || pi.findCommand(path) != null;
     }
 
     // Private methods -----------------------------------------------------
     /** Look up i18n strings here */
     private static ResourceBundle bundle;
+
     private static String getString(String s) {
         if (bundle == null) {
             bundle = NbBundle.getBundle(MakeActionProvider.class);

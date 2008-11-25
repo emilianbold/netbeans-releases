@@ -38,21 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.completion.cplusplus;
 
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.*;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-
 
 /**
  * Factory producing misc JCFinders.
@@ -78,42 +74,32 @@ import org.openide.filesystems.FileSystem;
 public final class CsmFinderFactory {
 
     private static CsmFinderFactory DEFAULT;
-
     /** Empty finder */
 //    private static final JCBaseFinder EMPTY = new JCBaseFinder(CCKit.class);
-    
     /** Cache of <FileObject, SoftReference<CsmFinder>>.
      * The FO is classpath root. Access to cache must be always synchronized
      * on CACHE_LOCK instance.
      */
-    private HashMap cache = new HashMap();
-    
+    private Map<FileObject, Reference<CsmFinder>> cache = new HashMap<FileObject, Reference<CsmFinder>>();
     /** Weak map whose value is always null and only key is relevant.
      * The key is ClassPath on which we are already listening. The purpose
      * of this map is to not attach one listener on the classpath multiple times.
      */
     private WeakHashMap cpListening = new WeakHashMap();
-    
-
     /** Weak map whose value is always null and only key is relevant.
      * The key is fakeJCClass used in web/jsp => XXX
      */
     private WeakHashMap fakeClasses = new WeakHashMap();
-    
     /** This is property change listener listening on classpaths and 
      * invalidating cache when cp has changed. It must be wrapped in weak
      * listener to allow cp to be garbage collected. */
     private static PropertyChangeListener cpListener;
-    
     /** Cached global finder. Access to this variable must be always
      * synchronized on CACHE_LOCK instance. */
     private SoftReference globalFinder;
-    
 //    private GlobalPathRegistryListener gpListener;
-    
     /** Object used as lock for cache updating synchronization. */
     private final Object CACHE_LOCK = new Object();
-    
     /** Was FakeFinder initialized? Use it in CompoundFinder? */
     private boolean useFakeFinder = false;
 
@@ -122,7 +108,7 @@ public final class CsmFinderFactory {
 //        gpListener = new GlobalPathListener();
 //        GlobalPathRegistry.getDefault().addGlobalPathRegistryListener(gpListener);
     }
-    
+
     public static synchronized CsmFinderFactory getDefault() {
         if (DEFAULT == null) {
             DEFAULT = new CsmFinderFactory();
@@ -137,20 +123,11 @@ public final class CsmFinderFactory {
      */
     public void resetCache() {
         synchronized (CACHE_LOCK) {
-            cache = new HashMap();
+            cache = new HashMap<FileObject, Reference<CsmFinder>>();
             invalidateGlobalFinderCache();
         }
     }
 
-    /** Append fake CsmClass. This support is needed from web/jsp module for evaluating of scriplets.
-     *  XXX - it is not recommended to use this method!
-     */
-    public void appendClass(CsmClass cls){
-        useFakeFinder = true;
-        fakeClasses.put(cls, null);
-        resetCache();
-    }
-    
     /** Returns finder for the given file. 
      * 
      * @return finder; cannot be null;
@@ -160,22 +137,22 @@ public final class CsmFinderFactory {
 //        ClassPath sourceCP = ClassPath.getClassPath(fo, ClassPath.SOURCE);
         FileObject owner;
 //        if (sourceCP == null) {
-            owner = null;
+        owner = null;
 //        }else{
 //            owner = sourceCP.findOwnerRoot(fo);
 //        }
-        FileObject cacheKey = (owner!=null) ? owner : fo;
-        
+        FileObject cacheKey = (owner != null) ? owner : fo;
+
         CsmFinder finder = retrieveFromCache(cacheKey);
         if (finder != null) {
             return finder;
         }
-        
+
         CsmFile cf = CsmUtilities.getCsmFile(fo, true);
-        
-        ArrayList finders = new ArrayList();
+
+        List<CsmFinder> finders = new ArrayList<CsmFinder>();
 //        ArrayList fileObjects = new ArrayList();
-        if (cf!=null){
+        if (cf != null) {
 //            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
 //            addClasspathFinders(finders, fileObjects, cp, false);
 //            cp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
@@ -185,7 +162,7 @@ public final class CsmFinderFactory {
             finder = new CsmFinderImpl(cf, getMimeType());
             return finder;
 //            finders.add();
-        }else{
+        } else {
             finders.add(getGlobalFinder());
         }
 //        
@@ -196,11 +173,11 @@ public final class CsmFinderFactory {
 //        }
 //            
 //        finder = new CompoundFinder(finders, getKitClass());
-        finder  = getGlobalFinder();
+        finder = getGlobalFinder();
         synchronized (CACHE_LOCK) {
-            cache.put(cacheKey, new SoftReference(finder));
+            cache.put(cacheKey, new SoftReference<CsmFinder>(finder));
         }
-        
+
         return finder;
     }
 
@@ -215,14 +192,13 @@ public final class CsmFinderFactory {
 //            }
 //        }
 //    }
-    
     /** Returns global finder which uses GlobalPathRegistry to learn
      * all ClassPaths in use and returns finder on top of all these classpaths.
      */
     public synchronized CsmFinder getGlobalFinder() {
         CsmFinder finder;
         synchronized (CACHE_LOCK) {
-            finder = globalFinder != null ? (CsmFinder)globalFinder.get() : null;
+            finder = globalFinder != null ? (CsmFinder) globalFinder.get() : null;
         }
         if (finder != null) {
             return finder;
@@ -244,9 +220,9 @@ public final class CsmFinderFactory {
 //        }
 
 //        finder = new CompoundFinder(finders, CCKit.class);
-	finder = new CsmFinderImpl((FileObject)null, getMimeType());
+        finder = new CsmFinderImpl((FileObject) null, getMimeType());
         synchronized (CACHE_LOCK) {
-            globalFinder = new SoftReference(finder);
+            globalFinder = new SoftReference<CsmFinder>(finder);
         }
         return finder;
     }
@@ -260,85 +236,17 @@ public final class CsmFinderFactory {
             globalFinder = null;
         }
     }
-    
-//    private void addClasspathFinders(List finders, List fileObjects, ClassPath cp, boolean findSources) {
-//        if (cp == null) {
-//            return;
-//        }
-//        Iterator it = cp.entries().iterator();
-//        
-//        while (it.hasNext()) {
-//            ClassPath.Entry entry = (ClassPath.Entry)it.next();
-//            if (findSources) {
-//                FileObject[] sroots = SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots();
-//                if (sroots.length > 0) {
-//                    for (int i=0; i<sroots.length; i++) {
-//                        addFinder(finders, fileObjects, sroots[i]);
-//                    }
-//                } else {
-//                    addFinder(finders, fileObjects, entry.getRoot());
-//                }
-//            } else {
-//                addFinder(finders, fileObjects, entry.getRoot());
-//            }
-//        }
-//        
-//        // start listening on this cp
-//        if (!cpListening.containsKey(cp)) {
-//            cp.addPropertyChangeListener(WeakListeners.propertyChange(cpListener, cp));
-//            cpListening.put(cp, null);
-//        }
-//    }
-    
-    private void addFinder(List finders, List fileObjects, FileObject fo) {
-        if (fo == null) {
-            return;
-        }
-        
-        if (fileObjects.contains(fo)) {
-            return;
-        }
-        fileObjects.add(fo);
-        
-        FileSystem fs = null;
-
-        // if the fo is root of Jar I need to get the fo of the jar itself
-        /*FileObject fo2 = FileUtil.getArchiveFile(fo);
-        if (fo2 != null) {
-            fo = fo2;
-        }
-        
-         */
-        
-        CsmFinder finder = null;
-//        CsmFinder finder = new MDRFinder(fo, getKitClass());//JCStorage.getStorage().getFinder(fo);
-        if (finder != null) {
-            finders.add(finder);
-        } 
-    }
-    
-    /** Returns kitClass over MDRFinder will operate and retrieve settings */
-    protected Class getKitClass(){
-        return CCKit.class;
-    }
 
     private String getMimeType() {
         return MIMENames.CPLUSPLUS_MIME_TYPE;
     }
-    
-    private void removeFromCache(FileObject fo) {
-        synchronized (CACHE_LOCK) {
-            cache.remove(fo);
-        }
-    }
-    
+
     private CsmFinder retrieveFromCache(FileObject fo) {
         synchronized (CACHE_LOCK) {
-            SoftReference ref = (SoftReference)cache.get(fo);
-            return ref != null ? (CsmFinder)ref.get() : null;
+            SoftReference ref = (SoftReference) cache.get(fo);
+            return ref != null ? (CsmFinder) ref.get() : null;
         }
     }
-
     /**
      * This method is called when classpath has changed.
      */
@@ -378,8 +286,6 @@ public final class CsmFinderFactory {
 //        // the global finder is affected too: invalidate it
 //        invalidateGlobalFinderCache();
 //    }
-    
-
 //    private class ClassPathListener implements PropertyChangeListener {
 //        
 //        public void propertyChange(PropertyChangeEvent evt) {
@@ -414,5 +320,4 @@ public final class CsmFinderFactory {
 //        }
 //        
 //    }
-    
 }

@@ -70,7 +70,6 @@ public class FontEditorElement extends PropertyEditorResourceElement implements 
     public FontEditorElement() {
         initComponents();
         attachListeners();
-
         this.defaultFont = sampleLabel.getFont();
     }
 

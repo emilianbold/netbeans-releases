@@ -93,9 +93,6 @@ public class ConfigManager implements IConfigManager
     
     public ConfigManager()
     {
-        // this((String)System.getProperty("embarcadero.home-dir",
-        //    System.getProperty("user.home") + File.separatorChar + ".uml"));
-        
         // The following line will get the netbeans.user property which should 
         //  be something like xyz/.jstudio/Ent81, where xyz is soe os specific
         //  user home (example Win - C:\Documents and Settings\Admin\), or

@@ -54,7 +54,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.TreeSet;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -78,7 +77,6 @@ import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -97,8 +95,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoaderPool;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.ExtensionList;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -114,7 +112,7 @@ import org.w3c.dom.Text;
  */
 public final class MakeProject implements Project, AntProjectListener {
 
-    private static final Icon MAKE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
+//    private static final Icon MAKE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N
     private static final String C_EXTENSIONS = "c-extensions"; // NOI18N
     private static final String CPP_EXTENSIONS = "cpp-extensions"; // NOI18N
@@ -453,27 +451,19 @@ public final class MakeProject implements Project, AntProjectListener {
             "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
 
         public String[] getRecommendedTypes() {
-            if (CppSettings.getDefault().isFortranEnabled()) {
-                return RECOMMENDED_TYPES_FORTRAN;
-            } else {
-                return RECOMMENDED_TYPES;
-            }
+            return RECOMMENDED_TYPES_FORTRAN;
         }
 
         public String[] getPrivilegedTemplates() {
-            if (CppSettings.getDefault().isFortranEnabled()) {
-                return PRIVILEGED_NAMES_FORTRAN;
-            } else {
-                return PRIVILEGED_NAMES;
-            }
+            return PRIVILEGED_NAMES_FORTRAN;
         }
     }
 
     /** Return configured project name. */
     public String getName() {
-        return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
 
-            public Object run() {
+            public String run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -489,9 +479,9 @@ public final class MakeProject implements Project, AntProjectListener {
     }
 
     public void setName(final String name) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
 
-            public Object run() {
+            public Void run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -575,9 +565,9 @@ public final class MakeProject implements Project, AntProjectListener {
         }
 
         // Get a set of projects which this project can be considered to depend upon somehow.
-        public Set getSubprojects() {
-            Set subProjects = new HashSet();
-            Set<String> subProjectLocations = new HashSet();
+        public Set<Project> getSubprojects() {
+            Set<Project> subProjects = new HashSet<Project>();
+            Set<String> subProjectLocations = new HashSet<String>();
 
             // Try project.xml first if project not already read (this is cheap)
             Element data = helper.getPrimaryConfigurationData(true);
@@ -588,7 +578,7 @@ public final class MakeProject implements Project, AntProjectListener {
                         Node node = nl4.item(i);
                         NodeList nl2 = node.getChildNodes();
                         for (int j = 0; j < nl2.getLength(); j++) {
-                            String typeTxt = (String) nl2.item(j).getNodeValue();
+                            String typeTxt = nl2.item(j).getNodeValue();
                             subProjectLocations.add(typeTxt);
                         }
                     }
@@ -785,7 +775,7 @@ public final class MakeProject implements Project, AntProjectListener {
     private final class MakeArtifactProviderImpl implements MakeArtifactProvider {
 
         public MakeArtifact[] getBuildArtifacts() {
-            ArrayList artifacts = new ArrayList();
+            List<MakeArtifact> artifacts = new ArrayList<MakeArtifact>();
 
             MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
             Configuration[] confs = projectDescriptor.getConfs().getConfs();
@@ -804,7 +794,7 @@ public final class MakeProject implements Project, AntProjectListener {
                 MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
                 artifacts.add(new MakeArtifact(projectDescriptor, makeConfiguration));
             }
-            return (MakeArtifact[]) artifacts.toArray(new MakeArtifact[artifacts.size()]);
+            return artifacts.toArray(new MakeArtifact[artifacts.size()]);
         }
     }
 
@@ -820,7 +810,7 @@ public final class MakeProject implements Project, AntProjectListener {
             return true;
         }
 
-        public Iterator objectsToSearch() {
+        public Iterator<DataObject> objectsToSearch() {
             MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
             Folder rootFolder = projectDescriptor.getLogicalFolders();
             return rootFolder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N

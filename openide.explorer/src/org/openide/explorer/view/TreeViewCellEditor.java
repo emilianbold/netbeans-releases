@@ -171,6 +171,12 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
 
     /** Implements <code>FocusListener</code> interface method. */
     public void focusLost(FocusEvent evt) {
+        if (evt.getSource() == tree) {
+            // stop timer if tree lost focus (#153009)
+            abortTimer();
+            return;
+        }
+
         if (stopped || cancelled) {
             return;
         }
@@ -292,9 +298,11 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
         if (newTree != tree) {
             if (tree != null) {
                 tree.removeMouseListener(this);
+                tree.removeFocusListener(this);
             }
             if (newTree != null) {
                 newTree.addMouseListener(this);
+                newTree.addFocusListener(this);
             }
         }
 

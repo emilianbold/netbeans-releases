@@ -871,6 +871,12 @@ private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         setStatus(NbBundle.getMessage(HQLEditorTopComponent.class, "emptyQuery"));
         return;
     }
+    if (hibernateConfigurationComboBox.getSelectedItem() == null) {
+        logger.info("hibernate configuration combo box is empty.");
+        switchToResultView();
+        setStatus(NbBundle.getMessage(HQLEditorTopComponent.class, "emptyConfiguration"));
+        return;
+    }
     runHQLButton.setEnabled(false);                                            
     try {
         ph = ProgressHandleFactory.createHandle(//GEN-HEADEREND:event_runHQLButtonActionPerformed

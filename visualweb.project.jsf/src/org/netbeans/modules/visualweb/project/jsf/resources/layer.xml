@@ -73,17 +73,9 @@ made subject to such option by the copyright holder.
     
     <folder name="Projects">
         <folder name="org-netbeans-modules-web-project">
-            <folder name="Nodes">
-                <file name="org-netbeans-modules-visualweb-project-jsf-ui-JSFNodeFactory.instance">
-                    <attr name="position" intvalue="900"/>
-                </file>
-            </folder>
             <folder name="BrokenLibraryRefFilterProviders">
               <file name="org-netbeans-modules-visualweb-project-jsf-libraries-ComplibBrokenLibraryRefFilterProvider.instance"/>
               <file name="org-netbeans-modules-visualweb-project-jsf-libraries-WebServicesBrokenLibraryRefFilterProvider.instance"/>
-            </folder>
-            <folder name="Lookup">
-              <file name="org-netbeans-modules-visualweb-project-jsf-libraries-ComplibLookupProvider.instance"/>
             </folder>
         </folder>
     </folder>

@@ -54,8 +54,11 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase.ProjectType;
 
 /**
+ *  Basic validation suite for web services support in the IDE
  *
- * @author lukas
+ *  Duration of this test suite: aprox. 7min
+ *
+ * @author lukas.jungmann@sun.com
  */
 public class EjbWsValidation extends WsValidation {
 
@@ -92,17 +95,30 @@ public class EjbWsValidation extends WsValidation {
     }
 
     @Override
+    protected String getWsURL() {
+        String suffix = "?wsdl"; //NOI18N
+        if (REGISTERED_SERVER.equals(ServerType.GLASSFISH)) {
+            suffix = "?Tester"; //NOI18N
+        }
+        return "http://localhost:8080/" + getWsName() + "Service" + "/" + getWsName() + suffix; //NOI18N
+    }
+
+    @Override
     protected String getWsClientPackage() {
         return getWsPackage(); //NOI18N
     }
-    
+
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(EjbWsValidation.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH,
+                NbModuleSuite.createConfiguration(EjbWsValidation.class),
                 "testCreateNewWs",
                 "testAddOperation",
+                "testSetSOAP",
+                "testGenerateWSDL",
                 "testStartServer",
                 "testWsHandlers",
                 "testDeployWsProject",
+                "testTestWS",
                 "testCreateWsClient",
                 "testRefreshClientAndReplaceWSDL",
                 "testCallWsOperationInSessionEJB",
@@ -111,8 +127,7 @@ public class EjbWsValidation extends WsValidation {
                 "testWsClientHandlers",
                 "testDeployWsClientProject",
                 "testUndeployProjects",
-                "testStopServer"
-                ).enableModules(".*").clusters(".*"));
+                "testStopServer").enableModules(".*").clusters(".*"));
     }
 
     public void testWsFromEJBinClientProject() {
@@ -157,6 +172,7 @@ public class EjbWsValidation extends WsValidation {
      * Tests Call Web Service Operation action in a servlet
      */
     public void testCallWsOperationInSessionEJB() {
+        assertServerRunning();
         //create a session bean
         String ejbName = "NewSession";
         //Enterprise

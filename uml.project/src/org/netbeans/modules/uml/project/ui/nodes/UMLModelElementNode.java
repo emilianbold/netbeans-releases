@@ -69,6 +69,7 @@ import org.netbeans.modules.uml.project.ui.nodes.actions.NewDiagramType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewPackageType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewElementType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewAttributeType;
+import org.netbeans.modules.uml.project.ui.nodes.actions.NewLiteralType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewOperationType;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewElementUI;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
@@ -191,13 +192,24 @@ public class UMLModelElementNode extends UMLElementNode
                 return new NewType[]
                 {
                     new NewDiagramType(this),
-//                        new NewPackageType(this),
-//                        new NewElementType(this),
-                        new NewAttributeType(this),
-                        new NewOperationType(this)
+                    new NewPackageType(this),
+                    new NewElementType(this),
+                    new NewAttributeType(this),
+                    new NewOperationType(this)
                 };
             }
-            
+            else if(elType.equals(ELEMENT_TYPE_ENUMERATION))
+            {
+                return new NewType[]
+                {
+                    new NewDiagramType(this),
+                    new NewPackageType(this),
+                    new NewElementType(this),
+                    new NewLiteralType((this)),
+                    new NewAttributeType(this),
+                    new NewOperationType(this)
+                };
+            }
             else if (elType.equals(ELEMENT_TYPE_ACTIVITY) ||
                 elType.equals(ELEMENT_TYPE_INTERACTION) ||
                 elType.equals(ELEMENT_TYPE_STATE_MACHINE) ||
@@ -206,15 +218,14 @@ public class UMLModelElementNode extends UMLElementNode
 //		elType.equals(ELEMENT_TYPE_PART_FACADE) ||
                 elType.equals(ELEMENT_TYPE_ARTIFACT) ||
                 elType.equals(ELEMENT_TYPE_NODE) ||
-                elType.equals(ELEMENT_TYPE_ENUMERATION) ||
                 elType.equals(ELEMENT_TYPE_DERIVATION_CLASSIFIER) ||
                 elType.equals(ELEMENT_TYPE_COLLABORATION))
             {
                 return new NewType[]
                 {
                     new NewDiagramType(this),
-                        new NewPackageType(this),
-                        new NewElementType(this)
+                    new NewPackageType(this),
+                    new NewElementType(this)
                 };
             }
         } // if getModelElement() instanceof INamespace

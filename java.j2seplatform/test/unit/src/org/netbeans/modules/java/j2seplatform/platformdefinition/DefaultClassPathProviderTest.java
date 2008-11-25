@@ -224,10 +224,10 @@ public class DefaultClassPathProviderTest extends NbTestCase {
     
     
     private static void assertRootsEquals (String message, ClassPath cp, FileObject[] roots) {
-        Set/*FileObject*/ cpRoots = new HashSet(Arrays.asList(cp.getRoots ()));
+        Set<FileObject> cpRoots = new HashSet<FileObject>(Arrays.asList(cp.getRoots()));
         assertEquals(message, cpRoots.size(), roots.length);
-        for (int i=0; i< roots.length; i++) {
-            if (!cpRoots.contains(roots[i])) {
+        for (FileObject root : roots) {
+            if (!cpRoots.contains(root)) {
                 assertTrue(message, false);
             }
         }

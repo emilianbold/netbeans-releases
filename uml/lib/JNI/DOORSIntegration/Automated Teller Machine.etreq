@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-<!-- edited with XML Spy v4.0 U (http://www.xmlspy.com) by test (Embarcadero Technologies, Inc.) -->
 <RequirementsProject name="Automated Teller Machine">
 	<Requirement type="Category" id="C.0" name="Business Specifications">
 		<Description>Business Specifications Section of Requirements</Description>

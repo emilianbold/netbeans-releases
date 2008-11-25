@@ -119,13 +119,13 @@ public class Issue141855 extends cc
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
     Sleep( 1000 );
     // Check code completion list
-    CompletionJListOperator jCompl = GetCompletion( );
-    List list = jCompl.getCompletionItems( );
+    CompletionInfo jCompl = GetCompletion( );
+    //List list = jCompl.getCompletionItems( );
     // Magic CC number for complete list
-    if( COMPLETE_CC_LIST_SIZE != list.size( ) )
-      fail( "Invalid CC list size: " + list.size( ) + ", expected: " + COMPLETE_CC_LIST_SIZE );
+    if( COMPLETION_LIST_THRESHOLD > jCompl.listItems.size( ) )
+      fail( "Invalid CC list size: " + jCompl.listItems.size( ) + ", expected: " + COMPLETION_LIST_THRESHOLD );
 
-    jCompl.hideAll( );
+    jCompl.listItself.hideAll( );
 
     endTest( );
   }

@@ -109,10 +109,10 @@ public class J2SEPersistenceProviderTest extends NbTestCase {
             }
         });
         project = ProjectManager.getDefault().findProject(projdir);
-        Sources src = (Sources)project.getLookup().lookup(Sources.class);
+        Sources src = project.getLookup().lookup(Sources.class);
         SourceGroup[] groups = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         root = groups[0].getRootFolder();
-        provider = (J2SEPersistenceProvider)project.getLookup().lookup(J2SEPersistenceProvider.class);
+        provider = project.getLookup().lookup(J2SEPersistenceProvider.class);
         persistenceLocation = new File(FileUtil.toFile(project.getProjectDirectory().getFileObject("src")), "META-INF");
     }
 

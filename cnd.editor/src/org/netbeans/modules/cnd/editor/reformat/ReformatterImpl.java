@@ -125,7 +125,8 @@ public class ReformatterImpl {
                        (qtExtension.isSignals(current) || qtExtension.isSlots(current))) {
                         break;
                     }
-                    // nobreak
+                    braces.setLastStatementStart(ts);
+                    break;
                 default:
                     braces.setLastStatementStart(ts);
             }
@@ -1122,20 +1123,10 @@ public class ReformatterImpl {
                                                 isPrevID = true;
                                                 break;
                                             }
-                                            // nobreak
+                                            removeLines(startName, nlList);
+                                            return;
                                         default:
-                                            ts.moveIndex(startName);
-                                            ts.moveNext();
-                                            newLineBefore(braces.getIndent());
-                                            for(int i = 0; i < nlList.size(); i++){
-                                                int nl = nlList.get(i);
-                                                if (startName < nl) {
-                                                    ts.moveIndex(nl);
-                                                    ts.moveNext();
-                                                    ts.moveNext();
-                                                    removeLineBefore(false);
-                                                }
-                                            }
+                                            removeLines(startName, nlList);
                                             return;
                                     }
                                 }
@@ -1147,6 +1138,21 @@ public class ReformatterImpl {
         } finally {
             ts.moveIndex(index);
             ts.moveNext();
+        }
+    }
+
+    private void removeLines(int startName, ArrayList<Integer> nlList){
+        ts.moveIndex(startName);
+        ts.moveNext();
+        newLineBefore(braces.getIndent());
+        for(int i = 0; i < nlList.size(); i++){
+            int nl = nlList.get(i);
+            if (startName < nl) {
+                ts.moveIndex(nl);
+                ts.moveNext();
+                ts.moveNext();
+                removeLineBefore(false);
+            }
         }
     }
 

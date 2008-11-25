@@ -82,6 +82,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.10</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.common</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -336,11 +345,7 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.web.project</friend>
-                <package>org.netbeans.modules.websvc.jaxws.light.api</package>
-                <package>org.netbeans.modules.websvc.jaxws.light.spi</package>
-            </friend-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

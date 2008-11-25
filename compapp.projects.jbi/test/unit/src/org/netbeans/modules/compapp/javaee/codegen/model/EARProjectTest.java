@@ -34,10 +34,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.jar.JarFile;
 import java.util.logging.Logger;
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -65,15 +62,10 @@ public class EARProjectTest extends NbTestCase {
 
     @Override
     public void setUp() throws Exception {
-        FileObject scratch = TestUtil.makeScratchDir(this);
-        this.scratchDir = FileUtil.toFile(scratch);
+        clearWorkDir();
+        scratchDir = getWorkDir();
     }
 
-    @Override
-    public void tearDown() throws Exception {
-        TestUtil.deleteRec(scratchDir);
-    }
-    
     public void testEjbInEarEndpointScan() throws MalformedURLException, IOException{
         File f = new File(getDataDir().getAbsolutePath(), EJB_IN_EAR_JAR_FILE);
         URL url = f.toURL();

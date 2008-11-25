@@ -85,6 +85,7 @@ import org.openide.util.actions.SystemAction;
 /**
  * Factory for the nodes in the Rails Project logical view.
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-ruby-rubyproject")
 public final class ProjectRootNodeFactory implements NodeFactory {
     
     public NodeList createNodes(Project p) {

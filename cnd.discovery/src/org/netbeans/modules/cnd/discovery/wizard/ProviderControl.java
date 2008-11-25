@@ -332,13 +332,14 @@ public class ProviderControl {
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue()  == DialogDescriptor.OK_OPTION) {
             Vector newList = libPanel.getListData();
-            String includes = ""; // NOI18N
+            StringBuilder includes = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
-                if (i > 0)
-                    includes += ";"; // NOI18N
-                includes += newList.elementAt(i);
+                if (i > 0) {
+                    includes.append(';'); // NOI18N
+                }
+                includes.append(newList.elementAt(i));
             }
-            field.setText(includes);
+            field.setText(includes.toString());
         }
     }
     
@@ -384,8 +385,9 @@ public class ProviderControl {
                 false
                 );
         int ret = fileChooser.showOpenDialog(panel);
-        if (ret == JFileChooser.CANCEL_OPTION)
+        if (ret == JFileChooser.CANCEL_OPTION) {
             return;
+        }
         String path = fileChooser.getSelectedFile().getPath();
         //path = FilePathAdaptor.normalize(path);
         field.setText(path);

@@ -87,15 +87,16 @@ public class TemplateUtils {
     
     public static void addSpecializationSuffix(AST firstChild, StringBuilder sb, List<CsmTemplateParameter> parameters) {
         int depth = 0;
-	for( AST child = firstChild; child != null; child = child.getNextSibling() ) {
-            if (child.getType() == CPPTokenTypes.LESSTHAN) depth ++;
-	    if( CPPTokenTypes.CSM_START <= child.getType() && child.getType() <= CPPTokenTypes.CSM_END ) {
-		AST grandChild = child.getFirstChild();
-		if( grandChild != null ) {
-		    addSpecializationSuffix(grandChild, sb, parameters);
-		}
-	    }
-	    else {
+        for (AST child = firstChild; child != null; child = child.getNextSibling()) {
+            if (child.getType() == CPPTokenTypes.LESSTHAN) {
+                depth++;
+            }
+            if (CPPTokenTypes.CSM_START <= child.getType() && child.getType() <= CPPTokenTypes.CSM_END) {
+                AST grandChild = child.getFirstChild();
+                if (grandChild != null) {
+                    addSpecializationSuffix(grandChild, sb, parameters);
+                }
+            } else {
                 String text = child.getText();
                 if (parameters != null) {
                     for (CsmTemplateParameter param : parameters) {
@@ -114,14 +115,15 @@ public class TemplateUtils {
                     }
                 }
                 sb.append(text);
-                    
+
                 if (child.getType() == CPPTokenTypes.GREATERTHAN) {
                     depth--;
-                    if (depth==0)
+                    if (depth == 0) {
                         break;
+                    }
                 }
-	    }
-	}
+            }
+        }
     }
     
     public static boolean isPartialClassSpecialization(AST ast) {
@@ -191,6 +193,10 @@ public class TemplateUtils {
                     // now create parameter
                     parameterStart = child;
                     AST varDecl = child.getFirstChild();
+                    // skip "typename"
+                    if (varDecl != null && varDecl.getType() == CPPTokenTypes.LITERAL_typename) {
+                        varDecl = varDecl.getNextSibling();
+                    }
                     if (varDecl != null && varDecl.getType() == CPPTokenTypes.LITERAL_enum) {
                         varDecl = varDecl.getNextSibling();
                         if(varDecl == null || varDecl.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND) {

@@ -42,42 +42,6 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <filesystem>
-    <folder name="Projects">
-        <folder name="org-netbeans-modules-java-j2seproject">
-            <folder name="Lookup">
-                <file name="org.netbeans.modules.xml.jaxb.model.JAXBWizLookupProvider.instance"/>
-            </folder>
-            
-            <folder name="Nodes">                
-                <file name="org-netbeans-modules-xml-jaxb-ui-JAXBNodeFactory.instance">
-                    <attr name="position" intvalue="100"/>
-                </file>
-            </folder>
-        </folder>
-        <folder name="org-netbeans-modules-web-project">
-            <folder name="Lookup">
-                <file name="org.netbeans.modules.xml.jaxb.model.JAXBWizLookupProvider.instance"/>
-            </folder>
-
-            <folder name="Nodes">
-                <file name="org-netbeans-modules-xml-jaxb-ui-JAXBNodeFactory.instance">
-                    <attr name="position" intvalue="100"/>
-                </file>
-            </folder>
-        </folder>        
-        <folder name="org-netbeans-modules-j2ee-ejbjarproject">
-            <folder name="Lookup">
-                <file name="org.netbeans.modules.xml.jaxb.model.JAXBWizLookupProvider.instance"/>
-            </folder>
-            
-            <folder name="Nodes">
-                <file name="org-netbeans-modules-xml-jaxb-ui-JAXBNodeFactory.instance">
-                    <attr name="position" intvalue="125"/>
-                </file>
-            </folder>
-        </folder>                
-    </folder>
-    
     <folder name="Templates">
         <folder name="XML">
              <file name="JavaXMLBinding">

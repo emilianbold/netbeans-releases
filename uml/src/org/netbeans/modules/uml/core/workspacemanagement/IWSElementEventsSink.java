@@ -126,12 +126,10 @@ public interface IWSElementEventsSink
 	public void onWSElementDocChanged( IWSElement element, IResultCell cell );
 
 	/* (non-Javadoc)
-	 * @see com.embarcadero.describe.workspacemanagement.IWSElementEventsSink#onWSElementPreAliasChanged(com.embarcadero.describe.workspacemanagement.IWSElement, java.lang.String, com.embarcadero.describe.umlsupport.IResultCell)
 	 */
 	public void onWSElementPreAliasChanged(IWSElement element, String proposedValue, IResultCell cell);
 
 	/* (non-Javadoc)
-	 * @see com.embarcadero.describe.workspacemanagement.IWSElementEventsSink#onWSElementAliasChanged(com.embarcadero.describe.workspacemanagement.IWSElement, com.embarcadero.describe.umlsupport.IResultCell)
 	 */
 	public void onWSElementAliasChanged(IWSElement element, IResultCell cell);
 

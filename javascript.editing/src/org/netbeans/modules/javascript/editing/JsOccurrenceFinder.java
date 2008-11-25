@@ -172,15 +172,16 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
                 org.netbeans.api.lexer.Token<?extends JsTokenId> token = LexUtilities.getToken(doc, caretPosition);
                 boolean isFunctionKeyword = (token != null) && token.id() == JsTokenId.FUNCTION;
                 boolean isMethodName = closest.getType() == Token.FUNCNAME;
-                boolean isReturn = closest.getType() == Token.RETURN && astOffset < closest.getSourceStart() + "return".length();
+                boolean isReturn = closest.getType() == Token.RETURN && astOffset < closest.getSourceStart() + "return".length(); // NOI18N
+                boolean isYield = closest.getType() == Token.YIELD && astOffset < closest.getSourceStart() + "yield".length(); // NOI18N
 
-                if (isFunctionKeyword || isMethodName || isReturn) {
+                if (isFunctionKeyword || isMethodName || isReturn || isYield) {
                     // Highlight exit points
                     Node func = closest;
                     if (isFunctionKeyword) {
                         // Look inside the method - the offsets for function doesn't include the "function" keyword yet
                         // Hmm, perhaps it's easier to just fix that? XXX TODO
-                        int offset =  astOffset+"function".length();
+                        int offset =  astOffset+"function".length(); // NOI18N
                         path = new AstPath(root, offset);
                         func = path.leaf();
                         if (func.getType() == Token.PARAMETER) {
@@ -188,7 +189,7 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
                         }
                     } else if (func.getType() == Token.FUNCNAME) {
                         func = func.getParentNode();
-                    } else if (isReturn) {
+                    } else if (isReturn || isYield) {
                         Node f = func.getParentNode();
                         while (f != null && f.getType() != Token.FUNCTION) {
                             f = f.getParentNode();
@@ -202,7 +203,7 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
                     closest = null;
                 } else if (closest.getType() == Token.CALL && 
                         lexStartPos != -1 && lexEndPos != -1 && 
-                            Utilities.getRowStart(doc, lexStartPos) != Utilities.getRowStart(doc, lexEndPos)) {
+                            Utilities.getRowStart(doc, Math.min(doc.getLength(), lexStartPos)) != Utilities.getRowStart(doc, Math.min(doc.getLength(), lexEndPos))) {
                     // Some nodes may span multiple lines, but the range we care about is only
                     // on a single line because we're pulling out the lvalue - for example,
                     // a method call may span multiple lines because of a long parameter list,
@@ -326,7 +327,7 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
         CompilationInfo info) {
         int type = node.getType();
         
-        if (type == Token.THROW || type == Token.RETHROW ||
+        if (type == Token.THROW || type == Token.RETHROW || type == Token.YIELD ||
                 // There are many RETURN nodes for implicit returns (e.g. end of the
                 // function) - these have zero size, and we skip these for occurrence highlighting
                 (type == Token.RETURN && node.getSourceEnd() > node.getSourceStart())) {
@@ -336,10 +337,10 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
                 try {
                     OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
                     if (lexRange != OffsetRange.NONE) {
-                        int lineStart = Utilities.getRowStart(doc, lexRange.getStart());
-                        int endLineStart = Utilities.getRowStart(doc, lexRange.getEnd());
+                        int lineStart = Utilities.getRowStart(doc, Math.min(lexRange.getStart(), doc.getLength()));
+                        int endLineStart = Utilities.getRowStart(doc, Math.min(lexRange.getEnd(), doc.getLength()));
                         if (lineStart != endLineStart) {
-                            lexRange = new OffsetRange(lexRange.getStart(), Utilities.getRowEnd(doc, lexRange.getStart()));
+                            lexRange = new OffsetRange(Math.min(lexRange.getStart(), doc.getLength()), Utilities.getRowEnd(doc, Math.min(doc.getLength(), lexRange.getStart())));
                             astRange = AstUtilities.getAstOffsets(info, lexRange);
                         }
                     }

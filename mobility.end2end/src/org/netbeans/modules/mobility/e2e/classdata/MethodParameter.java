@@ -49,10 +49,16 @@ public class MethodParameter {
     
     private ClassData type;
     private String name;
+    private String myFQNtype;
 
     public MethodParameter( String name, ClassData type ) {
         this.name = name;
         this.type = type;
+    }
+    
+    public MethodParameter( String name, String typeFQN ) {
+        this(name , (ClassData)null );
+        myFQNtype = typeFQN;
     }
 
     public String getName() {
@@ -62,6 +68,15 @@ public class MethodParameter {
     public ClassData getType() {
         return type;
     }
+    
+    public String getTypeAsString(){
+        if ( myFQNtype != null ){
+            return myFQNtype;
+        }
+        else {
+            return getType() == null ? null : getType().getFullyQualifiedName();
+        }
+    }
 
     public boolean equals(Object obj) {
         return (obj instanceof MethodParameter) 
@@ -70,7 +85,27 @@ public class MethodParameter {
     }
 
     public int hashCode() {
-        return name.hashCode() + type.hashCode();
+        if ( type == null ){
+            if ( myFQNtype == null ){
+                return name.hashCode();
+            }
+            else {
+                return name.hashCode() +7*myFQNtype.hashCode();
+            }
+        }
+        return name.hashCode() + 7*type.hashCode();
+    }
+
+    public boolean equalsFQN( MethodParameter parameter ) {
+        if ( !name.equals( parameter.getName())){
+            return false;
+        }
+        if ( type == null || parameter.getType() == null ){
+            return getTypeAsString().equals( parameter.getTypeAsString());
+        }
+        else {
+            return type.equals( parameter.getType() );
+        }
     }
     
 }

@@ -49,21 +49,21 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 public class MakeProjectOptions {
 
     /**
-     * @deprecated 
+     * @Deprecated
      */
     public static void setDefaultMakeCommand(String defaultMakeCommand) {
         //CppSettings.getDefault().setMakeName(defaultMakeCommand);
     }
 
     /**
-     * @deprecated 
+     * @Deprecated
      */
     public static String getDefaultMakeCommand() {
         return null; //CppSettings.getDefault().getMakeName();
     }
     
     /**
-     * @deprecated
+     * @Deprecated
      */
     public static void setDefaultCompilerSet(String name) {
         // Set the default name in global setting
@@ -84,14 +84,14 @@ public class MakeProjectOptions {
     }
 
     /**
-     * @deprecated
+     * @Deprecated
      */
     public static void setDefaultMakeOptions(String defaultMakeOptions) {
         MakeOptions.setDefaultMakeOptions(defaultMakeOptions);
     }
 
     /**
-     * @deprecated
+     * @Deprecated
      */
     public static String getDefaultMakeOptions() {
         return MakeOptions.getDefaultMakeOptions();
@@ -99,31 +99,32 @@ public class MakeProjectOptions {
 
 
     /**
-     * @deprecated
+     * @Deprecated
      */
     public static void setDefaultPlatform(int platform) {
         MakeOptions.getInstance().setPlatform(platform);
     }
 
     /**
-     * @deprecated
+     * @Deprecated
      */
     public static int getDefaultPlatform() {
         return MakeOptions.getInstance().getPlatform();
     }
 
     /**
-     * @deprecated
+     * @Deprecated
      */
     public static void setFortranSupport(boolean fortran) {
-        CppSettings.getDefault().setFortranEnabled(fortran);
+        //CppSettings.getDefault().setFortranEnabled(fortran);
     }
 
     /**
-     * @deprecated
+     * @Deprecated
      */
     public static boolean getFortranSupport() {
-        return CppSettings.getDefault().isFortranEnabled();
+        return true;
+        //return CppSettings.getDefault().isFortranEnabled();
     }
     
     public static void setDepencyChecking(boolean val) {

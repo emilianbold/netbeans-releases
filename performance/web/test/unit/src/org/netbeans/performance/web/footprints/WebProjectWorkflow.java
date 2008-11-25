@@ -100,7 +100,7 @@ public class WebProjectWorkflow extends MemoryFootprintTestCase {
         webproject = CommonUtilities.createproject("Samples|Web", "Tomcat Servlet Example", false);
         
         CommonUtilities.openFile(webproject, "<default package>", "SessionExample.java", true);
-        CommonUtilities.buildproject(webproject);
+        CommonUtilities.buildProject(webproject);
         CommonUtilities.deployProject(webproject);
         //CommonUtilities.collapseProject(webproject);
         

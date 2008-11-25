@@ -61,18 +61,18 @@ public class MeasureJ2EEActionsTest  {
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Actions suite");
         System.setProperty("suitename", MeasureJ2EEActionsTest.class.getCanonicalName());
-
+        System.setProperty("suite", "UI Responsiveness J2EE Actions suite");
         
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(Deploy.class)
-        .addTest(CreateJ2EEProject.class)
-        .addTest(CreateNewFile.class)
-        .addTest(ExpandEJBNodesProjectsView.class)
-        .addTest(MeasureCallEjbAction.class)
-        .addTest(MeasureEntityBeanAction.class)
-        .addTest(MeasureSessionBeanAction.class)
-        .addTest(MeasureWebServiceAction.class)
-        .addTest(OpenJ2EEFiles.class)
-        .addTest(OpenJ2EEFilesWithOpenedEditor.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(DeployTest.class)
+        .addTest(ExpandEJBNodesProjectsViewTest.class)
+        .addTest(CreateNewFileTest.class)
+        .addTest(MeasureCallEjbActionTest.class)
+        .addTest(MeasureEntityBeanActionTest.class)
+        .addTest(MeasureSessionBeanActionTest.class)
+        .addTest(MeasureWebServiceActionTest.class)
+        .addTest(OpenJ2EEFilesTest.class)
+        .addTest(OpenJ2EEFilesWithOpenedEditorTest.class)
+        .addTest(CreateJ2EEProjectTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;

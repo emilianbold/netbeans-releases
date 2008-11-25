@@ -782,7 +782,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         
         private void initialize() {
             DataObject jsfJavaDataObject = ((JsfJavaEditorSupport)cloneableEditorSupport()).getDataObject();
-            if(jsfJavaDataObject != null) {
+            if(jsfJavaDataObject != null && jsfJavaDataObject.isValid() /* #152694 */) {
                 setActivatedNodes(new Node[] {jsfJavaDataObject.getNodeDelegate()});
             }
             

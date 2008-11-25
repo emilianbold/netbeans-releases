@@ -42,7 +42,7 @@
 package org.netbeans.performance.visualweb;
 
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.visualweb.setup.WebSetupTest;
+import org.netbeans.performance.visualweb.setup.VisualWebSetup;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -61,21 +61,10 @@ public class VWPMeasuringSetupTest extends NbTestSuite {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for Visual Web Pack");
         System.setProperty("suitename", VWPMeasuringSetupTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness Visual Web Setup suite");
 
+        suite.addTest(NbModuleSuite.create(VisualWebSetup.class, ".*", ".*"));
 
-        suite.addTest(NbModuleSuite.create(WebSetupTest.class, ".*", ".*"));
-
-/*
-        suite.addTest(new WebSetupTest("closeMemoryToolbar"));        
-        suite.addTest(new WebSetupTest("closeWelcome"));
-        
-        // server is registered from command line
-        //suite.addTest(new WebSetupTest("setupAppServer"));
-        
-        suite.addTest(new WebSetupTest("openWebPackProject"));        
-        suite.addTest(new WebSetupTest("closeAllDocuments"));
-*/
-    
         return suite;
     }
     

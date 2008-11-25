@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.debug;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
@@ -144,7 +145,7 @@ public class TraceFlags {
     public static final boolean PARSE_STATISTICS = DebugUtils.getBoolean("cnd.parse.statistics", false);
     public static final boolean TRACE_PC_STATE = DebugUtils.getBoolean("cnd.pp.condition.state.trace", false);
     
-    public static final String[] logMacros;
+    public static final List<String> logMacros;
     static {
          String text = System.getProperty("parser.log.macro"); //NOI18N
          if (text != null && text.length() > 0) {
@@ -152,7 +153,7 @@ public class TraceFlags {
              for (StringTokenizer stringTokenizer = new StringTokenizer(text, ","); stringTokenizer.hasMoreTokens();) { //NOI18N
                  l.add(stringTokenizer.nextToken());
              }
-             logMacros = l.toArray(new String[l.size()]);
+             logMacros = Collections.unmodifiableList(l);
          } else {
              logMacros = null;
          }

@@ -151,8 +151,13 @@ public class Retriver_0001 extends Retriver {
       };
 
       for( String sIdeal : asIdeal )
+      {
         if( -1 == sText.indexOf( sIdeal ) )
+        {
+          System.out.println( ">>>" + sText + "<<<" );
           fail( "Unable to check retriver output: \"" + sIdeal + "\"" );
+        }
+      }
 
       out.close( );
 

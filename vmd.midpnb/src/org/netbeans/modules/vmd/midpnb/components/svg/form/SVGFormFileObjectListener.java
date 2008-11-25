@@ -63,6 +63,7 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGFormImageParser;
 import org.openide.filesystems.FileAttributeEvent;
@@ -198,7 +199,7 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
                                     String id = (String) component.readProperty(SVGComponentCD.PROP_ID).getPrimitiveValue();
                                     if (toDelete.contains(id)) {
                                         ArraySupport.remove(svgForm, SVGFormCD.PROP_COMPONENTS, component);
-                                        removeSVGButtonEventSource(component, svgForm);
+                                        removeSVGComponentEventSource(component, svgForm);
                                         svgForm.getDocument().deleteComponent(component);
                                     }
                                 }
@@ -227,12 +228,9 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
         for (String id : ids.keySet()) {
             String type = ids.get(id);
             if (MidpTypes.getSimpleClassName(SVGButtonCD.TYPEID).equals(type)) {
-                SVGFormImageParser.SVGFormComponent srcSvgComponent = SVGFormImageParser.SVGFormComponent.createSVGButton(id, SVGButtonCD.TYPEID, new Float(10000));
-                DesignComponent svgComponent = srcSvgComponent.createComponent(svgForm);
-                svgForm.addComponent(svgComponent);
-                MidpArraySupport.append(svgForm, SVGFormCD.PROP_COMPONENTS, svgComponent);
+                createComponent(id, SVGComboBoxCD.TYPEID, svgForm);
             } else if (MidpTypes.getSimpleClassName(SVGCheckBoxCD.TYPEID).equals(type)) {
-                createComponent(id, SVGCheckBoxCD.TYPEID, svgForm);
+                createComponent(id, SVGComboBoxCD.TYPEID, svgForm);
             } else if (MidpTypes.getSimpleClassName(SVGComboBoxCD.TYPEID).equals(type)) {
                 createComponent(id, SVGComboBoxCD.TYPEID, svgForm);
             } else if (MidpTypes.getSimpleClassName(SVGLabelCD.TYPEID).equals(type)) {
@@ -252,24 +250,34 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
     }
 
     private static void createComponent(String id, TypeID type, DesignComponent svgForm) {
-        SVGFormImageParser.SVGFormComponent srcSvgComponent = SVGFormImageParser.SVGFormComponent.create(id, type, new Float(10000));
+        SVGFormImageParser.SVGFormComponent srcSvgComponent = 
+            SVGFormImageParser.SVGFormComponent.createComponent(id, 
+                    type, SVGComponentCD.getEventType(type),
+                    new Float(10000));
         DesignComponent svgComponent = srcSvgComponent.createComponent(svgForm);
         svgForm.addComponent(svgComponent);
         MidpArraySupport.append(svgForm, SVGFormCD.PROP_COMPONENTS, svgComponent);
     }
 
-    private static void removeSVGButtonEventSource(DesignComponent svgButton, DesignComponent svgForm) {
-        if (svgButton.getType() != SVGButtonCD.TYPEID) {
-            return;
-        }
-        Collection<DesignComponent> components = new HashSet(svgForm.getComponents());
+    private static void removeSVGComponentEventSource(DesignComponent svgComponent, 
+            DesignComponent svgForm) 
+    {
+        Collection<DesignComponent> components = new HashSet<DesignComponent>(
+                svgForm.getComponents());
         for (DesignComponent potentialButtonEventSource : components) {
-            if (potentialButtonEventSource.getType() != SVGButtonEventSourceCD.TYPEID) {
+            if (!svgComponent.getDocument().getDescriptorRegistry().
+                    isInHierarchy(EventSourceCD.TYPEID, 
+                            potentialButtonEventSource.getType() )) 
+            {
                 continue;
             }
-            PropertyValue value = potentialButtonEventSource.readProperty(SVGButtonEventSourceCD.PROP_SVGBUTTON);
-            if (value != null && value.getComponent() != null && value.getComponent() == svgButton) {
-                potentialButtonEventSource.getDocument().deleteComponent(potentialButtonEventSource);
+            PropertyValue value = potentialButtonEventSource.readProperty(
+                    SVGComponentEventSourceCD.PROP_SVGCOMPONENT);
+            if (value != null && value.getComponent() != null && 
+                    value.getComponent() == svgComponent) 
+            {
+                potentialButtonEventSource.getDocument().
+                    deleteComponent(potentialButtonEventSource);
             }
         }
     }

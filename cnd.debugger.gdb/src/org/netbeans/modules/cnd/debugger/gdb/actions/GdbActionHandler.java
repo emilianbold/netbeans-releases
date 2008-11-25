@@ -41,16 +41,17 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.actions;
 
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
-import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandler;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
+import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -59,7 +60,7 @@ import org.openide.windows.InputOutput;
 
 public class GdbActionHandler implements CustomProjectActionHandler {
     
-    private ArrayList<ExecutionListener> listeners = new ArrayList<ExecutionListener>();
+    private Collection<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
     
     public void execute(final ProjectActionEvent ev, final InputOutput io) {
         GdbProfile profile = (GdbProfile) ev.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
@@ -90,7 +91,7 @@ public class GdbActionHandler implements CustomProjectActionHandler {
     }
 
     public void removeExecutionListener(ExecutionListener l) {
-        listeners.remove(listeners.indexOf(l));
+        listeners.remove(l);
     }
     
     /*
@@ -101,15 +102,13 @@ public class GdbActionHandler implements CustomProjectActionHandler {
     }
     
     public void executionStarted() {
-        for (int i = 0; i < listeners.size(); i++) {
-            ExecutionListener listener = listeners.get(i);
+        for (ExecutionListener listener : listeners) {
             listener.executionStarted();
         }
     }
     
     public void executionFinished(int rc) {
-        for (int i = 0; i < listeners.size(); i++) {
-            ExecutionListener listener = (ExecutionListener) listeners.get(i);
+        for (ExecutionListener listener : listeners) {
             listener.executionFinished(rc);
         }
     }

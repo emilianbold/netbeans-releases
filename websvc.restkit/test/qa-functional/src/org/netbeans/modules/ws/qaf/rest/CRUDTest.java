@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ws.qaf.rest;
 
 import java.io.File;
@@ -44,6 +43,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -56,6 +57,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -66,14 +68,16 @@ import org.openide.filesystems.FileUtil;
  */
 public class CRUDTest extends RestTestBase {
 
+    private static final Logger LOGGER = Logger.getLogger(CRUDTest.class.getName());
+
     /** Default constructor.
      * @param testName name of particular test case
-    */
+     */
     public CRUDTest(String name) {
         super(name);
     }
 
-    public String getProjectName() {
+    protected String getProjectName() {
         return "FromEntities"; //NOI18N
     }
 
@@ -87,11 +91,26 @@ public class CRUDTest extends RestTestBase {
      * and deploy the project
      */
     public void testRfE() {
-        prepareEntityClasses();
+        copyDBSchema();
+        //Persistence
+        String persistenceLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
+        //Entity Classes from Database
+        String fromDbLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "Templates/Persistence/RelatedCMP");
+        createNewFile(getProject(), persistenceLabel, fromDbLabel);
+        WizardOperator wo = prepareEntityClasses(new WizardOperator(fromDbLabel));
+        //Finish
+        //new JButtonOperator(wo, 7).pushNoBlock();
+        //only finish the wizard
+        wo.finish();
+        String generationTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "TXT_EntityClassesGeneration");
+        waitDialogClosed(generationTitle);
+        new EventTool().waitNoEvent(1500);
+
+
         //RESTful Web Services from Entity Classes
         String restLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromEntities");
         createNewWSFile(getProject(), restLabel);
-        WizardOperator wo = new WizardOperator(restLabel);
+        wo = new WizardOperator(restLabel);
         //have to wait until "retrieving message dissapers (see also issue 122802)
         new EventTool().waitNoEvent(2500);
         //Add All >>
@@ -107,9 +126,7 @@ public class CRUDTest extends RestTestBase {
         jcbo.clearText();
         jcbo.typeText(getRestPackage() + ".converter"); //NOI18N
         wo.finish();
-        //Generating RESTful Web Services from Entity Classes
-        String restGenTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RestSevicicesFromEntitiesProgress");
-        waitDialogClosed(restGenTitle);
+        waitGorGenerationProgress();
         Set<File> files = getFiles(getRestPackage() + ".service"); //NOI18N
         files.addAll(getFiles(getRestPackage() + ".converter")); //NOI18N
         assertEquals("Some files were not generated", 30, files.size()); //NOI18N
@@ -170,11 +187,7 @@ public class CRUDTest extends RestTestBase {
         assertEquals("add in available", 7, availableEntities.getModel().getSize()); //NOI18N
         wo.next();
         wo.finish();
-        //Generating RESTful Web Services from Entity Classes
-        String restGenTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RestSevicicesFromEntitiesProgress");
-        waitDialogClosed(restGenTitle);
-        // wait classpath scanning finished
-        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
+        waitGorGenerationProgress();
         Set<File> files = getFiles("service"); //NOI18N
         files.addAll(getFiles("converter")); //NOI18N
         assertEquals("Some files were not generated", 6, files.size()); //NOI18N
@@ -200,26 +213,29 @@ public class CRUDTest extends RestTestBase {
         getProjectRootNode().performPopupAction(testRestActionName);
     }
 
-    private void prepareEntityClasses() {
-        //Persistence
-        String persistenceLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.ui.resources.Bundle", "Templates/Persistence");
-        //Entity Classes from Database
-        String fromDbLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "Templates/Persistence/RelatedCMP");
-        createNewFile(getProject(), persistenceLabel, fromDbLabel);
-        WizardOperator wo = new WizardOperator(fromDbLabel);
-        JComboBoxOperator jcbo = new JComboBoxOperator(wo, 1);
-        jcbo.clickMouse();
-        //choose jdbc/sample connection
-        jcbo.selectItem("jdbc/sample"); //NOI18N
-        //skip Connecting to Database dialog
-        //wait only for Please Wait dialog
-        String waitTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.util.Bundle", "MSG_PleaseWait");
-        waitDialogClosed(waitTitle);
+    protected void copyDBSchema() {
+        //copy dbschema file to the project
+        FileObject fo = FileUtil.toFileObject(new File(getRestDataDir(), "sampleDB.dbschema")); //NOI18N
+        FileObject targetDir = getProject().getProjectDirectory().getFileObject("src/conf"); //NOI18N
+        try {
+            fo.copy(targetDir, fo.getName(), fo.getExt());
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "db schema not copied", ex);
+        }
+    }
+
+    /**
+     * Go through given from DB wizard and return WizardOperator from the last panel
+     * of the wizard
+     *
+     * @param wo wizard to go through
+     * @return last step in the wizard
+     */
+    protected WizardOperator prepareEntityClasses(WizardOperator wo) {
         //Add all >>
         new JButtonOperator(wo, 4).pushNoBlock();
         wo.next();
-        wo = new WizardOperator(fromDbLabel);
-        jcbo = new JComboBoxOperator(wo, 0);
+        JComboBoxOperator jcbo = new JComboBoxOperator(wo, 0);
         jcbo.clearText();
         jcbo.typeText(getRestPackage());
         //Create persistence unit
@@ -230,27 +246,30 @@ public class CRUDTest extends RestTestBase {
         //Create
         new JButtonOperator(ndo, 2).pushNoBlock();
         //end create pu dialog
-        //Finish
-        new JButtonOperator(wo, 7).pushNoBlock();
-        String generationTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "TXT_EntityClassesGeneration");
-        waitDialogClosed(generationTitle);
-        new EventTool().waitNoEvent(1500);
+        return wo;
     }
 
-    private Set<File> getFiles(String pkg) {
+    protected Set<File> getFiles(String pkg) {
         Set<File> files = new HashSet<File>();
         File fo = FileUtil.toFile(getProject().getProjectDirectory());
-        File pkgRoot = new File (fo, "src/java/" + pkg.replace('.', '/') + "/"); //NOI18N
+        File pkgRoot = new File(fo, "src/java/" + pkg.replace('.', '/') + "/"); //NOI18N
         if (pkgRoot.listFiles() != null) {
             files.addAll(Arrays.asList(pkgRoot.listFiles()));
         }
         return files;
     }
 
+    protected void waitGorGenerationProgress() {
+        //Generating RESTful Web Services from Entity Classes
+        String restGenTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RestSevicicesFromEntitiesProgress");
+        waitDialogClosed(restGenTitle);
+        // wait classpath scanning finished
+        ProjectSupport.waitScanFinished();
+    }
+
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
-
     public static Test suite() {
         return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(CRUDTest.class),
                 "testRfE", //NOI18N

@@ -64,7 +64,6 @@ import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.display.ChoiceElementDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
 import org.openide.util.NbBundle;
@@ -72,6 +71,7 @@ import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResourceLazyInit;
 
 /**
  * @author David Kaspar
@@ -112,9 +112,9 @@ public final class ChoiceElementCD extends ComponentDescriptor {
                 .addProperty(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_String"), // NOI18N
                     PropertyEditorString.createInstance(NbBundle.getMessage(ChoiceElementCD.class,
                         "LBL_ChoiceElement_String")), PROP_STRING) // NOI18N
-                .addProperty(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_Image"), PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
+                .addProperty(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_Image"), PropertyEditorResourceLazyInit.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
                 .addProperty(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_Selected"), PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(ChoiceElementCD.class, "LBL_ChoiceElement")), PROP_SELECTED) // NOI18N
-                .addProperty(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_Font"), PropertyEditorResource.createFontPropertyEditor(), PROP_FONT); // NOI18N
+                .addProperty(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_Font"), PropertyEditorResourceLazyInit.createFontPropertyEditor(), PROP_FONT); // NOI18N
     }
     
     @Override

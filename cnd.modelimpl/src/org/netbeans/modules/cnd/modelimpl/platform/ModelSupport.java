@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.platform;
 
 import java.io.IOException;
@@ -91,35 +90,31 @@ import org.openide.windows.WindowManager;
  * @author Vladimir Kvashin
  */
 public class ModelSupport implements PropertyChangeListener {
-    
+
     private static ModelSupport instance = new ModelSupport();
-    
     private ModelImpl theModel;
-    
     private final Set<Project> openedProjects = new HashSet<Project>();
-    
     private final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
     private FileChangeListener fileChangeListener;
-
     private static final boolean TRACE_STARTUP = false;
     private volatile boolean postponeParse = false;
-    
+
     private ModelSupport() {
     }
-    
+
     public static ModelSupport instance() {
         return instance;
     }
-    
+
     public static int getTabSize() {
         return 8;
     }
-    
+
     public File locateFile(String fileName) {
         InstalledFileLocator locator = InstalledFileLocator.getDefault();
-        if( locator != null ) {
+        if (locator != null) {
             File file = locator.locate(fileName, "com.sun.tools.swdev.parser.impl/1", false); // NOI18N
-            if( file != null ) {
+            if (file != null) {
                 return file;
             }
         }
@@ -128,104 +123,117 @@ public class ModelSupport implements PropertyChangeListener {
         File file = new File(fileName);
         return file.exists() ? file : null;
     }
-    
+
     public void setModel(ModelImpl model) {
         this.theModel = model;
-        synchronized( this ) {
-            if( fileChangeListener != null ) {
+        synchronized (this) {
+            if (fileChangeListener != null) {
                 FileUtil.removeFileChangeListener(fileChangeListener);
                 fileChangeListener = null;
             }
-            if( model != null ) {
+            if (model != null) {
                 fileChangeListener = new ExternalUpdateListener();
                 FileUtil.addFileChangeListener(fileChangeListener);
             }
         }
     }
-    
-    public void startup() {
-	
-        DataObject.getRegistry().addChangeListener(modifiedListener);
-	
-	if (!CndUtils.isStandalone()) {
-	    openedProjects.clear();
-	    if (TRACE_STARTUP) System.out.println("Model support: Inited"); // NOI18N
 
-	    if (TopComponent.getRegistry().getOpened().size() > 0){
-		if (TRACE_STARTUP) System.out.println("Model support: Open projects in Init"); // NOI18N
-		postponeParse = false;
-		OpenProjects.getDefault().addPropertyChangeListener(this);
-		openProjects();
-	    } else {
-		if (TRACE_STARTUP) System.out.println("Model support: Postpone open projects"); // NOI18N
-		postponeParse = true;
-		WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
-		    public void run() {
-			if (TRACE_STARTUP) System.out.println("Model support: invoked after ready UI"); // NOI18N
-			postponeParse = false;
-			Runnable task = new Runnable() {
-			    public void run() {
-				OpenProjects.getDefault().addPropertyChangeListener(ModelSupport.this);
-				openProjects();
-			    }
-			};
-			if (SwingUtilities.isEventDispatchThread()) {
-			    RequestProcessor.getDefault().post(task);
-			} else {
-			    task.run();
-			}
-		    }
-		});
-	    }
-	}
+    public void startup() {
+
+        DataObject.getRegistry().addChangeListener(modifiedListener);
+
+        if (!CndUtils.isStandalone()) {
+            openedProjects.clear();
+            if (TRACE_STARTUP) {
+                System.out.println("Model support: Inited"); // NOI18N
+            }
+            if (TopComponent.getRegistry().getOpened().size() > 0) {
+                if (TRACE_STARTUP) {
+                    System.out.println("Model support: Open projects in Init"); // NOI18N
+                }
+                postponeParse = false;
+                OpenProjects.getDefault().addPropertyChangeListener(this);
+                openProjects();
+            } else {
+                if (TRACE_STARTUP) {
+                    System.out.println("Model support: Postpone open projects"); // NOI18N
+                }
+                postponeParse = true;
+                WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+
+                    public void run() {
+                        if (TRACE_STARTUP) {
+                            System.out.println("Model support: invoked after ready UI"); // NOI18N
+                        }
+                        postponeParse = false;
+                        Runnable task = new Runnable() {
+
+                            public void run() {
+                                OpenProjects.getDefault().addPropertyChangeListener(ModelSupport.this);
+                                openProjects();
+                            }
+                        };
+                        if (SwingUtilities.isEventDispatchThread()) {
+                            RequestProcessor.getDefault().post(task);
+                        } else {
+                            task.run();
+                        }
+                    }
+                });
+            }
+        }
     }
-    
+
     public void shutdown() {
         DataObject.getRegistry().removeChangeListener(modifiedListener);
-	ModelImpl model = theModel;
-	if( model != null ) {
-	    model.shutdown();
-	}
+        ModelImpl model = theModel;
+        if (model != null) {
+            model.shutdown();
+        }
     }
-    
+
     public void propertyChange(PropertyChangeEvent evt) {
-	try { //FIXUP #109105 OpenProjectList does not get notification about adding a project if the project is stored in the repository
-	    if (TRACE_STARTUP) System.out.println("Model support event:"+evt.getPropertyName());
+        try { //FIXUP #109105 OpenProjectList does not get notification about adding a project if the project is stored in the repository
+            if (TRACE_STARTUP) {
+                System.out.println("Model support event:" + evt.getPropertyName());
+            }
             if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
-                if(!postponeParse) {
-                    if (TRACE_STARTUP) System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS"); // NOI18N
-                    RequestProcessor.getDefault().post(new Runnable(){
+                if (!postponeParse) {
+                    if (TRACE_STARTUP) {
+                        System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS"); // NOI18N
+                    }
+                    RequestProcessor.getDefault().post(new Runnable() {
+
                         public void run() {
                             openProjects();
                         }
                     });
                 }
             }
-	}
-	catch( Exception e) {
-	    e.printStackTrace(System.err); 
-	}
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+        }
     }
-    
+
     private void openProjects() {
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        
-        synchronized (openedProjects){
+
+        synchronized (openedProjects) {
             Set<Project> nowOpened = new HashSet<Project>();
-            for( int i = 0; i < projects.length; i++ ) {
+            for (int i = 0; i < projects.length; i++) {
                 nowOpened.add(projects[i]);
-                if( ! openedProjects.contains(projects[i]) ) {
+                if (!openedProjects.contains(projects[i])) {
                     addProject(projects[i]);
                 }
             }
-            
+
             Set<Project> toClose = new HashSet<Project>();
             for (Project project : openedProjects) {
-                if( ! nowOpened.contains(project) ) {
+                if (!nowOpened.contains(project)) {
                     toClose.add(project);
-                }                
+                }
             }
-            
+
             for (Project project : toClose) {
                 closeProject(project);
             }
@@ -236,13 +244,12 @@ public class ModelSupport implements PropertyChangeListener {
         if (!CndUtils.isStandalone()) {
             Project project = ModelImpl.findProjectByNativeProject(getNativeProject(platformProject));
             if (project != null) {
-                return new CodeAssistanceOptions(project,true).getParseOrphanEnabled().booleanValue();
+                return new CodeAssistanceOptions(project, true).getParseOrphanEnabled();
             }
         }
         return true;
     }
-    
-   
+
     public static void trace(NativeFileItem nativeFile) {
         try {
             Diagnostic.trace("  native file item" + nativeFile.getFile().getAbsolutePath()); // NOI18N
@@ -258,18 +265,26 @@ public class ModelSupport implements PropertyChangeListener {
     public static void dumpNativeProject(NativeProject nativeProject) {
         System.err.println("\n\n\nDumping project " + nativeProject.getProjectDisplayName());
         System.err.println("\nSystem include paths");
-        for (Iterator it = nativeProject.getSystemIncludePaths().iterator(); it.hasNext();) System.err.println("    " + it.next());
+        for (Iterator it = nativeProject.getSystemIncludePaths().iterator(); it.hasNext();) {
+            System.err.println("    " + it.next());
+        }
         System.err.println("\nUser include paths");
-        for (Iterator it = nativeProject.getUserIncludePaths().iterator(); it.hasNext();)   System.err.println("    " + it.next());
+        for (Iterator it = nativeProject.getUserIncludePaths().iterator(); it.hasNext();) {
+            System.err.println("    " + it.next());
+        }
         System.err.println("\nSystem macros");
-        for (Iterator it = nativeProject.getSystemMacroDefinitions().iterator(); it.hasNext();) System.err.println("    " + it.next());
+        for (Iterator it = nativeProject.getSystemMacroDefinitions().iterator(); it.hasNext();) {
+            System.err.println("    " + it.next());
+        }
         System.err.println("\nUser macros");
-        for (Iterator it = nativeProject.getUserMacroDefinitions().iterator(); it.hasNext();)   System.err.println("    " + it.next());
+        for (Iterator it = nativeProject.getUserMacroDefinitions().iterator(); it.hasNext();) {
+            System.err.println("    " + it.next());
+        }
         List<NativeFileItem> sources = new ArrayList<NativeFileItem>();
         List<NativeFileItem> headers = new ArrayList<NativeFileItem>();
-        for(NativeFileItem item : nativeProject.getAllFiles()){
+        for (NativeFileItem item : nativeProject.getAllFiles()) {
             if (!item.isExcluded()) {
-                switch(item.getLanguage()){
+                switch (item.getLanguage()) {
                     case C:
                     case CPP:
                         sources.add(item);
@@ -290,23 +305,23 @@ public class ModelSupport implements PropertyChangeListener {
         for (NativeFileItem elem : headers) {
             System.err.println(elem.getFile().getAbsolutePath());
         }
-        
+
         System.err.println("End of project dump\n\n\n");
     }
-    
+
     public static NativeProject getNativeProject(Object platformProject) {
-        NativeProject nativeProject = platformProject instanceof NativeProject ? (NativeProject)platformProject : null;
-        if (platformProject instanceof Project ) {
+        NativeProject nativeProject = platformProject instanceof NativeProject ? (NativeProject) platformProject : null;
+        if (platformProject instanceof Project) {
             Project project = (Project) platformProject;
             nativeProject = project.getLookup().lookup(NativeProject.class);
-        }    
-	return nativeProject;
+        }
+        return nativeProject;
     }
-    
+
     private String toString(Project project) {
         StringBuilder sb = new StringBuilder();
-        ProjectInformation  pi = ProjectUtils.getInformation(project);
-        if( pi != null ) {
+        ProjectInformation pi = ProjectUtils.getInformation(project);
+        if (pi != null) {
             sb.append(" Name=" + pi.getName()); // NOI18N
             sb.append(" DisplayName=" + pi.getDisplayName()); // NOI18N
         }
@@ -316,7 +331,7 @@ public class ModelSupport implements PropertyChangeListener {
 //        }
         return sb.toString();
     }
-    
+
     private void addProject(final Project project) {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("### ModelSupport.addProject: " + toString(project)); // NOI18N
@@ -339,22 +354,22 @@ public class ModelSupport implements PropertyChangeListener {
             nativeProject.runOnCodeModelReadiness(new Runnable() {
 
                 public void run() {
-                    boolean enableModel = new CodeAssistanceOptions(project).getCodeAssistanceEnabled().booleanValue();
+                    boolean enableModel = new CodeAssistanceOptions(project).getCodeAssistanceEnabled();
 
                     model.addProject(nativeProject, nativeProject.getProjectDisplayName(), enableModel);
                 }
             });
         }
     }
-    
+
     private void dumpProjectFiles(NativeProject nativeProject) {
-        if( TraceFlags.DEBUG ) {
+        if (TraceFlags.DEBUG) {
             Diagnostic.trace("+++ Sources:"); // NOI18N
             List<NativeFileItem> sources = new ArrayList<NativeFileItem>();
             List<NativeFileItem> headers = new ArrayList<NativeFileItem>();
-            for(NativeFileItem item : nativeProject.getAllFiles()){
+            for (NativeFileItem item : nativeProject.getAllFiles()) {
                 if (!item.isExcluded()) {
-                    switch(item.getLanguage()){
+                    switch (item.getLanguage()) {
                         case C:
                         case CPP:
                             sources.add(item);
@@ -378,62 +393,65 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     private void closeProject(Project project) {
-        if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.closeProject: " + toString(project)); // NOI18N
-	ModelImpl model = theModel;
-	if( model == null ) {
-	    return;
-	}
+        if (TraceFlags.DEBUG) {
+            Diagnostic.trace("### ModelSupport.closeProject: " + toString(project)); // NOI18N
+        }
+        ModelImpl model = theModel;
+        if (model == null) {
+            return;
+        }
         NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
         if (nativeProject != null) {
             model.closeProject(nativeProject);
         }
         openedProjects.remove(project);
-    }    
-    
+    }
+
     public static FileBuffer getFileBuffer(File file) {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-        if( fo != null ) {
+        if (fo != null) {
             try {
                 DataObject dao = DataObject.find(fo);
-                if( dao.isModified() ) {
+                if (dao.isModified()) {
                     EditorCookie editor = dao.getCookie(EditorCookie.class);
-                    if( editor != null ) {
+                    if (editor != null) {
                         Document doc = editor.getDocument();
-                        if( doc != null ) {
+                        if (doc != null) {
                             return new FileBufferDoc(file, doc);
                         }
                     }
                 }
-            } catch( DataObjectNotFoundException e ) {
+            } catch (DataObjectNotFoundException e) {
                 // nothing
             }
         }
         return new FileBufferFile(file);
     }
-    
+
     public void onMemoryLow(LowMemoryEvent event, boolean fatal) {
         LowMemoryAlerter alerter = Lookup.getDefault().lookup(LowMemoryAlerter.class);
-        if( alerter != null ) {
+        if (alerter != null) {
             alerter.alert(event, fatal);
         }
     }
-    
+
     public static NativeProject[] getOpenNativeProjects() {
-	if (CndUtils.isStandalone()) {
-	    return new NativeProject[0];
-	}
-	List<NativeProject> result = new ArrayList<NativeProject>();
-	Project[] projects = OpenProjects.getDefault().getOpenProjects();
-	for (int i = 0; i < projects.length; i++) {
-	    NativeProject nativeProject = projects[i].getLookup().lookup(NativeProject.class);
-	    if( nativeProject != null ) {
-		result.add(nativeProject);
-	    }
-	}
-	return result.toArray(new NativeProject[result.size()]);
-    }    
+        if (CndUtils.isStandalone()) {
+            return new NativeProject[0];
+        }
+        List<NativeProject> result = new ArrayList<NativeProject>();
+        Project[] projects = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < projects.length; i++) {
+            NativeProject nativeProject = projects[i].getLookup().lookup(NativeProject.class);
+            if (nativeProject != null) {
+                result.add(nativeProject);
+            }
+        }
+        return result.toArray(new NativeProject[result.size()]);
+    }
 
     private static final class BufAndProj {
+
         public BufAndProj(FileBuffer buffer, ProjectBase project, NativeFileItem nativeFile) {
             assert buffer != null : "null buffer";
             this.buffer = buffer;
@@ -446,63 +464,63 @@ public class ModelSupport implements PropertyChangeListener {
         public final ProjectBase project;
         public final NativeFileItem nativeFile;
     }
-    
+
     private class ModifiedObjectsChangeListener implements ChangeListener {
-        
+
         private Map<DataObject, Collection<BufAndProj>> buffers = new HashMap<DataObject, Collection<BufAndProj>>();
-	
-	private Collection<BufAndProj> getBufNP(DataObject dao) {
-	    Collection<BufAndProj> bufNPcoll = buffers.get(dao);
-	    return (bufNPcoll == null) ? Collections.<BufAndProj>emptyList() : bufNPcoll;
-	}
-	
-	private void addBufNP(DataObject dao, BufAndProj bufNP) {
-	    Collection<BufAndProj> bufNPcoll = buffers.get(dao);
-	    if( bufNPcoll == null ) {
-		bufNPcoll = new ArrayList<BufAndProj>();
-		buffers.put(dao, bufNPcoll);
-	    }
-	    bufNPcoll.add(bufNP);
-	}
-	
+
+        private Collection<BufAndProj> getBufNP(DataObject dao) {
+            Collection<BufAndProj> bufNPcoll = buffers.get(dao);
+            return (bufNPcoll == null) ? Collections.<BufAndProj>emptyList() : bufNPcoll;
+        }
+
+        private void addBufNP(DataObject dao, BufAndProj bufNP) {
+            Collection<BufAndProj> bufNPcoll = buffers.get(dao);
+            if (bufNPcoll == null) {
+                bufNPcoll = new ArrayList<BufAndProj>();
+                buffers.put(dao, bufNPcoll);
+            }
+            bufNPcoll.add(bufNP);
+        }
+
         // TODO: need to change implementation when ataObject will contain correct cookie
         private void editStart(DataObject curObj) {
-	    ModelImpl model = theModel;
-	    if( model == null ) {
-		return;
-	    }
-	    if (!curObj.isValid()) {//IZ#114182
+            ModelImpl model = theModel;
+            if (model == null) {
                 return;
             }
-	    NativeFileItemSet set = curObj.getLookup().lookup(NativeFileItemSet.class);
-            if (set == null){
+            if (!curObj.isValid()) {//IZ#114182
+                return;
+            }
+            NativeFileItemSet set = curObj.getLookup().lookup(NativeFileItemSet.class);
+            if (set == null) {
                 set = findCanonicalSet(curObj);
             }
-	    
-	    if( set != null && ! set.getItems().isEmpty() ) {
-		
-		EditorCookie editor = curObj.getCookie(EditorCookie.class);
-		Document doc = editor != null ? editor.getDocument() : null;
-		FileObject primaryFile = curObj.getPrimaryFile();
-		File file = FileUtil.toFile(primaryFile);
-		final FileBufferDoc buffer = new FileBufferDoc(file, doc);
-		
-		for( NativeFileItem nativeFile : set.getItems() ) {
-		    ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());
+
+            if (set != null && !set.getItems().isEmpty()) {
+
+                EditorCookie editor = curObj.getCookie(EditorCookie.class);
+                Document doc = editor != null ? editor.getDocument() : null;
+                FileObject primaryFile = curObj.getPrimaryFile();
+                File file = FileUtil.toFile(primaryFile);
+                final FileBufferDoc buffer = new FileBufferDoc(file, doc);
+
+                for (NativeFileItem nativeFile : set.getItems()) {
+                    ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());
                     if (csmProject != null) { // this could be null when code assistance is turned off for project
                         addBufNP(curObj, new BufAndProj(buffer, csmProject, nativeFile));
                         csmProject.onFileEditStart(buffer, nativeFile);
                     }
-		}
+                }
             }
         }
-       
-        private boolean isCndDataObject(FileObject fo){
+
+        private boolean isCndDataObject(FileObject fo) {
             String type = fo.getMIMEType();
             return MIMENames.CPLUSPLUS_MIME_TYPE.equals(type) || MIMENames.C_MIME_TYPE.equals(type);
         }
-        
-        private NativeFileItemSet findCanonicalSet(DataObject curObj){
+
+        private NativeFileItemSet findCanonicalSet(DataObject curObj) {
             FileObject fo = curObj.getPrimaryFile();
             if (fo != null && isCndDataObject(fo)) {
                 File file = FileUtil.toFile(fo);
@@ -520,7 +538,7 @@ public class ModelSupport implements PropertyChangeListener {
             }
             return null;
         }
-        
+
 //        private void editEnd(DataObject curObj) {
 //            // TODO: some weird logic. New FileBufferFile should be created
 //            // instead.
@@ -530,9 +548,8 @@ public class ModelSupport implements PropertyChangeListener {
 //                bufNP.project.onFileEditEnd(bufNP.buffer);
 //            }
 //        }
-
-	private void traceStateChanged(ChangeEvent e) {
-	    if( TraceFlags.DEBUG ) {
+        private void traceStateChanged(ChangeEvent e) {
+            if (TraceFlags.DEBUG) {
                 Diagnostic.trace("state of registry changed:"); // NOI18N
                 Diagnostic.indent();
                 if (e != null) {
@@ -546,16 +563,15 @@ public class ModelSupport implements PropertyChangeListener {
                             Diagnostic.trace("object " + i + ":" + curObj.getName()); // NOI18N
                             Diagnostic.indent();
                             Diagnostic.trace("with file: " + curObj.getPrimaryFile()); // NOI18N
-			    NativeFileItemSet set = curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
-			    if( set == null ) {
-				Diagnostic.trace("NativeFileItemSet == null"); // NOI18N
-			    }
-			    else {
-				Diagnostic.trace("NativeFileItemSet:"); // NOI18N
-				for( NativeFileItem item : set.getItems() ) {
-				    Diagnostic.trace("\t" + item.getNativeProject().getProjectDisplayName()); // NOI18N
-				}
-			    }
+                            NativeFileItemSet set = curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
+                            if (set == null) {
+                                Diagnostic.trace("NativeFileItemSet == null"); // NOI18N
+                            } else {
+                                Diagnostic.trace("NativeFileItemSet:"); // NOI18N
+                                for (NativeFileItem item : set.getItems()) {
+                                    Diagnostic.trace("\t" + item.getNativeProject().getProjectDisplayName()); // NOI18N
+                                }
+                            }
                             EditorCookie editor = curObj.getCookie(EditorCookie.class);
                             Diagnostic.trace("has editor support: " + editor); // NOI18N
                             Document doc = editor != null ? editor.getDocument() : null;
@@ -567,50 +583,50 @@ public class ModelSupport implements PropertyChangeListener {
                     Diagnostic.trace("no additional info from event object"); // NOI18N
                 }
                 Diagnostic.unindent();
-	    }
-	}
-	
+            }
+        }
+
         public void stateChanged(ChangeEvent e) {
-            if( TraceFlags.DEBUG ) {
-		traceStateChanged(e);
+            if (TraceFlags.DEBUG) {
+                traceStateChanged(e);
             }
             if (e != null) {
-                
+
                 DataObject[] objs = DataObject.getRegistry().getModified();
-                
+
                 Set<DataObject> toDelete = new HashSet<DataObject>();
-                
+
                 // find all files, which stopped editing
-                for( Iterator iter = buffers.keySet().iterator(); iter.hasNext(); ) {
+                for (Iterator iter = buffers.keySet().iterator(); iter.hasNext();) {
                     DataObject dao = (DataObject) iter.next();
-                    if( ! contains(objs, dao) ) {
-			for( BufAndProj bufNP : getBufNP(dao) ) {
-			    if( bufNP != null ) {
-				// removing old doc buffer and creating new one
-				bufNP.project.onFileEditEnd( getFileBuffer(bufNP.buffer.getFile()), bufNP.nativeFile );
-			    }
-			}
+                    if (!contains(objs, dao)) {
+                        for (BufAndProj bufNP : getBufNP(dao)) {
+                            if (bufNP != null) {
+                                // removing old doc buffer and creating new one
+                                bufNP.project.onFileEditEnd(getFileBuffer(bufNP.buffer.getFile()), bufNP.nativeFile);
+                            }
+                        }
                         toDelete.add(dao);
                     }
                 }
-                
+
                 // now remove these files from bufres map
-                for( Iterator iter = toDelete.iterator(); iter.hasNext(); ) {
+                for (Iterator iter = toDelete.iterator(); iter.hasNext();) {
                     buffers.remove(iter.next());
                 }
-                
+
                 // add new buffers
-                for( int i = 0; i < objs.length; i++ ) {
-                    if( ! buffers.containsKey(objs[i]) ) {
+                for (int i = 0; i < objs.length; i++) {
+                    if (!buffers.containsKey(objs[i])) {
                         editStart(objs[i]);
                     }
                 }
             }
         }
-        
+
         private boolean contains(Object[] objs, Object o) {
-            for( int i = 0; i < objs.length; i++ ) {
-                if( objs[i].equals(o) ) {
+            for (int i = 0; i < objs.length; i++) {
+                if (objs[i].equals(o)) {
                     return true;
                 }
             }
@@ -621,27 +637,33 @@ public class ModelSupport implements PropertyChangeListener {
     private class ExternalUpdateListener extends FileChangeAdapter implements Runnable {
 
         private boolean isRunning;
-        private Collection<FileObject> changedFileObjects = new HashSet();
-        
+        private final Collection<FileObject> changedFileObjects = new HashSet<FileObject>();
+
         /** FileChangeListener implementation. Fired when a file is changed. */
-        public @Override void fileChanged(FileEvent fe) {
-            if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("External updates: fileChanged %s\n", fe);
+        public 
+        @Override
+        void fileChanged(FileEvent fe) {
+            if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+                System.err.printf("External updates: fileChanged %s\n", fe);
+            }
             ModelImpl model = theModel;
-            if( model != null ) {
+            if (model != null) {
                 FileObject fo = fe.getFile();
-                if( isCOrCpp(fo) ) {
+                if (isCOrCpp(fo)) {
                     scheduleUpdate(fo);
                 }
             }
         }
-        
+
         private void scheduleUpdate(FileObject fo) {
             ModelImpl model = theModel;
-            if( model != null ) {
-                synchronized( this ) {
-                    if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("External updates: schedulling update for %s\n", fo);
+            if (model != null) {
+                synchronized (this) {
+                    if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+                        System.err.printf("External updates: schedulling update for %s\n", fo);
+                    }
                     changedFileObjects.add(fo);
-                    if( ! isRunning ) {
+                    if (!isRunning) {
                         isRunning = true;
                         model.enqueueModelTask(this, "External File Updater"); // NOI18N
                     }
@@ -650,12 +672,14 @@ public class ModelSupport implements PropertyChangeListener {
         }
 
         public void run() {
-            if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("External updates: running update task\n");
-            while( true ) {
+            if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+                System.err.printf("External updates: running update task\n");
+            }
+            while (true) {
                 FileObject fo = null;
-                synchronized( this ) {
+                synchronized (this) {
                     Iterator<FileObject> iter = changedFileObjects.iterator();
-                    if( iter.hasNext() ) {
+                    if (iter.hasNext()) {
                         fo = iter.next();
                         iter.remove();
                     } else {
@@ -663,8 +687,10 @@ public class ModelSupport implements PropertyChangeListener {
                         break;
                     }
                 }
-                if( fo != null ) {
-                    if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("Updating for %s\n", fo);
+                if (fo != null) {
+                    if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+                        System.err.printf("Updating for %s\n", fo);
+                    }
                     CsmFile[] files = CsmUtilities.getCsmFiles(fo);
                     for (int i = 0; i < files.length; i++) {
                         FileImpl file = (FileImpl) files[i];
@@ -672,19 +698,20 @@ public class ModelSupport implements PropertyChangeListener {
                     }
                 }
             }
-            if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("External updates: update task finished\n");
+            if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+                System.err.printf("External updates: update task finished\n");
+            }
         }
-        
 
         private boolean isCOrCpp(FileObject fo) {
             String mime = fo.getMIMEType();
-            if( mime == null ) {
+            if (mime == null) {
                 mime = FileUtil.getMIMEType(fo);
-                if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("MIME resolved: %s\n", mime);
+                if (TraceFlags.TRACE_EXTERNAL_CHANGES) {
+                    System.err.printf("MIME resolved: %s\n", mime);
+                }
             }
             return MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime) || MIMENames.C_MIME_TYPE.equals(mime);
         }
-
     }
-    
 }

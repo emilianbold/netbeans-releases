@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.utils;
 
 import java.awt.GridBagConstraints;
@@ -51,24 +50,21 @@ import org.openide.util.NbBundle;
 
 public class ConfSelectorPanel extends javax.swing.JPanel {
 
-    private static Configuration[] lastConfigurationItems;
-    private static JCheckBox[] lastCheckBoxes;
     private Configuration[] configurationItems;
     private JCheckBox[] checkBoxes;
-
     JButton[] actionButtons;
 
     public ConfSelectorPanel(String labelText, char mn, Configuration[] configurationItems, JButton[] actionButtons) {
         initComponents();
         GridBagConstraints gridBagConstraints;
-        
+
         this.configurationItems = configurationItems;
         this.actionButtons = actionButtons;
-        
+
         // Set the label
         label.setText(labelText);
         label.setDisplayedMnemonic(mn);
-        
+
         // Add the comboboxes
         CheckBoxActionListener checkBoxActionListener = new CheckBoxActionListener();
         checkBoxes = new JCheckBox[configurationItems.length];
@@ -77,15 +73,12 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
             checkBox.addActionListener(checkBoxActionListener);
             checkBox.setBackground(new java.awt.Color(255, 255, 255));
             checkBox.setText(configurationItems[i].toString());
-            if (sameAsLastTime(configurationItems))
-                checkBox.setSelected(lastCheckBoxes[i].isSelected());
-            else
-                checkBox.setSelected(true);
+            checkBox.setSelected(true);
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = i;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-            if (i == configurationItems.length-1) {
+            if (i == configurationItems.length - 1) {
                 gridBagConstraints.weightx = 1.0;
                 gridBagConstraints.weighty = 1.0;
             }
@@ -93,7 +86,7 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
             checkBoxes[i] = checkBox;
             checkBox.getAccessibleContext().setAccessibleDescription(""); // NOI18N
         }
-        
+
         // Add the action buttons
         if (actionButtons != null) {
             gridBagConstraints = new java.awt.GridBagConstraints();
@@ -106,43 +99,30 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
                 buttonPanel.add(actionButtons[i], gridBagConstraints);
             }
         }
-        
+
         // Set background
         innerPanel.setBackground(new java.awt.Color(255, 255, 255));
-        
+
         // Set size
         setPreferredSize(new java.awt.Dimension(350, 250));
-        
+
         // Accessibility
         getAccessibleContext().setAccessibleDescription(getString("SELECTED_CONF_AD"));
         label.setDisplayedMnemonic(getString("SELECTED_CONF_MN").charAt(0));
         selectAllButton.getAccessibleContext().setAccessibleDescription(getString("SELECT_ALL_BUTTON_AD"));
         deselectAllButton.getAccessibleContext().setAccessibleDescription(getString("DESELECT_ALL_BUTTON_AD"));
-        
+
         // Verify any checked
         checkCheckBoxes();
     }
 
-    private boolean sameAsLastTime(Configuration[] configurationItems) {
-	if (lastConfigurationItems == null || lastCheckBoxes == null)
-	    return false;
-	if (configurationItems.length != lastConfigurationItems.length)
-	    return false;
-	if (configurationItems.length != lastCheckBoxes.length)
-	    return false;
-	for (int i = 0; i < configurationItems.length; i++) {
-	    if (configurationItems[i] != lastConfigurationItems[i])
-		return false;
-	}
-	return true;
-    }
-    
     class CheckBoxActionListener implements java.awt.event.ActionListener {
+
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             checkCheckBoxes();
         }
     }
-    
+
     public void checkCheckBoxes() {
         boolean oneSelected = false;
         for (int i = 0; i < checkBoxes.length; i++) {
@@ -152,25 +132,23 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
             }
         }
         if (actionButtons != null) {
-            for (int i = 0; i < actionButtons.length; i++)
+            for (int i = 0; i < actionButtons.length; i++) {
                 actionButtons[i].setEnabled(oneSelected);
+            }
         }
     }
-    
+
     public Configuration[] getSelectedConfs() {
-        lastConfigurationItems = configurationItems;
-        lastCheckBoxes = checkBoxes;
-        
         Vector vector = new Vector();
         for (int i = 0; i < configurationItems.length; i++) {
-            if (checkBoxes[i].isSelected())
+            if (checkBoxes[i].isSelected()) {
                 vector.add(configurationItems[i]);
+            }
         }
-        
-        return (Configuration[])vector.toArray(new Configuration[vector.size()]);
+
+        return (Configuration[]) vector.toArray(new Configuration[vector.size()]);
     }
-    
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -262,22 +240,20 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
         add(buttonPanel, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
-    
+
     private void deselectAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deselectAllButtonActionPerformed
         for (int i = 0; i < checkBoxes.length; i++) {
             checkBoxes[i].setSelected(false);
         }
         checkCheckBoxes();
     }//GEN-LAST:event_deselectAllButtonActionPerformed
-    
+
     private void selectAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectAllButtonActionPerformed
         for (int i = 0; i < checkBoxes.length; i++) {
             checkBoxes[i].setSelected(true);
         }
         checkCheckBoxes();
     }//GEN-LAST:event_selectAllButtonActionPerformed
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JPanel confPanel;
@@ -287,9 +263,9 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane scrollPanel;
     private javax.swing.JButton selectAllButton;
     // End of variables declaration//GEN-END:variables
-    
     /** Look up i18n strings here */
     private static ResourceBundle bundle;
+
     private static String getString(String s) {
         if (bundle == null) {
             bundle = NbBundle.getBundle(ConfSelectorPanel.class);

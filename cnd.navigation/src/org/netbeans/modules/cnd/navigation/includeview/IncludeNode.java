@@ -57,14 +57,12 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Alexander Simon
  */
 public class IncludeNode extends AbstractCsmNode {
-    private Image icon;
     private CsmFile object;
     private IncludedModel model;
     private boolean isRoot = false;

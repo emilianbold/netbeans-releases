@@ -123,7 +123,7 @@ public class ExeLoader extends UniFileLoader {
 		    MIMENames.ELF_SHOBJ_MIME_TYPE.equals(mime) ||
 		    MIMENames.ELF_OBJECT_MIME_TYPE.equals(mime)) {
 	    lastMime = mime;
-	    lastFo = new WeakReference(fo);
+	    lastFo = new WeakReference<FileObject>(fo);
 
 //	    try {
 //		fo.setAttribute(KNOWN_EXEFILE_TYPE, mime);

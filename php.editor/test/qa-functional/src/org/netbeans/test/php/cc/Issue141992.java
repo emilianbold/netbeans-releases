@@ -122,13 +122,13 @@ public class Issue141992 extends cc
     TypeCode( eoPHP, "\n$z = new a999;\n$z->" );
 
     // Check code completion list
-    CompletionJListOperator jCompl = GetCompletion( );
+    CompletionInfo jCompl = GetCompletion( );
     if( null == jCompl )
-      fail( "Unale to find completion list in any form." );
-    List list = jCompl.getCompletionItems( );
+      fail( "Unable to find completion list in any form." );
+    //List list = jCompl.getCompletionItems( );
     // Magic CC number for complete list
-    if( AAA_LIST_SIZE != list.size( ) )
-      fail( "Invalid CC list size: " + list.size( ) + ", expected: " + COMPLETE_CC_LIST_SIZE );
+    if( AAA_LIST_SIZE != jCompl.size( ) )
+      fail( "Invalid CC list size: " + jCompl.size( ) + ", expected: " + AAA_LIST_SIZE );
 
     jCompl.hideAll( );
 

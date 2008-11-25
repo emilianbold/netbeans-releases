@@ -150,7 +150,7 @@ public class DateFieldCD extends ComponentDescriptor {
     }
 
     public static Map<String, PropertyValue> getInputModeValues() {
-        if (inputModeValues == null) {
+        if (inputModeValues == null || inputModeValues.isEmpty()) {
             inputModeValues = new TreeMap<String, PropertyValue>();
             inputModeValues.put("DATE", MidpTypes.createIntegerValue(DateFieldCD.VALUE_DATE)); // NOI18N
             inputModeValues.put("DATE_TIME", MidpTypes.createIntegerValue(DateFieldCD.VALUE_DATE_TIME)); // NOI18N

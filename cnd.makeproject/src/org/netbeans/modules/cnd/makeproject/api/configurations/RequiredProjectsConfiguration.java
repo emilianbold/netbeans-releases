@@ -38,31 +38,38 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.List;
 import java.util.ArrayList;
 
-public class RequiredProjectsConfiguration extends VectorConfiguration {
+public class RequiredProjectsConfiguration<E> extends VectorConfiguration<E> {
+
     public RequiredProjectsConfiguration() {
-	super(null);
+        super(null);
     }
 
     public LibraryItem.ProjectItem[] getRequiredProjectItemsAsArray() {
-        return (LibraryItem.ProjectItem[])getValue().toArray(new LibraryItem.ProjectItem[getValue().size()]);
+        return getValue().toArray(new LibraryItem.ProjectItem[getValue().size()]);
     }
 
     // Clone and Assign
     @Override
-    public void assign(VectorConfiguration conf) {
-	super.assign(conf);
+    public void assign(VectorConfiguration<E> conf) {
+        super.assign(conf);
     }
 
-    @Override
-    public Object clone() {
-	RequiredProjectsConfiguration clone = new RequiredProjectsConfiguration();
-	clone.setValue((List)((ArrayList)getValue()).clone());
-	return clone;
+    public RequiredProjectsConfiguration<E> cloneConf() {
+        RequiredProjectsConfiguration<E> clone = new RequiredProjectsConfiguration<E>();
+        clone.setValue(new ArrayList<E>(getValue()));
+        return clone;
     }
+
+//    @Override
+//    @Deprecated
+//    public Object clone() {
+//        RequiredProjectsConfiguration clone = new RequiredProjectsConfiguration();
+//        clone.setValue((List) ((ArrayList) getValue()).clone());
+//        return clone;
+//    }
 }

@@ -178,6 +178,7 @@ public class CsmOffsetUtilities {
                 return false;
             }
             // check if offset is before parameters
+            @SuppressWarnings("unchecked")
             Collection<CsmParameter> params = fun.getParameters();
             if(!params.isEmpty()) 
             {
@@ -216,6 +217,26 @@ public class CsmOffsetUtilities {
         return isInObject(clazz, offset) 
                 && clazz.getLeftBracketOffset() < offset
                 && offset < clazz.getEndOffset();
+    }
+
+    /**
+     * Checks if two objects have same offsets. It usually means that
+     * they are result of macro expansion.
+     *
+     * @param o1  first object
+     * @param o2  second object
+     * @return <code>true</code> if both arguments are offsetable and
+     *          have equal start and end offsets, <code>false</code> otherwise
+     */
+    public static boolean sameOffsets(final CsmObject obj1, final CsmObject obj2) {
+        if (CsmKindUtilities.isOffsetable(obj1) && CsmKindUtilities.isOffsetable(obj2)) {
+            final CsmOffsetable ofs1 = (CsmOffsetable)obj1;
+            final CsmOffsetable ofs2 = (CsmOffsetable)obj2;
+            return ofs1.getStartOffset() == ofs2.getStartOffset()
+                    && ofs1.getEndOffset() == ofs2.getEndOffset();
+        } else {
+            return false;
+        }
     }
 
 }

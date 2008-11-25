@@ -40,33 +40,34 @@
  */
 package org.netbeans.modules.maven.jaxws.nodes;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.jaxws.MavenModelUtils;
+import org.netbeans.modules.maven.jaxws.WSUtils;
+import org.netbeans.modules.maven.jaxws.actions.JaxWsRefreshAction;
+import org.netbeans.modules.maven.jaxws.wizards.JaxWsClientCreator;
+import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
-//import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsRefreshClientAction;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandler;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerChain;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerChains;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerClass;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModel;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModelFactory;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.DefinitionsBindings;
-//import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;
-//import org.netbeans.modules.websvc.core.ConfigureHandlerAction;
-//import org.netbeans.modules.websvc.core.ConfigureHandlerCookie;
-//import org.netbeans.modules.websvc.core.webservices.ui.panels.MessageHandlerPanel;
-//import org.netbeans.modules.websvc.core.wseditor.support.WSEditAttributesAction;
-//import org.netbeans.modules.websvc.jaxws.api.JaxWsRefreshCookie;
+import org.netbeans.modules.websvc.api.support.RefreshClientDialog;
+import org.netbeans.modules.websvc.api.support.RefreshCookie;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
-//import org.netbeans.modules.xml.retriever.catalog.Utilities;
-//import org.netbeans.modules.xml.xam.ModelSource;
-//import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
@@ -74,6 +75,7 @@ import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.HelpCtx;
@@ -85,7 +87,7 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 
-public class JaxWsClientNode extends AbstractNode implements OpenCookie {
+public class JaxWsClientNode extends AbstractNode implements OpenCookie, RefreshCookie {
     JaxWsService client;
     JAXWSLightSupport jaxWsSupport;
     InstanceContent content;
@@ -98,12 +100,13 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie {
     }
     
     private JaxWsClientNode(JAXWSLightSupport jaxWsSupport, JaxWsService client, InstanceContent content) {
-        super(new JaxWsClientChildren(client), new AbstractLookup(content));
+        super(new JaxWsClientChildren(jaxWsSupport, client), new AbstractLookup(content));
         this.jaxWsSupport=jaxWsSupport;
         this.client=client;
         this.content = content;
         content.add(this);
         content.add(client);
+        content.add(jaxWsSupport);
         final WsdlModeler modeler = getWsdlModeler();
         if (modeler!=null) {
             changeIcon();
@@ -117,16 +120,26 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie {
                 }
             });
         }
-        if (wsdlFileObject != null) {
-            setName(wsdlFileObject.getName());
-            setDisplayName(wsdlFileObject.getName());
-        }
+//        if (wsdlFileObject != null) {
+//            setName(wsdlFileObject.getName());
+//            setDisplayName(wsdlFileObject.getName());
+//        }
 //        content.add(new EditWSAttributesCookieImpl(this, jaxWsModel));
-        //setValue("wsdl-url",client.getWsdlUrl());
+//        setValue("wsdl-url",client.getWsdlUrl());
     }
     
     public WsdlModel getWsdlModel(){
         return this.getWsdlModeler().getAndWaitForWsdlModel();
+    }
+
+    @Override
+    public String getName() {
+        return wsdlFileObject.getName();
+    }
+    
+    @Override
+    public String getDisplayName() {
+        return wsdlFileObject.getName();
     }
     
     @Override
@@ -224,7 +237,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie {
     public Action[] getActions(boolean context) {
         ArrayList<Action> actions = new ArrayList<Action>(Arrays.asList(
             SystemAction.get(OpenAction.class),
-//            SystemAction.get(JaxWsRefreshClientAction.class),
+            SystemAction.get(JaxWsRefreshAction.class),
 //            null,
 //            SystemAction.get(WSEditAttributesAction.class),
 //            null,
@@ -261,87 +274,24 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie {
 
     @Override
     public void destroy() throws java.io.IOException {
-//        String clientName = client.getName();
-////        NotifyDescriptor.Confirmation notifyDesc =
-////                new NotifyDescriptor.Confirmation(NbBundle.getMessage(JaxWsClientNode.class, "MSG_CONFIRM_DELETE", clientName));
-////        DialogDisplayer.getDefault().notify(notifyDesc);
-////        if(notifyDesc.getValue() == NotifyDescriptor.YES_OPTION){
-//            
-//            JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
-//            // removing local wsdl and xml artifacts
-//            FileObject localWsdlFolder = support.getLocalWsdlFolderForClient(clientName,false);
-//            if (localWsdlFolder!=null) {
-//                FileObject clientArtifactsFolder = localWsdlFolder.getParent();
-//                FileLock lock=null;
-//                try {
-//                    lock = clientArtifactsFolder.lock();
-//                    clientArtifactsFolder.delete(lock);
-//                } finally {
-//                    if (lock!=null) lock.releaseLock();
-//                }
-//            }
-//            
-//            Project project = FileOwnerQuery.getOwner(srcRoot);
-//            // remove also client xml artifacs from WEB-INF[META-INF]/wsdl
-//            if (project.getLookup().lookup(J2eeModuleProvider.class)!=null) {
-//                FileObject webInfClientFolder = findWsdlFolderForClient(support, clientName);
-//                if (webInfClientFolder!=null) {
-//                    FileObject webInfClientRootFolder = webInfClientFolder.getParent();
-//                    FileLock lock=null;
-//                    try {
-//                        lock = webInfClientFolder.lock();
-//                        webInfClientFolder.delete(lock);
-//                    } finally {
-//                        if (lock!=null) lock.releaseLock();
-//                    }
-//                    if (webInfClientRootFolder.getChildren().length==0) {
-//                        try {
-//                            lock = webInfClientRootFolder.lock();
-//                            webInfClientRootFolder.delete(lock);
-//                        } finally {
-//                            if (lock!=null) lock.releaseLock();
-//                        }
-//                    }
-//                }
-//            }
-//            // cleaning java artifacts
-//            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-//            try {
-//                ExecutorTask wsimportTask =
-//                        ActionUtils.runTarget(buildImplFo,
-//                        new String[]{"wsimport-client-clean-"+clientName},null); //NOI18N
-//                wsimportTask.waitFinished();
-//            } catch (java.io.IOException ex) {
-//                ErrorManager.getDefault().log(ex.getLocalizedMessage());
-//            } catch (IllegalArgumentException ex) {
-//                ErrorManager.getDefault().log(ex.getLocalizedMessage());
-//            }
-//            // removing entry from jax-ws.xml
-//            support.removeServiceClient(clientName);
-//            super.destroy();
-//        }
+        if (wsdlFileObject != null) {
+            // remove entry in wsimport configuration
+            Project project = FileOwnerQuery.getOwner(wsdlFileObject);
+            if (project != null) {
+                try {
+                    ModelHandle mavenHandle = ModelHandleUtils.createModelHandle(project);
+                    if (mavenHandle != null) {
+                        MavenModelUtils.removeWsdlFile(mavenHandle, client.getLocalWsdl());
+                        ModelHandleUtils.writeModelHandle(mavenHandle, project);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+            // remove wsdl file
+            wsdlFileObject.delete();
+        }
     }
-    
-    /**
-     * refresh service information obtained from wsdl (when wsdl file was changed)
-     */
-//    public void refreshService(boolean downloadWsdl) {
-//        if (downloadWsdl) {
-//            String result = RefreshClientDialog.open(client.getWsdlUrl());
-//            if (RefreshClientDialog.CLOSE.equals(result)) return;
-//            else if (RefreshClientDialog.NO_DOWNLOAD.equals(result)) {
-//                ((JaxWsClientChildren)getChildren()).refreshKeys(false);
-//            } else {
-//                wsdlFileObject= null;
-//                ((JaxWsClientChildren)getChildren()).refreshKeys(true, result);
-//            }
-//        } else {
-//            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-//                    NbBundle.getMessage(JaxWsClientNode.class,
-//                    "HINT_RefreshClient"))); //NOI18N           
-//            ((JaxWsClientChildren)getChildren()).refreshKeys(false);
-//        }
-//    }
     
 //    private void removeWsdlFolderContents(){
 //        FileObject wsdlFolder = getJAXWSClientSupport().getLocalWsdlFolderForClient(getName(), false);
@@ -436,7 +386,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie {
 //                    } else {
 //                        modeler.setPackageName(null);
 //                    }
-//                    modeler.setCatalog(getJAXWSClientSupport().getCatalog());
+                    modeler.setCatalog(jaxWsSupport.getCatalog());
 //                    setBindings(modeler);
                     return modeler;
                 }
@@ -449,7 +399,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie {
         return null;
     }
     
-    FileObject getLocalWsdl() {
+    private FileObject getLocalWsdl() {
         if (wsdlFileObject==null) {
             FileObject localWsdlocalFolder = jaxWsSupport.getLocalWsdlFolder(false);
             if (localWsdlocalFolder!=null) {
@@ -492,6 +442,115 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie {
     
     void setModelGenerationFinished(boolean value) {
         modelGenerationFinished=value;
-    }    
+    }
+
+    public void refreshService(boolean replaceLocalWsdl) {
+        if (replaceLocalWsdl) {
+            String wsdlUrl = client.getWsdlUrl();
+            if (wsdlUrl == null) {
+                if (wsdlFileObject != null) {
+                    Project project = FileOwnerQuery.getOwner(wsdlFileObject);
+                    Preferences prefs = ProjectUtils.getPreferences(project, JaxWsService.class,true);
+                    if (prefs != null) {
+                        wsdlUrl = prefs.get(wsdlFileObject.getName(), null);
+                        if (wsdlUrl != null) {
+                            client.setWsdlUrl(wsdlUrl);
+                        }
+                    }
+                }
+            }
+            RefreshClientDialog.Result result = RefreshClientDialog.open(true, wsdlUrl);
+            if (RefreshClientDialog.Result.CLOSE.equals(result)) {
+                return;
+            } else if (RefreshClientDialog.Result.REFRESH_ONLY.equals(result)) {
+                updateNode();               
+            } else {
+                // replace local wsdl with downloaded version
+                FileObject localWsdlFolder = jaxWsSupport.getLocalWsdlFolder(false);                
+                if (localWsdlFolder != null) {
+                    String newWsdlUrl = result.getWsdlUrl();
+                    boolean wsdlUrlChanged = false;
+                    if (newWsdlUrl.length() > 0 && !newWsdlUrl.equals(wsdlUrl)) {
+                        wsdlUrlChanged = true;
+                    }
+                    FileObject wsdlFo = null;
+                    try {
+                        wsdlFo = WSUtils.retrieveResource(
+                                localWsdlFolder,
+                                jaxWsSupport.getCatalog().toURI(),
+                                new URI(wsdlUrl));
+                    } catch (URISyntaxException ex) {
+                        //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        String mes = NbBundle.getMessage(JaxWsClientCreator.class, "ERR_IncorrectURI", wsdlUrl); // NOI18N
+                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(desc);
+                    } catch (UnknownHostException ex) {
+                        //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        String mes = NbBundle.getMessage(JaxWsClientCreator.class, "ERR_UnknownHost", ex.getMessage()); // NOI18N
+                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(desc);
+                    } catch (IOException ex) {
+                        //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        String mes = NbBundle.getMessage(JaxWsClientCreator.class, "ERR_WsdlRetrieverFailure", wsdlUrl); // NOI18N
+                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(desc);
+                    }
+                    if (wsdlFo != null) {
+                        String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
+
+                        if (!relativePath.equals(client.getLocalWsdl())) {
+                            Project project = FileOwnerQuery.getOwner(wsdlFo);
+                            // update wsdl URL property
+                            if (wsdlUrlChanged) {
+                                wsdlUrl = newWsdlUrl;
+                                client.setWsdlUrl(wsdlUrl);
+                                Preferences prefs = ProjectUtils.getPreferences(project, JaxWsService.class,true);
+                                if (prefs != null) {
+                                    prefs.remove(wsdlFileObject.getName());
+                                    prefs.put(wsdlFo.getName(), wsdlUrl);
+                                }
+                            }
+                            wsdlFileObject = wsdlFo;
+                            // update project's pom.xml
+                            try {
+                                ModelHandle mavenHandle = ModelHandleUtils.createModelHandle(project);
+                                if (mavenHandle != null) {
+                                    MavenModelUtils.renameWsdlFile(mavenHandle, client.getLocalWsdl(), relativePath);
+                                    ModelHandleUtils.writeModelHandle(mavenHandle, project);
+                                }
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    } // endif
+                    updateNode();
+                } // endif
+            } //end if-else
+        } else {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(JaxWsClientNode.class, "MSG_RefreshClient")));        
+            updateNode();
+        }
+    }
+    
+    private void updateNode() {
+        final WsdlModeler wsdlModeler = getWsdlModeler();
+        if (wsdlModeler != null) {
+            wsdlModeler.generateWsdlModel(new WsdlModelListener() {
+
+                public void modelCreated(WsdlModel model) {
+                    wsdlModel = model;
+                    setModelGenerationFinished(true);
+                    changeIcon();
+                    if (model == null) {
+                        DialogDisplayer.getDefault().notify(
+                                new WsImportFailedMessage(false, wsdlModeler.getCreationException()));
+                    }
+                    ((JaxWsClientChildren)getChildren()).setWsdlModel(wsdlModel);
+                    ((JaxWsClientChildren)getChildren()).updateKeys();
+                }
+            });
+        }
+    }
  
 }

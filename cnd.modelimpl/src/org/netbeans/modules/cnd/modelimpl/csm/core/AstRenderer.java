@@ -748,11 +748,9 @@ public class AstRenderer {
                                 break;
                             case CPPTokenTypes.LITERAL_enum:
                                 if (AstUtil.findSiblingOfType(curr, CPPTokenTypes.RCURLY) != null) {
-                                    if (scope instanceof CsmScope) {
-                                        ei = EnumImpl.create(curr, (CsmScope) scope, file, !isRenderingLocalContext());
-                                        if (scope instanceof MutableDeclarationsContainer) {
-                                            ((MutableDeclarationsContainer) scope).addDeclaration(ei);
-                                        }
+                                    ei = EnumImpl.create(curr, scope, file, !isRenderingLocalContext());
+                                    if (scope instanceof MutableDeclarationsContainer) {
+                                        ((MutableDeclarationsContainer) scope).addDeclaration(ei);
                                     }
                                     break;
                                 }
@@ -800,7 +798,7 @@ public class AstRenderer {
                                         results.add(typedef);
                                         if (classifier instanceof ClassEnumBase) {
                                             ((ClassEnumBase) classifier).addEnclosingTypedef(typedef);
-                                        } else if (ei instanceof ClassEnumBase) {
+                                        } else if (ei != null) {
                                             ((ClassEnumBase) ei).addEnclosingTypedef(typedef);
                                         }
                                     }
@@ -984,10 +982,24 @@ public class AstRenderer {
         AST typeAST = tokType;
         tokType = getFirstSiblingSkipQualifiers(tokType);
 
-        if (tokType == null ||
-                (tokType.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN &&
-                tokType.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND)) {
-            return null;
+        if (tokType != null) {
+            if (tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
+                    tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
+                AST next = tokType.getNextSibling();
+                AST ptrOperator = (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) ? next : null;
+                return TypeFactory.createType(typeAST, file, ptrOperator, 0);
+            }
+            if (tokType.getType() == CPPTokenTypes.LITERAL_struct ||
+                    tokType.getType() == CPPTokenTypes.LITERAL_class ||
+                    tokType.getType() == CPPTokenTypes.LITERAL_union) {
+                AST next = tokType.getNextSibling();
+                if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                    tokType = next;
+                    next = tokType.getNextSibling();
+                    AST ptrOperator = (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) ? next : null;
+                    return TypeFactory.createType(typeAST, file, ptrOperator, 0);
+                }
+            }
         }
 
         /**
@@ -1027,9 +1039,7 @@ public class AstRenderer {
         
         return null;
          */
-        AST next = tokType.getNextSibling();
-        AST ptrOperator = (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) ? next : null;
-        return TypeFactory.createType(typeAST/*tokType*/, file, ptrOperator, 0);
+        return null;
     }
 
     /**

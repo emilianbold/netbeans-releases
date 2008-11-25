@@ -85,12 +85,12 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.Proper
 import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Anton Chechel
  */
+
 class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElementListener, ListSelectionListener, ActionListener, UserCodeAwareness, CleanUp {
 
     private static final String ACTION_ADD_RESOURCE = "addResource"; // NOI18N

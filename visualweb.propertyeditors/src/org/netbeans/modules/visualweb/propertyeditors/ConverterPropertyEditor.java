@@ -51,6 +51,7 @@ import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeSet;
 import javax.faces.application.Application;
@@ -160,10 +161,10 @@ public class ConverterPropertyEditor extends PropertyEditorBase implements Faces
         return false;
     }
     
-    private static Comparator converterComparator = new Comparator() {
-        public int compare(Object obj1, Object obj2) {
-            String name1 = ((Class) obj1).getName();
-            String name2 = ((Class) obj2).getName();
+    private static Comparator<Class> converterComparator = new Comparator<Class>() {
+        public int compare(Class class1, Class class2) {
+            String name1 = class1.getName();
+            String name2 = class2.getName();
             return name1.substring(name1.lastIndexOf('.') + 1).compareTo(name2.substring(name2.lastIndexOf('.') + 1));
         }
     };
@@ -172,7 +173,7 @@ public class ConverterPropertyEditor extends PropertyEditorBase implements Faces
     // A global map of classes to converters for those classes, used to avoid expensive
     // repetitive recalculation of converter classes. If a new component library is
     // imported into the IDE, any converters will be discovered and added to the map.
-    private static HashMap converterClassMap = new HashMap();
+    private static Map<Class, Class> converterClassMap = new HashMap<Class, Class>();
     
     private Class[] converterClasses;
     
@@ -190,9 +191,9 @@ public class ConverterPropertyEditor extends PropertyEditorBase implements Faces
                 ((FacesDesignContext) designProperty.getDesignBean().getDesignContext()).getFacesContext();
         Application application = facesContext.getApplication();
         
-        TreeSet set = new TreeSet(converterComparator);
+        TreeSet<Class> set = new TreeSet<Class>(converterComparator);
         
-        Iterator iter;
+        Iterator<Class> iter;
                 
         FacesDesignProject facesDesignProject = (FacesDesignProject)designProperty.getDesignBean().getDesignContext().getProject();
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
@@ -201,7 +202,7 @@ public class ConverterPropertyEditor extends PropertyEditorBase implements Faces
             // Add the conveters registered by types
             iter = application.getConverterTypes();
             while (iter.hasNext()) {
-                Class propertyClass = (Class)iter.next();
+                Class propertyClass = iter.next();
                 if (!converterClassMap.containsKey(propertyClass)) {
                     Converter converter = application.createConverter(propertyClass);
                     converterClassMap.put(propertyClass, converter.getClass());
@@ -222,7 +223,7 @@ public class ConverterPropertyEditor extends PropertyEditorBase implements Faces
         converterClasses = new Class[set.size()];
         iter = set.iterator();
         for (int i = 0; i < converterClasses.length; i++)
-            converterClasses[i] = (Class) iter.next();
+            converterClasses[i] = iter.next();
     
         return converterClasses;
     }

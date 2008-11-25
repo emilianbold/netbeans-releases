@@ -110,32 +110,7 @@ made subject to such option by the copyright holder.
     
     <folder name="Projects">
         <folder name="org-netbeans-modules-maven">
-            <folder name="Nodes">
-                <file name="org-netbeans-modules-maven-nodes-SourcesNodeFactory.instance">
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="org-netbeans-modules-maven-nodes-OtherRootNodeFactory.instance">
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <file name="org-netbeans-modules-maven-nodes-GenSourcesNodeFactory.instance">
-                    <attr name="position" intvalue="300"/>
-                </file>
-                <file name="org-netbeans-modules-maven-nodes-ModulesNodeFactory.instance">
-                    <attr name="position" intvalue="400"/>
-                </file>
-                <file name="org-netbeans-modules-maven-nodes-DependenciesNodeFactory.instance">
-                    <attr name="position" intvalue="500"/>
-                </file>
-                <file name="org-netbeans-modules-maven-nodes-SiteDocsNodeFactory.instance">
-                    <attr name="position" intvalue="600"/>
-                </file>
-                <file name="org-netbeans-modules-maven-nodes-ProjectFilesNodeFactory.instance">
-                    <attr name="position" intvalue="700"/>
-                </file>
-            </folder>    
-            <folder name="Lookup">
-                <file name="org-netbeans-modules-maven-runjar-J2seLookupProvider.instance"/>
-            </folder>    
+            <folder name="Nodes"/>
             <folder name="Customizer">
                 <file name="org-netbeans-modules-maven-customizer-BasicPanelProvider.instance">
                     <attr name="position" intvalue="100"/>

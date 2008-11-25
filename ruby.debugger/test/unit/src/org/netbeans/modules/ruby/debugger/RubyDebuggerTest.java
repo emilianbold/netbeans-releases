@@ -90,6 +90,27 @@ public final class RubyDebuggerTest extends TestBase {
         doContinue(); // finish
         waitFor(p);
     }
+
+    public void testAttach() throws Exception {
+        String[] testContent = {
+            "sleep 0.01",
+            "sleep 0.01",
+            "sleep 0.01",
+            "sleep 0.01"};
+        File testF = createScript(testContent);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        addBreakpoint(testFO, 2);
+        addBreakpoint(testFO, 3);
+        RubyPlatform platform = getTestConfiguredPlatform();
+        int port = 12345;
+        Process process = startDebuggerProcess(testF, port, platform);
+        RubyDebugger debugger = new RubyDebugger();
+        debugger.attach("localhost", port, 6);
+        waitForSuspension();
+        doContinue(); // 2 -> 3
+        doContinue(); // 3 -> finish
+        waitFor(process);
+    }
     
     public void testStepInto() throws Exception {
         String[] testContent = {

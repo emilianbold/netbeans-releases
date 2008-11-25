@@ -44,11 +44,6 @@ package org.netbeans.modules.uml.core.preferenceframework;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyElement;
 
-//import com.embarcadero.describe.gui.preference.framework.IPreferenceManagerEventsSink;
-//import com.embarcadero.describe.umlsupport.IResultCell;
-//import com.embarcadero.describe.umlutils.IPropertyElement;
-//import com.embarcadero.describe.umlutils.IPropertyElements;
-
 /**
  *
  * @author Trey Spiva

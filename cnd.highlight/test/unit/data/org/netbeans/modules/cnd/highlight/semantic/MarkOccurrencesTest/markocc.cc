@@ -26,3 +26,20 @@ void Foo::doFoo(int moo) {
 
 int bar = 1;
 void func(int bar) {}
+
+#ifdef MOO
+
+#  elif BOO
+
+#if BOO != 0
+
+#endif
+
+# else
+
+#ifndef INTERNAL
+
+# endif
+
+#endif
+

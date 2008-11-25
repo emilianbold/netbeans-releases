@@ -21,6 +21,16 @@ CLASS pointer_oserializer<class T,class Archive> (pointer_oserializer ) [4:1/46-
             UNIQUE NAME F:pointer_oserializer::pointer_oserializer()
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
+CLASS object (object ) [10:1/167-13:2/288] lcurly=180 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+        FUNCTION DEFINITION object  [12:45/234-12:65/254] ConstructorDDImpl SCOPE: object 
+            SIGNATURE object()
+            UNIQUE NAME f:object::object()
+            DECLARATION: object  [12:45/234-12:65/254]
+            PARAMETERS:
+            RETURNS <*no_classifier*> TEXT=  [null-null]
+            STATEMENT COMPOUND  [12:63/252-12:65/254] SCOPE: object 
 
 ========== Dumping model of PROJECT DummyProject
 CLASS pointer_oserializer<class T,class Archive> (pointer_oserializer ) [4:1/46-8:2/164] lcurly=105 SCOPE: $Global$ 
@@ -32,4 +42,14 @@ CLASS pointer_oserializer<class T,class Archive> (pointer_oserializer ) [4:1/46-
             UNIQUE NAME F:pointer_oserializer::pointer_oserializer()
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
+CLASS object (object ) [10:1/167-13:2/288] lcurly=180 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+        FUNCTION DEFINITION object  [12:45/234-12:65/254] ConstructorDDImpl SCOPE: object 
+            SIGNATURE object()
+            UNIQUE NAME f:object::object()
+            DECLARATION: object  [12:45/234-12:65/254]
+            PARAMETERS:
+            RETURNS <*no_classifier*> TEXT=  [null-null]
+            STATEMENT COMPOUND  [12:63/252-12:65/254] SCOPE: object 
 

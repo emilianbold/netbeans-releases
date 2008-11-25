@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -73,6 +74,12 @@ import org.openide.util.Utilities;
  * Miscellaneous utility classes useful for the Ipe module
  */
 public class IpeUtils {
+
+    /**
+     * Constructor is private. This class should not be instantiated.
+     */
+    private IpeUtils() {
+    }
 
     /** Store the real environment here */
 //    static private WeakReference wrEnv;
@@ -260,17 +267,17 @@ public class IpeUtils {
         }
         String newPath = null;
 
-        Vector separators = new Vector();
+        List<Integer> separators = new ArrayList<Integer>();
         for (int i = 0; i < path.length(); i++) {
             if (path.charAt(i) == '/') {
-                separators.add(0, new Integer(i));
+                separators.add(0, i);
             } else if (path.charAt(i) == '\\') {
-                separators.add(0, new Integer(i));
+                separators.add(0, i);
             }
         }
         if (separators.size() > levels) {
             newPath = "..." + // NOI18N
-                    path.substring(((Integer) separators.get(levels)).intValue(), path.length());
+                    path.substring((separators.get(levels)).intValue(), path.length());
         } else {
             newPath = path;
         }
@@ -291,7 +298,7 @@ public class IpeUtils {
             pos = 1;
         }
 
-        l = new ArrayList();
+        l = new ArrayList<String>();
         if (isPathAbsolute(path)) {
             while (pos >= 0) {
                 next = path.indexOf('/', pos);
@@ -657,7 +664,7 @@ public class IpeUtils {
         if (!(node instanceof DataNode)) {
             return null;
         }
-        DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
+        DataObject dataObject = node.getCookie(DataObject.class);
         if (!(dataObject instanceof CoreElfObject)) {
             return null;
         }
@@ -679,7 +686,7 @@ public class IpeUtils {
         if (executionNode.getDataObject() instanceof MakefileDataObject) {
             return null;
         }
-        ExecutionSupport bes = (ExecutionSupport) executionNode.getCookie(ExecutionSupport.class);
+        ExecutionSupport bes = executionNode.getCookie(ExecutionSupport.class);
         return bes;
     }
 
@@ -811,7 +818,7 @@ public class IpeUtils {
      * which case abc/def/.. is not necessary the same directory as abc.
      */
     public static String trimDotDot(String path) {
-        Stack stack = new Stack();
+        Stack<String> stack = new Stack<String>();
         String absPrefix = null;
 
         if (isPathAbsolute(path)) {
@@ -840,18 +847,17 @@ public class IpeUtils {
                 down++;
             }
         }
-        String retpath = ""; // NOI18N
+        StringBuilder retpath = new StringBuilder();
         if (absPrefix != null) {
-            retpath = absPrefix; // NOI18N
+            retpath.append(absPrefix);
         }
         for (int i = 0; i < stack.size(); i++) {
-            retpath = retpath + stack.elementAt(i);
+            retpath.append(stack.elementAt(i));
             if (i < (stack.size() - 1)) {
-                retpath = retpath + "/"; // NOI18N
+                retpath.append('/'); // NOI18N
             }
         }
-
-        return retpath;
+        return retpath.toString();
     }
 
     public static String createUniqueFileName(String folder, String name, String ext) {
@@ -894,7 +900,7 @@ public class IpeUtils {
      */
     public static boolean isGdbEnabled() {
         if (!CndUtils.isStandalone()) {
-            Iterator iter = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances().iterator();
+            Iterator iter = Lookup.getDefault().lookupAll(ModuleInfo.class).iterator();
             while (iter.hasNext()) {
                 ModuleInfo info = (ModuleInfo) iter.next();
                 if (info.getCodeNameBase().equals("org.netbeans.modules.cnd.debugger.gdb") && info.isEnabled()) { // NOI18N
@@ -912,7 +918,7 @@ public class IpeUtils {
      */
     public static boolean isDbxguiEnabled() {
         if (!CndUtils.isStandalone()) {
-            Iterator iter = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances().iterator();
+            Iterator iter = Lookup.getDefault().lookupAll(ModuleInfo.class).iterator();
             while (iter.hasNext()) {
                 ModuleInfo info = (ModuleInfo) iter.next();
                 if (info.getCodeNameBase().indexOf("dbxgui") >= 0 && info.isEnabled()) { // NOI18N

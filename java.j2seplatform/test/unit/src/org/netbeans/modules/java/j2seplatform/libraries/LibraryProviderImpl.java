@@ -46,6 +46,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.Lookup;
 
@@ -56,7 +57,7 @@ import org.openide.util.Lookup;
  */
 public class LibraryProviderImpl implements org.netbeans.spi.project.libraries.LibraryProvider {
 
-    private ArrayList libs = new ArrayList();
+    private List<LibraryImplementation> libs = new ArrayList<LibraryImplementation>();
     private PropertyChangeSupport support;
     
     private static final LibraryProviderImpl DEFAULT = new LibraryProviderImpl();
@@ -80,7 +81,7 @@ public class LibraryProviderImpl implements org.netbeans.spi.project.libraries.L
     }
     
     public LibraryImplementation[] getLibraries() {
-        return (LibraryImplementation[])libs.toArray(new LibraryImplementation[libs.size()]);
+        return libs.toArray(new LibraryImplementation[libs.size()]);
     }
     
     public void init() throws IOException {

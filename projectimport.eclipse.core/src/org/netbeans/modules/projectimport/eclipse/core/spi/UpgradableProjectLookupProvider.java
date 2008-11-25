@@ -46,10 +46,7 @@ import org.netbeans.spi.project.LookupProvider;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
-/**
- *
- * @author david
- */
+// registered separately in j2se and web modules, but could use @LookupProvider.Registration
 final public class UpgradableProjectLookupProvider implements LookupProvider {
 
     public Lookup createAdditionalLookup(Lookup baseContext) {

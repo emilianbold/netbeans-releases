@@ -197,12 +197,12 @@ public abstract class BaseDocumentUnitTestCase extends BaseTestCase {
                     if (context.length()>40){
                         context = context.substring(0, 40);
                     }
-                    sb.append("Expected "+context+"\n");
+                    sb.append("Expected:"+context+"\n");
                     context = docText.substring(i);
                     if (context.length()>40){
                         context = context.substring(0, 40);
                     }
-                    sb.append("Found "+context+"\n");
+                    sb.append("   Found:"+context+"\n");
                     break;
                 }
             }

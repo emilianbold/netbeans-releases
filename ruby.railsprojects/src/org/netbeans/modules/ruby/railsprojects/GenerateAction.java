@@ -45,8 +45,14 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -55,19 +61,21 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
+import org.netbeans.modules.ruby.platform.execution.ExecutionUtils.FileLocation;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputProcessor;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
-import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
+import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -76,10 +84,10 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Task;
 import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
@@ -266,57 +274,69 @@ public final class GenerateAction extends NodeAction {
                 try {
                     final String charsetName = project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
                     project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                            public void run() throws IOException {
-                                StatefulRecognizer recognizer =
-                                    new StatefulRecognizer(RailsProjectGenerator.RAILS_GENERATOR);
-                                FileLocator locator = new DirectoryFileLocator(dir);
-                                String displayName = NbBundle.getMessage(GenerateAction.class, "RailsGenerator");
-                                Task task =
-                                    new RubyExecution(new RubyExecutionDescriptor(RubyPlatform.platformFor(project), displayName, pwd, script).
-                                            additionalArgs(argv).fileLocator(locator).
-                                            addOutputRecognizer(recognizer), charsetName).run();
 
-                                task.waitFinished();
-                                project.getProjectDirectory().getFileSystem().refresh(true);
+                        public void run() throws IOException {
+                            FileLocator locator = new DirectoryFileLocator(dir);
+                            StatefulConvertor convertor = new StatefulConvertor(locator,
+                                    RailsProjectGenerator.RAILS_GENERATOR_PATTERN, RubyLineConvertorFactory.EXT_RE, 2, -1);
+                            String displayName = NbBundle.getMessage(GenerateAction.class, "RailsGenerator");
 
-                                List<FileLocation> locations = recognizer.getLocations();
+                            RubyExecutionDescriptor descriptor =
+                                    new RubyExecutionDescriptor(RubyPlatform.platformFor(project), displayName, pwd, script)
+                                    .additionalArgs(argv)
+                                    .fileLocator(locator)
+                                    .addStandardRecognizers()
+                                    .addOutConvertor(convertor)
+                                    .addErrConvertor(convertor);
 
-                                List<FileObject> rubyFiles = new ArrayList<FileObject>();
-                                List<FileObject> rhtmlFiles = new ArrayList<FileObject>();
+                            RubyProcessCreator rpc = new RubyProcessCreator(descriptor, charsetName);
+                            Future<Integer> execution =
+                                    ExecutionService.newService(rpc, descriptor.toExecutionDescriptor(), displayName).run();
+                            try {
+                                execution.get();
+                            } catch (InterruptedException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (ExecutionException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            project.getProjectDirectory().getFileSystem().refresh(true);
 
-                                // Process in reverse order such that first files in the list are added last
-                                // (so they will be on top)
-                                for (int i = locations.size()-1; i >= 0; i--) {
-                                    FileLocation loc = locations.get(i);
-                                    String file = loc.file;
+                            List<FileLocation> locations = convertor.getLocations();
+                            List<FileObject> rubyFiles = new ArrayList<FileObject>();
+                            List<FileObject> rhtmlFiles = new ArrayList<FileObject>();
 
-                                    if (file != null) {
-                                        FileObject fo = locator.find(file);
+                            // Process in reverse order such that first files in the list are added last
+                            // (so they will be on top)
+                            for (int i = locations.size() - 1; i >= 0; i--) {
+                                FileLocation loc = locations.get(i);
+                                String file = loc.file;
 
-                                        if (fo != null) {
-                                            String mimeType = fo.getMIMEType();
-                                            if (mimeType.equals(RubyInstallation.RUBY_MIME_TYPE)) {
-                                                rubyFiles.add(fo);
-                                            } else if (mimeType.equals(RhtmlTokenId.MIME_TYPE)) {
-                                                rhtmlFiles.add(fo);
-                                            }
+                                if (file != null) {
+                                    FileObject fo = locator.find(file);
+
+                                    if (fo != null) {
+                                        String mimeType = fo.getMIMEType();
+                                        if (mimeType.equals(RubyInstallation.RUBY_MIME_TYPE)) {
+                                            rubyFiles.add(fo);
+                                        } else if (mimeType.equals(RhtmlTokenId.MIME_TYPE)) {
+                                            rhtmlFiles.add(fo);
                                         }
                                     }
                                 }
-                                
-                                if (rhtmlFiles.size() <= 4) {
-                                    for (FileObject fo : rhtmlFiles) {
-                                        OutputProcessor.open(fo, 1);
-                                    }
+                            }
+
+                            if (rhtmlFiles.size() <= 4) {
+                                for (FileObject fo : rhtmlFiles) {
+                                    OutputProcessor.open(fo, 1);
                                 }
-                                if (rubyFiles.size() <= 4) {
-                                    for (FileObject fo : rubyFiles) {
-                                        OutputProcessor.open(fo, 1);
-                                    }
+                            }
+                            if (rubyFiles.size() <= 4) {
+                                for (FileObject fo : rubyFiles) {
+                                    OutputProcessor.open(fo, 1);
                                 }
-                             }
-                            
-                        });
+                            }
+                        }
+                    });
                     project.getProjectDirectory().getFileSystem().refresh(true);
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().notify(ioe);
@@ -365,28 +385,80 @@ public final class GenerateAction extends NodeAction {
         return true;
     }
 
-    private static class StatefulRecognizer extends OutputRecognizer {
-        private RegexpOutputRecognizer recognizer;
-        private List<FileLocation> locations = new ArrayList<FileLocation>();
+    private static class StatefulConvertor implements LineConvertor {
 
-        private StatefulRecognizer(RegexpOutputRecognizer recognizer) {
-            this.recognizer = recognizer;
+        private final FileLocator locator;
+        private final Pattern linePattern;
+        private final Pattern filePattern;
+        private final int fileGroup;
+        private final int lineGroup;
+        private final List<FileLocation> locations = new ArrayList<FileLocation>();
+
+
+        public StatefulConvertor(FileLocator locator, Pattern linePattern,
+                Pattern filePattern, int fileGroup, int lineGroup) {
+
+            this.locator = locator;
+            this.linePattern = linePattern;
+            this.fileGroup = fileGroup;
+            this.lineGroup = lineGroup;
+            this.filePattern = filePattern;
         }
 
-        @Override
-        public FileLocation processLine(String line) {
-            FileLocation loc = recognizer.processLine(line);
-
-            if (loc != null && !line.trim().startsWith("skip")) { // NOI18N
-                locations.add(loc);
+        public synchronized List<ConvertedLine> convert(final String line) {
+            // Don't try to match lines that are too long - the java.util.regex library
+            // throws stack exceptions (101234)
+            if (line.length() > 400) {
+                return null;
             }
 
-            return loc;
+            Matcher match = linePattern.matcher(line);
+
+            if (match.matches()) {
+                String file = null;
+                int lineno = -1;
+
+                if (fileGroup >= 0) {
+                    file = match.group(fileGroup);
+                    // Make some adjustments - easier to do here than in the regular expression
+                    // (See 109721 and 109724 for example)
+                    if (file.startsWith("\"")) { // NOI18N
+                        file = file.substring(1);
+                    }
+                    if (file.startsWith("./")) { // NOI18N
+                        file = file.substring(2);
+                    }
+                    if (filePattern != null && !filePattern.matcher(file).matches()) {
+                        return null;
+                    }
+                }
+
+                if (lineGroup >= 0) {
+                    String linenoStr = match.group(lineGroup);
+
+                    try {
+                        lineno = Integer.parseInt(linenoStr);
+                    } catch (NumberFormatException nfe) {
+                        LOGGER.log(Level.INFO, null, nfe);
+                        lineno = 0;
+                    }
+                }
+
+                if (!line.trim().startsWith("skip")) { // NOI18N
+                    locations.add(new FileLocation(file, lineno));
+                }
+
+                return Collections.<ConvertedLine>singletonList(
+                        ConvertedLine.forText(line, new FindFileListener(file, lineno, RubyProcessCreator.wrap(locator))));
+            }
+
+            return null;
         }
 
-        public List<FileLocation> getLocations() {
+        synchronized List<FileLocation> getLocations() {
             return locations;
         }
+
     }
 
     public void actionPerformed(ActionEvent evt, JTextComponent target) {

@@ -70,6 +70,8 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.gsfret.InstantRenameAction;
+import org.netbeans.modules.gsf.spi.CommentHandler;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.gsfret.editor.fold.GsfFoldManager;
 import org.netbeans.modules.gsfret.editor.hyperlink.GoToSupport;
 import org.netbeans.modules.gsfret.editor.semantic.GoToMarkOccurrencesAction;
@@ -219,6 +221,15 @@ public class GsfEditorKitFactory {
                 actions.add(new CommentAction(lineCommentPrefix));
                 actions.add(new UncommentAction(lineCommentPrefix));
                 actions.add(new ToggleCommentAction(lineCommentPrefix));
+            } else {
+                CommentHandler ch = gsfLanguage != null && gsfLanguage instanceof DefaultLanguageConfig
+                        ? ((DefaultLanguageConfig)gsfLanguage).getCommentHandler() : null;
+                if(ch != null) {
+                    actions.add(new CommentAction(lineCommentPrefix));
+                    actions.add(new UncommentAction(lineCommentPrefix));
+                    actions.add(new ToggleBlockCommentAction(ch));
+                }
+
             }
 
             actions.add(new InstantRenameAction());

@@ -86,7 +86,6 @@ package org.netbeans.test.uml.designpatterns;
 
 
 
-//import com.embarcadero.uml.ui.controls.projecttree.IProjectTreeItem;
 
 import java.awt.event.InputEvent;
 

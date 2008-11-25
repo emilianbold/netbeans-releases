@@ -204,6 +204,16 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
     // other methods ...........................................................
 
     void update() {
+        boolean caseSensitiveSearch = false;
+        String searchTxt;
+
+        if (searchText.matches(".*[A-Z].*")) { //NOI18N
+            caseSensitiveSearch = true;
+            searchTxt = searchText;
+        } else {
+            searchTxt = searchText.toLowerCase();
+        }
+
         getDataVector().removeAllElements();
         for (String category : getCategories().get("")) {
             for (Object o : getItems(category)) {
@@ -212,7 +222,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
                     String[] shortcuts = getShortcuts(sca);
                     String displayName = sca.getDisplayName();
 //                    System.out.println("### " + sca.getDisplayName() + " " + searched(displayName.toLowerCase()));
-                    if (searched(displayName.toLowerCase(), searchText)) {
+                    if (searched(caseSensitiveSearch ? displayName : displayName.toLowerCase(), searchTxt)) {
                         if (shortcuts.length == 0)
                             addRow(new Object[]{new ActionHolder(sca, false), new ShortcutCell(), category, ""});
                         else
@@ -238,7 +248,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
             return false;
     }
 
-    List getProfiles () {
+    List<String> getProfiles () {
         Set<String> result = new HashSet<String> (model.getProfiles ());
         result.addAll (modifiedProfiles.keySet ());
         List<String> r = new ArrayList<String> (result);
@@ -250,7 +260,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         return model.isCustomProfile (profile);
     }
     
-    void deleteProfile (String profile) {
+    void deleteOrRestoreProfile (String profile) {
         if (model.isCustomProfile (profile)) {
             deletedProfiles.add (profile);
             modifiedProfiles.remove (profile);
@@ -293,18 +303,44 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
     }
     
     public ShortcutAction findActionForShortcut (String shortcut) {
-        return findActionForShortcut (shortcut, "");
+        return findActionForShortcut (shortcut, "", false, null, "");
     }
-    
-    private ShortcutAction findActionForShortcut (String shortcut, String category) {
 
+    /**
+     * Finds action with conflicting shortcut (or a prefix, for a multi-keybinding)
+     * for a shortcut
+     * @param shortcut the shortcut to look for
+     * @return action with same shortcut, or shortcutprefix. If the prefix is same
+     * but the rest of multi-keybinding is different, returns <code>null</code> (no conflict).
+     */
+    Set<ShortcutAction> findActionForShortcutPrefix(String shortcut) {
+        Set<ShortcutAction> set = new HashSet<ShortcutAction>();
+        if (shortcut.length() == 0) {
+            return set;
+        }
+        //has to work with multi-keybinding properly,
+        //ie. not allow 'Ctrl+J' and 'Ctrl+J X' at the same time
+        if (shortcut.contains(" ")) {
+            findActionForShortcut(shortcut.substring(0, shortcut.indexOf(' ')), "", true, set, shortcut);
+        } else {
+            findActionForShortcut(shortcut, "", true, set, shortcut);
+        }
+        return set;
+    }
+
+    private ShortcutAction findActionForShortcut (String shortcut, String category, boolean prefixSearch, Set<ShortcutAction> set, String completeMultikeySC) {
         //search in modified profiles first
         Map<ShortcutAction, Set<String>> map = modifiedProfiles.get(currentProfile);
         if (map != null)
             for (Entry<ShortcutAction, Set<String>> entry : map.entrySet()) {
                 for (String sc : entry.getValue()) {
-                    if (sc.equals(shortcut))
+                    if (prefixSearch) {
+                        if (sc.equals(shortcut) || (sc.startsWith(completeMultikeySC) && shortcut.equals(completeMultikeySC) && sc.contains(" "))) {
+                            set.add(entry.getKey());
+                        }
+                    } else if (sc.equals(shortcut)) {
                         return entry.getKey();
+                    }
                 }
             }
 
@@ -312,17 +348,27 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         while (it.hasNext ()) {
             Object o = it.next ();
             if (o instanceof String) {
-                ShortcutAction result = findActionForShortcut (shortcut, (String) o);
-                if (result != null) return result;
+                ShortcutAction result = findActionForShortcut (shortcut, (String) o, prefixSearch, set, completeMultikeySC);
+                if (result != null) {
+                    if (!prefixSearch) {
+                        return result;
+                    }
+                }
                 continue;
             }
             ShortcutAction action = (ShortcutAction) o;
             String[] shortcuts = getShortcuts (action);
             int i, k = shortcuts.length;
             for (i = 0; i < k; i++) {
-                if (shortcuts [i].equals (shortcut)) return action;
-                if (shortcuts [i].equals (shortcut + " ")) return action;
+                if (prefixSearch) {
+                    if (shortcuts[i].equals(shortcut) || (shortcuts[i].startsWith(completeMultikeySC) && shortcut.equals(completeMultikeySC) && shortcuts[i].contains(" "))) {
+                        set.add(action);
+                    }
+                } else if (shortcuts[i].equals(shortcut)) {
+                    return action;
+                }
             }
+
         }
         return null;
     }
@@ -398,6 +444,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
 
     /**
      * Set of all shortcuts used by current profile (including modifications)
+     * In case there is a multikey keybinding used, its prefix is included
      * @return set of shortcuts
      */
     public Set<String> getAllCurrentlyUsedShortcuts() {
@@ -406,11 +453,21 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         Map<ShortcutAction, Set<String>> modMap = modifiedProfiles.get(currentProfile);
         if (modMap != null)
             for (Entry<ShortcutAction, Set<String>> entry : modMap.entrySet()) {
-                set.addAll(entry.getValue());
+                for (String sc : entry.getValue()) {
+                    set.add(sc);
+                    if (sc.contains(" ")) {
+                        set.add(sc.substring(0, sc.indexOf(' ')));
+                    }
+                }
             }
         //add default shortcuts
         for (Entry<ShortcutAction, Set<String>> entry : getProfileMap(currentProfile).entrySet()) {
-            set.addAll(entry.getValue());
+            for (String sc : entry.getValue()) {
+                    set.add(sc);
+                    if (sc.contains(" ")) {
+                        set.add(sc.substring(0, sc.indexOf(' ')));
+                    }
+                }
         }
 
         return set;
@@ -491,7 +548,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
     }
 
     public void removeShortcut (ShortcutAction action, String shortcut) {
-        Set<String> s = new HashSet<String> (Arrays.asList (getShortcuts (action)));
+        Set<String> s = new LinkedHashSet<String> (Arrays.asList (getShortcuts (action)));
         s.remove (shortcut);
         setShortcuts(action, s);
     }
@@ -535,10 +592,23 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         setCurrentProfile (model.getCurrentProfile ());
         model = new KeymapModel ();
     }
+
+    Map<String, Map<ShortcutAction, Set<String>>> getModifiedProfiles() {
+        return modifiedProfiles;
+    }
+
+    Set<String> getDeletedProfiles() {
+        return deletedProfiles;
+    }
+
+    void setModifiedProfiles(Map<String, Map<ShortcutAction, Set<String>>> mp) {
+        this.modifiedProfiles = mp;
+    }
+
+    void setDeletedProfiles(Set<String> dp) {
+        this.deletedProfiles = dp;
+    }
     
-    /**
-     *
-     */
     public String showShortcutsDialog() {
         final ShortcutsDialog d = new ShortcutsDialog ();
         d.init(this);
@@ -612,7 +682,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         Map<ShortcutAction, Set<String>> result = new HashMap<ShortcutAction, Set<String>> ();
         for (Map.Entry<ShortcutAction, Set<String>> entry: emacs.entrySet()) {
             ShortcutAction action = entry.getKey();
-            Set<String> shortcuts = new HashSet<String> ();
+            Set<String> shortcuts = new LinkedHashSet<String> ();
             for (String emacsShortcut: entry.getValue()) {
                 KeyStroke[] keyStroke = Utilities.stringToKeys (emacsShortcut);
                 shortcuts.add (Utils.getKeyStrokesAsText (keyStroke, " "));

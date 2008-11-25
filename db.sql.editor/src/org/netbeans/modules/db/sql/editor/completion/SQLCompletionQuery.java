@@ -63,14 +63,17 @@ import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.db.metadata.model.api.MetadataModels;
+import org.netbeans.modules.db.api.metadata.DBConnMetadataModelManager;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.sql.analyzer.FromClause;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
 import org.netbeans.modules.db.sql.analyzer.SQLStatement;
+import org.netbeans.modules.db.sql.analyzer.SQLStatement.SelectContext;
 import org.netbeans.modules.db.sql.analyzer.SQLStatementAnalyzer;
-import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv.Context;
+import org.netbeans.modules.db.sql.analyzer.SQLStatementKind;
+import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionResultSet;
+import org.netbeans.modules.db.sql.editor.api.completion.SubstitutionHandler;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -94,6 +97,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     private Metadata metadata;
     private SQLCompletionEnv env;
     private Quoter quoter;
+    private SQLStatement statement;
     private FromClause fromClause;
     private int anchorOffset = -1; // Relative to statement offset.
     private int substitutionOffset = 0; // Relative to statement offset.
@@ -105,9 +109,29 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     @Override
     protected void query(CompletionResultSet resultSet, final Document doc, final int caretOffset) {
-        final SQLCompletionEnv newEnv = SQLCompletionEnv.create(doc, caretOffset);
+        doQuery(SQLCompletionEnv.forDocument(doc, caretOffset));
+        if (items != null) {
+            items.fill(resultSet);
+        }
+        if (anchorOffset != -1) {
+            resultSet.setAnchorOffset(env.getStatementOffset() + anchorOffset);
+        }
+        resultSet.finish();
+    }
+
+    public void query(SQLCompletionResultSet resultSet, SQLCompletionEnv newEnv) {
+        doQuery(newEnv);
+        if (items != null) {
+            items.fill(resultSet);
+        }
+        if (anchorOffset != -1) {
+            resultSet.setAnchorOffset(newEnv.getStatementOffset() + anchorOffset);
+        }
+    }
+
+    private void doQuery(final SQLCompletionEnv newEnv) {
         try {
-            MetadataModels.get(dbconn).runReadAction(new Action<Metadata>() {
+            DBConnMetadataModelManager.get(dbconn).runReadAction(new Action<Metadata>() {
                 public void run(Metadata metadata) {
                     Connection conn = dbconn.getJDBCConnection();
                     if (conn == null) {
@@ -126,13 +150,6 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         } catch (MetadataModelException e) {
             reportError(e);
         }
-        if (items != null) {
-            items.fill(resultSet);
-        }
-        if (anchorOffset != -1) {
-            resultSet.setAnchorOffset(env.getStatementOffset() + anchorOffset);
-        }
-        resultSet.finish();
     }
 
     // Called by unit tests.
@@ -142,19 +159,19 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         this.quoter = quoter;
         anchorOffset = -1;
         substitutionOffset = 0;
-        if (env != null && env.isSelect()) {
-            items = new SQLCompletionItems(quoter, env.getStatementOffset());
+        items = new SQLCompletionItems(quoter, env.getSubstitutionHandler());
+        statement = SQLStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
+        if (statement != null && statement.getKind() == SQLStatementKind.SELECT) {
             completeSelect();
         }
         return items;
     }
 
     private void completeSelect() {
-        Context context = env.getContext();
+        SelectContext context = statement.getContextAtOffset(env.getCaretOffset());
         if (context == null) {
             return;
         }
-        SQLStatement statement = SQLStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
         fromClause = statement.getTablesInEffect(env.getCaretOffset());
 
         Identifier ident = findIdentifier();

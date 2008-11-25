@@ -139,7 +139,7 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
                     return item.getLibrary().getDisplayName();
                 }
             case ClassPathSupport.Item.TYPE_CLASSPATH:
-                String name = (String)WELL_KNOWN_PATHS_NAMES.get( CommonProjectUtils.getAntPropertyName( item.getReference() ) );
+                String name = WELL_KNOWN_PATHS_NAMES.get(CommonProjectUtils.getAntPropertyName(item.getReference()));
                 return name == null ? item.getReference() : name;
             case ClassPathSupport.Item.TYPE_ARTIFACT:
                 if ( item.isBroken() ) {

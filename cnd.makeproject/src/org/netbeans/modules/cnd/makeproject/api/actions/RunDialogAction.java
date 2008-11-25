@@ -83,7 +83,7 @@ public class RunDialogAction extends NodeAction {
     protected void performAction (final Node[] activatedNodes) {
 	String path = null;
 	if (activatedNodes != null && activatedNodes.length == 1) {
-	    DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+	    DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
 	    if (dataObject != null && dataObject instanceof ExeObject) {
 		Node node = dataObject.getNodeDelegate();
 		path = FileUtil.toFile(dataObject.getPrimaryFile()).getPath();
@@ -96,7 +96,7 @@ public class RunDialogAction extends NodeAction {
 	if (activatedNodes == null || activatedNodes.length != 1) {
 	    return false;
         }
-	DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+	DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
         // disabled for core files, see issue 136696
 	if (!(dataObject instanceof ExeObject) || dataObject instanceof CoreElfObject) {
 	    return false;

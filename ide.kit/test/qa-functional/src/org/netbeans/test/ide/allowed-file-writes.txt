@@ -9,6 +9,7 @@ var/cache
 var/cache/lastModified
 var/cache/lastModified/all-checksum.txt
 var/cache/all-manifest.dat
+var/cache/all-layers.dat
 
 
 config
@@ -70,4 +71,21 @@ config/Loaders
 config/Loaders/text
 config/Loaders/text/x-nbs
 config/Loaders/text/x-nbs/Factories
+
+# issue 152889
+config/Databases
+config/Databases/JDBCDrivers
+config/Databases/JDBCDrivers/org_apache_derby_jdbc_ClientDriver.xml
+config/Databases/JDBCDrivers/org_apache_derby_jdbc_EmbeddedDriver.xml
+config/Preferences/org/netbeans/modules/derby.properties
+config/Databases/Connections
+config/Databases/Connections/jdbc_derby___localhost_1527_samp.xml
+config/Databases/Connections/jdbc_derby___localhost_1527_trav.xml
+config/Preferences/org/netbeans/modules/db
+config/Preferences/org/netbeans/modules/db/mysql.properties
+config/Databases/Connections/jdbc_derby___localhost_1527_vir_.xml
+config/Preferences/org/netbeans/modules/visualweb
+config/Preferences/org/netbeans/modules/visualweb/dataconnectivity.properties
+config/Services
+config/Services/org-netbeans-modules-db-explorer-DatabaseOption.settings
 

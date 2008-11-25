@@ -698,12 +698,15 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
                 assert rubyStubs.exists() && rubyStubs.isDirectory();
                 stubsFO = FileUtil.toFileObject(rubyStubs);
             } else {
-                // During test?
-                String r = RubyPlatformManager.getDefaultPlatform().getInterpreter();
-                if (r != null) {
-                    FileObject fo = FileUtil.toFileObject(new File(r));
-                    if (fo != null) {
-                        stubsFO = fo.getParent().getParent().getParent().getFileObject("rubystubs/" + RUBYSTUBS_VERSION); // NOI18N
+                // Language registry polls us for some reason (see #153595 stacktrace)
+                RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+                if (platform != null) { // there does not need to be default platform
+                    String interpreter = platform.getInterpreter();
+                    if (interpreter != null) {
+                        FileObject fo = FileUtil.toFileObject(new File(interpreter));
+                        if (fo != null) {
+                            stubsFO = fo.getParent().getParent().getParent().getFileObject("rubystubs/" + RUBYSTUBS_VERSION); // NOI18N
+                        }
                     }
                 }
             }
@@ -721,7 +724,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     /**
-     * @return null if everthing is OK or errors in String
+     * @return null if everything is OK or errors in String
      */
     public String getFastDebuggerProblemsInHTML() {
         assert getGemManager() != null : "has gemManager when asking whether Fast Debugger is installed";
@@ -799,7 +802,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
             public void run() {
                 // TODO: ideally this would be e.g. '< 0.3' but then running external
                 // process has problems with the '<'. See issue 142240.
-                getGemManager().installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.4.0");
+                getGemManager().installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.4.2");
             }
         };
         if (!EventQueue.isDispatchThread()) {

@@ -97,7 +97,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 
         @Override
         public void render(AST ast) {
-            boolean rcurlyFound = false;
             CsmTypedef[] typedefs;
             AST child;
             for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
@@ -306,7 +305,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     case CPPTokenTypes.CSM_VISIBILITY_REDEF:
                         break;
                     case CPPTokenTypes.RCURLY:
-                        rcurlyFound = true;
                         break;
                     case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
                         //new VariableImpl(
@@ -344,21 +342,46 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                 return false;
             }
 
-            AST idAST = typeAST.getNextSibling();
-            if (idAST == null || idAST.getType() != CPPTokenTypes.ID) {
-                return false;
-            }
-
-            AST colonAST = idAST.getNextSibling();
-            if (colonAST == null || colonAST.getType() != CPPTokenTypes.COLON) {
-                return false;
-            }
-
+            // common type for all bit fields
             CsmType type = TypeFactory.createType(typeAST, getContainingFile(), null, 0);
-            FieldImpl field = new FieldImpl(token, getContainingFile(), type, idAST.getText(), ClassImpl.this, curentVisibility, !isRenderingLocalContext());
-            ClassImpl.this.addMember(field);
 
-            return true;
+            boolean cont = true;
+            boolean added = false;
+            AST start = token;
+            AST prev = typeAST;
+            while (cont) {
+                AST idAST = prev.getNextSibling();
+                if (idAST == null || idAST.getType() != CPPTokenTypes.ID) {
+                    break;
+                }
+
+                AST colonAST = idAST.getNextSibling();
+                if (colonAST == null || colonAST.getType() != CPPTokenTypes.COLON) {
+                    break;
+                }
+
+                AST expAST = colonAST.getNextSibling();
+                if (expAST == null || expAST.getType() != CPPTokenTypes.CSM_EXPRESSION) {
+                    break;
+                }
+                prev = expAST.getNextSibling();
+
+                // there could be next bit fields as well
+                if (prev != null && prev.getType() == CPPTokenTypes.COMMA) {
+                    // bit fields separated by comma
+                    // byte f:1, g:2, h:5;
+                    start = idAST;
+                } else {
+                    cont = false;
+                    if (added) {
+                        start = idAST;
+                    }
+                }
+                FieldImpl field = new FieldImpl(start, getContainingFile(), type, idAST.getText(), ClassImpl.this, curentVisibility, !isRenderingLocalContext());
+                ClassImpl.this.addMember(field);
+                added = true;
+            }
+            return added;
         }
 
         @Override
@@ -420,6 +443,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         private CsmUID<CsmClass> classDefinition;
         private final CsmUID<CsmIdentifiable> containerUID;
 
+        @SuppressWarnings("unchecked")
         public ClassMemberForwardDeclaration(CsmClass containingClass, AST ast, CsmVisibility curentVisibility, boolean register) {
             super(ast, containingClass.getContainingFile());
             visibility = curentVisibility;
@@ -519,6 +543,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             UIDObjectFactory.getDefaultFactory().writeUID(classDefinition, output);
         }
 
+        @SuppressWarnings("unchecked")
         public ClassMemberForwardDeclaration(DataInput input) throws IOException {
             super(input);
             visibility = PersistentUtils.readVisibility(input);
@@ -604,6 +629,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }
 
     private void addMember(CsmMember member) {
+        @SuppressWarnings("unchecked")
         CsmUID<CsmMember> uid = RepositoryUtils.put(member);
         assert uid != null;
         synchronized (members) {
@@ -612,6 +638,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }
 
     private void addFriend(CsmFriend friend) {
+        @SuppressWarnings("unchecked")
         CsmUID<CsmFriend> uid = RepositoryUtils.put(friend);
         assert uid != null;
         synchronized (friends) {
@@ -628,6 +655,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         return leftBracketPos;
     }
 
+    @SuppressWarnings("unchecked")
     public Collection<CsmScopeElement> getScopeElements() {
         return (Collection) getMembers();
     }

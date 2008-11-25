@@ -9,3 +9,8 @@ ruby*/jruby-*/lib/*.jar ruby*/modules/ext/*.jar
 # libraries.
 enterprise5/modules/ext/rest/http.jar java2/modules/ext/jaxws21/http.jar 
 enterprise5/modules/ext/rest/jdom-1.0.jar mobility8/modules/ext/jdom-1.0.jar  
+
+# Struts framework needs to bundle the official Struts release together
+# for well maintained and assure the compatibility issue. 
+enterprise5/modules/ext/struts/oro-2.0.8.jar
+enterprise5/modules/ext/struts/bsf-2.3.0.jar

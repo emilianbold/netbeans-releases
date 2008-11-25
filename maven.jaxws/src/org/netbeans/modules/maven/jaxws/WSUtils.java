@@ -100,11 +100,11 @@ public class WSUtils {
      * @param source URI of the XML resource that will be retrieved into the project
      * @return FileObject of the retrieved resource in the local file system
      */
-    public static FileObject retrieveResource(FileObject targetFolder, URI source)
+    public static FileObject retrieveResource(FileObject targetFolder, URI catalog, URI source)
             throws java.net.UnknownHostException, java.net.URISyntaxException, IOException{
         try {
             Retriever retriever = Retriever.getDefault();
-            FileObject result = retriever.retrieveResource(targetFolder, source);
+            FileObject result = retriever.retrieveResource(targetFolder, catalog, source);
             if (result==null) {
                 Map map = retriever.getRetrievedResourceExceptionMap();
                 if (map!=null) {

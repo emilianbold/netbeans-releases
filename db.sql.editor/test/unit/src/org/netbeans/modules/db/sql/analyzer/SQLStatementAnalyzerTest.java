@@ -49,6 +49,7 @@ import junit.framework.TestCase;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.db.explorer.test.api.SQLIdentifiersTestUtilities;
+import org.netbeans.modules.db.sql.analyzer.SQLStatement.SelectContext;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
 /**
@@ -151,13 +152,36 @@ public class SQLStatementAnalyzerTest extends TestCase {
         assertEquals(0, subquery.getSubqueries().size());
     }
 
-    private static SQLStatement doAnalyze(String sql, Quoter quoter) {
+    public void testContext() throws Exception {
+        String sql = "select customer_id from customer inner join invoice on customer.id = invoice.customer_id, foobar " +
+                "where vip = 1 group by customer_id having count(items) < 2 order by customer_id asc";
+        SQLStatement statement = doAnalyze(sql);
+        assertNull(statement.getContextAtOffset(0));
+        assertEquals(SelectContext.SELECT, statement.getContextAtOffset(sql.indexOf(" customer_id")));
+        assertEquals(SelectContext.FROM, statement.getContextAtOffset(sql.indexOf("customer ")));
+        assertEquals(SelectContext.JOIN_CONDITION, statement.getContextAtOffset(sql.indexOf(".id =")));
+        assertEquals(SelectContext.FROM, statement.getContextAtOffset(sql.indexOf(" foobar")));
+        assertEquals(SelectContext.WHERE, statement.getContextAtOffset(sql.indexOf("vip")));
+        assertEquals(SelectContext.GROUP_BY, statement.getContextAtOffset(sql.indexOf("customer_id having")));
+        assertEquals(SelectContext.HAVING, statement.getContextAtOffset(sql.indexOf("count")));
+        assertEquals(SelectContext.ORDER_BY, statement.getContextAtOffset(sql.indexOf("customer_id asc")));
+    }
+
+    public void testDetectKind() throws Exception {
+        assertNull(doDetectKind("foo"));
+        assertEquals(SQLStatementKind.SELECT, doDetectKind("select"));
+        assertEquals(SQLStatementKind.SELECT, doDetectKind("select * from foo"));
+    }
+
+    private static SQLStatement doAnalyze(String sql) {
         TokenHierarchy<String> hi = TokenHierarchy.create(sql, SQLTokenId.language());
+        Quoter quoter = SQLIdentifiersTestUtilities.createNonASCIIQuoter("\"");
         return SQLStatementAnalyzer.analyze(hi.tokenSequence(SQLTokenId.language()), quoter);
     }
 
-    private static SQLStatement doAnalyze(String sql) throws IOException {
-        return doAnalyze(sql, SQLIdentifiersTestUtilities.createNonASCIIQuoter("\""));
+    private static SQLStatementKind doDetectKind(String sql) {
+        TokenHierarchy<String> hi = TokenHierarchy.create(sql, SQLTokenId.language());
+        return SQLStatementAnalyzer.detectKind(hi.tokenSequence(SQLTokenId.language()));
     }
 
     public static void assertCanAnalyze(String sql) throws IOException {

@@ -80,21 +80,19 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     private JRadioButton radioButton;
     private String label;
     private boolean positiveNumersOnly;
+    private boolean useSpinner;
 
     private PropertyEditorNumber(boolean useSpinner, String label, String userCodeLabel) {
         super(userCodeLabel);
         this.label = label;
-        initComponents(useSpinner);
-
-        initElements(Collections.<PropertyEditorElement>singleton(this));
+        this.useSpinner = useSpinner;
     }
 
     private PropertyEditorNumber(boolean useSpinner, String label, String userCodeLabel, boolean positiveNumbersOnly) {
         super(userCodeLabel);
         this.label = label;
-        initComponents(useSpinner);
         this.positiveNumersOnly = positiveNumbersOnly;
-        initElements(Collections.<PropertyEditorElement>singleton(this));
+        this.useSpinner = useSpinner;
     }
 
     @Override
@@ -462,6 +460,17 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             saveValue(customEditor.getText());
         }
     }
+
+    @Override
+    public Component getCustomEditor() {
+        if (customEditor == null) {
+            initComponents(useSpinner);
+            initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+        return super.getCustomEditor();
+    }
+
+
 
     private class CustomEditor extends JPanel implements DocumentListener, ChangeListener, FocusListener {
 

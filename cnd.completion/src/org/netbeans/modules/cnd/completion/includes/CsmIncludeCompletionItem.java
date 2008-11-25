@@ -38,9 +38,9 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.lexer.PartType;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -53,17 +53,15 @@ import org.openide.util.Exceptions;
  * @author vv159170
  */
 public class CsmIncludeCompletionItem implements CompletionItem {
-       
+
     protected final static String QUOTE = "\""; // NOI18N
     protected final static String SYS_OPEN = "<"; // NOI18N
     protected final static String SYS_CLOSE = ">"; // NOI18N
     protected final static String SLASH = "/"; // NOI18N
     protected final static String PARENT_COLOR_TAG = "<font color=\"#557755\">"; // NOI18N
-    
     private final static int MAX_DISPLAYED_DIR_LENGTH = 35;
     private final static int NR_DISPLAYED_FRONT_DIRS = 2;
     private final static int NR_DISPLAYED_TRAILING_DIRS = 2;
-
     private final int substitutionOffset;
     private final int priority;
     private final String item;
@@ -72,12 +70,11 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     private final boolean isSysInclude;
     private final boolean isFolder;
     private final boolean supportInstantSubst;
-    
     private static final int FOLDER_PRIORITY = 30;
     private static final int FILE_PRIORITY = 10;
     private static final int SYS_VS_USR = 5;
-    
-    protected CsmIncludeCompletionItem(int substitutionOffset, int priority, 
+
+    protected CsmIncludeCompletionItem(int substitutionOffset, int priority,
             String parentFolder, String childSubdir, String item,
             boolean sysInclude, boolean isFolder,
             boolean supportInstantSubst) {
@@ -91,14 +88,14 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         this.item = item;
         this.supportInstantSubst = supportInstantSubst;
     }
-    
-    public static CsmIncludeCompletionItem createItem(int substitutionOffset, 
-                                                    String relFileName, 
-                                                    String dirPrefix, String childSubdir,
-                                                    boolean sysInclude,
-                                                    boolean highPriority,
-                                                    boolean isFolder,
-                                                    boolean supportInstantSubst) {
+
+    public static CsmIncludeCompletionItem createItem(int substitutionOffset,
+            String relFileName,
+            String dirPrefix, String childSubdir,
+            boolean sysInclude,
+            boolean highPriority,
+            boolean isFolder,
+            boolean supportInstantSubst) {
         int priority;
         if (isFolder) {
             if (highPriority) {
@@ -114,18 +111,18 @@ public class CsmIncludeCompletionItem implements CompletionItem {
             }
         }
         String item = relFileName;
-        return new CsmIncludeCompletionItem(substitutionOffset, priority, 
+        return new CsmIncludeCompletionItem(substitutionOffset, priority,
                 dirPrefix, childSubdir, item, sysInclude, isFolder, supportInstantSubst);
     }
-    
+
     public String getItemText() {
         return item;
     }
-    
+
     public void defaultAction(JTextComponent component) {
         if (component != null) {
             Completion.get().hideDocumentation();
-            boolean folder = this.isFolder();            
+            boolean folder = this.isFolder();
             if (!folder) {
                 Completion.get().hideCompletion();
             }
@@ -139,8 +136,8 @@ public class CsmIncludeCompletionItem implements CompletionItem {
 
     public void processKeyEvent(KeyEvent evt) {
         if (evt.getID() == KeyEvent.KEY_TYPED) {
-            JTextComponent component = (JTextComponent)evt.getSource();
-            final BaseDocument doc = (BaseDocument)component.getDocument();
+            JTextComponent component = (JTextComponent) evt.getSource();
+            final BaseDocument doc = (BaseDocument) component.getDocument();
             int caretOffset = component.getSelectionEnd();
             final int len = caretOffset - substitutionOffset;
             if (len < 0) {
@@ -177,7 +174,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                         Completion.get().hideDocumentation();
                         Completion.get().hideCompletion();
                         substituteText(component, substitutionOffset, len, SLASH);
-                        evt.consume();                        
+                        evt.consume();
                         Completion.get().showCompletion();
                     }
                     break;
@@ -193,27 +190,27 @@ public class CsmIncludeCompletionItem implements CompletionItem {
             return false;
         }
     }
-    
+
     public CompletionTask createDocumentationTask() {
         return null;
     }
-    
+
     public CompletionTask createToolTipTask() {
         return null;
     }
-    
+
     public int getPreferredWidth(Graphics g, Font defaultFont) {
         return CompletionUtilities.getPreferredWidth(getLeftHtmlText(true), getRightText(false, File.separator), g, defaultFont);
     }
-    
-    public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {        
+
+    public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
         CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(true), PARENT_COLOR_TAG + getRightText(true, File.separator), g, defaultFont, defaultColor, width, height, selected);
     }
 
     @Override
     public String toString() {
         StringBuilder out = new StringBuilder();
-        out.append(this.isFolder() ? "[D] ": "[F] "); // NOI18N
+        out.append(this.isFolder() ? "[D] " : "[F] "); // NOI18N
         out.append(this.isSysInclude() ? "<" : "\""); // NOI18N
         out.append(this.getLeftHtmlText(false));
         out.append(this.isSysInclude() ? ">" : "\""); // NOI18N
@@ -221,7 +218,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         out.append(this.getRightText(false, "/")); // NOI18N
         return out.toString();
     }
-    
+
     public int getSortPriority() {
         return this.priority;
     }
@@ -232,22 +229,22 @@ public class CsmIncludeCompletionItem implements CompletionItem {
 
     public CharSequence getInsertPrefix() {
         return item;
-    }        
-    
-    protected ImageIcon getIcon() {
-        return CsmImageLoader.getIncludeImageIcon(isSysInclude(),isFolder());
     }
-    
+
+    protected ImageIcon getIcon() {
+        return CsmImageLoader.getIncludeImageIcon(isSysInclude(), isFolder());
+    }
+
     protected String getLeftHtmlText(boolean html) {
         return (html ? (isFolder() ? "<i>" : "") : "") + this.getItemText(); // NOI18N
     }
-    
+
     protected String getRightText(boolean shrink, String separator) {
         StringBuilder builder = new StringBuilder(this.getParentFolder());
         builder.append(separator).append(getChildSubdir());
         int len = builder.length();
         if (shrink && len > MAX_DISPLAYED_DIR_LENGTH) {
-            
+
             StringBuilder reverse = new StringBuilder(builder).reverse();
             int st = builder.indexOf(separator);
             if (st < 0) {
@@ -278,20 +275,21 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         }
         return builder.toString(); // NOI18N
     }
-    
+
     protected void substituteText(final JTextComponent c, final int offset, final int origLen, final String toAdd) {
         final BaseDocument doc = (BaseDocument) c.getDocument();
         final String itemText = getItemText();
         if (itemText != null) {
             doc.runAtomic(new Runnable() {
+
                 public void run() {
                     try {
                         int len = origLen;
                         String text = itemText;
                         if (toAdd != null) {
                             text += toAdd;
-                        }                        
-                        Token<CppTokenId> token = CndTokenUtilities.getOffsetToken(doc, offset, true);
+                        }
+                        TokenItem<CppTokenId> token = CndTokenUtilities.getToken(doc, offset, true);
                         String pref = QUOTE;
                         String post = QUOTE;
                         if (token != null) {
@@ -314,7 +312,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                                     break;
                             }
                             if (changeLength) {
-                                len = (token.offset(null) + token.length()) - offset - (token.partType() == PartType.COMPLETE ? 0 : 1);
+                                len = (token.offset() + token.length()) - offset - (token.partType() == PartType.COMPLETE ? 0 : 1);
                             }
                         }
                         // Update the text
@@ -348,8 +346,8 @@ public class CsmIncludeCompletionItem implements CompletionItem {
 
     protected String getChildSubdir() {
         return childSubdir;
-    }    
-    
+    }
+
     protected boolean isSysInclude() {
         return isSysInclude;
     }

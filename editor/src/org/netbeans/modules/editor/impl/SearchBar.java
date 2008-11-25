@@ -94,6 +94,7 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuListener;
@@ -103,7 +104,6 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 
 
 /**
@@ -199,6 +199,7 @@ public final class SearchBar extends JPanel {
                              Math.max( 0, bgColor.getGreen() - 20 ),
                              Math.max( 0, bgColor.getBlue() - 20 ) );        
         setBackground(bgColor);
+        setForeground(UIManager.getColor("textText")); //NOI18N
         
         //setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         addMouseListener(sharedMouseListener);

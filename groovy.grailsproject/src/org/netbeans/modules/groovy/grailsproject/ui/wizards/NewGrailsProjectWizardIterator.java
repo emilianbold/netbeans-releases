@@ -33,7 +33,7 @@ import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.extexecution.api.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import java.util.NoSuchElementException;
@@ -47,10 +47,10 @@ import org.netbeans.api.progress.ProgressHandle;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
-import org.netbeans.modules.extexecution.api.ExecutionService;
-import org.netbeans.modules.extexecution.api.input.InputProcessors;
+import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
@@ -94,9 +94,8 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
 
             ExecutionDescriptor descriptor = new ExecutionDescriptor().frontWindow(true).inputVisible(true);
             descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
-
-                public InputProcessor newInputProcessor() {
-                    return InputProcessors.bridge(new ProgressSnooper(handle, 100, 2));
+                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                    return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressSnooper(handle, 100, 2)));
                 }
             });
             // TODO refresh

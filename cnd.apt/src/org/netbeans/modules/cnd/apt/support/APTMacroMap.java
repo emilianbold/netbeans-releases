@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import antlr.Token;
 import java.util.Collection;
 import java.util.List;
 
@@ -61,7 +60,7 @@ public interface APTMacroMap extends APTMacroCallback {
     /** 
      * APTWalker context methods to (un)define macros 
      */    
-    public void define(Token name, List<Token> value);
-    public void define(Token name, Collection<Token> params, List<Token> value);
-    public void undef(Token name);       
+    public void define(APTToken name, List<APTToken> value);
+    public void define(APTToken name, Collection<APTToken> params, List<APTToken> value);
+    public void undef(APTToken name);
 }

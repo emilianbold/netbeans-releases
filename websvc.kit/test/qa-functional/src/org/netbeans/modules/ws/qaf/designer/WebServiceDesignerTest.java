@@ -51,8 +51,11 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase;
 
 /**
+ *  Basic validation suite for web service designer
  *
- * @author lukas
+ *  Duration of this test suite: aprox. 3min
+ *
+ * @author lukas.jungmann@sun.com
  */
 public class WebServiceDesignerTest extends WebServicesTestBase {
 

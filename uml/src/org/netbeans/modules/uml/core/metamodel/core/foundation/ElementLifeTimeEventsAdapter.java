@@ -54,7 +54,6 @@ public class ElementLifeTimeEventsAdapter implements IElementLifeTimeEventsSink
 {
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IElementLifeTimeEventsSink#onElementPreCreate(java.lang.String, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onElementPreCreate(String ElementType, IResultCell cell)
    {
@@ -62,7 +61,6 @@ public class ElementLifeTimeEventsAdapter implements IElementLifeTimeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IElementLifeTimeEventsSink#onElementCreated(com.embarcadero.describe.foundation.IVersionableElement, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onElementCreated(IVersionableElement element, IResultCell cell)
    {
@@ -70,7 +68,6 @@ public class ElementLifeTimeEventsAdapter implements IElementLifeTimeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IElementLifeTimeEventsSink#onElementPreDelete(com.embarcadero.describe.foundation.IVersionableElement, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onElementPreDelete(
       IVersionableElement element,
@@ -80,7 +77,6 @@ public class ElementLifeTimeEventsAdapter implements IElementLifeTimeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IElementLifeTimeEventsSink#onElementDeleted(com.embarcadero.describe.foundation.IVersionableElement, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onElementDeleted(IVersionableElement element, IResultCell cell)
    {
@@ -88,7 +84,6 @@ public class ElementLifeTimeEventsAdapter implements IElementLifeTimeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IElementLifeTimeEventsSink#onElementPreDuplicated(com.embarcadero.describe.foundation.IVersionableElement, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onElementPreDuplicated(
       IVersionableElement element,
@@ -98,7 +93,6 @@ public class ElementLifeTimeEventsAdapter implements IElementLifeTimeEventsSink
    }
 
    /* (non-Javadoc)
-    * @see com.embarcadero.describe.foundation.IElementLifeTimeEventsSink#onElementDuplicated(com.embarcadero.describe.foundation.IVersionableElement, com.embarcadero.describe.umlsupport.IResultCell)
     */
    public void onElementDuplicated(
       IVersionableElement element,

@@ -60,12 +60,12 @@
 # By default, same as nbjdk. However you may wish to run tests with a
 # different VM.
 #
-# ant=/opt/ant-1.7.0/bin/ant
-# Ant 1.7.0 binary.
+# ant=/opt/ant-1.7.1/bin/ant
+# Ant 1.7.1 binary.
 # You can also set useful build options, e.g.
 # ant='.../ant -Dcluster.config=basic'
 #
-# testant=/opt/ant-1.7.0/bin/ant
+# testant=/opt/ant-1.7.1/bin/ant
 # By default, same as ant.
 #
 # doclean=no
@@ -78,11 +78,10 @@
 # default is "yes", do a build (incl. commit verification)
 # YOU MUST DO A CLEAN BUILD BEFORE COMMITTING TO THE TRUNK
 #
-# testedmodule=full
+# testedmodule=spi.palette
 # which tests to run after the build:
 # "validate" - just validation tests (fastest, default)
-# "full" - validation tests plus all stable developer tests (slower, but safest)
-# some module name, e.g. "core/palette" - validation tests plus all stable developer tests in that module
+# some module name - validation tests plus all stable developer tests in that module
 # "none" - do not run tests
 # YOU MUST RUN AT LEAST THE VALIDATION TESTS BEFORE COMMITTING TO THE TRUNK
 #
@@ -150,9 +149,9 @@ then
         echo "You need to set the variable 'nbjdk' to a JDK 1.5.0_15 installation" 1>&2
         exit 2
     fi
-    if $ant -version 2>&1 | fgrep -q -v 1.7.0
+    if $ant -version 2>&1 | fgrep -q -v 1.7.1
     then
-        echo "You need to set the variable 'ant' to an Ant 1.7.0 binary" 1>&2
+        echo "You need to set the variable 'ant' to an Ant 1.7.1 binary" 1>&2
         exit 2
     fi
 fi
@@ -303,54 +302,27 @@ function browse() {
 if [ $testedmodule != none ]
 then
     testantcmd="nice $testant -emacs -Djdkhome=$nbtestjdk"
-    if [ $doclean = yes ]
-    then
-        echo "----------CLEANING AND BUILDING TESTS----------" 1>&2
-        $testantcmd -f $sources/xtest/instance/build.xml -Dxtest.config=commit-validation-nb realclean
-        if [ $testedmodule = full ]
-        then
-            $testantcmd -f $sources/xtest/instance/build.xml realclean
-        elif [ $testedmodule != validate ]
-        then
-            $testantcmd -f $sources/$testedmodule/test/build.xml realclean
-        fi
-        $testantcmd -f $sources/xtest/instance/build.xml -Dxtest.config=commit-validation-nb buildtests
-        if [ $testedmodule = full ]
-        then
-            $testantcmd -f $sources/xtest/instance/build.xml buildtests
-        elif [ $testedmodule != validate ]
-        then
-            $testantcmd -f $sources/$testedmodule/test/build.xml buildtests
-        fi
-    fi
     echo "----------RUNNING TESTS----------" 1>&2
     # Always run validation suite.
-    $testantcmd -f $sources/xtest/instance/build.xml -Dxtest.config=commit-validation-nb -Dxtest.fail.on.failure=true runtests
+    $testantcmd -f $sources/build.xml commit-validation
     validation_status=$?
     if [ $testedmodule = validate ]
     then
-        browse $sources/xtest/instance/results/index.html
+        browse $sources/nbbuild/build/test/results/html/index.html
     else
         # Don't let these be clobbered by subsequent tests!
-        dir=/tmp/xtest-validation-suite-results-$USER
+        dir=/tmp/validation-suite-results-$USER
         rm -rf $dir
-        cp -r $sources/xtest/instance/results $dir
+        cp -r $sources/nbbuild/build/test/results/html $dir
         browse $dir/index.html
     fi
     other_status=0
-    if [ $testedmodule = full ]
-    then
-        # Run full developer test suite.
-        $testantcmd -f $sources/xtest/instance/build.xml -Dxtest.fail.on.failure=true runtests
-        other_status=$?
-        browse $sources/xtest/instance/results/index.html
-    elif [ $testedmodule != validate ]
+    if [ $testedmodule != validate ]
     then
         # Run full suite for one module.
-        $testantcmd -f $sources/$testedmodule/test/build.xml -Dxtest.fail.on.failure=true runtests
-        # XXX failures do not seem to result in non-zero exit code here
+        $testantcmd -f $sources/$testedmodule/build.xml -Dtest-unit-sys-prop.ignore.random.failures=true test-unit test-generate-html
         other_status=$?
-        browse $sources/$testedmodule/test/results/index.html
+        browse $sources/$testedmodule/build/test/unit/results/html/index.html
     fi
     if [ $validation_status != 0 -o $other_status != 0 ]
     then

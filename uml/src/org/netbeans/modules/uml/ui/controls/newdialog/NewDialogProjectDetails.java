@@ -293,7 +293,6 @@ public class NewDialogProjectDetails implements INewDialogProjectDetails
 	}
 
 	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.controls.newdialog.INewDialogProjectDetails#setCreatedProject(com.embarcadero.describe.structure.IProject)
 	 */
 	public void setCreatedProject(IProject value)
 	{

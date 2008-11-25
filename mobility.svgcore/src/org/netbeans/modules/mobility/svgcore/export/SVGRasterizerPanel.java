@@ -166,7 +166,7 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
         int p = Math.round(duration * 100);
         slider.setMinimum( 0);
         slider.setMaximum( p);
-        slider.setValue(p);
+        slider.setValue(0);
         ComponentWrapper sliderWrapper;
         
         if (!isStart) {

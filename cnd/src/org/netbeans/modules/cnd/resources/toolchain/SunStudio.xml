@@ -90,6 +90,7 @@ made subject to such option by the copyright holder.
             <default flags="" default="true"/>
             <all flags=""/>
         </language_extension>
+        <output_object_file flags="-o " />
         <!--<dependency_generation flags="-xMMD -xMF $@.d" />-->
     </c>
     <cpp>
@@ -145,6 +146,7 @@ made subject to such option by the copyright holder.
             <binary_standard flags="" default="true"/>
             <conforming_standard flags="-library=stlport4,no%Cstd"/>
         </library>
+        <output_object_file flags="-o " />
         <!--<dependency_generation flags="-xMMD -xMF $@.d" />-->
     </cpp>
     <fortran>
@@ -172,7 +174,36 @@ made subject to such option by the copyright holder.
             <bits_64 flags="-xarch=generic64"/>
         </architecture>
         <strip flags="-s"/>
+        <output_object_file flags="-o " />
     </fortran>
+    <assembler>
+        <compiler name="as"/>
+        <alternative_path>
+            <path directory="$PATH"/>
+        </alternative_path>
+        <version flags="-V"/>
+        <development_mode>
+            <fast_build flags=""/>
+            <debug flags="" default="true"/>
+            <performance_debug flags=""/>
+            <test_coverage flags=""/>
+            <diagnosable_release flags=""/>
+            <release flags=""/>
+            <performance_release flags=""/>
+        </development_mode>
+        <warning_level>
+            <no_warnings flags=""/>
+            <default flags="" default="true"/>
+            <more_warnings flags=""/>
+            <warning2error flags=""/>
+        </warning_level>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags=""/>
+            <bits_64 flags="-xarch=generic64"/>
+        </architecture>
+        <output_object_file flags="-o " />
+    </assembler>
     <scanner>
         <error pattern="^\&quot;(.*)\&quot;, line ([0-9]+):" language="c"/>
         <error pattern="^\&quot;(.*)\&quot;, line ([0-9]+): Error:" language="cpp"/>
@@ -191,9 +222,14 @@ made subject to such option by the copyright holder.
         <static_library flags="-Bstatic"/>
         <dynamic_library flags="-Bdynamic"/>
         <dynamic_library_basic flags="-G "/>
+        <output_file flags="-o "/>
     </linker>
     <make>
         <tool name="dmake"/>
+        <alternative_path>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
         <version flags="-v" />
         <dependency_support code=".KEEP_STATE:\n.KEEP_STATE_FILE:.make.state.${CONF}\n" />
     </make>

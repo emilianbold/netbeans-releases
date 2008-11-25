@@ -84,7 +84,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -103,6 +102,7 @@ import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -180,12 +180,18 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             String ident = Utilities.getIdentifier(Utilities.getDocument(target), caret);
             
             if (ident == null) {
-                Utilities.setStatusBoldText(target, "Cannot perform instant rename here.");
+                Utilities.setStatusBoldText(target, NbBundle.getMessage(InstantRenamePerformer.class, "WARN_CannotPerformHere"));
                 return;
             }
             
             DataObject od = (DataObject) target.getDocument().getProperty(Document.StreamDescriptionProperty);
-            JavaSource js = JavaSource.forFileObject(od.getPrimaryFile());
+            JavaSource js = od != null ? JavaSource.forFileObject(od.getPrimaryFile()) : null;
+
+            if (js == null) {
+                Utilities.setStatusBoldText(target, NbBundle.getMessage(InstantRenamePerformer.class, "WARN_CannotPerformHere"));
+                return ;
+            }
+            
             final boolean[] wasResolved = new boolean[1];
             @SuppressWarnings("unchecked")
             final Set<Token>[] changePoints = new Set[1];
@@ -207,7 +213,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                     doFullRename(od.getCookie(EditorCookie.class), od.getNodeDelegate());
                 }
             } else {
-                Utilities.setStatusBoldText(target, "Cannot perform instant rename here.");
+                Utilities.setStatusBoldText(target, NbBundle.getMessage(InstantRenamePerformer.class, "WARN_CannotPerformHere"));
             }
         } catch (BadLocationException e) {
             Exceptions.printStackTrace(e);
@@ -357,8 +363,22 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         //#92160: check for local classes:
         if (e.getKind() == ElementKind.CLASS) {//only classes can be local
             Element enclosing = e.getEnclosingElement();
-            
-            return LOCAL_CLASS_PARENTS.contains(enclosing.getKind());
+            final ElementKind enclosingKind = enclosing.getKind();
+
+            //#150352: parent is annonymous class
+            if (enclosingKind == ElementKind.CLASS) {
+                final Set<ElementKind> fm = EnumSet.of(ElementKind.METHOD, ElementKind.FIELD);
+                if (enclosing.getSimpleName().length() == 0 || fm.contains(enclosing.getEnclosingElement().getKind())) {
+                    return true;
+                }
+            }
+
+
+            return LOCAL_CLASS_PARENTS.contains(enclosingKind);
+        }
+
+        if (e.getKind() == ElementKind.TYPE_PARAMETER) {
+            return true;
         }
         
         return false;

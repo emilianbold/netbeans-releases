@@ -72,8 +72,11 @@ public class CloneConfigurationPanel extends JPanel implements DocumentListener 
         initAccessibility();
     }
     
+    @Override
     public String getName() {
-        return jTextFieldName.getText();
+        //jTextFieldName will be null in superclass constructor on GTK L&F.
+        //Anyway, what is the point of this?
+        return jTextFieldName == null ? null : jTextFieldName.getText();
     }
     
     public void setDialogDescriptor(final DialogDescriptor dd) {

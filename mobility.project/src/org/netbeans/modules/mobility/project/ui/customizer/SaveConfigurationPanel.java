@@ -78,7 +78,8 @@ public class SaveConfigurationPanel extends JPanel implements DocumentListener {
     }
     
     public String getName() {
-        return jTextFieldName.getText();
+        //Can this really be an intentional override? -Tim
+        return jTextFieldName == null ? null : jTextFieldName.getText();
     }
     
     final public boolean isValid() {

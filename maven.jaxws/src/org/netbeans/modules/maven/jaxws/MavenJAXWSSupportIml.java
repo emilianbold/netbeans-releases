@@ -41,11 +41,14 @@ package org.netbeans.modules.maven.jaxws;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.prefs.Preferences;
 import org.apache.maven.model.Plugin;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -65,6 +68,7 @@ import org.openide.filesystems.FileUtil;
 public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
     Project prj;
     private List<JaxWsService> services = new LinkedList<JaxWsService>();
+    public static final String CATALOG_PATH = "src/jax-ws-catalog.xml"; //NOI18N
     
     MavenJAXWSSupportIml(Project prj) {
         this.prj = prj;
@@ -80,14 +84,21 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
 
     public void removeService(JaxWsService service) {
         services.remove(service);
-    }
-
-    public JaxWsService getService(String implClass) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public boolean isFromWSDL(JaxWsService service) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        String localWsdl = service.getLocalWsdl();
+        if (localWsdl != null) {
+            // remove auxiliary wsdl url property
+            FileObject wsdlFolder = getLocalWsdlFolder(false);
+            if (wsdlFolder != null) {
+                FileObject wsdlFo = wsdlFolder.getFileObject(localWsdl);
+                if (wsdlFo != null) {
+                    Preferences prefs = ProjectUtils.getPreferences(prj, JaxWsService.class, true);
+                    if (prefs != null) {
+                        prefs.remove(wsdlFo.getName());
+                    }                    
+                }
+            }
+            
+        }
     }
 
     public FileObject getWsdlFolder(boolean create) throws IOException {
@@ -114,11 +125,12 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
     }
 
     public URL getCatalog() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public FileObject getDeploymentDescriptorFolder() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        File catalogFile = FileUtilities.resolveFilePath(FileUtil.toFile(prj.getProjectDirectory()), CATALOG_PATH);
+        try {
+            return catalogFile.toURL();
+        } catch (MalformedURLException ex) {
+            return null;
+        }
     }
 
     public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {

@@ -99,10 +99,6 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
         index = getMappedIndex (s) ;
         deleteConnectorCB.setSelectedIndex(index);
         
-        s = prefs.get("UML_ShowMe_Delete_File_when_Deleting_Artifacts", PSK_ASK);
-        index = getMappedIndex (s) ;
-        deleteFileCB.setSelectedIndex(index);
-        
         s = prefs.get("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", PSK_ASK);
         index = getMappedIndex (s) ;
         filterWarningCB.setSelectedIndex(index);
@@ -137,8 +133,6 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
         prefs.put("UML_ShowMe_Delete_Combined_Fragment_Messages", mappedChoices[index]);
         index = deleteConnectorCB.getSelectedIndex() ;
         prefs.put("UML_ShowMe_Delete_Connector_Messages", mappedChoices[index]);
-        index = deleteFileCB.getSelectedIndex() ;
-        prefs.put("UML_ShowMe_Delete_File_when_Deleting_Artifacts", mappedChoices[index]);
         index = filterWarningCB.getSelectedIndex() ;
         prefs.put("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", mappedChoices[index]);
         index = moveInvokedCB.getSelectedIndex() ;
@@ -166,7 +160,6 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
 
         allowLengthySearchesCB1 = new JComboBox (displayChoices);
         mainLabel = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
@@ -175,7 +168,6 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
-        deleteFileCB = new JComboBox (displayChoices);
         filterWarningCB = new JComboBox (displayChoices);
         transformCB = new JComboBox (displayChoices);
         overwriteCB = new JComboBox (displayChoices);
@@ -188,9 +180,6 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
         convertOldDiagramsCB = new JComboBox (displayChoices2);
 
         mainLabel.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "mainLabel.text")); // NOI18N
-
-        jLabel1.setLabelFor(deleteFileCB);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel1.text_3")); // NOI18N
 
         jLabel2.setLabelFor(filterWarningCB);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel2.text_2")); // NOI18N
@@ -237,7 +226,6 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
                             .add(jLabel10)
                             .add(jLabel7)
                             .add(jLabel8)
-                            .add(jLabel1)
                             .add(jLabel20))
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
@@ -250,14 +238,10 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, deleteConnectorCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, overwriteCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, transformCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 169, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(convertOldDiagramsCB, 0, 169, Short.MAX_VALUE))
-                                .add(15, 15, 15))
+                                    .add(convertOldDiagramsCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 169, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                             .add(layout.createSequentialGroup()
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(deleteFileCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 169, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(filterWarningCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 169, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))))
+                                .add(filterWarningCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 169, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -266,10 +250,6 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(mainLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(deleteFileCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(10, 10, 10)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(filterWarningCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -305,10 +285,9 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(convertOldDiagramsCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel20))
-                .addContainerGap(15, Short.MAX_VALUE))
+                .addContainerGap(47, Short.MAX_VALUE))
         );
 
-        deleteFileCB.getAccessibleContext().setAccessibleDescription(jLabel1.getText());
         filterWarningCB.getAccessibleContext().setAccessibleDescription(jLabel2.getText());
         transformCB.getAccessibleContext().setAccessibleDescription(jLabel3.getText());
         overwriteCB.getAccessibleContext().setAccessibleDescription(jLabel5.getText());
@@ -343,9 +322,7 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox convertOldDiagramsCB;
     private javax.swing.JComboBox deleteCombFragCB;
     private javax.swing.JComboBox deleteConnectorCB;
-    private javax.swing.JComboBox deleteFileCB;
     private javax.swing.JComboBox filterWarningCB;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;

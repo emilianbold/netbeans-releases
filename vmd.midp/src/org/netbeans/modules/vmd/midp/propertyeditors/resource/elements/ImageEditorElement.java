@@ -90,7 +90,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     private static final String[] EXTENSIONS = {"png", "gif", "jpg", "jpeg"}; // NOI18N
     private long componentID;
     private boolean doNotFireEvent;
-    private Project project;
+    //private Project project;
     private String lastDir;
     private ImagePreview imagePreview;
     private Image image;
@@ -100,8 +100,19 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     private DesignComponentWrapper wrapper;
     private WeakReference<DesignDocument> documentReferences;
 
+    
+
+    public ImageEditorElement() {
+        paths = new HashMap<String, FileObject>();
+        comboBoxModel = new DefaultComboBoxModel();
+        initComponents();
+        progressBar.setVisible(false);
+        imagePreview = new ImagePreview();
+        previewPanel.add(imagePreview, BorderLayout.CENTER);
+    }
+
     public void clean(DesignComponent component) {
-        project = null;
+        
         imagePreview = null;
         image = null;
         comboBoxModel = null;
@@ -112,15 +123,6 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         wrapper = null;
         documentReferences = null;
         this.removeAll();
-    }
-
-    public ImageEditorElement() {
-        paths = new HashMap<String, FileObject>();
-        comboBoxModel = new DefaultComboBoxModel();
-        initComponents();
-        progressBar.setVisible(false);
-        imagePreview = new ImagePreview();
-        previewPanel.add(imagePreview, BorderLayout.CENTER);
     }
 
     public JComponent getJComponent() {
@@ -147,10 +149,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         if (documentReferences == null || documentReferences.get() == null) {
             return;
         }
-        final DesignDocument document = documentReferences.get();
-
-        project = ProjectUtils.getProject(document);
-
+        
         if (wrapper == null) {
             // UI stuff
             setText(null);
@@ -193,6 +192,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         // UI stuff
         setAllEnabled(true);
         setText(_pathText[0]);
+
     }
 
     private void setText(String text) {
@@ -242,7 +242,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         chooserButton.setEnabled(isEnabled);
     }
 
-    private void updateModel(DesignDocument document) {
+    public void updateModel(DesignDocument document) {
         boolean isEnabled = pathTextComboBox.isEnabled();
         pathTextComboBox.setEnabled(false);
         doNotFireEvent = true;
@@ -309,6 +309,10 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     }
 
     private FileObject getSourceFolder() {
+        if (documentReferences != null && documentReferences.get() == null) {
+            return null;
+        }
+        Project project = ProjectUtils.getProject(documentReferences.get());
         if (project == null) {
             if (documentReferences != null && documentReferences.get() != null) {
                 project = ProjectUtils.getProject(documentReferences.get());
@@ -413,7 +417,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     @Override
     public void removeNotify() {
         paths.clear();
-        project = null;
+       
         wrapper = null;
         super.removeNotify();
     }
@@ -643,6 +647,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     }// </editor-fold>//GEN-END:initComponents
 
     private void chooserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooserButtonActionPerformed
+        Project project = ProjectUtils.getProject(documentReferences.get());
         JFileChooser chooser = new JFileChooser(lastDir != null ? lastDir : project.getProjectDirectory().getPath());
         chooser.setFileFilter(new ImageFilter());
         int returnVal = chooser.showOpenDialog(this);
@@ -667,6 +672,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
             fireElementChanged(componentID, ImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(text != null ? text : "")); // NOI18N
             updatePreview();
         }
+        this.repaint();
     }
 
     private void previewPanelComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_previewPanelComponentResized

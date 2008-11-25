@@ -44,6 +44,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.EventObject;
+import java.util.Set;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -91,16 +92,33 @@ public class ButtonCellEditor extends DefaultCellEditor {
         return true;
     }
 
+    private void removeConflictingShortcut(ShortcutAction action, String shortcutPrefix) {
+        if (shortcutPrefix.contains(" ")) {//multi-key shortcuts conflict
+            shortcutPrefix = shortcutPrefix.substring(0, shortcutPrefix.indexOf(' '));
+        }
+        String[] shortcuts = model.getShortcuts(action);
+        for (int i = 0; i < shortcuts.length; i++) {
+            if (shortcuts[i].startsWith(shortcutPrefix)) {
+                model.removeShortcut(action, shortcuts[i]);
+            }
+        }
+    }
+
     @Override
     public boolean stopCellEditing() {
         String s = cell.toString();
 
         ShortcutAction sca = (ShortcutAction) action;
-        ShortcutAction conflictingAction = model.findActionForShortcut(s);
-        if (conflictingAction != null && !conflictingAction.equals(sca)) {//there is a conflicting action, show err dialog
+        Set<ShortcutAction> conflictingAction = model.findActionForShortcutPrefix(s);
+        conflictingAction.remove(sca); //remove the original action
+        if (!conflictingAction.isEmpty()) {//there is a conflicting action, show err dialog
             //there is a conflicting action, show err dialog
-            Object overrride = overrride(conflictingAction.getDisplayName());
+            Object overrride = overrride(conflictingAction);
             if (overrride.equals(DialogDescriptor.YES_OPTION)) {
+                for (ShortcutAction sa : conflictingAction) {
+                    removeConflictingShortcut(sa, s); //remove all conflicting shortcuts
+                }
+                getComponent().requestFocus();
                 //proceed with override
                 } else if (overrride.equals(DialogDescriptor.NO_OPTION)) {
                 JComponent comp = (JComponent) getComponent();
@@ -161,9 +179,13 @@ public class ButtonCellEditor extends DefaultCellEditor {
      * @param displayName name of conflicting action
      * @return dialog result
      */
-    private Object overrride(String displayName) {
+    private Object overrride(Set<ShortcutAction> conflictingActions) {
+        StringBuffer conflictingActionList = new StringBuffer();
+        for (ShortcutAction sa : conflictingActions) {
+            conflictingActionList.append(" '" + sa.getDisplayName() + "'<br>"); //NOI18N
+        }
         JPanel innerPane = new JPanel();
-        innerPane.add(new JLabel(NbBundle.getMessage(ButtonCellEditor.class, "Override_Shortcut", displayName))); //NOI18N
+        innerPane.add(new JLabel(NbBundle.getMessage(ButtonCellEditor.class, "Override_Shortcut", conflictingActionList))); //NOI18N
         DialogDescriptor descriptor = new DialogDescriptor(
                 innerPane,
                 NbBundle.getMessage(ButtonCellEditor.class, "Conflicting_Shortcut_Dialog"),

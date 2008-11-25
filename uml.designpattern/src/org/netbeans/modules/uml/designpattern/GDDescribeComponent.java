@@ -45,16 +45,10 @@ import java.awt.BorderLayout;
 import java.util.ResourceBundle;
 
 import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
 
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.HelpCtx;
-
-//import com.embarcadero.integration.GDProSupport;
-import org.netbeans.modules.uml.ui.support.ProductHelper;
-//import com.embarcadero.netbeans.options.DescribeProjectSettings;
-import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogUtilities;
 
 /**
  *  TopComponent for the Describe 6.0 properties editor.

@@ -43,17 +43,9 @@
 package org.netbeans.performance.visualweb;
 
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.visualweb.dialogs.PropertyBindingDialog;
-import org.netbeans.performance.visualweb.dialogs.ManageComponentLibrariesDialog;
-import org.netbeans.performance.visualweb.dialogs.DataBindingDialog;
-import org.netbeans.performance.visualweb.dialogs.ConfigureDefaultOptionsDialog;
-import org.netbeans.performance.visualweb.dialogs.AddComponentLibraryDialog;
-import org.netbeans.performance.visualweb.dialogs.ComponentStyleDialog;
-import org.netbeans.performance.visualweb.dialogs.TableLayoutOptionsDialog;
-import org.netbeans.performance.visualweb.dialogs.PageStyleSheetDialog;
-import org.netbeans.performance.visualweb.dialogs.PageFragmentBoxDialog;
-import org.netbeans.performance.visualweb.dialogs.VirtualFormsDialog;
 import org.netbeans.junit.NbTestSuite;
+
+import org.netbeans.performance.visualweb.dialogs.*;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 
@@ -67,21 +59,21 @@ public class VWPMeasureDialogsTest {
     public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Dialogs suite");
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness Visual Web Dialogs suite");
         System.setProperty("suitename", VWPMeasureDialogsTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness Visual Web Dialogs suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddComponentLibraryDialog.class)
-        
-        .addTest(PageStyleSheetDialog.class)
-        .addTest(PageFragmentBoxDialog.class)
-        
-        .addTest(VirtualFormsDialog.class)
-        .addTest(TableLayoutOptionsDialog.class)
-        .addTest(DataBindingDialog.class)
-        .addTest(ConfigureDefaultOptionsDialog.class)
-        .addTest(PropertyBindingDialog.class)
-        .addTest(ComponentStyleDialog.class)
-        .addTest(ManageComponentLibrariesDialog.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddComponentLibraryDialogTest.class)
+        .addTest(ComponentStyleDialogTest.class)
+        .addTest(ConfigureDefaultOptionsDialogTest.class)
+        .addTest(DataBindingDialogTest.class)
+// needs to be fixed   .addTest(DatabaseTableDropTest.class)
+        .addTest(ManageComponentLibrariesDialogTest.class)
+        .addTest(PageStyleSheetDialogTest.class)
+        .addTest(PageFragmentBoxDialogTest.class)
+        .addTest(PropertyBindingDialogTest.class)
+        .addTest(VirtualFormsDialogTest.class)
+        .addTest(TableLayoutOptionsDialogTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;

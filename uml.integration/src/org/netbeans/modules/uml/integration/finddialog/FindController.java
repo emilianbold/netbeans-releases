@@ -612,7 +612,6 @@ public class FindController implements IFindController
     }
     
         /* (non-Javadoc)
-         * @see org.netbeans.modules.uml.ui.support.finddialog.IFindController#search2(com.embarcadero.describe.structure.IProject, org.netbeans.modules.uml.ui.support.finddialog.IFindResults)
          */
     public void search2(IProject pProject, IFindResults pResults)
     {

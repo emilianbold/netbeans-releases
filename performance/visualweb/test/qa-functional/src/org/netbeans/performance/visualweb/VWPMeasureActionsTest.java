@@ -44,17 +44,10 @@ package org.netbeans.performance.visualweb;
 
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.visualweb.actions.CSSRuleAdd;
-import org.netbeans.performance.visualweb.actions.ComponentAdd;
-import org.netbeans.performance.visualweb.actions.CreateWebPackProject;
-import org.netbeans.performance.visualweb.actions.OpenBeanFiles;
-import org.netbeans.performance.visualweb.actions.OpenNavigationPage;
-import org.netbeans.performance.visualweb.actions.OpenProjectFirstPage;
-import org.netbeans.performance.visualweb.actions.PageSwitch;
-import org.netbeans.performance.visualweb.actions.PasteCSSText;
-import org.netbeans.performance.visualweb.actions.ViewSwitch;
-import org.netbeans.performance.visualweb.windows.DatabaseTableDrop;
+import org.netbeans.performance.visualweb.actions.*;
+
 
 
 /**
@@ -66,43 +59,24 @@ public class VWPMeasureActionsTest  {
     public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Actions suite");
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness Visual Web Actions suite");
         System.setProperty("suitename", VWPMeasureActionsTest.class.getCanonicalName());
+        System.setProperty("suite", "UI Responsiveness Visual Web Actions suite");
 
-	
-//TODO do Open project through UI	suite.addTest(new OpenWebPackProject("measureTime","Open Small Web Project"));
-//TODO do Open project through UI        suite.addTest(new OpenHugeWebPackProject("testOpenWebPackProject","Open Huge Web Project"));
-
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenProjectFirstPage.class)
-
-        .addTest(CSSRuleAdd.class)
-        .addTest(PasteCSSText.class)
-        
-        .addTest(OpenBeanFiles.class)
-        .addTest(OpenNavigationPage.class)
-
-
-        //.addTest(CreateWebPackFiles.class)	
-
-     
-	.addTest(ComponentAdd.class)      
-        .addTest(DatabaseTableDrop.class)      
-
-        .addTest(PageSwitch.class)
-        .addTest(ViewSwitch.class)
-        .addTest(CreateWebPackProject.class)
-  
-//      manual results differ from automated        
-//      suite.addTest(NbModuleSuite.create(TypingInCSSEditor.class, ".*", ".*"));
-        
-//      suite.addTest(NbModuleSuite.create(CreateWebPackProjectSBS.class, ".*", ".*"));
-        
-//      suite.addTest(NbModuleSuite.create(WebProjectDeployment.class, ".*", ".*"));     
-//      suite.addTest(NbModuleSuite.create(WebProjectDeployment.class, ".*", ".*"));
-//        
-//      suite.addTest(NbModuleSuite.create(CleanAndBuildProject.class, ".*", ".*"));
-//      suite.addTest(NbModuleSuite.create(CleanAndBuildProject.class, ".*", ".*"));
-
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CSSRuleAddTest.class)
+        .addTest(ComponentAddTest.class)
+        // needs to be fixed  .addTest(CreateWebPackFilesTest.class)
+        // needs to be fixed          .addTest(CreateWebPackProjectTest.class)
+        .addTest(OpenBeanFilesTest.class)
+        // needs to be fixed       .addTest(OpenHugeWebPackProjectTest.class)
+        .addTest(OpenNavigationPageTest.class)
+        .addTest(OpenProjectFirstPageTest.class)
+        // needs to be fixed    .addTest(OpenWebPackProjectTest.class)
+        .addTest(PageSwitchTest.class)
+        .addTest(PasteCSSTextTest.class)
+        .addTest(TypingInCSSEditorTest.class)
+        .addTest(ViewSwitchTest.class)
+        .addTest(WebProjectDeploymentTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;

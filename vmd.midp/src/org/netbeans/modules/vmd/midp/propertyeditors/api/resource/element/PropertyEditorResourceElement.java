@@ -139,8 +139,7 @@ public abstract class PropertyEditorResourceElement extends JPanel {
     
     public void getCustomEdiotrNotification() {  
     }
-    
-    
+
     
     /** This method should help to get references to the DesignComponent. User should
      * take care of passing DesignComponent references to this class by overiding and

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import antlr.collections.AST;
@@ -62,6 +61,8 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  */
 public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase implements CsmIdentifiable<T>, Persistent, SelfPersistent {
     
+    private CsmUID uid = null;
+
     protected OffsetableIdentifiableBase(AST ast, CsmFile file) {
         super(ast, file);
     }
@@ -75,37 +76,35 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
     }
 
     protected abstract CsmUID createUID();
-    
+
+    @SuppressWarnings("unchecked")
     public CsmUID<T> getUID() {
         if (uid == null) {
             uid = createUID();
         }
         return uid;
     }
-    
+
     protected void cleanUID() {
         // this.uid = null;
     }
-    
-    private CsmUID uid = null;       
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
-    
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
     }
-    
+
     protected OffsetableIdentifiableBase(DataInput input) throws IOException {
         super(input);
-    } 
-    
+    }
+
     protected final void writeUID(DataOutput output) throws IOException {
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUID(uid, output);
     }
-    
+
     protected final void readUID(DataInput input) throws IOException {
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.uid = factory.readUID(input);

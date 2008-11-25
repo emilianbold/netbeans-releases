@@ -38,12 +38,12 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
-import org.netbeans.modules.extexecution.api.ExecutionService;
-import org.netbeans.modules.extexecution.api.input.InputProcessor;
-import org.netbeans.modules.extexecution.api.input.InputProcessors;
-import org.netbeans.modules.extexecution.api.input.LineProcessor;
+import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
@@ -93,8 +93,8 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
                 .controllable(true).inputVisible(true).showProgress(true).frontWindow(true);
         if (autodeploy) {
             descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
-                public InputProcessor newInputProcessor() {
-                    return InputProcessors.bridge(CreateWarFileAction.this);
+                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                    return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(CreateWarFileAction.this));
                 }
             });
         }

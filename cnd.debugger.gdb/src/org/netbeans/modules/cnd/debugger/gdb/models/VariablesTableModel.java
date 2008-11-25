@@ -72,7 +72,7 @@ public class VariablesTableModel implements TableModel, Constants {
     private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public VariablesTableModel(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
     public Object getValueAt(Object row, String columnID) throws UnknownTypeException {

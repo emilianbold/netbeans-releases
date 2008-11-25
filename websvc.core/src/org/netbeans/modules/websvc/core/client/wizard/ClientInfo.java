@@ -684,12 +684,18 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
                     jLabelJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setEnabled(false);
-                } else{
-                    jLabelJaxVersion.setEnabled(false);
-                    jComboBoxJaxVersion.setEnabled(false);
-                    jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);  
-                    jLblClientType.setVisible(true);
-                    jCbxClientType.setVisible(true);
+                } else {
+                    if (WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) != null) {
+                        jLabelJaxVersion.setEnabled(false);
+                        jComboBoxJaxVersion.setEnabled(false);
+                        jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);  
+                        jLblClientType.setVisible(true);
+                        jCbxClientType.setVisible(true);
+                    } else { // e.g. for Maven Web Project
+                        jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
+                        jLabelJaxVersion.setEnabled(false);
+                        jComboBoxJaxVersion.setEnabled(false);                        
+                    }
                 }
             }
         } else {
@@ -709,14 +715,15 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                 } else {
                     //jLabelJaxVersion.setEnabled(true);
                     //jComboBoxJaxVersion.setEnabled(true);
+                    jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
                 }
-            } else {
+            } else { // e.g. for Maven Web Project
                 //jLabelJaxVersion.setEnabled(false);
                 //jComboBoxJaxVersion.setEnabled(false);
-                jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
+                jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
             }
         }
-       if(jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS)){
+        if(jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS)){
             jCbxPackageName.setEditable(false);
             jCbxPackageName.setEnabled(false);
             jCbxPackageName.setRenderer(disabledPackageBoxRenderer );
@@ -745,10 +752,10 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                 if(pName == null){
                     jCbxPackageName.setToolTipText(NbBundle.getMessage(ClientInfo.class, "TOOLTIP_DEFAULT_PACKAGE"));
                 } else{
-                    jCbxPackageName.setToolTipText("");
+                    jCbxPackageName.setToolTipText(null);
                 }
             } else{
-                jCbxPackageName.setToolTipText("");
+                jCbxPackageName.setToolTipText(null);
             }
             jCbxPackageName.setSelectedItem(getPackageItem(pName));
             // Normalize selection, in case it's unspecified.
@@ -811,10 +818,10 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                 if(pName == null || pName.trim().equals("")){
                     jCbxPackageName.setToolTipText(NbBundle.getMessage(ClientInfo.class, "TOOLTIP_DEFAULT_PACKAGE"));
                 } else{
-                    jCbxPackageName.setToolTipText("");
+                    jCbxPackageName.setToolTipText(null);
                 }
             } else{
-                jCbxPackageName.setToolTipText("");
+                jCbxPackageName.setToolTipText(null);
             }
     }
     
@@ -987,6 +994,19 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             return false; // project with web service client support, but no stub types defined.
         }
          */
+        
+        // check source level
+        boolean isJaxWs = jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS);
+        double requiredVersion = (isJaxWs ? 1.5 : 1.4);
+        String srcLevel = Util.getSourceLevel(project);
+        if (srcLevel != null) {
+            boolean srcLevelOK = Double.parseDouble(srcLevel) >= requiredVersion;
+            if (!srcLevelOK) {
+                System.out.println("required = "+requiredVersion);
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WrongSrcLevel", String.valueOf(requiredVersion)));
+                return false;
+            }
+        }
         
         if(!checkNonJsr109Valid(wizardDescriptor)){
             return false;
@@ -1305,12 +1325,6 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                     }
                 }
             }
-        } else {
-            String srcLevel = Util.getSourceLevel(project);
-            if (srcLevel != null) {
-                return Double.parseDouble(srcLevel)>=1.4;
-            }
-            return false;
         }
         return true;
     }

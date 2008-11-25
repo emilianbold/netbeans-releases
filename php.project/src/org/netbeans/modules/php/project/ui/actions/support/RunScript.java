@@ -39,11 +39,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
-import org.netbeans.modules.extexecution.api.ExecutionService;
-import org.netbeans.modules.extexecution.api.ExternalProcessBuilder;
-import org.netbeans.modules.extexecution.api.input.InputProcessor;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -93,7 +94,7 @@ public class RunScript extends Command implements Displayable {
                         }
                     };
                 }
-                ExecutionDescriptor descriptor = new ExecutionDescriptor().controllable(isControllable()).frontWindow(true).inputVisible(false).showProgress(true).optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
+                ExecutionDescriptor descriptor = new ExecutionDescriptor().controllable(isControllable()).frontWindow(true).inputVisible(true).showProgress(true).optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
                 InOutPostRedirector redirector = new InOutPostRedirector(scriptFile);
                 descriptor = descriptor.outProcessorFactory(redirector);
                 descriptor = descriptor.postExecution(redirector);
@@ -165,22 +166,23 @@ public class RunScript extends Command implements Displayable {
             this.encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(scriptFile));
         }
 
-        public InputProcessor newInputProcessor() {
-            return new InputProcessor() {
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return InputProcessors.proxy(defaultProcessor,
+                new InputProcessor() {
 
-                public void processInput(char[] chars) throws IOException {
-                    getFileWriter().write(chars);
-                }
+                    public void processInput(char[] chars) throws IOException {
+                        getFileWriter().write(chars);
+                    }
 
-                public void reset() throws IOException {
-                }
+                    public void reset() throws IOException {
+                    }
 
-                public void close() throws IOException {
-                    getFileWriter().flush();
-                    getFileWriter().close();
-                }
+                    public void close() throws IOException {
+                        getFileWriter().flush();
+                        getFileWriter().close();
+                    }
 
-            };
+                });
         }
 
         public void run() {

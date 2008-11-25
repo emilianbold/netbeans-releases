@@ -48,6 +48,9 @@ import org.netbeans.modules.asm.base.syntax.*;
 
 }
 
+{
+@SuppressWarnings({"unchecked", "cast", "fallthrough"})
+}
 class ATTScanner extends Lexer;
 options {
     k = 3;   

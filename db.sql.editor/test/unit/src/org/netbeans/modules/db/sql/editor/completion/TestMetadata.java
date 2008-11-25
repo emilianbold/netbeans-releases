@@ -49,8 +49,10 @@ import java.util.TreeMap;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.Procedure;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.View;
 import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
@@ -194,6 +196,9 @@ public class TestMetadata extends MetadataImplementation {
     public void refresh() {
     }
 
+    public void refreshTable(String tablename) {
+    }
+
     static final class TestCatalog extends CatalogImplementation {
 
         private final String name;
@@ -270,6 +275,26 @@ public class TestMetadata extends MetadataImplementation {
         public Table getTable(String name) {
             return tables.get(name);
         }
+
+        @Override
+        public View getView(String name) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Collection<View> getViews() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Procedure getProcedure(String name) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Collection<Procedure> getProcedures() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     static final class TestTable extends TableImplementation {
@@ -297,6 +322,11 @@ public class TestMetadata extends MetadataImplementation {
 
         public Column getColumn(String name) {
             return columns.get(name);
+        }
+
+        @Override
+        public void refresh() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 

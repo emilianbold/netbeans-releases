@@ -42,6 +42,7 @@
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -90,8 +91,6 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
     private PropertyEditorDefaultCommand(TypeID parentTypeID) {
         super(NbBundle.getMessage(PropertyEditorDefaultCommand.class, "LBL_DEF_COMMAND_UCLABEL")); // NOI18N
         this.parentTypeID = parentTypeID;
-        initComponents();
-        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     public static PropertyEditorDefaultCommand createInstance() {
@@ -345,14 +344,26 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         return true;
     }
 
+    @Override
+    public Component getCustomEditor() {
+        if (customEditor == null) {
+            initComponents();
+            initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+        return super.getCustomEditor();
+    }
+
+
 
     private class CustomEditor extends JPanel implements ActionListener {
 
         private JComboBox combobox;
 
         void cleanUp() {
-            combobox.removeActionListener(this);
-            combobox = null;
+            if (combobox != null) {
+                combobox.removeActionListener(this);
+                combobox = null;
+            }
             this.removeAll();
         }
 

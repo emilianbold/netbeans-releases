@@ -236,6 +236,8 @@ public class Subversion {
             repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
             if (repositoryUrl != null) {
                 break;
+            } else {
+                Subversion.LOG.log(Level.WARNING, "Could not retrieve repository root for context file {0}", new Object[]{root});
             }
         }
 

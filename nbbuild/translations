@@ -17507,15 +17507,6 @@ mobility/project/test/unit/src/org/netbeans/spi//main/mobility.project/test/unit
 mobility/project/test/unit/src/org/netbeans/spi/project//main/mobility.project/test/unit/src/org/netbeans/spi/project
 mobility/project/test/unit/src/org/netbeans/spi/project/configurations//main/mobility.project/test/unit/src/org/netbeans/spi/project/configurations
 mobility/project/test/unit/src/org/netbeans/spi/project/configurations/support//main/mobility.project/test/unit/src/org/netbeans/spi/project/configurations/support
-mobility/snippets//main/mobility.snippets
-mobility/snippets/nbproject//main/mobility.snippets/nbproject
-mobility/snippets/src//main/mobility.snippets/src
-mobility/snippets/src/org//main/mobility.snippets/src/org
-mobility/snippets/src/org/netbeans//main/mobility.snippets/src/org/netbeans
-mobility/snippets/src/org/netbeans/modules//main/mobility.snippets/src/org/netbeans/modules
-mobility/snippets/src/org/netbeans/modules/mobility//main/mobility.snippets/src/org/netbeans/modules/mobility
-mobility/snippets/src/org/netbeans/modules/mobility/snippets//main/mobility.snippets/src/org/netbeans/modules/mobility/snippets
-mobility/snippets/src/org/netbeans/modules/mobility/snippets/resources//main/mobility.snippets/src/org/netbeans/modules/mobility/snippets/resources
 mobility/svg//misc/mobility/svg
 mobility/svg/core//main/mobility.svgcore
 mobility/svg/core/nbproject//main/mobility.svgcore/nbproject

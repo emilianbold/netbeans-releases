@@ -40,6 +40,7 @@
  */
 package org.netbeans.cnd.api.lexer;
 
+import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Language;
@@ -55,14 +56,30 @@ public final class CndLexerUtilities {
     public static final String C_MIME_TYPE = "text/x-c";// NOI18N
     public static final String CPLUSPLUS_MIME_TYPE = "text/x-c++";    // NOI18N
     public static final String PREPROC_MIME_TYPE = "text/x-cpp-preprocessor";// NOI18N
+    public static final String FORTRAN_MIME_TYPE = "text/x-fortran";// NOI18N
     public static final String LEXER_FILTER = "lexer-filter"; // NOI18N
+    public static final String FORTRAN_FREE_FORMAT = "fortran-free-format"; // NOI18N
+    public static final String FORTRAN_MAXIMUM_TEXT_WIDTH = "fortran-maximum-text-width"; // NOI18N
 
     private CndLexerUtilities() {
     }
 
-    public static TokenSequence<CppTokenId> getCppTokenSequence(final JTextComponent component, final int offset) {
+    /**
+     * returns C/C++/Preprocessor tokens sequence for component
+     * @param component component
+     * @param offset offset
+     * @param lexPP if <code>true</code> and offset is in preprocessor directive then return tokens sequnce of this 
+     * directive. If <code>false</code> and offset is in preprocessor directive do not dive into embedding
+     * @param backwardBias @see TokenHierarchy.embeddedTokenSequences
+     * If <code>true</code> the backward lying token will
+     *   be used in case that the <code>offset</code> specifies position between
+     *   two tokens. If <code>false</code> the forward lying token will be used.     * 
+     * @return token sequence positioned on token with offset (no need to call moveNext()/movePrevious() before token())
+     */
+    public static TokenSequence<CppTokenId> getCppTokenSequence(final JTextComponent component, final int offset,
+            boolean lexPP, boolean backwardBias) {
         Document doc = component.getDocument();
-        return getCppTokenSequence(doc, offset);
+        return getCppTokenSequence(doc, offset, lexPP, backwardBias);
     }
 
     public static Language<CppTokenId> getLanguage(String mime) {
@@ -77,31 +94,61 @@ public final class CndLexerUtilities {
     public static Language<CppTokenId> getLanguage(final Document doc) {
         // try from property
         Language lang = (Language) doc.getProperty(Language.class);
-        if (lang == null || (lang != CppTokenId.languageC() &&
-                             lang != CppTokenId.languageCpp())) {
+        if (lang == null || (lang != CppTokenId.languageC() && lang != CppTokenId.languageCpp() && lang != CppTokenId.languagePreproc())) {
             lang = getLanguage((String) doc.getProperty("mimeType")); // NOI18N
         }
         @SuppressWarnings("unchecked")
-        Language<CppTokenId> out = (Language<CppTokenId>)lang;
+        Language<CppTokenId> out = (Language<CppTokenId>) lang;
         return out;
     }
 
-    public static TokenSequence<CppTokenId> getCppTokenSequence(final Document doc, final int offset) {
+    /**
+     * returns C/C++/Preprocessor tokens sequence for document
+     * @param doc dicument
+     * @param offset offset
+     * @param lexPP if <code>true</code> and offset is in preprocessor directive then return tokens sequnce of this 
+     * directive. If <code>false</code> and offset is in preprocessor directive do not dive into embedding
+     * @param backwardBias @see TokenHierarchy.embeddedTokenSequences
+     * If <code>true</code> the backward lying token will
+     *   be used in case that the <code>offset</code> specifies position between
+     *   two tokens. If <code>false</code> the forward lying token will be used.     * 
+     * @return token sequence positioned on token with offset (no need to call moveNext()/movePrevious() before token())
+     */
+    public static TokenSequence<CppTokenId> getCppTokenSequence(final Document doc, final int offset,
+            boolean lexPP, boolean backwardBias) {
+        if (doc == null) {
+            return null;
+        }
+        TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(offset, backwardBias);
+        // Go from inner to outer TSes
+        for (int i = tsList.size() - 1; i >= 0; i--) {
+            TokenSequence<?> ts = tsList.get(i);
+            final Language<?> lang = ts.languagePath().innerLanguage();
+            if (lang == CppTokenId.languageC() || lang == CppTokenId.languageCpp() || (lexPP && lang == CppTokenId.languagePreproc())) {
+                @SuppressWarnings("unchecked")
+                TokenSequence<CppTokenId> cppInnerTS = (TokenSequence<CppTokenId>) ts;
+                return cppInnerTS;
+            }
+        }
+        return null;
+    }
+
+    public static TokenSequence<FortranTokenId> getFortranTokenSequence(final Document doc, final int offset) {
         TokenHierarchy th = doc != null ? TokenHierarchy.get(doc) : null;
-        TokenSequence<CppTokenId> ts = th != null ? getCppTokenSequence(th, offset) : null;
+        TokenSequence<FortranTokenId> ts = th != null ? getFortranTokenSequence(th, offset) : null;
         return ts;
     }
 
-    @SuppressWarnings("unchecked")
-    public static TokenSequence<CppTokenId> getCppTokenSequence(final TokenHierarchy hierarchy, final int offset) {
+    public static TokenSequence<FortranTokenId> getFortranTokenSequence(final TokenHierarchy hierarchy, final int offset) {
         if (hierarchy != null) {
             TokenSequence<?> ts = hierarchy.tokenSequence();
-            while(ts != null && (offset == 0 || ts.moveNext())) {
+            while (ts != null && (offset == 0 || ts.moveNext())) {
                 ts.move(offset);
-                if (ts.language() == CppTokenId.languageC() ||
-                        ts.language() == CppTokenId.languageCpp() ||
-                        ts.language() == CppTokenId.languagePreproc()) {
-                    return (TokenSequence<CppTokenId>)ts;
+                if (ts.language() == FortranTokenId.languageFortran()) {
+                    @SuppressWarnings("unchecked")
+                    TokenSequence<FortranTokenId> innerTS = (TokenSequence<FortranTokenId>) ts;
+                    return innerTS;
                 }
                 if (!ts.moveNext() && !ts.movePrevious()) {
                     return null;
@@ -128,6 +175,10 @@ public final class CndLexerUtilities {
         return Character.isJavaIdentifierPart(codePoint);
     }
 
+    public static boolean isFortranIdentifierPart(int codePoint) {
+        return Character.isJavaIdentifierPart(codePoint);
+    }
+
     public static CharSequence removeEscapedLF(CharSequence text, boolean escapedLF) {
         if (!escapedLF) {
             return text;
@@ -138,11 +189,11 @@ public final class CndLexerUtilities {
                 char c = text.charAt(i);
                 boolean append = true;
                 if (c == '\\') { // check escaped LF
-                    if ((i < lengthM1) && (text.charAt(i+1) == '\r')) {
+                    if ((i < lengthM1) && (text.charAt(i + 1) == '\r')) {
                         i++;
                         append = false;
                     }
-                    if ((i < lengthM1) && (text.charAt(i+1) == '\n')) {
+                    if ((i < lengthM1) && (text.charAt(i + 1) == '\n')) {
                         i++;
                         append = false;
                     }
@@ -173,7 +224,7 @@ public final class CndLexerUtilities {
             // unknown value
         }
         return false;
-   }
+    }
 
     public static boolean isType(CppTokenId id) {
         switch (id) {
@@ -234,6 +285,7 @@ public final class CndLexerUtilities {
     private static Filter<CppTokenId> FILTER_STD_CPP;
     private static Filter<CppTokenId> FILTER_GCC_CPP;
     private static Filter<CppTokenId> FILTER_PREPRPOCESSOR;
+    private static Filter<FortranTokenId> FILTER_FORTRAN;
 
     public static Filter<CppTokenId> getDefatultFilter(boolean cpp) {
         return cpp ? getStdCppFilter() : getStdCFilter();
@@ -262,7 +314,7 @@ public final class CndLexerUtilities {
             addCommonCCKeywords(FILTER_GCC_C);
             addCOnlyKeywords(FILTER_GCC_C);
             addGccOnlyCommonCCKeywords(FILTER_GCC_C);
-            //addGccOnlyCOnlyKeywords(FILTER_GCC_C);
+        //addGccOnlyCOnlyKeywords(FILTER_GCC_C);
         }
         return FILTER_GCC_C;
     }
@@ -287,9 +339,16 @@ public final class CndLexerUtilities {
         return FILTER_GCC_CPP;
     }
 
+    public synchronized static Filter<FortranTokenId> getFortranFilter() {
+        if (FILTER_FORTRAN == null) {
+            FILTER_FORTRAN = new Filter<FortranTokenId>();
+            addFortranKeywords(FILTER_FORTRAN);
+        }
+        return FILTER_FORTRAN;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // help methods
-
     private static void addPreprocKeywords(Filter<CppTokenId> filterToModify) {
         CppTokenId[] ids = new CppTokenId[]{
             CppTokenId.PREPROCESSOR_IF,
@@ -349,7 +408,7 @@ public final class CndLexerUtilities {
         addToFilter(ids, filterToModify);
     }
 
-    private static  void addCppOnlyKeywords(Filter<CppTokenId> filterToModify) {
+    private static void addCppOnlyKeywords(Filter<CppTokenId> filterToModify) {
         CppTokenId[] ids = new CppTokenId[]{
             CppTokenId.ASM, // gcc and C++
             CppTokenId.BOOL, // C++
@@ -389,9 +448,8 @@ public final class CndLexerUtilities {
         addToFilter(ids, filterToModify);
     }
 
-
     private static void addCOnlyKeywords(Filter<CppTokenId> filterToModify) {
-        CppTokenId[] ids = new CppTokenId[] {
+        CppTokenId[] ids = new CppTokenId[]{
             CppTokenId.INLINE, // gcc, C++, now in C also
             CppTokenId.RESTRICT, // C
             CppTokenId._BOOL, // C
@@ -402,7 +460,7 @@ public final class CndLexerUtilities {
     }
 
     private static void addGccOnlyCommonCCKeywords(Filter<CppTokenId> filterToModify) {
-        CppTokenId[] ids = new CppTokenId[] {
+        CppTokenId[] ids = new CppTokenId[]{
             CppTokenId.ASM,
             CppTokenId.__ALIGNOF__,
             CppTokenId.__ASM,
@@ -430,12 +488,11 @@ public final class CndLexerUtilities {
 
     /*
     private static void addGccOnlyCOnlyKeywords(Filter<CppTokenId> filterToModify) {
-        // no C only tokens in gnu c
+    // no C only tokens in gnu c
     }
-    */
-
+     */
     private static void addGccOnlyCppOnlyKeywords(Filter<CppTokenId> filterToModify) {
-        CppTokenId[] ids = new CppTokenId[] {
+        CppTokenId[] ids = new CppTokenId[]{
             CppTokenId.ALIGNOF,
             CppTokenId._ASM,
             CppTokenId._INLINE,
@@ -462,8 +519,187 @@ public final class CndLexerUtilities {
         addToFilter(ids, filterToModify);
     }
 
+    private static void addFortranKeywords(Filter<FortranTokenId> filterToModify) {
+        FortranTokenId[] ids = new FortranTokenId[]{
+            // Keywords
+            FortranTokenId.KW_ALLOCATABLE,
+            FortranTokenId.KW_ALLOCATE,
+            FortranTokenId.KW_APOSTROPHE,
+            FortranTokenId.KW_ASSIGNMENT,
+            FortranTokenId.KW_ASSOCIATE,
+            FortranTokenId.KW_ASYNCHRONOUS,
+            FortranTokenId.KW_BACKSPACE,
+            FortranTokenId.KW_BIND,
+            FortranTokenId.KW_BLOCK,
+            FortranTokenId.KW_BLOCKDATA,
+            FortranTokenId.KW_CALL,
+            FortranTokenId.KW_CASE,
+            FortranTokenId.KW_CHARACTER,
+            FortranTokenId.KW_CLASS,
+            FortranTokenId.KW_CLOSE,
+            FortranTokenId.KW_COMMON,
+            FortranTokenId.KW_COMPLEX,
+            FortranTokenId.KW_CONTAINS,
+            FortranTokenId.KW_CONTINUE,
+            FortranTokenId.KW_CYCLE,
+            FortranTokenId.KW_DATA,
+            FortranTokenId.KW_DEALLOCATE,
+            FortranTokenId.KW_DEFAULT,
+            FortranTokenId.KW_DIMENSION,
+            FortranTokenId.KW_DO,
+            FortranTokenId.KW_DOUBLE,
+            FortranTokenId.KW_DOUBLEPRECISION,
+            FortranTokenId.KW_ELEMENTAL,
+            FortranTokenId.KW_ELSE,
+            FortranTokenId.KW_ELSEIF,
+            FortranTokenId.KW_ELSEWHERE,
+            FortranTokenId.KW_END,
+            FortranTokenId.KW_ENDASSOCIATE,
+            FortranTokenId.KW_ENDBLOCK,
+            FortranTokenId.KW_ENDBLOCKDATA,
+            FortranTokenId.KW_ENDDO,
+            FortranTokenId.KW_ENDENUM,
+            FortranTokenId.KW_ENDFILE,
+            FortranTokenId.KW_ENDFORALL,
+            FortranTokenId.KW_ENDFUNCTION,
+            FortranTokenId.KW_ENDIF,
+            FortranTokenId.KW_ENDINTERFACE,
+            FortranTokenId.KW_ENDMAP,
+            FortranTokenId.KW_ENDMODULE,
+            FortranTokenId.KW_ENDPROGRAM,
+            FortranTokenId.KW_ENDSELECT,
+            FortranTokenId.KW_ENDSTRUCTURE,
+            FortranTokenId.KW_ENDSUBROUTINE,
+            FortranTokenId.KW_ENDTYPE,
+            FortranTokenId.KW_ENDUNION,
+            FortranTokenId.KW_ENDWHERE,
+            FortranTokenId.KW_ENDWHILE,
+            FortranTokenId.KW_ENTRY,
+            FortranTokenId.KW_ENUM,
+            FortranTokenId.KW_ENUMERATOR,
+            FortranTokenId.KW_EQUIVALENCE,
+            FortranTokenId.KW_EXIT,
+            FortranTokenId.KW_EXTERNAL,
+            FortranTokenId.KW_FLUSH,
+            FortranTokenId.KW_FORALL,
+            FortranTokenId.KW_FORMAT,
+            FortranTokenId.KW_FUNCTION,
+            FortranTokenId.KW_GO,
+            FortranTokenId.KW_GOTO,
+            FortranTokenId.KW_IF,
+            FortranTokenId.KW_IMPLICIT,
+            FortranTokenId.KW_IN,
+            FortranTokenId.KW_INCLUDE,
+            FortranTokenId.KW_INOUT,
+            FortranTokenId.KW_INQUIRE,
+            FortranTokenId.KW_INTEGER,
+            FortranTokenId.KW_INTENT,
+            FortranTokenId.KW_INTERFACE,
+            FortranTokenId.KW_INTRINSIC,
+            FortranTokenId.KW_KIND,
+            FortranTokenId.KW_LEN,
+            FortranTokenId.KW_LOGICAL,
+            FortranTokenId.KW_MAP,
+            FortranTokenId.KW_MODULE,
+            FortranTokenId.KW_NAMELIST,
+            FortranTokenId.KW_NONE,
+            FortranTokenId.KW_NULLIFY,
+            FortranTokenId.KW_ONLY,
+            FortranTokenId.KW_OPEN,
+            FortranTokenId.KW_OPERATOR,
+            FortranTokenId.KW_OPTIONAL,
+            FortranTokenId.KW_OUT,
+            FortranTokenId.KW_PARAMETER,
+            FortranTokenId.KW_POINTER,
+            FortranTokenId.KW_PRECISION,
+            FortranTokenId.KW_PRINT,
+            FortranTokenId.KW_PRIVATE,
+            FortranTokenId.KW_PROCEDURE,
+            FortranTokenId.KW_PROGRAM,
+            FortranTokenId.KW_PROTECTED,
+            FortranTokenId.KW_PUBLIC,
+            FortranTokenId.KW_PURE,
+            FortranTokenId.KW_QUOTE,
+            FortranTokenId.KW_READ,
+            FortranTokenId.KW_REAL,
+            FortranTokenId.KW_RECURSIVE,
+            FortranTokenId.KW_RESULT,
+            FortranTokenId.KW_RETURN,
+            FortranTokenId.KW_REWIND,
+            FortranTokenId.KW_SAVE,
+            FortranTokenId.KW_SELECT,
+            FortranTokenId.KW_SELECTCASE,
+            FortranTokenId.KW_SELECTTYPE,
+            FortranTokenId.KW_SEQUENCE,
+            FortranTokenId.KW_STAT,
+            FortranTokenId.KW_STOP,
+            FortranTokenId.KW_STRUCTURE,
+            FortranTokenId.KW_SUBROUTINE,
+            FortranTokenId.KW_TARGET,
+            FortranTokenId.KW_THEN,
+            FortranTokenId.KW_TO,
+            FortranTokenId.KW_TYPE,
+            FortranTokenId.KW_UNION,
+            FortranTokenId.KW_USE,
+            FortranTokenId.KW_VALUE,
+            FortranTokenId.KW_VOLATILE,
+            FortranTokenId.KW_WAIT,
+            FortranTokenId.KW_WHERE,
+            FortranTokenId.KW_WHILE,
+            FortranTokenId.KW_WRITE,
+            // Keyword C Extensions
+            FortranTokenId.KW_INT,
+            FortranTokenId.KW_SHORT,
+            FortranTokenId.KW_LONG,
+            FortranTokenId.KW_SIGNED,
+            FortranTokenId.KW_UNSIGNED,
+            FortranTokenId.KW_SIZE_T,
+            FortranTokenId.KW_INT8_T,
+            FortranTokenId.KW_INT16_T,
+            FortranTokenId.KW_INT32_T,
+            FortranTokenId.KW_INT64_T,
+            FortranTokenId.KW_INT_LEAST8_T,
+            FortranTokenId.KW_INT_LEAST16_T,
+            FortranTokenId.KW_INT_LEAST32_T,
+            FortranTokenId.KW_INT_LEAST64_T,
+            FortranTokenId.KW_INT_FAST8_T,
+            FortranTokenId.KW_INT_FAST16_T,
+            FortranTokenId.KW_INT_FAST32_T,
+            FortranTokenId.KW_INT_FAST64_T,
+            FortranTokenId.KW_INTMAX_T,
+            FortranTokenId.KW_INTPTR_T,
+            FortranTokenId.KW_FLOAT,
+            FortranTokenId.KW__COMPLEX,
+            FortranTokenId.KW__BOOL,
+            FortranTokenId.KW_CHAR,
+            FortranTokenId.KW_BOOL,
+            // Keyword Operator
+            FortranTokenId.KWOP_EQ,
+            FortranTokenId.KWOP_NE,
+            FortranTokenId.KWOP_LT,
+            FortranTokenId.KWOP_LE,
+            FortranTokenId.KWOP_GT,
+            FortranTokenId.KWOP_GE,
+            FortranTokenId.KWOP_AND,
+            FortranTokenId.KWOP_OR,
+            FortranTokenId.KWOP_NOT,
+            FortranTokenId.KWOP_EQV,
+            FortranTokenId.KWOP_NEQV,
+            FortranTokenId.KWOP_TRUE,
+            FortranTokenId.KWOP_FALSE
+        };
+        addToFilter(ids, filterToModify);
+    }
+
     private static void addToFilter(CppTokenId[] ids, Filter<CppTokenId> filterToModify) {
         for (CppTokenId id : ids) {
+            assert id.fixedText() != null : "id " + id + " must have fixed text";
+            filterToModify.addMatch(id.fixedText(), id);
+        }
+    }
+
+    private static void addToFilter(FortranTokenId[] ids, Filter<FortranTokenId> filterToModify) {
+        for (FortranTokenId id : ids) {
             assert id.fixedText() != null : "id " + id + " must have fixed text";
             filterToModify.addMatch(id.fixedText(), id);
         }

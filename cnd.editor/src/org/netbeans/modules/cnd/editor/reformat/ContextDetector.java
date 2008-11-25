@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.editor.reformat;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import sun.security.timestamp.TSRequest;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
@@ -152,7 +151,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                             if (depth == 0) {
                                 // end of template
                                 return true;
-                            } else
+                            }
                             depth--;
                         }
                         break;
@@ -165,7 +164,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                                     return false;
                                 }
                                 return true;
-                            } else
+                            }
                             depth--;
                         } else {
                             depth++;

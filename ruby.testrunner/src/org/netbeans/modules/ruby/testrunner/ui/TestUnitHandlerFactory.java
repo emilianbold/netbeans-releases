@@ -40,11 +40,10 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
 import org.openide.util.NbBundle;
@@ -55,11 +54,15 @@ import org.openide.util.NbBundle;
  *
  * @author Erno Mononen
  */
-public class TestUnitHandlerFactory {
+public class TestUnitHandlerFactory implements TestHandlerFactory {
 
     private static final Logger LOGGER = Logger.getLogger(TestUnitHandlerFactory.class.getName());
 
-    public static List<TestRecognizerHandler> getHandlers() {
+    public boolean printSummary() {
+        return true;
+    }
+
+    public List<TestRecognizerHandler> createHandlers() {
         List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
         result.add(new SuiteStartingHandler());
         result.add(new SuiteStartedHandler());
@@ -111,37 +114,38 @@ public class TestUnitHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase(TestType.TEST_UNIT);
-            testcase.timeMillis = toMillis(matcher.group(1));
-            testcase.name = matcher.group(2);
-            testcase.className = matcher.group(3);
-            testcase.trouble = new Report.Trouble(false);
+            Testcase testcase = new Testcase(TestType.TEST_UNIT, session);
+            testcase.setTimeMillis(toMillis(matcher.group(1)));
+            testcase.setName(matcher.group(2));
+            testcase.setClassName(matcher.group(3));
+            testcase.setTrouble(new Trouble(false));
             String message = matcher.group(4);
             String location = matcher.group(5);
-            testcase.trouble.stackTrace = getStackTrace(message, location);
+            testcase.getTrouble().stackTrace = getStackTrace(message, location);
             session.addTestCase(testcase);
 
             String failureMsg = failureMsg(session.incrementFailuresCount());
-            String testCase = testcase.name + "(" + testcase.className + "):";
+            String testCase = testcase.getName() + "(" + testcase.getClassName() + "):";
             output = new ArrayList<String>();
             output.add("");
             output.add(failureMsg);
             output.add(testCase);
-            output.addAll(Arrays.asList(testcase.trouble.stackTrace));
+            output.addAll(Arrays.asList(testcase.getTrouble().stackTrace));
             output.add("");
             
             manager.displayOutput(session, "", false);
             manager.displayOutput(session, failureMsg, false);
             manager.displayOutput(session, testCase, false); //NOI18N
-            for (String line : testcase.trouble.stackTrace) {
+            for (String line : testcase.getTrouble().stackTrace) {
                 manager.displayOutput(session, line, false);
             }
             manager.displayOutput(session, "", false);
+            testcase.addOutputLines(output);
         }
 
         @Override
-        RecognizedOutput getRecognizedOutput() {
-            return new FilteredOutput(output.toArray(new String[output.size()]));
+        List<String> getRecognizedOutput() {
+            return new ArrayList<String>(output);
         }
     }
 
@@ -165,35 +169,36 @@ public class TestUnitHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase(TestType.TEST_UNIT);
-            testcase.timeMillis = toMillis(matcher.group(1));
-            testcase.className = matcher.group(3);
-            testcase.name = matcher.group(2);
-            testcase.trouble = new Report.Trouble(true);
-            testcase.trouble.stackTrace = getStackTrace(matcher.group(4), matcher.group(5));
+            Testcase testcase = new Testcase(TestType.TEST_UNIT, session);
+            testcase.setTimeMillis(toMillis(matcher.group(1)));
+            testcase.setClassName(matcher.group(3));
+            testcase.setName(matcher.group(2));
+            testcase.setTrouble(new Trouble(true));
+            testcase.getTrouble().stackTrace = getStackTrace(matcher.group(4), matcher.group(5));
             session.addTestCase(testcase);
 
             String errorMsg = errorMsg(session.incrementFailuresCount());
-            String testCase = testcase.name + "(" + testcase.className + "):";
+            String testCase = testcase.getName() + "(" + testcase.getClassName() + "):";
             output = new ArrayList<String>();
             output.add("");
             output.add(errorMsg);
             output.add(testCase);
-            output.addAll(Arrays.asList(testcase.trouble.stackTrace));
+            output.addAll(Arrays.asList(testcase.getTrouble().stackTrace));
             output.add("");
 
             manager.displayOutput(session, "", false);
             manager.displayOutput(session, errorMsg, false);
             manager.displayOutput(session, testCase, false); //NOI18N
-            for (String line : testcase.trouble.stackTrace) {
+            for (String line : testcase.getTrouble().stackTrace) {
                 manager.displayOutput(session, line, true);
             }
             manager.displayOutput(session, "", false);
+            testcase.addOutputLines(output);
         }
 
         @Override
-        RecognizedOutput getRecognizedOutput() {
-            return new FilteredOutput(output.toArray(new String[output.size()]));
+        List<String> getRecognizedOutput() {
+            return new ArrayList<String>(output);
         }
     }
 
@@ -234,10 +239,10 @@ public class TestUnitHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase(TestType.TEST_UNIT);
-            testcase.timeMillis = toMillis(matcher.group(1));
-            testcase.className = matcher.group(3);
-            testcase.name = matcher.group(2);
+            Testcase testcase = new Testcase(TestType.TEST_UNIT, session);
+            testcase.setTimeMillis(toMillis(matcher.group(1)));
+            testcase.setClassName(matcher.group(3));
+            testcase.setName(matcher.group(2));
             session.addTestCase(testcase);
         }
     }
@@ -304,8 +309,8 @@ public class TestUnitHandlerFactory {
         }
 
         @Override
-        RecognizedOutput getRecognizedOutput() {
-            return new FilteredOutput(matcher.group(1));
+        List<String> getRecognizedOutput() {
+            return Collections.<String>singletonList(matcher.group(1));
         }
 
     }
@@ -325,7 +330,7 @@ public class TestUnitHandlerFactory {
                 manager.testStarted(session);
             }
             String suiteName = matcher.group(1);
-            session.setSuiteName(suiteName);
+            session.addSuite(new TestSuite(suiteName));
             manager.displaySuiteRunning(session, suiteName);
         }
     }

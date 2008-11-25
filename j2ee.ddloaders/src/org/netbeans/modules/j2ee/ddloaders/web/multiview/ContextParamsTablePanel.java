@@ -94,17 +94,13 @@ public class ContextParamsTablePanel extends DefaultTablePanel {
                 NbBundle.getMessage(ContextParamsTablePanel.class,"LBL_initParamValue"),
                 NbBundle.getMessage(ContextParamsTablePanel.class,"LBL_description")
             };
-            char[] mnem = new char[] {
-                NbBundle.getMessage(ContextParamsTablePanel.class,"LBL_initParamName_mnem").charAt(0),
-                NbBundle.getMessage(ContextParamsTablePanel.class,"LBL_initParamValue_mnem").charAt(0),
-                NbBundle.getMessage(ContextParamsTablePanel.class,"LBL_description_mnem").charAt(0)
-            };
             String[] a11y_desc = new String[]{
                 NbBundle.getMessage(ContextParamsTablePanel.class,"ACSD_context_param_name"),
                 NbBundle.getMessage(ContextParamsTablePanel.class,"ACSD_context_param_value"),
                 NbBundle.getMessage(ContextParamsTablePanel.class,"ACSD_context_param_desc")
             };
-            SimpleDialogPanel.DialogDescriptor descriptor = new SimpleDialogPanel.DialogDescriptor(labels);
+            SimpleDialogPanel.DialogDescriptor descriptor =
+                    new SimpleDialogPanel.DialogDescriptor(labels, true);
             if (!add) {
                 String[] initValues = new String[] {
                     (String)model.getValueAt(row,0),
@@ -113,7 +109,6 @@ public class ContextParamsTablePanel extends DefaultTablePanel {
                 };
                 descriptor.setInitValues(initValues);
             }
-            descriptor.setMnemonics(mnem);
             descriptor.setTextField(new boolean[]{true,true,false});
             descriptor.setA11yDesc(a11y_desc);
             final SimpleDialogPanel dialogPanel = new SimpleDialogPanel(descriptor);

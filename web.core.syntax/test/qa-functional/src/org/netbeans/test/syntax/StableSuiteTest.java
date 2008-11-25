@@ -82,6 +82,8 @@ public class StableSuiteTest extends J2eeTestCase {
             addCompletionTest("stableExpression.jsp");
             addCompletionTest("stableHTML.jsp");
             addCompletionTest("stableHTMLCompletion.html");
+            addCompletionTest("stableHTMLEmbedding.html");
+            addCompletionTest("stableJSPEmbedding.jsp");
             addCompletionTest("stableJSPElements.jsp");
             addCompletionTest("stableScriptletsJavaBasic.jsp");
             addCompletionTest("stableTaglibCompletion.jsp");

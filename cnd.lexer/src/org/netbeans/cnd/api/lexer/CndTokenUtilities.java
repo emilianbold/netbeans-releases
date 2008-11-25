@@ -38,11 +38,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.cnd.api.lexer;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 
 /**
@@ -61,44 +66,55 @@ public class CndTokenUtilities {
      * @return
      */
     public static boolean isInPreprocessorDirective(Document doc, int offset) {
-        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset);
+        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
         if (cppTokenSequence != null) {
-            cppTokenSequence.move(offset);
-            if (cppTokenSequence.moveNext()) {
-                return cppTokenSequence.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE;
-            }
+            return cppTokenSequence.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE;
         }
         return false;
     }
 
     /**
      * method should be called under document read lock and token processor must be
-     * very fast to prevent document blocking
+     * very fast to prevent document blocking. If startOffset is less than lastOffset,
+     * then process tokens in backward direction, otherwise in forward
      * @param tp
      * @param doc
      * @param startOffset
      * @param lastOffset
      */
-    public static void processTokens(CppTokenProcessor tp, Document doc, int startOffset, int lastOffset) {
-        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, 0);
+    public static void processTokens(CndTokenProcessor<Token<CppTokenId>> tp, Document doc, int startOffset, int lastOffset) {
+        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, startOffset, false, lastOffset < startOffset);
         if (cppTokenSequence == null) {
-            return;
-        }
-        if (startOffset > lastOffset) {
+            // check if it is C/C++ document at all
+            TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+            TokenSequence<?> ts = hi.tokenSequence();
+            if (ts != null) {
+                if (ts.language() == CppTokenId.languageC() ||
+                        ts.language() == CppTokenId.languageCpp() ||
+                        ts.language() == CppTokenId.languagePreproc()) {
+                    tp.start(startOffset, startOffset);
+                    // just emulate finish
+                    tp.end(lastOffset, lastOffset);
+                    return;
+                }
+            }            
             return;
         }
         int shift = cppTokenSequence.move(startOffset);
-        if (tp.getLastSeparatorOffset() >=0 && 
-            tp.getLastSeparatorOffset() > startOffset && 
-            tp.getLastSeparatorOffset() < lastOffset) {
-            shift = cppTokenSequence.move(tp.getLastSeparatorOffset());
-        }
         tp.start(startOffset, startOffset - shift);
-        if (processTokensImpl(tp, cppTokenSequence, startOffset, lastOffset)) {
+        if (processTokensImpl(tp, cppTokenSequence, startOffset, lastOffset, shift != 0)) {
             tp.end(lastOffset, cppTokenSequence.offset());
         } else {
             tp.end(lastOffset, lastOffset);
         }
+    }
+
+    public static <T extends CppTokenId> TokenItem<T> createTokenItem(TokenSequence<T> ts) {
+        return TokenItemImpl.create(ts);
+    }
+
+    public static <T extends CppTokenId> TokenItem<T> createTokenItem(Token<T> token, int tokenOffset) {
+        return TokenItemImpl.create(token, tokenOffset);
     }
 
     /**
@@ -107,22 +123,108 @@ public class CndTokenUtilities {
      * @param offset
      * @return
      */
-    public static Token<CppTokenId> shiftToNonWhiteBwd(Document doc, int offset) {
-        Token<CppTokenId> out = getOffsetTokenImpl(doc, offset, true, false);
-        boolean firstTime = true;
-        while (out != null &&
-                (out.id() == CppTokenId.WHITESPACE ||
-                (firstTime && (CppTokenId.WHITESPACE_CATEGORY.equals(out.id().primaryCategory()))))) {
-            firstTime = false;
-            int tokOffset = out.offset(null);
-            if (tokOffset == 0) {
-                break;
-            }
-            out = getOffsetTokenImpl(doc, tokOffset-1, true, false);
-        }
-        return out;
+    public static TokenItem<CppTokenId> getFirstNonWhiteBwd(Document doc, int offset) {
+        SkipTokenProcessor tp = new SkipTokenProcessor(Collections.<CppTokenId>emptySet(), skipWSCategories, true);
+        processTokens(tp, doc, offset, 0);
+        return tp.getTokenItem();
     }
 
+    /**
+     * method should be called under read lock
+     * Return the position of the last command separator before the given position.
+     * @param doc documetn
+     * @param pos position in document
+     * @return position of the last command separator before the given position or
+     * 
+     */
+    public static int getLastCommandSeparator(Document doc, int pos) throws BadLocationException {
+        if (pos < 0 || pos > doc.getLength()) {
+            throw new BadLocationException("position is out of range[" + 0 + "-" + doc.getLength() + "]", pos); // NOI18N
+        }
+        if (pos == 0) {
+            return 0;
+        }
+        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, pos, true, true);
+        if (ts == null) {
+            return 0;
+        }
+        do {
+            switch (ts.token().id()) {
+                case SEMICOLON:
+                case LBRACE:
+                case RBRACE:
+                    return ts.offset();
+            }
+        } while (ts.movePrevious());
+        ts.moveStart();
+        if (ts.moveNext()) {
+            return ts.offset();
+        }
+        return 0;
+    }
+
+    /**
+     * method should be called under read lock
+     * move token sequence to the position of preprocessor keyword
+     * @param ts token sequence
+     * @return true if successfuly moved, false if no preprocessor keyword in given sequence
+     * of sequence is null, or not preprocessor directive sequence
+     */
+    public static boolean moveToPreprocKeyword(TokenSequence<CppTokenId> ts) {
+        if (ts != null && ts.language() == CppTokenId.languagePreproc()) {
+            ts.moveStart();
+            ts.moveNext();
+            if (!ts.moveNext()) {// skip start #
+                return false;
+            }
+            if (shiftToNonWhite(ts, false)) {
+                switch (ts.token().id()) {
+                    case PREPROCESSOR_DEFINE:
+                    case PREPROCESSOR_ELIF:
+                    case PREPROCESSOR_ELSE:
+                    case PREPROCESSOR_ENDIF:
+                    case PREPROCESSOR_ERROR:
+                    case PREPROCESSOR_IDENT:
+                    case PREPROCESSOR_IF:
+                    case PREPROCESSOR_IFDEF:
+                    case PREPROCESSOR_IFNDEF:
+                    case PREPROCESSOR_INCLUDE:
+                    case PREPROCESSOR_INCLUDE_NEXT:
+                    case PREPROCESSOR_LINE:
+                    case PREPROCESSOR_PRAGMA:
+                    case PREPROCESSOR_UNDEF:
+                    case PREPROCESSOR_WARNING:
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * method should be called under read lock
+     * move sequence to the first not whitespace category token if needed
+     * @param ts token sequence to move
+     * @param backward if <code>true</code> move backward, otherwise move forward
+     * @return true if successfuly moved, false otherwise
+     */
+    public static boolean shiftToNonWhite(TokenSequence<CppTokenId> ts, boolean backward) {
+        do {
+            switch (ts.token().id()) {
+                case WHITESPACE:
+                case BLOCK_COMMENT:
+                case DOXYGEN_COMMENT:
+                case LINE_COMMENT:
+                case ESCAPED_LINE:
+                case ESCAPED_WHITESPACE:
+                    break;
+                default:
+                    return true;
+            }
+        } while (backward ? ts.movePrevious() : ts.moveNext());
+        return false;
+    }
+    
     /**
      * method should be called under document read lock
      * returns offsetable token on interested offset
@@ -131,18 +233,8 @@ public class CndTokenUtilities {
      * @return returns ofssetable token, but if offset is in the beginning of whitespace
      * or comment token, then it returns previous token
      */
-    public static Token<CppTokenId> getOffsetTokenCheckPrev(Document doc, int offset) {
-        return getOffsetTokenImpl(doc, offset, true, true);
-    }
-
-    /**
-     * method should be called under document read lock
-     * @param doc
-     * @param offset
-     * @return
-     */
-    public static Token<CppTokenId> getOffsetToken(Document doc, int offset) {
-        return getOffsetToken(doc, offset, false);
+    public static TokenItem<CppTokenId> getTokenCheckPrev(Document doc, int offset) {
+        return getTokenImpl(doc, offset, true, true);
     }
 
     /**
@@ -152,66 +244,82 @@ public class CndTokenUtilities {
      * @param tokenizePP
      * @return
      */
-    public static Token<CppTokenId> getOffsetToken(Document doc, int offset, boolean tokenizePP) {
-        return getOffsetTokenImpl(doc, offset, tokenizePP, false);
+    public static TokenItem<CppTokenId> getToken(Document doc, int offset, boolean tokenizePP) {
+        return getTokenImpl(doc, offset, tokenizePP, false);
     }
 
-    private static Token<CppTokenId> getOffsetTokenImpl(Document doc, int offset, boolean tokenizePP, boolean checkPrevious) {
-        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset);
+    private static TokenItem<CppTokenId> getTokenImpl(Document doc, int offset, boolean tokenizePP, boolean checkPrevious) {
+        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, tokenizePP, false);
         if (cppTokenSequence == null) {
             return null;
         }
-        Token<CppTokenId> offsetToken = getOffsetTokenImpl(cppTokenSequence, offset, checkPrevious);
-        if (tokenizePP && offsetToken != null && offsetToken.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
-            @SuppressWarnings("unchecked")
-            TokenSequence<CppTokenId> embedded = (TokenSequence<CppTokenId>) cppTokenSequence.embedded();
-            assert embedded != null : "no embedding for preprocessor directive " + offsetToken;
-            offsetToken = getOffsetTokenImpl(embedded, offset, checkPrevious);
-        }
+        TokenItem<CppTokenId> offsetToken = getTokenImpl(cppTokenSequence, offset, checkPrevious);
         return offsetToken;
     }
 
-    private static Token<CppTokenId> getOffsetTokenImpl(TokenSequence<CppTokenId> cppTokenSequence, int offset, boolean checkPrevious) {
+    private static TokenItem<CppTokenId> getTokenImpl(TokenSequence<CppTokenId> cppTokenSequence, int offset, boolean checkPrevious) {
         if (cppTokenSequence == null) {
             return null;
         }
         int shift = cppTokenSequence.move(offset);
-        Token<CppTokenId> offsetToken = null;
+        TokenItem<CppTokenId> offsetToken = null;
         boolean checkPrev = false;
         if (cppTokenSequence.moveNext()) {
-            offsetToken = cppTokenSequence.offsetToken();
+            offsetToken = TokenItemImpl.create(cppTokenSequence);
             if (checkPrevious && (shift == 0)) {
                 String category = offsetToken.id().primaryCategory();
                 if (CppTokenId.WHITESPACE_CATEGORY.equals(category) ||
-                    CppTokenId.COMMENT_CATEGORY.equals(category) ||
-                    CppTokenId.SEPARATOR_CATEGORY.equals(category) ||
-                    CppTokenId.OPERATOR_CATEGORY.equals(category)) {
+                        CppTokenId.COMMENT_CATEGORY.equals(category) ||
+                        CppTokenId.SEPARATOR_CATEGORY.equals(category) ||
+                        CppTokenId.OPERATOR_CATEGORY.equals(category)) {
                     checkPrev = true;
                 }
             }
         }
         if (checkPrev && cppTokenSequence.movePrevious()) {
-            offsetToken = cppTokenSequence.offsetToken();
+            offsetToken = TokenItemImpl.create(cppTokenSequence);
         }
         return offsetToken;
     }
 
-    private static boolean processTokensImpl(CppTokenProcessor tp, TokenSequence<CppTokenId> cppTokenSequence, int startOffset, int lastOffset) {
+    private static boolean processTokensImpl(CndTokenProcessor<Token<CppTokenId>> tp, TokenSequence<CppTokenId> cppTokenSequence, int startOffset, int lastOffset, boolean adjust) {
         boolean processedToken = false;
-        while (cppTokenSequence.moveNext()) {
-            if (cppTokenSequence.offset() >= lastOffset) {
+        boolean bwd = (lastOffset < startOffset);
+        boolean adjustOnFirstIteration = adjust;
+        // in forward direction move to next, otherwise move to previous token
+        while (!tp.isStopped()) {
+            // for backward mode, we need token as well
+            boolean moved;
+            if (adjustOnFirstIteration || !bwd) {
+                moved = cppTokenSequence.moveNext();
+            } else {
+                moved = cppTokenSequence.movePrevious();
+            }
+            if (!moved) {
                 break;
             }
-            Token<CppTokenId> token = (Token<CppTokenId>) cppTokenSequence.token();
+            adjustOnFirstIteration = false;
+            Token<CppTokenId> token = cppTokenSequence.token();
+            // check finish condition
+            if (bwd) {
+                if (cppTokenSequence.offset() + token.length() < lastOffset) {
+                    break;
+                }
+            } else {
+                if (cppTokenSequence.offset() >= lastOffset) {
+                    break;
+                }
+            }
             if (tp.token(token, cppTokenSequence.offset())) {
                 // process embedding
                 @SuppressWarnings("unchecked")
                 TokenSequence<CppTokenId> embedded = (TokenSequence<CppTokenId>) cppTokenSequence.embedded();
                 if (embedded != null) {
+                    int shift = 0;
                     if (cppTokenSequence.offset() < startOffset) {
-                        embedded.move(startOffset);
+                        shift = embedded.move(startOffset);
                     }
-                    processedToken |= processTokensImpl(tp, embedded, startOffset, lastOffset);
+                    processedToken |= processTokensImpl(tp, embedded, startOffset, lastOffset, shift != 0);
                 }
             } else {
                 processedToken = true;
@@ -220,5 +328,70 @@ public class CndTokenUtilities {
         return processedToken;
     }
 
+    private static class SkipTokenProcessor extends CndAbstractTokenProcessor<Token<CppTokenId>> {
 
+        private boolean stopped = false;
+        private TokenItem<CppTokenId> tokenItem = null;
+        private Token<CppTokenId> lastToken = null;
+        private final Set<CppTokenId> skipTokenIds;
+        private final Set<String> skipTokenCategories;
+        private final boolean processPP;
+
+        public SkipTokenProcessor(Set<CppTokenId> skipTokenIds, Set<String> skipTokenCategories, boolean processPP) {
+            this.skipTokenIds = skipTokenIds;
+            this.skipTokenCategories = skipTokenCategories;
+            this.processPP = processPP;
+        }
+
+        @Override
+        public boolean token(Token<CppTokenId> token, int tokenOffset) {
+            lastToken = token;
+            if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+                return processPP;
+            }
+            if (!skipTokenIds.contains(token.id()) && !skipTokenCategories.contains(token.id().primaryCategory())) {
+                stopped = true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean isStopped() {
+            return stopped;
+        }
+
+        public TokenItem<CppTokenId> getTokenItem() {
+            return tokenItem;
+        }
+
+        @Override
+        public void end(int offset, int lastTokenOffset) {
+            super.end(offset, lastTokenOffset);
+            if (lastToken != null) {
+                tokenItem = TokenItemImpl.create(lastToken, lastTokenOffset);
+            }
+        }
+    }
+
+    private static final class TokenItemImpl<T extends CppTokenId> extends TokenItem.AbstractItem<T> {
+
+        public TokenItemImpl(T tokenID, PartType pt, int index, int offset, CharSequence text) {
+            super(tokenID, pt, index, offset, text);
+        }
+
+        private static <T extends CppTokenId> TokenItem<T> create(TokenSequence<T> ts) {
+            Token<T> token = ts.token();
+            return new TokenItemImpl<T>(token.id(), token.partType(), ts.index(), ts.offset(), token.text());
+        }
+
+        private static <T extends CppTokenId> TokenItem<T> create(Token<T> token, int offset) {
+            return new TokenItemImpl<T>(token.id(), token.partType(), -1, offset, token.text());
+        }
+    }
+    private static final Set<String> skipWSCategories = new HashSet<String>(1);
+
+
+    static {
+        skipWSCategories.add(CppTokenId.WHITESPACE_CATEGORY);
+    }
 }

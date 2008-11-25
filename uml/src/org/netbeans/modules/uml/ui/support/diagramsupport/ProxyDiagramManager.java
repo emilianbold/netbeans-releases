@@ -113,37 +113,6 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
         return m_Instance;
     }
     
-   /*
-    * returns valid diagram name
-    */
-//    public String getValidDiagramName(String sSuggestedDiagramName)
-//    {
-//        String newName = sSuggestedDiagramName;
-//        boolean isCorrect = false;
-//        if (newName != null && newName.length() > 0)
-//        {
-//            char[] newArr = newName.toCharArray();
-//            int count = newName.length();
-//            for (int i=0; i<count; i++)
-//            {
-//                char c = newName.charAt(i);
-//                if (!Character.isLetterOrDigit(c))
-//                {
-//                    if (c == '_' || c=='(' || c==')' || c == '{' || c == '}' || c == '[' || c == ']' || c == ' ')
-//                    {
-//                        //these are ok
-//                    }
-//                    else
-//                    {
-//                        newArr[i] = '_';
-//                        isCorrecst = false;
-//                    }
-//                }
-//            }
-//            newName = String.valueOf(newArr);
-//        }
-//        return newName;
-//    }
     
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager#verifyUniqueDiagramName(java.lang.String, java.lang.String)
@@ -155,7 +124,6 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
     }
     
    /* (non-Javadoc)
-    * @see org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager#verifyUniqueDiagramName(com.embarcadero.describe.foundation.IElement, java.lang.String)
     */
     public String verifyUniqueDiagramName(IElement pElementInProject, String sProposedDiagramName)
     {
@@ -278,7 +246,6 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
     }
     
    /* (non-Javadoc)
-    * @see org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager#getDiagramsInDirectory(com.embarcadero.describe.foundation.IElement)
     */
     public ETList<IProxyDiagram> getDiagramsInDirectory(IElement pElementInProject)
     {
@@ -522,7 +489,6 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
      * @param pElementInProject An element in the project where the diagram is to live
      * @return The returned list of proxy diagrams
      *
-     * @see org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager#getDiagramsInNamespace(com.embarcadero.describe.foundation.INamespace)
      */
     public ETList<IProxyDiagram> getDiagramsInNamespace(INamespace pNamespace)
     {
@@ -956,7 +922,6 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
     }
     
    /* (non-Javadoc)
-    * @see org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager#markPresentationTargetsAsDeleted(com.embarcadero.describe.foundation.IVersionableElement[])
     */
     public void markPresentationTargetsAsDeleted(ETList<IVersionableElement> pElements)
     {
@@ -965,7 +930,6 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
     }
     
    /* (non-Javadoc)
-    * @see org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager#broadcastToAllOpenDiagrams(com.embarcadero.describe.diagrams.IBroadcastAction)
     */
     public void broadcastToAllOpenDiagrams(IBroadcastAction pAction)
     {
@@ -1156,7 +1120,6 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
     }
     
    /* (non-Javadoc)
-    * @see org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager#getAssociatedDiagramsForElement(com.embarcadero.describe.foundation.IElement)
     */
     public ETList<IProxyDiagram> getAssociatedDiagramsForElement(IElement element)
     {

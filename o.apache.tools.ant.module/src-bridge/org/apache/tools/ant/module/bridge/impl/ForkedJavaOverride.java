@@ -29,6 +29,7 @@
 package org.apache.tools.ant.module.bridge.impl;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -42,6 +43,7 @@ import org.apache.tools.ant.taskdefs.ExecuteStreamHandler;
 import org.apache.tools.ant.taskdefs.Java;
 import org.apache.tools.ant.taskdefs.LogOutputStream;
 import org.apache.tools.ant.taskdefs.Redirector;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.OutputWriter;
 
@@ -58,9 +60,6 @@ public class ForkedJavaOverride extends Java {
     private static final Pattern STACK_TRACE = Pattern.compile(
     "(?:\t|\\[catch\\] )at ((?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)*)[a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z_$<][a-zA-Z0-9_$>]*\\(([a-zA-Z_$][a-zA-Z0-9_$]*\\.java):([0-9]+)\\)"); // NOI18N
 
-    // should be consistent with org.apache.tools.ant.module.run.StandardLogger.HYPERLINK
-    private static final Pattern HYPERLINK = Pattern.compile("\"?(.+?)\"?(?::|, line )(?:(\\d+):(?:(\\d+):(?:(\\d+):(\\d+):)?)?)? +(.+)"); // NOI18N
-
     public ForkedJavaOverride() {
         redirector = new NbRedirector(this);
         super.setFork(true);
@@ -69,6 +68,16 @@ public class ForkedJavaOverride extends Java {
     @Override
     public void setFork(boolean fork) {
         // #47465: ignore! Does not work to be set to false.
+    }
+
+    // #121512: NbRedirector does not work with custom input
+    public @Override void setInput(File input) {
+        redirector = new Redirector(this);
+        super.setInput(input);
+    }
+    public @Override void setInputString(String inputString) {
+        redirector = new Redirector(this);
+        super.setInputString(inputString);
     }
 
     private class NbRedirector extends Redirector {
@@ -97,26 +106,27 @@ public class ForkedJavaOverride extends Java {
 
         private class NbOutputStreamHandler implements ExecuteStreamHandler {
 
-            private RequestProcessor.Task outTask;
-            private RequestProcessor.Task errTask;
-            //private RequestProcessor.Task inTask;
+            private Thread outTask;
+            private Thread errTask;
 
-            //long init = System.currentTimeMillis();
             NbOutputStreamHandler() {}
 
             public void start() throws IOException {}
 
             public void stop() {
-                /* XXX causes process to hang at end
-                if (inTask != null) {
-                    inTask.waitFinished();
-                }
-                */
                 if (errTask != null) {
-                    errTask.waitFinished();
+                    try {
+                        errTask.join();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
                 if (outTask != null) {
-                    outTask.waitFinished();
+                    try {
+                        outTask.join();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
 
@@ -127,7 +137,9 @@ public class ForkedJavaOverride extends Java {
                     os = AntBridge.delegateOutputStream(false);
                     logLevel = Project.MSG_INFO;
                 }
-                outTask = PROCESSOR.post(new Copier(inputStream, os, logLevel, outEncoding/*, init*/));
+                outTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(inputStream, os, logLevel, outEncoding), 
+                        "Out Thread for " + getProject().getName()); // NOI18N
+                outTask.start();
             }
 
             public void setProcessErrorStream(InputStream inputStream) throws IOException {
@@ -137,7 +149,9 @@ public class ForkedJavaOverride extends Java {
                     os = AntBridge.delegateOutputStream(true);
                     logLevel = Project.MSG_WARN;
                 }
-                errTask = PROCESSOR.post(new Copier(inputStream, os, logLevel, errEncoding/*, init*/));
+                errTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(inputStream, os, logLevel, errEncoding), 
+                        "Err Thread for " + getProject().getName()); // NOI18N
+                errTask.start();
             }
 
             public void setProcessInputStream(OutputStream outputStream) throws IOException {
@@ -145,7 +159,8 @@ public class ForkedJavaOverride extends Java {
                 if (is == null) {
                     is = AntBridge.delegateInputStream();
                 }
-                /*inTask = */PROCESSOR.post(new Copier(is, outputStream, null, null/*, init*/));
+                new Thread(Thread.currentThread().getThreadGroup(), new Copier(is, outputStream, null, null), 
+                        "In Thread for " + getProject().getName()).start(); // NOI18N
             }
 
         }
@@ -156,7 +171,6 @@ public class ForkedJavaOverride extends Java {
 
         private final InputStream in;
         private final OutputStream out;
-        //final long init;
         private final Integer logLevel;
         private final String encoding;
         private final RequestProcessor.Task flusher;
@@ -168,7 +182,6 @@ public class ForkedJavaOverride extends Java {
             this.out = out;
             this.logLevel = logLevel;
             this.encoding = encoding;
-            //this.init = init;
             if (logLevel != null) {
                 flusher = PROCESSOR.create(new Runnable() {
                     public void run() {
@@ -216,7 +229,7 @@ public class ForkedJavaOverride extends Java {
                                         str = str.substring(0, len - 1);
                                     }
                                     // skip stack traces (hyperlinks are created by JavaAntLogger), everything else write directly
-                                    if (!STACK_TRACE.matcher(str).matches() && !HYPERLINK.matcher(str).matches()) {
+                                    if (!STACK_TRACE.matcher(str).matches() && !org.apache.tools.ant.module.run.StandardLogger.HYPERLINK.matcher(str).matches()) {
                                         ow.println(str);
                                     }
                                     log(str, logLevel);

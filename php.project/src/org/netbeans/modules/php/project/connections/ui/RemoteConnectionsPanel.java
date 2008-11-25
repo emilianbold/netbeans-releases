@@ -41,126 +41,291 @@
 
 package org.netbeans.modules.php.project.connections.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractListModel;
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
-import org.netbeans.modules.php.project.connections.RemoteConnections.ConnectionType;
-import org.openide.util.ChangeSupport;
+import org.netbeans.modules.php.project.connections.RemoteClient;
+import org.netbeans.modules.php.project.connections.RemoteConnections;
+import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
  * @author Tomas Mysik
  */
-public class RemoteConnectionsPanel extends JPanel {
-    private static final long serialVersionUID = -2863458752980644116L;
+public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
+    private static final long serialVersionUID = -2869751187565123236L;
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private static final RequestProcessor TEST_CONNECTION_RP = new RequestProcessor("Test Remote Connection", 1); // NOI18N
+
     private final ConfigListModel configListModel = new ConfigListModel();
+    private final RemoteConnections remoteConnections;
+    private final ConfigManager configManager;
 
-    public RemoteConnectionsPanel() {
+    private RemoteConfigurationPanel configurationPanel = new EmptyConfigurationPanel();
+    private DialogDescriptor descriptor = null;
+    private JButton testConnectionButton = null;
+    private RequestProcessor.Task testConnectionTask = null;
+
+    public RemoteConnectionsPanel(RemoteConnections remoteConnections, ConfigManager configManager) {
+        this.remoteConnections = remoteConnections;
+        this.configManager = configManager;
+
         initComponents();
         errorLabel.setText(" "); // NOI18N
-        warningLabel.setText(" "); // NOI18N
 
         // init
         configList.setModel(configListModel);
         configList.setCellRenderer(new ConfigListRenderer());
 
-        setEnabledLoginCredentials();
         setEnabledRemoveButton();
-        for (ConnectionType connectionType : ConnectionType.values()) {
-            typeComboBox.addItem(connectionType);
-        }
-
-        // initial disabled status
-        setEnabledFields(false);
 
         // listeners
         registerListeners();
-    }
-
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
-    }
-
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
-
-    public void addAddButtonActionListener(ActionListener listener) {
-        addButton.addActionListener(listener);
-    }
-
-    public void removeAddButtonActionListener(ActionListener listener) {
-        addButton.removeActionListener(listener);
-    }
-
-    public void addRemoveButtonActionListener(ActionListener listener) {
-        removeButton.addActionListener(listener);
-    }
-
-    public void removeRemoveButtonActionListener(ActionListener listener) {
-        removeButton.removeActionListener(listener);
-    }
-
-    public void addConfigListListener(ListSelectionListener listener) {
-        configList.addListSelectionListener(listener);
-    }
-
-    public void removeConfigListListener(ListSelectionListener listener) {
-        configList.removeListSelectionListener(listener);
-    }
-
-    public void addConfiguration(ConfigManager.Configuration configuration) {
-        addConfiguration(configuration, true);
-    }
-
-    public void addConfiguration(ConfigManager.Configuration configuration, boolean select) {
-        assert configListModel.indexOf(configuration) == -1 : "Configuration already in the list: " + configuration;
-        configListModel.addElement(configuration);
-        if (select) {
-            configList.setSelectedValue(configuration, true);
-        }
-    }
-
-    public void selectConfiguration(int index) {
-        configList.setSelectedIndex(index);
-    }
-
-    public void selectConfiguration(String configName) {
-        configList.setSelectedValue(configListModel.getElement(configName), true);
-    }
-
-    public ConfigManager.Configuration getSelectedConfiguration() {
-        return (Configuration) configList.getSelectedValue();
-    }
-
-    public List<Configuration> getConfigurations() {
-        return configListModel.getElements();
     }
 
     public void setConfigurations(List<Configuration> configurations) {
         configListModel.setElements(configurations);
     }
 
-    public void removeConfiguration(ConfigManager.Configuration configuration) {
+    public boolean open(final RemoteConfiguration remoteConfiguration) {
+        testConnectionButton = new JButton(NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_TestConnection"));
+        testConnectionTask = TEST_CONNECTION_RP.create(new Runnable() {
+            public void run() {
+                testConnection();
+            }
+        }, true);
+        descriptor = new DialogDescriptor(
+                this,
+                NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_ManageRemoteConnections"),
+                true,
+                new Object[] {testConnectionButton, NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION},
+                NotifyDescriptor.OK_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
+        descriptor.setClosingOptions(new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION});
+        testConnectionButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                testConnectionTask.schedule(0);
+            }
+        });
+        testConnectionTask.addTaskListener(new TaskListener() {
+            public void taskFinished(Task task) {
+                enableTestConnection();
+            }
+        });
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        try {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (getConfigurations().isEmpty()) {
+                        // no config available => show add config dialog
+                        addConfig();
+                    } else {
+                        // this would need to implement hashCode() and equals() for RemoteConfiguration.... hmm, probably not needed
+                        //assert getConfigurations().contains(remoteConfiguration) : "Unknow remote configration: " + remoteConfiguration;
+                        if (remoteConfiguration != null) {
+                            // select config
+                            selectConfiguration(remoteConfiguration.getName());
+                        } else {
+                            // select the first one
+                            selectConfiguration(0);
+                        }
+                    }
+                }
+            });
+            dialog.setVisible(true);
+        } finally {
+            dialog.dispose();
+        }
+        return descriptor.getValue() == NotifyDescriptor.OK_OPTION;
+    }
+
+    private void registerListeners() {
+        configList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                setEnabledRemoveButton();
+                selectCurrentConfig();
+            }
+        });
+        addButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                addConfig();
+            }
+        });
+        removeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                removeConfig();
+            }
+        });
+    }
+
+    void testConnection() {
+        testConnectionButton.setEnabled(false);
+
+        Configuration selectedConfiguration = getSelectedConfiguration();
+        assert selectedConfiguration != null;
+        RemoteConfiguration remoteConfiguration = remoteConnections.getRemoteConfiguration(selectedConfiguration);
+        assert remoteConfiguration != null : "Cannot find remote configuration for config manager configuration " + selectedConfiguration.getName();
+
+        String configName = selectedConfiguration.getDisplayName();
+        String progressTitle = NbBundle.getMessage(RemoteConnectionsPanel.class, "MSG_TestingConnection", configName);
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle);
+        RemoteClient client = new RemoteClient(remoteConfiguration);
+        RemoteException exception = null;
+        try {
+            progressHandle.start();
+            client.connect();
+        } catch (RemoteException ex) {
+            exception = ex;
+        } finally {
+            try {
+                client.disconnect();
+            } catch (RemoteException ex) {
+                // ignored
+            }
+            progressHandle.finish();
+        }
+
+        // notify user
+        String msg = null;
+        int msgType = 0;
+        if (exception != null) {
+            if (exception.getRemoteServerAnswer() != null) {
+                msg = NbBundle.getMessage(RemoteConnectionsPanel.class, "MSG_TestConnectionFailedServerAnswer", exception.getMessage(), exception.getRemoteServerAnswer());
+            } else if (exception.getCause() != null) {
+                msg = NbBundle.getMessage(RemoteConnectionsPanel.class, "MSG_TestConnectionFailedCause", exception.getMessage(), exception.getCause().getMessage());
+            } else {
+                msg = exception.getMessage();
+            }
+            msgType = NotifyDescriptor.ERROR_MESSAGE;
+        } else {
+            msg = NbBundle.getMessage(RemoteConnectionsPanel.class, "MSG_TestConnectionSucceeded");
+            msgType = NotifyDescriptor.INFORMATION_MESSAGE;
+        }
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+                    msg,
+                    configName,
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    msgType,
+                    new Object[] {NotifyDescriptor.OK_OPTION},
+                    NotifyDescriptor.OK_OPTION));
+    }
+
+    void enableTestConnection() {
+        assert testConnectionButton != null;
+        assert testConnectionTask != null;
+
+        Configuration cfg = getSelectedConfiguration();
+        testConnectionButton.setEnabled(testConnectionTask.isFinished() && cfg != null && cfg.isValid());
+    }
+
+    private void addConfiguration(ConfigManager.Configuration configuration) {
+        addConfiguration(configuration, true);
+    }
+
+    private void addConfiguration(ConfigManager.Configuration configuration, boolean select) {
+        assert configListModel.indexOf(configuration) == -1 : "Configuration already in the list: " + configuration;
+        configListModel.addElement(configuration);
+        if (select) {
+            configList.setSelectedValue(configuration, true);
+            switchConfigurationPanel();
+            descriptor.setValid(false);
+        }
+    }
+
+    private void selectConfiguration(int index) {
+        configList.setSelectedIndex(index);
+        switchConfigurationPanel();
+    }
+
+    private void selectConfiguration(String configName) {
+        configList.setSelectedValue(configListModel.getElement(configName), true);
+        switchConfigurationPanel();
+    }
+
+    private void readActiveConfig(Configuration cfg) {
+        configurationPanel.read(cfg);
+    }
+
+    private void storeActiveConfig(Configuration cfg) {
+        configurationPanel.store(cfg);
+    }
+
+    private void switchConfigurationPanel() {
+        configurationPanel.removeChangeListener(this);
+
+        String name = null;
+        String type = null;
+        Configuration configuration = (Configuration) configList.getSelectedValue();
+        if (configuration != null) {
+            type = remoteConnections.getConfigurationType(configuration);
+            name = configuration.getDisplayName();
+
+            configurationPanel = remoteConnections.getConfigurationPanel(configuration);
+            assert configurationPanel != null : "Panel must be provided for configuration " + configuration.getName();
+            readActiveConfig(configuration);
+            configManager.markAsCurrentConfiguration(configuration.getName());
+        } else {
+            configurationPanel = new EmptyConfigurationPanel();
+        }
+
+        configurationPanel.addChangeListener(this);
+
+        resetFields();
+
+        if (configuration != null) {
+            assert name != null : "Name must be found for config " + configuration.getDisplayName();
+            assert type != null : "Type must be found for config " + configuration.getDisplayName();
+
+            nameTextField.setText(name);
+            typeTextField.setText(type);
+        }
+        configurationPanelHolder.add(configurationPanel.getComponent(), BorderLayout.NORTH);
+        configurationPanelHolder.validate();
+    }
+
+    private ConfigManager.Configuration getSelectedConfiguration() {
+        return (Configuration) configList.getSelectedValue();
+    }
+
+    private List<Configuration> getConfigurations() {
+        return configListModel.getElements();
+    }
+
+    private void removeConfiguration(ConfigManager.Configuration configuration) {
         assert configListModel.indexOf(configuration) != -1 : "Configuration not in the list: " + configuration;
         // select another config if possible
         int toSelect = -1;
@@ -175,75 +340,39 @@ public class RemoteConnectionsPanel extends JPanel {
         configListModel.removeElement(configuration);
         if (toSelect != -1) {
             configList.setSelectedIndex(toSelect);
+            switchConfigurationPanel();
         }
     }
 
-    public void setEnabledFields(boolean enabled) {
-        typeComboBox.setEnabled(enabled);
-        hostTextField.setEnabled(enabled);
-        portTextField.setEnabled(enabled);
-        userTextField.setEnabled(enabled);
-        passwordTextField.setEnabled(enabled);
-        anonymousCheckBox.setEnabled(enabled);
-        initialDirectoryTextField.setEnabled(enabled);
-        timeoutTextField.setEnabled(enabled);
-        passiveModeCheckBox.setEnabled(enabled);
-    }
+    private void resetFields() {
+        nameTextField.setText(null);
+        typeTextField.setText(null);
 
-    public void resetFields() {
-        connectionTextField.setText(null);
-        hostTextField.setText(null);
-        portTextField.setText(null);
-        userTextField.setText(null);
-        passwordTextField.setText(null);
-        anonymousCheckBox.setSelected(false);
-        initialDirectoryTextField.setText(null);
-        timeoutTextField.setText(null);
-        passiveModeCheckBox.setSelected(false);
-        // reset error and warning as well
-        setWarning(null);
+        configurationPanelHolder.removeAll();
+        configurationPanelHolder.validate();
+        configurationPanelHolder.repaint();
         setError(null);
     }
 
-    public void setError(String msg) {
+    private boolean isValidConfiguration() {
+        return configurationPanel.isValidConfiguration();
+    }
+
+    private String getError() {
+        return configurationPanel.getError();
+    }
+
+    private void setError(String msg) {
         errorLabel.setText(" "); // NOI18N
         errorLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
         errorLabel.setText(msg);
+
+        assert descriptor != null;
+        descriptor.setValid(msg == null);
+        enableTestConnection();
     }
 
-    public void setWarning(String msg) {
-        warningLabel.setText(" "); // NOI18N
-        warningLabel.setForeground(UIManager.getColor("nb.warningForeground")); // NOI18N
-        warningLabel.setText(msg);
-    }
-
-    private void registerListeners() {
-        DocumentListener documentListener = new DefaultDocumentListener();
-        ActionListener actionListener = new DefaultActionListener();
-        typeComboBox.addActionListener(actionListener);
-        hostTextField.getDocument().addDocumentListener(documentListener);
-        portTextField.getDocument().addDocumentListener(documentListener);
-        userTextField.getDocument().addDocumentListener(documentListener);
-        passwordTextField.getDocument().addDocumentListener(documentListener);
-        anonymousCheckBox.addActionListener(actionListener);
-        initialDirectoryTextField.getDocument().addDocumentListener(documentListener);
-        timeoutTextField.getDocument().addDocumentListener(documentListener);
-        passiveModeCheckBox.addActionListener(actionListener);
-
-        // internals
-        anonymousCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setEnabledLoginCredentials();
-            }
-        });
-        configList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                setEnabledRemoveButton();
-            }
-        });
-    }
-
-    void refreshConfigList() {
+    private void refreshConfigList() {
         configList.repaint();
     }
 
@@ -255,19 +384,68 @@ public class RemoteConnectionsPanel extends JPanel {
         removeButton.setEnabled(enabled);
     }
 
-    void setEnabledLoginCredentials() {
-        setEnabledLoginCredentials(!anonymousCheckBox.isSelected());
+    void validateActiveConfig() {
+        boolean valid = isValidConfiguration();
+        String error = getError();
+        Configuration cfg = getSelectedConfiguration();
+        cfg.setErrorMessage(error);
+        setError(error);
+
+        if (!valid) {
+            return;
+        }
+
+        // check whether all the configs are errorless
+        checkAllConfigs();
     }
 
-    void fireChange() {
-        changeSupport.fireChange();
-        // because of correct coloring of list items (invalid configurations)
-        refreshConfigList();
+    private void checkAllConfigs() {
+        for (Configuration cfg : getConfigurations()) {
+            assert cfg != null;
+            if (!cfg.isValid()) {
+                setError(NbBundle.getMessage(RemoteConnectionsPanel.class, "MSG_InvalidConfiguration", cfg.getDisplayName()));
+                assert descriptor != null;
+                descriptor.setValid(false);
+                return;
+            }
+        }
     }
 
-    private void setEnabledLoginCredentials(boolean enabled) {
-        userTextField.setEnabled(enabled);
-        passwordTextField.setEnabled(enabled);
+    void addConfig() {
+        NewRemoteConnectionPanel panel = new NewRemoteConnectionPanel(configManager);
+        if (panel.open()) {
+            String config = panel.getConfigName();
+            String name = panel.getConnectionName();
+            String type = panel.getConnectionType();
+            assert config != null;
+            assert name != null;
+            assert type != null;
+
+            Configuration cfg = configManager.createNew(config, name);
+            RemoteConfiguration remoteConfiguration = remoteConnections.createRemoteConfiguration(type, cfg);
+            assert remoteConfiguration != null : "No remote configuration created for type: " + type;
+            addConfiguration(cfg);
+            configManager.markAsCurrentConfiguration(config);
+        }
+    }
+
+    void removeConfig() {
+        Configuration cfg = getSelectedConfiguration();
+        assert cfg != null;
+        configManager.configurationFor(cfg.getName()).delete();
+        removeConfiguration(cfg); // this will change the current selection in the list => selectCurrentConfig() is called
+    }
+
+    void selectCurrentConfig() {
+        Configuration cfg = getSelectedConfiguration();
+        if (cfg != null) {
+            switchConfigurationPanel();
+            // validate fields only if there's valid config
+            validateActiveConfig();
+        } else {
+            resetFields();
+            checkAllConfigs();
+        }
     }
 
     /** This method is called from within the constructor to
@@ -283,29 +461,13 @@ public class RemoteConnectionsPanel extends JPanel {
         configList = new javax.swing.JList();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
-        detailsPanel = new javax.swing.JPanel();
-        connectionLabel = new javax.swing.JLabel();
-        connectionTextField = new javax.swing.JTextField();
-        typeLabel = new javax.swing.JLabel();
-        typeComboBox = new javax.swing.JComboBox();
-        hostLabel = new javax.swing.JLabel();
-        hostTextField = new javax.swing.JTextField();
-        portLabel = new javax.swing.JLabel();
-        portTextField = new javax.swing.JTextField();
-        userLabel = new javax.swing.JLabel();
-        userTextField = new javax.swing.JTextField();
-        anonymousCheckBox = new javax.swing.JCheckBox();
-        passwordLabel = new javax.swing.JLabel();
-        passwordTextField = new javax.swing.JPasswordField();
-        initialDirectoryLabel = new javax.swing.JLabel();
-        initialDirectoryTextField = new javax.swing.JTextField();
-        timeoutLabel = new javax.swing.JLabel();
-        timeoutTextField = new javax.swing.JTextField();
-        passiveModeCheckBox = new javax.swing.JCheckBox();
-        separator = new javax.swing.JSeparator();
-        warningLabel = new javax.swing.JLabel();
-        passwordLabelInfo = new javax.swing.JLabel();
+        configurationPanelHolder = new javax.swing.JPanel();
         errorLabel = new javax.swing.JLabel();
+        nameLabel = new javax.swing.JLabel();
+        nameTextField = new javax.swing.JTextField();
+        typeLabel = new javax.swing.JLabel();
+        typeTextField = new javax.swing.JTextField();
+        separator = new javax.swing.JSeparator();
 
         setFocusTraversalPolicy(null);
 
@@ -318,176 +480,19 @@ public class RemoteConnectionsPanel extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Remove")); // NOI18N
 
-        connectionLabel.setLabelFor(connectionTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(connectionLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_ConnectionName")); // NOI18N
-
-        connectionTextField.setEnabled(false);
-
-        typeLabel.setLabelFor(typeComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(typeLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Type")); // NOI18N
-
-        hostLabel.setLabelFor(hostTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_HostName")); // NOI18N
-
-        portLabel.setLabelFor(portTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(portLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Port")); // NOI18N
-
-        portTextField.setMinimumSize(new java.awt.Dimension(20, 19));
-
-        userLabel.setLabelFor(userTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_UserName")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(anonymousCheckBox, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_AnonymousLogin")); // NOI18N
-
-        passwordLabel.setLabelFor(passwordTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Password")); // NOI18N
-
-        initialDirectoryLabel.setLabelFor(initialDirectoryTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(initialDirectoryLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_InitialDirectory")); // NOI18N
-
-        timeoutLabel.setLabelFor(timeoutTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(timeoutLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Timeout")); // NOI18N
-
-        timeoutTextField.setMinimumSize(new java.awt.Dimension(20, 19));
-
-        org.openide.awt.Mnemonics.setLocalizedText(passiveModeCheckBox, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_PassiveMode")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, "warning"); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabelInfo, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "TXT_PasswordInfo")); // NOI18N
-        passwordLabelInfo.setEnabled(false);
-
-        org.jdesktop.layout.GroupLayout detailsPanelLayout = new org.jdesktop.layout.GroupLayout(detailsPanel);
-        detailsPanel.setLayout(detailsPanelLayout);
-        detailsPanelLayout.setHorizontalGroup(
-            detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(detailsPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE)
-                    .add(detailsPanelLayout.createSequentialGroup()
-                        .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(connectionLabel)
-                            .add(typeLabel)
-                            .add(hostLabel)
-                            .add(userLabel)
-                            .add(passwordLabel)
-                            .add(initialDirectoryLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(typeComboBox, 0, 309, Short.MAX_VALUE)
-                            .add(connectionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, detailsPanelLayout.createSequentialGroup()
-                                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
-                                    .add(hostTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
-                                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
-                                    .add(initialDirectoryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, detailsPanelLayout.createSequentialGroup()
-                                        .add(portLabel)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(portTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, anonymousCheckBox)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, detailsPanelLayout.createSequentialGroup()
-                                        .add(timeoutLabel)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                        .add(timeoutTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                            .add(detailsPanelLayout.createSequentialGroup()
-                                .add(passwordLabelInfo)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))))
-                    .add(warningLabel)
-                    .add(passiveModeCheckBox))
-                .addContainerGap())
-        );
-        detailsPanelLayout.setVerticalGroup(
-            detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(detailsPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(connectionLabel)
-                    .add(connectionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(typeLabel)
-                    .add(typeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(separator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(hostLabel)
-                    .add(portLabel)
-                    .add(portTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(hostTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(userLabel)
-                    .add(anonymousCheckBox)
-                    .add(userTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(passwordLabel)
-                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(passwordLabelInfo)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(initialDirectoryLabel)
-                    .add(timeoutLabel)
-                    .add(initialDirectoryTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(timeoutTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(passiveModeCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(warningLabel)
-                .addContainerGap())
-        );
-
-        connectionLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.connectionLabel.AccessibleContext.accessibleName")); // NOI18N
-        connectionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.connectionLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        connectionTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.connectionTextField.AccessibleContext.accessibleName")); // NOI18N
-        connectionTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.connectionTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        typeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.typeLabel.AccessibleContext.accessibleName")); // NOI18N
-        typeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.typeLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        typeComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.typeComboBox.AccessibleContext.accessibleName")); // NOI18N
-        typeComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.typeComboBox.AccessibleContext.accessibleDescription")); // NOI18N
-        hostLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.hostLabel.AccessibleContext.accessibleName")); // NOI18N
-        hostLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.hostLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        hostTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.hostTextField.AccessibleContext.accessibleName")); // NOI18N
-        hostTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.hostTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        portLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.portLabel.AccessibleContext.accessibleName")); // NOI18N
-        portLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.portLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        portTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.portTextField.AccessibleContext.accessibleName")); // NOI18N
-        portTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.portTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        userLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.userLabel.AccessibleContext.accessibleName")); // NOI18N
-        userLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.userLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        userTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.userTextField.AccessibleContext.accessibleName")); // NOI18N
-        userTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.userTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        anonymousCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.anonymousCheckBox.AccessibleContext.accessibleName")); // NOI18N
-        anonymousCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.anonymousCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
-        passwordLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.passwordLabel.AccessibleContext.accessibleName")); // NOI18N
-        passwordLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.passwordLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        passwordTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.passwordTextField.AccessibleContext.accessibleName")); // NOI18N
-        passwordTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.passwordTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        initialDirectoryLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.initialDirectoryLabel.AccessibleContext.accessibleName")); // NOI18N
-        initialDirectoryLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.initialDirectoryLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        initialDirectoryTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.initialDirectoryTextField.AccessibleContext.accessibleName")); // NOI18N
-        initialDirectoryTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.initialDirectoryTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        timeoutLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.timeoutLabel.AccessibleContext.accessibleName")); // NOI18N
-        timeoutLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.timeoutLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        timeoutTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.timeoutTextField.AccessibleContext.accessibleName")); // NOI18N
-        timeoutTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.timeoutTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        passiveModeCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.passiveModeCheckBox.AccessibleContext.accessibleName")); // NOI18N
-        passiveModeCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.passiveModeCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
-        separator.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.separator.AccessibleContext.accessibleName")); // NOI18N
-        separator.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.separator.AccessibleContext.accessibleDescription")); // NOI18N
-        warningLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.warningLabel.AccessibleContext.accessibleName")); // NOI18N
-        warningLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.warningLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        passwordLabelInfo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.passwordLabelInfo.AccessibleContext.accessibleName")); // NOI18N
-        passwordLabelInfo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.passwordLabelInfo.AccessibleContext.accessibleDescription")); // NOI18N
+        configurationPanelHolder.setLayout(new java.awt.BorderLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "error"); // NOI18N
+
+        nameLabel.setLabelFor(nameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Name")); // NOI18N
+
+        nameTextField.setEnabled(false);
+
+        typeLabel.setLabelFor(typeTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(typeLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Type")); // NOI18N
+
+        typeTextField.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -500,13 +505,20 @@ public class RemoteConnectionsPanel extends JPanel {
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeButton))
-                    .add(configScrollPane, 0, 0, Short.MAX_VALUE))
+                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(detailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(errorLabel)))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(configurationPanelHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, errorLabel)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(nameLabel)
+                            .add(typeLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(typeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
+                            .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
@@ -516,9 +528,20 @@ public class RemoteConnectionsPanel extends JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(detailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(nameLabel)
+                            .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(typeLabel)
+                            .add(typeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(18, 18, 18)
+                        .add(separator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(configurationPanelHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(addButton)
@@ -533,8 +556,8 @@ public class RemoteConnectionsPanel extends JPanel {
         addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.addButton.AccessibleContext.accessibleDescription")); // NOI18N
         removeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.removeButton.AccessibleContext.accessibleName")); // NOI18N
         removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.removeButton.AccessibleContext.accessibleDescription")); // NOI18N
-        detailsPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.detailsPanel.AccessibleContext.accessibleName")); // NOI18N
-        detailsPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.detailsPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        configurationPanelHolder.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.detailsPanel.AccessibleContext.accessibleName")); // NOI18N
+        configurationPanelHolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.detailsPanel.AccessibleContext.accessibleDescription")); // NOI18N
         errorLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.errorLabel.AccessibleContext.accessibleName")); // NOI18N
         errorLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "RemoteConnectionsPanel.errorLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -545,134 +568,28 @@ public class RemoteConnectionsPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
-    private javax.swing.JCheckBox anonymousCheckBox;
     private javax.swing.JList configList;
     private javax.swing.JScrollPane configScrollPane;
-    private javax.swing.JLabel connectionLabel;
-    private javax.swing.JTextField connectionTextField;
-    private javax.swing.JPanel detailsPanel;
+    private javax.swing.JPanel configurationPanelHolder;
     private javax.swing.JLabel errorLabel;
-    private javax.swing.JLabel hostLabel;
-    private javax.swing.JTextField hostTextField;
-    private javax.swing.JLabel initialDirectoryLabel;
-    private javax.swing.JTextField initialDirectoryTextField;
-    private javax.swing.JCheckBox passiveModeCheckBox;
-    private javax.swing.JLabel passwordLabel;
-    private javax.swing.JLabel passwordLabelInfo;
-    private javax.swing.JPasswordField passwordTextField;
-    private javax.swing.JLabel portLabel;
-    private javax.swing.JTextField portTextField;
+    private javax.swing.JLabel nameLabel;
+    private javax.swing.JTextField nameTextField;
     private javax.swing.JButton removeButton;
     private javax.swing.JSeparator separator;
-    private javax.swing.JLabel timeoutLabel;
-    private javax.swing.JTextField timeoutTextField;
-    private javax.swing.JComboBox typeComboBox;
     private javax.swing.JLabel typeLabel;
-    private javax.swing.JLabel userLabel;
-    private javax.swing.JTextField userTextField;
-    private javax.swing.JLabel warningLabel;
+    private javax.swing.JTextField typeTextField;
     // End of variables declaration//GEN-END:variables
 
-    public String getConnectionName() {
-        return connectionTextField.getText();
-    }
-
-    public void setConnectionName(String connectionName) {
-        connectionTextField.setText(connectionName);
-    }
-
-    public ConnectionType getType() {
-        return (ConnectionType) typeComboBox.getSelectedItem();
-    }
-
-    public void setType(ConnectionType connectionType) {
-        typeComboBox.setSelectedItem(connectionType);
-    }
-
-    public String getHostName() {
-        return hostTextField.getText();
-    }
-
-    public void setHostName(String hostName) {
-        hostTextField.setText(hostName);
-    }
-
-    public String getPort() {
-        return portTextField.getText();
-    }
-
-    public void setPort(String port) {
-        portTextField.setText(port);
-    }
-
-    public String getUserName() {
-        return userTextField.getText();
-    }
-
-    public void setUserName(String userName) {
-        userTextField.setText(userName);
-    }
-
-    public String getPassword() {
-        return new String(passwordTextField.getPassword());
-    }
-
-    public void setPassword(String password) {
-        passwordTextField.setText(password);
-    }
-
-    public boolean isAnonymousLogin() {
-        return anonymousCheckBox.isSelected();
-    }
-
-    public void setAnonymousLogin(boolean anonymousLogin) {
-        anonymousCheckBox.setSelected(anonymousLogin);
-        setEnabledLoginCredentials();
-    }
-
-    public String getInitialDirectory() {
-        return initialDirectoryTextField.getText();
-    }
-
-    public void setInitialDirectory(String initialDirectory) {
-        initialDirectoryTextField.setText(initialDirectory);
-    }
-
-    public String getTimeout() {
-        return timeoutTextField.getText();
-    }
-
-    public void setTimeout(String timeout) {
-        timeoutTextField.setText(timeout);
-    }
-
-    public boolean isPassiveMode() {
-        return passiveModeCheckBox.isSelected();
-    }
-
-    public void setPassiveMode(boolean passiveMode) {
-        passiveModeCheckBox.setSelected(passiveMode);
-    }
-
-    private class DefaultDocumentListener implements DocumentListener {
-        public void insertUpdate(DocumentEvent e) {
-            processUpdate();
+    public void stateChanged(ChangeEvent e) {
+        Configuration cfg = getSelectedConfiguration();
+        if (cfg != null) {
+            // no config selected
+            validateActiveConfig();
+            storeActiveConfig(cfg);
         }
-        public void removeUpdate(DocumentEvent e) {
-            processUpdate();
-        }
-        public void changedUpdate(DocumentEvent e) {
-            processUpdate();
-        }
-        private void processUpdate() {
-            fireChange();
-        }
-    }
 
-    private class DefaultActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            fireChange();
-        }
+        // because of correct coloring of list items (invalid configurations)
+        refreshConfigList();
     }
 
     public static class ConfigListRenderer extends JLabel implements ListCellRenderer, UIResource {
@@ -770,6 +687,34 @@ public class RemoteConnectionsPanel extends JPanel {
                 }
             }
             return null;
+        }
+    }
+
+    private static final class EmptyConfigurationPanel implements RemoteConfigurationPanel {
+        private static final JPanel PANEL = new JPanel();
+
+        public void addChangeListener(ChangeListener listener) {
+        }
+
+        public void removeChangeListener(ChangeListener listener) {
+        }
+
+        public JComponent getComponent() {
+            return PANEL;
+        }
+
+        public boolean isValidConfiguration() {
+            return true;
+        }
+
+        public String getError() {
+            return null;
+        }
+
+        public void read(Configuration configuration) {
+        }
+
+        public void store(Configuration configuration) {
         }
     }
 }

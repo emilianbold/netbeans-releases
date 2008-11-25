@@ -13,8 +13,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,6 +39,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -55,7 +58,7 @@ public class SchemaParser extends DefaultHandler {
     private Map<String, String> prefixMapping = new HashMap<String, String>();
     private Locator locator;
     
-    private String schemaURI;
+    private URL schemaURL;
     
     /* SCHEMA constants */
     private static final String SCHEMA          = "schema";
@@ -152,7 +155,7 @@ public class SchemaParser extends DefaultHandler {
         }        
     }
     
-    public void parseLocation( String uri, String targetNamespace ) throws SchemaException {
+    public void parseLocation( URL url, String targetNamespace ) throws SchemaException {
         this.targetNamespace = targetNamespace;
         
         SAXParserFactory spf = SAXParserFactory.newInstance();
@@ -162,8 +165,8 @@ public class SchemaParser extends DefaultHandler {
             
             SAXParser parser = spf.newSAXParser();
             
-            schemaURI = uri;
-            parser.parse( uri, this );
+            schemaURL = url;
+            parser.parse( url.toURI().toString() , this );
         } catch( SAXException e ) {
             if( e.getException() instanceof SchemaException ) {
                 validationResults.add( new WSDL2Java.ValidationResult( 
@@ -174,14 +177,14 @@ public class SchemaParser extends DefaultHandler {
             e.printStackTrace();
         } catch( FileNotFoundException e ) {
             validationResults.add( new WSDL2Java.ValidationResult(
-                WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Schema " + uri + " cannot be located." ));
+                WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Schema " + url + " cannot be located." ));
 //            throw new SchemaException( "");
         } catch( ConnectException e ) {
             validationResults.add( new WSDL2Java.ValidationResult(
-                WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Connection problem. Cannot download schema from " + uri + " location." ));
+                WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Connection problem. Cannot download schema from " + url + " location." ));
         } catch( IOException e ) {
             validationResults.add( new WSDL2Java.ValidationResult(
-                WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Connection problem. Cannot download schema from " + uri + " location." ));
+                WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Connection problem. Cannot download schema from " + url + " location." ));
         } catch( IllegalArgumentException e ) {
             validationResults.add( new WSDL2Java.ValidationResult(
                 WSDL2Java.ValidationResult.ErrorLevel.FATAL, e.getLocalizedMessage()));
@@ -227,13 +230,15 @@ public class SchemaParser extends DefaultHandler {
                 SchemaParser sp = new SchemaParser( false );
                     
                 try {
-                    URI u = new URI( schemaURI );
+                    URI u = schemaURL.toURI();
                     URI sl = u.resolve( schemaLocation );
-                    sp.parseLocation( sl.toString(), namespace);
+                    sp.parseLocation( sl.toURL(), namespace);
                 } catch( SchemaException ex ) {
-                    ex.printStackTrace();
+                    Exceptions.printStackTrace( ex );
                 } catch( URISyntaxException ex ) {
-                    ex.printStackTrace();
+                    Exceptions.printStackTrace( ex );
+                } catch( MalformedURLException e ){
+                    Exceptions.printStackTrace( e );
                 }
                 schemaHolder.importSchema( sp.getSchemaHolder());
                 validationResults.addAll( sp.getValidationResults());

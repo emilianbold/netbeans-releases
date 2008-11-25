@@ -61,7 +61,8 @@ public class SyncUpdateTest extends NbTestCase {
         try {
             Util.setDocumentContentTo(model,"faces-config-notwellformed.xml");
         } catch (IOException ioe ){
-            assertEquals("java.io.IOException: Invalid token '<' found in document: Please use the text editor to resolve the issues...", ioe.toString());
+            assertEquals("java.io.IOException: Invalid token found in document: Please use the text editor to resolve the issues...", ioe.toString());
+
             //            System.out.println(ioe);
         }
         

@@ -47,8 +47,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -57,7 +55,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
@@ -70,7 +67,9 @@ import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
@@ -88,7 +87,10 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 public class DefaultProjectActionHandler implements ActionListener {
+
+    private final static List<CustomProjectActionHandlerProvider> ahplist = getActionHandlerProvidersList();
     private CustomProjectActionHandlerProvider customActionHandlerProvider = null;
+    private CustomProjectActionHandlerProvider overrideActionHandlerProvider = null;
     private CustomProjectActionHandler customActionHandler = null;
     
     private static DefaultProjectActionHandler instance = null;
@@ -98,33 +100,42 @@ public class DefaultProjectActionHandler implements ActionListener {
             instance = new DefaultProjectActionHandler();
         return instance;
     }
+
+    private static List<CustomProjectActionHandlerProvider> getActionHandlerProvidersList() {
+        Lookup.Template<CustomProjectActionHandlerProvider> template = new Lookup.Template<CustomProjectActionHandlerProvider>(CustomProjectActionHandlerProvider.class);
+        Lookup.Result<CustomProjectActionHandlerProvider> result = Lookup.getDefault().lookup(template);
+        List<CustomProjectActionHandlerProvider> list = new ArrayList<CustomProjectActionHandlerProvider>(result.allInstances());
+        return list;
+    }
     
     /*
      * @deprecated. Register via services using org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandlerProvider
      */ 
-    public void setCustomDebugActionHandlerProvider(CustomProjectActionHandlerProvider customDebugActionHandlerProvider) {
-        customActionHandlerProvider = customDebugActionHandlerProvider;
+    public void setCustomDebugActionHandlerProvider(CustomProjectActionHandlerProvider overrideActionHandlerProvider) {
+        this.overrideActionHandlerProvider = overrideActionHandlerProvider;
+    }
+
+    public CustomProjectActionHandlerProvider getCustomDebugActionHandlerProvider() {
+        return getCustomDebugActionHandlerProvider(null);
     }
     
-    public CustomProjectActionHandlerProvider getCustomDebugActionHandlerProvider() {
-        // First try old-style registration (deprecated)
-        if (customActionHandlerProvider != null) {
-            return customActionHandlerProvider;
+    public CustomProjectActionHandlerProvider getCustomDebugActionHandlerProvider(MakeConfiguration conf) {
+        // First try old-style registration (deprecated but still used by dbxgui)
+        if (overrideActionHandlerProvider != null) {
+            return overrideActionHandlerProvider;
         }
-        // Then try services
-        Lookup.Template template = new Lookup.Template(CustomProjectActionHandlerProvider.class);
-        Lookup.Result result = Lookup.getDefault().lookup(template);
-        Collection collection = result.allInstances();
-        Iterator iterator = collection.iterator();
-        while (iterator.hasNext()) {
-            Object caop = iterator.next();
-            if (caop instanceof CustomProjectActionHandlerProvider) {
-                customActionHandlerProvider = (CustomProjectActionHandlerProvider)caop;
-                if (customActionHandlerProvider.getClass().getName().contains("dbx")) { // NOI18N
-                    // prefer dbx over gdb ....
-                    break;
-                }
+
+        // Then try DebuggerChooserConfiguriation
+        if (conf != null) {
+            DebuggerChooserConfiguration chooser = conf.getDebuggerChooserConfiguration();
+            CustomizerNode node = chooser.getNode();
+            if (node instanceof CustomProjectActionHandlerProvider) {
+                return (CustomProjectActionHandlerProvider) node;
             }
+        }
+
+        for (CustomProjectActionHandlerProvider caop : ahplist) {
+            customActionHandlerProvider = caop;
         }
         return customActionHandlerProvider;
     }
@@ -140,7 +151,7 @@ public class DefaultProjectActionHandler implements ActionListener {
     
     private static InputOutput mainTab = null;
     private static HandleEvents mainTabHandler = null;
-    private static ArrayList tabNames = new ArrayList();
+    private static ArrayList<String> tabNames = new ArrayList<String>();
     
     class HandleEvents implements ExecutionListener {
         private InputOutput ioTab = null;
@@ -312,12 +323,12 @@ public class DefaultProjectActionHandler implements ActionListener {
             if ((pae.getID() == ProjectActionEvent.DEBUG ||
                     pae.getID() == ProjectActionEvent.DEBUG_LOAD_ONLY ||
                     pae.getID() == ProjectActionEvent.DEBUG_STEPINTO) &&
-                    getCustomDebugActionHandlerProvider() != null) {
+                    getCustomDebugActionHandlerProvider((MakeConfiguration) pae.getConfiguration()) != null) {
                 // See 130827
                 progressHandle.finish();
                 progressHandle = createPogressHandleNoCancel();
                 progressHandle.start();
-                CustomProjectActionHandler ah = getCustomDebugActionHandlerProvider().factoryCreate();
+                CustomProjectActionHandler ah = getCustomDebugActionHandlerProvider((MakeConfiguration) pae.getConfiguration()).factoryCreate();
                 ah.addExecutionListener(this);
                 ah.execute(pae, getTab());
             } else if (pae.getID() == ProjectActionEvent.RUN ||

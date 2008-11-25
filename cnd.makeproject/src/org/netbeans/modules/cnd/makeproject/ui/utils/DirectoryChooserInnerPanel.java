@@ -139,7 +139,7 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel {
 
     @Override
     public Object copyAction(Object o) {
-        return new String((String) o);
+        return (String) o;
     }
 
     @Override

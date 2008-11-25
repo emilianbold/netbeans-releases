@@ -118,7 +118,11 @@ public abstract class RestSupport {
     public static final String REST_RI_JAR = "jersey.jar";//NOI18N
     public static final String IGNORE_PLATFORM_RESTLIB = "restlib.ignore.platform";//NOI18N
     public static final String JSR311_API_LOCATION = "modules/ext/rest/jsr311-api.jar";//NOI18N
-    public static final String JTA_USER_TRANSACTION_CLASS = "javax/transaction/UserTransaction.class";  //NOI18N
+    public static final String JTA_USER_TRANSACTION_CLASS = "javax/transaction/UserTransaction.class";  //NOI18
+    public static final String J2EE_SERVER_TYPE = "j2ee.server.type";       //NOI18N
+    public static final String TOMCAT_SERVER_TYPE = "tomcat";       //NOI18N
+    public static final String GFV3_SERVER_TYPE = "gfv3";          //NOI18N
+    public static final String GFV2_SERVER_TYPE = "J2EE";          //NOI18N
     
     private AntProjectHelper helper;
     protected RestServicesModel restServicesModel;
@@ -626,6 +630,28 @@ public abstract class RestSupport {
         } else {
             return REST_SERVLET_ADAPTOR_CLASS;
         }
+    }
+
+     public String getServerType() {
+        return getProjectProperty(J2EE_SERVER_TYPE);
+    }
+
+    public boolean isServerTomcat() {
+        String serverType = getServerType();
+
+        if (serverType != null) {
+            return serverType.toLowerCase().contains(TOMCAT_SERVER_TYPE);
+        }
+
+        return false;
+    }
+
+    public boolean isServerGFV3() {
+        return GFV3_SERVER_TYPE.equals(getServerType());
+    }
+
+    public boolean isServerGFV2() {
+        return GFV2_SERVER_TYPE.equals(getServerType());
     }
 }
 

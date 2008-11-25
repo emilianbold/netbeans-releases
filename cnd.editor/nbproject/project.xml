@@ -104,6 +104,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.languages</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.91</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.lexer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -273,7 +282,6 @@
                 <friend>org.netbeans.modules.cnd.navigation</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <package>org.netbeans.modules.cnd.editor.api</package>
-                <package>org.netbeans.modules.cnd.editor.cplusplus</package>
                 <package>org.netbeans.modules.cnd.editor.spi.cplusplus</package>
             </friend-packages>
         </data>

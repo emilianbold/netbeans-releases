@@ -156,45 +156,11 @@ public abstract class Unit {
             }
         };
         return retval;
-    }
-    public String annotateDisplayName (String toAnnotate) {
-        if (this instanceof Unit.Installed) {
-            Unit.Installed i = ((Unit.Installed)this);
-            if (i.getRelevantElement ().isEnabled ()) {
-                return "<font color=\"green\">"+toAnnotate+"</font>";
-            } else {
-                return "<font color=\"red\">"+toAnnotate+"</font>";
-            }
-        }
-        return toAnnotate;
-    }
-    public String annotate (String toAnnotate) {
-        if (isVisible && filter.length () != 0 && toAnnotate != null) {
-            String toAnnotate2 = toAnnotate.toLowerCase ();
-            int startIdx = 0;
-            int stopIdx = toAnnotate2.indexOf (filter);
-            StringBuffer sb = new StringBuffer ();
-            while (stopIdx > -1) {                
-                sb.append (toAnnotate.substring (startIdx, stopIdx));
-                sb.append ("<font bgcolor=\"yellow\">"+toAnnotate.substring (stopIdx,stopIdx+filter.length ())+"</font>");
-                startIdx = stopIdx + +filter.length ();
-                stopIdx = toAnnotate2.indexOf (filter, startIdx);
-            }
-            sb.append (toAnnotate.substring (startIdx));
-            if (startIdx > 0) {
-                return sb.toString ();
-            }
-        }
-        return toAnnotate;
-    }
-
-    public int findCaretPosition (String toAnnotate) {
-        if (isVisible && filter.length () != 0) {
-            return toAnnotate.toLowerCase ().indexOf (filter);
-        }
-        return -1;
-    }
+    }     
     
+    public String getFilter() {
+        return filter;
+    }
     
     public String getDescription () {
         return getRelevantElement ().getDescription ();

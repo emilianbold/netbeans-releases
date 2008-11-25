@@ -83,6 +83,12 @@ import org.w3c.dom.Text;
 
 public abstract class RubyBaseProject implements Project, RakeProjectListener {
 
+    static {
+        // initialize the logging levels -- see #151976
+        RubyLoggingOption.initLoggers();
+    }
+
+
     /**
      * Ruby package root sources type.
      * @see org.netbeans.api.project.Sources
@@ -289,7 +295,7 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
         if (hasRakeFile() && getPlatform().hasValidRake(false)) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    RakeSupport.refreshTasks(RubyBaseProject.this);
+                    RakeSupport.refreshTasks(RubyBaseProject.this, false);
                 }
             });
         }

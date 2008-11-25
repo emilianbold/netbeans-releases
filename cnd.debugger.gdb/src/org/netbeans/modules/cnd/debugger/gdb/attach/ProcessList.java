@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.debugger.gdb.actions.AttachTableColumn;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -60,9 +60,10 @@ import org.openide.util.Utilities;
 final class ProcessList implements Runnable {
     
     public final static int PTYPE_UNINITIALIZED = -1;
+    public final static int PTYPE_NONE = -2;
     public final static int PTYPE_STD = 0;
-    public final static int PTYPE_CYGWIN = 1;
-    
+    public final static int PTYPE_WINDOWS = 1; // Either Cygwin or MSys
+
     private int ptype = PTYPE_UNINITIALIZED;
     private final List<String> proclist;
     private final ProcessBuilder pb;
@@ -101,10 +102,10 @@ final class ProcessList implements Runnable {
         return ptype == PTYPE_STD;
     }
     
-    protected boolean isCygwin() {
-        return ptype == PTYPE_CYGWIN;
+    protected boolean isWindowsPsFound() {
+        return ptype == PTYPE_WINDOWS;
     }
-    
+
     protected List<AttachTableColumn> getColumnHeaders() {
         List<AttachTableColumn> headers = new ArrayList<AttachTableColumn>();
         
@@ -121,7 +122,7 @@ final class ProcessList implements Runnable {
                     NbBundle.getMessage(ProcessList.class, "HDR_TIME"))); // NOI18N
             headers.add(new AttachTableColumn("args", // NOI18N
                     NbBundle.getMessage(ProcessList.class, "HDR_ARGS"))); // NOI18N
-        } else if (ptype == PTYPE_CYGWIN) {
+        } else if (ptype == PTYPE_WINDOWS) {
             headers.add(new AttachTableColumn("uid",  // NOI18N
                     NbBundle.getMessage(ProcessList.class, "HDR_UID"))); // NOI18N
             headers.add(new AttachTableColumn("winpid", // NOI18N
@@ -134,7 +135,6 @@ final class ProcessList implements Runnable {
                     NbBundle.getMessage(ProcessList.class, "HDR_STIME"))); // NOI18N
             headers.add(new AttachTableColumn("args", // NOI18N
                     NbBundle.getMessage(ProcessList.class, "HDR_ARGS"))); // NOI18N
-            
         }
         return headers;
     }
@@ -144,18 +144,21 @@ final class ProcessList implements Runnable {
     }
     
     private List<String> getProcessCommand() {
-        List alist = new ArrayList<String>();
+        List<String> alist = new ArrayList<String>();
         
         if (Utilities.isWindows()) {
-            File file = new File(CppUtils.getCygwinBase() + "/bin", "ps.exe"); // NOI18N
+            File file = new File(CompilerSetManager.getCygwinBase() + "/bin", "ps.exe"); // NOI18N
             if (file.exists()) {
                 alist.add(file.getAbsolutePath());
-                ptype = PTYPE_CYGWIN;
+                alist.add("-W"); // NOI18N
+                ptype = PTYPE_WINDOWS;
             } else {
-                file = new File(CppUtils.getMSysBase() + "/bin", "ps.exe"); // NOI18N
+                file = new File(CompilerSetManager.getMSysBase() + "/bin", "ps.exe"); // NOI18N
                 if (file.exists()) {
                     alist.add(file.getAbsolutePath());
-                    ptype = PTYPE_CYGWIN;
+                    ptype = PTYPE_WINDOWS;
+                } else {
+                    ptype = PTYPE_NONE;
                 }
             }
         } else {
@@ -169,14 +172,14 @@ final class ProcessList implements Runnable {
                     alist.add("user,pid,ppid,stime,time,args"); // NOI18N
                 }
                 ptype = PTYPE_STD;
+            } else if (new File("/usr/bin/ps").exists()) { // NOI18N
+                alist.add("/usr/bin/ps"); // NOI18N
+                alist.add("-a"); // NOI18N
+                alist.add("-o"); // NOI18N
+                alist.add("user,pid,ppid,stime,time,args"); // NOI18N
+                ptype = PTYPE_STD;
             } else {
-                if (new File("/usr/bin/ps").exists()) { // NOI18N
-                    alist.add("/usr/bin/ps"); // NOI18N
-                    alist.add("-a"); // NOI18N
-                    alist.add("-o"); // NOI18N
-                    alist.add("user,pid,ppid,stime,time,args"); // NOI18N
-                    ptype = PTYPE_STD;
-                }
+                ptype = PTYPE_NONE;
             }
         }
         return alist;

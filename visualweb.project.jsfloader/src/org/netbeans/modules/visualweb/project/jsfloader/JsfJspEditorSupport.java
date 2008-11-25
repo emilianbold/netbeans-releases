@@ -544,7 +544,7 @@ public final class JsfJspEditorSupport extends DataEditorSupport
         
         
         private void initialize() {
-            if(jsfJspDataObject != null) {
+            if(jsfJspDataObject != null && jsfJspDataObject.isValid() /* #152694 */) {
                 setActivatedNodes(new Node[] {jsfJspDataObject.getNodeDelegate()});
             }
             

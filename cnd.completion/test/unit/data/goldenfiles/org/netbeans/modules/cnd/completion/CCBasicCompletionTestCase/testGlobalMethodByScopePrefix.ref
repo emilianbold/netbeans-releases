@@ -1,0 +1,2 @@
+globInt int
+globFoo() void

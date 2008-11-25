@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.Token;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * base class for nodes handling tokens and children
@@ -66,7 +66,7 @@ public abstract class APTTokenAndChildBasedNode extends APTTokenBasedNode
     }
     
     /** Creates a new instance of APTTokenAndChildBasedNode */
-    public APTTokenAndChildBasedNode(Token token) {
+    public APTTokenAndChildBasedNode(APTToken token) {
         super(token);
     }
 

@@ -57,7 +57,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 
 /**
  * Tests for CompiledSourceForBinaryQuery
@@ -80,11 +80,11 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(new Object[] {
+        MockLookup.setInstances(
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.java.project.ProjectSourceForBinaryQuery(),
-            new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
-        });
+            new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
+        );
         Properties p = System.getProperties();
     }
 
@@ -92,7 +92,6 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
         scratch = null;
         projdir = null;
         pm = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
     

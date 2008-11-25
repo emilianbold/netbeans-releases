@@ -423,7 +423,16 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
             return retType;
         }
 
-        public Collection getParameters() {
+        public CsmFunctionParameterList getParameterList() {
+            Collection<CsmParameter> res = new ArrayList<CsmParameter>();
+            Collection<CsmParameter> parameters = ((CsmFunction) declaration).getParameterList().getParameters();
+            for (CsmParameter param : parameters) {
+                res.add(new Parameter(param, this));
+            }
+            return FunctionParameterListImpl.create(((CsmFunction) declaration).getParameterList(), res);
+        }
+
+        public Collection<CsmParameter> getParameters() {
             Collection<CsmParameter> res = new ArrayList<CsmParameter>();
             Collection<CsmParameter> parameters = ((CsmFunction)declaration).getParameters();
             for (CsmParameter param : parameters) {
@@ -606,6 +615,15 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
 
         public CsmType getReturnType() {
             return retType;
+        }
+
+        public CsmFunctionParameterList getParameterList() {
+            Collection<CsmParameter> res = new ArrayList<CsmParameter>();
+            Collection<CsmParameter> parameters = ((CsmFunction) declaration).getParameterList().getParameters();
+            for (CsmParameter param : parameters) {
+                res.add(new Parameter(param, this));
+            }
+            return FunctionParameterListImpl.create(((CsmFunction) declaration).getParameterList(), res);
         }
 
         public Collection<CsmParameter> getParameters() {

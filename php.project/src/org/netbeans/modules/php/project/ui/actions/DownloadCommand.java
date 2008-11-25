@@ -61,7 +61,7 @@ import org.openide.windows.InputOutput;
  * Download files from remote connection.
  * @author Tomas Mysik
  */
-public class DownloadCommand extends FtpCommand implements Displayable {
+public class DownloadCommand extends RemoteCommand implements Displayable {
     public static final String ID = "download"; // NOI18N
     public static final String DISPLAY_NAME = NbBundle.getMessage(DownloadCommand.class, "LBL_DownloadCommand");
 
@@ -89,8 +89,8 @@ public class DownloadCommand extends FtpCommand implements Displayable {
 
         FileObject[] sources = Utils.getSourceObjects(getProject());
 
-        InputOutput ftpLog = getFtpLog(getRemoteConfiguration().getDisplayName());
-        RemoteClient remoteClient = getRemoteClient(ftpLog);
+        InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
+        RemoteClient remoteClient = getRemoteClient(remoteLog);
         String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_DownloadingFiles", getProject().getName());
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         TransferInfo transferInfo = null;
@@ -122,7 +122,7 @@ public class DownloadCommand extends FtpCommand implements Displayable {
                 processRemoteException(ex);
             }
             if (transferInfo != null) {
-                processTransferInfo(transferInfo, ftpLog);
+                processTransferInfo(transferInfo, remoteLog);
             }
             progressHandle.finish();
         }

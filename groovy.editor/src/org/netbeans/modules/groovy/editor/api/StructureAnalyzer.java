@@ -78,6 +78,7 @@ import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.codehaus.groovy.ast.ConstructorNode;
 
 
 /**
@@ -313,12 +314,13 @@ public class StructureAnalyzer implements StructureScanner {
                 ASTNode node = element.getNode();
                 OffsetRange range = AstUtilities.getRangeFull(node, doc);
 
-//                System.out.println("### range: " + element + ", " + range.getStart() + ", " + range.getLength());
-
-                if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR ||
-                    (kind == ElementKind.FIELD && ((FieldNode)node).getInitialExpression() instanceof ClosureExpression) ||
-                    // Only make nested classes/modules foldable, similar to what the java editor is doing
-                    (range.getStart() > Utilities.getRowStart(doc, range.getStart())) && kind != ElementKind.FIELD) {
+                // beware of synthetic elements
+                if ((kind == ElementKind.METHOD && !((MethodNode) node).isSynthetic())
+                        || (kind == ElementKind.CONSTRUCTOR && !((ConstructorNode) node).isSynthetic())
+                        || (kind == ElementKind.FIELD
+                            && ((FieldNode) node).getInitialExpression() instanceof ClosureExpression)
+                        // Only make nested classes/modules foldable, similar to what the java editor is doing
+                        || (range.getStart() > Utilities.getRowStart(doc, range.getStart())) && kind != ElementKind.FIELD) {
 
                     int start = range.getStart();
                     // Start the fold at the END of the line behind last non-whitespace, remove curly brace, if any

@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PropertyElements>
     <PropertyElement name="Default">
-        <aElement name="HideDescribeViews" value="PSK_YES"/>
         <aElement name="ProjectNamespace" value="PSK_NO"/>
-        <aElement name="ArtifactDeleteDeletesFile" value="PSK_ASK"/>
         <aElement name="AutoSaveOperation" value="PSK_ASK"/>
         <aElement name="AutoSaveInterval" value="10"/>
         <aElement name="ShowAliasedNames" value="PSK_NO"/>

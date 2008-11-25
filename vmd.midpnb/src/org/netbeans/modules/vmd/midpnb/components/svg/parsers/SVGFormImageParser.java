@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
 import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -52,10 +53,10 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGCheckBoxCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComboBoxCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGLabelCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGListCD;
@@ -137,20 +138,28 @@ public class SVGFormImageParser extends SVGComponentImageParser {
             };
         }
 
-        public static SVGFormComponent createSVGButton(final String id, final TypeID type, Float position) {
+        public static SVGFormComponent createComponent(final String id, 
+                final TypeID type, final TypeID eventTypeId , Float position) 
+        {
             return new SVGFormComponent(id, type, position) {
 
                 @Override
                 public DesignComponent createComponent(DesignComponent parentComponent) {
                     DesignComponent dc = parentComponent.getDocument().createComponent(type);
-                    DesignComponent svgBES = parentComponent.getDocument().createComponent(SVGButtonEventSourceCD.TYPEID);
-                    svgBES.writeProperty(SVGButtonEventSourceCD.PROP_SVGBUTTON, PropertyValue.createComponentReference(dc));
-                    parentComponent.addComponent(svgBES);
+                    if (eventTypeId != null) {
+                        DesignComponent svgES = parentComponent.getDocument()
+                                .createComponent(eventTypeId);
+                        svgES.writeProperty(
+                                SVGComponentEventSourceCD.PROP_SVGCOMPONENT,
+                                PropertyValue.createComponentReference(dc));
+                        parentComponent.addComponent(svgES);
+                    }
                     dc.writeProperty(SVGComponentCD.PROP_ID, MidpTypes.createStringValue(getId()));
                     return dc;
                 }
             };
         }
+        
         private String id;
         private TypeID type;
         private Float position;
@@ -214,14 +223,7 @@ public class SVGFormImageParser extends SVGComponentImageParser {
                 radioButtonFramePosition = getPosition(atts);
             }
             if (FORM_COMPONENT_ID_BUTTON.matcher(id).find()) {
-                Float position = getPosition(atts);
-                int index = getIndex(position);
-                if (index == -1) {
-
-                    foundElements.add(SVGFormComponent.createSVGButton(id, SVGButtonCD.TYPEID, position));
-                } else {
-                    foundElements.add(index, SVGFormComponent.createSVGButton(id, SVGButtonCD.TYPEID, position));
-                }
+                addSVGFormComponent(id, SVGButtonCD.TYPEID, getPosition(atts));
             } else if (FORM_COMPONENT_ID_CHECKBOX.matcher(id).find()) {
                 addSVGFormComponent(id, SVGCheckBoxCD.TYPEID, getPosition(atts));
             } else if (FORM_COMPONENT_ID_COMBOBOX.matcher(id).find()) {
@@ -243,10 +245,14 @@ public class SVGFormImageParser extends SVGComponentImageParser {
 
         private void addSVGFormComponent(String id, TypeID type, Float position) {
             int index = getIndex(position);
-            if (index == -1) {            
-                foundElements.add(SVGFormComponent.create(id, type, position));
-            } else {             
-                foundElements.add(index, SVGFormComponent.create(id, type, position));
+            if (index == -1) {
+                foundElements.add(SVGFormComponent.createComponent(id, 
+                        type, SVGComponentCD.getEventType(type), 
+                        position));
+            } else {
+                foundElements.add(index, SVGFormComponent.createComponent(
+                        id, type, SVGComponentCD.getEventType(type),
+                        position));
             }
         }
 
