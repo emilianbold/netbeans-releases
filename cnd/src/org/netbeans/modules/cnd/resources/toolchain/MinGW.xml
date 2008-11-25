@@ -66,6 +66,11 @@ made subject to such option by the copyright holder.
         <library_prefix stringvalue=""/>
     </linker>
     <make>
-        <tool name=""/>
+        <tool name="gmake,make" skip="true"/>
+        <alternative_path>
+            <path directory="$MSYS"/>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
     </make>
 </toolchaindefinition>

@@ -2,15 +2,15 @@
 <SCRIPT><FUNCTION>function <FUNCNAME>myfunc</FUNCNAME>() <BLOCK>{
     <TRY>try <BLOCK>{ 
         <EXPR_VOID><CALL><NAME>in_try_block</NAME>()</CALL></EXPR_VOID>;
-    }</BLOCK> <CATCH>catch ( <NAME>e</NAME> if <EQ><NAME>e</NAME> == <STRING>"InvalidNameException"</STRING></EQ>  ) { 
-        <BLOCK><EXPR_VOID><CALL><NAME>in_first_catch</NAME>()</CALL></EXPR_VOID></BLOCK>;</CATCH> 
-    } <CATCH>catch ( <NAME>e</NAME> if <EQ><NAME>e</NAME> == <STRING>"InvalidIdException"</STRING></EQ>    ) { 
-        <BLOCK><EXPR_VOID><CALL><NAME>in_second_catch</NAME>()</CALL></EXPR_VOID></BLOCK>;</CATCH> 
-    } <CATCH>catch ( <NAME>e</NAME> if <EQ><NAME>e</NAME> == <STRING>"InvalidEmailException"</STRING></EQ> ) { 
-        <BLOCK><EXPR_VOID><CALL><NAME>in_third_catch</NAME>()</CALL></EXPR_VOID></BLOCK>;</CATCH> 
-    } <CATCH>catch ( <NAME>e</NAME><EMPTY/> ) {
-        <BLOCK><EXPR_VOID><CALL><NAME>in_default_catch</NAME>()</CALL></EXPR_VOID></BLOCK>;</CATCH> 
-    } <FINALLY>finally <BLOCK>{
+    }</BLOCK> <CATCH>catch ( <NAME>e</NAME> if <EQ><NAME>e</NAME> == <STRING>"InvalidNameException"</STRING></EQ>  ) <BLOCK>{ 
+        <EXPR_VOID><CALL><NAME>in_first_catch</NAME>()</CALL></EXPR_VOID>; 
+    }</BLOCK></CATCH> <CATCH>catch ( <NAME>e</NAME> if <EQ><NAME>e</NAME> == <STRING>"InvalidIdException"</STRING></EQ>    ) <BLOCK>{ 
+        <EXPR_VOID><CALL><NAME>in_second_catch</NAME>()</CALL></EXPR_VOID>; 
+    }</BLOCK></CATCH> <CATCH>catch ( <NAME>e</NAME> if <EQ><NAME>e</NAME> == <STRING>"InvalidEmailException"</STRING></EQ> ) <BLOCK>{ 
+        <EXPR_VOID><CALL><NAME>in_third_catch</NAME>()</CALL></EXPR_VOID>; 
+    }</BLOCK></CATCH> <CATCH>catch ( <NAME>e</NAME><EMPTY/> ) <BLOCK>{
+        <EXPR_VOID><CALL><NAME>in_default_catch</NAME>()</CALL></EXPR_VOID>; 
+    }</BLOCK></CATCH> <FINALLY>finally <BLOCK>{
         <EXPR_VOID><CALL><NAME>in_finally</NAME>()</CALL></EXPR_VOID>;
     }</BLOCK></FINALLY></TRY>
 </BLOCK><RETURN/>}</FUNCTION>
@@ -25,14 +25,14 @@
 
 <TRY>try <BLOCK>{
     <EXPR_RESULT><CALL><NAME>in_try_block_2</NAME>()</CALL></EXPR_RESULT>;
-}</BLOCK> <CATCH>catch(<NAME>e</NAME><EMPTY/>) {
-    <BLOCK><EXPR_RESULT><CALL><NAME>in_catch</NAME>()</CALL></EXPR_RESULT></BLOCK>;</CATCH>
-}</TRY>
+}</BLOCK> <CATCH>catch(<NAME>e</NAME><EMPTY/>) <BLOCK>{
+    <EXPR_RESULT><CALL><NAME>in_catch</NAME>()</CALL></EXPR_RESULT>;
+}</BLOCK></CATCH></TRY>
 
 // Empty blocks
 <TRY>try <BLOCK>{
-}</BLOCK> <CATCH>catch(<NAME>e</NAME><EMPTY/>) <BLOCK>{</BLOCK></CATCH>
-} <FINALLY>finally <BLOCK>{
+}</BLOCK> <CATCH>catch(<NAME>e</NAME><EMPTY/>) <BLOCK>{
+}</BLOCK></CATCH> <FINALLY>finally <BLOCK>{
 }</BLOCK></FINALLY></TRY></SCRIPT>
 
 

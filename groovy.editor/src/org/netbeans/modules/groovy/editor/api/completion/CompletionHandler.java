@@ -110,16 +110,14 @@ import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.GroovyTypeAnalyzer;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
-import org.netbeans.modules.groovy.editor.api.TypeVisitor;
 import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
-import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler.CompletionType;
 import org.netbeans.modules.groovy.editor.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.completion.JavaElementHandler.ClassType;
-import org.netbeans.modules.groovy.editor.completion.MethodSignature;
+import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
@@ -130,9 +128,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class GroovyCompletionHandler implements CodeCompletionHandler {
+public class CompletionHandler implements CodeCompletionHandler {
 
-    private static final Logger LOG = Logger.getLogger(GroovyCompletionHandler.class.getName());
+    private static final Logger LOG = Logger.getLogger(CompletionHandler.class.getName());
 
     private final List<String> dfltImports = new ArrayList<String>();
 
@@ -146,7 +144,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
 
     private Set<GroovyKeyword> keywords;
 
-    public GroovyCompletionHandler() {
+    public CompletionHandler() {
         JavaPlatformManager platformMan = JavaPlatformManager.getDefault();
         JavaPlatform platform = platformMan.getDefaultPlatform();
         List<URL> docfolder = platform.getJavadocFolders();
@@ -2129,7 +2127,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
      */
     private ClassNode getBeforeDotDeclaringClass(CompletionRequest request) {
 
-        assert request.isBehindDot();
+        assert request.isBehindDot() || request.ctx.before1 == null;
 
         if (request.declaringClass != null && request.declaringClass instanceof ClassNode) {
             LOG.log(Level.FINEST, "returning declaringClass from request."); // NOI18N
@@ -2138,6 +2136,14 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
 
         // FIXME move this up
         DotCompletionContext dotCompletionContext = getDotCompletionContext(request);
+
+        // FIXME static/script context...
+        if (!request.isBehindDot() && request.ctx.before1 == null
+                && (request.location == CaretLocation.INSIDE_CLOSURE || request.location == CaretLocation.INSIDE_METHOD)) {
+            request.declaringClass = getSurroundingClassNode(request);
+            request.completionType = CompletionType.THIS;
+            return request.declaringClass;
+        }
 
         if (dotCompletionContext == null || dotCompletionContext.getAstPath() == null
                 || dotCompletionContext.getAstPath().leaf() == null) {
@@ -2298,7 +2304,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             return false;
         }
 
-        if (request == null || request.ctx == null || request.ctx.before1 == null) {
+        if (request == null || request.ctx == null/* || request.ctx.before1 == null*/) {
             return false;
         }
 
@@ -2314,7 +2320,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
 
         // 1.) Test if this is a Constructor-call?
         // FIXME move this to separate method completeConstructors()
-        if (request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
+        if (request.ctx.before1 != null && request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
             LOG.log(Level.FINEST, "This looks like a constructor ...");
             // look for all imported types starting with prefix, which have public constructors
             final List<String> defaultImports = new ArrayList<String>();
@@ -2385,7 +2391,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
 
         // 2.2  static/instance method on class or object
 
-        if (!request.isBehindDot()) {
+        if (!request.isBehindDot() && request.ctx.before1 != null) {
             LOG.log(Level.FINEST, "I'm not invoked behind a dot."); // NOI18N
             return false;
         }
@@ -2744,7 +2750,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
     public String document(CompilationInfo info, ElementHandle element) {
         LOG.log(Level.FINEST, "document(), ElementHandle : {0}", element);
 
-        String ERROR = "<h2>" + NbBundle.getMessage(GroovyCompletionHandler.class, "GroovyCompletion_NoJavaDocFound") + "</h2>";
+        String ERROR = "<h2>" + NbBundle.getMessage(CompletionHandler.class, "GroovyCompletion_NoJavaDocFound") + "</h2>";
         String doctext = null;
 
         if (element instanceof AstMethodElement) {

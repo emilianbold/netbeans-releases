@@ -190,6 +190,8 @@ public class EvaluationException2 extends RuntimeException {
             msgParams = new String [] {  };
         else if (reason.equals("forEachNotApplicable"))
             msgParams = new String [] {  };
+        else if (reason.equals("localVariableAlreadyDefined"))
+            msgParams = new String [] { params[0].toString() };
         else {
             msgParams = new String [] { reason };
             reason = "unknownInternalError";

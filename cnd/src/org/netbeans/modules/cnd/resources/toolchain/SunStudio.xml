@@ -178,6 +178,9 @@ made subject to such option by the copyright holder.
     </fortran>
     <assembler>
         <compiler name="as"/>
+        <alternative_path>
+            <path directory="$PATH"/>
+        </alternative_path>
         <version flags="-V"/>
         <development_mode>
             <fast_build flags=""/>
@@ -223,6 +226,10 @@ made subject to such option by the copyright holder.
     </linker>
     <make>
         <tool name="dmake"/>
+        <alternative_path>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
         <version flags="-v" />
         <dependency_support code=".KEEP_STATE:\n.KEEP_STATE_FILE:.make.state.${CONF}\n" />
     </make>

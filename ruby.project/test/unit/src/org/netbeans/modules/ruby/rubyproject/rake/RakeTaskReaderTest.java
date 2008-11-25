@@ -38,13 +38,9 @@
  */
 package org.netbeans.modules.ruby.rubyproject.rake;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Set;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 public class RakeTaskReaderTest extends RubyProjectTestBase {
 
@@ -149,13 +145,4 @@ public class RakeTaskReaderTest extends RubyProjectTestBase {
         assertNull("no_comment task description", noComment.getDescription());
     }
 
-    private void dumpRakefile(final String rakefileContent, final RubyProject project) throws IOException {
-        FileObject script = FileUtil.createData(project.getProjectDirectory(), "Rakefile");
-        PrintWriter pw = new PrintWriter(script.getOutputStream());
-        try {
-            pw.print(rakefileContent);
-        } finally {
-            pw.close();
-        }
-    }
 }

@@ -130,12 +130,22 @@ made subject to such option by the copyright holder.
         <output_file flags="-Fe"/>
     </linker>
     <make>
-        <tool name="gmake,make"/>
+        <tool name="gmake,make" skip="true"/>
+        <alternative_path>
+            <path directory="$MSYS"/>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
         <version flags="--version" />
         <dependency_support code="include $(wildcard $(addsuffix .d, ${OBJECTFILES}))\n" />
     </make>
     <debugger>
         <tool name="gdb"/>
+        <alternative_path>
+            <path directory="$MSYS"/>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
         <version flags="--version" />
     </debugger>
 </toolchaindefinition>

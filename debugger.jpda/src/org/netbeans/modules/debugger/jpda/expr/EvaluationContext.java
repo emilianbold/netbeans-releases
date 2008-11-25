@@ -183,22 +183,22 @@ public class EvaluationContext {
     }
 
     public void putField(Tree tree, Field field, ObjectReference objectRef) {
-        VariableInfo info = new VariableInfo.FieldI(field, objectRef);
+        VariableInfo info = new VariableInfo.FieldInf(field, objectRef);
         variables.put(tree, info);
     }
 
     public void putLocalVariable(Tree tree, LocalVariable var) {
-        VariableInfo info = new VariableInfo.LocalVarI(var, this);
+        VariableInfo info = new VariableInfo.LocalVarInf(var, this);
         variables.put(tree, info);
     }
 
     public void putArrayAccess(Tree tree, ArrayReference array, int index) {
-        VariableInfo info = new VariableInfo.ArrayElementI(array, index);
+        VariableInfo info = new VariableInfo.ArrayElementInf(array, index);
         variables.put(tree, info);
     }
 
     public void putScriptVariable(Tree tree, ScriptVariable var) {
-        VariableInfo info = new VariableInfo.ScriptLocalVarI(var);
+        VariableInfo info = new VariableInfo.ScriptLocalVarInf(var);
         variables.put(tree, info);
     }
 
@@ -255,16 +255,16 @@ public class EvaluationContext {
 
         public abstract void setValue(Value value);
 
-        private static class FieldI extends VariableInfo {
+        private static class FieldInf extends VariableInfo {
 
             private Field field;
             private ObjectReference fieldObject;
 
-            FieldI(Field field) {
+            FieldInf(Field field) {
                 this.field = field;
             }
 
-            FieldI(Field field, ObjectReference fieldObject) {
+            FieldInf(Field field, ObjectReference fieldObject) {
                 this.field = field;
                 this.fieldObject = fieldObject;
             }
@@ -283,12 +283,12 @@ public class EvaluationContext {
             }
         } // FieldI class
 
-        private static class LocalVarI extends VariableInfo {
+        private static class LocalVarInf extends VariableInfo {
 
             private LocalVariable var;
             private EvaluationContext context;
 
-            LocalVarI(LocalVariable var, EvaluationContext context) {
+            LocalVarInf(LocalVariable var, EvaluationContext context) {
                 this.var = var;
                 this.context = context;
             }
@@ -303,12 +303,12 @@ public class EvaluationContext {
             }
         } // LocalVarI class
 
-        private static class ArrayElementI extends VariableInfo {
+        private static class ArrayElementInf extends VariableInfo {
 
             private ArrayReference array;
             private int index;
 
-            ArrayElementI(ArrayReference array, int index) {
+            ArrayElementInf(ArrayReference array, int index) {
                 this.array = array;
                 this.index = index;
             }
@@ -323,11 +323,11 @@ public class EvaluationContext {
             }
         } // ArrayElementI class
 
-        private static class ScriptLocalVarI extends VariableInfo {
+        private static class ScriptLocalVarInf extends VariableInfo {
 
             private ScriptVariable variable;
 
-            ScriptLocalVarI(ScriptVariable variable) {
+            ScriptLocalVarInf(ScriptVariable variable) {
                 this.variable = variable;
             }
 

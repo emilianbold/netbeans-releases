@@ -82,7 +82,8 @@ public class SVGTextFieldCD extends ComponentDescriptor{
         return Arrays.asList(
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
-                MidpCodePresenterSupport.createAddImportPresenter()
+                MidpCodePresenterSupport.createAddImportPresenter(),
+                new SVGCodeFooter( SVGTextFieldEventSourceCD.TYPEID )
         );
     }
     

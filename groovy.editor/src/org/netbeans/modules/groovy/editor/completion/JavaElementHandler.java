@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
+import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,7 +67,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.modules.groovy.editor.api.completion.GroovyCompletionHandler;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.openide.filesystems.FileObject;
 
@@ -258,7 +259,7 @@ public final class JavaElementHandler {
                         }
 
                         String simpleName = element.getSimpleName().toString();
-                        String parameterString = GroovyCompletionHandler.getParameterListForMethod((ExecutableElement) element);
+                        String parameterString = CompletionHandler.getParameterListForMethod((ExecutableElement) element);
                         // FIXME this should be more accurate
                         TypeMirror returnType = ((ExecutableElement) element).getReturnType();
 

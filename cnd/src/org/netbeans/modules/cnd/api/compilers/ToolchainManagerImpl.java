@@ -702,6 +702,9 @@ import org.xml.sax.helpers.DefaultHandler;
         Element e;
         e = doc.createElement("compiler"); // NOI18N
         e.setAttribute("name", unsplit(compiler.getNames())); // NOI18N
+        if (compiler.skipSearch()) {
+            e.setAttribute("skip", "true"); // NOI18N
+        }
         element.appendChild(e);
         if (compiler.getPathPattern() != null ||
                 compiler.getExistFolder() != null) {
@@ -725,6 +728,7 @@ import org.xml.sax.helpers.DefaultHandler;
             }
             element.appendChild(e);
         }
+        writeAlternativePath(doc, element, compiler);
         if (compiler.getIncludeFlags() != null ||
                 compiler.getIncludeParser() != null ||
                 compiler.getRemoveIncludePathPrefix() != null ||
@@ -1058,6 +1062,9 @@ import org.xml.sax.helpers.DefaultHandler;
         Element c;
         c = doc.createElement("tool"); // NOI18N
         c.setAttribute("name", unsplit(make.getNames())); // NOI18N
+        if (make.skipSearch()) {
+            c.setAttribute("skip", "true"); // NOI18N
+        }
         element.appendChild(c);
 
         if (make.getVersionFlags() != null ||
@@ -1071,7 +1078,7 @@ import org.xml.sax.helpers.DefaultHandler;
             }
             element.appendChild(c);
         }
-
+        writeAlternativePath(doc, element, make);
         if (make.getDependencySupportCode() != null) {
             c = doc.createElement("dependency_support"); // NOI18N
             c.setAttribute("code", make.getDependencySupportCode()); // NOI18N
@@ -1083,6 +1090,9 @@ import org.xml.sax.helpers.DefaultHandler;
         Element c;
         c = doc.createElement("tool"); // NOI18N
         c.setAttribute("name", unsplit(debugger.getNames())); // NOI18N
+        if (debugger.skipSearch()) {
+            c.setAttribute("skip", "true"); // NOI18N
+        }
         element.appendChild(c);
         if (debugger.getVersionFlags() != null ||
                 debugger.getVersionPattern() != null) {
@@ -1094,6 +1104,31 @@ import org.xml.sax.helpers.DefaultHandler;
                 c.setAttribute("pattern", debugger.getVersionPattern()); // NOI18N
             }
             element.appendChild(c);
+        }
+        writeAlternativePath(doc, element, debugger);
+    }
+
+    private void writeAlternativePath(Document doc, Element element, ToolDescriptor tool){
+        AlternativePath[] paths = tool.getAlternativePath();
+        if (paths != null) {
+            Element c = doc.createElement("alternative_path"); // NOI18N
+            element.appendChild(c);
+            for(AlternativePath path : paths){
+                Element p = doc.createElement("path"); // NOI18N
+                c.appendChild(p);
+                switch(path.getKind()){
+                    case PATH:
+                        p.setAttribute("directory", path.getPath()); // NOI18N
+                        break;
+                    case TOOL_FAMILY:
+                        p.setAttribute("toolchain_family", path.getPath()); // NOI18N
+                        break;
+                    case TOOL_NAME:
+                        p.setAttribute("toolchain_name", path.getPath()); // NOI18N
+                        break;
+                }
+
+            }
         }
     }
 
@@ -1231,6 +1266,25 @@ import org.xml.sax.helpers.DefaultHandler;
         String name;
         String versionFlags;
         String versionPattern;
+        boolean skipSearch;
+        List<AlternativePath> alternativePath;
+    }
+
+    static class Alternative implements AlternativePath {
+        String path;
+        AlternativePath.PathKind kind;
+        Alternative(String path, AlternativePath.PathKind kind){
+            this.path = path;
+            this.kind = kind;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public PathKind getKind() {
+            return kind;
+        }
     }
 
     /**
@@ -1589,6 +1643,7 @@ import org.xml.sax.helpers.DefaultHandler;
                         } // NOI18N
                     }
                 }
+                return;
             } else if (path.endsWith(".toolchain")) { // NOI18N
                 v.toolChainName = getValue(attributes, "name"); // NOI18N
                 v.toolChainDisplay = getValue(attributes, "display"); // NOI18N
@@ -1663,21 +1718,31 @@ import org.xml.sax.helpers.DefaultHandler;
                 Make m = v.make;
                 if (path.endsWith(".tool")) { // NOI18N
                     m.name = getValue(attributes, "name"); // NOI18N
+                    m.skipSearch = "true".equals(getValue(attributes, "skip")); // NOI18N
                 } else if (path.endsWith(".version")) { // NOI18N
                     m.versionFlags = getValue(attributes, "flags"); // NOI18N
                     m.versionPattern = getValue(attributes, "pattern"); // NOI18N
+                } else if (path.endsWith(".alternative_path")) { // NOI18N
+                    m.alternativePath = new ArrayList<AlternativePath>();
                 } else if (path.endsWith(".dependency_support")) { // NOI18N
                     m.dependencySupportCode = getValue(attributes, "code").replace("\\n", "\n"); // NOI18N
+                } else if (checkAlternativePath(attributes, m.alternativePath)) {
                 }
+                return;
             }
             if (path.indexOf(".debugger.") > 0) { // NOI18N
                 Debugger d = v.debugger;
                 if (path.endsWith(".tool")) { // NOI18N
                     d.name = getValue(attributes, "name"); // NOI18N
+                    d.skipSearch = "true".equals(getValue(attributes, "skip")); // NOI18N
                 } else if (path.endsWith(".version")) { // NOI18N
                     d.versionFlags = getValue(attributes, "flags"); // NOI18N
                     d.versionPattern = getValue(attributes, "pattern"); // NOI18N
+                } else if (path.endsWith(".alternative_path")) { // NOI18N
+                    d.alternativePath = new ArrayList<AlternativePath>();
+                } else if (checkAlternativePath(attributes, d.alternativePath)) {
                 }
+                return;
             }
             if (path.indexOf(".scanner.") > 0) { // NOI18N
                 if (!isScanerOverrided) {
@@ -1708,6 +1773,7 @@ import org.xml.sax.helpers.DefaultHandler;
                 } else if (path.endsWith(".stack_next")) { // NOI18N
                     s.stackNextPattern = getValue(attributes, "pattern"); // NOI18N
                 }
+                return;
             }
             Compiler c;
             if (path.indexOf(".c.") > 0) { // NOI18N
@@ -1723,6 +1789,7 @@ import org.xml.sax.helpers.DefaultHandler;
             }
             if (path.endsWith(".compiler")) { // NOI18N
                 c.name = getValue(attributes, "name"); // NOI18N
+                c.skipSearch = "true".equals(getValue(attributes, "skip")); // NOI18N
                 return;
             } else if (path.endsWith(".recognizer")) { // NOI18N
                 c.pathPattern = getValue(attributes, "pattern"); // NOI18N
@@ -1731,6 +1798,11 @@ import org.xml.sax.helpers.DefaultHandler;
             } else if (path.endsWith(".version")) { // NOI18N
                 c.versionPattern = getValue(attributes, "pattern"); // NOI18N
                 c.versionFlags = getValue(attributes, "flags"); // NOI18N
+                return;
+            } else if (path.endsWith(".alternative_path")) { // NOI18N
+                c.alternativePath = new ArrayList<AlternativePath>();
+                return;
+            } else if (checkAlternativePath(attributes, c.alternativePath)) {
                 return;
             }
             String flags = getValue(attributes, "flags"); // NOI18N
@@ -1933,8 +2005,29 @@ import org.xml.sax.helpers.DefaultHandler;
                 }
             }
         }
-    }
 
+        private boolean checkAlternativePath(org.xml.sax.Attributes attributes, List<AlternativePath> alternativePath){
+            if (path.endsWith(".alternative_path.path") && alternativePath != null) { // NOI18N
+                String s = getValue(attributes, "directory"); // NOI18N
+                if (s != null) {
+                    alternativePath.add(new Alternative(s, AlternativePath.PathKind.PATH));
+                    return true;
+                }
+                s = getValue(attributes, "toolchain_family"); // NOI18N
+                if (s != null) {
+                    alternativePath.add(new Alternative(s, AlternativePath.PathKind.TOOL_FAMILY));
+                    return true;
+                }
+                s = getValue(attributes, "toolchain_name"); // NOI18N
+                if (s != null) {
+                    alternativePath.add(new Alternative(s, AlternativePath.PathKind.TOOL_NAME));
+                    return true;
+                }
+                return true;
+            }
+            return false;
+        }
+    }
     /**
      * class package-local for testing only
      */
@@ -2111,6 +2204,17 @@ import org.xml.sax.helpers.DefaultHandler;
 
         public String getVersionPattern() {
             return tool.versionPattern;
+        }
+
+        public AlternativePath[] getAlternativePath() {
+            if (tool.alternativePath != null) {
+                return tool.alternativePath.toArray(new AlternativePath[tool.alternativePath.size()] );
+            }
+            return null;
+        }
+
+        public boolean skipSearch() {
+            return tool.skipSearch;
         }
     }
 
