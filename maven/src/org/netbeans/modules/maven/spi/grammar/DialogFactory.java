@@ -36,10 +36,10 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.maven.spi.grammar;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.nodes.AddDependencyPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -67,27 +67,28 @@ public final class DialogFactory {
      *
      */
     public static String[] showDependencyDialog(Project prj) {
-            AddDependencyPanel pnl = new AddDependencyPanel();
-            DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(DialogFactory.class, "TIT_Add_Library"));
-            dd.setClosingOptions(new Object[] {
-                pnl.getOkButton(),
-                DialogDescriptor.CANCEL_OPTION
-            });
-            dd.setOptions(new Object[] {
-                pnl.getOkButton(),
-                DialogDescriptor.CANCEL_OPTION
-            });
-            Object ret = DialogDisplayer.getDefault().notify(dd);
-            if (pnl.getOkButton() == ret) {
-                return new String[] {
-                    pnl.getGroupId(),
-                    pnl.getArtifactId(),
-                    pnl.getVersion(),
-                    pnl.getScope(),
-                    null,
-                    null
-                };
-            }
-            return null;
+        NbMavenProject nbproj = prj.getLookup().lookup(NbMavenProject.class);
+        AddDependencyPanel pnl = new AddDependencyPanel(nbproj.getMavenProject());
+        DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(DialogFactory.class, "TIT_Add_Library"));
+        dd.setClosingOptions(new Object[]{
+                    pnl.getOkButton(),
+                    DialogDescriptor.CANCEL_OPTION
+                });
+        dd.setOptions(new Object[]{
+                    pnl.getOkButton(),
+                    DialogDescriptor.CANCEL_OPTION
+                });
+        Object ret = DialogDisplayer.getDefault().notify(dd);
+        if (pnl.getOkButton() == ret) {
+            return new String[]{
+                        pnl.getGroupId(),
+                        pnl.getArtifactId(),
+                        pnl.getVersion(),
+                        pnl.getScope(),
+                        null,
+                        null
+                    };
+        }
+        return null;
     }
 }
