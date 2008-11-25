@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -55,9 +54,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.csl.api.EmbeddingModel;
 import org.netbeans.modules.csl.api.GsfLanguage;
-import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -71,7 +68,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  * Registry which locates and provides information about languages supported
@@ -82,7 +78,7 @@ import org.openide.util.Lookup;
  *
  * @author Tor Norbye
  */
-public class LanguageRegistry extends org.netbeans.modules.csl.api.LanguageRegistry implements Iterable<Language> {
+public class LanguageRegistry implements Iterable<Language> {
 
     private static LanguageRegistry instance;
 
@@ -107,7 +103,6 @@ public class LanguageRegistry extends org.netbeans.modules.csl.api.LanguageRegis
     private static final String FOLDER = "CslPlugins"; // NOI18N
     private List<Language> languages;
     private Map<String,Language> mimeToLanguage;
-    private Collection<? extends EmbeddingModel> embeddingModels;
 
     /**
      * Creates a new instance of LanguageRegistry
@@ -152,89 +147,69 @@ public class LanguageRegistry extends org.netbeans.modules.csl.api.LanguageRegis
         return mimeToLanguage.get(mimeType);
     }
 
-    @CheckForNull
-    public EmbeddingModel getEmbedding(@NonNull String targetMimeType, @NonNull String sourceMimeType) {
-        Collection<? extends EmbeddingModel> models = getEmbeddingModels();
-        
-        for (EmbeddingModel model : models) {
-            if (model.getTargetMimeType().equals(targetMimeType) &&
-                model.getSourceMimeTypes().contains(sourceMimeType)) {
-                return model;
-            }
-        }
-
-        return null;
-    }
-
-    private Collection<? extends EmbeddingModel> getEmbeddingModels() {
-        if (embeddingModels == null) {
-            embeddingModels = Lookup.getDefault().lookupAll(EmbeddingModel.class);
-        }
-        
-        return embeddingModels;
-    }
-    
     private Map<String,Map<String,Boolean>> relevantMimes = new HashMap<String,Map<String,Boolean>>();
 
-    /** Return true iff the given file object is relevant for the given mimeType.
-     * This is true when the file is of a mime type that we're looking for, or if there
-     * is an embedding model mapping available for the given file's mime type targeting
-     * the requested mime type.
-     */
-    public boolean isRelevantFor(FileObject fo, String targetMimeType) {
-        final String fileMimeType = fo.getMIMEType();
-        if (targetMimeType.equals(fileMimeType)) {
-            return true;
-        }
+// XXX: parsingapi
+//    /** Return true iff the given file object is relevant for the given mimeType.
+//     * This is true when the file is of a mime type that we're looking for, or if there
+//     * is an embedding model mapping available for the given file's mime type targeting
+//     * the requested mime type.
+//     */
+//    public boolean isRelevantFor(FileObject fo, String targetMimeType) {
+//        final String fileMimeType = fo.getMIMEType();
+//        if (targetMimeType.equals(fileMimeType)) {
+//            return true;
+//        }
+//
+//        Map<String,Boolean> mimeMap = relevantMimes.get(targetMimeType);
+//        if (mimeMap == null) {
+//            mimeMap = new  HashMap<String,Boolean>();
+//            relevantMimes.put(targetMimeType, mimeMap);
+//        }
+//
+//        Boolean result = mimeMap.get(fileMimeType);
+//        if (result == null) {
+//            // Check to see if the file is relevant
+//            result = Boolean.FALSE;
+//
+//            Collection<? extends EmbeddingModel> models = getEmbeddingModels();
+//            for (EmbeddingModel model : models) {
+//                if (model.getTargetMimeType().equals(targetMimeType) &&
+//                    model.getSourceMimeTypes().contains(fileMimeType)) {
+//                    result = Boolean.TRUE;
+//                    break;
+//                }
+//            }
+//
+//            mimeMap.put(fileMimeType, result);
+//        }
+//
+//        return result.booleanValue();
+//    }
 
-        Map<String,Boolean> mimeMap = relevantMimes.get(targetMimeType);
-        if (mimeMap == null) {
-            mimeMap = new  HashMap<String,Boolean>();
-            relevantMimes.put(targetMimeType, mimeMap);
-        }
-
-        Boolean result = mimeMap.get(fileMimeType);
-        if (result == null) {
-            // Check to see if the file is relevant
-            result = Boolean.FALSE;
-
-            Collection<? extends EmbeddingModel> models = getEmbeddingModels();
-            for (EmbeddingModel model : models) {
-                if (model.getTargetMimeType().equals(targetMimeType) && 
-                    model.getSourceMimeTypes().contains(fileMimeType)) {
-                    result = Boolean.TRUE;
-                    break;
-                }
-            }
-
-            mimeMap.put(fileMimeType, result);
-        }
-        
-        return result.booleanValue();
-    }
-    
     @NonNull
     public List<Language> getApplicableLanguages(String mimeType) {
-        // TODO - cache the answer since this is called a lot (for example during
-        // task list scanning)
-        Collection<? extends EmbeddingModel> models = getEmbeddingModels();
-        
         List<Language> result = new ArrayList<Language>(5);
 
         final Language origLanguage = getLanguageByMimeType(mimeType);
         if (origLanguage != null) {
             result.add(origLanguage);
         }
-        
-        for (EmbeddingModel model : models) {
-            if (model.getSourceMimeTypes().contains(mimeType)) {
-                Language language = getLanguageByMimeType(model.getTargetMimeType());
-                if (language != null && !result.contains(language)) {
-                    result.add(language);
-                }
-            }
-        }
-        
+
+// XXX: parsingapi
+//        // TODO - cache the answer since this is called a lot (for example during
+//        // task list scanning)
+//        Collection<? extends EmbeddingModel> models = getEmbeddingModels();
+//
+//        for (EmbeddingModel model : models) {
+//            if (model.getSourceMimeTypes().contains(mimeType)) {
+//                Language language = getLanguageByMimeType(model.getTargetMimeType());
+//                if (language != null && !result.contains(language)) {
+//                    result.add(language);
+//                }
+//            }
+//        }
+
         return result;
     }
     
