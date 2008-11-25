@@ -410,7 +410,7 @@ class WebActionProvider implements ActionProvider {
                         
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
-                targetNames = setupDebugTestSingle(p, files);
+                targetNames = setupDeubgRunSingle(p, files);
             } else {
                 if (!isSelectedServer()) {
                     return null;
@@ -776,65 +776,9 @@ class WebActionProvider implements ActionProvider {
 
     private String[] setupRunSingle(Properties p, FileObject[] files)
     {
-//        String[] targetNames = null;
-//
-       FileObject[] rootz = project.getTestSourceRoots().getRoots();
-       FileObject file = files[0];
-       String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
-//        p.setProperty("javac.includes", clazz); // NOI18N
-//        // Convert foo/FooTest.java -> foo.FooTest
-//        if (clazz.endsWith(".java"))
-//        { // NOI18N
-//            clazz = clazz.substring(0, clazz.length() - 5);
-//        }
-//        clazz = clazz.replace('/', '.');
-//        final Collection<ElementHandle<TypeElement>> mainClasses = J2SEProjectUtil.getMainMethods(file);
-//        if (mainClasses.isEmpty())
-//        {
-//            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(J2SEActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-//            DialogDisplayer.getDefault().notify(nd);
-//            return null;
-//        }
-//        else
-//        {
-//            if (!hasMainClassFromTest)
-//            {
-//                if (mainClasses.size() == 1)
-//                {
-//                    //Just one main class
-//                    clazz = mainClasses.iterator().next().getBinaryName();
-//                }
-//                else
-//                {
-//                    //Several main classes, let the user choose
-//                    clazz = showMainClassWarning(file, mainClasses);
-//                    if (clazz == null)
-//                    {
-//                        return null;
-//                    }
-//                }
-//            }
-//            if (command.equals(COMMAND_RUN_SINGLE))
-//            {
-//                p.setProperty("run.class", clazz); // NOI18N
-//                String[] targets = targetsFromConfig.get(command);
-//                targetNames = (targets != null) ? targets : (isTest ? new String[]
-//                        {
-//                            "run-test-with-main"
-//                        } : commands.get(COMMAND_RUN_SINGLE));
-//            }
-//            else
-//            {
-//                p.setProperty("debug.class", clazz); // NOI18N
-//                String[] targets = targetsFromConfig.get(command);
-//                targetNames = (targets != null) ? targets : (isTest ? new String[]
-//                        {
-//                            "debug-test-with-main"
-//                        } : commands.get(COMMAND_DEBUG_SINGLE));
-//            }
-//        }
-//
-//        return targetNames;
+        FileObject[] rootz = project.getTestSourceRoots().getRoots();
+        FileObject file = files[0];
+        String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
         FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
         FileObject root = getRoot(testSrcPath, files[0]);
 
@@ -842,12 +786,30 @@ class WebActionProvider implements ActionProvider {
         {
             clazz = clazz.substring(0, clazz.length() - 5);
         }
-        
+
         p.setProperty("run.class", clazz); // NOI18N
-//        p.setProperty("javac.includes", clazz); // NOI18N
         p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
         p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        return new String[]{"run-test-with-main"}; // NOI18N
+        return new String[] { "run-test-with-main" }; // NOI18N
+    }
+
+    private String[] setupDeubgRunSingle(Properties p, FileObject[] files)
+    {
+        FileObject[] rootz = project.getTestSourceRoots().getRoots();
+        FileObject file = files[0];
+        String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        FileObject root = getRoot(testSrcPath, files[0]);
+
+        if (clazz.endsWith(".java")) // NOI18N
+        {
+            clazz = clazz.substring(0, clazz.length() - 5);
+        }
+
+        p.setProperty("debug.class", clazz); // NOI18N
+        p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        return new String[] { "debug-test-with-main" }; // NOI18N
     }
 
     private String[] setupTestSingle(Properties p, FileObject[] files) {
