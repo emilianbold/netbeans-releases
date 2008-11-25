@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xsi:schemaLocation="http://research.sun.com/wadl/2006/10 https://wadl.dev.java.net/wadl20061109.xsd"
+            xmlns="http://research.sun.com/wadl/2006/10">
+    <grammars/>
+    <resources base="#SERVICE_URL">
+        <resource path="service1">
+            <method id="newMethod" name="GET">
+                <request>
+                    <param name="a" type="xsd:string" style="query" default="10"/>
+                    <param name="b" type="xsd:string" style="query"/>
+                </request>
+                <response>
+                    <representation mediaType="application/xml"/>
+                </response>
+            </method>
+        </resource>
+    </resources>
+</application>
