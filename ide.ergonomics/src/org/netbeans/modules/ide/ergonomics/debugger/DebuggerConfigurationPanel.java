@@ -68,10 +68,10 @@ import org.openide.util.TaskListener;
  */
 public class DebuggerConfigurationPanel extends javax.swing.JPanel {
     private String attachTypeName;
-    private GdbAttachTypeProxy proxy;
+    private AttachTypeProxy proxy;
 
     /** Creates new form DebuggerConfigurationPanel */
-    public DebuggerConfigurationPanel(GdbAttachTypeProxy proxy) {
+    public DebuggerConfigurationPanel(AttachTypeProxy proxy) {
         initComponents();
         this.attachTypeName = proxy.getTypeDisplayName();
         this.proxy = proxy;
@@ -160,7 +160,6 @@ public class DebuggerConfigurationPanel extends javax.swing.JPanel {
                             DebuggerConfigurationPanel.this.invalidate();
                             DebuggerConfigurationPanel.this.revalidate();
                             DebuggerConfigurationPanel.this.repaint();
-                            System.err.println("What?");
                         }
                     });
                 }

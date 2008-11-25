@@ -43,5 +43,5 @@ package org.netbeans.modules.ide.ergonomics.debugger;
  *
  * @author Pavel Flaska
  */
-public class GdbAttachTypeProxy extends AttachTypeProxy {
+public class RubyAttachTypeProxy extends AttachTypeProxy {
 }
