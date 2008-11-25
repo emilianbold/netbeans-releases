@@ -46,18 +46,12 @@
 package org.netbeans.modules.ide.ergonomics.debugger;
 
 import java.awt.BorderLayout;
-import java.lang.reflect.Proxy;
-import java.util.Collections;
 import java.util.Set;
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfoAccessor;
 import org.netbeans.modules.ide.ergonomics.fod.ModulesInstaller;
-import org.netbeans.spi.debugger.ui.AttachType;
-import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.TaskListener;
