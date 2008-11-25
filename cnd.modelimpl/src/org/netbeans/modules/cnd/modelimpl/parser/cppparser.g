@@ -2161,7 +2161,7 @@ ctor_head
 
 ctor_decl_spec
 	:
-	(literal_inline|LITERAL_explicit)*
+    ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_explicit)*
 	;
 
 ctor_declarator[boolean definition]
@@ -2230,7 +2230,7 @@ dtor_head[boolean definition]
 
 dtor_decl_spec
 	:
-	(literal_inline|LITERAL_virtual)*
+	((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual)*
 	;
 
 /* ********
