@@ -38,13 +38,11 @@
  */
 package org.netbeans.modules.maven.model.pom;
 
-import java.util.*;
-
 /**
  *
  * @author mkleint
  */
-public interface DependencyManagement extends POMComponent {
+public interface DependencyManagement extends POMComponent, DependencyContainer {
 
 //  <!--xs:complexType name="DependencyManagement">
 //    <xs:all>
@@ -53,9 +51,5 @@ public interface DependencyManagement extends POMComponent {
 //    </xs:all>
 //  </xs:complexType-->
     
-    public List<Dependency> getDependencies();
-    public void addDependency(Dependency dependency);
-    public void removeDependency(Dependency dependency);
-    Dependency findDependencyById(String groupId, String artifactId, String classifier);
 
 }

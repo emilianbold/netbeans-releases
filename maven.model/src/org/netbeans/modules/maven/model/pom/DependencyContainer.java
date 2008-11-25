@@ -44,63 +44,18 @@ import java.util.*;
  *
  * @author mkleint
  */
-public interface Plugin extends VersionablePOMComponent, DependencyContainer {
+public interface DependencyContainer extends POMComponent {
 
-//  <!--xs:complexType name="Plugin">
+//  <!--xs:complexType name="DependencyManagement">
 //    <xs:all>
-//      <xs:element name="groupId" minOccurs="0" type="xs:string" default="org.apache.maven.plugins">
-//      <xs:element name="artifactId" minOccurs="0" type="xs:string">
-//      <xs:element name="version" minOccurs="0" type="xs:string">
-//      <xs:element name="extensions" minOccurs="0" type="xs:boolean" default="false">
-//      <xs:element name="executions" minOccurs="0">
-//            <xs:element name="execution" minOccurs="0" maxOccurs="unbounded" type="PluginExecution"/>
 //      <xs:element name="dependencies" minOccurs="0">
 //            <xs:element name="dependency" minOccurs="0" maxOccurs="unbounded" type="Dependency"/>
-//      <xs:element name="goals" minOccurs="0">
-//            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
-//      <xs:element name="inherited" minOccurs="0" type="xs:string">
-//      <xs:element name="configuration" minOccurs="0">
-//            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
 //    </xs:all>
 //  </xs:complexType-->
-
-    /**
-     * POM RELATED PROPERTY
-     * @return
-     */
-    List<PluginExecution> getExecutions();
-    void addExecution(PluginExecution execution);
-    void removeExecution(PluginExecution execution);
-    PluginExecution findExecutionById(String id);
-
     
-    /**
-     * POM RELATED PROPERTY
-     * @return
-     */
-    Boolean isExtensions();
-    void setExtensions(Boolean extensions);
-
-    /**
-     * POM RELATED PROPERTY
-     * @return
-     */
-    Boolean isInherited();
-    void setInherited(Boolean inherited);
-
-    /**
-     * POM RELATED PROPERTY
-     * @return
-     */
-    List<String> getGoals();
-    void addGoal(String goal);
-    void removeGoal(String goal);
-
-    /**
-     * POM RELATED PROPERTY
-     * @return
-     */
-    Configuration getConfiguration();
-    void setConfiguration(Configuration config);
+    public List<Dependency> getDependencies();
+    public void addDependency(Dependency dependency);
+    public void removeDependency(Dependency dependency);
+    Dependency findDependencyById(String groupId, String artifactId, String classifier);
 
 }
