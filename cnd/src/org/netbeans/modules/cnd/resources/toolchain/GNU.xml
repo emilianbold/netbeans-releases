@@ -183,6 +183,10 @@ made subject to such option by the copyright holder.
     </linker>
     <make>
         <tool name="gmake,make"/>
+        <alternative_path>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
         <version flags="--version" />
         <dependency_support code="include $(wildcard $(addsuffix .d, ${OBJECTFILES}))\n" />
     </make>

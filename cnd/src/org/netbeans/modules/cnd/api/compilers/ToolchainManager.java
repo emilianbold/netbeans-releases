@@ -130,6 +130,18 @@ public abstract class ToolchainManager {
         String getVersionFlags();
 
         String getVersionPattern();
+
+        AlternativePath[] getAlternativePath();
+    }
+
+    public interface AlternativePath {
+        public enum PathKind {
+            PATH,
+            TOOL_FAMILY,
+            TOOL_NAME
+        }
+        String getPath();
+        PathKind getKind();
     }
 
     public interface CompilerDescriptor extends ToolDescriptor {
