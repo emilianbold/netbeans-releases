@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
 import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -52,9 +53,7 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGCheckBoxCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGCheckBoxEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComboBoxCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentEventSourceCD;

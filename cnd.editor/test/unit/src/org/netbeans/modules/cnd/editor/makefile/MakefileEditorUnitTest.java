@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,60 +31,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.vmd.midpnb.components.svg.form;
+package org.netbeans.modules.cnd.editor.makefile;
 
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
-import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
-import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.netbeans.junit.NbTestSuite;
 
 /**
- *
- * @author avk
+ * @author Alexey Vladykin
  */
-public class SVGListCD extends ComponentDescriptor{
+public class MakefileEditorUnitTest extends NbTestSuite {
 
-    public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGList"); // NOI18N
-
-    public TypeDescriptor getTypeDescriptor () {
-        return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);
-    }
-    
-    static {
-        SVGComponentCD.addPairType( TYPEID, SVGListEventSourceCD.TYPEID );
+    public MakefileEditorUnitTest() {
+        super("Makefile Editor");
+        addTestSuite(MakefileIndentTestCase.class);
     }
 
-    @Override
-    public VersionDescriptor getVersionDescriptor() {
-        return MidpVersionDescriptor.MIDP_2;
-    }
-
-    @Override
-    public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
-        return Arrays.asList (
-                );
-    }
-
-    protected List<? extends Presenter> createPresenters () {
-        return Arrays.asList(
-                //code
-                MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
-                MidpCodePresenterSupport.createAddImportPresenter(),
-                new SVGCodeFooter( SVGListEventSourceCD.TYPEID )
-        );
+    public static NbTestSuite suite() {
+        return new MakefileEditorUnitTest();
     }
 
 }
