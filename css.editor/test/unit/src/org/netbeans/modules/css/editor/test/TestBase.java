@@ -63,8 +63,8 @@ public class TestBase extends GsfTestBase {
 //    static {
 //        MockServices.setServices(new Class[] {RepositoryImpl.class});
 //    }
-//
-//    private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
+
+    private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
 
     public TestBase(String name) {
         super(name);
