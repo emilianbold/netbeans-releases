@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.ide.ergonomics.debugger;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Iterator;
 import javax.swing.JComponent;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -51,12 +53,13 @@ import org.netbeans.spi.debugger.ui.Controller;
  *
  * @author Pavel Flaska
  */
-public abstract class AttachTypeProxy extends AttachType {
+public abstract class AttachTypeProxy extends AttachType implements Controller {
     private AttachType delegate;
     private boolean isVisible;
     private static Iterator<? extends FeatureInfo> it = Feature2LayerMapping.featureTypesLookup().lookupAll(FeatureInfo.class).iterator();
     private String attachTypeName;
-    
+    PropertyChangeSupport propertyChangeSupport;
+
     public AttachTypeProxy() {
         this.delegate = null;
         this.isVisible = true;
@@ -67,6 +70,7 @@ public abstract class AttachTypeProxy extends AttachType {
                 break;
             }
         }
+        propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
     @Override
@@ -97,15 +101,16 @@ public abstract class AttachTypeProxy extends AttachType {
     @Override
     public Controller getController() {
         if (delegate == null) {
-            return super.getController();
+            return this;
         } else {
-            return delegate.getController();
+            return getRealController();
         }
     }
 
     public void invalidate() {
         isVisible = false;
         delegate = getAttachType();
+        propertyChangeSupport.firePropertyChange(Controller.PROP_VALID, false, true);
     }
 
     AttachType getAttachType() {
@@ -117,6 +122,37 @@ public abstract class AttachTypeProxy extends AttachType {
             }
         }
         return null;
+    }
+
+    public boolean isValid() {
+        return delegate == null ? false : getRealController().isValid();
+    }
+
+    public boolean ok() {
+        return delegate != null ? getRealController().ok() : false;
+    }
+
+    public boolean cancel() {
+        return delegate == null ? true : getRealController().cancel();
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        propertyChangeSupport.addPropertyChangeListener(l);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener(l);
+    }
+
+    private Controller getRealController() {
+        Controller controller = null;
+        if (delegate != null) {
+             controller = delegate.getController();
+             if (controller == null && (delegate.getCustomizer() instanceof Controller)) {
+                 controller = (Controller) delegate.getCustomizer();
+             }
+        }
+        return controller;
     }
 
 }
