@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,26 +31,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.api.model;
 
-import java.util.List;
-
 /**
- * Represents C/C++ macros
- * @author vk155633
+ * Represents a parameter list.
+ *
+ *
+ * void foo(int a, int b) {
+ * }
+ *
+ * K&R style:
+ * void knr(a, b)
+ * int a;
+ * int b;
+ * {
+ * }
+ *
+ * CsmFunctionParameterList object is offsetable starting at "(" and ending at ")"
+ * @author Vladimir Voskresensky
  */
-public interface CsmMacro extends CsmNamedElement, CsmOffsetable, CsmIdentifiable<CsmMacro> {
+public interface CsmFunctionParameterList extends CsmParameterList<CsmFunctionParameterList, CsmParameter> {
 
-    List<? extends CharSequence> getParameters();
-    CsmParameterList<CsmParameterList, CsmMacroParameter> getParameterList();
-    
-    CharSequence getBody();
-    
     /**
-     * flag for system macros, such macro can't be undefined or changed
+     * returns collection of K&R named objects inside "(" and ")"
+     * @return null if not K&R style
      */
-    boolean isSystem();
-    
+    CsmParameterList<CsmParameterList, CsmKnRName> getKernighanAndRitchieParameterList();
 }
