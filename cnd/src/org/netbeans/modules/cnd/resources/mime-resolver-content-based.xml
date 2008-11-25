@@ -50,8 +50,12 @@ made subject to such option by the copyright holder.
         <pattern value="//" range="2">
             <pattern value="-*- C++ -*-" range="80"/>
         </pattern>
-        <!-- Pattern #include in first 80 bytes. -->
-        <pattern value="#include" range="80"/>
+        <pattern value="//" range="2">
+            <pattern value="standard header" range="80"/>
+        </pattern>
+        <!-- Pattern #include in first 256 bytes. -->
+        <pattern value="#include" range="128"/>
+        <pattern value="#pragma" range="128"/>
         <resolver mime="text/x-c++"/>
     </file>
 </MIME-resolver>

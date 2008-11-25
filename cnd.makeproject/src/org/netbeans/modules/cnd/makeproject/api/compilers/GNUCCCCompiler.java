@@ -57,8 +57,8 @@ import org.openide.util.NbBundle;
  */
 public abstract class GNUCCCCompiler extends CCCCompiler {
 
-    private PersistentList<String> systemIncludeDirectoriesList = null;
-    private PersistentList<String> systemPreprocessorSymbolsList = null;
+    protected PersistentList<String> systemIncludeDirectoriesList = null;
+    protected PersistentList<String> systemPreprocessorSymbolsList = null;
 
     public GNUCCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);

@@ -74,7 +74,6 @@ import org.netbeans.modules.cnd.editor.indent.HotCharIndent;
 import org.netbeans.modules.editor.NbEditorKit;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 
@@ -148,10 +147,6 @@ public class CCKit extends NbEditorKit {
             new InsertSemicolonAction(true),
             new InsertSemicolonAction(false),};
         ccActions = TextAction.augmentList(super.createActions(), ccActions);
-        Action[] extra = CndEditorActionsProvider.getDefault().getActions(getContentType());
-        if (extra.length > 0) {
-            ccActions = TextAction.augmentList(ccActions, extra);
-        }
 
         return ccActions;
     }

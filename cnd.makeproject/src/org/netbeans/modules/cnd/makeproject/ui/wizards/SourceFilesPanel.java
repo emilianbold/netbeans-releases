@@ -88,8 +88,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         filterComboBox.addItem(CSourceFileFilter.getInstance().getSuffixesAsString());
         filterComboBox.addItem(CCSourceFileFilter.getInstance().getSuffixesAsString());
         filterComboBox.addItem(HeaderSourceFileFilter.getInstance().getSuffixesAsString());
-        if (CppSettings.getDefault().isFortranEnabled())
-            filterComboBox.addItem(FortranSourceFileFilter.getInstance().getSuffixesAsString());
+        filterComboBox.addItem(FortranSourceFileFilter.getInstance().getSuffixesAsString());
         filterComboBox.addItem(ResourceFileFilter.getInstance().getSuffixesAsString());
         filterComboBox.addItem(AllSourceFileFilter.getInstance().getSuffixesAsString());
         filterComboBox.addItem(AllFileFilter.getInstance().getSuffixesAsString());

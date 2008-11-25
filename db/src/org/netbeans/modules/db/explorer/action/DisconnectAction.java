@@ -61,9 +61,9 @@ public class DisconnectAction extends BaseAction {
         }
         
         for (int i = 0; i < activatedNodes.length; i++) {
-            if (activatedNodes[i] instanceof ConnectionNode) {
-                ConnectionNode node = (ConnectionNode)activatedNodes[i];
-                Lookup lookup = node.getLookup();
+            Lookup lookup = activatedNodes[i].getLookup();
+            ConnectionNode node = lookup.lookup(ConnectionNode.class);
+            if (node != null) {
                 DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
                 Connection j = dbconn.getJDBCConnection();
                 try {
@@ -86,13 +86,15 @@ public class DisconnectAction extends BaseAction {
             return;
         
         for (int i = 0; i < activatedNodes.length; i++) {
-            ConnectionNode node = (ConnectionNode)activatedNodes[i];
-            Lookup lookup = node.getLookup();
-            DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
-            try {
-                dbconn.disconnect();
-            } catch (DatabaseException dbe) {
-                
+            Lookup lookup = activatedNodes[i].getLookup();
+            ConnectionNode node = lookup.lookup(ConnectionNode.class);
+            if (node != null) {
+                DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
+                try {
+                    dbconn.disconnect();
+                } catch (DatabaseException dbe) {
+
+                }
             }
         }
     }

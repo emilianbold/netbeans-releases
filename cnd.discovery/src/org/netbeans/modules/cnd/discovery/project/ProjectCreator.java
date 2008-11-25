@@ -477,18 +477,17 @@ public class ProjectCreator {
                }
                start++;
            }
-           String res = "";
-           for(int i = start; i < prj.length; i++){
-                res += "../"; // NOI18N
-           }
-           for(int i = start; i < lbr.length; i++){
-               if (res.length()>0 && res.charAt(res.length()-1)=='/'){
-                   res += lbr[i];
-               } else {
-                   res += "/"+lbr[i]; // NOI18N
-               }
-           }
-           libs.add(res);
+            StringBuilder res = new StringBuilder();
+            for (int i = start; i < prj.length; i++) {
+                res.append("../"); // NOI18N
+            }
+            for (int i = start; i < lbr.length; i++) {
+                if (res.length() == 0 || res.charAt(res.length() - 1) != '/') { // NOI18N
+                    res.append('/'); // NOI18N
+                }
+                res.append(lbr[i]);
+            }
+            libs.add(res.toString());
         }
         for (String sub:libs){
             //System.out.println("Add Required Project "+sub+" in "+displayName); // NOI18N

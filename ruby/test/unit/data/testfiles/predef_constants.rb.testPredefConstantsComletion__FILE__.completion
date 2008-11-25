@@ -1,0 +1,11 @@
+Code completion result for source line:
+__FILE__.cho|
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     chomp!(separator)                          String
+METHOD     chomp(separator)                           String
+METHOD     chop!                                      String
+------------------------------------
+METHOD     chomp!(string)                             Kernel
+METHOD     chomp(string)                              Kernel
+METHOD     chop                                       Kernel
+METHOD     chop!                                      Kernel

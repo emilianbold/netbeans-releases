@@ -67,5 +67,8 @@ made subject to such option by the copyright holder.
     </linker>
     <make>
         <tool name=""/>
+        <alternative_path>
+            <path toolchain_name="*"/>
+        </alternative_path>
     </make>
 </toolchaindefinition>

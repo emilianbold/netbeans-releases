@@ -181,12 +181,17 @@ KEYWORD    BEGIN                                      null
 KEYWORD    DATA                                       null
 KEYWORD    END                                        null
 KEYWORD    ENV                                        null
+KEYWORD    FALSE                                      null
+KEYWORD    NIL                                        null
 KEYWORD    RUBY_PLATFORM                              null
 KEYWORD    RUBY_RELEASE_DATE                          null
 KEYWORD    RUBY_VERSION                               null
+KEYWORD    SCRIPT_LINES__                             null
 KEYWORD    STDERR                                     null
 KEYWORD    STDIN                                      null
 KEYWORD    STDOUT                                     null
+KEYWORD    TOPLEVEL_BINDING                           null
+KEYWORD    TRUE                                       null
 KEYWORD    __FILE__                                   null
 KEYWORD    __LINE__                                   null
 KEYWORD    alias                                      null

@@ -3,5 +3,3 @@ OpenIDE-Module: org.netbeans.modules.maven.jaxws
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/maven/jaxws/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/maven/jaxws/resources/layer.xml
 OpenIDE-Module-Specification-Version: 1.0
-AutoUpdate-Show-In-Client: false
-
