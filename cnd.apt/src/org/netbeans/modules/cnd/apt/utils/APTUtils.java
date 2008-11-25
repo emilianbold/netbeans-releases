@@ -404,14 +404,14 @@ public class APTUtils {
         return false;
     }
     
-    public static List<Token> toList(TokenStream ts) {
-        List<Token> tokens = new ArrayList<Token>();
+    public static List<APTToken> toList(TokenStream ts) {
+        List<APTToken> tokens = new ArrayList<APTToken>();
         try {
-            Token token = ts.nextToken();
+            APTToken token = (APTToken) ts.nextToken();
             while (!isEOF(token)) {
                 assert(token != null) : "list of tokens must not have 'null' elements"; // NOI18N
                 tokens.add(token);
-                token = ts.nextToken();
+                token = (APTToken) ts.nextToken();
             }
         } catch (TokenStreamException ex) {
             LOG.log(Level.INFO, "error on converting token stream to list", ex.getMessage()); // NOI18N
@@ -453,7 +453,7 @@ public class APTUtils {
     public static final APTToken VA_ARGS_TOKEN; // support ELLIPSIS for IZ#83949 in macros
     public static final APTToken EMPTY_ID_TOKEN; // support ELLIPSIS for IZ#83949 in macros
     public static final APTToken COMMA_TOKEN; // support ELLIPSIS for IZ#83949 in macros
-    public static final List<Token> DEF_MACRO_BODY; //support "1" as content of #defined tokens without body IZ#122091
+    public static final List<APTToken> DEF_MACRO_BODY; //support "1" as content of #defined tokens without body IZ#122091
     static {
         VA_ARGS_TOKEN = createAPTToken();
         VA_ARGS_TOKEN.setType(APTTokenTypes.ID);
@@ -470,7 +470,7 @@ public class APTUtils {
         APTToken token = createAPTToken();
         token.setType(APTTokenTypes.NUMBER);
         token.setText("1"); // NOI18N
-        DEF_MACRO_BODY = new ArrayList<Token>();
+        DEF_MACRO_BODY = new ArrayList<APTToken>(1);
         DEF_MACRO_BODY.add(token);
     }
     

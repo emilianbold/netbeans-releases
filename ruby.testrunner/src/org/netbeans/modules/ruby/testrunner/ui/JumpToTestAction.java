@@ -44,7 +44,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyDeclarationFinder;
-import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
 
 /**
  * Jump to action for test methods.

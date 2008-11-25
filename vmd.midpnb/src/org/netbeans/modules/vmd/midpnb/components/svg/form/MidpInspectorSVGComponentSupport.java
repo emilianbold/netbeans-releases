@@ -93,7 +93,7 @@ public final class MidpInspectorSVGComponentSupport {
                         "DISP_FlowCategory_SVGComponents"), // NOI18N
                 TYPEID_CATEGORY_SVG_COMPONENTS, ICON_CATEGORY, Collections
                         .<InspectorOrderingController> emptyList(), null,
-                SVGButtonCD.TYPEID);
+                SVGButtonCD.TYPEID, SVGCheckBoxCD.TYPEID);
     }
 
 }

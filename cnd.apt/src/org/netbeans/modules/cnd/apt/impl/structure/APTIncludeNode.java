@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.Token;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * #include directive implementation
@@ -64,7 +64,7 @@ public final class APTIncludeNode extends APTIncludeBaseNode
     }
     
     /** Creates a new instance of APTIncludeNode */
-    public APTIncludeNode(Token token) {
+    public APTIncludeNode(APTToken token) {
         super(token);
     }    
     

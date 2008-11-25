@@ -83,7 +83,7 @@ public abstract class MIMEResolver {
     }
 
     /** Creates a new MIMEResolver. 
-     * @deprecated Use {@link MIMEResolver(String...)} instead. Declaring MIME
+     * @deprecated Use {@link #MIMEResolver(String...)} instead. Declaring MIME
      * types which can only be resolved by this resolver helps to speed up IDE.
      */
     @Deprecated

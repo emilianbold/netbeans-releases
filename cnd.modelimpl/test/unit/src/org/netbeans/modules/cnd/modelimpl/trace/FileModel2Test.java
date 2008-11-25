@@ -155,4 +155,14 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("iz151621.c");
     }
 
+    public void testInitializerInExpression() throws Exception {
+        // IZ#152872: parser error in VLC on cast expression
+        performTest("iz152872_initializer_in_expression.c");
+    }
+
+    public void testNamespaceAlias() throws Exception {
+        // IZ#151957: 9 parser's errors in boost 1.36
+        performTest("iz151957_namespace_alias.cc");
+    }
+
 }

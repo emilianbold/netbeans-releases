@@ -49,7 +49,7 @@ import org.netbeans.modules.groovy.editor.api.GroovyInstantRenamer;
 import org.netbeans.modules.groovy.editor.api.GroovyTypeSearcher;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
-import org.netbeans.modules.groovy.editor.api.completion.GroovyCompletionHandler;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
@@ -126,7 +126,7 @@ public class GroovyLanguage extends DefaultLanguageConfig {
 
     @Override
     public CodeCompletionHandler getCompletionHandler() {
-        return new GroovyCompletionHandler();
+        return new CompletionHandler();
     }
 
     @Override

@@ -57,6 +57,7 @@ KEYWORD    in                                         null
 KEYWORD    instanceof                                 null
 KEYWORD    int                                        null
 KEYWORD    interface                                  null
+KEYWORD    let                                        null
 KEYWORD    long                                       null
 KEYWORD    native                                     null
 KEYWORD    new                                        null
@@ -84,5 +85,6 @@ KEYWORD    void                                       null
 KEYWORD    volatile                                   null
 KEYWORD    while                                      null
 KEYWORD    with                                       null
+KEYWORD    yield                                      null
 PROPERTY   constructor                                Object
 PROPERTY   prototype                                  Object

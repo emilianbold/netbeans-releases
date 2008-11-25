@@ -90,6 +90,7 @@ public final class TestRunnerLineConvertor implements LineConvertor {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "No handler for line: " + line);
         }
+        session.addOutput(line);
         manager.displayOutput(session, line, false);
         return null;
     }

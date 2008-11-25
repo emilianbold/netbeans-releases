@@ -50,7 +50,9 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmMacroParameter;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -217,5 +219,9 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
 
     protected CsmUID createUID() {
         return UIDUtilities.createMacroUID(this);
-    }    
+    }
+
+    public CsmParameterList<CsmParameterList, CsmMacroParameter> getParameterList() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

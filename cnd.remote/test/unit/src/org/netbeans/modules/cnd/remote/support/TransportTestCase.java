@@ -38,7 +38,14 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
 
 /**
  * There hardly is a way to unit test remote operations.
@@ -84,32 +91,41 @@ public class TransportTestCase extends RemoteTestBase {
         }
     }
 
-//    public void testGetEnv() throws Exception {
-//        Map<String, String> env = RemoteHostInfoProvider.getDefault().getEnv(getKey());
-//        assert env != null && env.size() > 0;
-//    }
-//
-//    public void testCopyTo() throws Exception {
-//        File localFile = File.createTempFile("cnd", ".cnd"); //NOI18N
-//        FileWriter fstream = new FileWriter(localFile);
-//        BufferedWriter out = new BufferedWriter(fstream);
-//        out.write("File from "); //NOI18N
-//        try {
-//            InetAddress addr = InetAddress.getLocalHost();
-//            out.write( addr.getHostName() );
-//        } catch (UnknownHostException e) {
-//        }
-//        out.write("\n"); //NOI18N
-//        out.write(System.currentTimeMillis()+ "\n"); //NOI18N
-//        out.close();
-//        RemoteCopySupport rcs = new RemoteCopySupport(getHKey());
-//        String remoteFile = "/tmp/" + localFile.getName(); //NOI18N
-//        assert rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N
-//        HostInfoProvider hip = HostInfoProvider.getDefault();
-//        assert hip.fileExists(getHKey(), remoteFile);
-//        assert rcs.run("rm " + remoteFile);
-//    }
-//    
+    public void testGetEnv() throws Exception {
+        if (canTestRemote()) {
+            Map<String, String> env = RemoteHostInfoProvider.getDefault().getEnv(getHKey());
+            System.err.println("Environment: " + env);
+            assert env != null && env.size() > 0;
+            assert env.containsKey("PATH") || env.containsKey("Path") || env.containsKey("path");
+        }
+    }
+
+    public void testCopyTo() throws Exception {
+        if (canTestRemote()) {
+            File localFile = File.createTempFile("cnd", ".cnd"); //NOI18N
+            FileWriter fstream = new FileWriter(localFile);
+            StringBuffer sb = new StringBuffer("File from "); //NOI18N
+            try {
+                InetAddress addr = InetAddress.getLocalHost();
+                sb.append( addr.getHostName() );
+            } catch (UnknownHostException e) {
+            }
+            sb.append("\ntime: " + System.currentTimeMillis()+ "\n"); //NOI18N
+            BufferedWriter out = new BufferedWriter(fstream);
+            out.write(sb.toString());
+            out.close();
+            RemoteCopySupport rcs = new RemoteCopySupport(getHKey());
+            String remoteFile = "/tmp/" + localFile.getName(); //NOI18N
+            rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N
+            HostInfoProvider hip = HostInfoProvider.getDefault();
+            assert hip.fileExists(getHKey(), remoteFile);
+            RemoteCommandSupport rcs2 = new RemoteCommandSupport(getHKey(), "cat " + remoteFile);
+            assert rcs2.run() == 0;
+            assert rcs2.getOutput().equals(sb.toString());
+            //assert RemoteCommandSupport.run(getHKey(), "rm " + remoteFile) == 0;
+        }
+    }
+    
 //    public void qtestCopyFile() throws Exception {
 //        File localFile = File.createTempFile("cnd", ".cnd");
 //        File localFile2 = new File(localFile.getAbsolutePath().replace(".cnd", ".2.cnd"));

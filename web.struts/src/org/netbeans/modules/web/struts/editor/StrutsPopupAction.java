@@ -276,7 +276,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                     for (int i=0;i<beans.length;i++) {
                         if (dialogPanel.getFormName().equals(beans[i].getAttributeValue("name"))) { //NOI18N
                             beans[i].addFormProperty(prop);
-                            beans[i].setAttributeValue("dynamic","true");           //NOI18N
+                            beans[i].setAttributeValue("enhanced","true");           //NOI18N
                             target.setCaretPosition(StrutsEditorUtilities.writePropertyIntoBean((BaseDocument) doc, prop, beans[i].getAttributeValue("name"))); //NOI18N
                             break;
                         }

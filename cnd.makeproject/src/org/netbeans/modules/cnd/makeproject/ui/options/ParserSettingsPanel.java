@@ -47,6 +47,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -64,7 +65,7 @@ import org.openide.util.NbBundle;
 
 public class ParserSettingsPanel extends JPanel implements ChangeListener, ActionListener, IsChangedListener {
 
-    private HashMap predefinedPanels = new HashMap();
+    private Map<String, PredefinedPanel> predefinedPanels = new HashMap<String, PredefinedPanel>();
     private boolean updating = false;
     private boolean modified = false;
     private ToolsPanel tp;
@@ -188,8 +189,8 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             toolSet.add(cppCompiler);
         }
         for (Tool tool : toolSet) {
-            String key = csp.displayName + tool.getPath(); // display name has collection name and hkey
-            PredefinedPanel predefinedPanel = (PredefinedPanel) predefinedPanels.get(key);
+            String key = ""+tool.getKind()+csp.displayName + tool.getPath(); // display name has collection name and hkey
+            PredefinedPanel predefinedPanel = predefinedPanels.get(key);
             if (predefinedPanel == null) {
                 predefinedPanel = new PredefinedPanel((CCCCompiler) tool, this);
                 predefinedPanels.put(key, predefinedPanel);
@@ -399,7 +400,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     }
 
     private PredefinedPanel[] getPredefinedPanels() {
-        return (PredefinedPanel[]) predefinedPanels.values().toArray(new PredefinedPanel[predefinedPanels.size()]);
+        return predefinedPanels.values().toArray(new PredefinedPanel[predefinedPanels.size()]);
     }
     
 //    private synchronized void init() {

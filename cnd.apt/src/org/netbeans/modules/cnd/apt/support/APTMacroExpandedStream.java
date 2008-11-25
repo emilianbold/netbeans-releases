@@ -42,10 +42,8 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import antlr.RecognitionException;
-import antlr.Token;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
-import org.netbeans.modules.cnd.apt.support.APTExpandedStream;
 import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
 
 /**
@@ -58,31 +56,32 @@ public class APTMacroExpandedStream extends APTExpandedStream {
         super(stream, callback);
     }
 
-    protected TokenStream createMacroBodyWrapper(Token token, APTMacro macro) throws TokenStreamException, RecognitionException {
-        TokenStream origExpansion = super.createMacroBodyWrapper(token, macro);
-        Token last = getLastExtractedParamRPAREN();
+    @Override
+    protected APTTokenStream createMacroBodyWrapper(APTToken token, APTMacro macro) throws TokenStreamException, RecognitionException {
+        APTTokenStream origExpansion = super.createMacroBodyWrapper(token, macro);
+        APTToken last = getLastExtractedParamRPAREN();
         if (last == null) {
             last = token;
         }
-        TokenStream expandedMacros = new MacroExpandWrapper(token, origExpansion, last);
+        APTTokenStream expandedMacros = new MacroExpandWrapper(token, origExpansion, last);
         return expandedMacros;
     }   
     
-    private static final class MacroExpandWrapper implements TokenStream {
-        private final Token expandedFrom;
-        private final TokenStream expandedMacros;
-        private final Token endOffsetToken;
+    private static final class MacroExpandWrapper implements TokenStream, APTTokenStream {
+        private final APTToken expandedFrom;
+        private final APTTokenStream expandedMacros;
+        private final APTToken endOffsetToken;
         
-        public MacroExpandWrapper(Token expandedFrom, TokenStream expandedMacros, Token endOffsetToken) {
+        public MacroExpandWrapper(APTToken expandedFrom, APTTokenStream expandedMacros, APTToken endOffsetToken) {
             this.expandedFrom = expandedFrom;
             this.expandedMacros = expandedMacros;
             assert endOffsetToken != null : "end offset token must be valid";
             this.endOffsetToken = endOffsetToken;
         }
         
-        public Token nextToken() throws TokenStreamException {
-            Token expandedTo = expandedMacros.nextToken();
-            Token outToken = new MacroExpandedToken(expandedFrom, expandedTo, endOffsetToken);
+        public APTToken nextToken() {
+            APTToken expandedTo = expandedMacros.nextToken();
+            APTToken outToken = new MacroExpandedToken(expandedFrom, expandedTo, endOffsetToken);
             return outToken;
         }        
     }

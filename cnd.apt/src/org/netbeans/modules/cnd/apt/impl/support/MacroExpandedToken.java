@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import antlr.Token;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.support.APTBaseToken;
@@ -66,22 +65,22 @@ public class MacroExpandedToken implements APTToken, Serializable {
         endOffsetToken = null;
     }
 
-    public MacroExpandedToken(Token from, Token to, Token endOffsetToken) {
+    public MacroExpandedToken(APTToken from, APTToken to, APTToken endOffsetToken) {
         if (!(from instanceof APTToken)) {
             assert (false);
             throw new IllegalStateException("why 'from' is not APTToken?"); // NOI18N
         }
-        this.from = (APTToken)from;
+        this.from = from;
         if (!(to instanceof APTToken)) {
             assert (false);
             throw new IllegalStateException("why 'to' is not APTToken?"); // NOI18N
         }
-        this.to = (APTToken)to;
+        this.to = to;
         if (!(endOffsetToken instanceof APTToken)) {
             assert (false);
             throw new IllegalStateException("why 'endOffsetToken' is not APTToken?"); // NOI18N
         }
-        this.endOffsetToken = (APTToken)endOffsetToken;
+        this.endOffsetToken = endOffsetToken;
     }
 
     ////////////////////////////////////////////////////////
@@ -170,7 +169,7 @@ public class MacroExpandedToken implements APTToken, Serializable {
         throw new UnsupportedOperationException("setEndLine must not be used"); // NOI18N
     }
 
-    public Token getTo() {
+    public APTToken getTo() {
         return to;
     }
 

@@ -85,7 +85,6 @@ import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -212,6 +211,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btCBrowse.setEnabled(false);
         btCppBrowse.setEnabled(false);
         btFortranBrowse.setEnabled(false);
+        btAsBrowse.setEnabled(false);
         btMakeBrowse.setEnabled(false);
         btDebuggerBrowse.setEnabled(false);
         btVersions.setEnabled(false);
@@ -797,6 +797,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btCBrowse.setEnabled(enableBrowse);
         btCppBrowse.setEnabled(enableBrowse);
         btFortranBrowse.setEnabled(enableBrowse);
+        btAsBrowse.setEnabled(enableBrowse);
         btMakeBrowse.setEnabled(enableBrowse);
         btDebuggerBrowse.setEnabled(enableBrowse);
         btVersions.setEnabled(enableVersions);
@@ -1466,7 +1467,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 13;
-        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 6);
         add(btVersions, gridBagConstraints);

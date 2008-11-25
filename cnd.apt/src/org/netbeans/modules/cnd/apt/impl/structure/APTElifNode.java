@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.Token;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTElif;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * #elif directive implementation
@@ -66,7 +66,7 @@ public final class APTElifNode extends APTIfConditionBaseNode
     /**
      * Creates a new instance of APTElifNode
      */
-    public APTElifNode(Token token) {
+    public APTElifNode(APTToken token) {
         super(token);
     }
     
