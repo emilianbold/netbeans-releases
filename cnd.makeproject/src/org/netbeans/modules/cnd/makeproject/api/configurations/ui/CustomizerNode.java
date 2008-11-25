@@ -85,4 +85,8 @@ public class CustomizerNode {
     public HelpCtx getHelpCtx() {
         return new HelpCtx(""); // NOI18N // See CR 6718766
     }
+
+    public String getDisplayName() {
+        return displayName;
+    }
 }
