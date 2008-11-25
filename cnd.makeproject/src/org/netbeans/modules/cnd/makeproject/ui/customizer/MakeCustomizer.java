@@ -657,7 +657,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
         descriptions.add(createCCompilerDescription(project, compilerSetIdx, item, folder, isCompilerConfiguration));
         descriptions.add(createCCCompilerDescription(project, compilerSetIdx, item, folder, isCompilerConfiguration));
-        String nodeLabel = nodeLabel = getString("LBL_PARSER_NODE");
+        String nodeLabel = getString("LBL_PARSER_NODE");
 
         CustomizerNode rootDescription = new CustomizerNode(
                 "CodeAssistant", // NOI18N
@@ -733,6 +733,8 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 descriptions[index++] = createCCCompilerDescription(project, compilerSet, item, folder, isCompileConfiguration);
             } else if (tool == Tool.FortranCompiler) {
                 descriptions[index++] = createFortranCompilerDescription(project, compilerSet, item, isCompileConfiguration);
+            } else if (tool == Tool.Assembler) {
+                descriptions[index++] = createAssemblerDescription(project, compilerSet, item, isCompileConfiguration);
             } else if (tool == Tool.CustomTool) {
                 descriptions[index++] = createCustomBuildItemDescription(project, item);
             } else {
@@ -1023,8 +1025,11 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         if (tool < 0 || tool == Tool.CCCompiler) {
             descriptions.add(createCCCompilerDescription(project, compilerSetIdx, item, folder, isCompilerConfiguration));
         }
-        if (((tool < 0 && CppSettings.getDefault().isFortranEnabled() && folder == null) || tool == Tool.FortranCompiler) && isCompilerConfiguration) {
+        if (tool < 0 || tool == Tool.FortranCompiler) {
             descriptions.add(createFortranCompilerDescription(project, compilerSetIdx, item, isCompilerConfiguration));
+        }
+        if (tool < 0 || tool == Tool.Assembler) {
+            descriptions.add(createAssemblerDescription(project, compilerSetIdx, item, isCompilerConfiguration));
         }
 
         if (linkerNode != null) {
@@ -1251,6 +1256,44 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 return itemConfiguration.getFortranCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
             } else {
                 return ((MakeConfiguration) configuration).getFortranCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
+            }
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("ProjectPropsCompiling"); // NOI18N
+        }
+    }
+
+    // Assembler Compiler Node
+    private CustomizerNode createAssemblerDescription(Project project, int compilerSetIdx, Item item, boolean isCompilerConfiguration) {
+        String hostName = getSelectedHostName();
+        String compilerName = CompilerSetManager.getDefault(hostName).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.Assembler).getName();
+        String compilerDisplayName = CompilerSetManager.getDefault(hostName).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.Assembler).getDisplayName();
+        CustomizerNode assemblerCustomizerNode = new AssemblerCustomizerNode(
+                compilerName,
+                compilerDisplayName,
+                null,
+                item);
+        return assemblerCustomizerNode;
+    }
+
+    class AssemblerCustomizerNode extends CustomizerNode {
+
+        private Item item;
+
+        public AssemblerCustomizerNode(String name, String displayName, CustomizerNode[] children, Item item) {
+            super(name, displayName, children);
+            this.item = item;
+        }
+
+        @Override
+        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
+            if (item != null) {
+                ItemConfiguration itemConfiguration = item.getItemConfiguration(configuration); //ItemConfiguration)((MakeConfiguration)configuration).getAuxObject(ItemConfiguration.getId(item.getPath()));
+                return itemConfiguration.getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
+            } else {
+                return ((MakeConfiguration) configuration).getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
             }
         }
 

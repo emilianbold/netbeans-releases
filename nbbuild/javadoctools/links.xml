@@ -176,3 +176,5 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-maven-embedder}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-maven-embedder"/>
 <link href="${javadoc.docs.org-netbeans-spi-actions}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-spi-actions"/>
 <link href="${javadoc.docs.org-netbeans-modules-spi-actions}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-spi-actions"/>
+<link href="${javadoc.docs.org-netbeans-modules-extexecution}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-extexecution"/>
+

@@ -73,6 +73,7 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.IconType;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.NameType;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
+import org.netbeans.modules.vmd.api.properties.PropertiesPresenterForwarder;
 import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -82,7 +83,7 @@ import org.netbeans.modules.vmd.midp.components.general.ClassSupport;
 import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerSupport;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD.SVGButtonEventSourceOrder;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD.SVGComponentEventSourceOrder;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -126,6 +127,8 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
         return Arrays.asList(
                 // info
                 InfoPresenter.create(new SVGButtonEventSourceResolver()),
+                // properties
+                PropertiesPresenterForwarder.createByReference( PROP_SVGBUTTON ),
                 //code
                 new ImportCodePresenterSupport("org.netbeans.microedition.svg.SVGActionListener"), //NOI18N
                 new ImportCodePresenterSupport("org.netbeans.microedition.svg.SVGComponent"), //NOI18N
@@ -157,7 +160,7 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
                     String displayableName = ClassSupport.resolveDisplayName (displayable);
                     return NbBundle.getMessage(EventHandlerSupport.class, "DISP_Handler_Go_to_displayable", displayableName); // NOI18N
                 case SECONDARY:
-                    return NbBundle.getMessage(EventHandlerSupport.class, "TYPE_Action"); // NOI18N
+                    return null;//NbBundle.getMessage(EventHandlerSupport.class, "TYPE_Action"); // NOI18N
                 case TERTIARY:
                     return null;
                 default:
@@ -194,7 +197,7 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
         }
 
         protected String getOrder() {
-            return SVGButtonEventSourceOrder.CATEGORY_ID;
+            return SVGComponentEventSourceOrder.CATEGORY_ID;
         }
 
         @Override
@@ -273,7 +276,7 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
 
         @Override
         public boolean isInside(InspectorFolderPath path, InspectorFolder folder, DesignComponent component) {
-            if (path.getLastElement().getTypeID() == MidpInspectorSVGButtonSupport.TYPEID_CATEGORY_SVG_BUTTONS) {
+            if (path.getLastElement().getTypeID() == MidpInspectorSVGComponentSupport.TYPEID_CATEGORY_SVG_COMPONENTS) {
                 if (path.getLastElement().getComponentID().equals(component.getParentComponent().getComponentID())) {
                     return true;
                 }

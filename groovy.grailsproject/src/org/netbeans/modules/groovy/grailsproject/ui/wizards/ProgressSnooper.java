@@ -40,7 +40,7 @@
 package org.netbeans.modules.groovy.grailsproject.ui.wizards;
 
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.extexecution.api.input.LineProcessor;
+import org.netbeans.api.extexecution.input.LineProcessor;
 
 /**
  *

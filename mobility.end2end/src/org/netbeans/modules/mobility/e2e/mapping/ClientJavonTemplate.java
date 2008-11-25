@@ -42,10 +42,13 @@
 package org.netbeans.modules.mobility.e2e.mapping;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -53,14 +56,19 @@ import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.mobility.e2e.classdata.ClassData;
+import org.netbeans.modules.mobility.end2end.output.OutputLogger;
+import org.netbeans.modules.mobility.end2end.output.OutputLogger.LogLevel;
 import org.netbeans.modules.mobility.javon.JavonMapping;
 import org.netbeans.modules.mobility.javon.JavonTemplate;
 import org.netbeans.modules.mobility.javon.OutputFileFormatter;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 /**
@@ -90,85 +98,159 @@ public class ClientJavonTemplate extends JavonTemplate {
 
     public boolean generateTarget( ProgressHandle ph, String target ) {
         if( mapping.getServiceMapping( target ) != null ) {
-            ph.progress( NbBundle.getMessage( ClientJavonTemplate.class, "MSG_Client" ));   // NOI18N
-            try {
-                mapping.setProperty( "target", "client" );
-                
-                JavonMapping.Service service = mapping.getServiceMapping( target );
-                FileObject outputDir = FileUtil.toFileObject( FileUtil.normalizeFile( 
-                        new File( mapping.getClientMapping().getOutputDirectory())));
-                outputDir = outputDir.getFileObject( mapping.getClientMapping().getPackageName().replace( '.', '/' ));
+            String msg = NbBundle.getMessage( ClientJavonTemplate.class, "MSG_Client" );   // NOI18N
+            ph.progress( msg );
+            OutputLogger.getInstance().log( msg );
+                mapping.setProperty("target", "client");
 
-                FileObject outputFile = outputDir.getFileObject( mapping.getClientMapping().getClassName(), "java" );
-                if( outputFile == null ) {
-                    outputFile = outputDir.createData( mapping.getClientMapping().getClassName(), "java" );
-                }
-                OutputFileFormatter off = new OutputFileFormatter( outputFile );
+            JavonMapping.Service service = mapping.getServiceMapping(target);
+            FileObject outputDir = FileUtil.toFileObject(FileUtil
+                    .normalizeFile(new File(mapping.getClientMapping()
+                            .getOutputDirectory())));
+            outputDir = outputDir.getFileObject(mapping.getClientMapping()
+                    .getPackageName().replace('.', '/'));
 
-                ScriptEngineManager mgr = new ScriptEngineManager();
-                ScriptEngine eng = mgr.getEngineByName( "freemarker" );
-                Bindings bind = eng.getContext().getBindings( ScriptContext.ENGINE_SCOPE );
-
-                FileObject template = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject( "Templates/Client/Client.java" );        
-                
-                Set<ClassData> returnTypes = service.getReturnTypes();
-                Set<ClassData> parameterTypes = service.getParameterTypes();
-                bind.put( "mapping", mapping );
-                bind.put( "registry", mapping.getRegistry());
-                bind.put( "returnTypes", returnTypes );
-                bind.put( "parameterTypes", parameterTypes );
-                bind.put( "service", service );
-                bind.put( "utils", new Utils( mapping.getRegistry()));
-
-                // Compute imports for JavaBeans
-                Set<String> imports = new HashSet<String>();
-                for( ClassData cd : parameterTypes ) {
-                    while( cd.isArray()) {
-                        cd = cd.getComponentType();
-                    }
-                    if( cd.isPrimitive()) continue;
-                    if( cd.getPackage().equals( "java.lang" )) continue;
-                    if( cd.getFullyQualifiedName().equals( "java.util.List" )) continue;
-                    imports.add( cd.getFullyQualifiedName());
-                }
-                for( ClassData cd : returnTypes ) {
-                    while( cd.isArray()) {
-                        cd = cd.getComponentType();
-                    }
-                    if( cd.isPrimitive()) continue;
-                    if( cd.getPackage().equals( "java.lang" )) continue;
-                    if( cd.getFullyQualifiedName().equals( "java.util.List" )) continue;
-                    imports.add( cd.getFullyQualifiedName());
-                }
-                bind.put( "imports", imports );
-                
-                Writer w = null;
-                Reader is = null;
+            FileObject outputFile = outputDir.getFileObject(mapping
+                    .getClientMapping().getClassName(), "java");
+            if (outputFile == null) {
+                OutputLogger.getInstance().log(
+                        MessageFormat.format(NbBundle.getMessage(
+                                ClientJavonTemplate.class,
+                                "MSG_ClientJavonCreation"), mapping
+                                .getClientMapping().getClassName()));// NOI18N
                 try {
-                    w = new StringWriter();
-                    is = new InputStreamReader( template.getInputStream());
-
-                    eng.getContext().setWriter( w );
-                    eng.getContext().setAttribute( FileObject.class.getName(), template, ScriptContext.ENGINE_SCOPE );
-                    eng.getContext().setAttribute( ScriptEngine.FILENAME, template.getNameExt(), ScriptContext.ENGINE_SCOPE );
-
-                    eng.eval( is );
-                } catch( Exception e ) {
-                    e.printStackTrace();
-                } finally {
-                    if( w != null ) {
-                        off.write( w.toString());
-//                            System.err.println( "" + w.toString());
-                        w.close();
-                    }
-                    if( is != null ) is.close();
-                    off.close();
-                }                  
-            } catch( Exception e ) {                
-                e.printStackTrace();
+                outputFile = outputDir.createData(mapping.getClientMapping()
+                        .getClassName(), "java");
+                }
+                catch (IOException e ){
+                    OutputLogger.getInstance().log(
+                            LogLevel.ERROR,
+                            MessageFormat.format(NbBundle.getMessage(
+                                    ClientJavonTemplate.class,
+                                    "MSG_FailClientJavonCreation"), mapping
+                                    .getClientMapping().getClassName()));// NOI18N
+                }
+            }
+            OutputFileFormatter off = null ;
+            try {
+                off = new OutputFileFormatter(outputFile);
+            }
+            catch ( DataObjectNotFoundException e ){
+                generationFailed(e, outputFile);
                 return false;
             }
+            catch (IOException e ){
+                generationFailed(e, outputFile);
+                return false;
+            }
+
+            ScriptEngineManager mgr = new ScriptEngineManager();
+            ScriptEngine eng = mgr.getEngineByName("freemarker");
+            Bindings bind = eng.getContext().getBindings(
+                    ScriptContext.ENGINE_SCOPE);
+
+            FileObject template = Repository.getDefault()
+                    .getDefaultFileSystem().getRoot().getFileObject(
+                            "Templates/Client/Client.java");
+
+            OutputLogger.getInstance().log(
+                    NbBundle.getMessage(ClientJavonTemplate.class,
+                            "MSG_ConfigureBindings"));//NOI18N
+            Set<ClassData> returnTypes = service.getReturnTypes();
+            Set<ClassData> parameterTypes = service.getParameterTypes();
+            bind.put("mapping", mapping);
+            bind.put("registry", mapping.getRegistry());
+            bind.put("returnTypes", returnTypes);
+            bind.put("parameterTypes", parameterTypes);
+            bind.put("service", service);
+            bind.put("utils", new Utils(mapping.getRegistry()));
+
+            // Compute imports for JavaBeans
+            Set<String> imports = new HashSet<String>();
+            for (ClassData cd : parameterTypes) {
+                while (cd.isArray()) {
+                    cd = cd.getComponentType();
+                }
+                if (cd.isPrimitive())
+                    continue;
+                if (cd.getPackage().equals("java.lang"))
+                    continue;
+                if (cd.getFullyQualifiedName().equals("java.util.List"))
+                    continue;
+                imports.add(cd.getFullyQualifiedName());
+            }
+            for (ClassData cd : returnTypes) {
+                while (cd.isArray()) {
+                    cd = cd.getComponentType();
+                }
+                if (cd.isPrimitive())
+                    continue;
+                if (cd.getPackage().equals("java.lang"))
+                    continue;
+                if (cd.getFullyQualifiedName().equals("java.util.List"))
+                    continue;
+                imports.add(cd.getFullyQualifiedName());
+            }
+            bind.put("imports", imports);
+
+            OutputLogger.getInstance().log(MessageFormat.format(
+                    NbBundle.getMessage(ClientBeanGeneratorTemplate.class,
+                        "MSG_GenerateJavonClient" ),FileUtil.toFile(outputFile)));//NOI18N
+            Writer w = null;
+            Reader is = null;
+            try {
+                try {
+                    w = new StringWriter();
+                    is = new InputStreamReader(template.getInputStream());
+
+                    eng.getContext().setWriter(w);
+                    eng.getContext().setAttribute(FileObject.class.getName(),
+                            template, ScriptContext.ENGINE_SCOPE);
+                    eng.getContext().setAttribute(ScriptEngine.FILENAME,
+                            template.getNameExt(), ScriptContext.ENGINE_SCOPE);
+
+                    eng.eval(is);
+                }
+                catch (FileNotFoundException e) {
+                    OutputLogger.getInstance().log(e);
+                    ErrorManager.getDefault().notify( e );
+                    return false;
+                }
+                catch (ScriptException e) {
+                    OutputLogger.getInstance().log(e);
+                    ErrorManager.getDefault().notify( e );
+                    return false;
+                }
+                finally {
+                    if (w != null) {
+                        off.write(w.toString());
+                        // System.err.println( "" + w.toString());
+                        w.close();
+                    }
+                    if (is != null)
+                        is.close();
+                    off.close();
+                }
+            }
+            catch (IOException e) {
+                generationFailed(e, FileUtil.toFile(outputFile));
+                return false;
+            }
+            
+            OutputLogger.getInstance().log(
+                    MessageFormat.format(NbBundle.getMessage(
+                            ClientJavonTemplate.class,
+                                "MSG_ClientGenerated"),
+                                FileUtil.toFile(outputFile)));
         }
         return true;
+    }
+    
+    private void generationFailed( Exception e , Object file){
+        OutputLogger.getInstance().log(e);
+        ErrorManager.getDefault().notify( e );
+        OutputLogger.getInstance().log( MessageFormat.format(
+                NbBundle.getMessage(ClientBeanGeneratorTemplate.class,
+                "MSG_FailJavonClientGeneration" ), file ));
     }
 }

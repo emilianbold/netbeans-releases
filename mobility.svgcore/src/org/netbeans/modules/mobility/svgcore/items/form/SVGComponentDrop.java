@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.mobility.svgcore.items.form;
 
-import java.awt.Point;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.logging.Level;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
@@ -62,6 +65,18 @@ public abstract class SVGComponentDrop implements  ActiveEditorDrop{
         return new Default(snippet);
     }
     
+    protected static String getSnippetString(Class clazz, String relatedSnippetPath) throws IOException{
+        InputStream is = clazz.getResourceAsStream(relatedSnippetPath);
+        assert is != null : relatedSnippetPath + " resource Input Stream is null";//NOI18N
+        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+        StringBuffer buffer = new StringBuffer();
+        String line;
+        while ((line = in.readLine()) != null) {
+            buffer.append(line);
+        }
+        return buffer.toString();
+    }
+
     public boolean handleTransfer(SVGDataObject svgDataObject, float[] point) {
         if (svgDataObject == null){
             SceneManager.log(Level.INFO, "SVGDataObject not found."); //NOI18N
@@ -74,6 +89,10 @@ public abstract class SVGComponentDrop implements  ActiveEditorDrop{
 
     public boolean handleTransfer(JTextComponent targetComponent) {
         return false;
+    }
+
+    protected float[] getDropPoint(){
+        return myPoint;
     }
     
     protected void setSelection(String id){

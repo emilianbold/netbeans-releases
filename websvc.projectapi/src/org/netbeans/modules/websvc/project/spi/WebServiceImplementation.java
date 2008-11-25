@@ -74,9 +74,9 @@ public interface WebServiceImplementation {
     ServiceDescriptor getServiceDescriptor();
     
     /**
-     * Returns Netbeans node that representing the web service
+     * Creates Netbeans node representing the web service
      * @return Node representing the web service.
      */
-    Node getNode();
+    Node createNode();
 }
 

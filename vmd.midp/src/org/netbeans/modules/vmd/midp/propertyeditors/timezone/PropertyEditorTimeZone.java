@@ -38,9 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.propertyeditors.timezone;
 
+import java.awt.Component;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -64,11 +64,8 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
 
     private PropertyEditorTimeZone() {
         super(NbBundle.getMessage(PropertyEditorTimeZone.class, "LBL_TIME_ZONE_UCLABEL")); // NOI18N
-
-        timeZoneEditor = new TimeZoneEditor ();
-        initElements(Collections.<PropertyEditorElement>singleton (timeZoneEditor));
     }
-    
+
     public static PropertyEditorTimeZone createInstance() {
         return new PropertyEditorTimeZone();
     }
@@ -81,42 +78,53 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
             timeZoneEditor = null;
         }
     }
-    
+
     @Override
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
             return superText;
         }
-        
+
         PropertyValue value = (PropertyValue) super.getValue();
         return (String) value.getPrimitiveValue();
     }
-    
+
     private void saveValue(String text) {
         if (text.length() > 0) {
             super.setValue(MidpTypes.createStringValue(text));
         }
     }
-    
+
+    @Override
+    public Component getCustomEditor() {
+        if (timeZoneEditor == null) {
+            timeZoneEditor = new TimeZoneEditor();
+            initElements(Collections.<PropertyEditorElement>singleton(timeZoneEditor));
+        }
+        return super.getCustomEditor();
+    }
+
     @Override
     public void customEditorOKButtonPressed() {
         super.customEditorOKButtonPressed();
-        if (timeZoneEditor.getRadioButton().isSelected())
-            saveValue(timeZoneEditor.getTextForPropertyValue ());
+        if (timeZoneEditor.getRadioButton().isSelected()) {
+            saveValue(timeZoneEditor.getTextForPropertyValue());
+        }
     }
-    
+
     private final class TimeZoneEditor implements PropertyEditorElement, ActionListener {
+
         private JRadioButton radioButton;
         private TimeZoneComboboxModel model;
         private JComboBox combobox;
-        
+
         public TimeZoneEditor() {
             radioButton = new JRadioButton();
             Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorTimeZone.class, "LBL_TIMEZONE")); // NOI18N
             model = new TimeZoneComboboxModel();
             combobox = new JComboBox(model);
-            combobox.setEditable (true);
+            combobox.setEditable(true);
             combobox.addActionListener(this);
         }
 
@@ -128,7 +136,7 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
                 combobox = null;
             }
         }
-        
+
         public void updateState(PropertyValue value) {
             if (!isCurrentValueANull() && value != null) {
                 String timeZone;
@@ -141,34 +149,33 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
                 }
             }
         }
-        
-        public void setTextForPropertyValue (String text) {
+
+        public void setTextForPropertyValue(String text) {
             saveValue(text);
         }
-        
-        public String getTextForPropertyValue () {
+
+        public String getTextForPropertyValue() {
             return (String) combobox.getSelectedItem();
         }
-        
+
         public JComponent getCustomEditorComponent() {
             return combobox;
         }
-        
+
         public JRadioButton getRadioButton() {
             return radioButton;
         }
-        
+
         public boolean isInitiallySelected() {
             return true;
         }
-        
+
         public boolean isVerticallyResizable() {
             return false;
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
             radioButton.setSelected(true);
         }
     }
-    
 }

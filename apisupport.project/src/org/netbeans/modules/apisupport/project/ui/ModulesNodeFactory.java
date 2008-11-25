@@ -82,7 +82,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.lookup.Lookups;
@@ -91,6 +90,7 @@ import org.openide.windows.WindowManager;
 /**
  * @author mkleint
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-apisupport-project-suite", position=100)
 public class ModulesNodeFactory implements NodeFactory {
 
     public ModulesNodeFactory() {}

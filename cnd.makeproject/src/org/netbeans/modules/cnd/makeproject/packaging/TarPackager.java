@@ -123,7 +123,7 @@ public class TarPackager implements PackagerDescriptor {
 
         private void writePackagingScriptBodyTarZip(BufferedWriter bw, MakeConfiguration conf) throws IOException {
             PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
-            List<PackagerFileElement> fileList = (List<PackagerFileElement>) packagingConfiguration.getFiles().getValue();
+            List<PackagerFileElement> fileList = packagingConfiguration.getFiles().getValue();
             String output = packagingConfiguration.getOutputValue();
             String outputRelToTmp = IpeUtils.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
 

@@ -65,7 +65,6 @@ import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.wsdl.config.ConfigurationProxy;
 import org.netbeans.modules.websvc.wsdl.config.api.DDProvider;
 import org.netbeans.modules.websvc.wsdl.config.api.Configuration;
 import org.netbeans.modules.websvc.wsdl.config.api.Wsdl;
@@ -83,7 +82,7 @@ import org.netbeans.modules.websvc.wsdl.xmlutils.SAXParseError;
  * @author Peter Williams
  */
 public class WsCompileConfigDataObject extends DD2beansDataObject implements WsCompileConfigCookie,
-        Node.Cookie, ConfigurationProxy.OutputProvider, FileChangeListener, ChangeListener {
+        Node.Cookie, ConfigurationProxy.OutputProvider, ChangeListener {
     
     /** WsCompile confguration files are named [wsdl file name]-config.xml.  This
      *  constant is the suffix '-config'.
@@ -411,37 +410,6 @@ public class WsCompileConfigDataObject extends DD2beansDataObject implements WsC
 //        }
 //        super.dispose ();
 //    }
-    
-// --------------------------------------------------------------------
-//   org.openide.filesystems.FileChangeListener implementation
-// --------------------------------------------------------------------
-    public void fileRenamed(FileRenameEvent fe) {
-        // !PW can listen here for handler files being renamed so we can fix
-        // the handlers.
-    }
-    
-    public void fileFolderCreated(FileEvent fe) {
-    }
-    
-    public void fileDeleted(FileEvent fe) {
-        // !PW can listen here for handler files being deleted so we can remove
-        // the handlers.
-    }
-    
-    public void fileDataCreated(FileEvent fe) {
-// !PW enable this when handlers are added.
-//        FileObject fo = fileEvent.getFile();
-//        String resourceName = getPackageName (fo);
-//        if (resourceName != null && "java".equals(fo.getExt())) { //NOI18N
-//            elementCreated(resourceName);
-//        }
-    }
-    
-    public void fileChanged(FileEvent fe) {
-    }
-    
-    public void fileAttributeChanged(FileAttributeEvent fe) {
-    }
     
 // --------------------------------------------------------------------
 //   javax.swing.event.ChangeListener implementation

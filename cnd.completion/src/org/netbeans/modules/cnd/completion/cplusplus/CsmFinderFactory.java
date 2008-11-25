@@ -48,7 +48,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.*;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -238,19 +237,8 @@ public final class CsmFinderFactory {
         }
     }
 
-    /** Returns kitClass over MDRFinder will operate and retrieve settings */
-    protected Class getKitClass() {
-        return CCKit.class;
-    }
-
     private String getMimeType() {
         return MIMENames.CPLUSPLUS_MIME_TYPE;
-    }
-
-    private void removeFromCache(FileObject fo) {
-        synchronized (CACHE_LOCK) {
-            cache.remove(fo);
-        }
     }
 
     private CsmFinder retrieveFromCache(FileObject fo) {

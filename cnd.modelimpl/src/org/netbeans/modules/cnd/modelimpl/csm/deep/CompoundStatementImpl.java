@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
 import java.util.*;
@@ -57,45 +56,47 @@ import java.io.IOException;
  * @author Vladimir Kvashin
  */
 public class CompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
-    
+
     private List<CsmStatement> statements;
-    
+
     public CompoundStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
-    
+
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.COMPOUND;
     }
-    
+
     public List<CsmStatement> getStatements() {
-        if( statements == null ) {
+        if (statements == null) {
             statements = new ArrayList<CsmStatement>();
             renderStatements(getAst());
         }
         return statements;
     }
-    
+
     protected void renderStatements(AST ast) {
-        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
+        for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
             CsmStatement stmt = AstRenderer.renderStatement(token, getContainingFile(), this);
-            if( stmt != null ) {
+            if (stmt != null) {
                 statements.add(stmt);
             }
         }
     }
 
     public Collection<CsmScopeElement> getScopeElements() {
-        return (List)getStatements();
+        @SuppressWarnings("unchecked")
+        Collection<CsmScopeElement> out = (List) getStatements();
+        return out;
     }
 
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
-    }    
-    
+    }
+
     public CompoundStatementImpl(DataInput input) throws IOException {
         super(input);
         this.statements = null;
-    }     
+    }
 }

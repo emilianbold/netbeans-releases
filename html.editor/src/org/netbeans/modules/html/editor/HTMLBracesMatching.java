@@ -127,9 +127,13 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                             } else {
                                                 int from = t2.offset(th);
                                                 int to = t3.offset(th) + t3.length();
-                                                return new int[]{from, to, 
-                                                                 from, tagNameEnd,
-                                                                 to - 1, to};
+                                                if (tagNameEnd != -1) {
+                                                    return new int[]{from, to,
+                                                                from, tagNameEnd,
+                                                                to - 1, to};
+                                                } else {
+                                                    return new int[]{from, to};
+                                                }
                                             }
                                         } else if(t3.id() == HTMLTokenId.TAG_OPEN || t3.id() == HTMLTokenId.TAG_CLOSE) {
                                             tagNameEnd = t3.offset(th) + t3.length();

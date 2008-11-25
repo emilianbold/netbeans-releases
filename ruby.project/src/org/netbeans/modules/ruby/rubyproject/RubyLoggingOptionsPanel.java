@@ -66,6 +66,7 @@ public final class RubyLoggingOptionsPanel extends JPanel {
         loggingLabel = new javax.swing.JLabel();
         standardLogging = new javax.swing.JCheckBox();
         debuggerLogging = new javax.swing.JCheckBox();
+        jSeparator1 = new javax.swing.JSeparator();
 
         loggingLabel.setText(org.openide.util.NbBundle.getMessage(RubyLoggingOptionsPanel.class, "RubyLoggingOptionsPanel.loggingLabel.text")); // NOI18N
 
@@ -90,16 +91,24 @@ public final class RubyLoggingOptionsPanel extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(loggingLabel)
+                    .add(layout.createSequentialGroup()
+                        .add(loggingLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE))
                     .add(standardLogging)
                     .add(debuggerLogging))
-                .addContainerGap(58, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(loggingLabel)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(loggingLabel))
+                    .add(layout.createSequentialGroup()
+                        .add(19, 19, 19)
+                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(standardLogging)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -109,13 +118,9 @@ public final class RubyLoggingOptionsPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void standardLoggingItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_standardLoggingItemStateChanged
-        Logger rubyLogger = Logger.getLogger("org.netbeans.modules.ruby"); //NOI18N
-        setLevel(rubyLogger, Level.FINE, standardLogging.isSelected());
     }//GEN-LAST:event_standardLoggingItemStateChanged
 
     private void debuggerLoggingItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_debuggerLoggingItemStateChanged
-        Logger debuggerLogger = Logger.getLogger("org.rubyforge.debugcommons"); //NOI18N
-        setLevel(debuggerLogger, Level.FINEST, debuggerLogging.isSelected());
     }//GEN-LAST:event_debuggerLoggingItemStateChanged
 
     void setStandardLogging(boolean enabled) {
@@ -142,22 +147,9 @@ public final class RubyLoggingOptionsPanel extends JPanel {
         return debuggerLogging.isSelected();
     }
 
-    private void setLevel(Logger logger, Level level, boolean selected) {
-        RubyLoggingSettings loggingSettings = RubyLoggingSettings.getDefault();
-        if (selected) {
-            Level current = logger.getLevel();
-            if (current != null && current.intValue() > level.intValue()) {
-                logger.setLevel(level);
-            }
-            loggingSettings.setOriginalLoggingLevel(logger, current);
-        } else {
-            Level original = loggingSettings.getOriginalLoggingLevel(logger);
-            logger.setLevel(original);
-        }
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox debuggerLogging;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel loggingLabel;
     private javax.swing.JCheckBox standardLogging;
     // End of variables declaration//GEN-END:variables

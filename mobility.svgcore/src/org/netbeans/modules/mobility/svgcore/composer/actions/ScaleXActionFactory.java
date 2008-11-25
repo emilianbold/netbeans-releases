@@ -44,8 +44,6 @@ import java.awt.AWTEvent;
 import java.awt.Cursor;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerAction;
-import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.ActionMouseCursor;
 import org.netbeans.modules.mobility.svgcore.composer.ComposerAction;
 import org.netbeans.modules.mobility.svgcore.composer.ComposerActionFactory;
@@ -77,14 +75,12 @@ public final class ScaleXActionFactory extends ScaleActionFactory {
             if ( !isOutsideEvent && evt.getID() == MouseEvent.MOUSE_DRAGGED) {
                 MouseEvent me = (MouseEvent)evt;
                 
-                //calculate area to repaint
                 Rectangle bBox = m_scaled.getScreenBBox();
-                //m_scaled.scale(calculateScale(me.getX(), me.getY()));
-                m_scaled.scale(calculateScaleX(me.getX()), 1);
+                m_scaled.scale(calculateScaleX(me.getX()), 1, m_scalePtIdx);
                 bBox.add(m_scaled.getScreenBBox());
                 
                 m_factory.getSceneManager().getScreenManager().repaint(bBox, SVGObjectOutline.SELECTOR_OVERLAP);
-            } else {
+            } else if (evt.getID() == MouseEvent.MOUSE_RELEASED) {
                 actionCompleted();
                 m_scaled.commitChanges();
             }

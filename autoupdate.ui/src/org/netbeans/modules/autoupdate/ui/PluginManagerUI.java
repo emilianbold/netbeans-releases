@@ -328,7 +328,6 @@ public class PluginManagerUI extends javax.swing.JPanel  {
         bClose = closeButton;
         bHelp = new javax.swing.JButton();
 
-        tpTabs.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         tpTabs.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 tpTabsStateChanged(evt);
@@ -355,11 +354,11 @@ public class PluginManagerUI extends javax.swing.JPanel  {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(pProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 562, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 123, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 157, Short.MAX_VALUE)
                         .add(bClose)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(bHelp))
-                    .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 813, Short.MAX_VALUE))
+                    .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 841, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

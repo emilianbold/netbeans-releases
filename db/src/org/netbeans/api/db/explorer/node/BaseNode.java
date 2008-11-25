@@ -105,6 +105,10 @@ public abstract class BaseNode extends AbstractNode {
      */
     protected abstract void initialize();
 
+    public boolean canRefresh() {
+        return false;
+    }
+
     /**
      * Set up the node
      * 
@@ -170,7 +174,7 @@ public abstract class BaseNode extends AbstractNode {
         }
         
         // get the actions from the registry
-        List<Action> actions = actionRegistry.getActions();
+        Collection<Action> actions = actionRegistry.getActions();
         return (Action[])actions.toArray(new Action[actions.size()]);
     }
     

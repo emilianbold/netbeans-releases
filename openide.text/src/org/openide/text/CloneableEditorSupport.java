@@ -227,7 +227,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      */
     private boolean revertingUndoOrReloading;
     private boolean justRevertedToNotModified;
-    private int documentStatus = DOCUMENT_NO;
+    private volatile int documentStatus = DOCUMENT_NO;
     private Throwable prepareDocumentRuntimeException;
 
     /** Reference to WeakHashMap that is used by all Line.Sets created
@@ -433,8 +433,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 prepareTask = null;
                 documentStatus = DOCUMENT_NO;
             }
-
-            openDocument();
+            
+            //Assign reference to local variable to avoid gc before return
+            StyledDocument doc = openDocument();
             super.open();
         } catch (final UserQuestionException e) {
             class Query implements Runnable, Callable<Void> {
@@ -447,7 +448,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     getListener().loadExc = null;
                     prepareTask = null;
                     documentStatus = DOCUMENT_NO;
-                    openDocument();
+                    //Assign reference to local variable to avoid gc before return
+                    StyledDocument doc = openDocument();
 
                     CloneableEditorSupport.super.open();
                     return null;
@@ -529,6 +531,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return redirect.prepareDocument();
         }
         synchronized (getLock()) {
+            StyledDocument doc = getDoc();
+            if ((doc == null) && (documentStatus != DOCUMENT_NO)) {
+                //Sync document status
+                closeDocument();
+            }
             switch (documentStatus) {
             case DOCUMENT_NO:
                 documentStatus = DOCUMENT_LOADING;
@@ -541,7 +548,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                             counterPrepareDocument--;
                             if (isStrongSet && canReleaseDoc()) {
                                 isStrongSet = false;
-                                if (CloneableEditorSupport.this.doc != null) {
+                                if ((CloneableEditorSupport.this.doc != null) && !isAlreadyModified()) {
                                     CloneableEditorSupport.this.doc.setStrong(false);
                                 }
                             }
@@ -552,7 +559,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     counterPrepareDocument--;
                     if (isStrongSet && canReleaseDoc()) {
                         isStrongSet = false;
-                        if (this.doc != null) {
+                        if ((this.doc != null) && !isAlreadyModified()) {
                             this.doc.setStrong(false);
                         }
                     }
@@ -600,6 +607,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 // here would be the testability hook for issue 56413
                 // (Deadlock56413Test), but I use the reflection in the test
                 // instead, so the test depends on the above assignment
+            } else {
+                setDoc(docToLoad[0], true);
+                isStrongSet = true;
             }
 
 
@@ -754,15 +764,37 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return redirect.openDocument();
         }
         synchronized (getLock()) {
+            //It is to avoid gc of loaded document while we work with it
+            boolean wasCounterIncremented = false;
             try {
-                counterOpenDocument++;
-                StyledDocument doc = openDocumentCheckIOE();
-                return doc;
+                StyledDocument doc = getDoc();
+                if ((doc == null) && (documentStatus != DOCUMENT_NO)) {
+                    //Sync document status
+                    closeDocument();
+                }
+                //For DOCUMENT_NO strong reference is set in prepareDocument
+                if ((documentStatus == DOCUMENT_READY) || (documentStatus == DOCUMENT_LOADING) || (documentStatus == DOCUMENT_RELOADING)) {
+                    counterOpenDocument++;
+                    wasCounterIncremented = true;
+                    if (this.doc != null) {
+                        this.doc.setStrong(true);
+                        isStrongSet = true;
+                    }
+                }
+                try {
+                    counterOpenDocument++;
+                    doc = openDocumentCheckIOE();
+                    return doc;
+                } finally {
+                    counterOpenDocument--;
+                }
             } finally {
-                counterOpenDocument--;
+                if (wasCounterIncremented) {
+                    counterOpenDocument--;
+                }
                 if (isStrongSet && canReleaseDoc()) {
                     isStrongSet = false;
-                    if (this.doc != null) {
+                    if ((this.doc != null) && !isAlreadyModified()) {
                         this.doc.setStrong(false);
                     }
                 }
@@ -837,7 +869,16 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         if (redirect != null) {
             return redirect.getDocument();
         }
+        //#149717 Do not block when document is loading
+        if (documentStatus != DOCUMENT_READY) {
+            return null;
+        }
         synchronized (getLock()) {
+            StyledDocument doc = getDoc();
+            if ((doc == null) && (documentStatus != DOCUMENT_NO)) {
+                //Sync document status
+                closeDocument();
+            }
             while (true) {
                 switch (documentStatus) {
                 case DOCUMENT_NO:
@@ -851,15 +892,21 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                     try {
                         counterGetDocument++;
-                        StyledDocument doc = openDocumentCheckIOE();
-                        return doc;
-                    } catch (IOException e) {
-                        return null;
+                        if (this.doc != null) {
+                            this.doc.setStrong(true);
+                            isStrongSet = true;
+                        }
+                        try {
+                            doc = openDocumentCheckIOE();
+                            return doc;
+                        } catch (IOException e) {
+                            return null;
+                        }
                     } finally {
                         counterGetDocument--;
                         if (isStrongSet && canReleaseDoc()) {
                             isStrongSet = false;
-                            if (this.doc != null) {
+                            if ((this.doc != null) && !isAlreadyModified()) {
                                 this.doc.setStrong(false);
                             }
                         }
@@ -2405,7 +2452,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         counterOpenAtImpl--;
                         if (isStrongSet && canReleaseDoc()) {
                             isStrongSet = false;
-                            if (CloneableEditorSupport.this.doc != null) {
+                            if ((CloneableEditorSupport.this.doc != null) && !isAlreadyModified()) {
                                 CloneableEditorSupport.this.doc.setStrong(false);
                             }
                         }
@@ -2485,12 +2532,16 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 this.doc = doc;
             }
         }
+        
         @Override
         public StyledDocument get() {
             return doc != null ? doc : super.get();
         }
 
         public void run() {
+            if (this != CloneableEditorSupport.this.doc) {
+                return;
+            }
             closeDocument();
         }
 
@@ -2504,7 +2555,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         @Override
         public String toString() {
-            return "StrongRef[doc=" + doc + ",super.get=" + super.get() + "]";
+            return "StrongRef@" + Integer.toHexString(System.identityHashCode(this)) + "[doc=" + doc + ",super.get=" + super.get() + "]";
         }
 
     } // end of StrongRef

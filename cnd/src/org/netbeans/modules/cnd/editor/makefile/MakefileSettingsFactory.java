@@ -49,8 +49,18 @@ import org.netbeans.editor.AcceptorFactory;
  */
 public class MakefileSettingsFactory {
 
+    /**
+     * Constuctor is private to prevent instantiation.
+     */
+    private MakefileSettingsFactory() {
+    }
+
     public static Acceptor getAbbrevResetAcceptor() {
         return AcceptorFactory.NON_JAVA_IDENTIFIER;
+    }
+
+    public static Acceptor getIdentifierAcceptor() {
+        return AcceptorFactory.JAVA_IDENTIFIER;
     }
 
 }

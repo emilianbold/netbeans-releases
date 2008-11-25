@@ -332,7 +332,7 @@ public abstract class CsmResultItem implements CompletionItem {
     // It needs in case if some files have not been parsed yet
     private boolean isAlreadyIncluded(JTextComponent component, String include) {
         TokenSequence<CppTokenId> ts;
-        ts = CndLexerUtilities.getCppTokenSequence(component, 0);
+        ts = CndLexerUtilities.getCppTokenSequence(component, 0, false, false);
         ts.moveStart();
         while (ts.moveNext()) {
             if (ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
@@ -363,7 +363,7 @@ public abstract class CsmResultItem implements CompletionItem {
     // Says is it forward declarartion or not
     private boolean isForwardDeclaration(JTextComponent component) {
         TokenSequence<CppTokenId> ts;
-        ts = CndLexerUtilities.getCppTokenSequence(component, 0);
+        ts = CndLexerUtilities.getCppTokenSequence(component, 0, false, false);
         ts.moveStart();
         if (!ts.moveNext()) {
             return false;
@@ -429,9 +429,9 @@ public abstract class CsmResultItem implements CompletionItem {
                         CsmOffsetable guardOffset = fiq.getGuardOffset(currentFile);
                         TokenSequence<CppTokenId> ts;
                         if (guardOffset != null) {
-                            ts = CndLexerUtilities.getCppTokenSequence(component, guardOffset.getStartOffset());
+                            ts = CndLexerUtilities.getCppTokenSequence(component, guardOffset.getStartOffset(), false, false);
                         } else {
-                            ts = CndLexerUtilities.getCppTokenSequence(component, 0);
+                            ts = CndLexerUtilities.getCppTokenSequence(component, 0, false, false);
                         }
                         if (ts != null) {
                             int offset = getIncludeOffsetFromTokenSequence(ts);
@@ -667,7 +667,6 @@ public abstract class CsmResultItem implements CompletionItem {
         private Color typeColor;
         private String fldName;
         private int modifiers;
-        private boolean isDeprecated;
         private static CsmPaintComponent.FieldPaintComponent fieldComponent = null;
         private static CsmPaintComponent.FieldPaintComponent globVarComponent = null;
         private static CsmPaintComponent.FieldPaintComponent localVarComponent = null;
@@ -764,7 +763,7 @@ public abstract class CsmResultItem implements CompletionItem {
 
         private boolean isAfterShiftOperator(JTextComponent c) {
             TokenSequence<CppTokenId> ts;
-            ts = CndLexerUtilities.getCppTokenSequence(c, 0);
+            ts = CndLexerUtilities.getCppTokenSequence(c, 0, true, false);
             ts.moveStart();
             if (!ts.moveNext()) {
                 return false;
@@ -1256,9 +1255,7 @@ public abstract class CsmResultItem implements CompletionItem {
     public static class EnumResultItem extends CsmResultItem {
 
         private CsmEnum enm;
-        private boolean isInterface;
         private int classDisplayOffset;
-        private boolean isDeprecated;
         private boolean displayFQN;
         private static CsmPaintComponent.EnumPaintComponent enumComponent = null;
 
@@ -1308,7 +1305,6 @@ public abstract class CsmResultItem implements CompletionItem {
 
         private CsmEnumerator enmtr;
         private int enumDisplayOffset;
-        private boolean isDeprecated;
         private boolean displayFQN;
         private static CsmPaintComponent.EnumeratorPaintComponent enumtrComponent = null;
 
@@ -1359,9 +1355,7 @@ public abstract class CsmResultItem implements CompletionItem {
 
         private CsmClass cls;
         private CsmDeclaration.Kind kind;
-        private boolean isInterface;
         private int classDisplayOffset;
-        private boolean isDeprecated;
         private boolean displayFQN;
         private static CsmPaintComponent.ClassPaintComponent clsComponent = null;
         private static CsmPaintComponent.StructPaintComponent structComponent = null;
@@ -1522,7 +1516,6 @@ public abstract class CsmResultItem implements CompletionItem {
 
         private CsmTypedef def;
         private int defDisplayOffset;
-        private boolean isDeprecated;
         private boolean displayFQN;
         private static CsmPaintComponent.TypedefPaintComponent defComponent = null;
 

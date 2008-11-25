@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
-import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPath;
 import org.netbeans.modules.vmd.midpnb.components.svg.*;
 import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
@@ -58,10 +56,6 @@ import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.flow.FlowPinOrderPresenter;
 import org.netbeans.modules.vmd.api.flow.visual.FlowPinDescriptor;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
-import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
-import org.netbeans.modules.vmd.api.inspector.common.DesignComponentInspectorFolder;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
@@ -78,16 +72,14 @@ import org.netbeans.modules.vmd.midp.components.MidpAcceptProducerKindPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
-import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
-import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midpnb.actions.EditSVGFileAction;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.SVGImageAcceptTrensferableKindPresenter;
 import org.netbeans.modules.vmd.midpnb.general.SVGFileAcceptPresenter;
-import org.netbeans.modules.vmd.midpnb.propertyeditors.SVGFormEditorElement;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorResourceLazyInitFactory;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGPlayerDisplayPresenter;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -147,16 +139,13 @@ public class SVGFormCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT).addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES).addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_SVGImage"), //NOI18N
-                PropertyEditorResource.createInstance(new SVGFormEditorElement(),
-                NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NEW"), //NOI18N
-                NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NONE"), //NOI18N
-                NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_UCLABEL")), PROP_SVG_IMAGE) //NOI18N
+                    PropertyEditorResourceLazyInitFactory.createSVGFormPropertyEditor(), PROP_SVG_IMAGE) //NOI18N
                 .addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_StartAnimationImmediately"), // NOI18N
-                PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(SVGPlayerCD.class, "LBL_SVGPlayer_StartAnimationImmediately")), PROP_START_ANIM_IMMEDIATELY) // NOI18N
+                    PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(SVGPlayerCD.class, "LBL_SVGPlayer_StartAnimationImmediately")), PROP_START_ANIM_IMMEDIATELY) // NOI18N
                 .addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_AnimationTimeIncrement"), // NOI18N
-                PropertyEditorNumber.createFloatInstance(NbBundle.getMessage(SVGPlayerCD.class, "LBL_SVGPlayer_AnimationTimeIncrement")), PROP_TIME_INCREMENT) // NOI18N
+                    PropertyEditorNumber.createFloatInstance(NbBundle.getMessage(SVGPlayerCD.class, "LBL_SVGPlayer_AnimationTimeIncrement")), PROP_TIME_INCREMENT) // NOI18N
                 .addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_ResetAnimationWhenStopped"), // NOI18N
-                PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(SVGPlayerCD.class, "LBL_SVGPlayer_ResetAnimationWhenStopped")), PROP_RESET_ANIMATION_WHEN_STOPPED); // NOI18N
+                    PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(SVGPlayerCD.class, "LBL_SVGPlayer_ResetAnimationWhenStopped")), PROP_RESET_ANIMATION_WHEN_STOPPED); // NOI18N
     }
 
     private Presenter createSetterPresenter() {
@@ -190,7 +179,7 @@ public class SVGFormCD extends ComponentDescriptor {
                 //other
                 new SVGFormFileChangePresneter(),
                 //flow
-                new SVGButtonEventSourceOrder(),
+                new SVGComponentEventSourceOrder(),
                 //delete
                 new DeleteDependencyPresenter() {
 
@@ -210,7 +199,7 @@ public class SVGFormCD extends ComponentDescriptor {
             }
         },
                 //inspector
-                MidpInspectorSVGButtonSupport.createCategory()
+                MidpInspectorSVGComponentSupport.createCategory()
                 );
     }
 
@@ -256,9 +245,9 @@ public class SVGFormCD extends ComponentDescriptor {
 
     }
 
-    final class SVGButtonEventSourceOrder extends FlowPinOrderPresenter {
+    final class SVGComponentEventSourceOrder extends FlowPinOrderPresenter {
 
-        static final String CATEGORY_ID = "SVGButton"; //NOI18N
+        static final String CATEGORY_ID = "SVGComponent"; //NOI18N
 
         @Override
         public String getCategoryID() {
@@ -267,7 +256,8 @@ public class SVGFormCD extends ComponentDescriptor {
 
         @Override
         public String getCategoryDisplayName() {
-            return NbBundle.getMessage(SVGFormCD.class, "DISP_FlowCategory_SVGButtons"); // NOI18N; 
+            return NbBundle.getMessage(SVGFormCD.class, 
+                    "DISP_FlowCategory_SVGComponents"); // NOI18N; 
         }
 
         @Override

@@ -90,7 +90,7 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-@Deprecated
+
 class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElementListener, ListSelectionListener, ActionListener, UserCodeAwareness, CleanUp {
 
     private static final String ACTION_ADD_RESOURCE = "addResource"; // NOI18N

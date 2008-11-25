@@ -68,7 +68,7 @@ public class AsmLanguageHierarchy extends LanguageHierarchy<AsmTokenId> {
     }
 
     @Override
-    protected Lexer<AsmTokenId> createLexer(LexerRestartInfo info) {      
+    protected Lexer<AsmTokenId> createLexer(LexerRestartInfo<AsmTokenId> info) {
         return new AsmLexer(info, synt);
     }
 

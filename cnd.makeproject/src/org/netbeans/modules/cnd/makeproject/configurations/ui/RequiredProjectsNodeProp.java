@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.beans.PropertyEditor;
@@ -52,48 +51,51 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 
-public class RequiredProjectsNodeProp extends PropertySupport {
-    private VectorConfiguration vectorConfiguration;
+public class RequiredProjectsNodeProp<E> extends PropertySupport {
+
+    private VectorConfiguration<E> vectorConfiguration;
     Project project;
     MakeConfiguration conf;
     String baseDir;
     String[] texts;
-    
-    public RequiredProjectsNodeProp(VectorConfiguration vectorConfiguration, Project project, MakeConfiguration conf, String baseDir, String[] texts) {
+
+    public RequiredProjectsNodeProp(VectorConfiguration<E> vectorConfiguration, Project project, MakeConfiguration conf, String baseDir, String[] texts) {
         super(texts[0], List.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
-	this.project = project;
-	this.conf = conf;
-	this.baseDir = baseDir;
-	this.texts = texts;
+        this.project = project;
+        this.conf = conf;
+        this.baseDir = baseDir;
+        this.texts = texts;
     }
 
     @Override
     public String getHtmlDisplayName() {
-        if (vectorConfiguration.getModified())
+        if (vectorConfiguration.getModified()) {
             return "<b>" + getDisplayName(); // NOI18N
-        else
+        } else {
             return null;
+        }
     }
-    
+
     public Object getValue() {
         return vectorConfiguration.getValue();
     }
-    
+
+    @SuppressWarnings("unchecked")
     public void setValue(Object v) {
-        vectorConfiguration.setValue((List)v);
+        vectorConfiguration.setValue((List) v);
     }
-    
+
     @Override
     public void restoreDefaultValue() {
         vectorConfiguration.reset();
     }
-    
+
     @Override
     public boolean supportsDefaultValue() {
         return true;
     }
-    
+
     @Override
     public boolean isDefaultValue() {
         return vectorConfiguration.getValue().size() == 0;
@@ -101,46 +103,52 @@ public class RequiredProjectsNodeProp extends PropertySupport {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-	return new DirectoriesEditor((List)((ArrayList)vectorConfiguration.getValue()).clone());
+        ArrayList<E> clone = new ArrayList<E>();
+        clone.addAll(vectorConfiguration.getValue());
+        return new DirectoriesEditor(clone);
     }
 
     @Override
     public Object getValue(String attributeName) {
         if (attributeName.equals("canEditAsText")) // NOI18N
+        {
             return Boolean.FALSE;
+        }
         return super.getValue(attributeName);
     }
 
     private class DirectoriesEditor extends PropertyEditorSupport implements ExPropertyEditor {
-        private List value;
+
+        private List<E> value;
         private PropertyEnv env;
-        
-        public DirectoriesEditor(List value) {
+
+        public DirectoriesEditor(List<E> value) {
             this.value = value;
         }
-        
+
         @Override
         public void setAsText(String text) {
         }
-        
+
         @Override
         public String getAsText() {
-	    boolean addSep = false;
-	    String ret = ""; // NOI18N
-	    for (int i = 0; i < value.size(); i++) {
-		if (addSep)
-		    ret += ", "; // NOI18N
-		ret += value.get(i).toString();
-		addSep = true;
-	    }
-	    return ret;
+            boolean addSep = false;
+            StringBuilder ret = new StringBuilder();
+            for (int i = 0; i < value.size(); i++) {
+                if (addSep) {
+                    ret.append(", "); // NOI18N
+                }
+                ret.append(value.get(i).toString());
+                addSep = true;
+            }
+            return ret.toString();
         }
-        
+
         @Override
         public java.awt.Component getCustomEditor() {
             return new RequiredProjectsPanel(project, conf, baseDir, value.toArray(), this, env);
         }
-        
+
         @Override
         public boolean supportsCustomEditor() {
             return true;

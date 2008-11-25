@@ -42,9 +42,7 @@ import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
@@ -56,6 +54,7 @@ import org.openide.nodes.Node;
  *
  * @author mkleint
  */
+@NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=500)
 public class DependenciesNodeFactory implements NodeFactory {
     
     private static final String KEY_DEPENDENCIES = "dependencies"; //NOI18N

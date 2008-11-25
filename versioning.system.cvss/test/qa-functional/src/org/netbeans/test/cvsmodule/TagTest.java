@@ -38,63 +38,74 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.cvsmodule;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.modules.javacvs.TagOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
+
 /**
  *
  * @author peter
  */
 public class TagTest extends JellyTestCase {
-    
-    String os_name;
+
+    static String os_name;
     static String sessionCVSroot;
     boolean unix = false;
     final String projectName = "ForImport";
     final String pathToMain = "forimport|Main.java";
     final String PROTOCOL_FOLDER = "protocol";
-    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
-    
+    static Logger log;
+
+
     /** Creates a new instance of TagTest */
     public TagTest(String name) {
         super(name);
-    }
-    
-    @Override
-    protected void setUp() throws Exception {
-        os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
-        System.out.println("### "+getName()+" ###");
+        if (os_name == null)
+            os_name = System.getProperty("os.name");
         try {
             TestKit.extractProtocol(getDataDir());
-        } catch (Exception e ) {
+        } catch (Exception e) {
             e.printStackTrace();
-        } 
+        }
     }
-    
+
+    @Override
+    protected void setUp() throws Exception {
+        System.out.println("### " + getName() + " ###");
+
+        if (log == null) {
+            log = Logger.getLogger("org.netbeans.modules.versioning.system.cvss.t9y");
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
+    }
+
     protected boolean isUnix() {
         boolean _unix = false;
         if (os_name.indexOf("Windows") == -1) {
@@ -102,24 +113,28 @@ public class TagTest extends JellyTestCase {
         }
         return _unix;
     }
-    
+
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(TagTest.class).addTest(
                       "testCheckOutProject", "testTagDialogUI", "testCreateNewTag",
-                      "testCreateTagOnModified", "testOnNonVersioned", "removeAllData"
+                "testCreateTagOnModified", "testOnNonVersioned", "removeAllData"
                 )
                 .enableModules(".*")
                 .clusters(".*")
         );
-     }
-    
+    }
+
     public void testCheckOutProject() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        MessageHandler mh = new MessageHandler("Checking out");
+        log.addHandler(mh);
+
         TestKit.closeProject(projectName);
-        new ProjectsTabOperator().tree().clearSelection();
-        OutputOperator oo = OutputOperator.invoke();
+//        new ProjectsTabOperator().tree().clearSelection();
+        if ((os_name !=null) && (os_name.indexOf("Mac") > -1))
+            NewProjectWizardOperator.invoke().close();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -130,10 +145,10 @@ public class TagTest extends JellyTestCase {
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
         //crso.setPassword("");
         //crso.setPassword("test");
-        
+
         //prepare stream for successful authentification and run PseudoCVSServer
         //InputStream in = getClass().getResourceAsStream("authorized.in");   
-        InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");   
+        InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
         PseudoCvsServer cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         cvss.ignoreProbe();
@@ -142,10 +157,10 @@ public class TagTest extends JellyTestCase {
         crso.setCVSRoot(CVSroot);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         crso.next();
-              
+
         //second step of checkoutwizard
         //2nd step of CheckOutWizard
-        
+
         File tmp = new File("/tmp"); // NOI18N
         File work = new File(tmp, "" + File.separator + System.currentTimeMillis());
         tmp.mkdirs();
@@ -154,63 +169,54 @@ public class TagTest extends JellyTestCase {
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
         cvss.stop();
         try {
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             in.close();
         } catch (IOException e) {
             //
         }
-        moduleCheck.setModule("ForImport");        
+        moduleCheck.setModule("ForImport");
         moduleCheck.setLocalFolder(work.getAbsolutePath()); // NOI18N
-        
+
         //Pseudo CVS server for finishing check out wizard
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "checkout_finish_2.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         CVSroot = cvss.getCvsRoot();
         //cvss.ignoreProbe();
-        
-        //crso.setCVSRoot(CVSroot);
-        //combo.setSelectedItem(CVSroot);
+
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
-        Thread.sleep(3000);
-        
-        
+
         //System.out.println(CVSroot);
         //sessionCVSroot = CVSroot;
-        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.waitText("Checking out finished");
+        TestKit.waitText(mh);
         cvss.stop();
-        try {
-            Thread.sleep(1000);
-            in.close();
-        } catch (IOException e) {
-            //
-        }
+    
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
-        
-        //ProjectSupport.waitScanFinished();
-        //TestKit.waitForQueueEmpty()
+//
+//        //ProjectSupport.waitScanFinished();
+//        //TestKit.waitForQueueEmpty()
         ProjectSupport.waitScanFinished();
         
         //create new elements for testing
         TestKit.createNewElements(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
-    
+
     public void testTagDialogUI() throws Exception {
+        MessageHandler mh = new MessageHandler("Annotating");
+        log.addHandler(mh);
         Node node = new Node(new SourcePackagesNode(projectName), pathToMain);
         TagOperator to = TagOperator.invoke(node);
         to.setTagName("TagTest");
-        
+
         //System.out.println("Error in dialog buttons - OK -> Tag, Help -> missing!!!");
         new JButtonOperator(to, "Tag");
         new JButtonOperator(to, "Help");
         new JButtonOperator(to, "Cancel");
-        
+
         to.checkAvoidTaggingLocallyModifiedFiles(false);
         //
         assertFalse(to.cbAvoidTaggingLocallyModifiedFiles().isSelected());
@@ -225,74 +231,70 @@ public class TagTest extends JellyTestCase {
         assertTrue(to.cbMoveExistingTag().isSelected());
         to.cancel();
     }
-    
+
     public void testCreateNewTag() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         PseudoCvsServer cvss;
         InputStream in;
-        
+        MessageHandler mh = new MessageHandler("Annotating");
+        log.addHandler(mh);
+
         Node node = new Node(new SourcePackagesNode(projectName), pathToMain);
         TagOperator to = TagOperator.invoke(node);
         to.setTagName("MyNewTag");
-        
+
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "create_new_tag.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
         JButtonOperator btnTag = new JButtonOperator(to, "Tag");
         btnTag.push();
-        
-        //OutputOperator oo = OutputOperator.invoke();
-        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
-        oto.waitText("Tagging \"Main.java\"... finished");
+
         cvss.stop();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
-    
+
     public void testCreateTagOnModified() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         PseudoCvsServer cvss;
         InputStream in;
-        
+        MessageHandler mh = new MessageHandler("Tagging");
+        log.addHandler(mh);
+
         Node node = new Node(new SourcePackagesNode(projectName), pathToMain);
         node.performPopupAction("Open");
         EditorOperator eo = new EditorOperator("Main.java");
         eo.insert("//Comment\n");
         eo.save();
-        Thread.sleep(1000);
-        
+        new EventTool().waitNoEvent(1000);
+
         TagOperator to = TagOperator.invoke(node);
         to.setTagName("MyNewTag");
         to.checkAvoidTaggingLocallyModifiedFiles(false);
-        
+
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "create_new_tag_on_modified.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
         JButtonOperator btnTag = new JButtonOperator(to, "Tag");
         btnTag.push();
-        
-        //OutputOperator oo = OutputOperator.invoke();
-        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
-        oto.waitText("cvs server: Main.java is locally modified");
-        oto.waitText("correct the above errors first!");
+
         cvss.stop();
-        
+
         NbDialogOperator nbd = new NbDialogOperator("Command Failed");
         JButtonOperator btnOk = new JButtonOperator(nbd, "OK");
         btnOk.push();
-        oto.waitText("Tagging \"Main.java\"... finished");
+        
+        TestKit.waitText(mh);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
-    
-    public void testOnNonVersioned() throws Exception{
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+
+    public void testOnNonVersioned() throws Exception {
         //delete fake versioning of file
         //TestKit.unversionProject(file, projNonName);
-        
+        long lTimeOut = TestKit.changeTimeout("DialogWaiter.WaitDialogTimeout", 5000);
         TimeoutExpiredException tee = null;
         try {
             Node node = new Node(new SourcePackagesNode(projectName), "xx|NewClass.java");
@@ -301,9 +303,10 @@ public class TagTest extends JellyTestCase {
             tee = (TimeoutExpiredException) e;
         }
         assertNotNull(tee);
+        TestKit.changeTimeout("DialogWaiter.WaitDialogTimeout", lTimeOut);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
-    
+
     public void removeAllData() throws Exception {
         TestKit.closeProject(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");

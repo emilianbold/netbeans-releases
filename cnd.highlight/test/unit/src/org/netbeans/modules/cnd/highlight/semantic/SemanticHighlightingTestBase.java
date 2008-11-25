@@ -62,7 +62,12 @@ public abstract class SemanticHighlightingTestBase  extends ProjectBasedTestCase
         performTest(source, -1);
     }
 
-    protected void performTest(String testFileName, int offset) throws Exception {
+    protected final void performTest(String testFileName, int line, int column) throws Exception {
+        int offset = super.getOffset(getDataFile(testFileName), line, column);
+        performTest(testFileName, offset);
+    }
+    
+    protected final void performTest(String testFileName, int offset) throws Exception {
         FileImpl file = (FileImpl)getCsmFile(getDataFile(testFileName));
         Collection<? extends CsmOffsetable> out = getBlocks(file, offset);
         assertNotNull(out);

@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -119,7 +120,8 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
         }
         NbModuleProject project;
         try {
-            project = (NbModuleProject) ProjectManager.getDefault().findProject(source);
+            Project p = ProjectManager.getDefault().findProject(source);
+            project = p == null ? null : p.getLookup().lookup(NbModuleProject.class);
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
             return new String[0];

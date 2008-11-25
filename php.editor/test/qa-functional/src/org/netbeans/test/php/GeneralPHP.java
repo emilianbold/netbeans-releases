@@ -71,6 +71,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.Operator;
 import java.io.File;
 import org.netbeans.jemmy.Timeouts;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 
 /**
  *
@@ -412,4 +413,33 @@ public class GeneralPHP extends JellyTestCase {
 
       return;
     }
+
+  private void SetTagsSupport( String sTag, String sProject, boolean b )
+  {
+    // Open project properties
+    ProjectsTabOperator pto = new ProjectsTabOperator( );
+    ProjectRootNode prn = pto.getProjectRootNode( sProject );
+    prn.select( );
+    prn.callPopup( );
+    JPopupMenuOperator popup = new JPopupMenuOperator( );
+    popup.pushMenuNoBlock( "Properties" );
+    JDialogOperator jdProperties = new JDialogOperator( "Project Properties - " );
+    // Set support
+    JCheckBoxOperator box = new JCheckBoxOperator( jdProperties, sTag );
+    box.setSelected( b );
+    // Close dialog
+    JButtonOperator bOk = new JButtonOperator( jdProperties, "OK" );
+    bOk.push( );
+    jdProperties.waitClosed( );
+  }
+
+  protected void SetShortTags( String sProject, boolean b )
+  {
+    SetTagsSupport( "Allow short tags", sProject, b );
+  }
+
+  protected void SetAspTags( String sProject, boolean b )
+  {
+    SetTagsSupport( "Allow ASP tags", sProject, b );
+  }
 }

@@ -62,7 +62,7 @@ import javax.swing.JComponent;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.execution.ExecutionUtils;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
@@ -355,11 +355,11 @@ public class PluginManager {
         RubyPlatform platform = RubyPlatform.platformFor(project);
         File cmd = new File(platform.getInterpreter());
         
-        if (!cmd.getName().startsWith("jruby") || RubyExecution.LAUNCH_JRUBY_SCRIPT) { // NOI18N
+        if (!cmd.getName().startsWith("jruby") || ExecutionUtils.launchJRubyScript()) { // NOI18N
             argList.add(cmd.getPath());
         }
         
-        argList.addAll(RubyExecution.getRubyArgs(platform));
+        argList.addAll(ExecutionUtils.getRubyArgs(platform));
         // see #142698
         argList.add("-r" + getPluginCustomizer().getAbsolutePath()); //NOI18N
         argList.add(pluginCmd);
@@ -376,9 +376,9 @@ public class PluginManager {
         pb.redirectErrorStream(true);
         
         Util.adjustProxy(pb);
-        
         // PATH additions for JRuby etc.
-        new RubyExecution(new RubyExecutionDescriptor(platform, "plugin", pb.directory()).cmd(cmd)).setupProcessEnvironment(pb.environment()); // NOI18N
+        RubyExecutionDescriptor descriptor = new RubyExecutionDescriptor(platform, "plugin", pb.directory()).cmd(cmd);
+        ExecutionUtils.setupProcessEnvironment(pb.environment(), descriptor.getCmd().getParent(), descriptor.getAppendJdkToPath());
         
         if (lines == null) {
             lines = new ArrayList<String>(40);

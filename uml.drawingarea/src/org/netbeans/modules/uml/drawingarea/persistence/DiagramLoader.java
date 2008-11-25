@@ -1228,6 +1228,9 @@ class DiagramLoader
 //            System.out.println("  !!!  edgeInfo = "+edgeInfo);
             Widget sourceWidget = scene.findWidget(edgeInfo.getSourcePE());
             Widget targetWidget = scene.findWidget(edgeInfo.getTargetPE());
+            //
+            if(sourceWidget==null || targetWidget==null)continue;
+            //
             Point startingPoint = (Point) edgeInfo.getWayPoints().get(0);
             Point endingPoint = (Point) edgeInfo.getWayPoints().get(edgeInfo.getWayPoints().size() - 1);
             String edgeMEID = edgeInfo.getMEID();

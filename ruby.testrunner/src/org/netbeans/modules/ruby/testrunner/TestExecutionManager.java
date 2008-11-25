@@ -39,17 +39,25 @@
 
 package org.netbeans.modules.ruby.testrunner;
 
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.ExecutionService;
-import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
+import org.netbeans.modules.ruby.testrunner.ui.Manager;
+import org.netbeans.modules.ruby.testrunner.ui.TestHandlerFactory;
+import org.netbeans.modules.ruby.testrunner.ui.TestRunnerInputProcessorFactory;
+import org.netbeans.modules.ruby.testrunner.ui.TestRunnerLineConvertor;
+import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.openide.LifecycleManager;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Handles running and re-running of test executions.
@@ -66,12 +74,15 @@ public final class TestExecutionManager {
      * The current execution.
      */
     private ExecutionService execution;
+    private Future<Integer> result;
     /**
      * Indicates whether the current execution has finished.
      */
     private boolean finished;
-    private TestRecognizer recognizer;
-    private ChangeSupport changeSupport = new ChangeSupport(this);
+    private TestRunnerLineConvertor outConvertor;
+    private TestRunnerLineConvertor errConvertor;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final RequestProcessor testExecutionProcessor = new RequestProcessor("Ruby Test Execution Processor"); //NOI18N
     
     private static final TestExecutionManager INSTANCE = new TestExecutionManager();
     
@@ -82,8 +93,25 @@ public final class TestExecutionManager {
         return INSTANCE;
     }
 
+    synchronized void finish() {
+        setFinished(true);
+    }
+
     synchronized void reset() {
         this.finished = false;
+    }
+    /**
+     * Inits our TestExecutionManager with the given RubyExecution. Does not
+     * run the execution.
+     *
+     * @param rubyDescriptor
+     */
+    synchronized void init(RubyExecutionDescriptor rubyDescriptor) {
+
+        RubyProcessCreator rpc = new RubyProcessCreator(rubyDescriptor);
+
+        ExecutionDescriptor descriptor = rubyDescriptor.toExecutionDescriptor();
+        execution = ExecutionService.newService(rpc, descriptor, rubyDescriptor.getDisplayName());
     }
     /**
      * Starts a RubyExecution with the given executionDescriptor and testRecognizer.
@@ -91,41 +119,51 @@ public final class TestExecutionManager {
      * @param executionDescriptor
      * @param testRecognizer
      */
-    synchronized void start(RubyExecutionDescriptor executionDescriptor, TestRecognizer testRecognizer) {
-        assert executionDescriptor != null;
-        assert testRecognizer != null;
-        
-        if (!isFinished() && execution != null) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Killing unfinished execution: " + execution);
-            }
-            execution.kill();
-        } 
-        
-        recognizer = testRecognizer;
-        executionDescriptor.addOutputRecognizer(recognizer);
-        execution = new RubyExecution(executionDescriptor);
+    synchronized void start(RubyExecutionDescriptor rubyDescriptor,
+            TestHandlerFactory handlerFactory, TestSession session) {
 
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Starting: " + execution);
-        }
         setFinished(false);
-        LifecycleManager.getDefault().saveAll();
-        handleTask(execution.run());
-    }
-    
-    private void handleTask(Task task) {
-        // workaround for not being able to attach listeners
-        // directly to execution service
-        task.addTaskListener(new TaskListener() {
+        final Manager manager = Manager.getInstance();
+        outConvertor = new TestRunnerLineConvertor(manager, session, handlerFactory);
+        errConvertor = new TestRunnerLineConvertor(manager, session, handlerFactory);
+        rubyDescriptor.addOutConvertor(outConvertor);
+        rubyDescriptor.addErrConvertor(errConvertor);
+        rubyDescriptor.setOutProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, handlerFactory.printSummary()));
+        rubyDescriptor.setErrProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false));
+        rubyDescriptor.lineBased(true);
 
-            public void taskFinished(Task task) {
-                setFinished(true);
+
+        RubyProcessCreator rpc = new RubyProcessCreator(rubyDescriptor);
+
+        ExecutionDescriptor descriptor = rubyDescriptor.toExecutionDescriptor()
+                .postExecution(new Runnable() {
+
+            public void run() {
+                refresh();
             }
         });
-        setFinished(task.isFinished());
+        execution = ExecutionService.newService(rpc, descriptor, rubyDescriptor.getDisplayName());
+        runExecution();
     }
-    
+
+    private void runExecution() {
+        result = execution.run();
+        testExecutionProcessor.post(new Runnable() {
+            public void run() {
+                try {
+                    result.get();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (CancellationException ex) {
+                    // ignore
+                }
+                setFinished(result.isDone());
+            }
+        });
+    }
+
     /**
      * Checks whether the current execution is finished.
      * 
@@ -133,7 +171,7 @@ public final class TestExecutionManager {
      * false otherwise.
      */
     public synchronized boolean isFinished() {
-        return finished;
+        return finished || (result != null && result.isDone());
     }
     
     private void setFinished(boolean finished) {
@@ -148,11 +186,10 @@ public final class TestExecutionManager {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Re-running: " + execution);
         }
-        
-        recognizer.refreshSession();
+        refresh();
         setFinished(false);
         LifecycleManager.getDefault().saveAll();
-        handleTask(execution.rerun());
+        runExecution();
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -168,6 +205,11 @@ public final class TestExecutionManager {
      * computed test statuses.
      */
     public synchronized void refresh() {
-        recognizer.refreshSession();
+        if (outConvertor != null) {
+            outConvertor.refreshSession();
+        }
+        if (errConvertor != null) {
+            errConvertor.refreshSession();
+        }
     }
 }

@@ -575,8 +575,12 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         }
         
         private RepositoryConnection createNewRepositoryConnection(String url) {
-            editedRC.setUrl(url);
-            return new RepositoryConnection(editedRC);
+            if(editedRC != null) {
+                editedRC.setUrl(url);
+                return new RepositoryConnection(editedRC);
+            } else {
+                return new RepositoryConnection(url);
+            }
         }
     }
 }

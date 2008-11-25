@@ -174,3 +174,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-maven-embedder@" value="${javadoc.docs.org-netbeans-modules-maven-embedder}"/>
 <replacefilter token="@org-netbeans-spi-actions@" value="${javadoc.docs.org-netbeans-spi-actions}"/>
 <replacefilter token="@org-netbeans-modules-spi-actions@" value="${javadoc.docs.org-netbeans-modules-spi-actions}"/>
+<replacefilter token="@org-netbeans-modules-extexecution@" value="${javadoc.docs.org-netbeans-modules-extexecution}"/>
