@@ -44,26 +44,46 @@ import org.netbeans.modules.parsing.api.Snapshot;
 
 
 /**
- * Creates new instance of Parser for some specific collection of {@link Snapshot}s.
- * ParserFactory implemementation can be registerred for some concrete 
- * mimeType, or generally for all languages. So it can be registerred 
- * in manifest.xml in <code>"Editors/" + mimeType</code> folder, or directly in
- * <code>"Editors"</code>.
+ * The factory for {@link Parser}s. <code>ParserFactory</code> implemementations
+ * can be registered in <code>MimeLoolup</code> either for a specific
+ * mime type or for all languages. The example below shows <code>ParserFactory</code>
+ * registration for <code>text/x-something</code> mime type in an XML layer.
  *
+ * <pre>
+ * &lt;folder name="Editors"&gt;
+ *  &lt;folder name="text"&gt;
+ *   &lt;folder name="x-something"&gt;
+ *    &lt;file name="org-some-module-MyParserFactory.instance" /&gt;
+ *   &lt;/folder&gt;
+ *  &lt;/folder&gt;
+ * &lt;/folder&gt;
+ * </pre>
+ * 
  * @author Jan Jancura
  */
 public abstract class ParserFactory {
 
     /**
-     * Returns new instance of {@link Parser} for given collection of 
-     * {@link Snapshot}s or <code>null</code>.
+     * Creates a new instance of {@link Parser}. In general parsers are created
+     * for either one or several snapshots (ie. document sections), which are provided
+     * to this method. It is guaranteed that all snapshots in the collection will be
+     * of the same mime type and it will be the mime type, which this factory
+     * was registered for (ie. in <code>MimeLookup</code>). Typical factories won't
+     * need the snapshots for creating a parser, but factories that serve multiple
+     * languages (eg. in GSF or other language support frameworks) may find this useful.
+     *
+     * <p>It is important to remember that the snapshots are provided <b>only</b>
+     * for the factory and they reflect document states at the time when the factory
+     * is called. Since the parsing infrastructure may cache parser instances it
+     * will provide a new snapshot when it asks <code>Parser</code>s to do their job.
+     * Therefore the snapshots here may only be used for the parser creation, but must
+     * <b>never</b> be used for parsing!
      * 
-     * @param snapshots     A snapshots.
-     * @return              A new instance of parser.
+     * @param snapshots Snaphots of documents, which the new parser will be asked
+     *   to parse.
+     *
+     * @return The new <code>Parser</code> instance or <code>null</code> if this
+     *   factory does not have a parser suitable for parsing this type of snapshots.
      */
-    public abstract Parser createParser (Collection<Snapshot> snapshots);
+    public abstract Parser createParser(Collection<Snapshot> snapshots);
 }
-
-
-
-

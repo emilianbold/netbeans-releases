@@ -45,9 +45,8 @@ import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 
 /**
@@ -62,10 +61,10 @@ public class AstOffsetTest extends JsTestBase {
     }            
     
     @Override
-    protected String describeNode(CompilationInfo info, Object obj, boolean includePath) throws Exception {
+    protected String describeNode(ParserResult info, Object obj, boolean includePath) throws Exception {
         Node node = (Node)obj;
         if (includePath) {
-            BaseDocument doc = LexUtilities.getDocument(info, false);
+            BaseDocument doc = LexUtilities.getDocument((JsParseResult) info, true);
             String s = null;
             while (node != null) {
                 int line = Utilities.getLineOffset(doc, node.getSourceStart());
@@ -87,19 +86,19 @@ public class AstOffsetTest extends JsTestBase {
     }
     
     @Override
-    protected void initializeNodes(CompilationInfo info, ParserResult result, List<Object> validNodes,
+    protected void initializeNodes(ParserResult result, List<Object> validNodes,
             Map<Object,OffsetRange> positions, List<Object> invalidNodes) throws Exception {
         //Node root = AstUtilities.getRoot(info);
-        Node root = AstUtilities.getRoot(result);
-        assertNotNull(root);
+        JsParseResult jspr = AstUtilities.getParseResult(result);
+        assertNotNull(jspr.getRootNode());
         
-        initialize(root, validNodes, invalidNodes, positions, info);
+        initialize(jspr.getRootNode(), validNodes, invalidNodes, positions, result);
     }
 
     private void initialize(Node node, List<Object> validNodes, List<Object> invalidNodes, Map<Object,
-            OffsetRange> positions, CompilationInfo info) throws Exception {
+            OffsetRange> positions, ParserResult info) throws Exception {
         if (node.getSourceStart() > node.getSourceEnd()) {
-            BaseDocument doc = LexUtilities.getDocument(info, false);
+            BaseDocument doc = LexUtilities.getDocument((JsParseResult)info, true);
             assertTrue(describeNode(info, node, true) + "; node=" + node.toString() + " at line " + org.netbeans.editor.Utilities.getLineOffset(doc, node.getSourceStart()), false);
         }
         OffsetRange range = new OffsetRange(node.getSourceStart(), node.getSourceEnd());

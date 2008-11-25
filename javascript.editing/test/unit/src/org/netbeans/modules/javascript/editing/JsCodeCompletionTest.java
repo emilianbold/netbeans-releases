@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
-import org.netbeans.modules.gsf.GsfTestCompilationInfo;
+import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
  *
@@ -61,13 +61,15 @@ public class JsCodeCompletionTest extends JsTestBase {
     }
     
     @Override
-    protected void checkCall(GsfTestCompilationInfo info, int caretOffset, String expectedParameter, boolean expectSuccess) {
+    protected void checkCall(ParserResult info, int caretOffset, String expectedParameter, boolean expectSuccess) {
         IndexedFunction[] methodHolder = new IndexedFunction[1];
         int[] paramIndexHolder = new int[1];
         int[] anchorOffsetHolder = new int[1];
         int lexOffset = caretOffset;
         int astOffset = caretOffset;
-        boolean ok = JsCodeCompletion.computeMethodCall(info, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null);
+        JsParseResult jspr = AstUtilities.getParseResult(info);
+        assertNotNull("Expecting JsParseResult, but got " + info, jspr);
+        boolean ok = JsCodeCompletion.computeMethodCall(jspr, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null);
 
         if (expectSuccess) {
             assertTrue(ok);
