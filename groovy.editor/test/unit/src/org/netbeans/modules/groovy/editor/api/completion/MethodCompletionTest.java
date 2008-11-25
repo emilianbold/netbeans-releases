@@ -165,5 +165,17 @@ public class MethodCompletionTest extends GroovyTestBase {
     public void testCompletionGroovySuper1() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods15.groovy", "        super.^", false);
     }
+
+    public void testCompletionNoDot1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods16.groovy", "        no^", false);
+    }
+
+    public void testCompletionNoDot2() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods16.groovy", "        x^", false);
+    }
+
+    public void testCompletionNoDot3() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods16.groovy", "        n^", false);
+    }
 }
 
