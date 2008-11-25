@@ -336,7 +336,7 @@ public abstract class ContextAction<T> extends AbstractAction {
             super.addPropertyChangeListener(listener);
             int count = getPropertyChangeListeners().length;
             if (count == 1) {
-                addNotify();
+                internalAddNotify();
             }
         }
     }
@@ -347,28 +347,54 @@ public abstract class ContextAction<T> extends AbstractAction {
             super.removePropertyChangeListener(listener);
             int count = getPropertyChangeListeners().length;
             if (count == 0) {
-                removeNotify();
+                internalRemoveNotify();
             }
         }
     }
 
     volatile boolean attached;
-    void addNotify() {
-//        assert Thread.holdsLock(STATE_LOCK);
+    void internalAddNotify() {
         attached = true;
         stub = getStub();
         stub.resultChanged(null);
+        addNotify();
     }
 
-    void removeNotify() {
-//        assert Thread.holdsLock(STATE_LOCK);
-        attached = false;
-        stub.removePropertyChangeListener(stubListener);
-        stub = null;
+    void internalRemoveNotify() {
+        try {
+            removeNotify();
+        } finally {
+            attached = false;
+            stub.removePropertyChangeListener(stubListener);
+            stub = null;
+        }
     }
 
-    boolean isAttached() {
-        return attached;
+    /**
+     * Called when the first listener (such as a UI component) is attached
+     * to this action.  If your action depends on some external property
+     * to compute its enabled state, override this method to attach listeners.
+     */
+    protected void addNotify() {
+        //do nothing
+    }
+
+    /**
+     * Called when the last listener (such as a UI component) is removed
+     * to this action.  If your action depends on some external property
+     * to compute its enabled state, override this method to detach listeners.
+     */
+    protected void removeNotify() {
+        //do nothing
+    }
+
+    /**
+     * Recompute the enabled state of this action.  Call this method if your
+     * action depends on some external value to compute its enabled state,
+     * when that value changes.
+     */
+    protected final void refresh() {
+        getStub().resultChanged(null);
     }
 
     //for unit tests
@@ -493,6 +519,12 @@ public abstract class ContextAction<T> extends AbstractAction {
         return new MergeAction(actions, exclusive);
     }
 
+    /**
+     * Same as merge (actions, false);
+     *
+     * @param actions An array of context actions
+     * @return
+     */
     public static ContextAwareAction merge (ContextAction<?>... actions) {
         return new MergeAction(actions);
     }

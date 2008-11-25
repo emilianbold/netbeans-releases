@@ -119,10 +119,6 @@ class ActionStub<T> implements Action, LookupListener, ContextAwareAction {
         Collection<? extends T> targets = collection();
         assert targets != null;
         assert parent != null;
-        if (supp.getPropertyChangeListeners().length == 0) {
-            //No addNotify called - we may need to initialize values
-            parent.change(targets, this);
-        }
         return targets.isEmpty() ? false : parent.checkQuantity(targets) &&
                 parent.isEnabled(targets);
     }

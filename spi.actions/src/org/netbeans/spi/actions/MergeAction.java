@@ -42,7 +42,9 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,6 +71,8 @@ final class MergeAction implements ContextAwareAction, PropertyChangeListener {
         this.actions = actions;
         this.allowOnlyOne = allowOnlyOne;
         assert actions.length > 0;
+        assert new HashSet<Action>(Arrays.asList(actions)).size() == actions.length :
+            "Duplicate actions in " + Arrays.asList(actions);
         for (int i = 0; i < actions.length; i++) {
             Parameters.notNull("Action " + i, actions[i]); //NOI18N
             assert actions[i] instanceof ContextAction || actions[i] instanceof ActionStub;
@@ -168,11 +172,9 @@ final class MergeAction implements ContextAwareAction, PropertyChangeListener {
 
     private void sievePropertyChanges() {
         Map<String, Object> nue = new HashMap<String, Object>();
-//        Action del = getDelegateAction();
         for (String key : knownValues.keySet()) {
             Object expected = knownValues.get(key);
             Object found = getValue(key);//del.getValue(key);
-//            Object found = del.getValue(key);
             if (found != expected) {
                 nue.put(key, found);
                 supp.firePropertyChange(key, expected, found);
@@ -181,7 +183,11 @@ final class MergeAction implements ContextAwareAction, PropertyChangeListener {
     }
 
     interface ActionRunnable<T> {
-
+        //A bit of ugliness to accomplish two things:
+        // - Cannot have a common supertype for ActionStub + ContextAction
+        //   without exporting it to clients
+        // - Need to run some code on an uninitialized ActionStub or
+        //   contextAction *as if* it were being listened to
         T run(ContextAction<?> a);
 
         T run(ActionStub<?> a);
@@ -189,34 +195,32 @@ final class MergeAction implements ContextAwareAction, PropertyChangeListener {
 
     <T> T runActive(ActionRunnable<T> ar, Action a) {
         assert a instanceof ContextAction || a instanceof ActionStub;
-//        synchronized (a instanceof ActionStub ? ((ActionStub)a).lock() :
-//            ((ContextAction) a).STATE_LOCK) {
-            boolean wasActive = a instanceof ContextAction ? ((ContextAction) a).attached : ((ActionStub) a).attached;
-            try {
-                if (!wasActive) {
-                    if (a instanceof ContextAction) {
-                        ((ContextAction) a).addNotify();
-                        return ar.run((ContextAction) a);
-                    } else {
-                        ((ActionStub) a).addNotify();
-                        return ar.run((ActionStub) a);
-                    }
-                }
+        boolean wasActive = a instanceof ContextAction ? (
+                (ContextAction) a).attached : ((ActionStub) a).attached;
+        try {
+            if (!wasActive) {
                 if (a instanceof ContextAction) {
+                    ((ContextAction) a).internalAddNotify();
                     return ar.run((ContextAction) a);
                 } else {
+                    ((ActionStub) a).addNotify();
                     return ar.run((ActionStub) a);
                 }
-            } finally {
-                if (!wasActive) {
-                    if (a instanceof ContextAction) {
-                        ((ContextAction) a).removeNotify();
-                    } else {
-                        ((ActionStub) a).removeNotify();
-                    }
+            }
+            if (a instanceof ContextAction) {
+                return ar.run((ContextAction) a);
+            } else {
+                return ar.run((ActionStub) a);
+            }
+        } finally {
+            if (!wasActive) {
+                if (a instanceof ContextAction) {
+                    ((ContextAction) a).internalRemoveNotify();
+                } else {
+                    ((ActionStub) a).removeNotify();
                 }
             }
-//        }
+        }
     }
     volatile boolean attached;
 
@@ -251,12 +255,10 @@ final class MergeAction implements ContextAwareAction, PropertyChangeListener {
     public Object getValue(final String key) {
         Object result = pairs.get(key);
         if (result == null) {
-//            synchronized (this) {
-                if (isEnabled()) {
-                    Action del = getDelegateAction();
-                    result = del.getValue(key);
-                }
-//            }
+            if (isEnabled()) {
+                Action del = getDelegateAction();
+                result = del.getValue(key);
+            }
         }
         if (result == null) {
             ActionRunnable<Object> ar = new ActionRunnable<Object>() {
