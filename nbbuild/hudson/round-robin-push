@@ -13,7 +13,7 @@ if [ -z "$TMP" ]; then
   TMP="/tmp"
 fi
 
-
+t
 
 ANT_OPTS="-Xmx512m -XX:MaxPermSize=128m"
 export ANT_OPTS
@@ -23,7 +23,8 @@ export HGMERGE
 hg up -C tip
 hg --config extensions.purge= clean --all
 
-STATUS=$TMP/$$-status
+mkdir -p "nbbuild/build"
+STATUS="nbbuild/build/build-info"
 curl $pop_job/buildStatus -D "$STATUS"
 cat "$STATUS"
 
@@ -31,10 +32,8 @@ if grep "Location:.*blue[_anime]*.gif.*" "$STATUS"; then
     echo Build seems to be stable
 else
     echo Build is not stable, exiting
-    rm "$STATUS"
     exit 1
 fi
-rm "$STATUS"
 
 testresult() {
     FILE="$1/TEST-hg.$2.xml"
@@ -43,9 +42,9 @@ testresult() {
     echo '  <properties>' >>$FILE
     echo '  </properties>' >>$FILE
     echo '  <testcase classname="hg.'$2'" name="hg.'$2'" time="1" />' >>$FILE
-    echo '  <system-out>' >>$FILE
+    echo '  <system-out><![CDATA[' >>$FILE
     echo "$3" >>$FILE
-    echo '</system-out>' >>$FILE
+    echo ']]</system-out>' >>$FILE
     echo '  <system-err></system-err>' >>$FILE
     echo '</testsuite>' >>$FILE
 }
@@ -86,6 +85,7 @@ if [ "$OUT_COUNT" -gt 0 ]; then
     echo "Let the build start. There is $OUT_COUNT outgoing changes."
 else
     echo "No outgoing changes. No reason to do build."
+    echo >"nbbuild/no-outgoing-changes-no-build.zip"
     exit 0
 fi
 

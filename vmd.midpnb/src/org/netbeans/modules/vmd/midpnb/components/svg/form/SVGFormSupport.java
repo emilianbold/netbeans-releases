@@ -53,6 +53,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGFormImageParser;
@@ -81,9 +82,7 @@ public final class SVGFormSupport {
 
         for (DesignComponent svgComponent : components) {
             if (registry.isInHierarchy(SVGComponentCD.TYPEID, svgComponent.getType())) {
-                if (registry.isInHierarchy(SVGButtonCD.TYPEID, svgComponent.getType())) {
-                    deleteEventSource(svgComponent);
-                }
+                deleteEventSource(svgComponent);
                 ArraySupport.remove(svgForm, SVGFormCD.PROP_COMPONENTS, svgComponent);
                 svgForm.getDocument().deleteComponent(svgComponent);
             }
@@ -105,12 +104,17 @@ public final class SVGFormSupport {
         return svgComponents;
     }
 
-    private static void deleteEventSource(DesignComponent svgButton) {
-        DesignComponent parentComponent = svgButton.getParentComponent();
-        Collection<DesignComponent> components = new HashSet<DesignComponent>(parentComponent.getComponents());
+    private static void deleteEventSource(DesignComponent svgComponent) {
+        DesignComponent parentComponent = svgComponent.getParentComponent();
+        Collection<DesignComponent> components = new HashSet<DesignComponent>(
+                parentComponent.getComponents());
         for (DesignComponent child : components) {
-            if (parentComponent.getDocument().getDescriptorRegistry().isInHierarchy(SVGButtonEventSourceCD.TYPEID, child.getType())) {
-                if (child.readProperty(SVGButtonEventSourceCD.PROP_SVGBUTTON).getComponent() == svgButton) {
+            if (parentComponent.getDocument().getDescriptorRegistry().isInHierarchy(
+                    EventSourceCD.TYPEID, child.getType())) 
+            {
+                if (child.readProperty(
+                        SVGComponentEventSourceCD.PROP_SVGCOMPONENT).getComponent() == svgComponent) 
+                {
                     parentComponent.getDocument().deleteComponent(child);
                 }
             }

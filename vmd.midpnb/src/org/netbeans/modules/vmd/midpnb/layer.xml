@@ -101,13 +101,21 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGButtonCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGButtonEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGCheckBoxCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGCheckBoxEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGComboBoxCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGComboBoxEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGLabelCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGLabelEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGListCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGListEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGRadioButtonCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGRadioButtonEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGSliderCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGSliderEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGSpinnerCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGSpinnerEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGTextFieldCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGTextFieldEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGFormCD.instance"/>
         </folder>
         

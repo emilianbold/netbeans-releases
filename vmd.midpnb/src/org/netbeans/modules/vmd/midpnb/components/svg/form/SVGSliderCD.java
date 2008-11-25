@@ -62,6 +62,10 @@ public class SVGSliderCD extends ComponentDescriptor{
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);
     }
+    
+    static {
+        SVGComponentCD.addPairType( TYPEID, SVGSliderEventSourceCD.TYPEID );
+    }
 
     @Override
     public VersionDescriptor getVersionDescriptor() {

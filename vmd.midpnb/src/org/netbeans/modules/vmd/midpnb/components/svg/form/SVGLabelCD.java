@@ -66,6 +66,10 @@ public class SVGLabelCD extends ComponentDescriptor{
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);
     }
+    
+    static {
+        SVGComponentCD.addPairType( TYPEID, SVGLabelEventSourceCD.TYPEID );
+    }
 
     @Override
     public VersionDescriptor getVersionDescriptor() {
