@@ -702,6 +702,9 @@ import org.xml.sax.helpers.DefaultHandler;
         Element e;
         e = doc.createElement("compiler"); // NOI18N
         e.setAttribute("name", unsplit(compiler.getNames())); // NOI18N
+        if (compiler.skipSearch()) {
+            e.setAttribute("skip", "true"); // NOI18N
+        }
         element.appendChild(e);
         if (compiler.getPathPattern() != null ||
                 compiler.getExistFolder() != null) {
@@ -1059,6 +1062,9 @@ import org.xml.sax.helpers.DefaultHandler;
         Element c;
         c = doc.createElement("tool"); // NOI18N
         c.setAttribute("name", unsplit(make.getNames())); // NOI18N
+        if (make.skipSearch()) {
+            c.setAttribute("skip", "true"); // NOI18N
+        }
         element.appendChild(c);
 
         if (make.getVersionFlags() != null ||
@@ -1084,6 +1090,9 @@ import org.xml.sax.helpers.DefaultHandler;
         Element c;
         c = doc.createElement("tool"); // NOI18N
         c.setAttribute("name", unsplit(debugger.getNames())); // NOI18N
+        if (debugger.skipSearch()) {
+            c.setAttribute("skip", "true"); // NOI18N
+        }
         element.appendChild(c);
         if (debugger.getVersionFlags() != null ||
                 debugger.getVersionPattern() != null) {
@@ -1257,6 +1266,7 @@ import org.xml.sax.helpers.DefaultHandler;
         String name;
         String versionFlags;
         String versionPattern;
+        boolean skipSearch;
         List<AlternativePath> alternativePath;
     }
 
@@ -1708,6 +1718,7 @@ import org.xml.sax.helpers.DefaultHandler;
                 Make m = v.make;
                 if (path.endsWith(".tool")) { // NOI18N
                     m.name = getValue(attributes, "name"); // NOI18N
+                    m.skipSearch = "true".equals(getValue(attributes, "skip")); // NOI18N
                 } else if (path.endsWith(".version")) { // NOI18N
                     m.versionFlags = getValue(attributes, "flags"); // NOI18N
                     m.versionPattern = getValue(attributes, "pattern"); // NOI18N
@@ -1723,6 +1734,7 @@ import org.xml.sax.helpers.DefaultHandler;
                 Debugger d = v.debugger;
                 if (path.endsWith(".tool")) { // NOI18N
                     d.name = getValue(attributes, "name"); // NOI18N
+                    d.skipSearch = "true".equals(getValue(attributes, "skip")); // NOI18N
                 } else if (path.endsWith(".version")) { // NOI18N
                     d.versionFlags = getValue(attributes, "flags"); // NOI18N
                     d.versionPattern = getValue(attributes, "pattern"); // NOI18N
@@ -1777,6 +1789,7 @@ import org.xml.sax.helpers.DefaultHandler;
             }
             if (path.endsWith(".compiler")) { // NOI18N
                 c.name = getValue(attributes, "name"); // NOI18N
+                c.skipSearch = "true".equals(getValue(attributes, "skip")); // NOI18N
                 return;
             } else if (path.endsWith(".recognizer")) { // NOI18N
                 c.pathPattern = getValue(attributes, "pattern"); // NOI18N
@@ -2198,6 +2211,10 @@ import org.xml.sax.helpers.DefaultHandler;
                 return tool.alternativePath.toArray(new AlternativePath[tool.alternativePath.size()] );
             }
             return null;
+        }
+
+        public boolean skipSearch() {
+            return tool.skipSearch;
         }
     }
 
