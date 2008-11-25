@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,29 +31,31 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.DataInput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
-import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
-
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 /**
- * A key for CsmInclude objects (file and offset -based)
+ * A key for CsmParameterList objects (file and offset -based)
+ * @author Vladimir Voskresensky
  */
-
-/*package*/
-final class IncludeKey extends OffsetableKey {
-
-    public IncludeKey(CsmInclude obj) {
-        super(obj, Utils.getCsmIncludeKindKey(), NameCache.getManager().getString(obj.getIncludeName())); // NOI18N
+/*package*/final class ParamListKey extends OffsetableKey {
+    public ParamListKey(CsmParameterList obj) {
+        super(obj, Utils.getCsmParamListKindKey(), CharSequenceKey.empty()); // NOI18N
     }
 
-    /*package*/ IncludeKey(DataInput aStream) throws IOException {
+    /*package*/ ParamListKey(DataInput aStream) throws IOException {
         super(aStream);
     }
 
@@ -71,7 +67,7 @@ final class IncludeKey extends OffsetableKey {
     public String toString() {
         String retValue;
 
-        retValue = "InclKey: " + super.toString(); // NOI18N
+        retValue = "ParamListKey: " + super.toString(); // NOI18N
         return retValue;
     }
 
@@ -83,7 +79,7 @@ final class IncludeKey extends OffsetableKey {
     @Override
     public int getSecondaryAt(int level) {
         if (level == 0) {
-            return KeyObjectFactory.KEY_INCLUDE_KEY;
+            return KeyObjectFactory.KEY_PARAM_LIST_KEY;
         } else {
             return super.getSecondaryAt(level - 1);
         }

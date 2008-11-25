@@ -198,6 +198,7 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         if (next != null && next.getType() == CPPTokenTypes.RPAREN) {
             next = next.getNextSibling();
             // skip LPAREN (let's not assume it's obligatory)
+            AST lParent = next;
             if (next != null && next.getType() == CPPTokenTypes.LPAREN) {
                 next = next.getNextSibling();
             }

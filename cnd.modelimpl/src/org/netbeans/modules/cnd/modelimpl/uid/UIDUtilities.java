@@ -51,8 +51,10 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -124,6 +126,11 @@ public class UIDUtilities {
     @SuppressWarnings("unchecked")
     public static CsmUID<CsmInclude> createIncludeUID(CsmInclude incl) {
         return UIDManager.instance().getSharedUID(new IncludeUID(incl));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static CsmUID<CsmParameterList> createParamListUID(CsmParameterList incl) {
+        return UIDManager.instance().getSharedUID(new ParamListUID(incl));
     }
 
     @SuppressWarnings("unchecked")
@@ -366,6 +373,20 @@ public class UIDUtilities {
         }
 
         /* package */ IncludeUID(DataInput aStream) throws IOException {
+            super(aStream);
+        }
+    }
+
+    /**
+     * UID for CsmParameterList
+     */
+    /* package */ static final class ParamListUID<T extends CsmParameterList, K extends CsmNamedElement> extends KeyBasedUID<CsmParameterList<T, K>> {
+
+        public ParamListUID(CsmParameterList<T, K> paramList) {
+            super(KeyUtilities.createParamListKey(paramList));
+        }
+
+        /* package */ ParamListUID(DataInput aStream) throws IOException {
             super(aStream);
         }
     }
