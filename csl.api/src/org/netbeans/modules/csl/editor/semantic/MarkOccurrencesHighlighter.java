@@ -66,6 +66,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -97,7 +98,7 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
         return snapshot.getSource().getDocument();
     }
     
-    public void run(ParserResult info) {
+    public void run(ParserResult info, SchedulerEvent event) {
         resume();
         
         Document doc = getDocument();
@@ -107,13 +108,13 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
             return ;
         }
         
-        if (!(info.getEvent() instanceof CursorMovedSchedulerEvent)) {
+        if (!(event instanceof CursorMovedSchedulerEvent)) {
             return;
         }
 
         long start = System.currentTimeMillis();
 
-        int caretPosition = ((CursorMovedSchedulerEvent) info.getEvent()).getCaretOffset();
+        int caretPosition = ((CursorMovedSchedulerEvent) event).getCaretOffset();
         
         if (isCancelled())
             return;
@@ -178,7 +179,7 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
             OccurrencesFinder task = finder;
             if (task != null) {
                 try {
-                    task.run(info);
+                    task.run(info, null);
                 } catch (Exception ex) {
                     ErrorManager.getDefault().notify(ex);
                 }

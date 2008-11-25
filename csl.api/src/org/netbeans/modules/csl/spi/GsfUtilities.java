@@ -45,6 +45,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.EventObject;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.zip.ZipEntry;
@@ -62,7 +63,6 @@ import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -555,7 +555,7 @@ public class GsfUtilities {
      *
      * @return The last know caret offset or -1.
      */
-    public static int getLastKnownCaretOffset(Snapshot snapshot, SchedulerEvent event) {
+    public static int getLastKnownCaretOffset(Snapshot snapshot, EventObject event) {
         // Try scheduler event first
         if (event instanceof CursorMovedSchedulerEvent) {
             return ((CursorMovedSchedulerEvent) event).getCaretOffset();

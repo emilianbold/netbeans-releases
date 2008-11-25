@@ -55,7 +55,6 @@ import org.netbeans.modules.csl.source.util.LowMemoryNotifierMBeanImpl;
 import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 
 public class GsfModuleInstaller extends ModuleInstall {
@@ -64,8 +63,6 @@ public class GsfModuleInstaller extends ModuleInstall {
 //}    
     private static final boolean ENABLE_MBEANS =
         Boolean.getBoolean("org.netbeans.modules.gsf.enableMBeans"); //NOI18N
-
-    private static final RequestProcessor RP = new RequestProcessor("gsf module install", 1);                  //NOI18N
 
     @Override
     public void restored() {

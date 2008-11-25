@@ -50,6 +50,7 @@ import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.openide.util.Lookup;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
@@ -70,7 +71,7 @@ public final class ClassMemberNavigatorSourceFactory extends TaskFactory {
             // no-op
         }
 
-        public @Override void run(ParserResult result) {
+        public @Override void run(ParserResult result, SchedulerEvent event) {
             // no-op
         }
 

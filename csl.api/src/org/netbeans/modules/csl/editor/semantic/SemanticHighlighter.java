@@ -66,6 +66,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.ErrorManager;
 
 
@@ -117,7 +118,7 @@ public class SemanticHighlighter extends ParserResultTask<ParserResult> {
         cancelled = false;
     }
 
-    public @Override void run(ParserResult info) {
+    public @Override void run(ParserResult info, SchedulerEvent event) {
         resume();
         
         Document doc = getDocument();
@@ -276,7 +277,7 @@ public class SemanticHighlighter extends ParserResultTask<ParserResult> {
             if (task != null) {
                 // Allow language plugins to do their own analysis too
                 try {
-                    task.run(info);
+                    task.run(info, null);
                 } catch (Exception ex) {
                     ErrorManager.getDefault().notify(ex);
                 }

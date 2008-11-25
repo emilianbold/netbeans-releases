@@ -59,6 +59,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 
@@ -75,7 +76,7 @@ public class HintsTask extends ParserResultTask<ParserResult> {
     public HintsTask() {
     }
     
-    public @Override void run(ParserResult result) {
+    public @Override void run(ParserResult result, SchedulerEvent event) {
         resume();
         
         final List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();

@@ -65,6 +65,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 
@@ -92,7 +93,7 @@ public final class ElementScanningTask extends ParserResultTask<ParserResult> {
         this.ui = ui;
     }
 
-    public @Override void run(ParserResult result) {
+    public @Override void run(ParserResult result, SchedulerEvent event) {
         
         resume();
 

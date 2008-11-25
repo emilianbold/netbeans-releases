@@ -1038,7 +1038,7 @@ public abstract class CslTestBase extends NbTestCase {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult(caretOffset);
                 if (r instanceof ParserResult) {
-                    finder.run((ParserResult) r);
+                    finder.run((ParserResult) r, null);
                     Map<OffsetRange, ColoringAttributes> occurrences = finder.getOccurrences();
                     if (occurrences == null) {
                         occurrences = Collections.emptyMap();
@@ -1053,7 +1053,7 @@ public abstract class CslTestBase extends NbTestCase {
                         for (OffsetRange range : occurrences.keySet()) {
                             int midPoint = range.getStart() + range.getLength() / 2;
                             finder.setCaretPosition(midPoint);
-                            finder.run((ParserResult) r);
+                            finder.run((ParserResult) r, null);
                             Map<OffsetRange, ColoringAttributes> alternates = finder.getOccurrences();
                             assertEquals("Marks differ between caret positions - failed at " + midPoint, occurrences, alternates);
                         }
@@ -1156,7 +1156,7 @@ public abstract class CslTestBase extends NbTestCase {
                 SemanticAnalyzer analyzer = getSemanticAnalyzer();
                 assertNotNull("getSemanticAnalyzer must be implemented", analyzer);
 
-                analyzer.run(pr);
+                analyzer.run(pr, null);
                 Map<OffsetRange, Set<ColoringAttributes>> highlights = analyzer.getHighlights();
 
                 if (highlights == null) {

@@ -74,6 +74,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
@@ -276,7 +277,7 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
         cancel = false;
     }
     
-    public @Override void run(ParserResult result) {
+    public @Override void run(ParserResult result, SchedulerEvent event) {
         resume();
         
         final Document doc = getDocument();

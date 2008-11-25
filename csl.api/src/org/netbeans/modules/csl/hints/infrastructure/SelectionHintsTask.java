@@ -51,6 +51,7 @@ import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
@@ -67,7 +68,7 @@ public class SelectionHintsTask extends ParserResultTask<ParserResult> {
     public SelectionHintsTask() {
     }
     
-    public @Override void run(ParserResult result) {
+    public @Override void run(ParserResult result, SchedulerEvent event) {
         resume();
         
         Document doc = result.getSnapshot().getSource().getDocument();
@@ -80,11 +81,11 @@ public class SelectionHintsTask extends ParserResultTask<ParserResult> {
             return;
         }
 
-        if (!(result.getEvent() instanceof CursorMovedSchedulerEvent)) {
+        if (!(event instanceof CursorMovedSchedulerEvent)) {
             return;
         }
         
-        CursorMovedSchedulerEvent evt = (CursorMovedSchedulerEvent) result.getEvent();
+        CursorMovedSchedulerEvent evt = (CursorMovedSchedulerEvent) event;
         int[] range = new int [] {
             Math.min(evt.getMarkOffset(), evt.getCaretOffset()),
             Math.max(evt.getMarkOffset(), evt.getCaretOffset())

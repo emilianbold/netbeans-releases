@@ -45,6 +45,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
  * This file is originally from Retouche, the Java Support
@@ -62,16 +63,16 @@ public class CaretListeningTask extends ParserResultTask<ParserResult> {
     CaretListeningTask() {
     }
     
-    public @Override void run(ParserResult result) {
+    public @Override void run(ParserResult result, SchedulerEvent event) {
         resume();
         
         boolean navigatorShouldUpdate = ClassMemberPanel.getInstance() != null; // XXX set by navigator visible
         
-        if (isCancelled() || (!navigatorShouldUpdate) || !(result.getEvent() instanceof CursorMovedSchedulerEvent)) {
+        if (isCancelled() || (!navigatorShouldUpdate) || !(event instanceof CursorMovedSchedulerEvent)) {
             return;
         }
         
-        int offset = ((CursorMovedSchedulerEvent) result.getEvent()).getCaretOffset();
+        int offset = ((CursorMovedSchedulerEvent) event).getCaretOffset();
         if (offset != -1) {
             ClassMemberPanel.getInstance().selectElement(result, offset);
         }

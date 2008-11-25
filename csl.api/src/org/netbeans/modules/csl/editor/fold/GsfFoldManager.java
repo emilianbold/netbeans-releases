@@ -81,6 +81,7 @@ import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -299,7 +300,7 @@ public class GsfFoldManager implements FoldManager {
             this.manager = new WeakReference<GsfFoldManager>(manager);
         }
         
-        public void run(final ParserResult info) {
+        public void run(final ParserResult info, SchedulerEvent event) {
             cancelled.set(false);
             
             GsfFoldManager fm;
