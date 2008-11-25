@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.languages.features;
 
 import java.awt.event.InputEvent;
@@ -54,11 +53,15 @@ import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.prefs.Preferences;
 import javax.swing.text.StyledDocument;
 import javax.swing.JEditorPane;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.languages.ASTItem;
 
 import org.netbeans.api.languages.Highlighting.Highlight;
@@ -76,6 +79,8 @@ import org.netbeans.api.languages.database.DatabaseContext;
 import org.netbeans.api.languages.database.DatabaseUsage;
 import org.netbeans.api.languages.database.DatabaseDefinition;
 import org.netbeans.api.languages.database.DatabaseItem;
+import org.netbeans.editor.JumpList;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.languages.Feature;
@@ -93,35 +98,49 @@ import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 
-
 /**
  *
  * @author Administrator
  */
 public class HyperlinkListener implements MouseMotionListener, MouseListener,
-    KeyListener {
+        KeyListener {
 
-    private Highlight   highlight;
-    private Runnable    runnable = null;
+    private JTextComponent component;
+    private int position;
+    private Highlight highlight;
+    private Runnable runnable = null;
+    private int actionKeyMask = -1;
 
-    public void mouseMoved (MouseEvent e) {
-        JEditorPane c = (JEditorPane) e.getComponent ();
-        final NbEditorDocument doc = (NbEditorDocument) c.getDocument ();
-        if (highlight != null) highlight.remove ();
+    public void mouseMoved(MouseEvent e) {
+        component = (JEditorPane) e.getComponent();
+        final NbEditorDocument doc = (NbEditorDocument) component.getDocument();
+        if (highlight != null) {
+            highlight.remove();
+        }
         highlight = null;
         runnable = null;
-        if (((e.getModifiers() | e.getModifiersEx()) & InputEvent.CTRL_DOWN_MASK) != InputEvent.CTRL_DOWN_MASK) {
+
+        if (actionKeyMask == -1) {
+            Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(doc)).lookup(Preferences.class);
+            this.actionKeyMask = prefs.getInt(SimpleValueNames.HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK);
+        }
+
+        if (((e.getModifiers() | e.getModifiersEx()) & actionKeyMask) != actionKeyMask) {
             return;
         }
 
-        int offset = c.viewToModel (e.getPoint ());
-        highlight (doc, offset);
-        c.repaint ();
+        position = component.viewToModel(e.getPoint());
+        highlight(doc, position);
+        component.repaint();
     }
-    
-    public void mouseReleased (MouseEvent e) {
+
+    public void mouseReleased(MouseEvent e) {
         if (runnable != null) {
-            runnable.run ();
+            //make sure the position is correct and the JumpList works:
+            component.getCaret().setDot(position);
+            JumpList.addEntry(component, position);
+
+            runnable.run();
             runnable = null;
         }
     }
@@ -135,79 +154,97 @@ public class HyperlinkListener implements MouseMotionListener, MouseListener,
             runnable = null;
         }
     }
-    
-    public void mouseClicked (MouseEvent e) {}
-    public void mousePressed (MouseEvent e) {}
-    public void mouseExited (MouseEvent e) {}
-    public void mouseEntered (MouseEvent e) {}
-    public void mouseDragged (MouseEvent e) {}
-    public void keyPressed(KeyEvent e) {}
-    public void keyTyped(KeyEvent e) {}
-    
-    private void highlight (
-        final NbEditorDocument  document,
-        int                     offset
-    ) {
+
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    public void mousePressed(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseDragged(MouseEvent e) {
+    }
+
+    public void keyPressed(KeyEvent e) {
+    }
+
+    public void keyTyped(KeyEvent e) {
+    }
+
+    private void highlight(
+            final NbEditorDocument document,
+            int offset) {
         try {
-            ASTNode ast = ParserManagerImpl.getImpl (document).getAST ();
+            ASTNode ast = ParserManagerImpl.getImpl(document).getAST();
             if (ast == null) {
-                String mimeType = (String) document.getProperty ("mimeType");
-                TokenHierarchy tokenHierarchy = TokenHierarchy.get (document);
-                document.readLock ();
+                String mimeType = (String) document.getProperty("mimeType");
+                TokenHierarchy tokenHierarchy = TokenHierarchy.get(document);
+                document.readLock();
                 try {
-                    TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
-                    tokenSequence.move (offset);
-                    tokenSequence.moveNext ();
-                    Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
-                    Token token = tokenSequence.token ();
-                    if (token == null) return;
-                    Feature hyperlinkFeature = language.getFeatureList ().getFeature 
-                        ("HYPERLINK", token.id ().name ());
-                    if (hyperlinkFeature == null) return;
-                    ASTToken stoken = ASTToken.create (
-                        language,
-                        token.id ().ordinal (),
-                        token.text ().toString (),
-                        tokenSequence.offset ()
-                    );
-                    highlight = Highlighting.getHighlighting (document).highlight (
-                        tokenSequence.offset (),
-                        tokenSequence.offset () + token.length (),
-                        getHyperlinkAS ()
-                    );
-                    runnable = (Runnable) hyperlinkFeature.getValue (Context.create (document, offset));
+                    TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+                    tokenSequence.move(offset);
+                    tokenSequence.moveNext();
+                    Language language = LanguagesManager.getDefault().getLanguage(mimeType);
+                    Token token = tokenSequence.token();
+                    if (token == null) {
+                        return;
+                    }
+                    Feature hyperlinkFeature = language.getFeatureList().getFeature("HYPERLINK", token.id().name());
+                    if (hyperlinkFeature == null) {
+                        return;
+                    }
+                    ASTToken stoken = ASTToken.create(
+                            language,
+                            token.id().ordinal(),
+                            token.text().toString(),
+                            tokenSequence.offset());
+                    highlight = Highlighting.getHighlighting(document).highlight(
+                            tokenSequence.offset(),
+                            tokenSequence.offset() + token.length(),
+                            getHyperlinkAS());
+                    runnable = (Runnable) hyperlinkFeature.getValue(Context.create(document, offset));
                 } finally {
-                    document.readUnlock ();
+                    document.readUnlock();
                 }
                 return;
             }
-            ASTPath path = ast.findPath (offset);
-            if (path == null) return;
-            int i, k = path.size ();
-            for (i = 0; i < k; i++) {
-                ASTPath p = path.subPath (i);
-                Language language = (Language) p.getLeaf ().getLanguage ();
-                if (language == null) continue;
-                Feature hyperlinkFeature = language.getFeatureList ().getFeature ("HYPERLINK", p);
-                if (hyperlinkFeature == null) continue;
-                highlight = Highlighting.getHighlighting (document).highlight (
-                    p.getLeaf ().getOffset (),
-                    p.getLeaf ().getEndOffset (),
-                    getHyperlinkAS ()
-                );
-                runnable = (Runnable) hyperlinkFeature.getValue (SyntaxContext.create (document, p));
+            ASTPath path = ast.findPath(offset);
+            if (path == null) {
+                return;
             }
-            DatabaseContext root = DatabaseManager.getRoot (ast);
+            int i, k = path.size();
+            for (i = 0; i < k; i++) {
+                ASTPath p = path.subPath(i);
+                Language language = (Language) p.getLeaf().getLanguage();
+                if (language == null) {
+                    continue;
+                }
+                Feature hyperlinkFeature = language.getFeatureList().getFeature("HYPERLINK", p);
+                if (hyperlinkFeature == null) {
+                    continue;
+                }
+                highlight = Highlighting.getHighlighting(document).highlight(
+                        p.getLeaf().getOffset(),
+                        p.getLeaf().getEndOffset(),
+                        getHyperlinkAS());
+                runnable = (Runnable) hyperlinkFeature.getValue(SyntaxContext.create(document, p));
+            }
+            DatabaseContext root = DatabaseManager.getRoot(ast);
             if (root != null) {
-                final DatabaseItem item = root.getDatabaseItem (offset);
+                final DatabaseItem item = root.getDatabaseItem(offset);
                 if (item != null && item instanceof DatabaseUsage) {
-                    highlight = Highlighting.getHighlighting (document).highlight (
-                        path.getLeaf ().getOffset (),
-                        path.getLeaf ().getEndOffset (),
-                        getHyperlinkAS ()
-                    );
-                    runnable = new Runnable () {
-                        public void run () {
+                    highlight = Highlighting.getHighlighting(document).highlight(
+                            path.getLeaf().getOffset(),
+                            path.getLeaf().getEndOffset(),
+                            getHyperlinkAS());
+                    runnable = new Runnable() {
+
+                        public void run() {
                             DatabaseDefinition definition = ((DatabaseUsage) item).getDefinition();
                             int offset = definition.getOffset();
                             DataObject dobj = null;
@@ -254,40 +291,42 @@ public class HyperlinkListener implements MouseMotionListener, MouseListener,
                             Line.Set lineSet = lc.getLineSet();
                             Line line = lineSet.getCurrent(NbDocument.findLineNumber(docToGo, offset));
                             int column = NbDocument.findLineColumn(docToGo, offset);
-                            line.show(Line.SHOW_GOTO, column);
+                            line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
                         }
                     };
                 }
                 if (item == null) {
-                    FileObject fileObject = NbEditorUtilities.getFileObject (document);
+                    FileObject fileObject = NbEditorUtilities.getFileObject(document);
                     if (fileObject != null) {
-                        ASTItem leaf = path.getLeaf ();
-                        if (!(leaf instanceof ASTToken)) return;
-                        String name = ((ASTToken) leaf).getIdentifier ();
+                        ASTItem leaf = path.getLeaf();
+                        if (!(leaf instanceof ASTToken)) {
+                            return;
+                        }
+                        String name = ((ASTToken) leaf).getIdentifier();
                         try {
-                            Map<FileObject,List<DatabaseDefinition>> map = Index.getGlobalItem (fileObject, name, false);
-                            if (!map.isEmpty ()) {
-                                final FileObject fo = map.keySet ().iterator ().next ();
-                                final DatabaseDefinition definition = map.get (fo).iterator ().next ();
-                                highlight = Highlighting.getHighlighting (document).highlight (
-                                    path.getLeaf ().getOffset (),
-                                    path.getLeaf ().getEndOffset (),
-                                    getHyperlinkAS ()
-                                );
-                                runnable = new Runnable () {
-                                    public void run () {
-                                        int definitionOffset = definition.getOffset ();
+                            Map<FileObject, List<DatabaseDefinition>> map = Index.getGlobalItem(fileObject, name, false);
+                            if (!map.isEmpty()) {
+                                final FileObject fo = map.keySet().iterator().next();
+                                final DatabaseDefinition definition = map.get(fo).iterator().next();
+                                highlight = Highlighting.getHighlighting(document).highlight(
+                                        path.getLeaf().getOffset(),
+                                        path.getLeaf().getEndOffset(),
+                                        getHyperlinkAS());
+                                runnable = new Runnable() {
+
+                                    public void run() {
+                                        int definitionOffset = definition.getOffset();
                                         try {
-                                            DataObject dobj = DataObject.find (fo);
-                                            EditorCookie ec = dobj.getCookie (EditorCookie.class);
-                                            StyledDocument doc2 = ec.openDocument ();
-                                            LineCookie lc = dobj.getCookie (LineCookie.class);
-                                            Line.Set lineSet = lc.getLineSet ();
-                                            Line line = lineSet.getCurrent (NbDocument.findLineNumber (doc2, definitionOffset));
-                                            int column = NbDocument.findLineColumn (doc2, definitionOffset);
-                                            line.show (Line.SHOW_GOTO, column);
+                                            DataObject dobj = DataObject.find(fo);
+                                            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                                            StyledDocument doc2 = ec.openDocument();
+                                            LineCookie lc = dobj.getCookie(LineCookie.class);
+                                            Line.Set lineSet = lc.getLineSet();
+                                            Line line = lineSet.getCurrent(NbDocument.findLineNumber(doc2, definitionOffset));
+                                            int column = NbDocument.findLineColumn(doc2, definitionOffset);
+                                            line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
                                         } catch (IOException ex) {
-                                            ex.printStackTrace ();
+                                            ex.printStackTrace();
                                         }
                                     }
                                 };
@@ -301,26 +340,24 @@ public class HyperlinkListener implements MouseMotionListener, MouseListener,
         }
         return;
     }
-    
     private static AttributeSet hyperlinkAS = null;
-    
-    private static AttributeSet getHyperlinkAS () {
+
+    private static AttributeSet getHyperlinkAS() {
         if (hyperlinkAS == null) {
-            SimpleAttributeSet as = new SimpleAttributeSet ();
-            as.addAttribute (StyleConstants.Foreground, Color.blue);
-            as.addAttribute (StyleConstants.Underline, Color.blue);
+            SimpleAttributeSet as = new SimpleAttributeSet();
+            as.addAttribute(StyleConstants.Foreground, Color.blue);
+            as.addAttribute(StyleConstants.Underline, Color.blue);
             hyperlinkAS = as;
         }
         return hyperlinkAS;
     }
-    
     private static AttributeSet hyperlinkPressedAS = null;
-    
-    private static AttributeSet getHyperlinkPressedAS () {
+
+    private static AttributeSet getHyperlinkPressedAS() {
         if (hyperlinkPressedAS == null) {
-            SimpleAttributeSet as = new SimpleAttributeSet ();
-            as.addAttribute (StyleConstants.Foreground, Color.red);
-            as.addAttribute (StyleConstants.Underline, Color.red);
+            SimpleAttributeSet as = new SimpleAttributeSet();
+            as.addAttribute(StyleConstants.Foreground, Color.red);
+            as.addAttribute(StyleConstants.Underline, Color.red);
             hyperlinkPressedAS = as;
         }
         return hyperlinkPressedAS;
