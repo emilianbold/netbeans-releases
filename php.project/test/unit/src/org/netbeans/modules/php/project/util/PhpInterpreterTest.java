@@ -56,6 +56,11 @@ public class PhpInterpreterTest extends NbTestCase {
         assertEquals("", phpInterpreter.getInterpreter());
         assertEquals("", phpInterpreter.getFullCommand());
         assertEquals(0, phpInterpreter.getParameters().length);
+
+        phpInterpreter = new PhpInterpreter("");
+        assertEquals("", phpInterpreter.getInterpreter());
+        assertEquals("", phpInterpreter.getFullCommand());
+        assertEquals(0, phpInterpreter.getParameters().length);
     }
 
     public void testPhpInterpreter2() {

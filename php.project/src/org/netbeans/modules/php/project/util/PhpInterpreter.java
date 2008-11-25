@@ -71,14 +71,6 @@ public final class PhpInterpreter {
         // try to find interpreter (search for " -" or " /" after space)
         String[] tokens = command.split(" * (?=\\-|/)", 2); // NOI18N
         switch (tokens.length) {
-            case 0:
-                LOGGER.fine("No command given (null or empty string)");
-
-                interpreter = NO_INTERPRETER;
-                parameters = NO_PARAMETERS;
-                fullCommand = NO_INTERPRETER;
-                break;
-
             case 1:
                 LOGGER.fine("Only interpreter given (no parameters)");
 
@@ -88,10 +80,11 @@ public final class PhpInterpreter {
                 break;
 
             default:
+                assert tokens.length > 1;
                 interpreter = tokens[0].trim();
                 parameters = Utilities.parseParameters(tokens[1].trim());
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(String.format("Parameters parsed: %s => %s", tokens[1], Arrays.asList(parameters)));
+                    LOGGER.fine(String.format("Parameters parsed: %s => %s", tokens[1].trim(), Arrays.asList(parameters)));
                 }
                 fullCommand = command.trim();
                 break;
