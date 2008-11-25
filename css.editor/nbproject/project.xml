@@ -198,6 +198,18 @@
                         <code-name-base>org.netbeans.modules.lexer.nbbridge</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.gsf</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                        <test/>
+                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>

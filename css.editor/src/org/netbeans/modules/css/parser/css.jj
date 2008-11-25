@@ -22,18 +22,8 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants/*@egen*
 
     public CSSParser() {
        this((CharStream) null);
-       setPatchedTokenManager();
-    }
-
-    private void setPatchedTokenManager() {
-        token_source = new CSSParserTokenManager(null) {
-            @Override
-            protected Token jjFillToken() {
-                Token t = super.jjFillToken();
-                t.offset = input_stream.offset();
-                return t;
-            }
-        };
+       // change manager to our patched one:
+       token_source = new PatchedCSSParserTokenManager(null);
     }
 
     public List<ParseException> errors() {
