@@ -370,6 +370,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 return; // ignore
             }
             ((MakeConfiguration) currentConf).getFortranRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
+        } else if (element.equals(ASSEMBLER_REQUIRED_ELEMENT)) {
+            ((MakeConfiguration) currentConf).getAssemblerRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(PLATFORM_ELEMENT)) {
             int set = new Integer(currentText).intValue();
             if (descriptorVersion <= 37 && set == 4) {

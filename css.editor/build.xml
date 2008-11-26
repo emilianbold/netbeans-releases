@@ -4,8 +4,7 @@
     <import file="../nbbuild/templates/projectized.xml"/>
     
     <target name="build-css-parser" description="Builds CSS javacc parser">
-        <property name="javacc.home" value="/Users/marekfukala/Apps/javacc-4.1"/>
-
+        <fail unless="javacc.home">Must set javacc.home (preferably in ../nbbuild/user.build.properties)</fail>
         <jjtree target="src/org/netbeans/modules/css/parser/css.jjt" outputdirectory="src/org/netbeans/modules/css/parser/" javacchome="${javacc.home}"/>
         <javacc target="src/org/netbeans/modules/css/parser/css.jj" outputdirectory="src/org/netbeans/modules/css/parser/" javacchome="${javacc.home}"/>
     </target>

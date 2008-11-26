@@ -1341,12 +1341,28 @@ exists or setup the property manually. For example like this:
             <target name="connect-client-debugger" if="do.debug.client">
                 <webproject1:nbjsdebugstart webUrl="${{client.url}}"/>
             </target>
-            
+
+            <target name="-debug-start-debuggee-main-test">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single</xsl:attribute>
+                <fail unless="debug.class">Must select one file in the IDE or set debug.class</fail>
+                <webproject1:debug classname="${{debug.class}}" classpath="${{debug.test.classpath}}"/>
+            </target>
+
+            <target name="debug-test-with-main">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-debug-start-debugger-main-test,-debug-start-debuggee-main-test</xsl:attribute>
+            </target>
+
             <target name="debug-single">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,debug</xsl:attribute>
             </target>
-            
+            <target name="-debug-start-debugger-main-test">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <webproject1:nbjpdastart name="${{debug.class}}" classpath="${{debug.test.classpath}}"/>
+             </target>
             <target name="-debug-start-debugger">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
