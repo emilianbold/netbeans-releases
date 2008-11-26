@@ -68,7 +68,6 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Repository;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -80,8 +79,8 @@ import org.openide.util.Exceptions;
  * maven dependencies to the way classpath items are added through this api.
  * @author mkleint
  */
-
-public @SuppressWarnings("Deprecation") class CPExtender extends ProjectClassPathModifierImplementation implements ProjectClassPathExtender {
+@SuppressWarnings("deprecation")
+public class CPExtender extends ProjectClassPathModifierImplementation implements org.netbeans.spi.java.project.classpath.ProjectClassPathExtender {
 
     private NbMavenProjectImpl project;
     private static final String POM_XML = "pom.xml"; //NOI18N

@@ -28,6 +28,7 @@ public class ActionToGoalMapping implements java.io.Serializable {
      *                     @deprecated is ethe
      * netbeans.hint.packaging POM property instead.
      */
+    @Deprecated
     private String packaging;
 
     /**
@@ -76,6 +77,7 @@ public class ActionToGoalMapping implements java.io.Serializable {
      * 
      * @return String
      */
+    @Deprecated
     public String getPackaging()
     {
         return this.packaging;
@@ -116,6 +118,7 @@ public class ActionToGoalMapping implements java.io.Serializable {
      * 
      * @param packaging
      */
+    @Deprecated
     public void setPackaging(String packaging)
     {
         this.packaging = packaging;

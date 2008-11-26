@@ -118,7 +118,7 @@ public class NetbeansActionMapping implements java.io.Serializable {
      * 
      * @return java.util.List
      */
-    public java.util.List getActivatedProfiles()
+    public java.util.List<String> getActivatedProfiles()
     {
         if ( this.activatedProfiles == null )
         {

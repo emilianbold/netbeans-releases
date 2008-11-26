@@ -35,7 +35,7 @@ import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
  * 
  * @version $Revision$ $Date$
  */
-@SuppressWarnings("unchecked") //a generated class
+@SuppressWarnings({"unchecked", "deprecated"}) //a generated class
 public class NetbeansBuildActionJDOMWriter {
 
 
@@ -400,6 +400,7 @@ public class NetbeansBuildActionJDOMWriter {
      * @param document
      * @throws java.io.IOException
      */
+    @Deprecated
     public void write(ActionToGoalMapping actions, Document document, OutputStream stream)
         throws java.io.IOException
     {
