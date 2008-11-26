@@ -123,12 +123,15 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
         FileObject fileObject = FileUtil.toFileObject(basedir);
         if (fileObject != null) {//144159
             //read from profiles.xml
-            ModelSource ms = Utilities.createModelSource(fileObject, false);
-            ProfilesModel pm = ProfilesModelFactory.getDefault().getModel(ms);
-            if (State.VALID.equals(pm.getState())) {
-                List<String> actProfs = pm.getProfilesRoot().getActiveProfiles();
-                if (actProfs != null) {
-                    profileIds.addAll(actProfs);
+            FileObject profilesFo = fileObject.getFileObject("profiles.xml");
+            if (profilesFo != null) {
+                ModelSource ms = Utilities.createModelSource(profilesFo, false);
+                ProfilesModel pm = ProfilesModelFactory.getDefault().getModel(ms);
+                if (State.VALID.equals(pm.getState())) {
+                    List<String> actProfs = pm.getProfilesRoot().getActiveProfiles();
+                    if (actProfs != null) {
+                        profileIds.addAll(actProfs);
+                    }
                 }
             }
         }
@@ -198,13 +201,16 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
         FileObject fileObject = FileUtil.toFileObject(basedir);
         //read from profiles.xml
         if (fileObject != null) { //144159
-            ModelSource ms = Utilities.createModelSource(fileObject, false);
-            ProfilesModel pm = ProfilesModelFactory.getDefault().getModel(ms);
-            if (State.VALID.equals(pm.getState())) {
-                List<org.netbeans.modules.maven.model.profile.Profile> profs = pm.getProfilesRoot().getProfiles();
-                if (profs != null) {
-                    for (org.netbeans.modules.maven.model.profile.Profile prf : profs) {
-                        profileIds.add(prf.getId());
+            FileObject profiles = fileObject.getFileObject("profiles.xml");
+            if (profiles != null) {
+                ModelSource ms = Utilities.createModelSource(profiles, false);
+                ProfilesModel pm = ProfilesModelFactory.getDefault().getModel(ms);
+                if (State.VALID.equals(pm.getState())) {
+                    List<org.netbeans.modules.maven.model.profile.Profile> profs = pm.getProfilesRoot().getProfiles();
+                    if (profs != null) {
+                        for (org.netbeans.modules.maven.model.profile.Profile prf : profs) {
+                            profileIds.add(prf.getId());
+                        }
                     }
                 }
             }
@@ -236,7 +242,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
                         childPom = new File(childPom, "pom.xml"); //NOI18N
                     }
                     if (childPom.isFile()) {
-                        extractProfilesFromModelLineage(childPom, profileIds);
+                            extractProfilesFromModelLineage(childPom, profileIds);
                     }
                 }
             }
