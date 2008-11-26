@@ -76,6 +76,9 @@ public class Diagnostic {
     
     private static DiagnosticUnresolved diagnosticUnresolved = null;
     
+    private Diagnostic() {
+    }
+
     public static class StopWatch {
         
         private long time;
@@ -310,10 +313,10 @@ public class Diagnostic {
      *
      */
     private static class FileStatistics {
-        private Map/*<ExceptionWrapper, ExceptionWrapper>*/ lexerProblems = new HashMap();
-        private Map/*<ExceptionWrapper, ExceptionWrapper>*/ parserProblems = new HashMap();
-        private Map/*<ExceptionWrapper, ExceptionWrapper>*/           otherProblems = new HashMap();
-        private Map/*<String, IncludeInfo>*/ includes = new HashMap();
+        private Map<ExceptionWrapper, ExceptionWrapper> lexerProblems = new HashMap<ExceptionWrapper, ExceptionWrapper>();
+        private Map<ExceptionWrapper, ExceptionWrapper> parserProblems = new HashMap<ExceptionWrapper, ExceptionWrapper>();
+        private Map<ExceptionWrapper, ExceptionWrapper> otherProblems = new HashMap<ExceptionWrapper, ExceptionWrapper>();
+        private Map<String, IncludeInfo> includes = new HashMap<String, IncludeInfo>();
         
         /** first and last errors could be interesting */
         private ExceptionWrapper lastError = null;
@@ -343,7 +346,7 @@ public class Diagnostic {
             // if resolvedIncludePath is valid => include path resolving was OK
             String key = (resolvedIncludePath == null) ? include : resolvedIncludePath;
             assert (key != null) : "at least 'include' or 'resolvedIncludePath' must be specified";
-            IncludeInfo info = (IncludeInfo) includes.get(key);
+            IncludeInfo info = includes.get(key);
             if (info == null) {
                 info = new IncludeInfo(key, resolvedIncludePath == null);
                 includes.put(key, info);
@@ -388,8 +391,8 @@ public class Diagnostic {
         }
         
         private boolean hasIncludeProblems() {
-            for (Iterator it = includes.values().iterator(); it.hasNext();) {
-                IncludeInfo elem = (IncludeInfo) it.next();
+            for (Iterator<IncludeInfo> it = includes.values().iterator(); it.hasNext();) {
+                IncludeInfo elem = it.next();
                 if (elem.hasErrors()) {
                     return true;
                 }
@@ -449,11 +452,11 @@ public class Diagnostic {
             }
         }
         
-        private void handleError(Map/*<ExceptionWrapper, ExceptionWrapper>*/ errors,
+        private void handleError(Map<ExceptionWrapper, ExceptionWrapper> errors,
                 ExceptionWrapper error, boolean updateFirstLastError) {
             assert (error != null);
             assert (error.getException() != null);
-            ExceptionWrapper wrap = (ExceptionWrapper) errors.get(error);
+            ExceptionWrapper wrap = errors.get(error);
             if (wrap == null) {
                 wrap = error;
                 errors.put(wrap, wrap);
@@ -469,22 +472,22 @@ public class Diagnostic {
         }
         
         private void dumpExceptions(PrintStream dumpFile,
-                Map/*<ExceptionWrapper, ExceptionWrapper>*/ errors) {
+                Map<ExceptionWrapper, ExceptionWrapper> errors) {
             // sort errors
-            List values = new ArrayList(errors.keySet());
+            List<ExceptionWrapper> values = new ArrayList<ExceptionWrapper>(errors.keySet());
             Collections.sort(values, ExceptionWrapper.COMPARATOR);
-            for (Iterator it = values.iterator(); it.hasNext();) {
-                ExceptionWrapper elem = (ExceptionWrapper) it.next();
+            for (Iterator<ExceptionWrapper> it = values.iterator(); it.hasNext();) {
+                ExceptionWrapper elem = it.next();
                 trace(dumpFile, elem);
             }
         }
         
-        private void dumpIncludes(PrintStream dumpFile, Map includes) {
-            List values = new ArrayList(includes.values());
+        private void dumpIncludes(PrintStream dumpFile, Map<String, IncludeInfo> includes) {
+            List<IncludeInfo> values = new ArrayList<IncludeInfo>(includes.values());
             // sort to have failed first
             Collections.sort(values, IncludeInfo.COMPARATOR);
-            for (Iterator it = values.iterator(); it.hasNext();) {
-                IncludeInfo elem = (IncludeInfo) it.next();
+            for (Iterator<IncludeInfo> it = values.iterator(); it.hasNext();) {
+                IncludeInfo elem = it.next();
                 if ((Diagnostic.getStatisticsLevel() == 1) && !elem.hasErrors()) {
                     // includes are sorted to have failed in the head of list
                     // don't need to trace not failed inclusions
@@ -507,18 +510,16 @@ public class Diagnostic {
             /** amount of includes from all places*/
             private int     counter = 0;
             /** set of files from which was this include */
-            private Map     includedFrom = new HashMap();
+            private Map<String, Integer> includedFrom = new HashMap<String, Integer>();
             /** set of files from which was recursion include */
-            private Set     recursionFrom = new HashSet();
+            private Set<String> recursionFrom = new HashSet<String>();
             
             /** comparator */
-            static final Comparator COMPARATOR = new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    if (o1 == o2) {
+            static final Comparator<IncludeInfo> COMPARATOR = new Comparator<IncludeInfo>() {
+                public int compare(IncludeInfo i1, IncludeInfo i2) {
+                    if (i1 == i2) {
                         return 0;
                     }
-                    IncludeInfo i1 = (IncludeInfo)o1;
-                    IncludeInfo i2 = (IncludeInfo)o2;
                     // failed inclusion has priority
                     if (i1.failedInclusion != i2.failedInclusion) {
                         return i1.failedInclusion ? -1 : 1;
@@ -534,14 +535,6 @@ public class Diagnostic {
                     // then name of include
                     return i1.include.compareTo(i2.include);
                 }
-                
-                public boolean equals(Object obj) {
-                    return super.equals(obj);
-                }
-                
-                public int hashCode() {
-                    return 11; // any dummy value
-                }
             };
             
             IncludeInfo(String include, boolean failedInclusion) {
@@ -552,13 +545,14 @@ public class Diagnostic {
             void add(String absBaseFilePath, boolean recursion) {
                 counter++;
                 Integer fileCounter = includedFrom.containsKey(absBaseFilePath) ?
-                    (Integer)includedFrom.get(absBaseFilePath) : new Integer(0);
+                    includedFrom.get(absBaseFilePath) : new Integer(0);
                 includedFrom.put(absBaseFilePath, new Integer(fileCounter.intValue() + 1));
                 if (recursion) {
                     recursionFrom.add(absBaseFilePath);
                 }
             }
             
+            @Override
             public boolean equals(Object obj) {
                 if (this == obj) {
                     return true;
@@ -573,12 +567,14 @@ public class Diagnostic {
                 return retValue;
             }
             
+            @Override
             public int hashCode() {
                 // hash code by code of include file
                 int retValue = include.hashCode() + 17*(isFailedInclude()?0:1);
                 return retValue;
             }
             
+            @Override
             public String toString() {
                 StringBuilder retValue = new StringBuilder();
                 
@@ -599,22 +595,22 @@ public class Diagnostic {
                         if (hasRecursionInclude()) {
                             assert (recursionFrom.size() > 0);
                             assert (recursionFrom.iterator().hasNext());
-                            from = (String) recursionFrom.iterator().next();
+                            from = recursionFrom.iterator().next();
                             retValue.append(" [RECURSION] "); // NOI18N
                         } else {
                             assert (includedFrom.size() > 0);
                             assert (includedFrom.keySet().iterator().hasNext());
-                            from = (String) includedFrom.keySet().iterator().next();
+                            from = includedFrom.keySet().iterator().next();
                             retValue.append(" where [").append(includedFrom.get(from)).append("] time(s) "); // NOI18N
                         }
                         retValue.append("from ").append(from); // NOI18N
                     }
                 } else {
                     // sort "from" files
-                    List files = new ArrayList(this.includedFrom.keySet());
+                    List<String> files = new ArrayList<String>(this.includedFrom.keySet());
                     Collections.sort(files);
-                    for (Iterator it = files.iterator(); it.hasNext();) {
-                        String from = (String) it.next();
+                    for (Iterator<String> it = files.iterator(); it.hasNext();) {
+                        String from = it.next();
                         retValue.append("\n").append(indentBuffer.toString()); // NOI18N
                         retValue.append(indentBuffer.toString());
                         if (recursionFrom.contains(from)) {
@@ -647,19 +643,17 @@ public class Diagnostic {
             // the first recognition exception of the same types
             private Exception e;
             // collection of error messages
-            private Set/*<String>*/ errorMessages = new HashSet();
+            private Set<String> errorMessages = new HashSet<String>();
             private int counter = 0;
             private String source;
             
             /** comparator */
-            static final Comparator COMPARATOR = new Comparator() {
+            static final Comparator<ExceptionWrapper> COMPARATOR = new Comparator<ExceptionWrapper>() {
                 
-                public int compare(Object o1, Object o2) {
-                    if (o1 == o2) {
+                public int compare(ExceptionWrapper w1, ExceptionWrapper w2) {
+                    if (w1 == w2) {
                         return 0;
                     }
-                    ExceptionWrapper w1 = (ExceptionWrapper)o1;
-                    ExceptionWrapper w2 = (ExceptionWrapper)o2;
                     // then order by number of errors
                     if (w1.counter > w2.counter) {
                         return -1;
@@ -671,13 +665,6 @@ public class Diagnostic {
                     return msg1.compareTo(msg2);
                 }
                 
-                public boolean equals(Object obj) {
-                    return super.equals(obj);
-                }
-                
-                public int hashCode() {
-                    return 7; // any dummy value
-                }
             };
             
             ExceptionWrapper(Exception e, String source) {
@@ -689,6 +676,7 @@ public class Diagnostic {
                 return e;
             }
             
+            @Override
             public boolean equals(Object obj) {
                 if (this == obj) {
                     return true;
@@ -727,6 +715,7 @@ public class Diagnostic {
                 return this.source;
             }
             
+            @Override
             public String toString() {
                 StringBuilder retValue = new StringBuilder();
                 retValue.append("===> [").append(counter).append("] similar "); // NOI18N
@@ -746,10 +735,10 @@ public class Diagnostic {
                         String indent = indentBuffer.toString() + indentBuffer.toString();
                         retValue.append("\n").append(indent); // NOI18N
                         retValue.append("+++ all error messages:"); // NOI18N
-                        List values = new ArrayList(errorMessages);
+                        List<String> values = new ArrayList<String>(errorMessages);
                         Collections.sort(values);
-                        for (Iterator it = values.iterator(); it.hasNext();) {
-                            String elem = (String) it.next();
+                        for (Iterator<String> it = values.iterator(); it.hasNext();) {
+                            String elem = it.next();
                             retValue.append('\n').append(indent).append(elem);
                         }
                     }
@@ -757,6 +746,7 @@ public class Diagnostic {
                 return retValue.toString();
             }
             
+            @Override
             public int hashCode() {
                 int retValue;
                 StackTraceElement[] stack = e.getStackTrace();
@@ -786,6 +776,7 @@ public class Diagnostic {
                 super(e, "Lexer"); //NOI18N
             }
             
+            @Override
             protected boolean isStopElement(StackTraceElement curElem) {
                 // stop if not in lexer's method
                 // we are not interested in stack before lexer call
@@ -804,6 +795,7 @@ public class Diagnostic {
                 super(e, "Parser");//NOI18N
             }
             
+            @Override
             protected boolean isStopElement(StackTraceElement curElem) {
                 // stop if not in parser's method
                 // we are not interested in stack before parser call
@@ -817,5 +809,5 @@ public class Diagnostic {
             }
         }
     }
-    
+
 }
