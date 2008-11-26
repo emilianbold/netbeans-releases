@@ -78,6 +78,7 @@ public class DebuggerConfigurationPanel extends JPanel {
     final ProgressMonitor progressMonitor = new DownloadProgressMonitor();
     private AttachTypeProxy proxy;
     private String attachTypeName;
+    private FeatureInfo featureInfo;
 
     DebuggerConfigurationPanel(final AttachTypeProxy proxy) {
         initComponents();
@@ -85,7 +86,14 @@ public class DebuggerConfigurationPanel extends JPanel {
         this.attachTypeName = proxy.getTypeDisplayName();
         String lblMsg = null;
         String btnMsg = null;
-        if (false) { // TODO: do the proper checking
+        featureInfo = null;
+        for (FeatureInfo info : Feature2LayerMapping.featureTypesLookup().lookupAll(FeatureInfo.class)) {
+            if (attachTypeName.equals(info.getAttachTypeName())) {
+                featureInfo = info;
+                break;
+            }
+        }
+        if (featureInfo != null && featureInfo.isPresent()) { // TODO: do the proper checking
             lblMsg = NbBundle.getMessage(DebuggerConfigurationPanel.class, "LBL_EnableInfo", attachTypeName);
             btnMsg = NbBundle.getMessage(DebuggerConfigurationPanel.class, "LBL_Enable");
         } else {
@@ -161,17 +169,13 @@ public class DebuggerConfigurationPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void downloadButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
-      downloadButton.setEnabled(false);
+        downloadButton.setEnabled(false);
         final boolean[] success = new boolean[1];
+        final FeatureInfo info = featureInfo;
         Task task = RequestProcessor.getDefault().create(new Runnable() {
 
             public void run() {
-                for (FeatureInfo info : Feature2LayerMapping.featureTypesLookup().lookupAll(FeatureInfo.class)) {
-                    if (attachTypeName.equals(info.getAttachTypeName())) {
-                        success[0] = ModulesInstaller.installModules(progressMonitor, info);
-                        break;
-                    }
-                }
+                success[0] = ModulesInstaller.installModules(progressMonitor, info);
             }
         });
         task.addTaskListener(new TaskListener() {
@@ -189,7 +193,7 @@ public class DebuggerConfigurationPanel extends JPanel {
                             DebuggerConfigurationPanel.this.invalidate();
                             DebuggerConfigurationPanel.this.revalidate();
                             DebuggerConfigurationPanel.this.repaint();
-                            if (true) {
+                            if (featureInfo.isPresent()) {
                                 msg = NbBundle.getMessage(DebuggerConfigurationPanel.class, "MSG_EnableFailed");
                             } else {
                                 msg = NbBundle.getMessage(DebuggerConfigurationPanel.class, "MSG_DownloadFailed");

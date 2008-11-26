@@ -45,13 +45,16 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfoAccessor.Internal;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /** Description of <em>Feature On Demand</em> capabilities and a 
  * factory to create new instances.
@@ -149,6 +152,14 @@ public final class FeatureInfo {
         return Collections.unmodifiableSet(cnbs);
     }
 
+    public boolean isPresent() {
+        Set<String> codeNames = new HashSet<String>(getCodeNames());
+        for (ModuleInfo moduleInfo : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            codeNames.remove(moduleInfo.getCodeNameBase());
+        }
+        return codeNames.isEmpty();
+    }
+    
     private boolean isNbProject(FileObject dir, boolean deepCheck) {
         if (nbproject.isEmpty()) {
             return false;
