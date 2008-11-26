@@ -160,6 +160,26 @@ public class JsAnalyzer implements StructureScanner {
             currentClass.begin = LexUtilities.getLexerOffset(info, firstAstOffset);
             currentClass.end = LexUtilities.getLexerOffset(info, lastAstOffset);
         }
+
+        if (ar.e4xStrings != null) {
+            for (Node node : ar.e4xStrings) {
+                // It's an E4X string without embedded code (those would have
+                // a Token.ADD child instead of Token.STRING) which means we
+                // should be able to parse these guys and show some XML colors
+                // and other info.
+                String xml = node.getString();
+
+                int startOffset = LexUtilities.getLexerOffset(info, node.getSourceStart());
+                if (startOffset == -1) {
+                    startOffset = node.getSourceStart();
+                }
+
+                XmlStructureItem item = XmlStructureItem.get(xml, startOffset);
+                if (item != null) {
+                    itemList.add(item);
+                }
+            }
+        }
         
         return itemList;
     }
@@ -261,6 +281,7 @@ public class JsAnalyzer implements StructureScanner {
         private Node currentFunction;
         /** Namespace map */
         private Map<String,String> classToFqn;
+        private List<Node> e4xStrings;
 
         private AnalysisResult(CompilationInfo info) {
             this.info = info;
@@ -589,6 +610,18 @@ public class JsAnalyzer implements StructureScanner {
                         }
                     }
                 }
+                break;
+            }
+
+            case Token.E4X: {
+                Node child = node.getFirstChild();
+                if (child != null && child.getType() == Token.STRING) {
+                    if (e4xStrings == null) {
+                        e4xStrings = new ArrayList<Node>();
+                    }
+                    e4xStrings.add(child);
+                }
+                break;
             }
             }
             
@@ -664,7 +697,7 @@ public class JsAnalyzer implements StructureScanner {
                 }
             }
         }
-        
+
         private void postProcess(JsParseResult result) {
             if (result.getRootNode() != null) {
                 VariableVisitor visitor = result.getVariableVisitor();
@@ -1008,6 +1041,163 @@ public class JsAnalyzer implements StructureScanner {
         @Override
         public String toString() {
             return getName();
+        }
+
+        public ImageIcon getCustomIcon() {
+            return null;
+        }
+    }
+
+    public static class XmlStructureItem implements StructureItem {
+        private List<XmlStructureItem> children = new ArrayList<XmlStructureItem>();
+        private String name;
+        private long start;
+        private long end;
+
+        public XmlStructureItem(String name, long start, long end) {
+            this.name = name;
+            this.start = start;
+            this.end = end;
+        }
+
+        public static XmlStructureItem get(String xml, int startOffset) {
+            int start = 0;
+            XmlStructureItem root = null;
+            XmlStructureItem current = null;
+
+            final int IN_TEXT = 0;
+            final int LOOKING_FOR_START_END = 1;
+            final int LOOKING_FOR_END_END = 2;
+            final int LOOKING_FOR_START_TEXT = 3;
+            final int LOOKING_FOR_END_TEXT = 4;
+
+            int state = IN_TEXT;
+
+            List<XmlStructureItem> stack = new ArrayList<XmlStructureItem>();
+
+            for (int i = 0, n = xml.length(); i < n; i++) {
+                char c = xml.charAt(i);
+                if (state == IN_TEXT) {
+                    if (c == '<') {
+                        // Beginning of start or ending element
+                        if (i < n-1 && xml.charAt(i+1) == '/') {
+                            start = i+2;
+                            i++;
+                            state = LOOKING_FOR_END_END;
+                        } else {
+                            start = i+1;
+                            state = LOOKING_FOR_START_END;
+                        }
+                    }
+                } else if (state == LOOKING_FOR_START_END) {
+                    if (!Character.isLetterOrDigit(c) && c != '_' && c != ':') {
+                        // Found start of a new element
+                        String name = xml.substring(start, i);
+                        XmlStructureItem item = new XmlStructureItem(name, start-1+startOffset, i+startOffset);
+                        if (!stack.isEmpty()) {
+                            stack.get(stack.size()-1).children.add(item);
+                        }
+                        stack.add(item);
+
+                        if (root == null) {
+                            root = item;
+                        }
+                        current = item;
+
+                        if (c == '>') {
+                            state = IN_TEXT;
+                        } else {
+                            state = LOOKING_FOR_START_TEXT;
+                        }
+                    }
+                } else if (state == LOOKING_FOR_END_END) {
+                    if (!Character.isLetterOrDigit(c) && c != '_' && c != ':') {
+                        if (!stack.isEmpty()) {
+                            // Should have the same element ending here as is on top of the stack
+                            // but don't assert it since user documents may be incorrect
+                            //assert stack.get(stack.size()-1).name.equals(xml.substring(start, i));
+                            XmlStructureItem top = stack.get(stack.size()-1);
+                            if (top.end < startOffset+i+1) {
+                                top.end = startOffset+i+1;
+                            }
+                            stack.remove(stack.size()-1);
+                        }
+
+                        if (c == '>') {
+                            state = IN_TEXT;
+                        } else {
+                            state = LOOKING_FOR_END_TEXT;
+                        }
+                    }
+                } else if (state == LOOKING_FOR_START_TEXT) {
+                    if (c == '>') {
+                        state = IN_TEXT;
+                        if (i > 0 && xml.charAt(i-1) == '/') {
+                            if (current != null) {
+                                current.end = startOffset+i+1;
+                                current = null;
+                            }
+                            if (!stack.isEmpty()) {
+                                stack.remove(stack.size()-1);
+                            }
+                        }
+                    }
+                } else if (state == LOOKING_FOR_END_TEXT) {
+                    if (c == '>') {
+                        state = IN_TEXT;
+                    }
+                    if (current != null) {
+                        current.end = startOffset+i+1;
+                        current = null;
+                    }
+                } else {
+                    assert false : state;
+                }
+            }
+
+            return root;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getSortText() {
+            return name;
+        }
+
+        public String getHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            formatter.appendText(name);
+            return formatter.getText();
+        }
+
+        public ElementHandle getElementHandle() {
+            return null;
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.TAG;
+        }
+
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        public boolean isLeaf() {
+            return children.size() == 0;
+        }
+
+        public List<? extends StructureItem> getNestedItems() {
+            return children;
+        }
+
+        public long getPosition() {
+            return start;
+        }
+
+        public long getEndPosition() {
+            return end;
         }
 
         public ImageIcon getCustomIcon() {
