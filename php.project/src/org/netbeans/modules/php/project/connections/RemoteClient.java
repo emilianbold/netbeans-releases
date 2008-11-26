@@ -161,6 +161,10 @@ public class RemoteClient implements Cancellable {
         remoteClient.disconnect();
     }
 
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
     public boolean cancel() {
         cancelled = true;
         return true;
