@@ -47,8 +47,12 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
@@ -91,6 +95,8 @@ public class MavenSourcesImpl implements Sources {
     
     private Map<String, SourceGroup> javaGroup;
     private SourceGroup genSrcGroup;
+    private Map<File, SourceGroup> otherMainGroups;
+    private Map<File, SourceGroup> otherTestGroups;
     
     private final Object lock = new Object();
     
@@ -100,6 +106,8 @@ public class MavenSourcesImpl implements Sources {
         project = proj;
         listeners = new ArrayList<ChangeListener>();
         javaGroup = new TreeMap<String, SourceGroup>();
+        otherMainGroups = new TreeMap<File, SourceGroup>();
+        otherTestGroups = new TreeMap<File, SourceGroup>();
         NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(event.getPropertyName())) {
@@ -130,11 +138,15 @@ public class MavenSourcesImpl implements Sources {
                     folder = null;
                 }
                 changed = changed | checkGeneratedGroupCache(folder);
+                changed = changed | checkOtherGroupsCache(project.getOtherRoots(false), false);
+                changed = changed | checkOtherGroupsCache(project.getOtherRoots(true), true);
             } else {
                 changed = true;
                 checkJavaGroupCache(null, NAME_SOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Sources"));
                 checkJavaGroupCache(null, NAME_TESTSOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Test_Sources"));
                 checkGeneratedGroupCache(null);
+                checkOtherGroupsCache(null, true);
+                checkOtherGroupsCache(null, false);
             }
         }
         if (changed) {
@@ -215,10 +227,13 @@ public class MavenSourcesImpl implements Sources {
             boolean test = TYPE_TEST_OTHER.equals(str);
             List<SourceGroup> toReturn = new ArrayList<SourceGroup>();
             File[] roots = project.getOtherRoots(test);
-            for (File f : roots) {
-                FileObject folder = FileUtil.toFileObject(f);
-                if (folder != null && folder.isFolder()) { //#146753
-                    toReturn.add(new OtherGroup(project, folder, "Resource" + (test ? "Test":"Main") + folder.getNameExt(), folder.getName())); //NOI18N
+            synchronized (lock) {
+                // don't fire event synchronously..
+                checkOtherGroupsCache(roots, test);
+                if (test && !otherTestGroups.isEmpty()) {
+                    toReturn.addAll(otherTestGroups.values());
+                } else if (!test && !otherMainGroups.isEmpty()) {
+                    toReturn.addAll(otherMainGroups.values());
                 }
             }
             SourceGroup[] grp = new SourceGroup[toReturn.size()];
@@ -300,6 +315,45 @@ public class MavenSourcesImpl implements Sources {
         boolean changed = false;
         if (genSrcGroup == null || !genSrcGroup.getRootFolder().isValid() || !genSrcGroup.getRootFolder().equals(root)) {
             genSrcGroup = new GeneratedGroup(project, root, NAME_GENERATED_SOURCE, NbBundle.getMessage(MavenSourcesImpl.class, "SG_Generated_Sources"));
+            changed = true;
+        }
+        return changed;
+    }
+
+    private boolean checkOtherGroupsCache(File[] roots, boolean test) {
+        boolean ch = false;
+        Set<File> toRemove = new HashSet<File>(test ? otherTestGroups.keySet() : otherMainGroups.keySet());
+        toRemove.removeAll(Arrays.asList(roots));
+
+        for (File f : roots) {
+            ch = ch | checkOtherGroup(f, test);
+        }
+        for (File f : toRemove) {
+            //now this shall remove the nonexisting ones and even mark the change..
+            ch = ch | checkOtherGroup(f, test);
+        }
+        return ch;
+    }
+
+    private boolean checkOtherGroup(File rootFile, boolean test) {
+        FileObject root = FileUtil.toFileObject(rootFile);
+        if (root != null && !root.isFolder()) {
+            root = null;
+        }
+        Map<File, SourceGroup> map = test ? otherTestGroups : otherMainGroups;
+        SourceGroup grp = map.get(rootFile);
+        if (root == null && grp != null) {
+            map.remove(rootFile);
+            return true;
+        }
+        if (root == null) {
+            return false;
+        }
+        boolean changed = false;
+        if (grp == null || !grp.getRootFolder().isValid() || !grp.getRootFolder().equals(root)) {
+            System.out.println("creating new other group" + root);
+            grp = new OtherGroup(project, root, "Resource" + (test ? "Test":"Main") + root.getNameExt(), root.getName()); //NOI18N
+            map.put(rootFile, grp);
             changed = true;
         }
         return changed;
