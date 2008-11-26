@@ -351,7 +351,6 @@ public class MavenSourcesImpl implements Sources {
         }
         boolean changed = false;
         if (grp == null || !grp.getRootFolder().isValid() || !grp.getRootFolder().equals(root)) {
-            System.out.println("creating new other group" + root);
             grp = new OtherGroup(project, root, "Resource" + (test ? "Test":"Main") + root.getNameExt(), root.getName()); //NOI18N
             map.put(rootFile, grp);
             changed = true;
