@@ -64,11 +64,12 @@ public final class FeatureInfo {
     private final Set<String> cnbs;
     final Map<String,String> nbproject = new HashMap<String,String>();
     final Map<String,String> files = new HashMap<String,String>();
-    private String attachTypeName;
+    private Properties properties;
 
-    private FeatureInfo(Set<String> cnbs, URL delegateLayer) {
+    private FeatureInfo(Set<String> cnbs, URL delegateLayer, Properties p) {
         this.cnbs = cnbs;
         this.delegateLayer = delegateLayer;
+        this.properties = p;
     }
     
 
@@ -80,8 +81,7 @@ public final class FeatureInfo {
         TreeSet<String> s = new TreeSet<String>();
         s.addAll(Arrays.asList(cnbs.split(",")));
 
-        FeatureInfo info = new FeatureInfo(s, delegateLayer);
-        info.attachTypeName = p.getProperty("attachTypeName");
+        FeatureInfo info = new FeatureInfo(s, delegateLayer, p);
         final String prefix = "nbproject.";
         final String prefFile = "project.file.";
         for (Object k : p.keySet()) {
@@ -105,7 +105,7 @@ public final class FeatureInfo {
         FeatureInfoAccessor.DEFAULT = new FeatureInfoAccessor() {
             @Override
             public Set<String> getCodeName(FeatureInfo info) {
-                return info.cnbs;
+                return info.getCodeNames();
             }
 
             @Override
@@ -121,7 +121,11 @@ public final class FeatureInfo {
     }
 
     public String getAttachTypeName() {
-        return attachTypeName;
+        return properties.getProperty("attachTypeName");
+    }
+
+    String getPreferredCodeNameBase() {
+        return properties.getProperty("mainModule");
     }
 
     boolean isProject(FileObject dir, boolean deepCheck) {
@@ -139,6 +143,10 @@ public final class FeatureInfo {
                 return false;
             }
         }
+    }
+
+    public final Set<String> getCodeNames() {
+        return Collections.unmodifiableSet(cnbs);
     }
 
     private boolean isNbProject(FileObject dir, boolean deepCheck) {

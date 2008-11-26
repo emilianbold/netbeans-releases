@@ -43,7 +43,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Set;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -58,7 +57,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
-import org.netbeans.modules.ide.ergonomics.fod.FeatureInfoAccessor;
 import org.netbeans.modules.ide.ergonomics.fod.ModulesInstaller;
 import org.netbeans.modules.ide.ergonomics.fod.ProgressMonitor;
 import org.openide.awt.Mnemonics;
@@ -170,8 +168,12 @@ public class DebuggerConfigurationPanel extends JPanel {
             public void run() {
                 for (FeatureInfo info : Feature2LayerMapping.featureTypesLookup().lookupAll(FeatureInfo.class)) {
                     if (attachTypeName.equals(info.getAttachTypeName())) {
+<<<<<<< local
+                        success[0] = ModulesInstaller.installModules(info);
+=======
                         Set<String> codeNames = FeatureInfoAccessor.DEFAULT.getCodeName(info);
                         success[0] = ModulesInstaller.installModules(progressMonitor, codeNames);
+>>>>>>> other
                         break;
                     }
                 }

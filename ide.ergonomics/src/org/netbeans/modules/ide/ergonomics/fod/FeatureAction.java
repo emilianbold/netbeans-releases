@@ -88,8 +88,7 @@ public class FeatureAction implements ActionListener, Runnable {
 
     public void run() {
         assert ! SwingUtilities.isEventDispatchThread () : "Cannot run in EQ!";
-        URL url = FoDFileSystem.getInstance().getDelegateFileSystem(fo);
-        Set<String> cnbs = Feature2LayerMapping.getInstance().getCodeName(url);
-        success = ModulesInstaller.installModules(cnbs);
+        FeatureInfo info = FoDFileSystem.getInstance().whichProvides(fo);
+        success = ModulesInstaller.installModules(info);
     }
 }

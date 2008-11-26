@@ -110,6 +110,20 @@ implements Runnable {
         
         setDelegates(delegate.toArray(new FileSystem[0]));
     }
+
+    public FeatureInfo whichProvides(FileObject template) {
+        Lookup.Result<FeatureInfo> result = Feature2LayerMapping.featureTypesLookup().lookupResult(FeatureInfo.class);
+
+        String path = template.getPath();
+        for (FeatureInfo info : result.allInstances()) {
+            Internal internal = FeatureInfoAccessor.DEFAULT.getInternal(info);
+            XMLFileSystem fs = internal.getXMLFileSystem();
+            if (fs.findResource(path) != null) {
+                return info;
+            }
+        }
+        return null;
+    }
     
     public URL getDelegateFileSystem(FileObject template) {
         Lookup.Result<FeatureInfo> result = Feature2LayerMapping.featureTypesLookup().lookupResult(FeatureInfo.class);

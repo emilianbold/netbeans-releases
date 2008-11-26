@@ -62,6 +62,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -126,34 +127,33 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     }
     
     private Runnable doFindingModues = new Runnable () {
-
-                public void run () {
-                    if (SwingUtilities.isEventDispatchThread ()) {
-                        RequestProcessor.getDefault ().post (doFindingModues);
-                        return;
-                    }
-                    RequestProcessor.Task findingTask = getFinder ().getFindingTask ();
-                    if (findingTask != null && findingTask.isFinished ()) {
-                        presentModulesForActivation ();
-                    } else {
-                        if (findingTask == null) {
-                            findingTask = getFinder ().createFindingTask ();
-                            findingTask.schedule (10);
-                        }
-                        if (findingTask.getDelay () > 0) {
-                            findingTask.schedule (10);
-                        }
-                        findingTask.addTaskListener (new TaskListener () {
-                                    public void taskFinished (Task task) {
-                                        presentModulesForActivation ();
-                                        return;
-                                    }
-                                });
-                        presentFindingModules ();
-                    }
+        public void run () {
+            if (SwingUtilities.isEventDispatchThread ()) {
+                RequestProcessor.getDefault ().post (doFindingModues);
+                return;
+            }
+            RequestProcessor.Task findingTask = getFinder ().getFindingTask ();
+            if (findingTask != null && findingTask.isFinished ()) {
+                presentModulesForActivation ();
+            } else {
+                if (findingTask == null) {
+                    findingTask = getFinder ().createFindingTask ();
+                    findingTask.schedule (10);
                 }
-            };
-            
+                if (findingTask.getDelay () > 0) {
+                    findingTask.schedule (10);
+                }
+                findingTask.addTaskListener (new TaskListener () {
+                            public void taskFinished (Task task) {
+                                presentModulesForActivation ();
+                                return;
+                            }
+                        });
+                presentFindingModules ();
+            }
+        }
+    };
+
     private void presentModulesForActivation () {
         forInstall = getFinder ().getModulesForInstall ();
         forEnable = getFinder ().getModulesForEnable ();
@@ -175,16 +175,17 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         Collection<UpdateElement> elems = getFinder ().getModulesForInstall ();
         if (elems != null && !elems.isEmpty ()) {
             isValid = true;
-            Collection<UpdateElement> visible = FindComponentModules.getVisibleUpdateElements (elems);
-            panel.replaceComponents (
-                    visible.size () > 1 ?
-                        new JLabel (getBundle ("DescriptionStep_BrokenModulesFound", ModulesInstaller.presentUpdateElements (visible))) :
-                        new JLabel (getBundle ("DescriptionStep_BrokenModuleFound", ModulesInstaller.presentUpdateElements (visible))));
+            Collection<UpdateElement> visible = getFinder().getVisibleUpdateElements (elems);
+            String names = ModulesInstaller.presentUpdateElements (visible);
+            panel.replaceComponents(
+                new JLabel(getBundle ("DescriptionStep_BrokenModulesFound", visible.size(), names))
+            );
             forInstall = elems;
         } else {
             panel.replaceComponents (
-                    new JLabel (getBundle ("DescriptionStep_NoMissingModules1")),
-                    new JLabel ());
+                new JLabel (getBundle ("DescriptionStep_NoMissingModules1")),
+                new JLabel ()
+            );
             isValid = false;
         }
         fireChange ();
@@ -192,8 +193,9 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     
     private void presentNone () {
         panel.replaceComponents (
-                new JLabel (getBundle ("DescriptionStep_NoMissingModules1")),
-                new JLabel ());
+            new JLabel (getBundle ("DescriptionStep_NoMissingModules1")),
+            new JLabel ()
+        );
         isValid = false;
     }
     
@@ -206,16 +208,17 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         Collection<UpdateElement> elems = getFinder ().getModulesForEnable ();
         if (elems != null && !elems.isEmpty ()) {
             isValid = true;
-            Collection<UpdateElement> visible = FindComponentModules.getVisibleUpdateElements (elems);
-            panel.replaceComponents (
-                    visible.size () > 1 ?
-                        new JLabel (getBundle ("DescriptionStep_DisabledModulesFound", ModulesInstaller.presentUpdateElements (visible))) :
-                        new JLabel (getBundle ("DescriptionStep_DisabledModuleFound", ModulesInstaller.presentUpdateElements (visible))));
+            Collection<UpdateElement> visible = getFinder().getVisibleUpdateElements (elems);
+            String names = ModulesInstaller.presentUpdateElements (visible);
+            panel.replaceComponents(
+                new JLabel (getBundle ("DescriptionStep_DisabledModulesFound", visible.size(), names))
+            );
             forEnable = elems;
         } else {
             panel.replaceComponents (
-                    new JLabel (getBundle ("DescriptionStep_NoMissingModules1")),
-                    new JLabel ());
+                new JLabel (getBundle ("DescriptionStep_NoMissingModules1")),
+                new JLabel ()
+            );
             isValid = false;
         }
         fireChange ();
@@ -245,9 +248,8 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         Object o = settings.getProperty (FeatureOnDemanWizardIterator.CHOSEN_TEMPLATE);
         assert o != null && o instanceof FileObject : o + " is not null and instanceof FileObject.";
         FileObject fo = (FileObject) o;
-        URL layer = FoDFileSystem.getInstance ().getDelegateFileSystem (fo);
-        Set<String> cnbs = Feature2LayerMapping.getInstance().getCodeName(layer);
-        finder = new FindComponentModules(cnbs);
+        FeatureInfo info = FoDFileSystem.getInstance ().whichProvides(fo);
+        finder = new FindComponentModules(info);
     }
 
     public void storeSettings (WizardDescriptor settings) {

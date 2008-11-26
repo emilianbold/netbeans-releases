@@ -54,6 +54,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -95,21 +96,22 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         listeners.remove(l);
     }
 
-    private Runnable doInstall () {
+    private Runnable doInstall (final FeatureInfo info) {
         return new Runnable () {
             public void run () {
                 if (! doInstallRunning) {
                     doInstallRunning = true;
-                    ModulesInstaller installer = new ModulesInstaller (forInstall);
+                    FindComponentModules find = new FindComponentModules(info);
+                    ModulesInstaller installer = new ModulesInstaller (forInstall, find);
                     ProgressHandle downloadHandle = ProgressHandleFactory.createHandle (
                             getBundle ("InstallStep_Downloading",
-                            presentElementsForInstall ()));
+                            presentElementsForInstall (find)));
                     ProgressHandle verifyHandle = ProgressHandleFactory.createHandle (
                             getBundle ("InstallStep_Verifing",
-                            presentElementsForInstall ()));
+                            presentElementsForInstall (find)));
                     ProgressHandle installHandle = ProgressHandleFactory.createHandle (
                             getBundle ("InstallStep_Installing",
-                            presentElementsForInstall ()));
+                            presentElementsForInstall (find)));
                     JComponent downloadComponent = ProgressHandleFactory.createProgressComponent (downloadHandle);
                     JComponent downloadMainLabel = ProgressHandleFactory.createMainLabelComponent (downloadHandle);
                     JComponent downloadDetailLabel = ProgressHandleFactory.createDetailLabelComponent (downloadHandle);
@@ -164,8 +166,8 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         Object templateO = settings.getProperty (FeatureOnDemanWizardIterator.CHOSEN_TEMPLATE);
         assert templateO != null && templateO instanceof FileObject : templateO + " is not null and instanceof FileObject.";
         FileObject templateFO = (FileObject) templateO;
-        layer = FoDFileSystem.getInstance().getDelegateFileSystem (templateFO);
-        RequestProcessor.getDefault ().post (doInstall ());
+        FeatureInfo info = FoDFileSystem.getInstance().whichProvides(templateFO);
+        RequestProcessor.getDefault ().post (doInstall (info));
     }
 
     public void storeSettings (WizardDescriptor settings) {
@@ -176,12 +178,12 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     }
     
     @SuppressWarnings("unchecked")
-    private String presentElementsForInstall () {
+    private String presentElementsForInstall (FindComponentModules find) {
         assert forInstall != null : "UpdateElements for install are " + forInstall;
         
         String res = "";
         
-        Collection<UpdateElement> visible = FindComponentModules.getVisibleUpdateElements (forInstall);
+        Collection<UpdateElement> visible = find.getVisibleUpdateElements (forInstall);
         res = getBundle ("InstallStep_InstallDescription_Plugin",
                 ModulesInstaller.presentUpdateElements (visible),
                 getDownloadSizeAsString (getDownloadSize (forInstall)));

@@ -65,10 +65,12 @@ import org.openide.util.RequestProcessor;
  * @author Jirka Rechtacek
  */
 public final class FindComponentModules {
-    private Collection<String> codeNames;
+    private final Collection<String> codeNames;
+    private final FeatureInfo info;
     
-    public FindComponentModules(Set<String> components) {
-        codeNames = components;
+    public FindComponentModules(FeatureInfo info) {
+        this.info = info;
+        codeNames = info.getCodeNames();
     }
     
     public final String DO_CHECK = "do-check";
@@ -139,11 +141,16 @@ public final class FindComponentModules {
         return res;
     }
     
-    public static Collection<UpdateElement> getVisibleUpdateElements (Collection<UpdateElement> elems) {
+    public Collection<UpdateElement> getVisibleUpdateElements (Collection<UpdateElement> elems) {
+        String prefCNB = info.getPreferredCodeNameBase();
+
         Collection<UpdateElement> res = new HashSet<UpdateElement> ();
         for (UpdateElement el : new LinkedList<UpdateElement> (elems)) {
             if (UpdateManager.TYPE.KIT_MODULE.equals (el.getUpdateUnit ().getType ())) {
                 res.add (el);
+            }
+            if (el.getUpdateUnit().getCodeName().equals(prefCNB)) {
+                return Collections.singleton(el);
             }
         }
         return res;

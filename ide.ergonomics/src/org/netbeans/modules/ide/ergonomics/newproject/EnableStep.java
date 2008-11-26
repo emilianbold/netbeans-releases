@@ -47,7 +47,6 @@ import org.netbeans.modules.ide.ergonomics.fod.FindComponentModules;
 import org.netbeans.modules.ide.ergonomics.fod.ModulesActivator;
 import org.netbeans.modules.ide.ergonomics.fod.ModulesInstaller;
 import java.awt.Component;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -57,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -68,7 +68,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 public class EnableStep implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
-    private URL layer;
     private InstallPanel component;
     private Collection<UpdateElement> forEnable = null;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
@@ -100,15 +99,16 @@ public class EnableStep implements WizardDescriptor.FinishablePanel<WizardDescri
         listeners.remove(l);
     }
 
-    private Runnable doEnable () {
+    private Runnable doEnable (final FeatureInfo info) {
         return new Runnable () {
             public void run () {
                 if (! doEnableRunning) {
                     doEnableRunning = true;
-                    ModulesActivator activator = new ModulesActivator (forEnable);
+                    FindComponentModules find = new FindComponentModules(info);
+                    ModulesActivator activator = new ModulesActivator(forEnable, find);
                     ProgressHandle enableHandle = ProgressHandleFactory.createHandle (
                             getBundle ("ModulesStep_Enable",
-                            presentElementsForEnable ()));
+                            presentElementsForEnable (find)));
                     JComponent enableComponent = ProgressHandleFactory.createProgressComponent (enableHandle);
                     JComponent enableMainLabel = ProgressHandleFactory.createMainLabelComponent (enableHandle);
                     JComponent enableDetailLabel = ProgressHandleFactory.createDetailLabelComponent (enableHandle);
@@ -120,7 +120,6 @@ public class EnableStep implements WizardDescriptor.FinishablePanel<WizardDescri
                     RequestProcessor.Task enable = activator.getEnableTask ();
                     enable.schedule (0);
                     enable.waitFinished ();
-                    assert layer != null : "Layer must be known.";
                     FoDFileSystem.getInstance().refresh();
                     waitForDelegateWizard ();
                 }
@@ -149,8 +148,8 @@ public class EnableStep implements WizardDescriptor.FinishablePanel<WizardDescri
         Object templateO = settings.getProperty (FeatureOnDemanWizardIterator.CHOSEN_TEMPLATE);
         assert templateO != null && templateO instanceof FileObject : templateO + " is not null and instanceof FileObject.";
         FileObject templateFO = (FileObject) templateO;
-        layer = FoDFileSystem.getInstance().getDelegateFileSystem (templateFO);
-        RequestProcessor.getDefault ().post (doEnable ());
+        FeatureInfo info = FoDFileSystem.getInstance().whichProvides(templateFO);
+        RequestProcessor.getDefault ().post (doEnable (info));
     }
 
     public void storeSettings (WizardDescriptor settings) {
@@ -160,9 +159,9 @@ public class EnableStep implements WizardDescriptor.FinishablePanel<WizardDescri
         return false;
     }
     
-    private String presentElementsForEnable () {
+    private String presentElementsForEnable (FindComponentModules find) {
         assert forEnable != null : "UpdateElements for enable are " + forEnable;
-        Collection<UpdateElement> visible = FindComponentModules.getVisibleUpdateElements (forEnable);
+        Collection<UpdateElement> visible = find.getVisibleUpdateElements (forEnable);
         return ModulesInstaller.presentUpdateElements (visible);
     }
     
