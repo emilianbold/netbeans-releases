@@ -421,7 +421,7 @@ public class CompilationUnit {
         Object o = entry.getAttributeValue(ATTR.DW_AT_specification);
         
         if (o instanceof Integer) {
-            specifications.put(new Long(((Integer) o).intValue()), entry.getRefference());
+            specifications.put(Long.valueOf(((Integer) o).intValue()), entry.getRefference());
         }
         
         for (DwarfEntry child : entry.getChildren()) {
