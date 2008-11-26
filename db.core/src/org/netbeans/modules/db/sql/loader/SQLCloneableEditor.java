@@ -402,10 +402,6 @@ public class SQLCloneableEditor extends CloneableEditor {
         super.componentClosed();
     }
 
-    public void writeExternal(java.io.ObjectOutput out) throws IOException {
-        super.writeExternal(out);
-    }
-
     public void readExternal(java.io.ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
         initialize();

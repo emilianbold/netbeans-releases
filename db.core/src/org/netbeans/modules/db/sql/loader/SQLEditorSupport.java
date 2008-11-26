@@ -161,11 +161,6 @@ public class SQLEditorSupport extends DataEditorSupport
     }
 
     @Override
-    protected String messageToolTip() {
-        return super.messageToolTip();
-    }
-
-    @Override
     protected String messageName() {
         if (!isValid()) {
             return ""; // NOI18N
@@ -188,11 +183,6 @@ public class SQLEditorSupport extends DataEditorSupport
         super.notifyClosed();
         closeExecutionResult();
         closeLogger();
-    }
-
-    @Override
-    protected boolean canClose() {
-        return super.canClose();
     }
 
     boolean isValid() {
@@ -509,21 +499,6 @@ public class SQLEditorSupport extends DataEditorSupport
             MultiDataObject obj = (MultiDataObject) getDataObject();
             fileLock = obj.getPrimaryEntry().takeLock();
             return fileLock;
-        }
-
-        @Override
-        public void markModified() throws IOException {
-            super.markModified();
-        }
-
-        @Override
-        public void unmarkModified() {
-            super.unmarkModified();
-        }
-
-        @Override
-        public boolean isModified() {
-            return super.isModified();
         }
 
         @Override
