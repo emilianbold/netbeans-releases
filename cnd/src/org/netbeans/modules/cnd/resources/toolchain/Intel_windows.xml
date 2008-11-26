@@ -57,6 +57,7 @@ made subject to such option by the copyright holder.
     </cpp>
     <fortran>
         <compiler name=""/>
+        <alternative_path/>
     </fortran>
     <debugger>
         <tool name="idb"/>

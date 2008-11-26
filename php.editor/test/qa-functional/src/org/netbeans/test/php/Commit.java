@@ -444,6 +444,7 @@ public class Commit extends GeneralPHP
       Sleep( 1500 );
       eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
       Sleep( 1500 );
+      System.out.println( "Current: >>>" + eoPHP.getText( eoPHP.getLineNumber( ) ) + "<<<" );
       CheckResult( eoPHP, "function  __construct() {", -1 );
       int i = eoPHP.getLineNumber( ) - 1;
       eoPHP.deleteLine( i );

@@ -223,6 +223,7 @@ public class TableUISupport {
 
     private static final class SelectedTableRenderer extends DefaultListCellRenderer {
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Table table = null;
             Object displayName = null;
@@ -270,7 +271,11 @@ public class TableUISupport {
                     tables.add(refTable);
                 }
             }
-            return NbBundle.getMessage(TableUISupport.class, bundleKey, createTableList(tables));
+            if(tables.size() == 0){ // issue 149542
+                return null;
+            } else {
+                return NbBundle.getMessage(TableUISupport.class, bundleKey, createTableList(tables));
+            }
         }
 
         private static String createTableList(List<Table> tables) {

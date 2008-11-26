@@ -101,17 +101,6 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
         }
     }
 
-    public JaxWsService getService(String implClass) {
-        for (JaxWsService s:services) {
-            if (implClass.equals(s.getImplementationClass())) return s;
-        }
-        return null;
-    }
-
-    public boolean isFromWSDL(JaxWsService service) {
-        return service.getLocalWsdl() != null;
-    }
-
     public FileObject getWsdlFolder(boolean create) throws IOException {
         throw new UnsupportedOperationException("Not supported yet.");
     }

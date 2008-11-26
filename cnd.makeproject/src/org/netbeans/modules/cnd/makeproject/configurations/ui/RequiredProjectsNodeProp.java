@@ -133,15 +133,15 @@ public class RequiredProjectsNodeProp<E> extends PropertySupport {
         @Override
         public String getAsText() {
             boolean addSep = false;
-            String ret = ""; // NOI18N
+            StringBuilder ret = new StringBuilder();
             for (int i = 0; i < value.size(); i++) {
                 if (addSep) {
-                    ret += ", "; // NOI18N
+                    ret.append(", "); // NOI18N
                 }
-                ret += value.get(i).toString();
+                ret.append(value.get(i).toString());
                 addSep = true;
             }
-            return ret;
+            return ret.toString();
         }
 
         @Override

@@ -105,6 +105,10 @@ public abstract class BaseNode extends AbstractNode {
      */
     protected abstract void initialize();
 
+    public boolean canRefresh() {
+        return false;
+    }
+
     /**
      * Set up the node
      * 
