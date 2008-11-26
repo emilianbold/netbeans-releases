@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -338,15 +338,20 @@ public class Call {
                                 return new Call(type, lhs, false, methodExpected);
                             }
                         }
-                        
-                        String type = null;
-                        if (RubyUtils.isValidRubyModuleName(lhs)) {
+
+                        String type = RubyUtils.RUBY_PREDEF_VARS_CLASSES.get(lhs);
+                        boolean isStatic = type == null; // predefined vars are instances
+
+                        if (type == null && RubyUtils.isValidRubyModuleName(lhs)) {
                             type = lhs;
                         }
 
-                        return new Call(type, lhs, true, methodExpected);
+                        return new Call(type, lhs, isStatic, methodExpected);
                     } else {
-                        return new Call(null, lhs, false, methodExpected);
+                        // try __FILE__ or __LINE__
+                        String type = RubyUtils.RUBY_PREDEF_VARS_CLASSES.get(lhs);
+
+                        return new Call(type, lhs, false, methodExpected);
                     }
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);

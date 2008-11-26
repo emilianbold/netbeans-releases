@@ -537,6 +537,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         availableTablesLabel.setLabelFor(availableTablesList);
         org.openide.awt.Mnemonics.setLocalizedText(availableTablesLabel, org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_AvailableTables")); // NOI18N
+        availableTablesLabel.setToolTipText(org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "TXT_AvailableTables")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
@@ -557,6 +558,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         selectedTablesLabel.setLabelFor(selectedTablesList);
         org.openide.awt.Mnemonics.setLocalizedText(selectedTablesLabel, org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_SelectedTables")); // NOI18N
+        selectedTablesLabel.setToolTipText(org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "TXT_SelectedTables")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;

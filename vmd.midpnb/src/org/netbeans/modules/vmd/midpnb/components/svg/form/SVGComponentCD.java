@@ -44,7 +44,10 @@ import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.*;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
@@ -75,6 +78,10 @@ public class SVGComponentCD extends ComponentDescriptor {
         );
     }
     
+    public static TypeID getEventType( TypeID type ){
+        return PAIR_TYPES.get( type );
+    }
+    
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList(
                 // delete
@@ -91,5 +98,14 @@ public class SVGComponentCD extends ComponentDescriptor {
                     
                 });
     }
+    
+    static void addPairType( TypeID typeId , TypeID eventTypeId ){
+        assert eventTypeId.getString().endsWith("EventSource") :
+            "Check type of paired component descriptor. It ends with " + 
+            eventTypeId.getString()+". Possibly it is not correct";// NOI18N
+        PAIR_TYPES.put( typeId , eventTypeId );
+    }
+    
+    private static Map<TypeID,TypeID> PAIR_TYPES = new HashMap<TypeID, TypeID>();
 
 }

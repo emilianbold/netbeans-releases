@@ -106,7 +106,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                         result.add(file, pkg, name, sb.toString());
                     }
                 }
-            } else {                                
+            } else {
                 for (ClassNode classNode : classNodes) {
                     try {
                         CharSequence javaStub = generator.generateClass(classNode);
@@ -145,7 +145,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                 Exceptions.printStackTrace(ex);
             }
         }
-        
+
         return resultList;
     }
 
@@ -478,7 +478,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                 }
             }
 
-            // fall back for parameterless constructor 
+            // fall back for parameterless constructor
             if (superType.isPrimaryClassNode()) {
                 return Parameter.EMPTY_ARRAY;
             }

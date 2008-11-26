@@ -145,8 +145,9 @@ public class OutputWindowWriter extends Writer {
                     boolean found = m.find();
 
                     if (found && m.start() == 0) {
-                        if (parsers[cntr].handleLine(delegate, line, m))
+                        if (parsers[cntr].handleLine(delegate, line, m)) {
                             return ;
+                        }
                     }
                 }
             }
@@ -158,8 +159,9 @@ public class OutputWindowWriter extends Writer {
 //                System.out.println("  " + found);
 //                if (found)
 //                    System.out.println("  " + m.start());
-                if (found && m.start() == 0)
+                if (found && m.start() == 0) {
                     return;
+                }
             }
         }
         
@@ -262,16 +264,18 @@ public class OutputWindowWriter extends Writer {
                     // the compiler(set) and the output should only be scanned for those patterns.
                     String absPath1 = relativePath;
                     String absPath2 = null;
-                    if (absPath1.startsWith("/usr/lib")) // NOI18N
+                    if (absPath1.startsWith("/usr/lib")) { // NOI18N
                         absPath2 = absPath1.substring(4);
+                    }
                     List<CompilerSet> compilerSets = CompilerSetManager.getDefault(hkey).getCompilerSets();
                     for (CompilerSet set : compilerSets) {
                         Tool cCompiler = set.getTool(Tool.CCompiler);
                         if (cCompiler != null) {
                             String includePrefix = cCompiler.getIncludeFilePathPrefix();
                             File file = new File(includePrefix + absPath1);
-                            if (!file.exists() && absPath2 != null)
+                            if (!file.exists() && absPath2 != null) {
                                 file = new File(includePrefix + absPath2);
+                            }
                             if (file.exists()) {
                                 FileObject fo = FileUtil.toFileObject( FileUtil.normalizeFile(file));
                                 return fo;
@@ -566,7 +570,9 @@ public class OutputWindowWriter extends Writer {
             
             if ((m.pattern() == GCC_ERROR_SCANNER) ||
                 (m.pattern() == GCC_ERROR_SCANNER_ANOTHER) ||
-                (m.pattern() == GCC_ERROR_SCANNER_INTEL)){
+                (m.pattern() == GCC_ERROR_SCANNER_INTEL) ||
+                (m.pattern() == MSVC_WARNING_SCANNER) ||
+                (m.pattern() == MSVC_ERROR_SCANNER)){
                 try {
                     String file = m.group(1);
                     Integer lineNumber = Integer.valueOf(m.group(2));
@@ -612,7 +618,10 @@ public class OutputWindowWriter extends Writer {
 
         
         public Pattern[] getPattern() {
-            return new Pattern[] {GCC_DIRECTORY_ENTER, GCC_DIRECTORY_LEAVE, GCC_DIRECTORY_CD, GCC_STACK_HEADER, GCC_STACK_NEXT, GCC_ERROR_SCANNER, GCC_ERROR_SCANNER_ANOTHER, GCC_ERROR_SCANNER_INTEL};
+            return new Pattern[] {GCC_DIRECTORY_ENTER, GCC_DIRECTORY_LEAVE, GCC_DIRECTORY_CD, GCC_STACK_HEADER, GCC_STACK_NEXT, GCC_ERROR_SCANNER,
+            GCC_ERROR_SCANNER_ANOTHER, GCC_ERROR_SCANNER_INTEL,
+            MSVC_WARNING_SCANNER, MSVC_ERROR_SCANNER
+            };
         }
         
     }

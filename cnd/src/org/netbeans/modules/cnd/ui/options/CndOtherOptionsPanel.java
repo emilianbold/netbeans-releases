@@ -300,18 +300,18 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
         private static final String DELIMITER = ", "; // NOI18N
     
         public void updateTextField() {
-            String text = "";
+            StringBuilder text = new StringBuilder();
             for (String elem : list) {
                 if (text.length() > 0) {
-                    text += DELIMITER;
+                    text.append(DELIMITER);
                 }
                 if (elem.equals(defaultValue)) {
                     elem = "<b>" + elem + "</b>"; // NOI18N
                 }
-                text += elem;
+                text.append(elem);
             }
 
-            textfield.setText(text);
+            textfield.setText(text.toString());
         }
 
         String[] getValues() {

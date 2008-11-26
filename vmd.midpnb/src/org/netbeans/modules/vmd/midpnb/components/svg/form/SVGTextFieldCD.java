@@ -63,6 +63,10 @@ public class SVGTextFieldCD extends ComponentDescriptor{
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, true);
     }
+    
+    static {
+        SVGComponentCD.addPairType( TYPEID, SVGTextFieldEventSourceCD.TYPEID );
+    }
 
     @Override
     public VersionDescriptor getVersionDescriptor() {
@@ -78,7 +82,8 @@ public class SVGTextFieldCD extends ComponentDescriptor{
         return Arrays.asList(
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
-                MidpCodePresenterSupport.createAddImportPresenter()
+                MidpCodePresenterSupport.createAddImportPresenter(),
+                new SVGCodeFooter( SVGTextFieldEventSourceCD.TYPEID )
         );
     }
     

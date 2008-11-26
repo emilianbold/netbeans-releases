@@ -345,11 +345,7 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.web.project</friend>
-                <package>org.netbeans.modules.websvc.jaxws.light.api</package>
-                <package>org.netbeans.modules.websvc.jaxws.light.spi</package>
-            </friend-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>
