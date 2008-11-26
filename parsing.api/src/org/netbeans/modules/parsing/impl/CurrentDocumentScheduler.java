@@ -69,7 +69,6 @@ public class CurrentDocumentScheduler extends CurrentEditorTaskScheduler {
         else {
             currentDocument = null;
             source = null;
-            //schedule (null, null);
         }
     }
     
