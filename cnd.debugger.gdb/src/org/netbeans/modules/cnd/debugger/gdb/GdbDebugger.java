@@ -1124,7 +1124,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if (pendingBreakpointMap.containsKey(token)) {
                 BreakpointImpl breakpoint = pendingBreakpointMap.remove(token);
-                if (breakpoint != null) {
+                if (platform == PlatformTypes.PLATFORM_MACOSX && breakpoint != null) {
                     breakpoint.addError(msg);
                     breakpoint.completeValidation(null);
                 }
@@ -2394,7 +2394,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     public String getBestPath(String path) {
         path = pathMap.getRemotePath(path);
-        if (path.startsWith(baseDir + '/')) {
+        if (path.indexOf(' ') == -1 && platform != PlatformTypes.PLATFORM_MACOSX) {
+            return path;
+        } else if (path.startsWith(baseDir + '/')) {
             return path.substring(baseDir.length() + 1);
         } else {
             int pos = path.lastIndexOf('/');

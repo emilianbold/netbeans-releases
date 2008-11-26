@@ -66,7 +66,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     protected final GdbDebugger debugger;
     private final GdbBreakpoint breakpoint;
     private String state = BPSTATE_UNVALIDATED;
-    protected String err = null;
+    private String err = null;
     private int breakpointNumber = -1;
     private boolean runWhenValidated = false;
 
@@ -105,18 +105,9 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             breakpoint.setValid();
             debugger.getBreakpointList().put(breakpointNumber, this);
         } else {
-	    if (alternateSourceRootAvailable()) {
-		setState(BPSTATE_UNVALIDATED);
-		setRequests();
-	    } else {
-		breakpoint.setInvalid(err);
-		setState(BPSTATE_VALIDATION_FAILED);
-	    }
+            breakpoint.setInvalid(err);
+            setState(BPSTATE_VALIDATION_FAILED);
         }
-    }
-
-    protected boolean alternateSourceRootAvailable() {
-	return false;
     }
 
     public void addError(String err) {
@@ -172,15 +163,11 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 requestDelete();
             }
             setState(BPSTATE_VALIDATION_PENDING);
-	    String bpcmd = getBreakpointCommand();
-	    if (bpcmd != null) {
-		int token = debugger.getGdbProxy().break_insert(getBreakpoint().getSuspend(),
-			getBreakpoint().isTemporary(), bpcmd, getBreakpoint().getThreadID());
-		debugger.addPendingBreakpoint(token, this);
-	    } else {
-		breakpoint.setInvalid(err);
-		setState(BPSTATE_VALIDATION_FAILED);
-	    }
+            int token = debugger.getGdbProxy().break_insert(getBreakpoint().getSuspend(),
+                    getBreakpoint().isTemporary(),
+                    getBreakpointCommand(),
+                    getBreakpoint().getThreadID());
+            debugger.addPendingBreakpoint(token, this);
 	} else {
             if (breakpointNumber > 0) { // bnum < 0 for breakpoints from other projects...
                 if (st.equals(BPSTATE_DELETION_PENDING)) {
