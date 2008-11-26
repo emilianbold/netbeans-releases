@@ -171,7 +171,7 @@ public class DebuggerConfigurationPanel extends JPanel {
                 for (FeatureInfo info : Feature2LayerMapping.featureTypesLookup().lookupAll(FeatureInfo.class)) {
                     if (attachTypeName.equals(info.getAttachTypeName())) {
                         Set<String> codeNames = FeatureInfoAccessor.DEFAULT.getCodeName(info);
-                        success[0] = ModulesInstaller.installModules(codeNames);
+                        success[0] = ModulesInstaller.installModules(progressMonitor, codeNames);
                         break;
                     }
                 }

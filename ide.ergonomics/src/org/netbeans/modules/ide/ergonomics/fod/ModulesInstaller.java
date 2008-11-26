@@ -82,15 +82,29 @@ public class ModulesInstaller {
     private ProgressHandle downloadHandle;
     private ProgressHandle verifyHandle;
     private ProgressHandle installHandle;
+    private final ProgressMonitor progressMonitor;
     
     public ModulesInstaller (Collection<UpdateElement> modules) {
+        this(modules, null);
+    }
+    
+    public ModulesInstaller (Collection<UpdateElement> modules, ProgressMonitor progressMonitor) {
         if (modules == null || modules.isEmpty ()) {
             throw new IllegalArgumentException ("Cannot construct InstallerMissingModules with null or empty Collection " + modules);
         }
         modules4install = modules;
+        if (progressMonitor != null) {
+            this.progressMonitor = progressMonitor;
+        } else {
+            this.progressMonitor = ProgressMonitor.DEV_NULL_PROGRESS_MONITOR;
+        }
     }
     
     public static boolean installModules (Set<String> codeNames) {
+        return installModules(null, codeNames);
+    }
+
+    public static boolean installModules (ProgressMonitor monitor, Set<String> codeNames) {
         assert ! SwingUtilities.isEventDispatchThread () : "Cannot run in EQ!";
         boolean success = false;
         
@@ -100,13 +114,13 @@ public class ModulesInstaller {
         Collection<UpdateElement> toInstall = findModules.getModulesForInstall();
         Collection<UpdateElement> toEnable = findModules.getModulesForEnable();
         if (toInstall != null && !toInstall.isEmpty()) {
-            ModulesInstaller installer = new ModulesInstaller(toInstall);
+            ModulesInstaller installer = new ModulesInstaller(toInstall, monitor);
             installer.getInstallTask ().schedule (10);
             installer.getInstallTask ().waitFinished();
             findModules.createFindingTask().waitFinished();
             success = findModules.getModulesForInstall ().isEmpty ();
         } else if (toEnable != null && !toEnable.isEmpty()) {
-            ModulesActivator enabler = new ModulesActivator(toEnable);
+            ModulesActivator enabler = new ModulesActivator(toEnable, monitor);
             enabler.getEnableTask ().schedule (100);
             enabler.getEnableTask ().waitFinished();
             success = true;
@@ -229,16 +243,19 @@ public class ModulesInstaller {
                 getBundle ("InstallerMissingModules_Download",
                 presentUpdateElements (FindComponentModules.getVisibleUpdateElements (modules4install))));
         }
+        progressMonitor.onDownload(downloadHandle);
         Validator v = installSupport.doDownload (downloadHandle, false);
         if (verifyHandle == null) {
             verifyHandle = ProgressHandleFactory.createHandle (
                     getBundle ("InstallerMissingModules_Verify"));
             }
+        progressMonitor.onValidate(verifyHandle);
         Installer i = installSupport.doValidate (v, verifyHandle);
         if (installHandle == null) {
             installHandle = ProgressHandleFactory.createHandle (
                     getBundle ("InstallerMissingModules_Install"));
             }
+        progressMonitor.onInstall(installHandle);
         Restarter r = installSupport.doInstall (i, installHandle);
         if (r != null) {
             installSupport.doRestartLater (r);
