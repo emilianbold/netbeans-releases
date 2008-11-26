@@ -27,6 +27,8 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -120,19 +122,33 @@ public final class TestKit {
     }
     
     public static void closeProject(String projectName) {
+        long lTimeOut = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         try {
-            Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
-            rootNode.performPopupActionNoBlock("Close ");
+            lTimeOut = JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 10000);
             try {
-                Thread.sleep(2000);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
+                Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+                rootNode.performPopupActionNoBlock("Close");
+//                new EventTool().waitNoEvent(2000);
+            } catch (Exception e) {
             }
         } catch (Exception e) {
-            e.printStackTrace();
         } finally {
-            new ProjectsTabOperator().tree().clearSelection();
+            try {
+                JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", lTimeOut);
+            } catch (Exception e) {
+            }
         }
+
+    }
+    
+    public static long changeTimeout(String name, long value) {
+        long timeOut = -1;
+        try {
+            timeOut = JemmyProperties.setCurrentTimeout(name, value);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return timeOut;
     }
     
     public static void waitForScanFinishedAndQueueEmpty() {
@@ -270,7 +286,17 @@ public final class TestKit {
         JMenuItemOperator mo = mbo.showMenuItem("View|Show Versioning Labels");
         JCheckBoxMenuItemOperator cbmio = new JCheckBoxMenuItemOperator((JCheckBoxMenuItem) mo.getSource());
         if (!cbmio.getState())
-            cbmio.push();
+            cbmio.doClick();
+    }
+
+    public static String getOsName() {
+        String osName = "uknown";
+        try {
+            osName = System.getProperty("os.name");
+        } catch (Throwable e) {
+
+        }
+        return osName;
     }
 
     public static boolean waitText(MessageHandler handler) {

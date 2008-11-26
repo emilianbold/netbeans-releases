@@ -16,6 +16,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -42,7 +43,6 @@ public class DiffTest extends JellyTestCase {
     public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
     public PrintStream stream;
-    String os_name;
     static Logger log;
 
     /** Creates a new instance of DiffTest */
@@ -62,14 +62,6 @@ public class DiffTest extends JellyTestCase {
         }
     }
 
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
-    }
-
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(DiffTest.class).addTest(
@@ -78,12 +70,17 @@ public class DiffTest extends JellyTestCase {
 
     public void testDiffFile() throws Exception {
         try {
-            MessageHandler mh = new MessageHandler("Checking out");
+            MessageHandler mh = new MessageHandler("Committing");
             log.addHandler(mh);
+
+            TestKit.closeProject(PROJECT_NAME);
+            
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                new NewProjectWizardOperator().invoke().close();
 
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             VersioningOperator vo = VersioningOperator.invoke();
-            TestKit.showStatusLabels();
+            
             CheckoutWizardOperator.invoke();
             RepositoryStepOperator rso = new RepositoryStepOperator();
 
