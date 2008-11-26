@@ -42,6 +42,8 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 
 /**
  *
@@ -64,7 +66,8 @@ public class ColumnNode extends BaseNode {
     }
 
     private DatabaseConnection connection;
-    private Column column;
+    private Metadata metaData;
+    private MetadataElementHandle<Column> columnHandle;
 
     private ColumnNode(NodeDataLookup lookup) {
         super(lookup, FOLDER);
@@ -73,17 +76,19 @@ public class ColumnNode extends BaseNode {
     protected void initialize() {
         // get the connection from the lookup
         connection = getLookup().lookup(DatabaseConnection.class);
-        column = getLookup().lookup(Column.class);
-
+        metaData = getLookup().lookup(Metadata.class);
+        columnHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     @Override
     public String getName() {
+        Column column = columnHandle.resolve(metaData);
         return column.getName();
     }
 
     @Override
     public String getDisplayName() {
+        Column column = columnHandle.resolve(metaData);
         return column.getName();
     }
 

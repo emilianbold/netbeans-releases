@@ -46,6 +46,8 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.View;
 import org.openide.nodes.Node;
@@ -74,12 +76,14 @@ public class ViewNodeProvider extends NodeProvider {
     }
 
     private final DatabaseConnection connection;
-    private final Schema schema;
+    private MetadataElementHandle<Schema> schemaHandle;
+    private Metadata metaData;
 
     private ViewNodeProvider(Lookup lookup) {
         super(lookup, new ViewComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
-        schema = getLookup().lookup(Schema.class);
+        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
+        metaData = getLookup().lookup(Metadata.class);
     }
 
     private void setup() {
@@ -89,6 +93,7 @@ public class ViewNodeProvider extends NodeProvider {
     private synchronized void update() {
         List<Node> newList = new ArrayList<Node>();
 
+        Schema schema = schemaHandle.resolve(metaData);
         Collection<View> views = schema.getViews();
         for (View view : views) {
             Collection<Node> matches = getNodes(view);
@@ -97,7 +102,10 @@ public class ViewNodeProvider extends NodeProvider {
             } else {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(connection);
-                lookup.add(view);
+                lookup.add(metaData);
+
+                MetadataElementHandle<View> handle = MetadataElementHandle.create(view);
+                lookup.add(handle);
 
                 newList.add(ViewNode.create(lookup));
             }

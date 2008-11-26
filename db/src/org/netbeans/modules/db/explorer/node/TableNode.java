@@ -42,6 +42,8 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Table;
 
 /**
@@ -65,7 +67,8 @@ public class TableNode extends BaseNode {
     }
 
     private DatabaseConnection connection;
-    private Table table;
+    private Metadata metaData;
+    private MetadataElementHandle<Table> tableHandle;
 
     private TableNode(NodeDataLookup lookup) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER);
@@ -74,17 +77,20 @@ public class TableNode extends BaseNode {
     protected void initialize() {
         // get the connection from the lookup
         connection = getLookup().lookup(DatabaseConnection.class);
-        table = getLookup().lookup(Table.class);
+        metaData = getLookup().lookup(Metadata.class);
+        tableHandle = getLookup().lookup(MetadataElementHandle.class);
 
     }
 
     @Override
     public String getName() {
+        Table table = tableHandle.resolve(metaData);
         return table.getName();
     }
 
     @Override
     public String getDisplayName() {
+        Table table = tableHandle.resolve(metaData);
         return table.getName();
     }
 
