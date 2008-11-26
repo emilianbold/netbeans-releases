@@ -135,12 +135,13 @@ public class CommittingCvs11Test extends JellyTestCase {
         PROTOCOL_FOLDER = "protocol";
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        TestKit.TIME_OUT = 25;
         MessageHandler mh = new MessageHandler("Checking out");
         log.addHandler(mh);
 
         TestKit.closeProject(projectName);
         TestKit.showStatusLabels();
-//        new ProjectsTabOperator().tree().clearSelection();
+
         if ((os_name !=null) && (os_name.indexOf("Mac") > -1))
             NewProjectWizardOperator.invoke().close();
 
@@ -154,9 +155,9 @@ public class CommittingCvs11Test extends JellyTestCase {
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
         //crso.setPassword("");
         //crso.setPassword("test");
-        
+
         //prepare stream for successful authentification and run PseudoCVSServer
-        InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");   
+        InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
         PseudoCvsServer cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         cvss.ignoreProbe();
@@ -166,10 +167,10 @@ public class CommittingCvs11Test extends JellyTestCase {
         crso.setCVSRoot(CVSroot);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         crso.next();
-              
+
         //second step of checkoutwizard
         //2nd step of CheckOutWizard
-        
+
         File tmp = new File("/tmp"); // NOI18N
         File work = new File(tmp, "" + File.separator + System.currentTimeMillis());
         cacheFolder = new File(work, projectName + File.separator + "src" + File.separator + "forimport" + File.separator + "CVS" + File.separator + "RevisionCache");
@@ -178,46 +179,37 @@ public class CommittingCvs11Test extends JellyTestCase {
         tmp.deleteOnExit();
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
         cvss.stop();
-        try {
-            new EventTool().waitNoEvent(1000);
-            in.close();
-        } catch (IOException e) {
-            //
-        }
-        moduleCheck.setModule("ForImport");        
+        in.close();
+        moduleCheck.setModule("ForImport");
         moduleCheck.setLocalFolder(work.getAbsolutePath()); // NOI18N
-        
+
         //Pseudo CVS server for finishing check out wizard
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "checkout_finish_2.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         CVSroot = cvss.getCvsRoot();
         //cvss.ignoreProbe();
-        
+
         //crso.setCVSRoot(CVSroot);
         //combo.setSelectedItem(CVSroot);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
-        
+
         TestKit.waitText(mh);
         cvss.stop();
-        try {
-            new EventTool().waitNoEvent(1000);
-            in.close();
-        } catch (IOException e) {
-            //
-        }
+        in.close();
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
-        
+
         ProjectSupport.waitScanFinished();
 //        TestKit.waitForQueueEmpty();
 //        ProjectSupport.waitScanFinished();
-        
+
         //create new elements for testing
         TestKit.createNewElementsCommitCvs11(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
+        TestKit.TIME_OUT = 15;
     }
 
     public void testCommitModified() throws Exception {
