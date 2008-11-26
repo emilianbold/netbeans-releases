@@ -42,6 +42,8 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
@@ -65,7 +67,8 @@ public class SchemaNode extends BaseNode {
     }
 
     private DatabaseConnection connection;
-    private Schema schema;
+    private MetadataElementHandle<Schema> schemaHandle;
+    private Metadata metaData;
 
     private SchemaNode(NodeDataLookup lookup) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER);
@@ -74,7 +77,8 @@ public class SchemaNode extends BaseNode {
     protected void initialize() {
         // get the connection from the lookup
         connection = getLookup().lookup(DatabaseConnection.class);
-        schema = getLookup().lookup(Schema.class);
+        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
+        metaData = getLookup().lookup(Metadata.class);
     }
 
     @Override
@@ -88,6 +92,7 @@ public class SchemaNode extends BaseNode {
     }
 
     private String renderName() {
+        Schema schema = schemaHandle.resolve(metaData);
         String name = schema.getName();
         if (name == null) {
             name = schema.getParent().getName();

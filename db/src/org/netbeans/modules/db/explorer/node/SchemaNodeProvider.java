@@ -53,6 +53,7 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.MetadataModels;
@@ -128,26 +129,31 @@ public class SchemaNodeProvider extends NodeProvider {
 
                             Catalog cat = parameter.getDefaultCatalog();
                             Schema syntheticSchema = cat.getSyntheticSchema();
+
                             if (syntheticSchema != null) {
-                                updateNode(newList, syntheticSchema);
+                                updateNode(newList, parameter.getDefaultSchema(), parameter);
                             } else {
                                 Collection<Schema> schemas = cat.getSchemas();
                                 for (Schema schema : schemas) {
-                                    updateNode(newList, schema);
+                                    updateNode(newList, schema, parameter);
                                 }
                             }
 
                             setNodes(newList);
                         }
 
-                        private void updateNode(List<Node> newList, Schema schema) {
+                        private void updateNode(List<Node> newList, Schema schema, Metadata metadata) {
                             Collection<Node> matches = SchemaNodeProvider.this.getNodes(schema);
                             if (matches.size() > 0) {
                                 newList.addAll(matches);
                             } else {
                                 NodeDataLookup lookup = new NodeDataLookup();
                                 lookup.add(connection);
-                                lookup.add(schema);
+
+                                MetadataElementHandle<Schema> schemaHandle = MetadataElementHandle.create(schema);
+                                lookup.add(schemaHandle);
+                                lookup.add(metadata);
+
                                 newList.add(SchemaNode.create(lookup));
                             }
                         }

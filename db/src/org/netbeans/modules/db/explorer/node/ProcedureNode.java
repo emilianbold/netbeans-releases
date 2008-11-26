@@ -42,6 +42,8 @@ package org.netbeans.modules.db.explorer.node;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
 
 /**
@@ -65,7 +67,8 @@ public class ProcedureNode extends BaseNode {
     }
 
     private DatabaseConnection connection;
-    private Procedure procedure;
+    private Metadata metaData;
+    private MetadataElementHandle<Procedure> procedureHandle;
 
     private ProcedureNode(NodeDataLookup lookup) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER);
@@ -74,17 +77,19 @@ public class ProcedureNode extends BaseNode {
     protected void initialize() {
         // get the connection from the lookup
         connection = getLookup().lookup(DatabaseConnection.class);
-        procedure = getLookup().lookup(Procedure.class);
-
+        metaData = getLookup().lookup(Metadata.class);
+        procedureHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     @Override
     public String getName() {
+        Procedure procedure = procedureHandle.resolve(metaData);
         return procedure.getName();
     }
 
     @Override
     public String getDisplayName() {
+        Procedure procedure = procedureHandle.resolve(metaData);
         return procedure.getName();
     }
 
