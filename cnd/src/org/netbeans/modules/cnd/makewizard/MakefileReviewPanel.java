@@ -190,13 +190,13 @@ public class MakefileReviewPanel extends MakefileWizardPanel
                         "Error: Unknown target type in summary");	// NOI18N
             }
             if (td.getSourcesList() == null) {
-                append("LBL_SingleTargetSrcs", new Integer(0));		// NOI18N
+                append("LBL_SingleTargetSrcs", Integer.valueOf(0)); // NOI18N
             } else {
                 if (td.getSourcesList().length == 1) {
                     append("LBL_SingleTargetSrcs1");			// NOI18N
                 } else {
                     append("LBL_SingleTargetSrcs", // NOI18N
-                            new Integer(td.getSourcesList().length));
+                            Integer.valueOf(td.getSourcesList().length));
                 }
             }
         } else {
