@@ -44,13 +44,13 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle.Kind;
 import org.netbeans.modules.db.metadata.model.jdbc.JDBCMetadata;
-import org.netbeans.modules.db.test.DBTestBase;
+import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
 /**
  *
  * @author Andrei Badea
  */
-public class MetadataElementHandleTest extends DBTestBase {
+public class MetadataElementHandleTest extends MetadataTestBase {
 
     private Connection conn;
     private Metadata metadata;
@@ -61,11 +61,15 @@ public class MetadataElementHandleTest extends DBTestBase {
 
     @Override
     public void setUp() throws Exception {
-        super.setUp();
         clearWorkDir();
-        createTestTable();
-        conn = getConnection();
-        metadata = new JDBCMetadata(conn, getSchema()).getMetadata();
+        Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+        conn = DriverManager.getConnection("jdbc:derby:" + getWorkDirPath() + "/test;create=true");
+        Statement stmt = conn.createStatement();
+        stmt.executeUpdate("CREATE TABLE FOO (" +
+                "ID INT NOT NULL PRIMARY KEY, " +
+                "FOO VARCHAR(16))");
+        stmt.close();
+        metadata = new JDBCMetadata(conn, "APP").getMetadata();
     }
 
     public void testResolve() {
@@ -79,12 +83,12 @@ public class MetadataElementHandleTest extends DBTestBase {
         Schema resolvedSchema = schemaHandle.resolve(metadata);
         assertSame(schema, resolvedSchema);
 
-        Table table = schema.getTable(getTestTableName());
+        Table table = schema.getTable("FOO");
         MetadataElementHandle<Table> tableHandle = MetadataElementHandle.create(table);
         Table resolvedTable = tableHandle.resolve(metadata);
         assertSame(table, resolvedTable);
 
-        Column column = table.getColumn(getTestTableIdName());
+        Column column = table.getColumn("FOO");
         MetadataElementHandle<Column> columnHandle = MetadataElementHandle.create(column);
         Column resolvedColumn = columnHandle.resolve(metadata);
         assertSame(column, resolvedColumn);
