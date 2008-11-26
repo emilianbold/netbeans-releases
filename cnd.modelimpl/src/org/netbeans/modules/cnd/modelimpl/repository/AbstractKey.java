@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -49,43 +48,43 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 /*package*/
 // have to be public or UID factory does not work
 public abstract class AbstractKey implements Key, SelfPersistent {
+
     /**
      * must be implemented in child
      */
     @Override
     public abstract String toString();
-    
+
     /**
      * must be implemented in child
      */
     @Override
     public abstract int hashCode();
-    
+
     @Override
     public boolean equals(Object obj) {
-	if (this == obj) {
-	    return true;
-	}
-	if (obj == null || (this.getClass() != obj.getClass())) {
-	    return false;
-	}
-	return true;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || (this.getClass() != obj.getClass())) {
+            return false;
+        }
+        return true;
     }
-    
+
     public Key.Behavior getBehavior() {
-	return Behavior.Default;
+        return Behavior.Default;
     }
-    
+
     public abstract int getSecondaryAt(int level);
-    
+
     public abstract CharSequence getAt(int level);
-    
+
     public abstract CharSequence getUnit();
 
     public abstract int getUnitId();
-    
+
     public abstract int getSecondaryDepth();
-    
+
     public abstract int getDepth();
-    
 }

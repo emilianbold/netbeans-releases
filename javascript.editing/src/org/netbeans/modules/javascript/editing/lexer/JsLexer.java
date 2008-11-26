@@ -292,6 +292,9 @@ public final class JsLexer implements Lexer<JsTokenId> {
         case Token.VAR:
         case Token.VOID:
         case Token.GOTO:
+        case Token.YIELD:
+        case Token.LET:
+        case Token.DEBUGGER:
             return JsTokenId.ANY_KEYWORD;
         case Token.NUMBER:
             return JsTokenId.FLOAT_LITERAL;

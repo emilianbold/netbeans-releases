@@ -1467,7 +1467,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 13;
-        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 6);
         add(btVersions, gridBagConstraints);

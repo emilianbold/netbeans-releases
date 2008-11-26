@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -63,6 +64,8 @@ import org.openide.util.NbBundle;
  * @author gordonp
  */
 public class ToggleBreakpointActionProvider extends ActionsProviderSupport implements PropertyChangeListener {
+
+    private final Logger log = Logger.getLogger("gdb.breakpoint.annotations"); // NOI18N
     
     /** Creates a new instance of ToggleBreakpointActionProvider */
     public ToggleBreakpointActionProvider() {
@@ -87,6 +90,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
         // 2) find and remove existing line breakpoint
         GdbBreakpoint lb = findBreakpoint(url, ln);
         if (lb != null) {
+            log.fine("ToggleBreakpointActionProvider.doAction: Removing breakpoint at " + lb.getPath() + ":" + lb.getLineNumber());
             d.removeBreakpoint(lb);
             return;
         }
@@ -100,6 +104,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
             lb.setPrintText(
                 NbBundle.getBundle(ToggleBreakpointActionProvider.class).getString("CTL_Line_Breakpoint_Print_Text")
             );
+            log.fine("ToggleBreakpointActionProvider.doAction: Adding disassembly breakpoint at " + lb.getPath() + ":" + lb.getLineNumber());
             d.addBreakpoint(lb);
             return;
         }
@@ -108,6 +113,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
         lb = LineBreakpoint.create(url, ln);
         lb.setPrintText(NbBundle.getBundle(
                 ToggleBreakpointActionProvider.class).getString("CTL_Line_Breakpoint_Print_Text")); // NOI18N
+        log.fine("ToggleBreakpointActionProvider.doAction: Adding breakpoint at " + lb.getPath() + ":" + lb.getLineNumber());
         d.addBreakpoint(lb);
     }
     

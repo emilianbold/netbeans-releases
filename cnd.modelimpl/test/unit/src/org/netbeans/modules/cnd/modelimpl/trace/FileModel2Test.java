@@ -160,5 +160,9 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("iz152872_initializer_in_expression.c");
     }
 
+    public void testNamespaceAlias() throws Exception {
+        // IZ#151957: 9 parser's errors in boost 1.36
+        performTest("iz151957_namespace_alias.cc");
+    }
 
 }

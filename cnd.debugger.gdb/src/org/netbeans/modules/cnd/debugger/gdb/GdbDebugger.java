@@ -255,7 +255,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     pae.getID() != DEBUG_ATTACH) {
                 termpath = pae.getProfile().getTerminalPath();
             }
-            if (!Boolean.getBoolean("gdb.suppress-timeout")) {
+            if (!Boolean.getBoolean("gdb.suppress.timeout")) {
                 startupTimer = new Timer("GDB Startup Timer Thread"); // NOI18N
                 startupTimer.schedule(new TimerTask() {
 

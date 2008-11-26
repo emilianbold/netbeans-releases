@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Services">
+        <!-- Recognize application/vnd.sun.wadl+xml: -->
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-websvc-rest-wadl-design-resources-mime-resolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wadl.design.loader.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wadl/design/resources/wadl_file.png"/>
+                <attr name="position" intvalue="430"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Loaders">
+        <folder name="application">
+            <folder name="vnd.sun.wadl+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-websvc-rest-wadl-design-loader-WadlDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wadl.design.loader.Bundle"/>
+                    </file>
+                </folder>
+                <folder name="Actions">
+                    <file name="org-openide-actions-EditAction.instance_hidden"/>
+                    <file name="org-netbeans-modules-websvc-rest-wadl-design-actions-WadlViewOpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>                 
+                    <file name="org-netbeans-modules-websvc-rest-wadl-design-actions-WadlSourceViewOpenAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="sep-0.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-actions-CollectXMLAction.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="700"/>
+                    </file> 
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="org-openide-actions-PasteAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+                    <file name="sep-5.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1900"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="2000"/>
+                    </file>
+                    <file name="sep-6.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="2100"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="2200"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="2300"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Templates">       
+        <folder name="WebServices">
+            <file name="WADL.wadl" url="WADL.template">
+                <attr name="position" intvalue="230"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.rest.wadl.design.wizard.NewWadlWizardIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wadl/design/wizard/newWadl.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wadl.design.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wadl/design/resources/wadl_file.png"/>
+                <attr name="templateCategory" stringvalue="XML"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>
+
