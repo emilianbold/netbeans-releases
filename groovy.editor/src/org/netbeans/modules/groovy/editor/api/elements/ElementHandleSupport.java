@@ -135,6 +135,11 @@ public class ElementHandleSupport {
         return null;
     }
 
+    public static ElementHandle createHandle(String className, String elementName, ElementKind kind,
+                Set<Modifier> modifiers) {
+        return new SimpleElementHandle(className, elementName, kind, modifiers);
+    }
+
     private static ASTNode find(ASTNode oldRoot, ASTNode oldObject, ASTNode newRoot) {
         // Walk down the tree to locate oldObject, and in the process, pick the same child for newRoot
         @SuppressWarnings("unchecked")
@@ -190,7 +195,7 @@ public class ElementHandleSupport {
 
         public FileObject getFileObject() {
             if (object instanceof IndexedElement) {
-                return ((IndexedElement)object).getFileObject();
+                return ((IndexedElement) object).getFileObject();
             }
 
             return fileObject;
@@ -215,6 +220,56 @@ public class ElementHandleSupport {
         public Set<Modifier> getModifiers() {
             return object.getModifiers();
         }
+    }
+
+    // FIXME could it be ElementKind.OTHER or can we use url?
+    private static class SimpleElementHandle implements ElementHandle {
+
+        private final String className;
+
+        private final String elementName;
+
+        private final ElementKind kind;
+
+        private final Set<Modifier> modifiers;
+
+        public SimpleElementHandle(String className, String elementName, ElementKind kind,
+                Set<Modifier> modifiers) {
+            this.className = className;
+            this.elementName = elementName;
+            this.kind = kind;
+            this.modifiers = modifiers;
+        }
+
+        public FileObject getFileObject() {
+            return null;
+        }
+
+        public String getIn() {
+            return className;
+        }
+
+        public ElementKind getKind() {
+            return kind;
+        }
+
+        public String getMimeType() {
+            return GroovyTokenId.GROOVY_MIME_TYPE;
+        }
+
+        public Set<Modifier> getModifiers() {
+            return modifiers;
+        }
+
+        public String getName() {
+            return elementName;
+        }
+
+        public boolean signatureEquals(ElementHandle handle) {
+            // FIXME
+            return false;
+        }
+
     }
 
 }

@@ -206,7 +206,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
             set.add(new PropertyDescriptor(FILTER_USE_STANDARD, true, DefaultPropertyParsers.BOOLEAN_PARSER, TRUE));
             set.add(new PropertyDescriptor(FILTER_EXCLUDE_TESTS, true, DefaultPropertyParsers.BOOLEAN_PARSER, FALSE));
             set.add(new PropertyDescriptor(FILTER_EXCLUDES, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));
-            set.add(new PropertyDescriptor(FILTER_MORE_EXCLUDES, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));
+            set.add(new PropertyDescriptor(FILTER_MORE_EXCLUDES, true, DefaultPropertyParsers.STRING_PARSER, "**/overview.html,**/package.html"));
         
             set.add(new PropertyDescriptor(JAVADOC_PRIVATE, true, DefaultPropertyParsers.BOOLEAN_PARSER, FALSE));
             set.add(new PropertyDescriptor(JAVADOC_NO_TREE, true, DefaultPropertyParsers.INVERSE_BOOLEAN_PARSER, FALSE));

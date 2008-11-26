@@ -43,14 +43,14 @@ package org.netbeans.modules.websvc.jaxws.light;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
 
-/* This class provides access to the {@link WebServicesSupport}'s private constructor 
- * from outside in the way that this class is implemented by an inner class of 
+/** This class provides access to the {@link WebServicesSupport}'s private constructor
+ * from outside in the way that this class is implemented by an inner class of
  * {@link JAXWSSupport} and the instance is set into the {@link DEFAULT}.
  */
 public abstract class JAXWSLightSupportAccessor {
 
     public static JAXWSLightSupportAccessor DEFAULT;
-    
+
     // force loading JAXWSSupport class. That will set DEFAULT variable.
     static {
         Class c = JAXWSLightSupport.class;
@@ -60,7 +60,7 @@ public abstract class JAXWSLightSupportAccessor {
             ex.printStackTrace();
         }
     }
-    
+
     public abstract JAXWSLightSupport createJAXWSSupport(JAXWSLightSupportImpl spiJAXWSSupport);
 
     public abstract JAXWSLightSupportImpl getJAXWSSupportImpl(JAXWSLightSupport wss);

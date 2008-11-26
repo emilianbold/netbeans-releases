@@ -104,8 +104,8 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
         for (i = 0; i < panels.length; i++) {
             JComponent jc = (JComponent) panels[i].getComponent();
             steps[i] = ((Name) panels[i]).getName();
-            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
-            jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+            jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
         };
     }
     

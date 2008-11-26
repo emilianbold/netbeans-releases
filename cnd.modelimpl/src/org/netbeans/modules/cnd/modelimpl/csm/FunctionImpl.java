@@ -80,6 +80,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private CharSequence name;
     private final CsmType returnType;
     private final List<CsmUID<CsmParameter>>  parameters;
+//    private final CsmUID<ParameterListImpl<CsmParameterList, CsmKnRName>> params;
     private CharSequence signature;
     
     // only one of scopeRef/scopeAccessor must be used 
@@ -153,6 +154,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
         // set parameters, do it in constructor to have final fields
         List<CsmParameter> params = initParameters(ast);
+//        params = createParameterList(ast);
         if (params == null) {
             this.parameters = null;
         } else {
@@ -503,6 +505,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         return null;
     }
+
+    private FunctionParameterListImpl createParameterList(AST funAST) {
+        return FunctionParameterListImpl.create(getContainingFile(), funAST, this);
+    }
     
     private List<CsmParameter> initParameters(AST node) {
         AST ast = findParameterNode(node);
@@ -513,7 +519,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         AST ast = findParameterNode(node);
         return AstRenderer.isVoidParameter(ast);
     }
-    
+
+    public CsmFunctionParameterList  getParameterList() {
+        return null; //paramList;
+    }
+
     public Collection<CsmParameter>  getParameters() {
         return _getParameters();
     }
@@ -693,7 +703,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             return out;
         }
     }
-    
+
     private void _disposeParameters() {
         if (parameters != null) {
             RepositoryUtils.remove(parameters);
@@ -721,6 +731,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         output.writeByte(flags);
         output.writeUTF(this.getScopeSuffix().toString());
         PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
+//        this.paramList.write(output);
     }
 
     @SuppressWarnings("unchecked")
@@ -745,5 +756,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         this.flags = input.readByte();
         this.classTemplateSuffix = NameCache.getManager().getString(input.readUTF());
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
+//        this.paramList = ParameterListImpl.create(input);
     }
 }

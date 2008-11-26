@@ -1,0 +1,10 @@
+    let x = 5
+         ----
+HINT:Switch JavaScript version to 1.7 to enable support for "let"
+FIX:Change targeted JavaScript version to 1.7
+HINT:missing ; before statement
+    yield i;
+           -
+HINT:Switch JavaScript version to 1.7 to enable support for "yield"
+FIX:Change targeted JavaScript version to 1.7
+HINT:missing ; before statement

@@ -90,7 +90,7 @@ public class TemplatesTableRowPanel extends javax.swing.JPanel
             ((DefaultComboBoxModel)templateFileCombo.getModel());
         
         selectionModel.addElement(NbBundle.getMessage(
-            TemplatesTableRowPanel.class, "VAL_ElementType_NodeSelected")); // NOI18N
+            TemplatesTableRowPanel.class, "VAL_ElementType_NoneSelected")); // NOI18N
         
         Enumeration templateFiles = root.getChildren(true);
         

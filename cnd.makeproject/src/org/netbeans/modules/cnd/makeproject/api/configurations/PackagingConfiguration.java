@@ -336,7 +336,7 @@ public class PackagingConfiguration {
         
         @Override
         public Object getValue() {
-            return new Integer(PackagerManager.getDefault().getNameIndex(getType().getValue()));
+            return Integer.valueOf(PackagerManager.getDefault().getNameIndex(getType().getValue()));
         }
     
         @Override

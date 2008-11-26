@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import antlr.Token;
 import antlr.TokenStream;
 import java.util.Collection;
 
@@ -52,7 +51,7 @@ import java.util.Collection;
 public interface APTMacro {
     public boolean isSystem();
     public boolean isFunctionLike();
-    public Token getName();
-    public Collection<Token> getParams();
+    public APTToken getName();
+    public Collection<APTToken> getParams();
     public TokenStream getBody();
 }

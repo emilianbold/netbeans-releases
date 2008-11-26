@@ -89,6 +89,7 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
     
     private Project project;
     private AntProjectHelper antProjectHelper;
+    private FileObject serviceArtifactsFolder;
     
     /** Creates a new instance of JAXWSSupport */
     public ProjectJAXWSSupport(Project project, AntProjectHelper antProjectHelper) {
@@ -191,12 +192,13 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
             // HACK to enable filesystems to fire events when new folder will be created
             // need to ask for children           
             FileObject projectDir = project.getProjectDirectory();
-            FileObject serviceArtifactsFolder = projectDir.getFileObject("build/generated/wsimport/service"); //NOI18N
+            serviceArtifactsFolder = projectDir.getFileObject("build/generated/wsimport/service"); //NOI18N
             if (serviceArtifactsFolder!=null) {
                 serviceArtifactsFolder.getChildren(true);
             } else {
                 try {
-                    FileUtil.createFolder(projectDir, "build/generated/wsimport/service");
+                    serviceArtifactsFolder = FileUtil.createFolder(projectDir, "build/generated/wsimport/service");
+                    if (serviceArtifactsFolder != null) serviceArtifactsFolder.getChildren(true);
                 } catch (IOException ex) {}
             }
             

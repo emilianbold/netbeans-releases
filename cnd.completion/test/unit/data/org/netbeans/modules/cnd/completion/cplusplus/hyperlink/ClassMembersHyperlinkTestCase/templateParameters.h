@@ -111,3 +111,12 @@ struct _Vector_base {
     };
 };
 
+// IZ#151957: 9 parser's errors in boost 1.36
+template<typename frac_sec_type,
+typename frac_sec_type::int_type resolution_adjust>
+class time_resolution_traits {
+public:
+    time_resolution_traits() {
+        resolution_adjust++;
+    }
+};

@@ -99,7 +99,6 @@ public class Commit extends GeneralPHP
   static private final String CLASS_PHP_INITIAL_CONTENT =
     "<?php/**Tochangethistemplate,chooseTools|Templates*andopenthetemplateintheeditor.*//***DescriptionofPHPClass**@author" + System.getProperty( "user.name" ) + "*/classPHPClass{//putyourcodehere}?>";
 
-  static private final int COMPLETION_LIST_THRESHOLD = 5000;
   static private final int COMPLETION_LIST_INCLASS = 22;
 
   private static boolean bUnzipped = false;
@@ -119,9 +118,11 @@ public class Commit extends GeneralPHP
           "ManipulateEmptyPHP",
           "CreateTemplatePHP",
           "ManipulateTemplatePHP",
+
           //"OpenStandalonePHP",
           //"ManipulateStandalonePHP",
           //"CreateCustomPHPApplication",
+
           "CreatePHPWithExistingSources",
           "ManipulatePHPWithExistingSources"
         )
@@ -188,50 +189,6 @@ public class Commit extends GeneralPHP
     endTest( );
   }
 
-  private class CompletionInfo
-  {
-    public CompletionJListOperator listItself;
-    public List listItems;
-  }
-
-  protected CompletionInfo GetCompletion( )
-  {
-    CompletionInfo result = new CompletionInfo( );
-    result.listItself = null;
-    int iRedo = 10;
-    while( true )
-    {
-      try
-      {
-        result.listItself = new CompletionJListOperator( );
-        try
-        {
-          result.listItems = result.listItself.getCompletionItems( );
-          Object o = result.listItems.get( 0 );
-          if(
-              !o.toString( ).contains( "No suggestions" )
-              && !o.toString( ).contains( "Scanning in progress..." )
-            )
-          {
-            return result;
-          }
-          Sleep( 1000 );
-        }
-        catch( java.lang.Exception ex )
-        {
-          return null;
-        }
-      }
-      catch( JemmyException ex )
-      {
-        System.out.println( "Wait completion timeout." );
-        if( 0 == --iRedo )
-          return null;
-      }
-      Sleep( 100 );
-    }
-  }
-
   protected void Backit( EditorOperator eoPHP, int iCount )
   {
     for( int i = 0; i < iCount; i++ )
@@ -285,31 +242,6 @@ public class Commit extends GeneralPHP
     }
     return sCode + sSuffix;
   }
-
-    protected void CheckCompletionItems(
-        CompletionJListOperator jlist,
-        String[] asIdeal
-      )
-    {
-      for( String sCode : asIdeal )
-      {
-        int iIndex = jlist.findItemIndex( sCode );
-        if( -1 == iIndex )
-        {
-          try
-          {
-            List list = jlist.getCompletionItems();
-            for( int i = 0; i < list.size( ); i++ )
-              System.out.println( "******" + list.get( i ) );
-          }
-          catch( java.lang.Exception ex )
-          {
-            System.out.println( "#" + ex.getMessage( ) );
-          }
-          fail( "Unable to find " + sCode + " completion." );
-        }
-      }
-    }
 
   protected void TestPHPFile(
       String sProjectName,
@@ -598,39 +530,6 @@ public class Commit extends GeneralPHP
       );
 
     endTest( );
-  }
-
-  protected void CreatePHPFile(
-      String sProject,
-      String sItem,
-      String sName
-    )
-  {
-    ProjectsTabOperator pto = new ProjectsTabOperator( );
-    ProjectRootNode prn = pto.getProjectRootNode( sProject );
-    prn.select( );
-
-    // Workaround for MacOS platform
-    NewFileWizardOperator.invoke().cancel( );
-
-    NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
-    opNewFileWizard.selectCategory( "PHP" );
-    opNewFileWizard.selectFileType( sItem );
-    opNewFileWizard.next( );
-
-    JDialogOperator jdNew = new JDialogOperator( "New " + sItem );
-    JTextComponentOperator jt = new JTextComponentOperator( jdNew, 0 );
-    if( null != sName )
-      jt.setText( sName );
-    else
-      sName = jt.getText( );
-
-    opNewFileWizard.finish( );
-
-    // Check created schema in project tree
-    String sPath = sProject + "|Source Files|" + sName;
-    prn = pto.getProjectRootNode( sPath );
-    prn.select( );
   }
 
   public void CreateEmptyPHP( )

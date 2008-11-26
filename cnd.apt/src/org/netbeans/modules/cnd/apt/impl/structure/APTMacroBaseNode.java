@@ -41,11 +41,11 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.Token;
 import java.io.Serializable;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 public abstract class APTMacroBaseNode extends APTTokenBasedNode
                                         implements Serializable {
     private static final long serialVersionUID = 1315417078059538898L;
-    private Token macroName = EMPTY_NAME;
+    private APTToken macroName = EMPTY_NAME;
     
     /** Copy constructor */
     /**package*/APTMacroBaseNode(APTMacroBaseNode orig) {
@@ -69,7 +69,7 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
     }
     
     /** Creates a new instance of APTMacroBaseNode */
-    public APTMacroBaseNode(Token token) {
+    public APTMacroBaseNode(APTToken token) {
         super(token);
     }
 
@@ -83,7 +83,7 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
         assert (false) : "define/undef doesn't support children"; // NOI18N        
     }
 
-    public boolean accept(Token token) {
+    public boolean accept(APTToken token) {
         if (APTUtils.isID(token)) {
             if (macroName != EMPTY_NAME) {
                 // init macro name only once
@@ -113,7 +113,7 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
         return retValue;
     }
     
-    public Token getName() {
+    public APTToken getName() {
         return macroName;
     }
     
@@ -124,6 +124,7 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
         public NotHandledMacroName() {
         }
         
+        @Override
         public String getText() {
             return "<<DUMMY>>"; // NOI18N
         }        

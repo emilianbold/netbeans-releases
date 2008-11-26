@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.DataInput;
@@ -49,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableName;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyCompoundStatementImpl;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.NestedType;
+import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterTypeImpl;
@@ -89,7 +90,6 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // support file buffers
-
     public static void writeBuffer(FileBuffer buffer, DataOutput output) throws IOException {
         assert buffer != null;
         if (buffer instanceof AbstractFileBuffer) {
@@ -113,7 +113,6 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // support string (arrays)
-
     public static void writeStrings(CharSequence[] arr, DataOutput output) throws IOException {
         if (arr == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
@@ -171,11 +170,10 @@ public class PersistentUtils {
         }
         return arr;
     }
-
     private static final int UTF_LIMIT = 65535;
 
     public static void writeUTF(CharSequence st, DataOutput aStream) throws IOException {
-        if  (st != null) {
+        if (st != null) {
             // write extent count
             // NB: for an empty string, 0 is written
             aStream.writeShort(st.length() / UTF_LIMIT + ((st.length() % UTF_LIMIT == 0) ? 0 : 1));
@@ -200,7 +198,7 @@ public class PersistentUtils {
             case 1:
                 return aStream.readUTF();
             default:
-                StringBuilder sb = new StringBuilder(cnt*UTF_LIMIT);
+                StringBuilder sb = new StringBuilder(cnt * UTF_LIMIT);
                 for (int i = 0; i < cnt; i++) {
                     sb.append(aStream.readUTF());
                 }
@@ -210,14 +208,13 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // support CsmExpression
-
     public static void writeExpression(CsmExpression expr, DataOutput output) throws IOException {
         if (expr == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else {
             if (expr instanceof ExpressionBase) {
                 output.writeInt(EXPRESSION_BASE);
-                ((ExpressionBase)expr).write(output);
+                ((ExpressionBase) expr).write(output);
             } else {
                 throw new IllegalArgumentException("instance of unknown CsmExpression " + expr);  //NOI18N
             }
@@ -243,7 +240,7 @@ public class PersistentUtils {
             int collSize = exprs.size();
             output.writeInt(collSize);
 
-            for (CsmExpression expr: exprs) {
+            for (CsmExpression expr : exprs) {
                 assert expr != null;
                 writeExpression(expr, output);
             }
@@ -286,37 +283,36 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // support types
-
     public static CsmType readType(DataInput stream) throws IOException {
         CsmType obj;
         int handler = stream.readInt();
         switch (handler) {
-        case AbstractObjectFactory.NULL_POINTER:
-            obj = null;
-            break;
+            case AbstractObjectFactory.NULL_POINTER:
+                obj = null;
+                break;
 
-        case NO_TYPE:
-            obj = NoType.instance();
-            break;
+            case NO_TYPE:
+                obj = NoType.instance();
+                break;
 
-        case TYPE_IMPL:
-            obj = new TypeImpl(stream);
-            break;
+            case TYPE_IMPL:
+                obj = new TypeImpl(stream);
+                break;
 
-        case NESTED_TYPE:
-            obj = new NestedType(stream);
-            break;
+            case NESTED_TYPE:
+                obj = new NestedType(stream);
+                break;
 
-        case TYPE_FUN_PTR_IMPL:
-            obj = new TypeFunPtrImpl(stream);
-            break;
+            case TYPE_FUN_PTR_IMPL:
+                obj = new TypeFunPtrImpl(stream);
+                break;
 
-        case TEMPLATE_PARAM_TYPE:
-            obj = new TemplateParameterTypeImpl(stream);
-            break;
+            case TEMPLATE_PARAM_TYPE:
+                obj = new TemplateParameterTypeImpl(stream);
+                break;
 
-        default:
-            throw new IllegalArgumentException("unknown type handler" + handler);  //NOI18N
+            default:
+                throw new IllegalArgumentException("unknown type handler" + handler);  //NOI18N
         }
         return obj;
     }
@@ -329,17 +325,17 @@ public class PersistentUtils {
         } else if (type instanceof TypeImpl) {
             if (type instanceof TypeFunPtrImpl) {
                 stream.writeInt(TYPE_FUN_PTR_IMPL);
-                ((TypeFunPtrImpl)type).write(stream);
+                ((TypeFunPtrImpl) type).write(stream);
             } else if (type instanceof NestedType) {
                 stream.writeInt(NESTED_TYPE);
-                ((NestedType)type).write(stream);
+                ((NestedType) type).write(stream);
             } else {
                 stream.writeInt(TYPE_IMPL);
-                ((TypeImpl)type).write(stream);
+                ((TypeImpl) type).write(stream);
             }
         } else if (type instanceof TemplateParameterTypeImpl) {
             stream.writeInt(TEMPLATE_PARAM_TYPE);
-            ((TemplateParameterTypeImpl)type).write(stream);
+            ((TemplateParameterTypeImpl) type).write(stream);
         } else {
             throw new IllegalArgumentException("instance of unknown class " + type.getClass().getName());  //NOI18N
         }
@@ -360,7 +356,7 @@ public class PersistentUtils {
         int collSize = types.size();
         output.writeInt(collSize);
 
-        for (CsmType elem: types) {
+        for (CsmType elem : types) {
             assert elem != null;
             writeType(elem, output);
         }
@@ -368,11 +364,10 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // support inheritance
-
     private static void writeInheritance(CsmInheritance inheritance, DataOutput output) throws IOException {
         assert inheritance != null;
         if (inheritance instanceof InheritanceImpl) {
-            ((InheritanceImpl)inheritance).write(output);
+            ((InheritanceImpl) inheritance).write(output);
         } else {
             throw new IllegalArgumentException("instance of unknown CsmInheritance " + inheritance);  //NOI18N
         }
@@ -398,7 +393,7 @@ public class PersistentUtils {
         int collSize = inhs.size();
         output.writeInt(collSize);
 
-        for (CsmInheritance elem: inhs) {
+        for (CsmInheritance elem : inhs) {
             assert elem != null;
             writeInheritance(elem, output);
         }
@@ -406,11 +401,10 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // support template parameters
-
     public static void writeTemplateParameter(CsmTemplateParameter param, DataOutput output) throws IOException {
         assert param != null;
         if (param instanceof TemplateParameterImpl) {
-            ((TemplateParameterImpl)param).write(output);
+            ((TemplateParameterImpl) param).write(output);
         } else {
             throw new IllegalArgumentException("instance of unknown TemplateParameterImpl " + param);  //NOI18N
         }
@@ -443,7 +437,7 @@ public class PersistentUtils {
             int collSize = params.size();
             output.writeInt(collSize);
 
-            for (CsmTemplateParameter param: params) {
+            for (CsmTemplateParameter param : params) {
                 assert param != null;
                 writeTemplateParameter(param, output);
             }
@@ -471,7 +465,6 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // support visibility
-
     public static void writeVisibility(CsmVisibility visibility, DataOutput output) throws IOException {
         assert visibility != null;
         int handler = -1;
@@ -516,18 +509,17 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // compound statements
-
     public static void writeCompoundStatement(CsmCompoundStatement body, DataOutput output) throws IOException {
         assert body != null;
         if (body instanceof LazyCompoundStatementImpl) {
             output.writeInt(LAZY_COMPOUND_STATEMENT_IMPL);
-            ((LazyCompoundStatementImpl)body).write(output);
+            ((LazyCompoundStatementImpl) body).write(output);
         } else if (body instanceof EmptyCompoundStatementImpl) {
             output.writeInt(EMPTY_COMPOUND_STATEMENT_IMPL);
-            ((EmptyCompoundStatementImpl)body).write(output);
+            ((EmptyCompoundStatementImpl) body).write(output);
         } else if (body instanceof CompoundStatementImpl) {
             output.writeInt(COMPOUND_STATEMENT_IMPL);
-            ((CompoundStatementImpl)body).write(output);
+            ((CompoundStatementImpl) body).write(output);
         } else {
             throw new IllegalArgumentException("unknown compound statement " + body);  //NOI18N
         }
@@ -551,8 +543,6 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // support preprocessor states
-
-
 // Unused for the time being
 //    public static void writeStringToStateMap(Map<String, APTPreprocHandler.State> filesHandlers, DataOutput output) throws IOException {
 //        assert filesHandlers != null;
@@ -582,38 +572,32 @@ public class PersistentUtils {
 //            filesHandlers.put(key, state);
 //        }
 //    }
-
     public static void writePreprocState(APTPreprocHandler.State state, DataOutput output) throws IOException {
-	APTPreprocHandler.State cleanedState = APTHandlersSupport.createCleanPreprocState(state);
+        APTPreprocHandler.State cleanedState = APTHandlersSupport.createCleanPreprocState(state);
         APTSerializeUtils.writePreprocState(cleanedState, output);
     }
 
     public static APTPreprocHandler.State readPreprocState(DataInput input) throws IOException {
         APTPreprocHandler.State state = APTSerializeUtils.readPreprocState(input);
-	assert state.isCleaned();
-	return state;
+        assert state.isCleaned();
+        return state;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // indices
-
-
-    private static final int FIRST_INDEX            = CsmObjectFactory.LAST_INDEX + 1;
-
-    private static final int VISIBILITY_PUBLIC      = FIRST_INDEX;
-    private static final int VISIBILITY_PROTECTED   = VISIBILITY_PUBLIC + 1;
-    private static final int VISIBILITY_PRIVATE     = VISIBILITY_PROTECTED + 1;
-    private static final int VISIBILITY_NONE        = VISIBILITY_PRIVATE + 1;
-
-    private static final int EXPRESSION_BASE        = VISIBILITY_NONE + 1;
-
-    private static final int FILE_BUFFER_FILE       = EXPRESSION_BASE + 1;
+    private static final int FIRST_INDEX = CsmObjectFactory.LAST_INDEX + 1;
+    private static final int VISIBILITY_PUBLIC = FIRST_INDEX;
+    private static final int VISIBILITY_PROTECTED = VISIBILITY_PUBLIC + 1;
+    private static final int VISIBILITY_PRIVATE = VISIBILITY_PROTECTED + 1;
+    private static final int VISIBILITY_NONE = VISIBILITY_PRIVATE + 1;
+    private static final int EXPRESSION_BASE = VISIBILITY_NONE + 1;
+    private static final int FILE_BUFFER_FILE = EXPRESSION_BASE + 1;
     // types
-    private static final int NO_TYPE                = FILE_BUFFER_FILE + 1;
-    private static final int TYPE_IMPL              = NO_TYPE + 1;
-    private static final int NESTED_TYPE         = TYPE_IMPL + 1;
-    private static final int TYPE_FUN_PTR_IMPL	    = NESTED_TYPE + 1;
-    private static final int TEMPLATE_PARAM_TYPE    = TYPE_FUN_PTR_IMPL + 1;
+    private static final int NO_TYPE = FILE_BUFFER_FILE + 1;
+    private static final int TYPE_IMPL = NO_TYPE + 1;
+    private static final int NESTED_TYPE = TYPE_IMPL + 1;
+    private static final int TYPE_FUN_PTR_IMPL = NESTED_TYPE + 1;
+    private static final int TEMPLATE_PARAM_TYPE = TYPE_FUN_PTR_IMPL + 1;
 
     // state
     private static final int PREPROC_STATE_STATE_IMPL = TEMPLATE_PARAM_TYPE + 1;
@@ -625,5 +609,5 @@ public class PersistentUtils {
 
     // index to be used in another factory (but only in one)
     // to start own indeces from the next after LAST_INDEX
-    public static final int LAST_INDEX              = COMPOUND_STATEMENT_IMPL;
+    public static final int LAST_INDEX = COMPOUND_STATEMENT_IMPL;
 }

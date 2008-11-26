@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.FileUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.IncludeUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.MacroUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.NamespaceUID;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ParamListUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ProjectUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.TypedefUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.UnnamedClassifierUID;
@@ -317,6 +318,8 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             aHandler = UID_MACRO_UID;
         } else if (object instanceof IncludeUID) {
             aHandler = UID_INCLUDE_UID;
+        } else if (object instanceof ParamListUID) {
+            aHandler = UID_PARAM_LIST_UID;
         } else if (object instanceof UnnamedOffsetableDeclarationUID) {
             aHandler = UID_UNNAMED_OFFSETABLE_DECLARATION_UID;
         } else if (object instanceof DeclarationUID) {
@@ -430,7 +433,8 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     private static final int UID_UNNAMED_CLASSIFIER_UID = UID_CLASSIFIER_UID + 1;
     private static final int UID_MACRO_UID              = UID_UNNAMED_CLASSIFIER_UID + 1;
     private static final int UID_INCLUDE_UID            = UID_MACRO_UID + 1;
-    private static final int UID_UNNAMED_OFFSETABLE_DECLARATION_UID = UID_INCLUDE_UID + 1;
+    private static final int UID_PARAM_LIST_UID            = UID_INCLUDE_UID + 1;
+    private static final int UID_UNNAMED_OFFSETABLE_DECLARATION_UID = UID_PARAM_LIST_UID + 1;
     private static final int UID_DECLARATION_UID        = UID_UNNAMED_OFFSETABLE_DECLARATION_UID + 1;
     private static final int UID_BUILT_IN_UID           = UID_DECLARATION_UID + 1;
     private static final int UID_INSTANTIATION_UID      = UID_BUILT_IN_UID + 1;
