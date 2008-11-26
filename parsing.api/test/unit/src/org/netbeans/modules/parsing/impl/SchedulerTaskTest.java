@@ -847,7 +847,7 @@ public class SchedulerTaskTest extends NbTestCase {
         writer.close ();
         Source source = Source.create (testFile);
         sb.append ("1\n");
-        CursorMovedSchedulerEvent event1 = new CursorMovedSchedulerEvent (MyScheduler.class, 666, 666) {};
+        CursorMovedSchedulerEvent event1 = new CursorMovedSchedulerEvent (MyScheduler.class, 666, 333) {};
         MyScheduler.schedule2 (source, event1);
         latch1.await ();
         sb.append ("2\n");
