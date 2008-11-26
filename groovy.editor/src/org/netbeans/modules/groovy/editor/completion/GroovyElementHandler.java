@@ -123,8 +123,7 @@ public final class GroovyElementHandler {
                 sb.append(NbUtilities.stripPackage(string));
             }
 
-            // FIXME what is this intended to do ? + modifiers
-            result.put(getSignature(indexedMethod), new CompletionItem.JavaMethodItem(indexedMethod.getName(), sb.toString(), null,
+            result.put(getSignature(indexedMethod), new CompletionItem.JavaMethodItem(className, indexedMethod.getName(), sb.toString(), null,
                     org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedMethod.getModifiers(), Modifier.PUBLIC), anchor, emphasise));
         }
 

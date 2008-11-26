@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionType;
+import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.openide.util.Lookup;
@@ -80,6 +81,24 @@ public final class DynamicElementHandler {
                 if (entry.getKey().getName().startsWith(prefix)) {
                     resultDynamic.put(entry.getKey(), new CompletionItem.DynamicMethodItem(
                             anchor, entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue()));
+                }
+            }
+        }
+
+        return resultDynamic;
+    }
+
+    public Map<FieldSignature, ? extends CompletionItem> getFields(CompletionType completionType,
+            String className, String prefix, int anchor) {
+
+        Map<FieldSignature, CompletionItem.DynamicFieldItem> resultDynamic =
+                new HashMap<FieldSignature, CompletionItem.DynamicFieldItem>();
+
+        for (DynamicCompletionProvider provider : Lookup.getDefault().lookupAll(DynamicCompletionProvider.class)) {
+            for (Map.Entry<FieldSignature, String> entry : provider.getFields(info.getFileObject(), className, completionType).entrySet()) {
+                if (entry.getKey().getName().startsWith(prefix)) {
+                    resultDynamic.put(entry.getKey(), new CompletionItem.DynamicFieldItem(
+                            anchor, entry.getKey().getName(), entry.getValue()));
                 }
             }
         }

@@ -102,10 +102,10 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
                 // Currently do not allow to create embedding over token that is physically joined
                 return null;
             }
-            if (token.getClass() == PartToken.class) {
-                // Currently do not allow to create embedding in a part of join token
-                return null;
-            }
+//            if (token.getClass() == PartToken.class) {
+//                // Currently do not allow to create embedding in a part of join token
+//                return null;
+//            }
             EmbeddingPresence ep;
             if (ec != null) {
                 ep = null;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,41 +31,31 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.jaxws;
+package org.netbeans.test.subversion.operators.actions;
 
-import java.io.IOException;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.modules.websvc.api.support.java.SourceUtils;
-import org.openide.filesystems.FileObject;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  *
- * @author Martin Adamek
+ * @author peterpis
  */
-public final class _RetoucheUtil {
+public class RelocateAction extends ActionNoBlock {
+    public static final String VERSIONING_ITEM = "Versioning";
 
-    private _RetoucheUtil() { }
+    /** "Subversion" menu item. */
+    public static final String SVN_ITEM = "Subversion";
 
-    /** Get Main Class Name.
-     * never call this from javac task.
-     * @param classFO file object
-     * @exception IOException throws when runUserActionTask fails
-     * @return class name
-     */
-    public static String getMainClassName(final FileObject classFO) throws IOException {
-        JavaSource javaSource = JavaSource.forFileObject(classFO);
-        final String[] result = new String[1];
-        javaSource.runUserActionTask(new Task<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                result[0] = SourceUtils.getPublicTopLevelElement(controller).getQualifiedName().toString();
-            }
-        }, true);
-        return result[0];
+    /** "Relocate..." menu item. */
+    public static final String RELOCATE_ITEM = "Relocate...";
+
+    /** Creates a new instance of RelocateAction */
+    public RelocateAction() {
+        super(VERSIONING_ITEM + "|" + RELOCATE_ITEM, null);
     }
-
 }
