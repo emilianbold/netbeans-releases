@@ -53,10 +53,15 @@ import org.openide.filesystems.FileObject;
  * @author Martin Adamek
  */
 public final class _RetoucheUtil {
-    
-    private _RetoucheUtil() {}
-    
-    /** never call this from javac task */
+
+    private _RetoucheUtil() { }
+
+    /** Get Main Class Name.
+     * never call this from javac task.
+     * @param classFO file object
+     * @exception IOException throws when runUserActionTask fails
+     * @return class name
+     */
     public static String getMainClassName(final FileObject classFO) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(classFO);
         final String[] result = new String[1];

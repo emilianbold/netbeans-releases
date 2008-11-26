@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -62,8 +62,15 @@ import org.openide.filesystems.FileObject;
  *
  * @author mkuchtiak
  */
-public class MavenModelUtils {
-    
+public final class MavenModelUtils {
+
+    private MavenModelUtils() { }
+
+    /** Returns JAX-WS maven plugin.
+     *
+     * @param handle ModelHandle object
+     * @return JAX-WS plugin
+     */
     public static Plugin getJaxWSPlugin(ModelHandle handle) {
         @SuppressWarnings("unchecked")
         List<Plugin> plugins = handle.getPOMModel().getBuild().getPlugins();
@@ -75,7 +82,12 @@ public class MavenModelUtils {
         }
         return null;
     }
-    
+
+    /** Returns WAR plugin.
+     *
+     * @param handle ModelHandle object
+     * @return WAR plugin
+     */
     public static Plugin getWarPlugin(ModelHandle handle) {
         @SuppressWarnings("unchecked")
         List<Plugin> plugins = handle.getPOMModel().getBuild().getPlugins();
@@ -87,7 +99,12 @@ public class MavenModelUtils {
         }
         return null;
     }
-        
+
+    /** Adds JAX-WS plugin.
+     *
+     * @param handle ModelHandle object
+     * @return JAX--WS plugin
+     */
     public static Plugin addJaxWSPlugin(ModelHandle handle) {
         Plugin plugin = new Plugin();
         plugin.setGroupId("org.codehaus.mojo"); //NOI18N
@@ -131,16 +148,16 @@ public class MavenModelUtils {
         if (destDir == null) {
             destDir = new Xpp3Dom("sourceDestDir"); //NOI18N
             destDir.setValue("${project.build.directory}/generated-sources/jaxws-wsimport"); //NOI18N
-            conf.addChild(destDir );
+            conf.addChild(destDir);
         }
 
         Xpp3Dom xnocompile = conf.getChild("xnocompile"); //NOI18N
-        if (xnocompile== null) {
+        if (xnocompile == null) {
             xnocompile = new Xpp3Dom("xnocompile"); //NOI18N
             xnocompile.setValue("true");
             conf.addChild(xnocompile);
         }
-        
+
         Xpp3Dom verbose = conf.getChild("verbose"); //NOI18N
         if (verbose == null) {
             verbose = new Xpp3Dom("verbose"); //NOI18N
@@ -151,14 +168,19 @@ public class MavenModelUtils {
         Xpp3Dom catalog = conf.getChild("catalog"); //NOI18N
         if (catalog == null) {
             catalog = new Xpp3Dom("catalog"); //NOI18N
-            catalog.setValue("${basedir}/"+MavenJAXWSSupportIml.CATALOG_PATH); //NOI18N
+            catalog.setValue("${basedir}/" + MavenJAXWSSupportIml.CATALOG_PATH); //NOI18N
             conf.addChild(catalog);
         }
 
         handle.markAsModified(handle.getPOMModel());
-        return plugin; 
+        return plugin;
     }
-        
+
+    /** Adds WAR plugin.
+     *
+     * @param handle ModelHandle object
+     * @return WAR plugin
+     */
     public static Plugin addWarlugin(ModelHandle handle) {
 
         Plugin plugin = new Plugin();
@@ -195,31 +217,35 @@ public class MavenModelUtils {
         if (resource == null) {
             resource = new Xpp3Dom("resource"); //NOI18N
             webResources.addChild(resource);
-            
+
             Xpp3Dom directory = new Xpp3Dom("directory"); //NOI18N
             directory.setValue("src"); //NOI18N
             resource.addChild(directory);
-            
+
             Xpp3Dom targetPath = new Xpp3Dom("targetPath"); //NOI18N
             targetPath.setValue("WEB-INF"); //NOI18N
             resource.addChild(targetPath);
-            
+
             Xpp3Dom includes = new Xpp3Dom("includes"); //NOI18N
             resource.addChild(includes);
 
             Xpp3Dom include = new Xpp3Dom("include"); //NOI18N
             include.setValue("jax-ws-catalog.xml"); //NOI18N
             includes.addChild(include);
-            
+
             include = new Xpp3Dom("include"); //NOI18N
             include.setValue("wsdl/**"); //NOI18N
-            includes.addChild(include);           
+            includes.addChild(include);
         }
-    
+
         handle.markAsModified(handle.getPOMModel());
-        return plugin; 
+        return plugin;
     }
-    
+
+    /** Adds wsdl Resource.
+     *
+     * @param handle ModelHandle object
+     */
     public static void addWsdlResources(ModelHandle handle) {
 
         Build bld = handle.getPOMModel().getBuild();
@@ -227,8 +253,8 @@ public class MavenModelUtils {
             boolean foundResourceForMetaInf = false;
             List resources = bld.getResources();
             if (resources != null) {
-                for (Object o: resources) {
-                    Resource resource = (Resource)o;
+                for (Object o : resources) {
+                    Resource resource = (Resource) o;
                     if ("META-INF".equals(resource.getTargetPath())) { //NOI18N
                         foundResourceForMetaInf = true;
                     }
@@ -248,9 +274,15 @@ public class MavenModelUtils {
         }
 
     }
-    
+
+    /** Adds Wsdl File.
+     *
+     * @param handle ModelHandle object
+     * @param jaxWsPlugin JAX-WS plugin
+     * @param wsdlPath wsdl path
+     */
     public static void addWsdlFile(ModelHandle handle, Plugin jaxWsPlugin, String wsdlPath) {
-        
+
         Xpp3Dom conf = (Xpp3Dom) jaxWsPlugin.getConfiguration();
         if (conf == null) {
             conf = new Xpp3Dom("configuration"); //NOI18N
@@ -269,7 +301,7 @@ public class MavenModelUtils {
             conf.addChild(verbose);
 
             Xpp3Dom catalog = new Xpp3Dom("catalog"); //NOI18N
-            catalog.setValue("${basedir}/"+MavenJAXWSSupportIml.CATALOG_PATH); //NOI18N
+            catalog.setValue("${basedir}/" + MavenJAXWSSupportIml.CATALOG_PATH); //NOI18N
             conf.addChild(catalog);
         }
 
@@ -285,8 +317,13 @@ public class MavenModelUtils {
 
         handle.markAsModified(handle.getPOMModel());
     }
-    
-    public static void removeWsdlFile(ModelHandle handle, String wsdlPath) {       
+
+    /** Removes wsdl file.
+     *
+     * @param handle Maven handle
+     * @param wsdlPath wsdl path
+     */
+    public static void removeWsdlFile(ModelHandle handle, String wsdlPath) {
         @SuppressWarnings("unchecked")
         List<Plugin> plugins = handle.getPOMModel().getBuild().getPlugins();
         for (Plugin plugin : plugins) {
@@ -297,7 +334,7 @@ public class MavenModelUtils {
                     if (wsdlFilesNode != null) {
                         int clientToRemove = -1;
                         Xpp3Dom[] wsdlFiles = wsdlFilesNode.getChildren();
-                        for (int i=0; i<wsdlFiles.length;i++) {
+                        for (int i = 0; i < wsdlFiles.length; i++) {
                             if (wsdlPath.equals(wsdlFiles[i].getValue())) {
                                 clientToRemove = i;
                                 break;
@@ -308,13 +345,19 @@ public class MavenModelUtils {
                             handle.markAsModified(handle.getPOMModel());
                         }
                     }
-                    
+
                 }
             }
         }
     }
-    
-    public static void renameWsdlFile(ModelHandle handle, String oldWsdlPath, String newWsdlPath) {       
+
+    /** Renamesoves wsdl file.
+     *
+     * @param handle Maven handle
+     * @param oldWsdlPath old wsdl path
+     * @param newWsdlPath new wsdl path
+     */
+    public static void renameWsdlFile(ModelHandle handle, String oldWsdlPath, String newWsdlPath) {
         @SuppressWarnings("unchecked")
         List<Plugin> plugins = handle.getPOMModel().getBuild().getPlugins();
         for (Plugin plugin : plugins) {
@@ -323,7 +366,7 @@ public class MavenModelUtils {
                 if (conf != null) {
                     Xpp3Dom wsdlFilesNode = conf.getChild("wsdlFiles"); //NOI18N
                     if (wsdlFilesNode != null) {
-                        for (Xpp3Dom wsdlFile:wsdlFilesNode.getChildren()) {
+                        for (Xpp3Dom wsdlFile : wsdlFilesNode.getChildren()) {
                             if (oldWsdlPath.equals(wsdlFile.getValue())) {
                                 wsdlFile.setValue(newWsdlPath);
                                 handle.markAsModified(handle.getPOMModel());
@@ -331,25 +374,33 @@ public class MavenModelUtils {
                             }
                         }
                     }
-                    
+
                 }
             }
         }
     }
-    
+
+    /** Adds JAX-WS 2.1 Library.
+     *
+     * @param project Project
+     * @throws java.io.IOException throws when Library cannot be found
+     */
     public static void addJaxws21Library(Project project) throws IOException {
-        SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (srcGroups.length > 0) {
             ClassPath classPath = ClassPath.getClassPath(srcGroups[0].getRootFolder(), ClassPath.COMPILE);
             FileObject wsimportFO = classPath.findResource("javax/xml/ws/WebServiceFeature.class"); // NOI18N
             if (wsimportFO == null) {
                 //add the JAXWS 2.1 library
-                Library jaxws21_ext = LibraryManager.getDefault().getLibrary("jaxws21"); //NOI18N
-                if (jaxws21_ext == null) {
+                Library jaxws21Lib = LibraryManager.getDefault().getLibrary("jaxws21"); //NOI18N
+                if (jaxws21Lib == null) {
                     throw new IOException("Unable to find JAXWS 21 Library."); //NOI18N
                 }
                 try {
-                    ProjectClassPathModifier.addLibraries(new Library[] {jaxws21_ext}, srcGroups[0].getRootFolder(), ClassPath.COMPILE);
+                    ProjectClassPathModifier.addLibraries(new Library[] {jaxws21Lib},
+                            srcGroups[0].getRootFolder(),
+                            ClassPath.COMPILE);
                 } catch (IOException e) {
                     throw new IOException("Unable to add JAXWS 21 Library. " + e.getMessage()); //NOI18N
                 }
