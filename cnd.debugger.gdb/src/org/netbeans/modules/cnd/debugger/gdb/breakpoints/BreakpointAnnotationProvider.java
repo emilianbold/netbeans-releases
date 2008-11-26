@@ -86,6 +86,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
 
     private final Map<GdbBreakpoint, Annotation[]> breakpointToAnnotations = new HashMap<GdbBreakpoint, Annotation[]>();
     private final Set<FileObject> annotatedFiles = new WeakSet<FileObject>();
+    private boolean attachManagerListener = true;
     private final Logger log = Logger.getLogger("gdb.breakpoint.annotations"); // NOI18N
 
     public void annotate(Line.Set set, Lookup lookup) {
@@ -116,8 +117,11 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             }
             annotatedFiles.add(fo);
         }
-        DebuggerManager.getDebuggerManager().addDebuggerListener(WeakListeners.create(DebuggerManagerListener.class,
+        if (attachManagerListener) {
+            DebuggerManager.getDebuggerManager().addDebuggerListener(WeakListeners.create(DebuggerManagerListener.class,
                  this, DebuggerManager.getDebuggerManager()));
+            attachManagerListener = false;
+        }
     }
 
     public void breakpointAdded(Breakpoint breakpoint) {
