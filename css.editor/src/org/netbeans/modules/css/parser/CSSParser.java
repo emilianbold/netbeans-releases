@@ -148,21 +148,25 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
       label_4:
       while (true) {
         ;
-        rule();
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case 0:
+          jj_consume_token(0);
+              {if (true) return;}
+          break;
+        default:
+          jj_la1[6] = jj_gen;
+          rule();
+        }
         label_5:
         while (true) {
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          //>>> infinite loop on EOF token workaround
-          case EOF:
-              break label_4;
-          //<<<
           case S:
           case CDO:
           case CDC:
             ;
             break;
           default:
-            jj_la1[6] = jj_gen;
+            jj_la1[7] = jj_gen;
             break label_5;
           }
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -176,7 +180,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             jj_consume_token(CDC);
             break;
           default:
-            jj_la1[7] = jj_gen;
+            jj_la1[8] = jj_gen;
             jj_consume_token(-1);
             throw new ParseException();
           }
@@ -240,7 +244,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
         unknownRule();
         break;
       default:
-        jj_la1[8] = jj_gen;
+        jj_la1[9] = jj_gen;
         error_skip_to_whitespace();
       }
     } catch (Throwable jjte000) {
@@ -303,7 +307,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
         unknownRule();
         break;
       default:
-        jj_la1[9] = jj_gen;
+        jj_la1[10] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -344,7 +348,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[10] = jj_gen;
+          jj_la1[11] = jj_gen;
           break label_6;
         }
         jj_consume_token(S);
@@ -357,7 +361,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[11] = jj_gen;
+          jj_la1[12] = jj_gen;
           break label_7;
         }
         jj_consume_token(S);
@@ -403,7 +407,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[12] = jj_gen;
+          jj_la1[13] = jj_gen;
           break label_8;
         }
         jj_consume_token(S);
@@ -416,7 +420,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
         jj_consume_token(URI);
         break;
       default:
-        jj_la1[13] = jj_gen;
+        jj_la1[14] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -427,7 +431,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[14] = jj_gen;
+          jj_la1[15] = jj_gen;
           break label_9;
         }
         jj_consume_token(S);
@@ -437,7 +441,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
         mediaList();
         break;
       default:
-        jj_la1[15] = jj_gen;
+        jj_la1[16] = jj_gen;
         ;
       }
       jj_consume_token(SEMICOLON);
@@ -478,7 +482,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[16] = jj_gen;
+          jj_la1[17] = jj_gen;
           break label_10;
         }
         jj_consume_token(S);
@@ -492,7 +496,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[17] = jj_gen;
+          jj_la1[18] = jj_gen;
           break label_11;
         }
         jj_consume_token(S);
@@ -509,7 +513,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
         mediaRuleList();
         break;
       default:
-        jj_la1[18] = jj_gen;
+        jj_la1[19] = jj_gen;
         ;
       }
       jj_consume_token(RBRACE);
@@ -550,7 +554,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[19] = jj_gen;
+          jj_la1[20] = jj_gen;
           break label_12;
         }
         jj_consume_token(COMMA);
@@ -561,7 +565,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[20] = jj_gen;
+            jj_la1[21] = jj_gen;
             break label_13;
           }
           jj_consume_token(S);
@@ -615,7 +619,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           unknownRule();
           break;
         default:
-          jj_la1[21] = jj_gen;
+          jj_la1[22] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -626,7 +630,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[22] = jj_gen;
+            jj_la1[23] = jj_gen;
             break label_15;
           }
           jj_consume_token(S);
@@ -643,7 +647,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[23] = jj_gen;
+          jj_la1[24] = jj_gen;
           break label_14;
         }
       }
@@ -692,7 +696,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
         unknownRule();
         break;
       default:
-        jj_la1[24] = jj_gen;
+        jj_la1[25] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -733,7 +737,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[25] = jj_gen;
+          jj_la1[26] = jj_gen;
           break label_16;
         }
         jj_consume_token(S);
@@ -763,7 +767,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[26] = jj_gen;
+          jj_la1[27] = jj_gen;
           break label_17;
         }
         jj_consume_token(S);
@@ -780,7 +784,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
               ;
               break;
             default:
-              jj_la1[27] = jj_gen;
+              jj_la1[28] = jj_gen;
               break label_18;
             }
             jj_consume_token(S);
@@ -797,7 +801,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
                 ;
                 break;
               default:
-                jj_la1[28] = jj_gen;
+                jj_la1[29] = jj_gen;
                 break label_19;
               }
               jj_consume_token(S);
@@ -812,21 +816,21 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
                 ;
                 break;
               default:
-                jj_la1[29] = jj_gen;
+                jj_la1[30] = jj_gen;
                 break label_20;
               }
               jj_consume_token(S);
             }
             break;
           default:
-            jj_la1[30] = jj_gen;
+            jj_la1[31] = jj_gen;
             jj_consume_token(-1);
             throw new ParseException();
           }
         }
         break;
       default:
-        jj_la1[31] = jj_gen;
+        jj_la1[32] = jj_gen;
         ;
       }
       jj_consume_token(LBRACE);
@@ -837,7 +841,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[32] = jj_gen;
+          jj_la1[33] = jj_gen;
           break label_21;
         }
         jj_consume_token(S);
@@ -847,7 +851,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
         declaration();
         break;
       default:
-        jj_la1[33] = jj_gen;
+        jj_la1[34] = jj_gen;
         ;
       }
       label_22:
@@ -857,7 +861,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[34] = jj_gen;
+          jj_la1[35] = jj_gen;
           break label_22;
         }
         jj_consume_token(SEMICOLON);
@@ -868,7 +872,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[35] = jj_gen;
+            jj_la1[36] = jj_gen;
             break label_23;
           }
           jj_consume_token(S);
@@ -878,7 +882,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           declaration();
           break;
         default:
-          jj_la1[36] = jj_gen;
+          jj_la1[37] = jj_gen;
           ;
         }
       }
@@ -948,7 +952,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[37] = jj_gen;
+          jj_la1[38] = jj_gen;
           break label_24;
         }
         jj_consume_token(S);
@@ -961,7 +965,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[38] = jj_gen;
+          jj_la1[39] = jj_gen;
           break label_25;
         }
         jj_consume_token(S);
@@ -971,7 +975,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
         declaration();
         break;
       default:
-        jj_la1[39] = jj_gen;
+        jj_la1[40] = jj_gen;
         ;
       }
       label_26:
@@ -981,7 +985,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[40] = jj_gen;
+          jj_la1[41] = jj_gen;
           break label_26;
         }
         jj_consume_token(SEMICOLON);
@@ -992,7 +996,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[41] = jj_gen;
+            jj_la1[42] = jj_gen;
             break label_27;
           }
           jj_consume_token(S);
@@ -1002,7 +1006,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           declaration();
           break;
         default:
-          jj_la1[42] = jj_gen;
+          jj_la1[43] = jj_gen;
           ;
         }
       }
@@ -1051,7 +1055,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[43] = jj_gen;
+            jj_la1[44] = jj_gen;
             break label_28;
           }
           jj_consume_token(S);
@@ -1066,14 +1070,14 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[44] = jj_gen;
+            jj_la1[45] = jj_gen;
             break label_29;
           }
           jj_consume_token(S);
         }
         break;
       default:
-        jj_la1[45] = jj_gen;
+        jj_la1[46] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1107,7 +1111,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[46] = jj_gen;
+            jj_la1[47] = jj_gen;
             break label_30;
           }
           jj_consume_token(S);
@@ -1122,7 +1126,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[47] = jj_gen;
+            jj_la1[48] = jj_gen;
             break label_31;
           }
           jj_consume_token(S);
@@ -1141,7 +1145,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             jj_consume_token(GT);
             break;
           default:
-            jj_la1[48] = jj_gen;
+            jj_la1[49] = jj_gen;
             jj_consume_token(-1);
             throw new ParseException();
           }
@@ -1152,19 +1156,19 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
               ;
               break;
             default:
-              jj_la1[49] = jj_gen;
+              jj_la1[50] = jj_gen;
               break label_32;
             }
             jj_consume_token(S);
           }
           break;
         default:
-          jj_la1[50] = jj_gen;
+          jj_la1[51] = jj_gen;
           ;
         }
         break;
       default:
-        jj_la1[51] = jj_gen;
+        jj_la1[52] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1196,7 +1200,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
         jj_consume_token(PLUS);
         break;
       default:
-        jj_la1[52] = jj_gen;
+        jj_la1[53] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1228,7 +1232,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[53] = jj_gen;
+          jj_la1[54] = jj_gen;
           break label_33;
         }
         jj_consume_token(S);
@@ -1266,7 +1270,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[54] = jj_gen;
+            jj_la1[55] = jj_gen;
             break label_34;
           }
           jj_consume_token(S);
@@ -1276,7 +1280,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           declaration();
           break;
         default:
-          jj_la1[55] = jj_gen;
+          jj_la1[56] = jj_gen;
           ;
         }
         label_35:
@@ -1286,7 +1290,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[56] = jj_gen;
+            jj_la1[57] = jj_gen;
             break label_35;
           }
           jj_consume_token(SEMICOLON);
@@ -1297,7 +1301,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
               ;
               break;
             default:
-              jj_la1[57] = jj_gen;
+              jj_la1[58] = jj_gen;
               break label_36;
             }
             jj_consume_token(S);
@@ -1307,7 +1311,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             declaration();
             break;
           default:
-            jj_la1[58] = jj_gen;
+            jj_la1[59] = jj_gen;
             ;
           }
         }
@@ -1354,7 +1358,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[59] = jj_gen;
+            jj_la1[60] = jj_gen;
             break label_37;
           }
           jj_consume_token(COMMA);
@@ -1365,7 +1369,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
               ;
               break;
             default:
-              jj_la1[60] = jj_gen;
+              jj_la1[61] = jj_gen;
               break label_38;
             }
             jj_consume_token(S);
@@ -1428,7 +1432,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[61] = jj_gen;
+            jj_la1[62] = jj_gen;
             break label_40;
           }
           jj_consume_token(S);
@@ -1485,7 +1489,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[62] = jj_gen;
+            jj_la1[63] = jj_gen;
             break label_41;
           }
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1502,7 +1506,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             pseudo();
             break;
           default:
-            jj_la1[63] = jj_gen;
+            jj_la1[64] = jj_gen;
             jj_consume_token(-1);
             throw new ParseException();
           }
@@ -1528,7 +1532,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             pseudo();
             break;
           default:
-            jj_la1[64] = jj_gen;
+            jj_la1[65] = jj_gen;
             jj_consume_token(-1);
             throw new ParseException();
           }
@@ -1540,13 +1544,13 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[65] = jj_gen;
+            jj_la1[66] = jj_gen;
             break label_42;
           }
         }
         break;
       default:
-        jj_la1[66] = jj_gen;
+        jj_la1[67] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1614,7 +1618,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
         jj_consume_token(ASTERISK);
         break;
       default:
-        jj_la1[67] = jj_gen;
+        jj_la1[68] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1647,7 +1651,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[68] = jj_gen;
+          jj_la1[69] = jj_gen;
           break label_43;
         }
         jj_consume_token(S);
@@ -1660,7 +1664,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[69] = jj_gen;
+          jj_la1[70] = jj_gen;
           break label_44;
         }
         jj_consume_token(S);
@@ -1680,7 +1684,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           jj_consume_token(DASHMATCH);
           break;
         default:
-          jj_la1[70] = jj_gen;
+          jj_la1[71] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -1691,7 +1695,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[71] = jj_gen;
+            jj_la1[72] = jj_gen;
             break label_45;
           }
           jj_consume_token(S);
@@ -1704,7 +1708,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           jj_consume_token(STRING);
           break;
         default:
-          jj_la1[72] = jj_gen;
+          jj_la1[73] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -1715,14 +1719,14 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[73] = jj_gen;
+            jj_la1[74] = jj_gen;
             break label_46;
           }
           jj_consume_token(S);
         }
         break;
       default:
-        jj_la1[74] = jj_gen;
+        jj_la1[75] = jj_gen;
         ;
       }
       jj_consume_token(RSQUARE);
@@ -1760,7 +1764,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[75] = jj_gen;
+            jj_la1[76] = jj_gen;
             break label_47;
           }
           jj_consume_token(S);
@@ -1773,7 +1777,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[76] = jj_gen;
+            jj_la1[77] = jj_gen;
             break label_48;
           }
           jj_consume_token(S);
@@ -1781,7 +1785,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
         jj_consume_token(RROUND);
         break;
       default:
-        jj_la1[77] = jj_gen;
+        jj_la1[78] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1824,7 +1828,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[78] = jj_gen;
+          jj_la1[79] = jj_gen;
           break label_49;
         }
         jj_consume_token(S);
@@ -1834,7 +1838,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
         declaration();
         break;
       default:
-        jj_la1[79] = jj_gen;
+        jj_la1[80] = jj_gen;
         ;
       }
       label_50:
@@ -1844,7 +1848,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[80] = jj_gen;
+          jj_la1[81] = jj_gen;
           break label_50;
         }
         jj_consume_token(SEMICOLON);
@@ -1855,7 +1859,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[81] = jj_gen;
+            jj_la1[82] = jj_gen;
             break label_51;
           }
           jj_consume_token(S);
@@ -1865,7 +1869,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           declaration();
           break;
         default:
-          jj_la1[82] = jj_gen;
+          jj_la1[83] = jj_gen;
           ;
         }
       }
@@ -1915,7 +1919,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[83] = jj_gen;
+            jj_la1[84] = jj_gen;
             break label_52;
           }
           jj_consume_token(S);
@@ -1926,7 +1930,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           prio();
           break;
         default:
-          jj_la1[84] = jj_gen;
+          jj_la1[85] = jj_gen;
           ;
         }
       } catch (ParseException e) {
@@ -1976,7 +1980,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[85] = jj_gen;
+          jj_la1[86] = jj_gen;
           break label_53;
         }
         jj_consume_token(S);
@@ -2041,7 +2045,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[86] = jj_gen;
+          jj_la1[87] = jj_gen;
           break label_54;
         }
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -2050,7 +2054,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           operator();
           break;
         default:
-          jj_la1[87] = jj_gen;
+          jj_la1[88] = jj_gen;
           ;
         }
         term();
@@ -2098,7 +2102,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
         unaryOperator();
         break;
       default:
-        jj_la1[88] = jj_gen;
+        jj_la1[89] = jj_gen;
         ;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -2180,7 +2184,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           function();
           break;
         default:
-          jj_la1[89] = jj_gen;
+          jj_la1[90] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -2210,7 +2214,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
         jj_consume_token(INHERIT);
         break;
       default:
-        jj_la1[90] = jj_gen;
+        jj_la1[91] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -2221,7 +2225,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[91] = jj_gen;
+          jj_la1[92] = jj_gen;
           break label_55;
         }
         jj_consume_token(S);
@@ -2268,7 +2272,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[92] = jj_gen;
+          jj_la1[93] = jj_gen;
           break label_56;
         }
         jj_consume_token(S);
@@ -2317,7 +2321,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[93] = jj_gen;
+          jj_la1[94] = jj_gen;
           break label_57;
         }
         jj_consume_token(S);
@@ -2366,7 +2370,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
           ;
           break;
         default:
-          jj_la1[94] = jj_gen;
+          jj_la1[95] = jj_gen;
           break label_58;
         }
         jj_consume_token(S);
@@ -2698,7 +2702,7 @@ try {Token t;
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
   private int jj_gen;
-  final private int[] jj_la1 = new int[95];
+  final private int[] jj_la1 = new int[96];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static private int[] jj_la1_2;
@@ -2708,13 +2712,13 @@ try {Token t;
       jj_la1_init_2();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x0,0x18000002,0x18000002,0x80000000,0x18000002,0x18000002,0x18000002,0x18000002,0x506800,0x80506800,0x2,0x2,0x2,0x4800000,0x2,0x0,0x2,0x2,0x506800,0x400,0x2,0x506800,0x2,0x506800,0x506800,0x2,0x2,0x2,0x2,0x2,0x2000,0x2000,0x2,0x0,0x1000,0x2,0x0,0x2,0x2,0x0,0x1000,0x2,0x0,0x2,0x2,0x8400,0x2,0x2,0x90000,0x2,0x90000,0x90002,0x30000,0x2,0x2,0x0,0x1000,0x2,0x0,0x400,0x2,0x2,0x502800,0x502800,0x502800,0x502800,0x506800,0x4000,0x2,0x2,0x60040000,0x2,0x800000,0x2,0x60040000,0x2,0x2,0x0,0x2,0x0,0x1000,0x2,0x0,0x2,0x0,0x2,0x4c38410,0x8400,0x30000,0x10,0x4c00010,0x2,0x2,0x2,0x2,};
+      jj_la1_0 = new int[] {0x0,0x18000002,0x18000002,0x80000000,0x18000002,0x18000002,0x1,0x18000002,0x18000002,0x506800,0x80506800,0x2,0x2,0x2,0x4800000,0x2,0x0,0x2,0x2,0x506800,0x400,0x2,0x506800,0x2,0x506800,0x506800,0x2,0x2,0x2,0x2,0x2,0x2000,0x2000,0x2,0x0,0x1000,0x2,0x0,0x2,0x2,0x0,0x1000,0x2,0x0,0x2,0x2,0x8400,0x2,0x2,0x90000,0x2,0x90000,0x90002,0x30000,0x2,0x2,0x0,0x1000,0x2,0x0,0x400,0x2,0x2,0x502800,0x502800,0x502800,0x502800,0x506800,0x4000,0x2,0x2,0x60040000,0x2,0x800000,0x2,0x60040000,0x2,0x2,0x0,0x2,0x0,0x1000,0x2,0x0,0x2,0x0,0x2,0x4c38410,0x8400,0x30000,0x10,0x4c00010,0x2,0x2,0x2,0x2,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x8,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000017,0x800001f,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x8000011,0x0,0x0,0x8000011,0x0,0x8000011,0x8000011,0x0,0x0,0x0,0x0,0x0,0x8000000,0x8000000,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x8000000,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x0,0x0,0xc000000,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x20,0x0,0x4fffffc0,0x0,0x0,0x5bfff80,0x4fffffc0,0x0,0x0,0x0,0x0,};
+      jj_la1_1 = new int[] {0x8,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000017,0x800001f,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x8000011,0x0,0x0,0x8000011,0x0,0x8000011,0x8000011,0x0,0x0,0x0,0x0,0x0,0x8000000,0x8000000,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x8000000,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x0,0x0,0xc000000,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x20,0x0,0x4fffffc0,0x0,0x0,0x5bfff80,0x4fffffc0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_init_2() {
-      jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[2];
   private boolean jj_rescan = false;
@@ -2726,7 +2730,7 @@ try {Token t;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 95; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 96; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2737,7 +2741,7 @@ try {Token t;
     jj_ntk = -1;
     jjtree.reset();
     jj_gen = 0;
-    for (int i = 0; i < 95; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 96; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2747,7 +2751,7 @@ try {Token t;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 95; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 96; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2758,7 +2762,7 @@ try {Token t;
     jj_ntk = -1;
     jjtree.reset();
     jj_gen = 0;
-    for (int i = 0; i < 95; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 96; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2875,7 +2879,7 @@ try {Token t;
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 95; i++) {
+    for (int i = 0; i < 96; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {

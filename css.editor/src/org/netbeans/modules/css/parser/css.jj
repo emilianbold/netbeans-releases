@@ -235,7 +235,7 @@ void styleSheetRuleList() :{/*@bgen(jjtree) styleSheetRuleList */
   ( charsetRule() )?
   ( <S> | <CDO> | <CDC> )*
   ( importRule() ( <S> | <CDO> | <CDC> )* )*
-  ( ( rule() ( <S> | <CDO> | <CDC> )* )* )/*@bgen(jjtree)*/
+  ( ( <EOF> { return; } | rule() ) ( <S> | <CDO> | <CDC> )* )*/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
     if (jjtc000) {
       jjtree.clearNodeScope(jjtn000);
