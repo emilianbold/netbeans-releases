@@ -439,7 +439,9 @@ public class GeneralPHP extends JellyTestCase {
     JDialogOperator jdProperties = new JDialogOperator( "Project Properties - " );
     // Set support
     JCheckBoxOperator box = new JCheckBoxOperator( jdProperties, sTag );
-    box.setSelected( b );
+    if( box.isSelected( ) ^ b )
+      box.clickMouse( );
+    //Sleep( 100 );
     // Close dialog
     JButtonOperator bOk = new JButtonOperator( jdProperties, "OK" );
     bOk.push( );
@@ -507,8 +509,9 @@ public class GeneralPHP extends JellyTestCase {
           result.listItems = result.listItself.getCompletionItems( );
           Object o = result.listItems.get( 0 );
           if(
-              !o.toString( ).contains( "No suggestions" )
-              && !o.toString( ).contains( "Scanning in progress..." )
+              //!o.toString( ).contains( "No suggestions" )
+              //&&
+              !o.toString( ).contains( "Scanning in progress..." )
             )
           {
             return result;
@@ -537,7 +540,7 @@ public class GeneralPHP extends JellyTestCase {
     {
       for( String sCode : asIdeal )
       {
-        int iIndex = jlist.findItemIndex( sCode );
+        int iIndex = jlist.findItemIndex( sCode, new CFulltextStringComparator( ) );
         if( -1 == iIndex )
         {
           try
