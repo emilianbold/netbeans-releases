@@ -9,18 +9,8 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
 
     public CSSParser() {
        this((CharStream) null);
-       setPatchedTokenManager();
-    }
-
-    private void setPatchedTokenManager() {
-        token_source = new CSSParserTokenManager(null) {
-            @Override
-            protected Token jjFillToken() {
-                Token t = super.jjFillToken();
-                t.offset = input_stream.offset();
-                return t;
-            }
-        };
+       // change manager to our patched one:
+       token_source = new PatchedCSSParserTokenManager(null);
     }
 
     public List<ParseException> errors() {
@@ -2571,16 +2561,6 @@ try {Token t;
     return false;
   }
 
-  private boolean jj_3R_65() {
-    Token xsp;
-    if (jj_3R_68()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_68()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
   private boolean jj_3R_66() {
     Token xsp;
     xsp = jj_scanpos;
@@ -2685,6 +2665,16 @@ try {Token t;
   private boolean jj_3_2() {
     if (jj_3R_59()) return true;
     if (jj_3R_60()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_65() {
+    Token xsp;
+    if (jj_3R_68()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_68()) { jj_scanpos = xsp; break; }
+    }
     return false;
   }
 
