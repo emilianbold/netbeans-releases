@@ -138,6 +138,7 @@ public class SQLEditorSupport extends DataEditorSupport
         setMIMEType(MIME_TYPE);
     }
     
+    @Override
     protected boolean notifyModified () {
         if (!super.notifyModified()) 
             return false;
@@ -155,6 +156,7 @@ public class SQLEditorSupport extends DataEditorSupport
         return true;
     }
 
+    @Override
     protected void notifyUnmodified () {
         super.notifyUnmodified();
 
@@ -167,6 +169,7 @@ public class SQLEditorSupport extends DataEditorSupport
         }
     }
     
+    @Override
     protected String messageToolTip() {
         if (isConsole()) {
             return getDataObject().getPrimaryFile().getName();
@@ -175,6 +178,7 @@ public class SQLEditorSupport extends DataEditorSupport
         }
     }
     
+    @Override
     protected String messageName() {
         if (!isValid()) return ""; // NOI18N
         
@@ -186,6 +190,7 @@ public class SQLEditorSupport extends DataEditorSupport
         }
     }
     
+    @Override
     protected String messageHtmlName() {
         if (!isValid()) return ""; // NOI18N
         
@@ -203,6 +208,7 @@ public class SQLEditorSupport extends DataEditorSupport
         }
     }
     
+    @Override
     protected void notifyClosed() {
         super.notifyClosed();
         
@@ -218,6 +224,7 @@ public class SQLEditorSupport extends DataEditorSupport
         }
     }
     
+    @Override
     protected boolean canClose() {
         if (isConsole()) {
             return true;
@@ -234,10 +241,12 @@ public class SQLEditorSupport extends DataEditorSupport
         return getDataObject().isValid();
     }
     
+    @Override
     protected CloneableEditor createCloneableEditor() {
         return new SQLCloneableEditor(this);
     }
     
+    @Override
     protected Component wrapEditorComponent(Component editor) {
         JPanel container = new JPanel(new BorderLayout());
         container.setName(EDITOR_CONTAINER); // NOI18N
@@ -245,11 +254,13 @@ public class SQLEditorSupport extends DataEditorSupport
         return container;
     }
     
+    @Override
     public void open() {
         SQLCoreUILogger.logEditorOpened();
         super.open();
     }
     
+    @Override
     public void edit() {
         SQLCoreUILogger.logEditorOpened();
         super.edit();
@@ -298,14 +309,14 @@ public class SQLEditorSupport extends DataEditorSupport
      * have to be delimited by \n.
      */
     void execute(String sql, int startOffset, int endOffset) {
-        DatabaseConnection dbconn;
+        DatabaseConnection dbConnection;
         synchronized (this) {
-            dbconn = this.dbconn;
+            dbConnection = this.dbconn;
         }
-        if (dbconn == null) {
+        if (dbConnection == null) {
             return;
         }
-        SQLExecutor executor = new SQLExecutor(this, dbconn, sql, startOffset, endOffset);
+        SQLExecutor executor = new SQLExecutor(this, dbConnection, sql, startOffset, endOffset);
         RequestProcessor.Task task = rp.create(executor);
         executor.setTask(task);
         task.schedule(0);
@@ -547,6 +558,7 @@ public class SQLEditorSupport extends DataEditorSupport
             return fileLock;
         }
 
+        @Override
         public void markModified() throws IOException {
             if (findSQLEditorSupport().isConsole()) {
                 modified = true;
@@ -555,6 +567,7 @@ public class SQLEditorSupport extends DataEditorSupport
             }
         }
 
+        @Override
         public void unmarkModified() {
             if (findSQLEditorSupport().isConsole()) {
                 modified = false;
@@ -566,6 +579,7 @@ public class SQLEditorSupport extends DataEditorSupport
             }
         }
 
+        @Override
         public boolean isModified() {
             if (findSQLEditorSupport().isConsole()) {
                 return modified;
@@ -574,6 +588,7 @@ public class SQLEditorSupport extends DataEditorSupport
             }
         }
 
+        @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
             return findSQLEditorSupport();
         }
