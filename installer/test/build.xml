@@ -68,7 +68,7 @@
     -->
     <target name="myinit">
         <property environment="env"/>
-        <property name="my_test_result_dir" value="results" />
+        <property name="my_test_result_dir" value="testdistribution" />
         
         <condition property="copy.results">
             <and>
@@ -87,5 +87,9 @@
                 <include name="**/*.xml"/>
             </fileset>
         </copy>
+    </target>
+    <target name="work-dir-cleanup">
+        <echo>Cleaning up workspace</echo>
+        
     </target>
 </project>
