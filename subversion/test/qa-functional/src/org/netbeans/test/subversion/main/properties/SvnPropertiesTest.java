@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -77,14 +78,6 @@ public class SvnPropertiesTest extends JellyTestCase {
             TestKit.removeHandlers(log);
         }
     }
-
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
-    }
     
     public static Test suite() {
          return NbModuleSuite.create(
@@ -98,9 +91,12 @@ public class SvnPropertiesTest extends JellyTestCase {
 
     public void SvnPropertiesTest() throws Exception {
         try {
-            MessageHandler mh = new MessageHandler("Checking out");
+            MessageHandler mh = new MessageHandler("Committing");
             log.addHandler(mh);
 
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                new NewProjectWizardOperator().invoke().close();
+            
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             VersioningOperator.invoke();
             TestKit.showStatusLabels();
