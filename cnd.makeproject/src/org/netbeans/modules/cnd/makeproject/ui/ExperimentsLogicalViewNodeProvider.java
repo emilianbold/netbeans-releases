@@ -121,7 +121,7 @@ class ExperimentsRootNodeChildren extends Children.Keys implements ChangeListene
     }
 
     private Collection getKeys() {
-        Vector v = new Vector();
+        Vector<ExperimentsGroupNode> v = new Vector<ExperimentsGroupNode>();
         v.add(new ExperimentsGroupNode(project, "Heap Tracing")); // NOI18N
         v.add(new ExperimentsGroupNode(project, "Data Race Detection")); // NOI18N
         v.add(new ExperimentsGroupNode(project, "Runtime Checking")); // NOI18N
@@ -189,9 +189,9 @@ class ExperimentsGroupNodeChildren extends Children.Keys implements ChangeListen
         setKeys(getKeys());
     }
 
-    private Collection getKeys() {
+    private Collection<Experiment> getKeys() {
         // FIXUP: add per project...
-        Vector v = new Vector();
+        Vector<Experiment> v = new Vector<Experiment>();
         v.add(new Experiment("Experiment-01212007-1422")); // NOI18N
         v.add(new Experiment("Experiment-01212007-1427")); // NOI18N
         v.add(new Experiment("Experiment-01212007-1532")); // NOI18N

@@ -108,7 +108,7 @@ public class VectorNodeProp<E> extends PropertySupport {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-        ArrayList<E> clone = new ArrayList<E>();
+        ArrayList clone = new ArrayList<E>();
         clone.addAll(vectorConfiguration.getValue());
         return new DirectoriesEditor(clone);
     }
@@ -122,10 +122,10 @@ public class VectorNodeProp<E> extends PropertySupport {
      */
     private class DirectoriesEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
-        private List<E> value;
+        private List<String> value;
         private PropertyEnv env;
 
-        public DirectoriesEditor(List<E> value) {
+        public DirectoriesEditor(List<String> value) {
             this.value = value;
         }
 
@@ -147,7 +147,7 @@ public class VectorNodeProp<E> extends PropertySupport {
                 if (addSep) {
                     ret.append(File.pathSeparator);
                 }
-                ret.append((String) value.get(i));
+                ret.append(value.get(i));
                 addSep = true;
             }
             return ret.toString();
@@ -159,7 +159,7 @@ public class VectorNodeProp<E> extends PropertySupport {
             if (inheritValues != null) {
                 text = texts[3];
             }
-            return new DirectoryChooserPanel(baseDir, value.toArray(new String[value.size()]), addPathPanel, inheritValues, text, this, env, helpCtx);
+            return new DirectoryChooserPanel(baseDir, value, addPathPanel, inheritValues, text, this, env, helpCtx);
         }
 
         @Override

@@ -156,7 +156,7 @@ public class StringListNodeProp extends PropertySupport {
             if (inheritValues != null) {
                 text = texts[3];
             }
-            return new StringListPanel(value.toArray(new String[value.size()]), addPathPanel, inheritValues, text, this, env, helpCtx);
+            return new StringListPanel(value, addPathPanel, inheritValues, text, this, env, helpCtx);
         }
 
         @Override
