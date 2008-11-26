@@ -37,64 +37,48 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.explorer.node;
+package org.netbeans.modules.db.explorer.action;
 
-import org.netbeans.api.db.explorer.node.BaseNode;
-import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import java.sql.Connection;
+import java.sql.SQLException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.metadata.model.api.Metadata;
-import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
-import org.netbeans.modules.db.metadata.model.api.View;
+import org.openide.nodes.Node;
 
 /**
  *
- * @author rob
+ * @author Rob Englander
  */
-public class ViewNode extends BaseNode {
-    private static final String ICONBASE = "org/netbeans/modules/db/resources/view.gif";
-    private static final String FOLDER = "View"; //NOI18N
+public class RecreateTableAction extends BaseAction {
 
-    /**
-     * Create an instance of ViewNode.
-     *
-     * @param dataLookup the lookup to use when creating node providers
-     * @return the ViewNode instance
-     */
-    public static ViewNode create(NodeDataLookup dataLookup) {
-        ViewNode node = new ViewNode(dataLookup);
-        node.setup();
-        return node;
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes == null || activatedNodes.length != 1) {
+            return false;
+        }
+
+        boolean enabled = false;
+        DatabaseConnection dbconn = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
+
+        if (dbconn != null) {
+            Connection conn = dbconn.getConnection();
+            try {
+                if (conn != null) {
+                    enabled = !conn.isClosed();
+                }
+            } catch (SQLException e) {
+
+            }
+        }
+
+        return enabled;
     }
 
-    private DatabaseConnection connection;
-    private Metadata metaData;
-    private MetadataElementHandle<View> viewHandle;
-
-    private ViewNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
-    }
-
-    protected void initialize() {
-        // get the connection from the lookup
-        connection = getLookup().lookup(DatabaseConnection.class);
-        metaData = getLookup().lookup(Metadata.class);
-        viewHandle = getLookup().lookup(MetadataElementHandle.class);
+    public void performAction (Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length == 1) {
+        }
     }
 
     @Override
     public String getName() {
-        View view = viewHandle.resolve(metaData);
-        return view.getName();
-    }
-
-    @Override
-    public String getDisplayName() {
-        View view = viewHandle.resolve(metaData);
-        return view.getName();
-    }
-
-    @Override
-    public String getIconBase() {
-        return ICONBASE;
+        return bundle().getString("RecreateTable"); // NOI18N
     }
 }

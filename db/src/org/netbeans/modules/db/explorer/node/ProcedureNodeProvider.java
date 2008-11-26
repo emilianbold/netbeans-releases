@@ -46,6 +46,8 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
 import org.openide.nodes.Node;
@@ -74,12 +76,14 @@ public class ProcedureNodeProvider extends NodeProvider {
     }
 
     private final DatabaseConnection connection;
-    private final Schema schema;
+    private MetadataElementHandle<Schema> schemaHandle;
+    private Metadata metaData;
 
     private ProcedureNodeProvider(Lookup lookup) {
         super(lookup, new ProcedureComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
-        schema = getLookup().lookup(Schema.class);
+        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
+        metaData = getLookup().lookup(Metadata.class);
     }
 
     private void setup() {
@@ -89,6 +93,7 @@ public class ProcedureNodeProvider extends NodeProvider {
     private synchronized void update() {
         List<Node> newList = new ArrayList<Node>();
 
+        Schema schema = schemaHandle.resolve(metaData);
         Collection<Procedure> procedures = schema.getProcedures();
         for (Procedure procedure : procedures) {
             Collection<Node> matches = getNodes(procedure);
@@ -97,7 +102,11 @@ public class ProcedureNodeProvider extends NodeProvider {
             } else {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(connection);
-                lookup.add(procedure);
+                lookup.add(metaData);
+
+                MetadataElementHandle<Procedure> handle = MetadataElementHandle.create(procedure);
+
+                lookup.add(handle);
 
                 newList.add(ProcedureNode.create(lookup));
             }

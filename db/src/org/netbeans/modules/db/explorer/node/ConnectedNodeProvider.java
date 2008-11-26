@@ -46,6 +46,8 @@ import java.sql.SQLException;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.util.Lookup;
 
@@ -106,9 +108,14 @@ public abstract class ConnectedNodeProvider  extends NodeProvider {
             NodeDataLookup lookup = new NodeDataLookup();
             lookup.add(connection);
 
-            Schema schema = getLookup().lookup(Schema.class);
-            if (schema != null) {
-                lookup.add(schema);
+            Metadata metaData = getLookup().lookup(Metadata.class);
+            if (metaData != null) {
+                lookup.add(metaData);
+            }
+
+            MetadataElementHandle<Schema> schemaHandle = getLookup().lookup(MetadataElementHandle.class);
+            if (schemaHandle != null) {
+                lookup.add(schemaHandle);
             }
             
             addNode(createNode(lookup));
