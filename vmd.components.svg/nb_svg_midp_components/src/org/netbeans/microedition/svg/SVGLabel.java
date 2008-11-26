@@ -75,6 +75,7 @@ public class SVGLabel extends SVGComponent {
         }
         
         verify();
+        setFocusable( false );
     }
     
     public SVGLabel( SVGForm form, SVGLocatableElement element ) {
@@ -103,14 +104,14 @@ public class SVGLabel extends SVGComponent {
         return myText.getTrait( TRAIT_TEXT );
     }
 
-    public synchronized boolean isFocusable() {
+    /*public synchronized boolean isFocusable() {
         if ( getLabelFor() == null ){
             return super.isFocusable();
         }
         else {
             return false;
         }
-    }
+    }*/
     
     private void verify() {
         if ( myText == null ){
