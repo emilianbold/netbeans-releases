@@ -545,8 +545,8 @@ public class Diagnostic {
             void add(String absBaseFilePath, boolean recursion) {
                 counter++;
                 Integer fileCounter = includedFrom.containsKey(absBaseFilePath) ?
-                    includedFrom.get(absBaseFilePath) : new Integer(0);
-                includedFrom.put(absBaseFilePath, new Integer(fileCounter.intValue() + 1));
+                    includedFrom.get(absBaseFilePath) : Integer.valueOf(0);
+                includedFrom.put(absBaseFilePath, Integer.valueOf(fileCounter + 1));
                 if (recursion) {
                     recursionFrom.add(absBaseFilePath);
                 }

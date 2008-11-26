@@ -41,12 +41,14 @@
 
 package org.netbeans.modules.db.sql.loader;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
@@ -54,15 +56,20 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Andrei Badea
+ * @author Andrei Badea, John Baker
  */
 public class SQLDataObject extends MultiDataObject {
 
     public SQLDataObject(FileObject primaryFile, UniFileLoader loader) throws DataObjectExistsException {
         super(primaryFile, loader);
         CookieSet cookies = getCookieSet();
-        cookies.add(new SQLEditorSupport(this));
-        cookies.assign(FileEncodingQueryImpl.class, new FileEncodingQueryImpl());
+        final SQLEditorSupport sqlEditorSupport = new SQLEditorSupport(this);
+        cookies.add(sqlEditorSupport);
+        cookies.assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs(FileObject folder, String fileName) throws IOException {
+                sqlEditorSupport.saveAs( folder, fileName );
+            }
+        });
     }
 
     @Override
@@ -90,16 +97,5 @@ public class SQLDataObject extends MultiDataObject {
 
     void removeCookie(Node.Cookie cookie) {
         getCookieSet().remove(cookie);
-    }
-
-    private final class FileEncodingQueryImpl extends FileEncodingQueryImplementation {
-
-        public Charset getEncoding(FileObject file) {
-            // the "console" files are always in UTF-8
-            if (isConsole()) {
-                return Charset.forName("UTF-8"); // NOI18N
-            }
-            return null;
-        }
     }
 }
