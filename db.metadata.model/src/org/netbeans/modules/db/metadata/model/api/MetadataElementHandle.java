@@ -186,7 +186,12 @@ public class MetadataElementHandle<T extends MetadataElement> {
     private Schema resolveSchema(Metadata metadata) {
         Catalog catalog = resolveCatalog(metadata);
         if (catalog != null) {
-            return catalog.getSchema(names[SCHEMA]);
+            String name = names[SCHEMA];
+            if (name != null) {
+                return catalog.getSchema(name);
+            } else {
+                return catalog.getSyntheticSchema();
+            }
         }
         return null;
     }
