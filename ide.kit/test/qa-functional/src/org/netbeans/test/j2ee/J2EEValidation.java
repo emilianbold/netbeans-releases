@@ -119,7 +119,7 @@ public class J2EEValidation extends JellyTestCase {
     
     // name of sample web application project
     private static final String SAMPLE_WEB_PROJECT_NAME = "SampleWebProject";  //NOI18N
-    private static final String HTTP_PORT= (System.getProperty("http.port")!=null)? System.getProperty("http.port"):"8080"; //NOI18N
+    private static final String HTTP_PORT= System.getProperty("http.port","8080"); //NOI18N
 
     /** Test Web Application
      * - create new Web Application project
