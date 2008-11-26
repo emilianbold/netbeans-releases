@@ -125,8 +125,8 @@ public class SimpleConfigParser {
     }
 
     private static void writeAttributes(StringBuilder sb, Map<String, String> attributes) {
-        for (String attributeName : attributes.keySet()) {
-            sb.append("\t" + attributeName + "=" + attributes.get(attributeName) + "\n"); //NOI18N
+        for (Map.Entry<String, String> entry : attributes.entrySet()) {
+            sb.append("\t" + entry.getKey() + "=" + entry.getValue() + "\n"); //NOI18N
         }
     }
 }

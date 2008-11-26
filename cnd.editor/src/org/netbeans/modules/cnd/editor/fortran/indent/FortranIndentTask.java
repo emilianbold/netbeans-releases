@@ -381,9 +381,6 @@ public class FortranIndentTask extends FortranIndentSupport implements IndentTas
 
         // If indent not found, search back for the first important token
         if (indent < 0) { // if not yet resolved
-            if (token == null) {
-                return 0;
-            }
             //TokenItem matchToken;
             TokenItem impToken = findImportantToken(token, null, true);
             TokenItem startToken = findLineStartToken(impToken);
