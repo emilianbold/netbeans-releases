@@ -40,18 +40,33 @@
  */
 package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
-import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.midp.components.*;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
+import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.Presenter;
+import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeDescriptor;
+import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -62,6 +77,7 @@ public class SVGComponentCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGComponent"); // NOI18N
 
     public static final String PROP_ID = "id"; // NOI18N
+    public static final String PROP_FOCUSABLE="isFocusable";// NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (ClassCD.TYPEID, TYPEID, true, true);
@@ -71,11 +87,32 @@ public class SVGComponentCD extends ComponentDescriptor {
     public VersionDescriptor getVersionDescriptor () {
         return MidpVersionDescriptor.MIDP_2;
     }
-
+    
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
         return Arrays.asList (
-            new PropertyDescriptor(PROP_ID, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), false, false, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_ID, MidpTypes.TYPEID_JAVA_LANG_STRING, 
+                    PropertyValue.createNull(), false, false, MidpVersionable.MIDP_2),
+            new PropertyDescriptor(PROP_FOCUSABLE, MidpTypes.TYPEID_BOOLEAN, 
+                    MidpTypes.createBooleanValue (Boolean.TRUE), false, false, 
+                    MidpVersionable.MIDP_2)
         );
+    }
+    
+    private static DefaultPropertiesPresenter createPropertiesPresenter() {
+        return new DefaultPropertiesPresenter().
+                addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES).
+                addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES).
+                    addProperty(NbBundle.getMessage(SVGComponentCD.class, 
+                            "DISP_SVGComponentIsFocusable"), 
+                            PropertyEditorBooleanUC.createInstance(), PROP_FOCUSABLE); // NOI18N
+            
+    }
+    
+    private Presenter createSetterPresenter () {
+        return new CodeSetterPresenter ().
+                addParameters(MidpParameter.create(PROP_FOCUSABLE)).
+                addSetters(MidpSetter.createSetter("setFocusable", 
+                        MidpVersionable.MIDP_2).addParameters(PROP_FOCUSABLE));
     }
     
     public static TypeID getEventType( TypeID type ){
@@ -84,6 +121,10 @@ public class SVGComponentCD extends ComponentDescriptor {
     
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList(
+                // properties
+                createPropertiesPresenter(),
+                // code
+                createSetterPresenter(),
                 // delete
                 DeleteDependencyPresenter.createDependentOnParentComponentPresenter (),
                 new DeletePresenter() {
