@@ -123,15 +123,22 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
     public static class JavaMethodItem extends CompletionItem {
 
+        private final String className;
+
         private final String simpleName;
+
         private final String parameterString;
+
         private final TypeMirror returnType;
-        private final Collection<javax.lang.model.element.Modifier> modifiers;
+
+        private final Set<javax.lang.model.element.Modifier> modifiers;
+
         private final boolean emphasise;
 
-        public JavaMethodItem(String simpleName, String parameterString, TypeMirror returnType,
-                Collection<javax.lang.model.element.Modifier> modifiers, int anchorOffset, boolean emphasise) {
+        public JavaMethodItem(String className, String simpleName, String parameterString, TypeMirror returnType,
+                Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, boolean emphasise) {
             super(null, anchorOffset);
+            this.className = className;
             this.simpleName = simpleName;
             this.parameterString = parameterString;
             this.returnType = returnType;
@@ -183,13 +190,70 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public Set<Modifier> getModifiers() {
-            // FIXME update
+            // FIXME - fix tests
+            //return Utilities.modelModifiersToGsf(modifiers);
             return Collections.emptySet();
         }
 
         @Override
         public ElementHandle getElement() {
-            return null;
+            return ElementHandleSupport.createHandle(className, simpleName, ElementKind.METHOD,
+                    Utilities.modelModifiersToGsf(modifiers));
+        }
+    }
+
+    public static class DynamicFieldItem extends CompletionItem {
+
+        private final String name;
+
+        private final String type;
+
+        public DynamicFieldItem(int anchorOffset, String name, String type) {
+            super(null, anchorOffset);
+            this.name = name;
+            this.type = type;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.FIELD;
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            // no FQN return types but only the classname, please:
+
+            String retType = type;
+            retType = NbUtilities.stripPackage(retType);
+
+            formatter.appendText(retType);
+
+            return formatter.getText();
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            if (groovyIcon == null) {
+                groovyIcon = new ImageIcon(ImageUtilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
+            }
+
+            return groovyIcon;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.singleton(Modifier.PROTECTED);
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            return ElementHandleSupport.createHandle(null, name, ElementKind.FIELD,
+                    Collections.singleton(Modifier.PROTECTED));
         }
     }
 
@@ -268,12 +332,13 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
+            return Collections.singleton(Modifier.PROTECTED);
         }
 
         @Override
         public ElementHandle getElement() {
-            return null;
+            return ElementHandleSupport.createHandle(null, name, ElementKind.METHOD,
+                    Collections.singleton(Modifier.PROTECTED));
         }
     }
 
@@ -663,6 +728,69 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             LOG.log(Level.FINEST, "Template returned : {0}", sb.toString());
             return sb.toString();
 
+        }
+    }
+
+    public static class JavaFieldItem extends CompletionItem {
+
+        private final String className;
+
+        private final String name;
+
+        private final TypeMirror type;
+
+        private final Set<javax.lang.model.element.Modifier> modifiers;
+
+        private final boolean emphasise;
+
+        public JavaFieldItem(String className, String name, TypeMirror type,
+                Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, boolean emphasise) {
+            super(null, anchorOffset);
+            this.className = className;
+            this.name = name;
+            this.type = type;
+            this.modifiers = modifiers;
+            this.emphasise = emphasise;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.FIELD;
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            String retType = "";
+            if (type != null) {
+                retType = Utilities.getTypeName(type, false).toString();
+            }
+
+            formatter.appendText(retType);
+
+            return formatter.getText();
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return (ImageIcon) ElementIcons.getElementIcon(
+                    javax.lang.model.element.ElementKind.FIELD, modifiers);
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Utilities.modelModifiersToGsf(modifiers);
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            // For completion documentation
+            return ElementHandleSupport.createHandle(className, name, ElementKind.FIELD,
+                    Utilities.modelModifiersToGsf(modifiers));
         }
     }
 

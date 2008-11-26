@@ -116,8 +116,8 @@ import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
 import org.netbeans.modules.groovy.editor.completion.CompletionItem;
+import org.netbeans.modules.groovy.editor.completion.DynamicElementHandler;
 import org.netbeans.modules.groovy.editor.completion.JavaElementHandler.ClassType;
-import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
@@ -1064,8 +1064,12 @@ public class CompletionHandler implements CodeCompletionHandler {
             if (field.getName().startsWith(fieldName)) {
                 proposals.add(new CompletionItem.FieldItem(field.getName(), field.getModifiers(), anchor + anchorShift, request.info, fieldTypeAsString));
             }
-
         }
+
+        // FIXME just a dirty prototype
+        Map<FieldSignature, ? extends CompletionItem> dynamic = DynamicElementHandler.forCompilationInfo(request.info).getFields(
+                CompletionType.THIS, declaringClass.getName(), request.prefix, anchor);
+        proposals.addAll(dynamic.values());
 
         return true;
     }
