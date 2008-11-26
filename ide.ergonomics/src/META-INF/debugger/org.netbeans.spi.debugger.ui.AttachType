@@ -2,3 +2,4 @@ org.netbeans.modules.ide.ergonomics.debugger.GdbAttachTypeProxy
 org.netbeans.modules.ide.ergonomics.debugger.BpelAttachTypeProxy
 org.netbeans.modules.ide.ergonomics.debugger.JPDAAttachTypeProxy
 org.netbeans.modules.ide.ergonomics.debugger.RubyAttachTypeProxy
+org.netbeans.modules.ide.ergonomics.debugger.URLAttachTypeProxy
