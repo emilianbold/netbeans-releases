@@ -103,12 +103,20 @@ public class GlobalToolsPanelModel extends ToolsPanelModel {
     }
     
     public boolean isFortranRequired() {
-        return CppSettings.getDefault().isFortranEnabled();
+        return true;
+        //return CppSettings.getDefault().isFortranEnabled();
         //return CppSettings.getDefault().isFortranRequired();
     }
     
     public void setFortranRequired(boolean value) {
 //        CppSettings.getDefault().setFortranRequired(value);
+    }
+
+    public boolean isAsRequired() {
+        return true;
+    }
+
+    public void setAsRequired(boolean value) {
     }
     
     public boolean showRequiredTools() {

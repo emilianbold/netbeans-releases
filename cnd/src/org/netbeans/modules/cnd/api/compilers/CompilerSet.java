@@ -511,13 +511,18 @@ public class CompilerSet {
         }
         return null;
     }
-    
+
+    /*
+     * Is this one being used?
+     */
+    @Deprecated
     public boolean isValid() {
         Tool cCompiler = getTool(Tool.CCompiler);
         Tool cppCompiler = getTool(Tool.CCCompiler);
         Tool fortranCompiler = getTool(Tool.FortranCompiler);
+        Tool assembler = getTool(Tool.Assembler);
         
-        return cCompiler != null && cppCompiler != null && (!CppSettings.getDefault().isFortranEnabled() || fortranCompiler != null);
+        return cCompiler != null && cppCompiler != null && fortranCompiler != null && assembler != null;
     }
     
     @SuppressWarnings("unchecked")

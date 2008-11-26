@@ -13,6 +13,7 @@ import java.io.File;
 import javax.swing.table.TableModel;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JTableOperator;
@@ -39,7 +40,6 @@ public class ImportUITest extends JellyTestCase {
     public static final String WORK_PATH = "work";
     public static final String PROJECT_NAME = "SVNApplication";
     public File projectPath;
-    String os_name;
     Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
     long timeout_c;
@@ -52,16 +52,7 @@ public class ImportUITest extends JellyTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        os_name = System.getProperty("os.name");
         System.out.println("### " + getName() + " ###");
-    }
-
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
     }
     
     public static Test suite() {
@@ -79,6 +70,9 @@ public class ImportUITest extends JellyTestCase {
 
     public void testInvoke() throws Exception {
         try {
+            TestKit.closeProject(PROJECT_NAME);
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                new NewProjectWizardOperator().invoke().close();
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);

@@ -43,7 +43,7 @@ package org.netbeans.modules.groovy.editor.api.completion;
  *
  * @author schmidtm
  */
-import org.netbeans.modules.groovy.editor.api.completion.GroovyCompletionHandler;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,7 +58,7 @@ public class MethodCompletionTest extends GroovyTestBase {
 
     public MethodCompletionTest(String testName) {
         super(testName);
-        Logger.getLogger(GroovyCompletionHandler.class.getName()).setLevel(Level.FINEST);
+        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
     // uncomment this to have logging from GroovyLexer
@@ -164,6 +164,18 @@ public class MethodCompletionTest extends GroovyTestBase {
     
     public void testCompletionGroovySuper1() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods15.groovy", "        super.^", false);
+    }
+
+    public void testCompletionNoDot1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods16.groovy", "        no^", false);
+    }
+
+    public void testCompletionNoDot2() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods16.groovy", "        x^", false);
+    }
+
+    public void testCompletionNoDot3() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods16.groovy", "        n^", false);
     }
 }
 

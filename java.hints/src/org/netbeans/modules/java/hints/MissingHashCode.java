@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.swing.JComponent;
@@ -197,8 +198,10 @@ public class MissingHashCode extends AbstractHint {
             wc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             for (Element elem : handle.resolveElement(wc).getEnclosedElements()) {
                 if (elem.getKind() == ElementKind.FIELD) {
-                    fieldFound = true;
-                    return;
+                    if (!elem.getModifiers().contains(Modifier.STATIC)) {
+                        fieldFound = true;
+                        return;
+                    }
                 }
             }
             EqualsHashCodeGenerator.generateEqualsAndHashCode(wc, handle.resolve(wc));

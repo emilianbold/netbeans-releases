@@ -68,7 +68,7 @@ public class DwarfLineInfoSection extends ElfSection {
     }
     
     public DwarfStatementList getStatementList(long offset) {
-        Long lOffset = new Long(offset);
+        Long lOffset = Long.valueOf(offset);
         DwarfStatementList statementList = statementLists.get(lOffset);
         
         if (statementList == null) {

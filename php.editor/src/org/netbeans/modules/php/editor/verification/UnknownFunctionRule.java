@@ -74,7 +74,7 @@ public class UnknownFunctionRule extends PHPRule{
             
             String fname = CodeUtils.extractFunctionName(functionInvocation);
             
-            if (!IGNORED.contains(fname.toLowerCase())) {
+            if (fname != null && !IGNORED.contains(fname.toLowerCase())) {
                 Collection<IndexedFunction> functions = context.index.getFunctions(
                         (PHPParseResult) context.parserResult,
                         fname, NameKind.EXACT_NAME);

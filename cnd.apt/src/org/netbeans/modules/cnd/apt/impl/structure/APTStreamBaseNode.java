@@ -41,13 +41,13 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.Token;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 public abstract class APTStreamBaseNode extends APTTokenBasedNode
                                         implements Serializable {
     private static final long serialVersionUID = -1498074871896804293L;
-    private List<Token> tokens;
+    private List<APTToken> tokens;
     
     /** Copy constructor */
     /**package*/ APTStreamBaseNode(APTStreamBaseNode orig) {
@@ -73,7 +73,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     /**
      * Creates a new instance of APTStreamBaseNode
      */
-    public APTStreamBaseNode(Token token) {
+    public APTStreamBaseNode(APTToken token) {
         super(token);
         assert (validToken(token)) : "must init only from valid tokens"; // NOI18N
     }
@@ -81,7 +81,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     ////////////////////////////////////////////////////////////////////////////
     // implementation of abstract methods
     
-    public boolean accept(Token token) {
+    public boolean accept(APTToken token) {
         boolean accepted = false;
         if (validToken(token)) {
             accepted = true;
@@ -105,14 +105,15 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     }
     
     /** returns list of tokens */
+    @Override
     public String getText() {
         StringBuilder retValue = new StringBuilder("TOKENS{"); // NOI18N
         try {
             TokenStream ts = getTokenStream();
-            for (Token token = ts.nextToken(); !APTUtils.isEOF(token);) {
+            for (APTToken token = (APTToken) ts.nextToken(); !APTUtils.isEOF(token);) {
                 assert(token != null) : "list of tokens must not have 'null' elements"; // NOI18N
                 retValue.append(token.toString());
-                token = ts.nextToken();
+                token = (APTToken) ts.nextToken();
                 if (!APTUtils.isEOF(token)) {
                     retValue.append("; "); // NOI18N
                 }
@@ -139,6 +140,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     
     ////////////////////////////////////////////////////////////////////////////
     // reset tokens
+    @Override
     public void dispose() {
         super.dispose();
         tokens = null;
@@ -147,22 +149,22 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     ////////////////////////////////////////////////////////////////////////////
     // help implementation methods
     
-    private void appendToken(Token token) {
+    private void appendToken(APTToken token) {
         assert (validToken(token)) : "must append only valid tokens"; // NOI18N
         if (tokens == null) {
-            tokens = new ArrayList<Token>();
+            tokens = new ArrayList<APTToken>();
         }
         tokens.add(token);
     }
     
-    protected abstract boolean validToken(Token t);
+    protected abstract boolean validToken(APTToken t);
     
     /** token stream iterator */
     private class TokenStreamIterator implements TokenStream {
         private int index = -1;
         
-        public Token nextToken() throws TokenStreamException {
-            Token token;
+        public APTToken nextToken() throws TokenStreamException {
+            APTToken token;
             if (index == -1) {
                 token = getToken();
                 index++;
@@ -170,7 +172,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
                 token = tokens.get(index++);
             } else {
                 token = APTUtils.EOF_TOKEN;
-            };
+            }
             return token;
         }
     }

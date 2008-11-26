@@ -122,9 +122,9 @@ public class TagHelpItem implements HelpItem {
         this.name = name;
         this.file = file;
         this.startText = startText;
-        this.startTextOffset = startTextOffset;
+        this.startTextOffset = startOffset;
         this.endText = endText;
-        this.endTextOffset = endTextOffset;
+        this.endTextOffset = endOffset;
         this.textBefore = textBefore;
         this.textAfter = textAfter;
         this.identical = null;

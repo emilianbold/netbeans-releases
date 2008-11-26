@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.debug;
 
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -53,34 +52,37 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author Vladimir Kvashin
  */
 public class DiagnosticExceptoins {
-    
+
+    private DiagnosticExceptoins() {
+    }
+
     public interface Hook {
-	/**
-	 * Is called whenether an exception or error occurs 
-	 * in one of the code model threads
-	 * (parser thread, repository writing thread, 
-	 * code model request processor)
-	 */
-	void exception(Throwable thr);
+
+        /**
+         * Is called whenether an exception or error occurs
+         * in one of the code model threads
+         * (parser thread, repository writing thread,
+         * code model request processor)
+         */
+        void exception(Throwable thr);
     }
-    
     private static Hook hook;
-    
+
     public static void setHook(Hook aHook) {
-	hook = aHook;
+        hook = aHook;
     }
-    
+
     /**
      * This method is called from within catch(...) in code model threads.
      * See Hook.exception description for more details
      */
     public static void register(Throwable thr) {
-        if( CndUtils.isDebugMode() ) {
+        if (CndUtils.isDebugMode()) {
             thr.printStackTrace();
         }
-	Hook aHook = hook;
-	if( aHook != null ) {
-	    hook.exception(thr);
-	}
+        Hook aHook = hook;
+        if (aHook != null) {
+            hook.exception(thr);
+        }
     }
 }

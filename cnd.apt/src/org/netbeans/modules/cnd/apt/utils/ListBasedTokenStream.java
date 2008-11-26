@@ -41,29 +41,29 @@
 
 package org.netbeans.modules.cnd.apt.utils;
 
-import antlr.Token;
 import antlr.TokenStream;
-import antlr.TokenStreamException;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 
 /**
  * implementation of TokenStream based on list
  * passed list is unchanged
  * @author Vladimir Voskresensky
  */
-public class ListBasedTokenStream implements TokenStream {
-    private final List<Token> tokens;
-    private Iterator<Token> position;
+public class ListBasedTokenStream implements TokenStream, APTTokenStream {
+    private final List<APTToken> tokens;
+    private Iterator<APTToken> position;
     
     /** Creates a new instance of ListBasedTokenStream */
-    public ListBasedTokenStream(List<Token> tokens) {
+    public ListBasedTokenStream(List<APTToken> tokens) {
         assert(tokens != null) : "not valid to pass null list"; // NOI18N
         this.tokens = tokens;
         position = tokens.iterator();
     }
 
-    public Token nextToken() throws TokenStreamException {
+    public APTToken nextToken() {
         if (position.hasNext()) {
             return position.next();
         } else {
@@ -76,7 +76,7 @@ public class ListBasedTokenStream implements TokenStream {
         return APTUtils.debugString(new ListBasedTokenStream(tokens));
     }
     
-    public List<Token> getList() {
+    public List<APTToken> getList() {
         return tokens;
     }
 }

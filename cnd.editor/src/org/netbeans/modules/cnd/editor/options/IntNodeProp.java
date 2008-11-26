@@ -84,7 +84,7 @@ public class IntNodeProp extends PropertySupport.ReadWrite<Integer> {
     }
 
     public Integer getValue() {
-        return new Integer(state);
+        return Integer.valueOf(state);
     }
 
     public void setValue(Integer v) {

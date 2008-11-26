@@ -39,9 +39,9 @@ REGEXP_LITERAL  "^Ruby the OOPL", la=2, st=LS(regexp=,string=^Ruby the OOPLxmlOp
 REGEXP_END      "/", la=1, st=LS(regexp=,string=^Ruby the OOPLxmlOpen=0,flags=dirty|stringmode=0,stringlit=/^Ruby the OOPL/)
 SEMI            ";", st=LS(regexp=,string=^Ruby the OOPLxmlOpen=0,flags=divregexp|dirty|stringmode=0,stringlit=/^Ruby the OOPL/)
 EOL             "\n", st=LS(regexp=,string=^Ruby the OOPLxmlOpen=0,flags=divregexp|stringmode=0,stringlit=/^Ruby the OOPL/)
-REGEXP_BEGIN    "/", la=7, st=LS(regexp=i,string=RubyixmlOpen=0,flags=dirty|stringmode=4,stringlit=/Ruby/i)
-REGEXP_LITERAL  "Ruby", la=3, st=LS(regexp=i,string=RubyixmlOpen=0,flags=dirty|stringmode=5,stringlit=/Ruby/i)
-REGEXP_END      "/i", la=1, st=LS(regexp=i,string=RubyixmlOpen=0,flags=dirty|stringmode=0,stringlit=/Ruby/i)
+REGEXP_BEGIN    "/", la=7, st=LS(regexp=i,string=RubyixmlOpen=0,flags=dirty|eof|stringmode=4,stringlit=/Ruby/i)
+REGEXP_LITERAL  "Ruby", la=3, st=LS(regexp=i,string=RubyixmlOpen=0,flags=dirty|eof|stringmode=5,stringlit=/Ruby/i)
+REGEXP_END      "/i", la=1, st=LS(regexp=i,string=RubyixmlOpen=0,flags=dirty|eof|stringmode=0,stringlit=/Ruby/i)
 ----- EOF -----
 
 .t.e.s.t. Number Literals

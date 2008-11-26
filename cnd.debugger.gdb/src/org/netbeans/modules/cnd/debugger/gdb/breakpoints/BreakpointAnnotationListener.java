@@ -49,6 +49,7 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -69,6 +70,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
     
     private HashMap<GdbBreakpoint,Object> breakpointToAnnotation = new HashMap<GdbBreakpoint,Object>();
     private boolean listen = true;
+    private final Logger log = Logger.getLogger("gdb.breakpoint.annotations"); // NOI18N
     
     
     @Override
@@ -107,6 +109,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
     public void breakpointAdded(Breakpoint b) {
         b.addPropertyChangeListener(this);
         if (b instanceof GdbBreakpoint) {
+            log.fine("BreakpointAnnotationListener.breakpointAdded: " + ((GdbBreakpoint) b).getPath() + ":" + ((GdbBreakpoint) b).getLineNumber());
             annotate((GdbBreakpoint) b);
         }
     }
@@ -119,6 +122,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
     @Override
     public void breakpointRemoved(Breakpoint b) {
         b.removePropertyChangeListener(this);
+        log.fine("BreakpointAnnotationListener.breakpointRemoved:");
         removeAnnotation(b);
     }
     
@@ -181,6 +185,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
     }
     
     private void annotate(GdbBreakpoint b) {
+        log.fine("BreakpointAnnotationListener.annotation: " + b.getPath() + ":" + b.getLineNumber());
         // remove old annotation
         Object annotation = breakpointToAnnotation.get(b);
         if (annotation != null) {

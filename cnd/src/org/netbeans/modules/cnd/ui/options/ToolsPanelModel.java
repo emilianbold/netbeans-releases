@@ -112,6 +112,10 @@ public abstract class ToolsPanelModel {
     public abstract boolean isFortranRequired();
     
     public abstract void setFortranRequired(boolean value);
+
+    public abstract boolean isAsRequired();
+
+    public abstract void setAsRequired(boolean value);
     
     public abstract void setCompilerSetName(String name);
     
