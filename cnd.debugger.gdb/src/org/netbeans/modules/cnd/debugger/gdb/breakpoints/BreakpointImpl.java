@@ -189,6 +189,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         }
         if (st.equals(BPSTATE_UNVALIDATED) || st.equals(BPSTATE_REVALIDATE)) {
             if (st.equals(BPSTATE_REVALIDATE) && breakpointNumber > 0) {
+                log.warning("BreakpointImpl.setRequests: requestDelete for breakpoint needing revalidation");
                 requestDelete();
             }
             setState(BPSTATE_VALIDATION_PENDING);
@@ -204,6 +205,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 	} else {
             if (breakpointNumber > 0) { // bnum < 0 for breakpoints from other projects...
                 if (st.equals(BPSTATE_DELETION_PENDING)) {
+                    log.warning("BreakpointImpl.setRequests: requestDelete for deletion-pending breakpoint");
                     requestDelete();
                 } else if (st.equals(BPSTATE_VALIDATED)) {
                     enable(getBreakpoint().isEnabled());
@@ -225,6 +227,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     }
 
     protected void suspend() {
+        log.warning("BreakpointImpl.suspend: requestDelete from suspend");
         requestDelete();
         setState(BPSTATE_UNVALIDATED);
         setRequests();
@@ -283,6 +286,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     }
 
     private void requestDelete() {
+        log.warning("BreakpointImpl.requestDelete: Deleting breakpoint number " + breakpointNumber);
         debugger.getGdbProxy().break_delete(breakpointNumber);
     }
 
