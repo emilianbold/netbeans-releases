@@ -70,8 +70,6 @@ import java.io.*;
 import java.util.Enumeration;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
-import javax.swing.SwingUtilities;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -101,7 +99,6 @@ public class Commit extends GeneralPHP
   static private final String CLASS_PHP_INITIAL_CONTENT =
     "<?php/**Tochangethistemplate,chooseTools|Templates*andopenthetemplateintheeditor.*//***DescriptionofPHPClass**@author" + System.getProperty( "user.name" ) + "*/classPHPClass{//putyourcodehere}?>";
 
-  static private final int COMPLETION_LIST_THRESHOLD = 5000;
   static private final int COMPLETION_LIST_INCLASS = 22;
 
   private static boolean bUnzipped = false;
@@ -190,57 +187,6 @@ public class Commit extends GeneralPHP
     endTest( );
   }
 
-  private class CompletionInfo
-  {
-    public CompletionJListOperator listItself;
-    public List listItems;
-  }
-
-  protected CompletionInfo GetCompletion( )
-  {
-    final CompletionInfo result = new CompletionInfo( );
-    result.listItself = null;
-    int iRedo = 10;
-    while( true )
-    {
-      try
-      {
-        try
-        {
-          SwingUtilities.invokeAndWait(new Runnable() {
-              public void run() {
-                  result.listItself = new CompletionJListOperator();
-                  try {
-                      result.listItems = result.listItself.getCompletionItems();
-                  } catch (Exception ex) {
-                  }
-              }
-          });
-          Object o = result.listItems.get( 0 );
-          if(
-              !o.toString( ).contains( "No suggestions" )
-              && !o.toString( ).contains( "Scanning in progress..." )
-            )
-          {
-            return result;
-          }
-          Sleep( 1000 );
-        }
-        catch( java.lang.Exception ex )
-        {
-          return null;
-        }
-      }
-      catch( JemmyException ex )
-      {
-        System.out.println( "Wait completion timeout." );
-        if( 0 == --iRedo )
-          return null;
-      }
-      Sleep( 100 );
-    }
-  }
-
   protected void Backit( EditorOperator eoPHP, int iCount )
   {
     for( int i = 0; i < iCount; i++ )
@@ -295,31 +241,6 @@ public class Commit extends GeneralPHP
     return sCode + sSuffix;
   }
 
-    protected void CheckCompletionItems(
-        CompletionJListOperator jlist,
-        String[] asIdeal
-      )
-    {
-      for( String sCode : asIdeal )
-      {
-        int iIndex = jlist.findItemIndex( sCode );
-        if( -1 == iIndex )
-        {
-          try
-          {
-            List list = jlist.getCompletionItems();
-            for( int i = 0; i < list.size( ); i++ )
-              System.out.println( "******" + list.get( i ) );
-          }
-          catch( java.lang.Exception ex )
-          {
-            System.out.println( "#" + ex.getMessage( ) );
-          }
-          fail( "Unable to find " + sCode + " completion." );
-        }
-      }
-    }
-
   protected void TestPHPFile(
       String sProjectName,
       String sFileName,
@@ -361,43 +282,47 @@ public class Commit extends GeneralPHP
     Sleep( 1000 );
 
     // Check code completion list
-    try {
-      final CompletionInfo completionInfo = GetCompletion();
-      if (null == completionInfo) {
-          fail("NPE instead of competion info.");
-          // Magic CC number for complete list
-
+    try
+    {
+      CompletionInfo completionInfo = GetCompletion( );
+      if( null == completionInfo )
+        fail( "NPE instead of competion info." );
+      // Magic CC number for complete list
+      if(
+          ( bInclass ? COMPLETION_LIST_INCLASS : COMPLETION_LIST_THRESHOLD )
+          > completionInfo.listItems.size( )
+        )
+      {
+        fail( "CC list looks to small, there are only: " + completionInfo.listItems.size( ) + " items in." );
       }
-      if ((bInclass ? COMPLETION_LIST_INCLASS : COMPLETION_LIST_THRESHOLD) > completionInfo.listItems.size()) {
-          fail("CC list looks to small, there are only: " + completionInfo.listItems.size() + " items in.");
-      }
 
-      if (!bInclass) {
-          // Check some completions
-          final String[] asCompletions = {
-              "$GLOBALS",
-              "LC_MONETARY",
-              "ibase_wait_event",
-              "mysql_error",
-              "openssl_pkcs12_export_to_file",
-              "str_word_count",
-              "ZendAPI_Queue"
-          };
-          SwingUtilities.invokeAndWait(new Runnable() {
-              public void run() {
-                  CheckCompletionItems(completionInfo.listItself, asCompletions);
-              }
-          });
-          //jCompl.clickOnItem( "$GLOBALS" );
-          //Sleep( 500 );
-          //CheckResult( eoPHP, "$GLOBALS" );
+      if( !bInclass )
+      {
+        // Check some completions
+        String[] asCompletions =
+        {
+          "$GLOBALS",
+          "LC_MONETARY",
+          "ibase_wait_event",
+          "mysql_error",
+          "openssl_pkcs12_export_to_file",
+          "str_word_count",
+          "ZendAPI_Queue"
+        };
+        CheckCompletionItems( completionInfo.listItself, asCompletions );
+        //jCompl.clickOnItem( "$GLOBALS" );
+        //Sleep( 500 );
+        //CheckResult( eoPHP, "$GLOBALS" );
 
-          completionInfo.listItself.hideAll();
+        completionInfo.listItself.hideAll( );
       }
-    } catch (Exception ex) {
-      ex.printStackTrace(System.out);
-      fail("Completion check failed: \"" + ex.getMessage() + "\"");
     }
+    catch( Exception ex )
+    {
+      ex.printStackTrace( System.out );
+      fail( "Completion check failed: \"" + ex.getMessage( ) + "\"" );
+    }
+
     // Brackets
     // Predefined
     String[] asCheckers =
@@ -449,6 +374,7 @@ public class Commit extends GeneralPHP
       Sleep( 1500 );
       eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
       Sleep( 1500 );
+      System.out.println( "Current: >>>" + eoPHP.getText( eoPHP.getLineNumber( ) ) + "<<<" );
       CheckResult( eoPHP, "function  __construct() {", -1 );
       int i = eoPHP.getLineNumber( ) - 1;
       eoPHP.deleteLine( i );
@@ -602,39 +528,6 @@ public class Commit extends GeneralPHP
       );
 
     endTest( );
-  }
-
-  protected void CreatePHPFile(
-      String sProject,
-      String sItem,
-      String sName
-    )
-  {
-    ProjectsTabOperator pto = new ProjectsTabOperator( );
-    ProjectRootNode prn = pto.getProjectRootNode( sProject );
-    prn.select( );
-
-    // Workaround for MacOS platform
-    NewFileWizardOperator.invoke().cancel( );
-
-    NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
-    opNewFileWizard.selectCategory( "PHP" );
-    opNewFileWizard.selectFileType( sItem );
-    opNewFileWizard.next( );
-
-    JDialogOperator jdNew = new JDialogOperator( "New " + sItem );
-    JTextComponentOperator jt = new JTextComponentOperator( jdNew, 0 );
-    if( null != sName )
-      jt.setText( sName );
-    else
-      sName = jt.getText( );
-
-    opNewFileWizard.finish( );
-
-    // Check created schema in project tree
-    String sPath = sProject + "|Source Files|" + sName;
-    prn = pto.getProjectRootNode( sPath );
-    prn.select( );
   }
 
   public void CreateEmptyPHP( )

@@ -67,4 +67,6 @@ public abstract class TableImplementation {
     public abstract Collection<Column> getColumns();
 
     public abstract Column getColumn(String name);
+
+    public abstract void refresh();
 }

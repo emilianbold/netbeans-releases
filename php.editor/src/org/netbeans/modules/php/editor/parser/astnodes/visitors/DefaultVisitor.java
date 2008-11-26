@@ -38,75 +38,7 @@
  */
 package org.netbeans.modules.php.editor.parser.astnodes.visitors;
 
-import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
-import org.netbeans.modules.php.editor.parser.astnodes.ArrayElement;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
-import org.netbeans.modules.php.editor.parser.astnodes.BackTickExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.Block;
-import org.netbeans.modules.php.editor.parser.astnodes.BreakStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.CastExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
-import org.netbeans.modules.php.editor.parser.astnodes.CloneExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.Comment;
-import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.ContinueStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.DeclareStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.EchoStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
-import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.IgnoreError;
-import org.netbeans.modules.php.editor.parser.astnodes.InLineHtml;
-import org.netbeans.modules.php.editor.parser.astnodes.Include;
-import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ListVariable;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocPropertyTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
-import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.PostfixExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.PrefixExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.Quote;
-import org.netbeans.modules.php.editor.parser.astnodes.Reference;
-import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
-import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
-import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
-import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.ThrowStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.Visitor;
-import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 
 /**
  *
@@ -426,9 +358,23 @@ public class DefaultVisitor implements Visitor {
         scan(node.getTags());
     }
 
+    public void visit(PHPDocNode node) {
+    }
+
     public void visit(PHPDocTag node) {
     }
 
-    public void visit(PHPDocPropertyTag phpDocPropertyTag) {
+    public void visit(PHPDocTypeTag node) {
+        scan(node.getTypes());
+    }
+
+    public void visit(PHPDocVarTypeTag node) {
+        scan(node.getVariable());
+        scan(node.getTypes());
+    }
+
+    public void visit(PHPDocStaticAccessType node) {
+        scan(node.getClassName());
+        scan(node.getConstant());
     }
 }

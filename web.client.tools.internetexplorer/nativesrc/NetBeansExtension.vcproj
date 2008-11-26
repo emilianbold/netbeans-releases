@@ -20,7 +20,7 @@
 			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			UseOfATL="2"
+			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
 			>
@@ -52,11 +52,11 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="activescript"
+				AdditionalIncludeDirectories="activescript;&quot;VSIP 8.0\Microsoft Visual Studio Debugging SDK\Includes&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL"
 				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				BasicRuntimeChecks="0"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
@@ -78,9 +78,9 @@
 				Name="VCLinkerTool"
 				RegisterOutput="true"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="Ws2_32.lib ad1.lib Wininet.lib"
+				AdditionalDependencies="Ws2_32.lib ad1.lib Wininet.lib ad2de.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="activescript"
+				AdditionalLibraryDirectories="activescript;&quot;VSIP 8.0\Microsoft Visual Studio Debugging SDK\Libs&quot;"
 				ModuleDefinitionFile=".\NetBeansExtension.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -109,7 +109,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="cp $(TargetDir)$(TargetName).dll ..\..\nbbuild\netbeans\webcommon1\native"
+				CommandLine="copy $(TargetDir)$(TargetName).dll ..\..\nbbuild\netbeans\webcommon1\native"
 			/>
 		</Configuration>
 		<Configuration
@@ -117,7 +117,7 @@
 			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			UseOfATL="2"
+			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
 			>
@@ -149,9 +149,9 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				AdditionalIncludeDirectories="activescript"
+				AdditionalIncludeDirectories="activescript;&quot;VSIP 8.0\Microsoft Visual Studio Debugging SDK\Includes&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
@@ -173,9 +173,9 @@
 				Name="VCLinkerTool"
 				RegisterOutput="true"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="Ws2_32.lib ad1.lib Wininet.lib"
+				AdditionalDependencies="Ws2_32.lib ad1.lib Wininet.lib ad2de.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="activescript"
+				AdditionalLibraryDirectories="activescript;&quot;VSIP 8.0\Microsoft Visual Studio Debugging SDK\Libs&quot;"
 				ModuleDefinitionFile=".\NetBeansExtension.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -206,6 +206,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy $(TargetDir)$(TargetName).dll ..\..\nbbuild\netbeans\webcommon1\native&#x0D;&#x0A;copy $(TargetDir)$(TargetName).dll ..\release\native"
 			/>
 		</Configuration>
 	</Configurations>

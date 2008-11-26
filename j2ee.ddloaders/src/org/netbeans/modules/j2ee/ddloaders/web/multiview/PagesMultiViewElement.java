@@ -294,19 +294,14 @@ public class PagesMultiViewElement extends ToolBarMultiViewElement implements ja
                 NbBundle.getMessage(PagesMultiViewElement.class,"LBL_description"),
                 NbBundle.getMessage(PagesMultiViewElement.class,"LBL_urlPatterns")
             };
-            char[] mnem = new char[] {
-                NbBundle.getMessage(PagesMultiViewElement.class,"LBL_displayName_mnem").charAt(0),
-                NbBundle.getMessage(PagesMultiViewElement.class,"LBL_description_mnem").charAt(0),
-                NbBundle.getMessage(PagesMultiViewElement.class,"LBL_urlPatterns_mnem").charAt(0)
-            };
             String[] a11y_desc = new String[]{
                 NbBundle.getMessage(PagesMultiViewElement.class,"ACSD_jsp_property_display_name"),
                 NbBundle.getMessage(PagesMultiViewElement.class,"ACSD_jsp_property_desc"),
                 NbBundle.getMessage(PagesMultiViewElement.class,"ACSD_jsp_property_url_pattern")
             };
             boolean[] buttons = new boolean[]{false,false,true};
-            SimpleDialogPanel.DialogDescriptor descriptor = new SimpleDialogPanel.DialogDescriptor(labels);
-            descriptor.setMnemonics(mnem);
+            SimpleDialogPanel.DialogDescriptor descriptor =
+                    new SimpleDialogPanel.DialogDescriptor(labels, true);
             descriptor.setButtons(buttons);
             descriptor.setA11yDesc(a11y_desc);
             descriptor.setTextField(new boolean[]{true,false,true});

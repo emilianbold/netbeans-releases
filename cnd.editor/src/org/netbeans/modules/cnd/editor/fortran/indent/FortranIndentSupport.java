@@ -299,6 +299,11 @@ public class FortranIndentSupport {
                     if (nextToken.getImage().indexOf('\n') > -1) {
                         continue;
                     }
+                } else if (matchTokenID == KW_TYPE && matchEndKeywordID == KW_ENDTYPE) {
+                    TokenItem next = findImportantToken(startToken.getNext(), null, false);
+                    if (next != null && next.getTokenID() == LPAREN) {
+                        continue;
+                    }
                 }
                 if (depth-- == 0) {
                     return token; // successful search

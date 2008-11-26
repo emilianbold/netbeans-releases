@@ -131,7 +131,7 @@ public final class CommandCD extends ComponentDescriptor {
     }
 
     public static Map<String, PropertyValue> getTypes() {
-        if (typeValues == null) {
+        if (typeValues == null || typeValues.isEmpty()) {
             typeValues = new TreeMap<String, PropertyValue>();
             typeValues.put("SCREEN", MidpTypes.createIntegerValue(VALUE_SCREEN)); // NOI18N
             typeValues.put("BACK", MidpTypes.createIntegerValue(VALUE_BACK)); // NOI18N

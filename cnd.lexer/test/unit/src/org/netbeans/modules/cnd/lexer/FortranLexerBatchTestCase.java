@@ -510,6 +510,88 @@ public class FortranLexerBatchTestCase extends TestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     }
+    public void testKeywordExtensions() {
+        String text = "int\n" +
+                "short\n" +
+                "long\n" +
+                "signed\n" +
+                "unsigned\n" +
+                "size_t\n" +
+                "int8_t\n" +
+                "int16_t\n" +
+                "int32_t\n" +
+                "int64_t\n" +
+                "int_least8_t\n" +
+                "int_least16_t\n" +
+                "int_least32_t\n" +
+                "int_least64_t\n" +
+                "int_fast8_t\n" +
+                "int_fast16_t\n" +
+                "int_fast32_t\n" +
+                "int_fast64_t\n" +
+                "intmax_t\n" +
+                "intptr_t\n" +
+                "float\n" +
+                "double\n" +
+                "_Complex\n" +
+                "_Bool\n" +
+                " char";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes());
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INT, "int");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_SHORT, "short");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_LONG, "long");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_SIGNED, "signed");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_UNSIGNED, "unsigned");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_SIZE_T, "size_t");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INT8_T, "int8_t");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INT16_T, "int16_t");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INT32_T, "int32_t");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INT64_T, "int64_t");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INT_LEAST8_T, "int_least8_t");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INT_LEAST16_T, "int_least16_t");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INT_LEAST32_T, "int_least32_t");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INT_LEAST64_T, "int_least64_t");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INT_FAST8_T, "int_fast8_t");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INT_FAST16_T, "int_fast16_t");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INT_FAST32_T, "int_fast32_t");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INT_FAST64_T, "int_fast64_t");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INTMAX_T, "intmax_t");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INTPTR_T, "intptr_t");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_FLOAT, "float");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_DOUBLE, "double");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.IDENTIFIER, "_Complex");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.IDENTIFIER, "_Bool");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_CHAR, "char");
+
+        assertFalse("No more tokens", ts.moveNext());
+    }
 
     public void testNonKeywords() {
         String text = "asma autos b br car dou doubl finall im i ifa inti throwx ";

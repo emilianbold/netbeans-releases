@@ -58,13 +58,28 @@ import java.util.List;
  */
 public class MetadataElementHandle<T extends MetadataElement> {
 
+    // These integers place a particular element in the hierarchy of elements,
+    // with CATALOG at the top
     private static final int CATALOG = 0;
     private static final int SCHEMA = 1;
     private static final int TABLE = 2;
+    private static final int VIEW = 2;
+    private static final int PROCEDURE = 2;
     private static final int COLUMN = 3;
+    private static final int PARAMETER = 3;
 
+    // The hierarchy of names for this element (e.g. ["mycatalog","myschema","mytable","mycolumn"])
+    //
+    // It is the combination of the hierarchy of names and kinds that uniquely identifies this
+    // element in the metadata model.
     private final String[] names;
-    private final Kind kind;
+
+    // The hierarchy of element kinds for this element (e.g. [CATALOG,SCHEMA,TABLE,COLUMN]
+    // or [CATALOG,SCHEMA,VIEW,COLUMN])
+    //
+    // It is the combination of the hierarchy of names and kinds that uniquely identifies this
+    // element in the metadata model.
+    private final Kind[] kinds;
 
     /**
      * Creates a handle for a metadata element.
@@ -75,24 +90,26 @@ public class MetadataElementHandle<T extends MetadataElement> {
      */
     public static <T extends MetadataElement> MetadataElementHandle<T> create(T element) {
         List<String> names = new ArrayList<String>();
+        List<Kind> kinds = new ArrayList<Kind>();
         MetadataElement current = element;
         while (current != null) {
             names.add(current.getName());
+            kinds.add(Kind.of(current));
             current = current.getParent();
         }
         Collections.reverse(names);
-        Kind kind = Kind.of(element);
-        return new MetadataElementHandle<T>(names.toArray(new String[names.size()]), kind);
+        Collections.reverse(kinds);
+        return new MetadataElementHandle<T>(names.toArray(new String[names.size()]), kinds.toArray(new Kind[kinds.size()]));
     }
 
     // For use in unit tests.
-    static <T extends MetadataElement> MetadataElementHandle<T> create(Class<T> clazz, String... names) {
-        return new MetadataElementHandle<T>(names, Kind.of(clazz));
+    static <T extends MetadataElement> MetadataElementHandle<T> create(Class<T> clazz, String[] names, Kind[] kinds) {
+        return new MetadataElementHandle<T>(names, kinds);
     }
 
-    private MetadataElementHandle(String[] names, Kind kind) {
+    private MetadataElementHandle(String[] names, Kind[] kinds) {
         this.names = names;
-        this.kind = kind;
+        this.kinds = kinds;
     }
 
     @Override
@@ -104,7 +121,7 @@ public class MetadataElementHandle<T extends MetadataElement> {
             return false;
         }
         MetadataElementHandle<?> other = (MetadataElementHandle<?>) obj;
-        if (this.kind != other.kind) {
+        if (!Arrays.equals(this.kinds, other.kinds)) {
             return false;
         }
         if (!Arrays.equals(this.names, other.names)) {
@@ -125,7 +142,9 @@ public class MetadataElementHandle<T extends MetadataElement> {
                 hash++;
             }
         }
-        hash ^= kind.hashCode();
+        for (Kind kind : kinds) {
+            hash ^= kind.hashCode();
+        }
         return hash;
     }
 
@@ -139,17 +158,24 @@ public class MetadataElementHandle<T extends MetadataElement> {
      */
     @SuppressWarnings("unchecked")
     public T resolve(Metadata metadata) {
-        switch (kind) {
+        int length = kinds.length;
+        switch (kinds[length - 1]) {
             case CATALOG:
                 return (T) resolveCatalog(metadata);
             case SCHEMA:
                 return (T) resolveSchema(metadata);
             case TABLE:
                 return (T) resolveTable(metadata);
+            case VIEW:
+                return (T) resolveView(metadata);
+            case PROCEDURE:
+                return (T) resolveProcedure(metadata);
             case COLUMN:
                 return (T) resolveColumn(metadata);
+            case PARAMETER:
+                return (T) resolveParameter(metadata);
             default:
-                throw new IllegalStateException("Unhandled kind " + kind);
+                throw new IllegalStateException("Unhandled kind " + kinds[kinds.length -1]);
         }
     }
 
@@ -160,7 +186,12 @@ public class MetadataElementHandle<T extends MetadataElement> {
     private Schema resolveSchema(Metadata metadata) {
         Catalog catalog = resolveCatalog(metadata);
         if (catalog != null) {
-            return catalog.getSchema(names[SCHEMA]);
+            String name = names[SCHEMA];
+            if (name != null) {
+                return catalog.getSchema(name);
+            } else {
+                return catalog.getSyntheticSchema();
+            }
         }
         return null;
     }
@@ -173,19 +204,66 @@ public class MetadataElementHandle<T extends MetadataElement> {
         return null;
     }
 
-    private Column resolveColumn(Metadata metadata) {
-        Table table = resolveTable(metadata);
-        if (table != null) {
-            return table.getColumn(names[COLUMN]);
+    private View resolveView(Metadata metadata) {
+        Schema schema = resolveSchema(metadata);
+        if (schema != null) {
+            return schema.getView(names[VIEW]);
         }
         return null;
     }
 
-    private enum Kind {
+    private Procedure resolveProcedure(Metadata metadata) {
+        Schema schema = resolveSchema(metadata);
+        if (schema != null) {
+            return schema.getProcedure(names[PROCEDURE]);
+        }
+        return null;
+    }
+
+    private Column resolveColumn(Metadata metadata) {
+        // A column can be part of a number of different metadata elements.
+        // Find out which one and resolve appropriately
+        switch (kinds[COLUMN - 1]) {
+            case TABLE:
+                Table table = resolveTable(metadata);
+                if (table != null) {
+                    return table.getColumn(names[COLUMN]);
+                }
+                return null;
+            case PROCEDURE:
+                Procedure proc = resolveProcedure(metadata);
+                if (proc != null) {
+                    return proc.getColumn(names[COLUMN]);
+                }
+                return null;
+            case VIEW:
+                View view = resolveView(metadata);
+                if (view != null) {
+                    return view.getColumn(names[COLUMN]);
+                }
+                return null;
+            default:
+                throw new IllegalStateException("Unhandled kind " + kinds[COLUMN -1]);
+        }
+    }
+
+    private Parameter resolveParameter(Metadata metadata) {
+        Procedure proc = resolveProcedure(metadata);
+        if (proc != null) {
+            return proc.getParameter(names[PARAMETER]);
+        }
+        return null;
+    }
+
+    // Not private becuase it's used in unit tests
+    enum Kind {
 
         CATALOG(Catalog.class),
         SCHEMA(Schema.class),
         TABLE(Table.class),
+        VIEW(View.class),
+        PROCEDURE(Procedure.class),
+        PARAMETER(Parameter.class),
         COLUMN(Column.class);
 
         public static Kind of(MetadataElement element) {

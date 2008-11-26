@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.Token;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTUnknown;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
@@ -68,7 +68,7 @@ public class APTErrorNode extends APTStreamBaseNode
     /**
      * Creates a new instance of APTUnknownNode
      */
-    public APTErrorNode(Token token) {
+    public APTErrorNode(APTToken token) {
         super(token);
     }
     
@@ -76,7 +76,7 @@ public class APTErrorNode extends APTStreamBaseNode
         return APT.Type.ERROR;
     }
     
-    protected boolean validToken(Token t) {
+    protected boolean validToken(APTToken t) {
         assert (t != null);
         int ttype = t.getType();
         assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers"; // NOI18N

@@ -36,14 +36,8 @@ public class ReminderPanel extends javax.swing.JPanel {
         (NbBundle.getMessage(ReminderPanel.class, "ACSN_LearnMore"));
         lblLearnMore.getAccessibleContext().setAccessibleDescription
         (NbBundle.getMessage(ReminderPanel.class, "ACSD_LearnMore"));
-        Font controlFont = UIManager.getFont("controlFont");
-        if (controlFont != null) {
-            jBottomLabel1.setFont(controlFont);
-            jBottomLabel2.setFont(controlFont);
-            jBottomLabel3.setFont(controlFont);
-            lblLearnMore.setFont(controlFont);
-        }
     }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

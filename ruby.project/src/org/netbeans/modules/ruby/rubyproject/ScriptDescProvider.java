@@ -40,7 +40,7 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
-import org.netbeans.modules.extexecution.api.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;

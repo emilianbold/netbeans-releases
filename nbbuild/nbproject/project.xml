@@ -197,12 +197,6 @@ made subject to such option by the copyright holder.
                         <target>build-nbms</target>
                         <property name="moduleconfig">daily-alpha-nbms</property>
                     </action>
-                    <action>
-                        <script>../xtest/instance/build.xml</script>
-                        <label>Run All Unit Tests</label>
-                        <target>cleanresults</target>
-                        <target>runtests</target>
-                    </action>
                 </context-menu>
             </view>
             <project-license>cddl-netbeans-sun</project-license>

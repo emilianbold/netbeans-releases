@@ -50,8 +50,8 @@ import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.StatusBar;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.extexecution.api.print.ConvertedLine;
-import org.netbeans.modules.extexecution.api.print.LineConvertor;
+import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 

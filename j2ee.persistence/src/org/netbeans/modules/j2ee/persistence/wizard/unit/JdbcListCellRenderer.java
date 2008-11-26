@@ -62,8 +62,13 @@ public class JdbcListCellRenderer extends JLabel implements ListCellRenderer {
     
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         // values might be DatabaseConnections or Strings (for custom connections)
-        String text = value == null ? NbBundle.getMessage(JdbcListCellRenderer.class, "LBL_NoAvailableConnection") : String.valueOf(value);
-        
+        String text = null;
+        if(value == null || String.valueOf(value).length() == 0) {
+            text = NbBundle.getMessage(JdbcListCellRenderer.class, "LBL_NoAvailableConnection");
+        } else {
+            text = String.valueOf(value);
+        }
+            
         if (value instanceof DatabaseConnection) {
             DatabaseConnection connection = (DatabaseConnection) value;
             text = connection.getName();

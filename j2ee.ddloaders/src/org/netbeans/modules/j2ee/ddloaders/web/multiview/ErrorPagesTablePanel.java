@@ -102,17 +102,13 @@ public class ErrorPagesTablePanel extends DefaultTablePanel {
                 NbBundle.getMessage(ErrorPagesTablePanel.class,"LBL_exceptionType")
             };
 
-            char[] mnem = new char[] {
-                NbBundle.getMessage(ErrorPagesTablePanel.class,"LBL_errorPage_mnem").charAt(0),
-                NbBundle.getMessage(ErrorPagesTablePanel.class,"LBL_errorCode_mnem").charAt(0),
-                NbBundle.getMessage(ErrorPagesTablePanel.class,"LBL_exceptionType_mnem").charAt(0)
-            };
             String[] a11y_desc = new String[]{
                 NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_errorPage"),
                 NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_errorCode"),
                 NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_exceptionType")
             };
-            SimpleDialogPanel.DialogDescriptor descriptor = new SimpleDialogPanel.DialogDescriptor(labels);
+            SimpleDialogPanel.DialogDescriptor descriptor =
+                    new SimpleDialogPanel.DialogDescriptor(labels, true);
             if (!add) {
                 Integer val = (Integer)model.getValueAt(row,1);
                 String[] initValues = new String[] {
@@ -123,7 +119,6 @@ public class ErrorPagesTablePanel extends DefaultTablePanel {
                 descriptor.setInitValues(initValues);
             }
             descriptor.setButtons(new boolean[]{true,false,false});
-            descriptor.setMnemonics(mnem);
             descriptor.setA11yDesc(a11y_desc);
             final SimpleDialogPanel dialogPanel = new SimpleDialogPanel(descriptor);
             if (add) {

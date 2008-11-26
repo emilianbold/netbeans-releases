@@ -231,7 +231,7 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
             //if errorVariant == 3, the test above should never be true:
             assert errorVariant == 0 || errorVariant == 1 : "Invalid error variant: " + errorVariant;
             
-            return NbBundle.getMessage(CndPanel.class, "MSG_not_valid_filename", newObjectName, new Integer(errorVariant));
+            return NbBundle.getMessage(CndPanel.class, "MSG_not_valid_filename", newObjectName, Integer.valueOf(errorVariant));
         }
         
         if (!isValidName(newObjectName)) {

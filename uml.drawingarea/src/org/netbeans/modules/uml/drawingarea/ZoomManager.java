@@ -402,10 +402,13 @@ public class ZoomManager implements Scene.SceneListener
                 else clientArea.add (bounds);
             }
         }
-        clientArea.x -= insets.left;
-        clientArea.y -= insets.top;
-        clientArea.width += insets.left + insets.right;
-        clientArea.height += insets.top + insets.bottom;
+        if(insets!=null)//shouldn't be null but somehow may be null if border isn't initialized correctly
+        {
+            clientArea.x -= insets.left;
+            clientArea.y -= insets.top;
+            clientArea.width += insets.left + insets.right;
+            clientArea.height += insets.top + insets.bottom;
+        }
         return clientArea;
     }
 

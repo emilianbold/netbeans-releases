@@ -68,6 +68,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ136887() throws Exception {
+        // IZ136887: Model do not support bit fields
+        performTest("iz136887.cc");
+    }
+
     public void testIZ149505() throws Exception {
         // IZ#149505: special handling of __VA_ARGS__ with preceding comma
         performTest("iz149505.cc");
@@ -148,6 +153,16 @@ public class FileModel2Test extends TraceModelTestBase {
     public void testIZ151621() throws Exception {
         // IZ#151621 no support for __thread keyword
         performTest("iz151621.c");
+    }
+
+    public void testInitializerInExpression() throws Exception {
+        // IZ#152872: parser error in VLC on cast expression
+        performTest("iz152872_initializer_in_expression.c");
+    }
+
+    public void testNamespaceAlias() throws Exception {
+        // IZ#151957: 9 parser's errors in boost 1.36
+        performTest("iz151957_namespace_alias.cc");
     }
 
 }

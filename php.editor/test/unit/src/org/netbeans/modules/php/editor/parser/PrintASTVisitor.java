@@ -56,7 +56,7 @@ public class PrintASTVisitor implements Visitor {
 
 
 
-    
+
     private class XMLPrintNode {
         
         private class GroupItem {
@@ -644,15 +644,43 @@ public class PrintASTVisitor implements Visitor {
     }
 
     public void visit(PHPDocBlock phpDocBlock) {
-        addIndentation();
-        buffer.append("### Not supported yet phpDocBlock.\n");
+        XMLPrintNode printNode = new XMLPrintNode(phpDocBlock, "PHPDocBlock");
+        printNode.addChildrenGroup("Tags", phpDocBlock.getTags());
+        printNode.print(this);
     }
 
     public void visit(PHPDocTag phpDocTag) {
-
+        XMLPrintNode printNode = new XMLPrintNode(phpDocTag, "PHPDocTag",
+                new String[] {"kind", phpDocTag.getKind().name()});
+        printNode.print(this);
     }
 
-    public void visit(PHPDocPropertyTag phpDocTag) {
+    public void visit(PHPDocTypeTag node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "PHPDocTypeTag",
+                new String[] {"kind", node.getKind().name()});
+        printNode.addChildrenGroup("Types", node.getTypes());
+        printNode.print(this);
+    }
 
+    public void visit(PHPDocVarTypeTag node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "PHPDocVarTypeTag",
+                new String[] {"kind", node.getKind().name()});
+        printNode.addChild("Variable", node.getVariable());
+        printNode.addChildrenGroup("Types", node.getTypes());
+        printNode.print(this);
+    }
+
+    public void visit(PHPDocStaticAccessType node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "PHPDocStaticAccessType",
+                new String[] {"value", node.getValue()});
+        printNode.addChild(node.getClassName());
+        printNode.addChild(node.getConstant());
+        printNode.print(this);
+    }
+
+    public void visit(PHPDocNode phpDocNode) {
+        XMLPrintNode printNode = new XMLPrintNode(phpDocNode, "PHPDocNode",
+                new String[] {"value", phpDocNode.getValue()});
+        printNode.print(this);
     }
 }

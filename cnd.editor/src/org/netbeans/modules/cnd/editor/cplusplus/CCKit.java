@@ -59,14 +59,11 @@ import org.netbeans.cnd.api.lexer.Filter;
 
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseKit.InsertBreakAction;
-import org.netbeans.editor.Syntax;
-import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
@@ -77,9 +74,6 @@ import org.netbeans.modules.cnd.editor.indent.HotCharIndent;
 import org.netbeans.modules.editor.NbEditorKit;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 
@@ -94,11 +88,6 @@ public class CCKit extends NbEditorKit {
         return MIMENames.CPLUSPLUS_MIME_TYPE;
     }
 
-// Work-in-progress...
-//    public HelpCtx getHelpCtx() {
-//        System.err.println("CCKit.getHelpCts: Using JavaKit help ID");
-//        return new HelpCtx("org.netbeans.modules.editor.java.JavaKit");
-//    }
     @Override
     public Document createDefaultDocument() {
         Document doc = super.createDefaultDocument();
@@ -131,29 +120,6 @@ public class CCKit extends NbEditorKit {
         return CndLexerUtilities.getGccCppFilter();
     }
 
-    /** Create new instance of syntax coloring scanner
-     * @param doc document to operate on. It can be null in the cases the syntax
-     *   creation is not related to the particular document
-     */
-    @Override
-    public Syntax createSyntax(Document doc) {
-        return new CCSyntax();
-    }
-
-    /** Create syntax support */
-    @Override
-    public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
-        SyntaxSupportProvider ss = Lookup.getDefault().lookup(SyntaxSupportProvider.class);
-        SyntaxSupport sup = null;
-        if (ss != null) {
-            sup = ss.createSyntaxSupport(doc);
-        }
-        if (sup == null) {
-            sup = new CCSyntaxSupport(doc);
-        }
-        return sup;
-    }
-
     protected Action getCommentAction() {
         return new CommentAction("//"); // NOI18N
     }
@@ -181,10 +147,6 @@ public class CCKit extends NbEditorKit {
             new InsertSemicolonAction(true),
             new InsertSemicolonAction(false),};
         ccActions = TextAction.augmentList(super.createActions(), ccActions);
-        Action[] extra = CndEditorActionsProvider.getDefault().getActions(getContentType());
-        if (extra.length > 0) {
-            ccActions = TextAction.augmentList(ccActions, extra);
-        }
 
         return ccActions;
     }
@@ -346,7 +308,7 @@ public class CCKit extends NbEditorKit {
                             return Boolean.FALSE;
                         }
                         int lBracePos = firstNonWhiteBwd.offset();
-                        int lastSepOffset = BracketCompletion.getLastCommandSeparator(doc, lBracePos - 1);
+                        int lastSepOffset = CndTokenUtilities.getLastCommandSeparator(doc, lBracePos - 1);
                         if (lastSepOffset == -1 && lBracePos > 0) {
                             lastSepOffset = 0;
                         }

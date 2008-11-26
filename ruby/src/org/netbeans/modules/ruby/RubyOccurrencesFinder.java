@@ -519,12 +519,11 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
             }
 
             if (last instanceof ListNode) {
-                last = (Node)last.childNodes().get(last.childNodes().size() - 1);
+                last = last.childNodes().get(last.childNodes().size() - 1);
             }
 
             if (last instanceof NewlineNode && (last.childNodes().size() > 0)) {
-                last = (Node)last.childNodes().get(last.childNodes().size() - 1);
-
+                last = last.childNodes().get(last.childNodes().size() - 1);
                 break;
             }
 

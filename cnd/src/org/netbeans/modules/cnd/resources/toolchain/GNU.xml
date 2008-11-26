@@ -28,7 +28,7 @@ Contributor(s):
 The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 2001-2006 Sun
 Microsystems, Inc. All Rights Reserved.
-
+/export/home/thp/netbeans-dev/main
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -73,6 +73,7 @@ made subject to such option by the copyright holder.
             <bits_64 flags="-m64"/>
         </architecture>
         <strip flags="-s"/>
+        <output_object_file flags="-o " />
         <dependency_generation flags="-MMD -MP -MF $@.d" />
         <precompiled_header flags="-o $@" suffix=".gch" append="true" />
     </c>
@@ -104,6 +105,7 @@ made subject to such option by the copyright holder.
             <bits_64 flags="-m64"/>
         </architecture>
         <strip flags="-s"/>
+        <output_object_file flags="-o " />
         <dependency_generation flags="-MMD -MP -MF $@.d" />
         <precompiled_header flags="-o $@" suffix=".gch" append="true" />
     </cpp>
@@ -130,11 +132,38 @@ made subject to such option by the copyright holder.
             <bits_32 flags="-m32"/>
             <bits_64 flags="-m64"/>
         </architecture>
+        <output_object_file flags="-o " />
         <strip flags="-s"/>
     </fortran>
+    <assembler>
+        <compiler name="as"/>
+        <version flags="-version"/>
+        <development_mode>
+            <fast_build flags=""/>
+            <debug flags="-g" default="true"/>
+            <performance_debug flags="-g"/>
+            <test_coverage flags="-g"/>
+            <diagnosable_release flags="-g"/>
+            <release flags=""/>
+            <performance_release flags=""/>
+        </development_mode>
+        <warning_level>
+            <no_warnings flags="-W"/>
+            <default flags="" default="true"/>
+            <more_warnings flags=""/>
+            <warning2error flags="--fatal-warnings"/>
+        </warning_level>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags="--32"/>
+            <bits_64 flags="--64"/>
+        </architecture>
+        <output_object_file flags="-o " />
+        <strip flags="-s"/>
+    </assembler>
     <scanner>
-        <error pattern="([a-zA-Z]:[^:\n]*|[^:\n]*):([^:\n]*):([^:\n]*):([^\n]*)" language="c,cpp,fortran"/>
-        <error pattern="([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*" language="c,cpp,fortran"/>
+        <error pattern="([a-zA-Z]:[^:\n]*|[^:\n]*):([^:\n]*):([^:\n]*):([^\n]*)" language="c,cpp,fortran,assembler"/>
+        <error pattern="([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*" language="c,cpp,fortran,assembler"/>
         <stack_header pattern="In file included from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"/>
         <stack_next pattern="                 from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"/>
         <change_directory pattern="cd\\s+([\\S]+)[\\s;]"/>
@@ -150,14 +179,23 @@ made subject to such option by the copyright holder.
         <static_library flags="-static"/>
         <dynamic_library flags="-dynamic"/>
         <dynamic_library_basic flags="-shared "/>
+        <output_file flags="-o "/>
     </linker>
     <make>
         <tool name="gmake,make"/>
+        <alternative_path>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
         <version flags="--version" />
         <dependency_support code="include $(wildcard $(addsuffix .d, ${OBJECTFILES}))\n" />
     </make>
     <debugger>
         <tool name="gdb"/>
+        <alternative_path>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
         <version flags="--version" />
     </debugger>
 </toolchaindefinition>

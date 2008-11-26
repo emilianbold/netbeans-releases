@@ -305,17 +305,6 @@ public class BracketCompletion {
         return false;
     }
 
-    /** Return the position of the last command separator before
-     * the given position.
-     */
-    static int getLastCommandSeparator(BaseDocument doc, int pos) throws BadLocationException {
-        int stLine = Utilities.getRowFirstNonWhite(doc, pos);
-        if (stLine != -1 && stLine < pos) {
-            return stLine;
-        }
-        return pos;
-    }
-
     /**
      * Returns position of the first unpaired closing paren/brace/bracket from the caretOffset
      * till the end of caret row. If there is no such element, position after the last non-white

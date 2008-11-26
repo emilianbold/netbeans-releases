@@ -40,8 +40,8 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE MIME-Resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN"
-		    "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
+<!DOCTYPE MIME-Resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.1//EN"
+		    "http://www.netbeans.org/dtds/mime-resolver-1_1.dtd">
 <MIME-resolver>
     <file>
         <!-- Only files without extension. -->
@@ -50,8 +50,12 @@ made subject to such option by the copyright holder.
         <pattern value="//" range="2">
             <pattern value="-*- C++ -*-" range="80"/>
         </pattern>
-        <!-- Pattern #include in first 80 bytes. -->
-        <pattern value="#include" range="80"/>
+        <pattern value="//" range="2">
+            <pattern value="standard header" range="80"/>
+        </pattern>
+        <!-- Pattern #include in first 256 bytes. -->
+        <pattern value="#include" range="128"/>
+        <pattern value="#pragma" range="128"/>
         <resolver mime="text/x-c++"/>
     </file>
 </MIME-resolver>

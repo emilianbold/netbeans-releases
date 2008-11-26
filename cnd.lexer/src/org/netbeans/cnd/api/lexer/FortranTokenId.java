@@ -128,6 +128,7 @@ public enum FortranTokenId implements TokenId {
     KW_ENDTYPE("endtype", "keyword"), // NOI18N
     KW_ENDUNION("endunion", "keyword"), // NOI18N
     KW_ENDWHERE("endwhere", "keyword"), // NOI18N
+    KW_ENDWHILE("endwhile", "keyword"), // NOI18N // extension
     KW_ENTRY("entry", "keyword"), // NOI18N
     KW_ENUM("enum", "keyword"), // NOI18N
     KW_ENUMERATOR("enumerator", "keyword"), // NOI18N
@@ -241,6 +242,34 @@ public enum FortranTokenId implements TokenId {
     KW_WHERE("where", "keyword"), // NOI18N
     KW_WHILE("while", "keyword"), // NOI18N
     KW_WRITE("write", "keyword"), // NOI18N
+
+    // Keyword C Extensions
+    KW_INT("int", "keyword"), // NOI18N
+    KW_SHORT("short", "keyword"), // NOI18N
+    KW_LONG("long", "keyword"), // NOI18N
+    KW_SIGNED("signed", "keyword"), // NOI18N
+    KW_UNSIGNED("unsigned", "keyword"), // NOI18N
+    KW_SIZE_T("size_t", "keyword"), // NOI18N
+    KW_INT8_T("int8_t", "keyword"), // NOI18N
+    KW_INT16_T("int16_t", "keyword"), // NOI18N
+    KW_INT32_T("int32_t", "keyword"), // NOI18N
+    KW_INT64_T("int64_t", "keyword"), // NOI18N
+    KW_INT_LEAST8_T("int_least8_t", "keyword"), // NOI18N
+    KW_INT_LEAST16_T("int_least16_t", "keyword"), // NOI18N
+    KW_INT_LEAST32_T("int_least32_t", "keyword"), // NOI18N
+    KW_INT_LEAST64_T("int_least64_t", "keyword"), // NOI18N
+    KW_INT_FAST8_T("int_fast8_t", "keyword"), // NOI18N
+    KW_INT_FAST16_T("int_fast16_t", "keyword"), // NOI18N
+    KW_INT_FAST32_T("int_fast32_t", "keyword"), // NOI18N
+    KW_INT_FAST64_T("int_fast64_t", "keyword"), // NOI18N
+    KW_INTMAX_T("intmax_t", "keyword"), // NOI18N
+    KW_INTPTR_T("intptr_t", "keyword"), // NOI18N
+    KW_FLOAT("float", "keyword"), // NOI18N
+//    KW_DOUBLE("double", "keyword"), // NOI18N // included as part of double precision
+    KW__COMPLEX("_Complex", "keyword"), // NOI18N
+    KW__BOOL("_Bool", "keyword"), // NOI18N
+    KW_CHAR("char", "keyword"), // NOI18N
+    KW_BOOL("bool", "keyword"), // NOI18N
 
     // Keyword Operators
     KWOP_EQ(".eq.", "keyword-operator"), //NOI18N

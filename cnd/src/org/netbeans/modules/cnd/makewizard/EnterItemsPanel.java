@@ -1382,7 +1382,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
     /**
      *  Filter to eliminate all files except directories.
      */
-    private class DirFilter implements java.io.FileFilter {
+    private static class DirFilter implements java.io.FileFilter {
 	public boolean accept(File file) {
 	    return file.isDirectory();
 	}
@@ -1393,7 +1393,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
      *  Store an item for each token in the original text and each file or
      *  directory found during the search.
      */
-    protected class ListItem {
+    protected static class ListItem {
 
 	/** a name from the text field */
 	private String name;
@@ -1424,7 +1424,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
 
     /** Is the token a regular expression token? */
-    private final class TokType {
+    private static final class TokType {
 
 	private boolean re;
 
@@ -1437,7 +1437,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 	}
     }
 
-    protected final class ErrorInfo {
+    protected static final class ErrorInfo {
 
 	private String title;
 	private String msg;

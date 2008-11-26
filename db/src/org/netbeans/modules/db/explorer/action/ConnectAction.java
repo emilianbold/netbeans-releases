@@ -63,10 +63,13 @@ public class ConnectAction extends BaseAction {
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
         if (activatedNodes.length == 1) {
-            if (activatedNodes[0] instanceof ConnectionNode) {
-                ConnectionNode node = (ConnectionNode)activatedNodes[0];
-                Lookup lookup = node.getLookup();
-                enabled = lookup.lookup(DatabaseConnection.class) == null;
+            Lookup lookup = activatedNodes[0].getLookup();
+            ConnectionNode node = lookup.lookup(ConnectionNode.class);
+            if (node != null) {
+                DatabaseConnection dbconn = lookup.lookup(DatabaseConnection.class);
+                if (dbconn != null) {
+                    enabled = (null == dbconn.getJDBCConnection(true));
+                }
             }
         }
 
