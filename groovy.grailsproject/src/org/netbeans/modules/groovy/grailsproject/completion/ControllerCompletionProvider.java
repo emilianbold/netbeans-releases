@@ -65,42 +65,53 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
 
     // FIXME move it to some resource file, check the grails version
     static {
-        METHODS.put(new MethodSignature("redirect", new String[] {"java.util.Map"}), "void");
+        String[] noParams = new String[] {};
 
-        METHODS.put(new MethodSignature("chain", new String[] {"java.util.Map"}), "void");
+        METHODS.put(new MethodSignature("redirect", new String[] {"java.util.Map"}), "void"); // NOI18N
 
-        METHODS.put(new MethodSignature("render", new String[] {"java.lang.Object"}), "void");
-        METHODS.put(new MethodSignature("render", new String[] {"java.lang.String"}), "void");
-        METHODS.put(new MethodSignature("render", new String[] {"java.util.Map"}), "void");
-        METHODS.put(new MethodSignature("render", new String[] {"groovy.lang.Closure"}), "void");
-        METHODS.put(new MethodSignature("render", new String[] {"java.util.Map", "groovy.lang.Closure"}), "void");
+        METHODS.put(new MethodSignature("chain", new String[] {"java.util.Map"}), "void"); // NOI18N
 
-        METHODS.put(new MethodSignature("bindData", new String[] {"java.lang.Object", "java.lang.Object"}), "void");
-        METHODS.put(new MethodSignature("bindData", new String[] {"java.lang.Object", "java.lang.Object", "java.util.List"}), "void");
-        METHODS.put(new MethodSignature("bindData", new String[] {"java.lang.Object", "java.lang.Object", "java.util.List", "java.lang.String"}), "void");
-        METHODS.put(new MethodSignature("bindData", new String[] {"java.lang.Object", "java.lang.Object", "java.util.Map"}), "void");
-        METHODS.put(new MethodSignature("bindData", new String[] {"java.lang.Object", "java.lang.Object", "java.util.Map", "java.lang.String"}), "void");
-        METHODS.put(new MethodSignature("bindData", new String[] {"java.lang.Object", "java.lang.Object", "java.lang.String"}), "void");
+        METHODS.put(new MethodSignature("render", new String[] {"java.lang.Object"}), "void"); // NOI18N
+        METHODS.put(new MethodSignature("render", new String[] {"java.lang.String"}), "void"); // NOI18N
+        METHODS.put(new MethodSignature("render", new String[] {"java.util.Map"}), "void"); // NOI18N
+        METHODS.put(new MethodSignature("render", new String[] {"groovy.lang.Closure"}), "void"); // NOI18N
+        METHODS.put(new MethodSignature("render", new String[] {"java.util.Map", "groovy.lang.Closure"}), "void"); // NOI18N
 
-        METHODS.put(new MethodSignature("withFormat", new String[] {"groovy.lang.Closure"}), "void");
+        METHODS.put(new MethodSignature("bindData", new String[] {"java.lang.Object", "java.lang.Object"}), "void"); // NOI18N
+        METHODS.put(new MethodSignature("bindData", new String[] {"java.lang.Object", "java.lang.Object", "java.util.List"}), "void"); // NOI18N
+        METHODS.put(new MethodSignature("bindData", new String[] {"java.lang.Object", "java.lang.Object", "java.util.List", "java.lang.String"}), "void"); // NOI18N
+        METHODS.put(new MethodSignature("bindData", new String[] {"java.lang.Object", "java.lang.Object", "java.util.Map"}), "void"); // NOI18N
+        METHODS.put(new MethodSignature("bindData", new String[] {"java.lang.Object", "java.lang.Object", "java.util.Map", "java.lang.String"}), "void"); // NOI18N
+        METHODS.put(new MethodSignature("bindData", new String[] {"java.lang.Object", "java.lang.Object", "java.lang.String"}), "void"); // NOI18N
 
-        FIELDS.put(new FieldSignature("actionName"), "java.lang.String");
+        METHODS.put(new MethodSignature("withFormat", new String[] {"groovy.lang.Closure"}), "void"); // NOI18N
 
-        FIELDS.put(new FieldSignature("controllerName"), "java.lang.String");
+        FIELDS.put(new FieldSignature("actionName"), "java.lang.String"); // NOI18N
+        METHODS.put(new MethodSignature("getActionName", noParams), "java.lang.String"); // NOI18N
 
-        FIELDS.put(new FieldSignature("flash"), "java.util.Map");
+        FIELDS.put(new FieldSignature("controllerName"), "java.lang.String"); // NOI18N
+        METHODS.put(new MethodSignature("getControllerName", noParams), "java.lang.String"); // NOI18N
 
-        FIELDS.put(new FieldSignature("grailsApplication"), "org.codehaus.groovy.grails.commons.GrailsApplication");
+        FIELDS.put(new FieldSignature("flash"), "java.util.Map"); // NOI18N
+        METHODS.put(new MethodSignature("getFlash", noParams), "java.util.Map"); // NOI18N
 
-        FIELDS.put(new FieldSignature("params"), "java.util.Map");
+        FIELDS.put(new FieldSignature("grailsApplication"), "org.codehaus.groovy.grails.commons.GrailsApplication"); // NOI18N
+        METHODS.put(new MethodSignature("getGrailsApplication", noParams), "org.codehaus.groovy.grails.commons.GrailsApplication"); // NOI18N
 
-        FIELDS.put(new FieldSignature("request"), "javax.servlet.http.HttpServletRequest");
+        FIELDS.put(new FieldSignature("params"), "java.util.Map"); // NOI18N
+        METHODS.put(new MethodSignature("getParams", noParams), "java.util.Map"); // NOI18N
 
-        FIELDS.put(new FieldSignature("response"), "javax.servlet.http.HttpServletResponse");
+        FIELDS.put(new FieldSignature("request"), "javax.servlet.http.HttpServletRequest"); // NOI18N
+        METHODS.put(new MethodSignature("getRequest", noParams), "javax.servlet.http.HttpServletRequest"); // NOI18N
 
-        FIELDS.put(new FieldSignature("servletContext"), "javax.servlet.ServletContext");
+        FIELDS.put(new FieldSignature("response"), "javax.servlet.http.HttpServletResponse"); // NOI18N
+        METHODS.put(new MethodSignature("getResponse", noParams), "javax.servlet.http.HttpServletResponse"); // NOI18N
 
-        FIELDS.put(new FieldSignature("session"), "javax.servlet.HttpSession");
+        FIELDS.put(new FieldSignature("servletContext"), "javax.servlet.ServletContext"); // NOI18N
+        METHODS.put(new MethodSignature("getServletContext", noParams), "javax.servlet.ServletContext"); // NOI18N
+
+        FIELDS.put(new FieldSignature("session"), "javax.servlet.HttpSession"); // NOI18N
+        METHODS.put(new MethodSignature("getSession", noParams), "javax.servlet.HttpSession"); // NOI18N
     }
 
     @Override
