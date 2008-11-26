@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import antlr.Token;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
 import java.util.LinkedList;
@@ -99,18 +98,23 @@ public abstract class APTWalker {
         return new WalkerTokenStream();
     }
     
-    private class WalkerTokenStream implements TokenStream {
+    private class WalkerTokenStream implements TokenStream, APTTokenStream {
         public WalkerTokenStream() {
             init(true);
         }
         
-        public Token nextToken() throws TokenStreamException {
-            //Token token = null;
-            //do {
+        public APTToken nextToken() {
+            try {
+                //do {
+                //do {
                 //token = nextTokenImpl();
                 //token = onToken(token); not used anywhere
-            //} while (token == null); 
-            return nextTokenImpl();
+                //} while (token == null);
+                return nextTokenImpl();
+            } catch (TokenStreamException ex) {
+                APTUtils.LOG.log(Level.SEVERE, null, ex);
+                return APTUtils.EOF_TOKEN;
+            }
         }
     }
     
@@ -320,13 +324,13 @@ public abstract class APTWalker {
         walkerInUse = true;
     }    
     
-    private Token nextTokenImpl() throws TokenStreamException {
-        Token theRetToken;
+    private APTToken nextTokenImpl() throws TokenStreamException {
+        APTToken theRetToken;
         tokenLoop:
         for (;;) {           
             while (!tokens.isEmpty()) {
                 TokenStream ts = tokens.peek();
-                theRetToken = ts.nextToken();
+                theRetToken = (APTToken) ts.nextToken();
                 if (!APTUtils.isEOF(theRetToken)) {
                     return theRetToken;
                 } else {

@@ -40,6 +40,8 @@
 package org.netbeans.modules.ruby.rubyproject.rake;
 
 import java.io.IOException;
+import org.netbeans.api.ruby.platform.DialogDisplayerImpl;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
 
@@ -73,4 +75,11 @@ public class RakeSupportTest extends RubyProjectTestBase {
         assertFalse("a.rake is not main rakefile", RakeSupport.isMainRakeFile(touch(getWorkDir(), "a.rake")));
     }
 
+    public void testOpeningProjectWithBrokenRakefile() throws Exception { // #153275
+        MockServices.setServices(DialogDisplayerImpl.class);
+        RubyProject project = createTestProject();
+        String rakeContent = "require 'non-sense'\n";
+        dumpRakefile(rakeContent, project);
+        RakeSupport.refreshTasks(project, false);
+    }
 }

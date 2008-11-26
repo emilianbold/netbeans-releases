@@ -9,6 +9,8 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
 
     public CSSParser() {
        this((CharStream) null);
+       // change manager to our patched one:
+       token_source = new PatchedCSSParserTokenManager(null);
     }
 
     public List<ParseException> errors() {
@@ -135,48 +137,15 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
       }
       label_4:
       while (true) {
+        ;
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case DOT:
-        case COLON:
-        case ASTERISK:
-        case LSQUARE:
-        case HASH:
-        case PAGE_SYM:
-        case MEDIA_SYM:
-        case FONT_FACE_SYM:
-        case ATKEYWORD:
-        case IDENT:
-          ;
+        case 0:
+          jj_consume_token(0);
+              {if (true) return;}
           break;
         default:
           jj_la1[6] = jj_gen;
-          break label_4;
-        }
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case DOT:
-        case COLON:
-        case ASTERISK:
-        case LSQUARE:
-        case HASH:
-        case IDENT:
-          styleRule();
-          break;
-        case MEDIA_SYM:
-          mediaRule();
-          break;
-        case PAGE_SYM:
-          pageRule();
-          break;
-        case FONT_FACE_SYM:
-          fontFaceRule();
-          break;
-        case ATKEYWORD:
-          unknownRule();
-          break;
-        default:
-          jj_la1[7] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
+          rule();
         }
         label_5:
         while (true) {
@@ -187,7 +156,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             ;
             break;
           default:
-            jj_la1[8] = jj_gen;
+            jj_la1[7] = jj_gen;
             break label_5;
           }
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -201,7 +170,7 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
             jj_consume_token(CDC);
             break;
           default:
-            jj_la1[9] = jj_gen;
+            jj_la1[8] = jj_gen;
             jj_consume_token(-1);
             throw new ParseException();
           }
@@ -226,6 +195,67 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSPar
       jjtree.closeNodeScope(jjtn000, true);
       jjtn000.jjtSetLastToken(getToken(0));
     }
+    }
+  }
+
+//mfukala@netbeans.org: please note that to make the grammar properly working you need
+//to add following code into the label_5 switch in styleSheetRuleList() method
+//after regenerating the class:
+// case EOF:
+//   break label_4;
+//if this is not done the parser endlessly cycles on EOF token.
+//I'll try to resolve this properly in this grammar later.
+  final public void rule() throws ParseException {
+              /*@bgen(jjtree) rule */
+  SimpleNode jjtn000 = new SimpleNode(JJTRULE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+  jjtn000.jjtSetFirstToken(getToken(1));
+    try {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case DOT:
+      case COLON:
+      case ASTERISK:
+      case LSQUARE:
+      case HASH:
+      case IDENT:
+        styleRule();
+        break;
+      case MEDIA_SYM:
+        mediaRule();
+        break;
+      case PAGE_SYM:
+        pageRule();
+        break;
+      case FONT_FACE_SYM:
+        fontFaceRule();
+        break;
+      case ATKEYWORD:
+        unknownRule();
+        break;
+      default:
+        jj_la1[9] = jj_gen;
+        error_skip_to_whitespace();
+      }
+    } catch (Throwable jjte000) {
+      if (jjtc000) {
+        jjtree.clearNodeScope(jjtn000);
+        jjtc000 = false;
+      } else {
+        jjtree.popNode();
+      }
+      if (jjte000 instanceof RuntimeException) {
+        {if (true) throw (RuntimeException)jjte000;}
+      }
+      if (jjte000 instanceof ParseException) {
+        {if (true) throw (ParseException)jjte000;}
+      }
+      {if (true) throw (Error)jjte000;}
+    } finally {
+      if (jjtc000) {
+        jjtree.closeNodeScope(jjtn000, true);
+        jjtn000.jjtSetLastToken(getToken(0));
+      }
     }
   }
 
@@ -2431,8 +2461,7 @@ try {StringBuffer sb = new StringBuffer();
       nesting--;
     else if( t.kind == EOF )
       break;
-  }
-  /*@bgen(jjtree)*/
+  }/*@bgen(jjtree)*/
  } finally {
    if (jjtc000) {
      jjtree.closeNodeScope(jjtn000, true);
@@ -2463,6 +2492,24 @@ try {StringBuffer sb = new StringBuffer();
  }
   }
 
+  void error_skip_to_whitespace() throws ParseException {
+                                 /*@bgen(jjtree) error_skip_to_whitespace */
+SimpleNode jjtn000 = new SimpleNode(JJTERROR_SKIP_TO_WHITESPACE);
+boolean jjtc000 = true;
+jjtree.openNodeScope(jjtn000);
+jjtn000.jjtSetFirstToken(getToken(1));
+try {Token t;
+  do {
+    t = getNextToken();
+  } while (t != null && t.kind != S &&  t.kind != EOF );/*@bgen(jjtree)*/
+} finally {
+  if (jjtc000) {
+    jjtree.closeNodeScope(jjtn000, true);
+    jjtn000.jjtSetLastToken(getToken(0));
+  }
+}
+  }
+
   private boolean jj_2_1(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_1(); }
@@ -2477,13 +2524,44 @@ try {StringBuffer sb = new StringBuffer();
     finally { jj_save(1, xla); }
   }
 
-  private boolean jj_3R_65() {
+  private boolean jj_3R_74() {
+    if (jj_scan_token(DOT)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_72() {
+    if (jj_3R_76()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_71() {
+    if (jj_3R_75()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_70() {
+    if (jj_3R_74()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_68() {
     Token xsp;
-    if (jj_3R_68()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_68()) { jj_scanpos = xsp; break; }
+    xsp = jj_scanpos;
+    if (jj_3R_69()) {
+    jj_scanpos = xsp;
+    if (jj_3R_70()) {
+    jj_scanpos = xsp;
+    if (jj_3R_71()) {
+    jj_scanpos = xsp;
+    if (jj_3R_72()) return true;
     }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_69() {
+    if (jj_3R_73()) return true;
     return false;
   }
 
@@ -2594,44 +2672,13 @@ try {StringBuffer sb = new StringBuffer();
     return false;
   }
 
-  private boolean jj_3R_74() {
-    if (jj_scan_token(DOT)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_72() {
-    if (jj_3R_76()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_71() {
-    if (jj_3R_75()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_70() {
-    if (jj_3R_74()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_68() {
+  private boolean jj_3R_65() {
     Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_69()) {
-    jj_scanpos = xsp;
-    if (jj_3R_70()) {
-    jj_scanpos = xsp;
-    if (jj_3R_71()) {
-    jj_scanpos = xsp;
-    if (jj_3R_72()) return true;
+    if (jj_3R_68()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_68()) { jj_scanpos = xsp; break; }
     }
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_69() {
-    if (jj_3R_73()) return true;
     return false;
   }
 
@@ -2644,9 +2691,6 @@ try {StringBuffer sb = new StringBuffer();
   private int jj_ntk;
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
-  /** Whether we are looking ahead. */
-  private boolean jj_lookingAhead = false;
-  private boolean jj_semLA;
   private int jj_gen;
   final private int[] jj_la1 = new int[96];
   static private int[] jj_la1_0;
@@ -2658,10 +2702,10 @@ try {StringBuffer sb = new StringBuffer();
       jj_la1_init_2();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x0,0x18000002,0x18000002,0x80000000,0x18000002,0x18000002,0x506800,0x506800,0x18000002,0x18000002,0x80506800,0x2,0x2,0x2,0x4800000,0x2,0x0,0x2,0x2,0x506800,0x400,0x2,0x506800,0x2,0x506800,0x506800,0x2,0x2,0x2,0x2,0x2,0x2000,0x2000,0x2,0x0,0x1000,0x2,0x0,0x2,0x2,0x0,0x1000,0x2,0x0,0x2,0x2,0x8400,0x2,0x2,0x90000,0x2,0x90000,0x90002,0x30000,0x2,0x2,0x0,0x1000,0x2,0x0,0x400,0x2,0x2,0x502800,0x502800,0x502800,0x502800,0x506800,0x4000,0x2,0x2,0x60040000,0x2,0x800000,0x2,0x60040000,0x2,0x2,0x0,0x2,0x0,0x1000,0x2,0x0,0x2,0x0,0x2,0x4c38410,0x8400,0x30000,0x10,0x4c00010,0x2,0x2,0x2,0x2,};
+      jj_la1_0 = new int[] {0x0,0x18000002,0x18000002,0x80000000,0x18000002,0x18000002,0x1,0x18000002,0x18000002,0x506800,0x80506800,0x2,0x2,0x2,0x4800000,0x2,0x0,0x2,0x2,0x506800,0x400,0x2,0x506800,0x2,0x506800,0x506800,0x2,0x2,0x2,0x2,0x2,0x2000,0x2000,0x2,0x0,0x1000,0x2,0x0,0x2,0x2,0x0,0x1000,0x2,0x0,0x2,0x2,0x8400,0x2,0x2,0x90000,0x2,0x90000,0x90002,0x30000,0x2,0x2,0x0,0x1000,0x2,0x0,0x400,0x2,0x2,0x502800,0x502800,0x502800,0x502800,0x506800,0x4000,0x2,0x2,0x60040000,0x2,0x800000,0x2,0x60040000,0x2,0x2,0x0,0x2,0x0,0x1000,0x2,0x0,0x2,0x0,0x2,0x4c38410,0x8400,0x30000,0x10,0x4c00010,0x2,0x2,0x2,0x2,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x8,0x0,0x0,0x0,0x0,0x0,0x8000017,0x8000017,0x0,0x0,0x800001f,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x8000011,0x0,0x0,0x8000011,0x0,0x8000011,0x8000011,0x0,0x0,0x0,0x0,0x0,0x8000000,0x8000000,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x8000000,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x0,0x0,0xc000000,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x20,0x0,0x4fffffc0,0x0,0x0,0x5bfff80,0x4fffffc0,0x0,0x0,0x0,0x0,};
+      jj_la1_1 = new int[] {0x8,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000017,0x800001f,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x8000011,0x0,0x0,0x8000011,0x0,0x8000011,0x8000011,0x0,0x0,0x0,0x0,0x0,0x8000000,0x8000000,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x8000000,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x0,0x0,0xc000000,0x0,0x8000000,0x0,0x0,0x8000000,0x0,0x20,0x0,0x4fffffc0,0x0,0x0,0x5bfff80,0x4fffffc0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_init_2() {
       jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
@@ -2685,7 +2729,6 @@ try {StringBuffer sb = new StringBuffer();
     token_source.ReInit(stream);
     token = new Token();
     jj_ntk = -1;
-    jj_lookingAhead = false;
     jjtree.reset();
     jj_gen = 0;
     for (int i = 0; i < 96; i++) jj_la1[i] = -1;
@@ -2772,7 +2815,7 @@ try {StringBuffer sb = new StringBuffer();
 
 /** Get the specific Token. */
   final public Token getToken(int index) {
-    Token t = jj_lookingAhead ? jj_scanpos : token;
+    Token t = token;
     for (int i = 0; i < index; i++) {
       if (t.next != null) t = t.next;
       else t = t.next = token_source.getNextToken();

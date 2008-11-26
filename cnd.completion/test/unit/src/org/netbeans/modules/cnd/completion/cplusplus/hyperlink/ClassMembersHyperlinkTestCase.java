@@ -673,6 +673,13 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz148929.cc", 16, 9, "iz148929.cc", 13, 5);
     }
 
+    public void testTypenameInTemplateParameterDeclaration() throws Exception {
+        // IZ#151957: 9 parser's errors in boost 1.36
+        performTest("templateParameters.h", 116, 39, "templateParameters.h", 116, 1);
+        performTest("templateParameters.h", 120, 15, "templateParameters.h", 116, 1);
+    }
+
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

@@ -369,13 +369,15 @@ public class PanelProjectLocationVisual extends SettingsPanel
         String projectName = (String) settings.getProperty("displayName"); //NOI18N
         if (projectName == null) {
             String workingDir = (String) settings.getProperty("buildCommandWorkingDirTextField"); //NOI18N
-            if (workingDir != null && workingDir.length() > 0 && templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME))
+            if (workingDir != null && workingDir.length() > 0 && templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME)) {
                 name = IpeUtils.getBaseName(workingDir);
+            }
             int baseCount = 1;
             String formater = name + "_{0}"; // NOI18N
-            while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
+            while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null) {
                 baseCount++;
-            settings.putProperty(NewMakeProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
+            }
+            settings.putProperty(NewMakeProjectWizardIterator.PROP_NAME_INDEX, Integer.valueOf(baseCount));
         }
         this.projectNameTextField.setText(projectName);
         this.projectNameTextField.selectAll();
@@ -407,7 +409,7 @@ public class PanelProjectLocationVisual extends SettingsPanel
     }
     
     private String validFreeProjectName(final File parentFolder, final String formater, final int index) {
-        String projectName = MessageFormat.format(formater, new Object[]{new Integer(index)});
+        String projectName = MessageFormat.format(formater, new Object[]{Integer.valueOf(index)});
         File file = new File(parentFolder, projectName);
         return file.exists() ? null : projectName;
     }

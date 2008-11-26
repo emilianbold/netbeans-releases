@@ -53,7 +53,6 @@ public class RubyProjectOperationsTest extends RubyProjectTestBase {
     }
     
     public void testDelete() throws Exception {
-        registerLayer();
         RubyProject project = createTestProject();
         ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
         assertNotNull("have an action provider", ap);

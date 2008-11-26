@@ -89,11 +89,7 @@ public class MavenWebService implements WebServiceImplementation {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public Node getNode() {
-        return createNode();
-    }
-    
-    private Node createNode() {
+    public Node createNode() {
         if (service.isServiceProvider()) {
             SourceGroup[] srcGroups = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             String implClass = service.getImplementationClass();
@@ -112,7 +108,7 @@ public class MavenWebService implements WebServiceImplementation {
     
     private FileObject getImplementationClass(String implClass, FileObject srcRoot) {
         if(implClass != null && srcRoot!=null) {
-            return srcRoot.getFileObject(implClass.replace('.','/')+".java");
+            return srcRoot.getFileObject(implClass.replace('.','/')+".java"); //NOI18N
         }
         return null;
     }

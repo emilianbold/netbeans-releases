@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import antlr.Token;
 import antlr.TokenStream;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,6 +49,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
 
@@ -70,7 +70,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         return null;
     }
 
-    public boolean isDefined(Token token) {
+    public boolean isDefined(APTToken token) {
         return isDefined(token.getText());
     }
     
@@ -90,9 +90,9 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         return false;
     }
 
-    public APTMacro getMacro(Token token) { 
+    public APTMacro getMacro(APTToken token) {
         if (isDefined(token.getText())) {
-            return new APTPredefinedMacroImpl(token);        
+            return new APTPredefinedMacroImpl(token);
         }
         return null;
     }
@@ -102,23 +102,23 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         APTUtils.LOG.log(Level.SEVERE, "setState is not supported", new IllegalAccessException()); // NOI18N
     }
 
-    public void define(Token name, List value) {
+    public void define(APTToken name, List<APTToken> value) {
         APTUtils.LOG.log(Level.SEVERE, "define is not supported", new IllegalAccessException()); // NOI18N
     }
 
-    public void define(Token name, Collection params, List value) {
+    public void define(APTToken name, Collection<APTToken> params, List<APTToken> value) {
         APTUtils.LOG.log(Level.SEVERE, "define is not supported", new IllegalAccessException()); // NOI18N
     }
 
-    public void undef(Token name) {
+    public void undef(APTToken name) {
         APTUtils.LOG.log(Level.SEVERE, "undef is not supported", new IllegalAccessException()); // NOI18N
     }
    
-    protected APTMacro createMacro(Token name, Collection<Token> params, List<Token> value) {
+    protected APTMacro createMacro(APTToken name, Collection<APTToken> params, List<APTToken> value) {
         return new APTMacroImpl(name, params, value, true);
     }
     
-    public boolean pushExpanding(Token token) {
+    public boolean pushExpanding(APTToken token) {
         APTUtils.LOG.log(Level.SEVERE, "pushExpanding is not supported", new IllegalAccessException()); // NOI18N
         return false;
     }
@@ -127,7 +127,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         APTUtils.LOG.log(Level.SEVERE, "popExpanding is not supported", new IllegalAccessException()); // NOI18N
     }
 
-    public boolean isExpanding(Token token) {
+    public boolean isExpanding(APTToken token) {
         APTUtils.LOG.log(Level.SEVERE, "isExpanding is not supported", new IllegalAccessException()); // NOI18N
         return false;
     }     
@@ -138,9 +138,9 @@ public class APTPredefinedMacroMap implements APTMacroMap {
     
     
     private static class APTPredefinedMacroImpl implements APTMacro {   
-        private Token macro;
+        private APTToken macro;
         
-        public APTPredefinedMacroImpl(Token macro) {
+        public APTPredefinedMacroImpl(APTToken macro) {
             this.macro =  macro;           
         }
 
@@ -152,16 +152,16 @@ public class APTPredefinedMacroMap implements APTMacroMap {
             return false;
         }
 
-        public Token getName() {            
+        public APTToken getName() {
             return macro;
         }
 
-        public Collection<Token> getParams() {
-            return Collections.<Token>emptyList();
+        public Collection<APTToken> getParams() {
+            return Collections.<APTToken>emptyList();
         }
 
         public TokenStream getBody() {
-            Token tok = APTUtils.createAPTToken(macro, APTTokenTypes.STRING_LITERAL);            
+            APTToken tok = APTUtils.createAPTToken(macro, APTTokenTypes.STRING_LITERAL);
             
             if (!macro.getText().equals("__LINE__")) { // NOI18N
                 tok.setType(APTTokenTypes.STRING_LITERAL);
@@ -174,6 +174,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
             return new TokenBasedTokenStream(tok);
         }    
         
+        @Override
         public String toString() {
             StringBuilder retValue = new StringBuilder();
             retValue.append("<P>"); // NOI18N     

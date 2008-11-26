@@ -1,4 +1,20 @@
 <!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<!--
     DTD for the Validator Rules Configuration File, Version 1.2.0
 
     To allow for XML validation of your rules configuration
@@ -9,7 +25,7 @@
      "-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.2.0//EN"
      "http://jakarta.apache.org/commons/dtds/validator_1_2_0.dtd">
 
-    $Id$
+    $Id: validator_1_2_0.dtd 478334 2006-11-22 21:31:54Z niallp $
 -->
 
 
@@ -30,7 +46,7 @@
 
 
 <!--
-     The "validator" element defines what validator objects can be used with
+     Defines what validator objects can be used with
      the fields referenced by the formset elements.
      elements:
        validator         Defines a new validatior
@@ -61,14 +77,14 @@
 
 
 <!--
-     The "javascript" element defines a JavaScript that can be used to perform
+     Defines a JavaScript that can be used to perform
      client-side validators.
 -->
 <!ELEMENT javascript (#PCDATA)>
 
 
 <!--
-     The "constant" element defines a static value that can be used as
+     Defines a static value that can be used as
      replacement parameters within "field" elements. The "constant-name" and
      "constant-value" elements define the constant's reference id and replacement
      value.
@@ -79,7 +95,7 @@
 
 
 <!--
-      The "formset" element defines a set of forms for a locale. Formsets for
+      Defines a set of forms for a locale. Formsets for
       specific locales can override only those fields that change. The
       localization is properly scoped, so that a formset can override just the
       language, or just the country, or both.
@@ -91,17 +107,17 @@
 
 
 <!--
-     The "form" element defines a set of fields to be validated. The name
+     Defines a set of fields to be validated. The name
      corresponds to the identifier the application assigns to the form. 
 -->
 <!ELEMENT form (field+)>
-<!ATTLIST form name CDATA #REQUIRED
-            extends CDATA #IMPLIED>
+<!ATTLIST form name CDATA #REQUIRED>
+<!ATTLIST form extends CDATA #IMPLIED>
  
 
 
 <!--
-     The "field" element defines the properties to be validated. In a
+     Defines the properties to be validated. In a
      web application, a field would also correspond to a control on
      a HTML form. To validate the properties, the validator works through
      a JavaBean representation. The field element accepts these 
@@ -129,7 +145,7 @@
                      validations for this field.
 
 -->
-<!ELEMENT field (msg|arg|arg0|arg1|arg2|arg3|var)*>
+<!ELEMENT field (msg|arg|var)*>
 <!ATTLIST field property CDATA #REQUIRED>
 <!ATTLIST field depends CDATA #IMPLIED>
 <!ATTLIST field page CDATA #IMPLIED>
@@ -137,7 +153,7 @@
 
 
 <!--
-     The "msg" element defines a custom message key to use when one of the
+     Defines a custom message key to use when one of the
      validators for this field fails. Each validator has a default message
      property that is used when a corresponding field msg is not specified.
      Each validator applied to a field may have its own msg element.
@@ -163,7 +179,7 @@
 
 
 <!--
-     The "arg" element defines a replacement value to use with the
+     Defines a replacement value to use with the
      message template for this validator or this field.
      The arg element accepts these attributes.
 
@@ -181,8 +197,14 @@
                   [true]
 
       position    The position of this replacement parameter in the message.
-      			  For example, position="0" will set the first argument.
-      			  [0]
+                  For example, position="0" will set the first argument.
+
+             N.B. Since 1.2.0 position is ignored for 'default' arguments
+                  (i.e. those with no 'name' supplied) - it is calculated
+                  automatically from the order the arguments are added in.
+                  For 'overriden' arguments (i.e. those with a 'name')
+                  it is optional. If 'position' is not supplied it will
+                  use the position of the 'default' argument it follows.
 -->
 <!ELEMENT arg EMPTY>
 <!ATTLIST arg key CDATA #REQUIRED>
@@ -196,8 +218,15 @@
      one of its validators, such as the minimum and maximum values in a
      range validation. These parameters may also be referenced by one of the
      arg? elements using a shell syntax: ${var:var-name}.
+
+     N.B. resource ='true' indicates that the var-value is a resource key,
+          with the option to specify the bundle name. Validator doesn't do
+          anything itself with these values. Down-stream systems need
+          to resolve resource values.
 -->
 <!ELEMENT var (var-name, var-value, var-jstype?)>
+<!ATTLIST var resource CDATA #IMPLIED>
+<!ATTLIST var bundle CDATA #IMPLIED>
 
 
 
@@ -214,8 +243,7 @@
 <!ELEMENT var-value (#PCDATA)>
 
 <!--
-     The java script type, Possible Values [int| string | regexp] 
-
+     The javascript type. Possible Values [int|string|regexp] 
 -->
 <!ELEMENT var-jstype (#PCDATA)>
 

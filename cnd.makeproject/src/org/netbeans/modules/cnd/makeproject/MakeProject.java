@@ -77,7 +77,6 @@ import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -452,25 +451,18 @@ public final class MakeProject implements Project, AntProjectListener {
             "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
 
         public String[] getRecommendedTypes() {
-            if (CppSettings.getDefault().isFortranEnabled()) {
-                return RECOMMENDED_TYPES_FORTRAN;
-            } else {
-                return RECOMMENDED_TYPES;
-            }
+            return RECOMMENDED_TYPES_FORTRAN;
         }
 
         public String[] getPrivilegedTemplates() {
-            if (CppSettings.getDefault().isFortranEnabled()) {
-                return PRIVILEGED_NAMES_FORTRAN;
-            } else {
-                return PRIVILEGED_NAMES;
-            }
+            return PRIVILEGED_NAMES_FORTRAN;
         }
     }
 
     /** Return configured project name. */
     public String getName() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+
             public String run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -488,6 +480,7 @@ public final class MakeProject implements Project, AntProjectListener {
 
     public void setName(final String name) {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+
             public Void run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.

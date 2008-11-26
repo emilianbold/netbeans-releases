@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.modules.websvc.rest.wadl.model</code-name-base>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.schema.model</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.xam</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.20</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
+            <test-dependencies>
+                <!-- Dependencies for a source root with tests: -->
+                <test-type>
+                    <name>unit</name>
+                    <!-- A dependency on a module or its tests: -->
+                    <test-dependency>
+                        <!-- Identification of module our tests depend upon: -->
+                        <code-name-base>org.netbeans.modules.xml.text</code-name-base>
+                        <!-- Include also transitive module dependencies of that module: -->
+                        <recursive/>
+                        <!-- Always available when running, but to include at compile time also: -->
+                        <compile-dependency/>
+                        <!-- To request the tests of that module as well: -->
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
+            <friend-packages>
+                <friend>org.netbeans.modules.websvc.rest.wadl.design</friend>
+                <package>org.netbeans.modules.websvc.rest.wadl.model</package>
+                <package>org.netbeans.modules.websvc.rest.wadl.model.extensions.xsd</package>
+                <package>org.netbeans.modules.websvc.rest.wadl.model.spi</package>
+                <package>org.netbeans.modules.websvc.rest.wadl.model.visitor</package>
+                <package>org.netbeans.modules.websvc.rest.wadl.validator.spi</package>
+            </friend-packages>
+        </data>
+    </configuration>
+</project>

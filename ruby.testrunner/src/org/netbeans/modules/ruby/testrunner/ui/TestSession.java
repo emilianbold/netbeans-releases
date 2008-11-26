@@ -60,14 +60,21 @@ public class TestSession {
      */
     private long failuresCount = 0;
     
-    
-    private final List<Report.Testcase> testCases = new ArrayList<Report.Testcase>();
-    private String suiteName;
     private final FileLocator fileLocator;
     private final SessionType sessionType;
     private final String name;
     private final SessionResult result;
     private final Project project;
+    /**
+     * The suites that were executed.
+     */
+    private final List<TestSuite> testSuites = new ArrayList<TestSuite>();
+    /**
+     * Holds output for testcases. Since a testcase is created only after 
+     * a test finishes, the output of that testcase needs to be associated 
+     * with it after it has been created.
+     */
+    private final List<String> output = new ArrayList<String>();
     /*
      * The message to display when this session is starting.
      */
@@ -99,16 +106,39 @@ public class TestSession {
         return project;
     }
 
+    Testcase getCurrentTestCase() {
+        if (getCurrentSuite() == null) {
+            return null;
+        }
+        List<Testcase> testcases = getCurrentSuite().getTestcases();
+        return testcases.isEmpty() ? null : testcases.get(testcases.size() - 1);
+     }
 
+    private List<Testcase> getAllTestCases() {
+        List<Testcase> all = new ArrayList<Testcase>();
+        for (TestSuite suite : testSuites) {
+            all.addAll(suite.getTestcases());
+        }
+        return all;
+    }
+
+    void addSuite(TestSuite suite) {
+        if (!output.isEmpty() && getCurrentSuite() != null) {
+            Testcase testcase = getCurrentSuite().getLastTestCase();
+            if (testcase != null) {
+                testcase.addOutputLines(output);
+                output.clear();
+            }
+        }
+        testSuites.add(suite);
+    }
 
     /**
-     * Sets the name of the currently running suite.
-     * 
-     * @param suiteName the name of the suite.
-     */ 
-    void setSuiteName(String suiteName) {
-        this.testCases.clear();
-        this.suiteName = suiteName;
+     * Adds the given line as output of the current testcase.
+     * @param line
+     */
+    void addOutput(String line) {
+        output.add(line);
     }
 
     /**
@@ -116,14 +146,23 @@ public class TestSession {
      * 
      * @param testCase the test case to add.
      */
-    void addTestCase(Report.Testcase testCase) {
-        for (Report.Testcase each : testCases) {
-            if (testCase.className.equals(each.className) 
-                    && testCase.name.equals(each.name)) {
+    void addTestCase(Testcase testCase) {
+        assert !testSuites.isEmpty() : "No suites running";
+        //XXX: is this really needed?
+        for (Testcase each : getAllTestCases()) {
+            if (testCase.getClassName().equals(each.getClassName())
+                    && testCase.getName().equals(each.getName())) {
                 return;
             }
         }
-        testCases.add(testCase);
+        // add pending output to the newly created testcase
+        testCase.addOutputLines(output);
+        output.clear();
+        getCurrentSuite().addTestcase(testCase);
+    }
+
+    TestSuite getCurrentSuite() {
+        return testSuites.isEmpty() ? null : testSuites.get(testSuites.size() -1);
     }
 
     /**
@@ -132,9 +171,9 @@ public class TestSession {
      * @return
      */
     Report getReport(long timeInMillis) {
-        Report report = new Report(suiteName, project);
+        Report report = new Report(getCurrentSuite().getName(), project);
         report.elapsedTimeMillis = timeInMillis;
-        for (Report.Testcase testcase : testCases) {
+        for (Testcase testcase : getCurrentSuite().getTestcases()) {
             report.reportTest(testcase);
             report.totalTests += 1;
             if (testcase.getStatus() == Status.ERROR) {
@@ -155,10 +194,6 @@ public class TestSession {
         result.passed(report.detectedPassedTests);
         result.pending(report.pending);
         result.errors(report.errors);
-    }
-
-    String getSuiteName() {
-        return suiteName;
     }
 
     SessionType getSessionType() {

@@ -206,6 +206,10 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.run"/>
                   <attr name="position" intvalue="1000"/>
                     </file>
+              <file name="TestFile.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.test"/>
+                  <attr name="position" intvalue="1267"/>
+                    </file>
               <file name="java-project-separator-3.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                   <attr name="position" intvalue="1300"/>

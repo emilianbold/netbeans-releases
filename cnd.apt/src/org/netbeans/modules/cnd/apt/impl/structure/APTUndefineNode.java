@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.Token;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * #undef directive implementation
@@ -64,7 +64,7 @@ public final class APTUndefineNode extends APTMacroBaseNode
     }
     
     /** Creates a new instance of APTUndefineNode */
-    public APTUndefineNode(Token token) {
+    public APTUndefineNode(APTToken token) {
         super(token);
     }
     

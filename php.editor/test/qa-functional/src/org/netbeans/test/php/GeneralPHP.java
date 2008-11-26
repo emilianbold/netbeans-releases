@@ -71,6 +71,9 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.Operator;
 import java.io.File;
 import org.netbeans.jemmy.Timeouts;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import java.util.List;
 
 /**
  *
@@ -81,6 +84,8 @@ public class GeneralPHP extends JellyTestCase {
     
     static final String PHP_CATEGORY_NAME = "PHP";
     static final String PHP_PROJECT_NAME = "PHP Application";
+
+    static protected final int COMPLETION_LIST_THRESHOLD = 5000;
 
     protected static final String PHP_EXTENSION = ".php";
 
@@ -99,6 +104,15 @@ public class GeneralPHP extends JellyTestCase {
         return caption.startsWith( match );
       }
     }
+
+  protected class CompletionInfo
+  {
+    public CompletionJListOperator listItself;
+    public List listItems;
+
+    public int size( ) { return listItems.size( ); }
+    public void hideAll( ) { listItself.hideAll( ); }
+  }
 
     public GeneralPHP( String arg0 )
     {
@@ -411,5 +425,141 @@ public class GeneralPHP extends JellyTestCase {
       }
 
       return;
+    }
+
+  private void SetTagsSupport( String sTag, String sProject, boolean b )
+  {
+    // Open project properties
+    ProjectsTabOperator pto = new ProjectsTabOperator( );
+    ProjectRootNode prn = pto.getProjectRootNode( sProject );
+    prn.select( );
+    prn.callPopup( );
+    JPopupMenuOperator popup = new JPopupMenuOperator( );
+    popup.pushMenuNoBlock( "Properties" );
+    JDialogOperator jdProperties = new JDialogOperator( "Project Properties - " );
+    // Set support
+    JCheckBoxOperator box = new JCheckBoxOperator( jdProperties, sTag );
+    box.setSelected( b );
+    // Close dialog
+    JButtonOperator bOk = new JButtonOperator( jdProperties, "OK" );
+    bOk.push( );
+    jdProperties.waitClosed( );
+  }
+
+  protected void SetShortTags( String sProject, boolean b )
+  {
+    SetTagsSupport( "Allow short tags", sProject, b );
+  }
+
+  protected void SetAspTags( String sProject, boolean b )
+  {
+    SetTagsSupport( "Allow ASP tags", sProject, b );
+  }
+
+  protected void CreatePHPFile(
+      String sProject,
+      String sItem,
+      String sName
+    )
+  {
+    ProjectsTabOperator pto = new ProjectsTabOperator( );
+    ProjectRootNode prn = pto.getProjectRootNode( sProject );
+    prn.select( );
+
+    // Workaround for MacOS platform
+    NewFileWizardOperator.invoke().cancel( );
+
+    NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
+    opNewFileWizard.selectCategory( "PHP" );
+    opNewFileWizard.selectFileType( sItem );
+    opNewFileWizard.next( );
+
+    JDialogOperator jdNew = new JDialogOperator( "New " + sItem );
+    JTextComponentOperator jt = new JTextComponentOperator( jdNew, 0 );
+    if( null != sName )
+      jt.setText( sName );
+    else
+      sName = jt.getText( );
+
+    opNewFileWizard.finish( );
+
+    // Check created in project tree
+    String sPath = sProject + "|Source Files|" + sName;
+    prn = pto.getProjectRootNode( sPath );
+    prn.select( );
+
+    // Check created in editor
+    new EditorOperator( sName );
+  }
+
+  protected CompletionInfo GetCompletion( )
+  {
+    CompletionInfo result = new CompletionInfo( );
+    result.listItself = null;
+    int iRedo = 10;
+    while( true )
+    {
+      try
+      {
+        result.listItself = new CompletionJListOperator( );
+        try
+        {
+          result.listItems = result.listItself.getCompletionItems( );
+          Object o = result.listItems.get( 0 );
+          if(
+              !o.toString( ).contains( "No suggestions" )
+              && !o.toString( ).contains( "Scanning in progress..." )
+            )
+          {
+            return result;
+          }
+          Sleep( 1000 );
+        }
+        catch( java.lang.Exception ex )
+        {
+          return null;
+        }
+      }
+      catch( JemmyException ex )
+      {
+        System.out.println( "Wait completion timeout." );
+        if( 0 == --iRedo )
+          return null;
+      }
+      Sleep( 100 );
+    }
+  }
+
+    protected void CheckCompletionItems(
+        CompletionJListOperator jlist,
+        String[] asIdeal
+      )
+    {
+      for( String sCode : asIdeal )
+      {
+        int iIndex = jlist.findItemIndex( sCode );
+        if( -1 == iIndex )
+        {
+          try
+          {
+            List list = jlist.getCompletionItems();
+            for( int i = 0; i < list.size( ); i++ )
+              System.out.println( "******" + list.get( i ) );
+          }
+          catch( java.lang.Exception ex )
+          {
+            System.out.println( "#" + ex.getMessage( ) );
+          }
+          fail( "Unable to find " + sCode + " completion." );
+        }
+      }
+    }
+
+    protected void CheckCompletionItems(
+        CompletionInfo jlist,
+        String[] asIdeal
+      )
+    {
+      CheckCompletionItems( jlist.listItself, asIdeal );
     }
 }

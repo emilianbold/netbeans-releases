@@ -100,6 +100,11 @@ public class ConnectionNode extends BaseNode {
     }
 
     @Override
+    public boolean canRefresh() {
+        return true;
+    }
+
+    @Override
     public boolean canDestroy() {
         boolean result = true;
         

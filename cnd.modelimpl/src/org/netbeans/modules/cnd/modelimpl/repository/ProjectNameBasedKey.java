@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.DataInput;
@@ -51,58 +50,58 @@ import java.io.IOException;
 
 /*package*/
 abstract class ProjectNameBasedKey extends AbstractKey {
-    
+
     private final int unitIndex;
-    
+
     protected ProjectNameBasedKey(String project) {
-	assert project != null;
-	this.unitIndex = KeyUtilities.getUnitId(project);
+        assert project != null;
+        this.unitIndex = KeyUtilities.getUnitId(project);
     }
-    
+
     public String toString() {
-	return getProjectName().toString();
+        return getProjectName().toString();
     }
-    
+
     public int hashCode() {
-	return unitIndex;
+        return unitIndex;
     }
-    
+
     public final int getUnitId() {
         return unitIndex;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
-	if (!super.equals(obj)) {
-	    return false;
-	}
-	ProjectNameBasedKey other = (ProjectNameBasedKey)obj;
-	
-	return this.unitIndex==other.unitIndex;
+        if (!super.equals(obj)) {
+            return false;
+        }
+        ProjectNameBasedKey other = (ProjectNameBasedKey) obj;
+
+        return this.unitIndex == other.unitIndex;
     }
-    
+
     protected CharSequence getProjectName() {
-	return getUnit();
+        return getUnit();
     }
-    
+
     public void write(DataOutput aStream) throws IOException {
-	aStream.writeInt(this.unitIndex);
+        aStream.writeInt(this.unitIndex);
     }
-    
+
     protected ProjectNameBasedKey(DataInput aStream) throws IOException {
-	this.unitIndex = aStream.readInt();
+        this.unitIndex = aStream.readInt();
     }
-    
+
     public int getDepth() {
-	return 0;
+        return 0;
     }
-    
+
     public CharSequence getAt(int level) {
-	throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
-    
+
     public CharSequence getUnit() {
-	// having this functionality here to be sure unit is the same thing as project
-	return KeyUtilities.getUnitName(this.unitIndex);
+        // having this functionality here to be sure unit is the same thing as project
+        return KeyUtilities.getUnitName(this.unitIndex);
     }
 }

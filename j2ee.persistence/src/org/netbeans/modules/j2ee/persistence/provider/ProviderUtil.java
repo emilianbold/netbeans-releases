@@ -255,7 +255,8 @@ public class ProviderUtil {
             DatabaseConnection connection, String tableGenerationStrategy){
         
         Parameters.notNull("persistenceUnit", persistenceUnit); //NOI18N
-        Parameters.notNull("connection", connection); //NOI18N
+        // See issue 123224 desc 12 and desc 15 - connection can be null
+        //Parameters.notNull("connection", connection); //NOI18N
         Parameters.notNull("provider", provider); //NOI18N
         
         removeProviderProperties(persistenceUnit);
@@ -346,7 +347,9 @@ public class ProviderUtil {
     public static void setDatabaseConnection(PersistenceUnit persistenceUnit, DatabaseConnection connection){
         
         Parameters.notNull("persistenceUnit", persistenceUnit); //NOI18N
-        Parameters.notNull("connection", connection); //NOI18N
+        // See issue 123224 desc 12 and desc 15 - connection can be null
+        //Parameters.notNull("connection", connection); //NOI18N
+        
         
         Provider provider = getProvider(persistenceUnit);
         Property[] properties = getProperties(persistenceUnit);
@@ -700,6 +703,51 @@ public class ProviderUtil {
             return true;
         }
         return serverStatusProvider.validServerInstancePresent();
+    }
+   
+    /**
+     * Help to migrate the Toplink properties to the corresponding Eclipselink ones and vice versa
+     * 
+     * @param prevProvider the provider class string 
+     * @param curProvider the provider class string
+     * @param persistenceUnit the persistence unit that is being modified on
+     */
+    public static void migrateProperties(String prevProvider, String curProvider, PersistenceUnit persistenceUnit) {
+        if (prevProvider.equals("oracle.toplink.essentials.PersistenceProvider") && // NOI18N
+                curProvider.equals("org.eclipse.persistence.jpa.PersistenceProvider")) { // NOI18N
+            // Migrate TopLink properties to EclipseLink
+            Property[] toplinkProps = persistenceUnit.getProperties().getProperty2();
+            for (int i = 0; i < toplinkProps.length; i++) {
+                if (toplinkProps[i].getName().contains("toplink")) { // NOI18N
+                    String propName = toplinkProps[i].getName();
+                    propName = propName.replace("toplink", "eclipselink"); // NOI18N
+
+                    Property eclipselinkProp = persistenceUnit.getProperties().newProperty();
+                    eclipselinkProp.setName(propName);
+                    eclipselinkProp.setValue(toplinkProps[i].getValue());
+
+                    persistenceUnit.getProperties().removeProperty2(toplinkProps[i]);
+                    persistenceUnit.getProperties().addProperty2(eclipselinkProp);
+                }
+            }
+        } else if (prevProvider.equals("org.eclipse.persistence.jpa.PersistenceProvider") && // NOI18N
+                curProvider.equals("oracle.toplink.essentials.PersistenceProvider")) { // NOI18N
+            // Change back to TopLink properties from EclipseLink
+            Property[] eclipselinkProps = persistenceUnit.getProperties().getProperty2();
+            for (int i = 0; i < eclipselinkProps.length; i++) {
+                if (eclipselinkProps[i].getName().contains("eclipselink")) { // NOI18N
+                    String propName = eclipselinkProps[i].getName();
+                    propName = propName.replace("eclipselink", "toplink"); // NOI18N
+
+                    Property toplinkProp = persistenceUnit.getProperties().newProperty();
+                    toplinkProp.setName(propName);
+                    toplinkProp.setValue(eclipselinkProps[i].getValue());
+
+                    persistenceUnit.getProperties().removeProperty2(eclipselinkProps[i]);
+                    persistenceUnit.getProperties().addProperty2(toplinkProp);
+                }
+            }
+        }
     }
     
 }

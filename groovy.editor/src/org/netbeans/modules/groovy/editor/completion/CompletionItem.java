@@ -193,6 +193,90 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         }
     }
 
+    public static class DynamicMethodItem extends CompletionItem {
+
+        private final String name;
+
+        private final String[] parameters;
+
+        private final String returnType;
+
+        public DynamicMethodItem(int anchorOffset, String name, String[] parameters, String returnType) {
+            super(null, anchorOffset);
+            this.name = name;
+            this.parameters = parameters;
+            this.returnType = returnType;
+        }
+
+        @Override
+        public String getName() {
+            return name + "()";
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.METHOD;
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+
+            ElementKind kind = getKind();
+
+            formatter.name(kind, true);
+
+            formatter.appendText(name);
+
+            StringBuilder buf = new StringBuilder();
+            // construct signature by removing package names.
+            for (String param : parameters) {
+                if (buf.length() > 0) {
+                    buf.append(", ");
+                }
+                buf.append(NbUtilities.stripPackage(Utilities.translateClassLoaderTypeName(param)));
+            }
+
+            String simpleSig = buf.toString();
+            formatter.appendText("(" + simpleSig + ")");
+
+
+            formatter.name(kind, false);
+
+            return formatter.getText();
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            // no FQN return types but only the classname, please:
+
+            String retType = returnType;
+            retType = NbUtilities.stripPackage(retType);
+
+            formatter.appendText(retType);
+
+            return formatter.getText();
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            if (groovyIcon == null) {
+                groovyIcon = new ImageIcon(ImageUtilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
+            }
+
+            return groovyIcon;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            return null;
+        }
+    }
+
     public static class MetaMethodItem extends CompletionItem {
 
         private final MetaMethod method;
@@ -255,7 +339,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
                 String simpleSig = buf.toString();
                 formatter.appendText("(" + simpleSig + ")");
             } else {
-                formatter.appendText(GroovyCompletionHandler.getMethodSignature(method, false, isGDK));
+                formatter.appendText(CompletionHandler.getMethodSignature(method, false, isGDK));
             }
 
 
