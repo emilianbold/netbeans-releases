@@ -183,12 +183,12 @@ public class OutputWindowOutputStream extends OutputStream {
     }
     
     // #14804: detach everything before uninstalling module.
-    private static final Set hyperlinks = new WeakSet(); // Set<Hyperlink>
+    private static final Set<Hyperlink> hyperlinks = new WeakSet<Hyperlink>(); // Set<Hyperlink>
     public static void detachAllAnnotations() {
         synchronized (hyperlinks) {
-            Iterator it = hyperlinks.iterator();
+            Iterator<Hyperlink> it = hyperlinks.iterator();
             while (it.hasNext()) {
-                ((Hyperlink)it.next()).destroy();
+                (it.next()).destroy();
             }
         }
     }
@@ -262,7 +262,9 @@ public class OutputWindowOutputStream extends OutputStream {
         // OutputListener:
         public void outputLineAction(OutputEvent ev) {
             System.err.println("outputLineAction: " + ev.getLine()); // NOI18N
-            if (dead) return;
+            if (dead) {
+                return;
+            }
             if (! file.isValid()) { // #13115
                 Toolkit.getDefaultToolkit().beep();
                 return;
@@ -306,7 +308,9 @@ public class OutputWindowOutputStream extends OutputStream {
         
         public void outputLineSelected(OutputEvent ev) {
             System.err.println("outputLineSelected: " + ev.getLine()); // NOI18N
-            if (dead) return;
+            if (dead) {
+                return;
+            }
             if (! file.isValid()) {
                 return;
             }
@@ -349,21 +353,21 @@ public class OutputWindowOutputStream extends OutputStream {
                 // Text of the line, incl. trailing newline.
                 String text = l.getText();
                 System.err.println("attachAsNeeded: " + text); // NOI18N
-                if (log) CndModule.err.log("Attaching to line " + l.getDisplayName() + " text=`" + text + "' line1=" + line1 + " line2=" + line2 + " col1=" + col1 + " col2=" + col2); // NOI18N
+                if (log) {CndModule.err.log("Attaching to line " + l.getDisplayName() + " text=`" + text + "' line1=" + line1 + " line2=" + line2 + " col1=" + col1 + " col2=" + col2);} // NOI18N
                 if (text != null && (line2 == -1 || line1 == line2) && col1 != -1) {
-                    if (log) CndModule.err.log("\tfits on one line"); // NOI18N
+                    if (log) {CndModule.err.log("\tfits on one line");} // NOI18N
                     if (col2 != -1 && col2 >= col1 && col2 < text.length()) {
-                        if (log) CndModule.err.log("\tspecified section of the line"); // NOI18N
+                        if (log) {CndModule.err.log("\tspecified section of the line");} // NOI18N
                         ann = l.createPart(col1, col2 - col1 + 1);
                     } else if (col1 < text.length()) {
-                        if (log) CndModule.err.log("\tspecified column to end of line"); // NOI18N
+                        if (log) {CndModule.err.log("\tspecified column to end of line");} // NOI18N
                         ann = l.createPart(col1, text.length() - col1);
                     } else {
-                        if (log) CndModule.err.log("\tcolumn numbers are bogus"); // NOI18N
+                        if (log) {CndModule.err.log("\tcolumn numbers are bogus");} // NOI18N
                         ann = l;
                     }
                 } else {
-                    if (log) CndModule.err.log("\tmultiple lines, something wrong with line, or no column given"); // NOI18N
+                    if (log) {CndModule.err.log("\tmultiple lines, something wrong with line, or no column given");} // NOI18N
                     ann = l;
                 }
                 attach(ann);
@@ -390,7 +394,9 @@ public class OutputWindowOutputStream extends OutputStream {
         
         
         public void propertyChange(PropertyChangeEvent ev) {
-            if (dead) return;
+            if (dead) {
+                return;
+            }
             String prop = ev.getPropertyName();
             if (prop == null ||
                     prop.equals(Annotatable.PROP_TEXT) ||
@@ -423,17 +429,17 @@ public class OutputWindowOutputStream extends OutputStream {
         }
     }
     
-    private static final class HyperlinkFactory implements Comparator {
+    private static final class HyperlinkFactory implements Comparator<String> {
         
         /** used only in constructor */
-        private Map fss0; // Map<String,FileSystem>
+        private Map<String,FileSystem> fss0; // Map
         
         /** list of filesystem prefixes, akin to a classpath, mapped to filesystems */
-        private SortedMap fss; // SortedMap<String,FileSystem>
+        private SortedMap<String,FileSystem> fss; // SortedMap<String,FileSystem>
         
         public HyperlinkFactory() {
-            fss0 = new HashMap();
-            fss = new TreeMap(this);
+            fss0 = new HashMap<String,FileSystem>();
+            fss = new TreeMap<String,FileSystem>(this);
             FileSystem fs = Repository.getDefault().getDefaultFileSystem();
             FileObject root = fs.getRoot();
             File path = FileUtil.toFile(root);
@@ -536,16 +542,16 @@ public class OutputWindowOutputStream extends OutputStream {
         
         
         /** compare prefixes */
-        public int compare(Object o1, Object o2) {
-            FileSystem f1 = (FileSystem) fss0.get(o1);
-            FileSystem f2 = (FileSystem) fss0.get(o2);
+        public int compare(String o1, String o2) {
+            FileSystem f1 = fss0.get(o1);
+            FileSystem f2 = fss0.get(o2);
             // The same; compare length of prefixes. Longer prefixes
             // are more specific, thus preference (earlier in list).
-            String p1 = (String) o1;
-            String p2 = (String) o2;
-            int comp = p2.length() - p1.length();
+            int comp = o2.length() - o1.length();
             //debug ("comp=" + comp); // NOI18N
-            if (comp != 0) return comp;
+            if (comp != 0) {
+                return comp;
+            }
             return System.identityHashCode(f1) - System.identityHashCode(f2);
         }
     }

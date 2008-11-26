@@ -180,16 +180,8 @@ void styleSheetRuleList() :{} {
   ( charsetRule() )?
   ( <S> | <CDO> | <CDC> )*
   ( importRule() ( <S> | <CDO> | <CDC> )* )*
-  ( ( rule() ( <S> | <CDO> | <CDC> )* )* )
+  ( ( <EOF> { return; } | rule() ) ( <S> | <CDO> | <CDC> )* )*
 }
-
-//mfukala@netbeans.org: please note that to make the grammar properly working you need
-//to add following code into the label_5 switch in styleSheetRuleList() method
-//after regenerating the class:
-// case EOF:
-//   break label_4;
-//if this is not done the parser endlessly cycles on EOF token.
-//I'll try to resolve this properly in this grammar later.
 
 void rule() :{} {
     styleRule() | mediaRule() | pageRule() | fontFaceRule() | unknownRule() | error_skip_to_whitespace()
