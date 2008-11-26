@@ -107,9 +107,9 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     public AddDependencyPanel(MavenProject project) {
         this.project = project;
         initComponents();
-        groupCompleter = new TextValueCompleter(Collections.EMPTY_LIST, txtGroupId);
-        artifactCompleter = new TextValueCompleter(Collections.EMPTY_LIST, txtArtifactId);
-        versionCompleter = new TextValueCompleter(Collections.EMPTY_LIST, txtVersion);
+        groupCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtGroupId);
+        artifactCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtArtifactId);
+        versionCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtVersion);
         txtGroupId.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -545,7 +545,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         variance += varianceStep;
     }
 
-    private static class QueryPanel extends JPanel implements ExplorerManager.Provider, Comparator, PropertyChangeListener {
+    private static class QueryPanel extends JPanel implements ExplorerManager.Provider, Comparator<String>, PropertyChangeListener {
 
         private BeanTreeView btv;
         private ExplorerManager manager;
@@ -732,9 +732,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         /** Impl of comparator, sorts artifacts asfabetically with exception
          * of items that contain current query string, which take precedence.
          */
-        public int compare(Object o1, Object o2) {
-            String s1 = (String)o1;
-            String s2 = (String)o2;
+        public int compare(String s1, String s2) {
 
             int index1 = s1.indexOf(inProgressText);
             int index2 = s2.indexOf(inProgressText);
@@ -885,7 +883,9 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 localProj = localProj.getParent();
                 curDM = localProj.getDependencyManagement();
                 if (curDM != null) {
-                    result.addAll(curDM.getDependencies());
+                    @SuppressWarnings("unchecked")
+                    List<Dependency> ds = curDM.getDependencies();
+                    result.addAll(ds);
                 }
             }
 

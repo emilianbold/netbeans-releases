@@ -40,12 +40,12 @@ public class NetbeansActionMapping implements java.io.Serializable {
     /**
      * Field packagings.
      */
-    private java.util.List packagings;
+    private java.util.List<String> packagings;
 
     /**
      * Field goals.
      */
-    private java.util.List goals;
+    private java.util.List<String> goals;
 
     /**
      * Field properties.
@@ -55,7 +55,7 @@ public class NetbeansActionMapping implements java.io.Serializable {
     /**
      * Field activatedProfiles.
      */
-    private java.util.List activatedProfiles;
+    private java.util.List<String> activatedProfiles;
 
 
       //-----------/
@@ -69,10 +69,6 @@ public class NetbeansActionMapping implements java.io.Serializable {
      */
     public void addActivatedProfile(String string)
     {
-        if ( !(string instanceof String) )
-        {
-            throw new ClassCastException( "NetbeansActionMapping.addActivatedProfiles(string) parameter must be instanceof " + String.class.getName() );
-        }
         getActivatedProfiles().add( string );
     } //-- void addActivatedProfile(String) 
 
@@ -83,10 +79,6 @@ public class NetbeansActionMapping implements java.io.Serializable {
      */
     public void addGoal(String string)
     {
-        if ( !(string instanceof String) )
-        {
-            throw new ClassCastException( "NetbeansActionMapping.addGoals(string) parameter must be instanceof " + String.class.getName() );
-        }
         getGoals().add( string );
     } //-- void addGoal(String) 
 
@@ -97,10 +89,6 @@ public class NetbeansActionMapping implements java.io.Serializable {
      */
     public void addPackaging(String string)
     {
-        if ( !(string instanceof String) )
-        {
-            throw new ClassCastException( "NetbeansActionMapping.addPackagings(string) parameter must be instanceof " + String.class.getName() );
-        }
         getPackagings().add( string );
     } //-- void addPackaging(String) 
 
@@ -134,7 +122,7 @@ public class NetbeansActionMapping implements java.io.Serializable {
     {
         if ( this.activatedProfiles == null )
         {
-            this.activatedProfiles = new java.util.ArrayList();
+            this.activatedProfiles = new java.util.ArrayList<String>();
         }
         
         return this.activatedProfiles;
@@ -155,11 +143,11 @@ public class NetbeansActionMapping implements java.io.Serializable {
      * 
      * @return java.util.List
      */
-    public java.util.List getGoals()
+    public java.util.List<String> getGoals()
     {
         if ( this.goals == null )
         {
-            this.goals = new java.util.ArrayList();
+            this.goals = new java.util.ArrayList<String>();
         }
         
         return this.goals;
@@ -170,11 +158,11 @@ public class NetbeansActionMapping implements java.io.Serializable {
      * 
      * @return java.util.List
      */
-    public java.util.List getPackagings()
+    public java.util.List<String> getPackagings()
     {
         if ( this.packagings == null )
         {
-            this.packagings = new java.util.ArrayList();
+            this.packagings = new java.util.ArrayList<String>();
         }
         
         return this.packagings;
@@ -212,10 +200,6 @@ public class NetbeansActionMapping implements java.io.Serializable {
      */
     public void removeActivatedProfile(String string)
     {
-        if ( !(string instanceof String) )
-        {
-            throw new ClassCastException( "NetbeansActionMapping.removeActivatedProfiles(string) parameter must be instanceof " + String.class.getName() );
-        }
         getActivatedProfiles().remove( string );
     } //-- void removeActivatedProfile(String) 
 
@@ -226,10 +210,6 @@ public class NetbeansActionMapping implements java.io.Serializable {
      */
     public void removeGoal(String string)
     {
-        if ( !(string instanceof String) )
-        {
-            throw new ClassCastException( "NetbeansActionMapping.removeGoals(string) parameter must be instanceof " + String.class.getName() );
-        }
         getGoals().remove( string );
     } //-- void removeGoal(String) 
 
@@ -240,10 +220,6 @@ public class NetbeansActionMapping implements java.io.Serializable {
      */
     public void removePackaging(String string)
     {
-        if ( !(string instanceof String) )
-        {
-            throw new ClassCastException( "NetbeansActionMapping.removePackagings(string) parameter must be instanceof " + String.class.getName() );
-        }
         getPackagings().remove( string );
     } //-- void removePackaging(String) 
 
@@ -262,7 +238,7 @@ public class NetbeansActionMapping implements java.io.Serializable {
      * 
      * @param activatedProfiles
      */
-    public void setActivatedProfiles(java.util.List activatedProfiles)
+    public void setActivatedProfiles(java.util.List<String> activatedProfiles)
     {
         this.activatedProfiles = activatedProfiles;
     } //-- void setActivatedProfiles(java.util.List) 
@@ -282,7 +258,7 @@ public class NetbeansActionMapping implements java.io.Serializable {
      * 
      * @param goals
      */
-    public void setGoals(java.util.List goals)
+    public void setGoals(java.util.List<String> goals)
     {
         this.goals = goals;
     } //-- void setGoals(java.util.List) 
@@ -293,7 +269,7 @@ public class NetbeansActionMapping implements java.io.Serializable {
      * 
      * @param packagings
      */
-    public void setPackagings(java.util.List packagings)
+    public void setPackagings(java.util.List<String> packagings)
     {
         this.packagings = packagings;
     } //-- void setPackagings(java.util.List) 

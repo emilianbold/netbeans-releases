@@ -35,6 +35,7 @@ import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
  * 
  * @version $Revision$ $Date$
  */
+@SuppressWarnings("unchecked") //a generated class
 public class NetbeansBuildActionJDOMWriter {
 
 
@@ -324,6 +325,7 @@ public class NetbeansBuildActionJDOMWriter {
      * @param counter
      * @param xmlTag
      */
+    @SuppressWarnings("deprecation")
     protected void updateActionToGoalMapping(ActionToGoalMapping value, String xmlTag, Counter counter, Element element)
     {
         Element root = element;

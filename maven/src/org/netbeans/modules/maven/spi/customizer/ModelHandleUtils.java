@@ -42,15 +42,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collections;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.StyledDocument;
-import org.apache.maven.model.Model;
-import org.apache.maven.profiles.ProfilesRoot;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
 import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
@@ -64,7 +59,6 @@ import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.text.EditorSupport;
 
 /**
  * Some random utility methods to allow post creation modifications of the project model.

@@ -198,8 +198,10 @@ public class CosChecker implements PrerequisitesChecker {
             ds.setBasedir(dirFile);
             ds.addDefaultExcludes();
             //includes/excludes
+            @SuppressWarnings("unchecked")
             String[] incls = (String[]) r.getIncludes().toArray(new String[0]);
             ds.setIncludes(incls);
+            @SuppressWarnings("unchecked")
             String[] excls = (String[]) r.getExcludes().toArray(new String[0]);
             ds.setExcludes(excls);
             ds.scan();

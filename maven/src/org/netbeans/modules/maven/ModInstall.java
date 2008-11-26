@@ -175,6 +175,7 @@ public class ModInstall extends ModuleInstall implements ErrorHandler, EntityRes
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void uninstalled() {
         super.uninstalled();
         if (projectsListener != null) {

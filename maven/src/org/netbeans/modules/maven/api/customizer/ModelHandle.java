@@ -272,6 +272,7 @@ public final class ModelHandle {
      */
     public static void setUserActionMapping(NetbeansActionMapping action, ActionToGoalMapping mapp) {
         action.setPackagings(null);
+        @SuppressWarnings("unchecked")
         List<NetbeansActionMapping> lst = mapp.getActions() != null ? mapp.getActions() : new ArrayList<NetbeansActionMapping>();
         Iterator<NetbeansActionMapping> it = lst.iterator();
         while (it.hasNext()) {

@@ -200,13 +200,14 @@ public class DependenciesNode extends AbstractNode {
         
         @Override
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<DependencyWrapper>emptyList());
             NbMavenProject.removePropertyChangeListener(project, this);
             super.removeNotify();
         }
         
+        @SuppressWarnings("unchecked") // a lot of calls to maven lists..
         int regenerateKeys() {
-            TreeSet lst = new TreeSet(new DependenciesComparator());
+            TreeSet<DependencyWrapper> lst = new TreeSet<DependencyWrapper>(new DependenciesComparator());
             MavenProject mp = project.getOriginalMavenProject();
             if (type == TYPE_COMPILE) {
                 lst.addAll(create(mp.getCompileDependencies(), mp.getArtifacts()));
@@ -453,6 +454,7 @@ public class DependenciesNode extends AbstractNode {
     
     private static class DependenciesComparator implements Comparator<DependencyWrapper> {
 
+        @SuppressWarnings("unchecked")
         public int compare(DependencyWrapper art1, DependencyWrapper art2) {
             if (art1 == NULL && art2 == NULL) {
                 return 0;

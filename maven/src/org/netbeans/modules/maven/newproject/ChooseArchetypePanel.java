@@ -416,7 +416,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         
         @Override
         public void removeNotify() {
-            setKeys(Collections.EMPTY_LIST);
+            setKeys(Collections.<Archetype>emptyList());
         }
         
         public void addArchetype(Archetype arch) {
@@ -445,7 +445,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
 
         private void setArchetypes(Collection<Archetype> archetypes) {
-            keys = new ArrayList(archetypes);
+            keys = new ArrayList<Archetype>(archetypes);
             setKeys(keys);
             refresh();
         }
@@ -477,7 +477,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         
         @Override
         public void removeNotify() {
-            setKeys(Collections.EMPTY_LIST);
+            setKeys(Collections.<Archetype>emptyList());
         }
         
         @Override

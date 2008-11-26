@@ -55,6 +55,11 @@ import org.apache.maven.project.build.model.ModelLineage;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.profile.ProfilesModel;
+import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
+import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -84,6 +89,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
         sharedProfiles.addAll(retrieveActiveProfiles(ac, true));
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> getAllProfiles() {
         Set<String> profileIds = new HashSet<String>();
         //pom+profiles.xml profiles come first
@@ -99,29 +105,35 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
        return new ArrayList<String>(shared ? sharedProfiles : privateProfiles);
     }
     public List<String> getMergedActiveProfiles(boolean shared) {
-                Set<String> prifileides = new HashSet<String>();
+        Set<String> profileIds = new HashSet<String>();
         MavenProject mavenProject = nmp.getOriginalMavenProject();
+        @SuppressWarnings("unchecked")
         List<Profile> profiles = mavenProject.getActiveProfiles();
         for (Profile profile : profiles) {
-            prifileides.add(profile.getId());
+            profileIds.add(profile.getId());
         }
         //read from Settings.xml
+        @SuppressWarnings("unchecked")
         List<String> profileStrings = MavenSettingsSingleton.getInstance().createUserSettingsModel().getActiveProfiles();
         for (String profile : profileStrings) {
-            prifileides.add(profile);
+            profileIds.add(profile);
         }
         
         File basedir = FileUtil.normalizeFile(mavenProject.getBasedir());
         FileObject fileObject = FileUtil.toFileObject(basedir);
         if (fileObject != null) {//144159
             //read from profiles.xml
-            Iterator it2 = MavenSettingsSingleton.createProfilesModel(fileObject).getActiveProfiles().iterator();
-            while (it2.hasNext()) {
-                prifileides.add((String) it2.next());
+            ModelSource ms = Utilities.createModelSource(fileObject, false);
+            ProfilesModel pm = ProfilesModelFactory.getDefault().getModel(ms);
+            if (State.VALID.equals(pm.getState())) {
+                List<String> actProfs = pm.getProfilesRoot().getActiveProfiles();
+                if (actProfs != null) {
+                    profileIds.addAll(actProfs);
+                }
             }
         }
-        prifileides.addAll(getActiveProfiles(shared));
-        return new ArrayList<String>(prifileides);
+        profileIds.addAll(getActiveProfiles(shared));
+        return new ArrayList<String>(profileIds);
     }
 
     public void disableProfile(String id, boolean shared) {
@@ -186,10 +198,15 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
         FileObject fileObject = FileUtil.toFileObject(basedir);
         //read from profiles.xml
         if (fileObject != null) { //144159
-            Iterator it2 = MavenSettingsSingleton.createProfilesModel(fileObject).getProfiles().iterator();
-            while (it2.hasNext()) {
-                org.apache.maven.profiles.Profile prof = (org.apache.maven.profiles.Profile) it2.next();
-                profileIds.add(prof.getId());
+            ModelSource ms = Utilities.createModelSource(fileObject, false);
+            ProfilesModel pm = ProfilesModelFactory.getDefault().getModel(ms);
+            if (State.VALID.equals(pm.getState())) {
+                List<org.netbeans.modules.maven.model.profile.Profile> profs = pm.getProfilesRoot().getProfiles();
+                if (profs != null) {
+                    for (org.netbeans.modules.maven.model.profile.Profile prf : profs) {
+                        profileIds.add(prf.getId());
+                    }
+                }
             }
         }
     }
@@ -210,6 +227,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
                 }
             }
             if (lineage != null && lineage.getOriginatingModel() != null) {
+                @SuppressWarnings("unchecked")
                 List<String> modules = lineage.getOriginatingModel().getModules();
                 File basedir = FileUtil.normalizeFile(file.getParentFile());
                 for (String module : modules) {

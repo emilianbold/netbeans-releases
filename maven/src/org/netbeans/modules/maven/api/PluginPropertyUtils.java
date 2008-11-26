@@ -361,7 +361,7 @@ public class PluginPropertyUtils {
      * @param add true == add to model, always returns a non-null value then.
      * @return 
      */
-    public static Dependency checkModelDependency(Model mdl, String groupId, String artifactId, boolean add) {
+    public @Deprecated static Dependency checkModelDependency(Model mdl, String groupId, String artifactId, boolean add) {
         List deps = mdl.getDependencies();
         Dependency ret = null;
         Dependency managed = null;
@@ -409,7 +409,7 @@ public class PluginPropertyUtils {
      * @param artifactid
      * @return
      */
-    public static boolean hasModelDependency(Model mdl, String groupid, String artifactid) {
+    public @Deprecated static boolean hasModelDependency(Model mdl, String groupid, String artifactid) {
         return checkModelDependency(mdl, groupid, artifactid, false) != null;
     }
 
@@ -421,7 +421,7 @@ public class PluginPropertyUtils {
      * @param add true == add to model, will not add if the repo is in project but not in model (eg. central repo)
      * @return 
      */
-    public static Repository checkModelRepository(MavenProject project, Model mdl, String url, boolean add) {
+    public @Deprecated static Repository checkModelRepository(MavenProject project, Model mdl, String url, boolean add) {
         if (url.contains("http://repo1.maven.org/maven2")) { //NOI18N
             return null;
         }
@@ -475,7 +475,7 @@ public class PluginPropertyUtils {
      * @param url
      * @return
      */
-    public static boolean hasModelRepository(MavenProject project, Model mdl, String url) {
+    public @Deprecated static boolean hasModelRepository(MavenProject project, Model mdl, String url) {
         return checkModelRepository(project, mdl, url, false) != null;
     }
 
@@ -488,7 +488,7 @@ public class PluginPropertyUtils {
      * @param handle handle which models are to be updated
      * @param sourceLevel the sourcelevel to set
      */
-    public static void checkSourceLevel(ModelHandle handle, String sourceLevel) {
+    public @Deprecated static void checkSourceLevel(ModelHandle handle, String sourceLevel) {
         ModelUtils.checkSourceLevel(handle, sourceLevel);
     }
     
@@ -499,7 +499,7 @@ public class PluginPropertyUtils {
      * @param handle handle which models are to be updated
      * @param enc encoding to use
      */
-    public static void checkEncoding(ModelHandle handle, String enc) {
+    public @Deprecated static void checkEncoding(ModelHandle handle, String enc) {
         ModelUtils.checkEncoding(handle, enc);
     }
     

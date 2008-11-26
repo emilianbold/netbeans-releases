@@ -245,6 +245,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         debug = null;
         if (handle.isConfigurationsEnabled()) {
             ActionToGoalMapping mapp = handle.getActionMappings((ModelHandle.Configuration) comConfiguration.getSelectedItem());
+            @SuppressWarnings("unchecked")
             List<NetbeansActionMapping> lst = mapp.getActions();
             for (NetbeansActionMapping m : lst) {
                 if (ActionProvider.COMMAND_RUN.equals(m.getActionName())) {
