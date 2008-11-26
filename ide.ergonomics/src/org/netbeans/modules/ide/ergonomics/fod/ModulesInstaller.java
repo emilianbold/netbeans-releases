@@ -44,7 +44,6 @@ package org.netbeans.modules.ide.ergonomics.fod;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -81,45 +80,31 @@ public class ModulesInstaller {
     private ProgressHandle downloadHandle;
     private ProgressHandle verifyHandle;
     private ProgressHandle installHandle;
-<<<<<<< local
     private final FindComponentModules finder;
-=======
     private final ProgressMonitor progressMonitor;
->>>>>>> other
     
-<<<<<<< local
     public ModulesInstaller (Collection<UpdateElement> modules, FindComponentModules find) {
-=======
-    public ModulesInstaller (Collection<UpdateElement> modules) {
-        this(modules, null);
+        this(modules, find, null);
     }
     
-    public ModulesInstaller (Collection<UpdateElement> modules, ProgressMonitor progressMonitor) {
->>>>>>> other
+    public ModulesInstaller (Collection<UpdateElement> modules, FindComponentModules find, ProgressMonitor progressMonitor) {
         if (modules == null || modules.isEmpty ()) {
             throw new IllegalArgumentException ("Cannot construct InstallerMissingModules with null or empty Collection " + modules);
         }
         modules4install = modules;
-<<<<<<< local
         finder = find;
-=======
         if (progressMonitor != null) {
             this.progressMonitor = progressMonitor;
         } else {
             this.progressMonitor = ProgressMonitor.DEV_NULL_PROGRESS_MONITOR;
         }
->>>>>>> other
     }
     
-<<<<<<< local
     public static boolean installModules (FeatureInfo info) {
-=======
-    public static boolean installModules (Set<String> codeNames) {
-        return installModules(null, codeNames);
+        return installModules(null, info);
     }
 
-    public static boolean installModules (ProgressMonitor monitor, Set<String> codeNames) {
->>>>>>> other
+    public static boolean installModules (ProgressMonitor monitor, FeatureInfo info) {
         assert ! SwingUtilities.isEventDispatchThread () : "Cannot run in EQ!";
         boolean success = false;
         
@@ -129,21 +114,13 @@ public class ModulesInstaller {
         Collection<UpdateElement> toInstall = findModules.getModulesForInstall();
         Collection<UpdateElement> toEnable = findModules.getModulesForEnable();
         if (toInstall != null && !toInstall.isEmpty()) {
-<<<<<<< local
-            ModulesInstaller installer = new ModulesInstaller(toInstall, findModules);
-=======
-            ModulesInstaller installer = new ModulesInstaller(toInstall, monitor);
->>>>>>> other
+            ModulesInstaller installer = new ModulesInstaller(toInstall, findModules, monitor);
             installer.getInstallTask ().schedule (10);
             installer.getInstallTask ().waitFinished();
             findModules.createFindingTask().waitFinished();
             success = findModules.getModulesForInstall ().isEmpty ();
         } else if (toEnable != null && !toEnable.isEmpty()) {
-<<<<<<< local
-            ModulesActivator enabler = new ModulesActivator(toEnable, findModules);
-=======
-            ModulesActivator enabler = new ModulesActivator(toEnable, monitor);
->>>>>>> other
+            ModulesActivator enabler = new ModulesActivator(toEnable, findModules, monitor);
             enabler.getEnableTask ().schedule (100);
             enabler.getEnableTask ().waitFinished();
             success = true;

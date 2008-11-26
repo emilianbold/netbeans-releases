@@ -64,34 +64,24 @@ public class ModulesActivator {
     private RequestProcessor.Task enableTask = null;
     private OperationContainer<OperationSupport> enableContainer;
     private ProgressHandle enableHandle;
-<<<<<<< local
     private final FindComponentModules finder;
-=======
     private final ProgressMonitor progressMonitor;
->>>>>>> other
-    
-<<<<<<< local
+
     public ModulesActivator (Collection<UpdateElement> modules, FindComponentModules f) {
-=======
-    public ModulesActivator (Collection<UpdateElement> modules) {
-        this(modules, null);
+        this(modules, f, null);
     }
 
-    public ModulesActivator (Collection<UpdateElement> modules, ProgressMonitor progressMonitor) {
->>>>>>> other
+    public ModulesActivator (Collection<UpdateElement> modules, FindComponentModules f, ProgressMonitor progressMonitor) {
         if (modules == null || modules.isEmpty ()) {
             throw new IllegalArgumentException ("Cannot construct ModulesActivator with null or empty Collection " + modules);
         }
         modules4enable = modules;
-<<<<<<< local
         this.finder = f;
-=======
         if (progressMonitor != null) {
             this.progressMonitor = progressMonitor;
         } else {
             this.progressMonitor = ProgressMonitor.DEV_NULL_PROGRESS_MONITOR;
         }
->>>>>>> other
     }
 
     public void assignEnableHandle (ProgressHandle handle) {
