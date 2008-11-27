@@ -60,6 +60,7 @@ var SOURCES_AND_BINARIES_URL = "javascript: open_zip_link()";
 
 function add_download_tabs() {
 	add_download_tab("6.5");
+	add_download_tab(PYTHON_TITLE, PYTHON_LINK);
 	add_download_tab(DEVELOPMENT_TITLE, DEVELOPMENT_BUILDS_LINK);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }
