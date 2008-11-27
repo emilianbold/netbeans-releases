@@ -337,7 +337,6 @@
                 <xs:element ref="tns:binary_standard" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:conforming_standard" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 
