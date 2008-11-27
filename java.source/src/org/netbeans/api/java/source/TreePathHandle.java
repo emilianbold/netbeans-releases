@@ -46,11 +46,15 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;                                                                                                                                                                                           
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;                                                                                                                                                                                        
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;                                                                                                                                                                                                    
 import javax.lang.model.element.Element;                                                                                                                                                                                       
@@ -391,6 +395,31 @@ public final class TreePathHandle {
                     debug.append(ex.getMessage());
                 }
 
+                try {
+                    debug.append("\n---------------------------------------------------\n");
+                    Class fileObjectFactoryClass = Class.forName("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory");
+                    Field allFactoriesField = fileObjectFactoryClass.getDeclaredField("AllFactories");
+                    Map<?, ?> factories = (Map<?, ?>) allFactoriesField.get(null);
+                    Class callerClass = Class.forName("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory$Caller");
+                    Method getValidFileObjectMethod = fileObjectFactoryClass.getMethod("getValidFileObject", File.class, callerClass);
+                    Object othersCaller = callerClass.getEnumConstants()[4];
+                    for (Map.Entry<?, ?> entry : factories.entrySet()) {
+                        File rootFile = (File) entry.getKey();
+                        Object fof = entry.getValue();
+                        debug.append("FileObjectFactory=" + fof);
+                        debug.append("\n");
+                        debug.append("RootFile=" + rootFile + ", hash=" + rootFile.hashCode());
+                        debug.append("\n");
+                        FileObject foMine = (FileObject) getValidFileObjectMethod.invoke(fof, FileUtil.toFile(mine), othersCaller);
+                        FileObject foRemote = (FileObject) getValidFileObjectMethod.invoke(fof, FileUtil.toFile(remote), othersCaller);
+                        debug.append("foMine: id=" + System.identityHashCode(foMine) + ", valid=" + foMine.isValid());
+                        debug.append("\n");
+                        debug.append("foRemote: id=" + System.identityHashCode(foRemote) + ", valid=" + foRemote.isValid());
+                        debug.append("\n---------------------------------------------------\n");
+                    }
+                } catch (Exception e) {
+                    debug.append("Reflection failed: "+e.getMessage());
+                }
                 throw new IllegalArgumentException(debug.toString());
             }
             Element element = enclosingElement.resolve(compilationInfo);
