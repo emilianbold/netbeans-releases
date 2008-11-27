@@ -45,11 +45,12 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.SQLType;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.Tuple;
 import org.netbeans.modules.db.metadata.model.api.View;
 import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
@@ -79,6 +80,7 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
                 "\"i+d\" INT NOT NULL PRIMARY KEY, " +
                 "FOO_ID INT NOT NULL, " +
                 "BAR_NAME VARCHAR(16), " +
+                "DEC_COL DECIMAL(12,2), " +
                 "FOREIGN KEY (FOO_ID) REFERENCES FOO(ID))");
         stmt.executeUpdate("CREATE VIEW BARVIEW AS SELECT * FROM BAR");
         stmt.close();
@@ -109,11 +111,8 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         assertEquals("BAR", barTable.getName());
 
         Collection<Column> columns = barTable.getColumns();
-        assertEquals(3, columns.size());
-        Iterator<Column> columnIterator = columns.iterator();
-        assertEquals("i+d", columnIterator.next().getName());
-        assertEquals("FOO_ID", columnIterator.next().getName());
-        assertEquals("BAR_NAME", columnIterator.next().getName());
+
+        checkColumns(barTable, columns);
     }
 
     public void testViews() throws Exception {
@@ -126,10 +125,7 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         assertSame(schema, barView.getParent());
 
         Collection<Column> columns = barView.getColumns();
-        assertNames(Arrays.asList("i+d", "FOO_ID", "BAR_NAME"), columns);
-        Column iPlusDColumn = barView.getColumn("i+d");
-        assertTrue(columns.contains(iPlusDColumn));
-        assertSame(barView, iPlusDColumn.getParent());
+        checkColumns(barView, columns);
     }
 
     public void testRefresh() throws Exception {
@@ -149,5 +145,30 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         stmt.close();
         fooTable.refresh();
         assertNames(Arrays.asList("ID", "FOO_NAME", "NEW_COLUMN"), fooTable.getColumns());
+    }
+
+    private void checkColumns(Tuple parent, Collection<Column> columns) {
+        assertEquals(4, columns.size());
+        Column[] colarray = columns.toArray(new Column[4]);
+
+        Column col = colarray[0];
+        assertEquals("JDBCColumn[name=i+d, type=INTEGER, length=0, precision=10, radix=10, scale=0, nullable=NOT_NULLABLE, ordinal_position=1]", col.toString());
+        assertEquals("i+d", col.getName());
+        assertSame(parent, col.getParent());
+        assertEquals(SQLType.INTEGER, col.getType());
+        assertEquals(0, col.getLength());
+        assertEquals(10, col.getRadix());
+        assertEquals(10, col.getPrecision());
+        assertEquals(0, col.getScale());
+        assertEquals(1, col.getOrdinalPosition());
+
+        col = colarray[1];
+        assertEquals("JDBCColumn[name=FOO_ID, type=INTEGER, length=0, precision=10, radix=10, scale=0, nullable=NOT_NULLABLE, ordinal_position=2]", col.toString());
+
+        col = colarray[2];
+        assertEquals("JDBCColumn[name=BAR_NAME, type=VARCHAR, length=16, precision=0, radix=0, scale=0, nullable=NULLABLE, ordinal_position=3]", col.toString());
+
+        col = colarray[3];
+        assertEquals("JDBCColumn[name=DEC_COL, type=DECIMAL, length=0, precision=12, radix=10, scale=2, nullable=NULLABLE, ordinal_position=4]", col.toString());
     }
 }
