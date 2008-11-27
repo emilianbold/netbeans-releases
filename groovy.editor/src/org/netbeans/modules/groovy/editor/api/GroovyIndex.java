@@ -727,8 +727,7 @@ public final class GroovyIndex {
             //signature = signature.substring(0, attributeIndex);
         }
 
-        IndexedMethod m =
-            IndexedMethod.create(this, signature, fqn, clz, fileUrl, attributes, flags);
+        IndexedMethod m = IndexedMethod.create(this, signature, type, fqn, clz, fileUrl, attributes, flags);
 
         m.setInherited(inherited);
         return m;

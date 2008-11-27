@@ -126,7 +126,7 @@ public final class GroovyElementHandler {
             }
 
             // FIXME retrurn type
-            result.put(getSignature(indexedMethod), new CompletionItem.JavaMethodItem(className, indexedMethod.getName(), sb.toString(), null,
+            result.put(getSignature(indexedMethod), new CompletionItem.JavaMethodItem(className, indexedMethod.getName(), sb.toString(), indexedMethod.getReturnType(),
                     org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedMethod.getModifiers(), Modifier.PUBLIC), anchor, emphasise));
         }
 
