@@ -116,7 +116,7 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
         return classFqn + "#" + signature;
     }
 
-    public String[] getArgs() {
+    private String[] getArgs() {
         if (args == null) {
             // Parse signature
             int parenIndex = signature.indexOf('(');
