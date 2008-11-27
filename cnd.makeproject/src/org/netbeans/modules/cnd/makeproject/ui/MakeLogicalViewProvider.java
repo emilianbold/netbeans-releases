@@ -830,7 +830,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
             @Override
             public void run() {
-                setFiles(Collections.EMPTY_SET /*folder.getAllItemsAsFileObjectSet(true)*/); // See IZ 100394 for details
+                setFiles(new HashSet<FileObject>() /*Collections.EMPTY_SET*/ /*folder.getAllItemsAsFileObjectSet(true)*/); // See IZ 100394 for details
                 List<Folder> allFolders = new ArrayList<Folder>();
                 allFolders.add(folder);
                 allFolders.addAll(folder.getAllFolders(true));
@@ -1556,7 +1556,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return true;
         }
 
-        public Iterator objectsToSearch() {
+        public Iterator<DataObject> objectsToSearch() {
             return folder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
         }
     }

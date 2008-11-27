@@ -54,16 +54,16 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
 
-public class VectorNodeProp<E> extends PropertySupport {
+public class VectorNodeProp extends PropertySupport<List> {
 
-    private VectorConfiguration<E> vectorConfiguration;
+    private VectorConfiguration<String> vectorConfiguration;
     private BooleanConfiguration inheritValues;
     private String baseDir;
     private String[] texts;
     boolean addPathPanel;
     private HelpCtx helpCtx;
 
-    public VectorNodeProp(VectorConfiguration<E> vectorConfiguration, BooleanConfiguration inheritValues, String baseDir, String[] texts, boolean addPathPanel, HelpCtx helpCtx) {
+    public VectorNodeProp(VectorConfiguration<String> vectorConfiguration, BooleanConfiguration inheritValues, String baseDir, String[] texts, boolean addPathPanel, HelpCtx helpCtx) {
         super(texts[0], List.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
         this.inheritValues = inheritValues;
@@ -82,13 +82,12 @@ public class VectorNodeProp<E> extends PropertySupport {
         }
     }
 
-    public Object getValue() {
+    public List getValue() {
         return vectorConfiguration.getValue();
     }
 
-    @SuppressWarnings("unchecked")
-    public void setValue(Object v) {
-        vectorConfiguration.setValue((List) v);
+    public void setValue(List v) {
+        vectorConfiguration.setValue(v);
     }
 
     @Override
@@ -108,7 +107,7 @@ public class VectorNodeProp<E> extends PropertySupport {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-        ArrayList clone = new ArrayList<E>();
+        ArrayList<String> clone = new ArrayList<String>();
         clone.addAll(vectorConfiguration.getValue());
         return new DirectoriesEditor(clone);
     }
