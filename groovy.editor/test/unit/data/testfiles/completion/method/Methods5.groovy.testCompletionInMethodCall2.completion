@@ -2,12 +2,12 @@ Code completion result for source line:
 new File("something").c|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
-METHOD     canRead()                                  boolean
-METHOD     canWrite()                                 boolean
+METHOD     canRead()                       [PUBLIC]   boolean
+METHOD     canWrite()                      [PUBLIC]   boolean
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
-METHOD     compareTo(File)                            int
-METHOD     createNewFile()                            boolean
-METHOD     createTempFile(String, String)             File
-METHOD     createTempFile(String, String,             File
+METHOD     compareTo(File)                 [PUBLIC]   int
+METHOD     createNewFile()                 [PUBLIC]   boolean
+METHOD     createTempFile(String, String)  [STATIC,   File
+METHOD     createTempFile(String, String,  [STATIC,   File
 FIELD      counter                                    int

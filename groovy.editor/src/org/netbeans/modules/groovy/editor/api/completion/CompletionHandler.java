@@ -117,7 +117,7 @@ import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
 import org.netbeans.modules.groovy.editor.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.completion.DynamicElementHandler;
-import org.netbeans.modules.groovy.editor.completion.JavaElementHandler.ClassType;
+import org.netbeans.modules.groovy.editor.completion.JavaElementHandler.ClassCompletionType;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
@@ -2434,7 +2434,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         Map<MethodSignature, ? extends CompletionItem> result = CompleteElementHandler
                 .forCompilationInfo(request.info)
-                    .getMethods(request.getCompletionType(), declaringClass, ClassType.CLASS, request.prefix, anchor);
+                    .getMethods(request.getCompletionType(), declaringClass, ClassCompletionType.CLASS, request.prefix, anchor);
         proposals.addAll(result.values());
 
         return true;
