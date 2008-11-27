@@ -157,30 +157,6 @@ public class GoToDeclarationAction extends BaseAction {
         } catch (ParseException ex) {
             ex.printStackTrace ();
         }
-<<<<<<< /home/hanz/Hanz/Dev/trunk/languages/src/org/netbeans/modules/languages/features/GoToDeclarationAction.java.orig.1805120397
-||||||| /tmp/GoToDeclarationAction.java~base.Kec5y5
-        
-        if (dobj == null) {
-            return;
-        }
-        
-        LineCookie lc = (LineCookie)dobj.getCookie(LineCookie.class);
-        Line.Set lineSet = lc.getLineSet();
-        Line line = lineSet.getCurrent(NbDocument.findLineNumber(docToGo, offset));
-        int column = NbDocument.findLineColumn (docToGo, offset);
-        line.show (Line.SHOW_GOTO, column);
-=======
-        
-        if (dobj == null) {
-            return;
-        }
-        
-        LineCookie lc = (LineCookie)dobj.getCookie(LineCookie.class);
-        Line.Set lineSet = lc.getLineSet();
-        Line line = lineSet.getCurrent(NbDocument.findLineNumber(docToGo, offset));
-        int column = NbDocument.findLineColumn (docToGo, offset);
-        line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
->>>>>>> /tmp/GoToDeclarationAction.java~other.Lcg8y7
     }
     
     public boolean isEnabled() {
