@@ -64,14 +64,14 @@ import org.openide.windows.OutputWriter;
 public abstract class AbstractOutputHandler {
     protected static final String PRJ_EXECUTE = "project-execute"; //NOI18N
     
-    protected HashMap<String, Set> processors;
-    protected Set currentProcessors;
+    protected HashMap<String, Set<OutputProcessor>> processors;
+    protected Set<OutputProcessor> currentProcessors;
     protected Set<NotifyFinishOutputProcessor> toFinishProcessors;
     protected OutputVisitor visitor;
 
     protected AbstractOutputHandler() {
-        processors = new HashMap<String, Set>();
-        currentProcessors = new HashSet();
+        processors = new HashMap<String, Set<OutputProcessor>>();
+        currentProcessors = new HashSet<OutputProcessor>();
         visitor = new OutputVisitor();
         toFinishProcessors = new HashSet<NotifyFinishOutputProcessor>();
     }
@@ -91,9 +91,9 @@ public abstract class AbstractOutputHandler {
         Iterator<? extends OutputProcessorFactory> it = result.allInstances().iterator();
         while (it.hasNext()) {
             OutputProcessorFactory factory = it.next();
-            Set procs = factory.createProcessorsSet(proj);
+            Set<OutputProcessor> procs = factory.createProcessorsSet(proj);
             if (factory instanceof ContextOutputProcessorFactory) {
-                procs = new HashSet(procs);
+                procs = new HashSet<OutputProcessor>(procs);
                 procs.addAll(((ContextOutputProcessorFactory)factory).createProcessorsSet(proj, config));
             }
             Iterator it2 = procs.iterator();
@@ -102,9 +102,9 @@ public abstract class AbstractOutputHandler {
                 String[] regs = proc.getRegisteredOutputSequences();
                 for (int i = 0; i < regs.length; i++) {
                     String str = regs[i];
-                    Set set = processors.get(str);
+                    Set<OutputProcessor> set = processors.get(str);
                     if (set == null) {
-                        set = new HashSet();
+                        set = new HashSet<OutputProcessor>();
                         processors.put(str, set);
                     }
                     set.add(proc);
@@ -114,7 +114,7 @@ public abstract class AbstractOutputHandler {
     }
     
     protected final void processStart(String id, OutputWriter writer) {
-        Set set = processors.get(id);
+        Set<OutputProcessor> set = processors.get(id);
         if (set != null) {
             currentProcessors.addAll(set);
         }
@@ -139,9 +139,9 @@ public abstract class AbstractOutputHandler {
     
     protected final void processEnd(String id, OutputWriter writer) {
         visitor.resetVisitor();
-        Iterator it = currentProcessors.iterator();
+        Iterator<OutputProcessor> it = currentProcessors.iterator();
         while (it.hasNext()) {
-            OutputProcessor proc = (OutputProcessor)it.next();
+            OutputProcessor proc = it.next();
             proc.sequenceEnd(id, visitor);
             if (proc instanceof NotifyFinishOutputProcessor) {
                 toFinishProcessors.add((NotifyFinishOutputProcessor)proc);
@@ -188,12 +188,12 @@ public abstract class AbstractOutputHandler {
                 writer.println(visitor.getLine());
             }
         }
-        Set set = processors.get(id);
+        Set<OutputProcessor> set = processors.get(id);
         if (set != null) {
-            Set retain = new HashSet();
+            Set<OutputProcessor> retain = new HashSet<OutputProcessor>();
             retain.addAll(set);
             retain.retainAll(currentProcessors);
-            Set remove = new HashSet();
+            Set<OutputProcessor> remove = new HashSet<OutputProcessor>();
             remove.addAll(set);
             remove.removeAll(retain);
             currentProcessors.removeAll(remove);
