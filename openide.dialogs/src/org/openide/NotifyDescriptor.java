@@ -43,6 +43,7 @@ package org.openide;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.InvocationTargetException;
@@ -53,8 +54,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
 import org.jdesktop.layout.GroupLayout;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;

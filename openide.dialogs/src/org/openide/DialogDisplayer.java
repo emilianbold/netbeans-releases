@@ -74,7 +74,7 @@ public abstract class DialogDisplayer {
      * @return the default instance from lookup
      */
     public static DialogDisplayer getDefault() {
-        DialogDisplayer dd = (DialogDisplayer) Lookup.getDefault().lookup(DialogDisplayer.class);
+        DialogDisplayer dd = Lookup.getDefault ().lookup (DialogDisplayer.class);
 
         if (dd == null) {
             dd = new Trivial();

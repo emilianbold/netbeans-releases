@@ -479,6 +479,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         if (UIManager.getLookAndFeel().getClass() == MetalLookAndFeel.class ||
             UIManager.getLookAndFeel().getClass() == BasicLookAndFeel.class) {
             optionPane.setUI(new javax.swing.plaf.basic.BasicOptionPaneUI() {
+                @Override
                 public Dimension getMinimumOptionPaneSize() {
                     if (minimumSize == null) {
                         //minimumSize = UIManager.getDimension("OptionPane.minimumSize");
