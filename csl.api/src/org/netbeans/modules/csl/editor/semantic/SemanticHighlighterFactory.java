@@ -42,11 +42,10 @@ package org.netbeans.modules.csl.editor.semantic;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.csl.core.AbstractTaskFactory;
 import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -57,22 +56,16 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  *
  * @author Jan Lahoda
  */
-public class SemanticHighlighterFactory extends TaskFactory {
+public class SemanticHighlighterFactory extends AbstractTaskFactory {
     
     /** Creates a new instance of SemanticHighlighterFactory */
     public SemanticHighlighterFactory() {
-        super(); // Phase.RESOLVED, Priority.BELOW_NORMAL
+        super(true); // Phase.RESOLVED, Priority.BELOW_NORMAL
     }
 
     @Override
-    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        String mimeType = snapshot.getMimeType();
-        Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
-        if (l != null) {
-            return Collections.singleton(new SemanticHighlighter(snapshot));
-        } else {
-            return null;
-        }
+    public Collection<? extends SchedulerTask> createTasks(Language l, Snapshot snapshot) {
+        return Collections.singleton(new SemanticHighlighter(snapshot));
     }
 
 

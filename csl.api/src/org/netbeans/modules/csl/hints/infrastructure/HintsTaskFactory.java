@@ -42,31 +42,24 @@ package org.netbeans.modules.csl.hints.infrastructure;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.csl.core.AbstractTaskFactory;
 import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class HintsTaskFactory extends TaskFactory {
+public class HintsTaskFactory extends AbstractTaskFactory {
     
     /** Creates a new instance of SuggestionsAndHintsTaskFactory */
     public HintsTaskFactory() {
-        super(); // XXX: Phase.UP_TO_DATE, Priority.MIN
+        super(true); // XXX: Phase.UP_TO_DATE, Priority.MIN
     }
     
-    public @Override Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        String mimeType = snapshot.getMimeType();
-        Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
-        if (l != null) {
-            return Collections.singleton(new HintsTask());
-        } else {
-            return null;
-        }
+    public @Override Collection<? extends SchedulerTask> createTasks(Language l, Snapshot snapshot) {
+        return Collections.singleton(new HintsTask());
     }
 
 }

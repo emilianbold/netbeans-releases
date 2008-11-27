@@ -42,8 +42,8 @@ package org.netbeans.modules.csl.navigation;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.csl.core.AbstractTaskFactory;
 import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
@@ -51,7 +51,6 @@ import org.openide.util.Lookup;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -62,7 +61,7 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  *
  * @author Jan Lahoda, Petr Hrebejk
  */
-public final class ClassMemberNavigatorSourceFactory extends TaskFactory {
+public final class ClassMemberNavigatorSourceFactory extends AbstractTaskFactory {
 
     private static ClassMemberNavigatorSourceFactory instance = null;
     private ClassMemberPanelUI ui;
@@ -92,22 +91,16 @@ public final class ClassMemberNavigatorSourceFactory extends TaskFactory {
     }
     
     private ClassMemberNavigatorSourceFactory() {
-        super(); // XXX: Phase.ELEMENTS_RESOLVED, Priority.LOW
+        super(true); // XXX: Phase.ELEMENTS_RESOLVED, Priority.LOW
     }
 
     @Override
-    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+    public Collection<? extends SchedulerTask> createTasks(Language l, Snapshot snapshot) {
         // System.out.println("CREATE TASK FOR " + file.getNameExt() );
-        String mimeType = snapshot.getMimeType();
-        Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
-        if (l != null) {
-            if ( ui == null) {
-                return Collections.singleton(EMPTY_TASK);
-            } else {
-                return Collections.singleton(ui.getTask());
-            }
+        if ( ui == null) {
+            return Collections.singleton(EMPTY_TASK);
         } else {
-            return null;
+            return Collections.singleton(ui.getTask());
         }
     }
 
