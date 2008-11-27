@@ -402,9 +402,9 @@ public class ProjectTab extends TopComponent
 
     private static final Lookup context = Utilities.actionsGlobalContext();
 
-    private static final Lookup.Result foSelection = context.lookup(new Lookup.Template(FileObject.class));
+    private static final Lookup.Result<FileObject> foSelection = context.lookup(new Lookup.Template<FileObject>(FileObject.class));
 
-    private static final Lookup.Result doSelection = context.lookup(new Lookup.Template(DataObject.class));
+    private static final Lookup.Result<DataObject> doSelection = context.lookup(new Lookup.Template<DataObject>(DataObject.class));
 
     private final LookupListener baseListener = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
@@ -413,20 +413,20 @@ public class ProjectTab extends TopComponent
                 return;
             }
             if (synchronizeViews) {
-                Collection fos = foSelection.allInstances();
+                Collection<? extends FileObject> fos = foSelection.allInstances();
                 if (fos.size() == 1) {
-                    selectNodeAsyncNoSelect((FileObject) fos.iterator().next());
+                    selectNodeAsyncNoSelect(fos.iterator().next());
                 } else {
-                    Collection dos = doSelection.allInstances();
+                    Collection<? extends DataObject> dos = doSelection.allInstances();
                     if (dos.size() == 1) {
-                        selectNodeAsyncNoSelect(((DataObject) dos.iterator().next()).getPrimaryFile());
+                        selectNodeAsyncNoSelect((dos.iterator().next()).getPrimaryFile());
                     }
                 }
             }
         }
     };
 
-    private final LookupListener weakListener = (LookupListener) WeakListeners.create(LookupListener.class, baseListener, null);
+    private final LookupListener weakListener = WeakListeners.create(LookupListener.class, baseListener, null);
 
     private void startListening() {
         foSelection.addLookupListener(weakListener);
@@ -439,11 +439,13 @@ public class ProjectTab extends TopComponent
         doSelection.removeLookupListener(weakListener);
     }
 
+    @Override
     protected void componentShowing() {
         super.componentShowing();
         startListening();
     }
 
+    @Override
     protected void componentHidden() {
         super.componentHidden();
         stopListening();
