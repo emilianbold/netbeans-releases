@@ -13,6 +13,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.ProxySelector;
 import java.util.prefs.Preferences;
@@ -22,7 +24,6 @@ import org.ini4j.Ini.Section;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -311,5 +312,27 @@ public class SvnConfigFilesTest extends NbTestCase {
             System.out.println(string);
         }
         System.out.println("===");
+    }
+
+    public void testWinUserAppdata() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        SvnConfigFiles config = SvnConfigFiles.getInstance();;
+        Method m = config.getClass().getDeclaredMethod("getWinUserAppdata", new Class[]{String.class, String.class});
+        m.setAccessible(true);
+        
+        String ret = (String) m.invoke(config, new Object[] {"", ""});
+        assertEquals("", ret);
+
+        ret = (String) m.invoke(config, new Object[] {"c:\\dil\\dil", "c:\\foo\\bar"});
+        assertEquals("c:\\foo\\bar/dil", ret);
+
+        ret = (String) m.invoke(config, new Object[] {"c:\\dil\\dil", "c:\\foo\\bar\\"});
+        assertEquals("c:\\foo\\bar/dil", ret);
+
+        ret = (String) m.invoke(config, new Object[] {"c:\\dil\\dil", "c:\\foo\\bar"});
+        assertEquals("c:\\foo\\bar/dil", ret);
+
+        ret = (String) m.invoke(config, new Object[] {"c:\\dil\\dil\\", "c:\\foo\\bar\\"});
+        assertEquals("c:\\foo\\bar/dil", ret);
+
     }
 }
