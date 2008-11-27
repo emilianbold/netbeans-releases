@@ -54,6 +54,8 @@ import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.View;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
 import org.netbeans.modules.db.metadata.model.api.SQLType;
+import org.netbeans.modules.db.metadata.model.api.Tuple;
+import org.netbeans.modules.db.metadata.model.jdbc.mysql.MySQLMetadata;
 import org.netbeans.modules.db.metadata.model.test.api.MetadataTestBase;
 
 /**
@@ -90,6 +92,7 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
                 "`i+d` INT NOT NULL PRIMARY KEY, " +
                 "foo_id INT NOT NULL, " +
                 "bar_name  VARCHAR(16), " +
+                "bar_digit DECIMAL(12,2) NOT NULL, " +
                 "FOREIGN KEY (foo_id) REFERENCES foo(id))");
         stmt.executeUpdate("CREATE VIEW barview AS SELECT * FROM bar");
         // TODO - test precision, scale, radix
@@ -97,7 +100,7 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
                 "BEGIN SELECT * from bar; END");
         stmt.executeUpdate("CREATE PROCEDURE fooproc(IN param1 INT) " +
                 "BEGIN SELECT * from foo; END");
-        metadata = new JDBCMetadata(conn, null);
+        metadata = new MySQLMetadata(conn, null);
         defaultCatalogName = mysqlDatabase;
     }
 
@@ -125,11 +128,7 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         assertTrue(tables.contains(barTable));
         assertSame(schema, barTable.getParent());
 
-        Collection<Column> columns = barTable.getColumns();
-        assertNames(Arrays.asList("i+d", "foo_id", "bar_name"), columns);
-        Column iPlusDColumn = barTable.getColumn("i+d");
-        assertTrue(columns.contains(iPlusDColumn));
-        assertSame(barTable, iPlusDColumn.getParent());
+        checkColumns(barTable);
     }
 
     public void testViews() throws Exception {
@@ -141,11 +140,7 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         assertTrue(views.contains(barView));
         assertSame(schema, barView.getParent());
 
-        Collection<Column> columns = barView.getColumns();
-        assertNames(Arrays.asList("i+d", "foo_id", "bar_name"), columns);
-        Column iPlusDColumn = barView.getColumn("i+d");
-        assertTrue(columns.contains(iPlusDColumn));
-        assertSame(barView, iPlusDColumn.getParent());
+        checkColumns(barView);
     }
 
     public void testProcedures() throws Exception {
@@ -168,13 +163,12 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         // MySQL does not tell you what the result columns are - bummer
         assertEquals(0, barProc.getColumns().size());
 
-        // MySQL *always* returns a length of 65535
-        // Email has been sent to MySQL about this...
         Parameter param = barProc.getParameter("param1");
         assertTrue(barParams.contains(param));
         assertSame(barProc, param.getParent());
+        assertEquals("JDBCParameter[name=param1, type=INTEGER, length=0, precision=10, radix=10, scale=0, nullable=NOT_NULLABLE, direction=IN, position=1]", param.toString());
         assertEquals(SQLType.INTEGER, param.getType());
-        assertEquals(65535, param.getLength());
+        assertEquals(0, param.getLength());
         assertEquals(Direction.IN, param.getDirection());
         assertEquals(10, param.getPrecision());
         assertEquals(0, param.getScale());
@@ -183,21 +177,39 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         param = barProc.getParameter("result");
         assertTrue(barParams.contains(param));
         assertSame(barProc, param.getParent());
-        assertEquals(SQLType.VARCHAR, param.getType());
-        assertEquals(65535, param.getLength());
-        assertEquals(Direction.OUT, param.getDirection());
-        assertEquals(255, param.getPrecision());
-        assertEquals(0, param.getScale());
-        assertEquals(10, param.getRadix());
+        assertEquals("JDBCParameter[name=result, type=VARCHAR, length=255, precision=0, radix=10, scale=0, nullable=NOT_NULLABLE, direction=OUT, position=2]", param.toString());
 
         param = barProc.getParameter("param2");
         assertTrue(barParams.contains(param));
         assertSame(barProc, param.getParent());
-        assertEquals(SQLType.DECIMAL, param.getType());
-        assertEquals(65535, param.getLength());
-        assertEquals(Direction.INOUT, param.getDirection());
-        assertEquals(5, param.getPrecision());
-        assertEquals(2, param.getScale());
-        assertEquals(10, param.getRadix());
+        assertEquals("JDBCParameter[name=param2, type=DECIMAL, length=0, precision=5, radix=10, scale=2, nullable=NOT_NULLABLE, direction=INOUT, position=3]", param.toString());
+    }
+
+    private void checkColumns(Tuple parent) {
+        Collection<Column> columns = parent.getColumns();
+        assertEquals(4, columns.size());
+        Column[] colarray = columns.toArray(new Column[4]);
+
+        Column col = colarray[0];
+        assertEquals("JDBCColumn[name=i+d, type=INTEGER, length=0, precision=10, radix=10, scale=0, nullable=NOT_NULLABLE, ordinal_position=1]", col.toString());
+        assertEquals("i+d", col.getName());
+        assertSame(parent, col.getParent());
+        assertEquals(SQLType.INTEGER, col.getType());
+        assertEquals(0, col.getLength());
+        assertEquals(10, col.getRadix());
+        assertEquals(10, col.getPrecision());
+        assertEquals(0, col.getScale());
+        assertEquals(1, col.getOrdinalPosition());
+
+        col = colarray[1];
+        assertEquals("JDBCColumn[name=foo_id, type=INTEGER, length=0, precision=10, radix=10, scale=0, nullable=NOT_NULLABLE, ordinal_position=2]", col.toString());
+
+        col = colarray[2];
+        assertEquals("JDBCColumn[name=bar_name, type=VARCHAR, length=16, precision=0, radix=10, scale=0, nullable=NULLABLE, ordinal_position=3]", col.toString());
+
+        col = colarray[3];
+        assertEquals(12, col.getPrecision());
+        assertEquals(2, col.getScale());
+        assertEquals("JDBCColumn[name=bar_digit, type=DECIMAL, length=0, precision=12, radix=10, scale=2, nullable=NOT_NULLABLE, ordinal_position=4]", col.toString());
     }
 }

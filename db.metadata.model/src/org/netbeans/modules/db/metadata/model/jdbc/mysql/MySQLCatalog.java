@@ -1,8 +1,8 @@
-/*
+    /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,46 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sample.providers;
+package org.netbeans.modules.db.metadata.model.jdbc.mysql;
 
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.spi.db.sample.SampleDbProvider;
+import java.util.logging.Logger;
+import org.netbeans.modules.db.metadata.model.jdbc.JDBCCatalog;
+import org.netbeans.modules.db.metadata.model.jdbc.JDBCSchema;
+
 
 /**
  *
- * @author David
+ * @author Andrei Badea
  */
-// XXX possibly intended: @ServiceProvider(service=SampleDbProvider.class) but original M-I/s reg asked for "MySQLSampleDbProvider" (note case)
-public class MySqlSampleDbProvider implements SampleDbProvider {
-    private static MySqlSampleDbProvider DEFAULT;
-    
-    public static synchronized MySqlSampleDbProvider getDefault(){
-        if (DEFAULT == null) {
-            DEFAULT = new MySqlSampleDbProvider();
-        }
-        return DEFAULT;
-    }
-    
-    private MySqlSampleDbProvider() {
-        
+public class MySQLCatalog extends JDBCCatalog {
+
+    private static final Logger LOGGER = Logger.getLogger(MySQLCatalog.class.getName());
+
+    public MySQLCatalog(MySQLMetadata metadata, String name, boolean _default, String defaultSchemaName) {
+        super(metadata, name, _default, defaultSchemaName);
     }
 
-    public String getJDBCDriverClass() {
-        return "com.mysql.jdbc.Driver"; // NO18N
+    @Override
+    public String toString() {
+        return "MySQLCatalog[name='" + getName() + "']"; // NOI18N
     }
 
-    public void dropDatabase(String sampleName, String host, String port, 
-            String user, String password) throws DatabaseException {
-    }
-
-    public void createSample(String sampleName, String host, String port, String user, String password) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @Override
+    protected JDBCSchema createJDBCSchema(String name, boolean _default, boolean synthetic) {
+        return new MySQLSchema(this, name, _default, synthetic);
     }
 
 }

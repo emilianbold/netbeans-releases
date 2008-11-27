@@ -45,6 +45,7 @@ import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Parameter;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
 import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.Value;
 
 /**
  *
@@ -72,6 +73,8 @@ public abstract class ProcedureImplementation {
     public abstract Collection<Parameter> getParameters();
 
     public abstract Parameter getParameter(String name);
+
+    public abstract Value getReturnValue();
 
     public abstract void refresh();
 }
