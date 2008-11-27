@@ -335,6 +335,13 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         checkCompletion("testfiles/predef_constants.rb", "__FILE__.cho^");
     }
 
+    // #threw NPE from RubyDeclarationFinder
+    public void testUnkownInTheBlock() throws Exception {
+        // TODO: it actually tries to infer wrongly upon the 'arr', but should
+        // upon the 'Huh'. Cf. unknown_in_the_block.rb
+        checkCompletion("testfiles/unknown_in_the_block.rb", "Huh.err^");
+    }
+
     // TODO - test more non-fc calls (e.g. x.foo)
     // TODO test with splat args (more args than are in def list)
     // TODO test with long arg lists
