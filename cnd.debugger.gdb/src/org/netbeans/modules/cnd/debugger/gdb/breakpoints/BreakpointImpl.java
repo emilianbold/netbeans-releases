@@ -44,10 +44,10 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.Map;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
@@ -70,7 +70,6 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     protected String err = null;
     private int breakpointNumber = -1;
     private boolean runWhenValidated = false;
-    private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
 
     protected BreakpointImpl(GdbBreakpoint breakpoint, GdbDebugger debugger) {
         this.debugger = debugger;
@@ -91,9 +90,14 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 // path to a possiby non-unique relative path and another project has a similar
                 // relative path. See IZ #151761.
                 String path = getBreakpoint().getPath();
-                if (!path.equals(fullname)) {
-                    log.warning("BreakpointImpl: Breakpoint path validation failed [" + path + "] vs [" + fullname + "]");
-                    path = path.replace("\\", "/"); // NOI18N - possible fix for 151577 (QA to test)
+                if (debugger.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
+                    // See IZ 151577 - do some magic to ensure equivalent paths really do match
+                    path = path.replace("\\", "/").toLowerCase();
+                    fullname = fullname.replace("\\", "/").toLowerCase();
+                } else if (debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+                    // See IZ 151577 - do some magic to ensure equivalent paths really do match
+                    path = path.toLowerCase();
+                    fullname = fullname.toLowerCase();
                 }
                 if (!path.equals(fullname)) {
                     debugger.getGdbProxy().break_delete(number);
