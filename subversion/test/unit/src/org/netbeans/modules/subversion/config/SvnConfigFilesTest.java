@@ -315,7 +315,7 @@ public class SvnConfigFilesTest extends NbTestCase {
     }
 
     public void testWinUserAppdata() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        SvnConfigFiles config = SvnConfigFiles.getInstance();;
+        SvnConfigFiles config = SvnConfigFiles.getInstance();
         Method m = config.getClass().getDeclaredMethod("getWinUserAppdata", new Class[]{String.class, String.class});
         m.setAccessible(true);
         
