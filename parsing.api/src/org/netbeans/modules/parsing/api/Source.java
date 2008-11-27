@@ -537,6 +537,8 @@ public final class Source {
             if (schedulerType == null) {
                 return null;
             }
+            if (source.schedulerEvents == null)
+                return null;
             return source.schedulerEvents.get (schedulerType);
         }
 
