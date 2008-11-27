@@ -37,35 +37,42 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.spi;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.netbeans.modules.db.metadata.model.api.MetadataElement;
+import org.netbeans.modules.db.metadata.model.api.Nullable;
+import org.netbeans.modules.db.metadata.model.api.SQLType;
+import org.netbeans.modules.db.metadata.model.api.Value;
 
 /**
- * Encapsulates a table column.
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Column extends Value {
+public abstract class ValueImplementation {
+    private Value value;
 
-    private final ColumnImplementation impl;
-
-    Column(ColumnImplementation impl) {
-        super(impl);
-        this.impl = impl;
+    public final Value getValue() {
+        if (value == null) {
+            value = MetadataAccessor.getDefault().createValue(this);
+        }
+        return value;
     }
 
-    @Override
-    public Tuple getParent() {
-        return impl.getParent();
-    }
+    public abstract MetadataElement getParent();
 
-    /**
-     * Return the position of this column
-     * 
-     * @return the positoin of this column in the result list, starting at 1
-     */
-    public int getOrdinalPosition() {
-        return impl.getOrdinalPosition();
-    }
+    public abstract int getLength();
+
+    public abstract String getName();
+
+    public abstract Nullable getNullable();
+
+    public abstract int getPrecision();
+
+    public abstract short getRadix();
+
+    public abstract short getScale();
+
+    public abstract SQLType getType();
+
 }

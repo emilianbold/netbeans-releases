@@ -37,35 +37,29 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.jdbc.mysql;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import org.netbeans.modules.db.metadata.model.jdbc.JDBCCatalog;
+import org.netbeans.modules.db.metadata.model.jdbc.JDBCProcedure;
+import org.netbeans.modules.db.metadata.model.jdbc.JDBCSchema;
 
 /**
- * Encapsulates a table column.
  *
- * @author Andrei Badea
+ * @author David
  */
-public class Column extends Value {
-
-    private final ColumnImplementation impl;
-
-    Column(ColumnImplementation impl) {
-        super(impl);
-        this.impl = impl;
+public class MySQLSchema extends JDBCSchema {
+    public MySQLSchema(JDBCCatalog jdbcCatalog, String name, boolean _default, boolean synthetic) {
+        super(jdbcCatalog, name, _default, synthetic);
     }
 
     @Override
-    public Tuple getParent() {
-        return impl.getParent();
+    protected JDBCProcedure createJDBCProcedure(String procedureName) {
+        return new MySQLProcedure(this, procedureName);
     }
 
-    /**
-     * Return the position of this column
-     * 
-     * @return the positoin of this column in the result list, starting at 1
-     */
-    public int getOrdinalPosition() {
-        return impl.getOrdinalPosition();
+    @Override
+    public String toString() {
+        return "MySQLSchema[name=" + getName() + "]";
     }
+
 }

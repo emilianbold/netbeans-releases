@@ -64,12 +64,21 @@ public class Procedure extends Tuple {
     }
 
     /**
-     * Returns the name of this table; never {@code null}.
+     * Returns the name of this procedure; never {@code null}.
      *
      * @return the name.
      */
     public String getName() {
         return impl.getName();
+    }
+
+    /**
+     * Returns the return value of this procedure
+     * 
+     * @return the return value for this procedure
+     */
+    public Value getReturnValue() {
+        return impl.getReturnValue();
     }
 
     /**

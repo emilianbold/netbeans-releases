@@ -37,35 +37,28 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.jdbc.mysql;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import java.sql.Connection;
+import org.netbeans.modules.db.metadata.model.jdbc.JDBCMetadata;
 
 /**
- * Encapsulates a table column.
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Column extends Value {
+public class MySQLMetadata extends JDBCMetadata {
 
-    private final ColumnImplementation impl;
-
-    Column(ColumnImplementation impl) {
-        super(impl);
-        this.impl = impl;
+    public MySQLMetadata(Connection conn, String defaultSchemaName) {
+        super(conn, defaultSchemaName);
     }
 
     @Override
-    public Tuple getParent() {
-        return impl.getParent();
+    public String toString() {
+        return "MySQLMetadata"; // NOI18N
     }
 
-    /**
-     * Return the position of this column
-     * 
-     * @return the positoin of this column in the result list, starting at 1
-     */
-    public int getOrdinalPosition() {
-        return impl.getOrdinalPosition();
+    @Override
+    protected MySQLCatalog createJDBCCatalog(String catalogName, boolean _default, String defaultSchemaName) {
+        return new MySQLCatalog(this, catalogName, _default, defaultSchemaName);
     }
 }

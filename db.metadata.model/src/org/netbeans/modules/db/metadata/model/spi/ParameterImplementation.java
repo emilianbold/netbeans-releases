@@ -40,17 +40,15 @@
 package org.netbeans.modules.db.metadata.model.spi;
 
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Nullable;
 import org.netbeans.modules.db.metadata.model.api.Parameter;
 import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
-import org.netbeans.modules.db.metadata.model.api.SQLType;
 
 /**
  *
  * @author Andrei Badea
  */
-public abstract class ParameterImplementation {
+public abstract class ParameterImplementation extends ValueImplementation {
 
     private Parameter param;
 
@@ -65,18 +63,6 @@ public abstract class ParameterImplementation {
 
     public abstract Procedure getParent();
 
-    public abstract String getName();
-
-    public abstract int getPrecision();
-
-    public abstract short getRadix();
-
-    public abstract short getScale();
-
-    public abstract SQLType getType();
-
-    public abstract int getLength();
-
-    public abstract Nullable getNullable();
+    public abstract int getOrdinalPosition();
 
 }

@@ -1,4 +1,4 @@
-/*
+    /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
@@ -37,35 +37,33 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.jdbc.mysql;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import java.util.logging.Logger;
+import org.netbeans.modules.db.metadata.model.jdbc.JDBCCatalog;
+import org.netbeans.modules.db.metadata.model.jdbc.JDBCSchema;
+
 
 /**
- * Encapsulates a table column.
  *
  * @author Andrei Badea
  */
-public class Column extends Value {
+public class MySQLCatalog extends JDBCCatalog {
 
-    private final ColumnImplementation impl;
+    private static final Logger LOGGER = Logger.getLogger(MySQLCatalog.class.getName());
 
-    Column(ColumnImplementation impl) {
-        super(impl);
-        this.impl = impl;
+    public MySQLCatalog(MySQLMetadata metadata, String name, boolean _default, String defaultSchemaName) {
+        super(metadata, name, _default, defaultSchemaName);
     }
 
     @Override
-    public Tuple getParent() {
-        return impl.getParent();
+    public String toString() {
+        return "MySQLCatalog[name='" + getName() + "']"; // NOI18N
     }
 
-    /**
-     * Return the position of this column
-     * 
-     * @return the positoin of this column in the result list, starting at 1
-     */
-    public int getOrdinalPosition() {
-        return impl.getOrdinalPosition();
+    @Override
+    protected JDBCSchema createJDBCSchema(String name, boolean _default, boolean synthetic) {
+        return new MySQLSchema(this, name, _default, synthetic);
     }
+
 }
