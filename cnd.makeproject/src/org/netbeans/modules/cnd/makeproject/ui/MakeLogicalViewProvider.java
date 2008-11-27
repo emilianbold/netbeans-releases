@@ -401,7 +401,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     private static Node findProjectNode(Node root, Project p) {
         Node[] n = root.getChildren().getNodes(true);
-        Template t = new Template(null, null, p);
+        Template<Project> t = new Template<Project>(null, null, p);
 
         for (int cntr = 0; cntr < n.length; cntr++) {
             if (n[cntr].getLookup().lookupItem(t) != null) {
