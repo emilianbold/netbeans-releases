@@ -69,7 +69,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
-import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.openide.filesystems.FileObject;
 
@@ -121,7 +120,7 @@ public final class JavaElementHandler {
         return result;
     }
 
-    public Map<FieldSignature, ? extends CompletionItem> getMethods(String className,
+    public Map<FieldSignature, ? extends CompletionItem> getFields(String className,
             String prefix, int anchor, boolean emphasise) {
         JavaSource javaSource = createJavaSource();
 

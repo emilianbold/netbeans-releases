@@ -50,6 +50,7 @@ import org.codehaus.groovy.ast.GenericsType;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionType;
+import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.completion.JavaElementHandler.ClassType;
@@ -81,6 +82,17 @@ public final class CompleteElementHandler {
 
         //Map<MethodSignature, CompletionItem> meta = new HashMap<MethodSignature, CompletionItem>();
         Map<MethodSignature, CompletionItem> result = getMethodsInner(
+                completionType, node, type, prefix, anchor);
+
+        //fillSuggestions(meta, result);
+        return result;
+    }
+
+    public Map<FieldSignature, ? extends CompletionItem> getFields(
+            CompletionType completionType, ClassNode node, ClassType type, String prefix, int anchor) {
+
+        //Map<MethodSignature, CompletionItem> meta = new HashMap<MethodSignature, CompletionItem>();
+        Map<FieldSignature, CompletionItem> result = getFieldsInner(
                 completionType, node, type, prefix, anchor);
 
         //fillSuggestions(meta, result);
@@ -131,6 +143,42 @@ public final class CompleteElementHandler {
 
         for (ClassNode inter : typeNode.getInterfaces()) {
             fillSuggestions(getMethods(completionType, inter,
+                    ClassType.SUPERINTERFACE, prefix, anchor), result);
+        }
+
+        return result;
+    }
+
+    private Map<FieldSignature, CompletionItem> getFieldsInner(
+            CompletionType completionType, ClassNode node, ClassType type, String prefix, int anchor) {
+
+        Map<FieldSignature, CompletionItem> result = new HashMap<FieldSignature, CompletionItem>();
+        ClassNode typeNode = loadDefinition(completionType, node, type);
+
+        fillSuggestions(GroovyElementHandler.forCompilationInfo(info)
+                .getFields(typeNode.getName(), prefix, anchor, type == ClassType.CLASS), result);
+
+        fillSuggestions(JavaElementHandler.forCompilationInfo(info)
+                .getFields(typeNode.getName(), prefix, anchor, type == ClassType.CLASS), result);
+
+        // FIXME not sure about order of the meta methods, perhaps interface
+        // methods take precedence
+        fillSuggestions(MetaElementHandler.forCompilationInfo(info)
+                .getFields(typeNode.getName(), prefix, anchor), result);
+
+        fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
+                .getFields(completionType, typeNode.getName(), prefix, anchor), result);
+
+        if (typeNode.getSuperClass() != null) {
+            fillSuggestions(getFields(completionType, typeNode.getSuperClass(),
+                    ClassType.SUPERCLASS, prefix, anchor), result);
+        } else if (type == ClassType.CLASS) {
+            fillSuggestions(JavaElementHandler.forCompilationInfo(info)
+                    .getFields("java.lang.Object", prefix, anchor, false), result); // NOI18N
+        }
+
+        for (ClassNode inter : typeNode.getInterfaces()) {
+            fillSuggestions(getFields(completionType, inter,
                     ClassType.SUPERINTERFACE, prefix, anchor), result);
         }
 
