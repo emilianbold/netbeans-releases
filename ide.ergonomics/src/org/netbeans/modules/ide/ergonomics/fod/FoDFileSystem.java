@@ -91,16 +91,19 @@ implements Runnable {
         Lookup.Result<FeatureInfo> result = Feature2LayerMapping.featureTypesLookup().lookupResult(FeatureInfo.class);
         boolean empty = true;
         
+        LOG.fine("collecting layers"); // NOI18N
         List<XMLFileSystem> delegate = new ArrayList<XMLFileSystem>();
         for (FeatureInfo info : result.allInstances ()) {
             Internal internal = FeatureInfoAccessor.DEFAULT.getInternal(info);
             if (!internal.isEnabled()) {
+                LOG.finest("adding feature " + info.getPreferredCodeNameBase()); // NOI18N
                 delegate.add(internal.getXMLFileSystem());
             } else {
                 empty = false;
             }
         }
         if (empty) {
+            LOG.finest("adding default layer"); // NOI18N
             try {
                 delegate.add(0, new XMLFileSystem(FoDFileSystem.class.getResource("default.xml"))); // NOI18N
             } catch (SAXException ex) {
@@ -108,7 +111,9 @@ implements Runnable {
             }
         }
         
+        LOG.fine("delegating to " + delegate.size() + " layers"); // NOI18N
         setDelegates(delegate.toArray(new FileSystem[0]));
+        LOG.fine("done");
     }
 
     public FeatureInfo whichProvides(FileObject template) {
