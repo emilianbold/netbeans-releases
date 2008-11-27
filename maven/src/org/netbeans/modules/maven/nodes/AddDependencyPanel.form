@@ -15,23 +15,16 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="tabPane" alignment="0" pref="409" max="32767" attributes="0"/>
-          <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
-              <Component id="coordPanel" alignment="1" max="32767" attributes="0"/>
-          </Group>
+          <Component id="coordPanel" alignment="1" max="32767" attributes="0"/>
+          <Component id="tabPane" alignment="0" pref="434" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace min="-2" pref="111" max="-2" attributes="0"/>
-              <Component id="tabPane" pref="331" max="32767" attributes="0"/>
-          </Group>
-          <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
-                  <Component id="coordPanel" min="-2" pref="107" max="-2" attributes="0"/>
-                  <EmptySpace pref="335" max="32767" attributes="0"/>
-              </Group>
+          <Group type="102" attributes="0">
+              <Component id="coordPanel" min="-2" pref="107" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="tabPane" pref="329" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -51,10 +44,10 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="txtArtifactId" alignment="0" pref="312" max="32767" attributes="0"/>
-                      <Component id="txtGroupId" alignment="0" pref="312" max="32767" attributes="0"/>
+                      <Component id="txtArtifactId" alignment="0" pref="337" max="32767" attributes="0"/>
+                      <Component id="txtGroupId" alignment="0" pref="337" max="32767" attributes="0"/>
                       <Group type="102" alignment="1" attributes="0">
-                          <Component id="txtVersion" pref="156" max="32767" attributes="0"/>
+                          <Component id="txtVersion" pref="181" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="lblScope" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -176,12 +169,12 @@
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="resultsPanel" pref="377" max="32767" attributes="0"/>
+                              <Component id="resultsPanel" pref="402" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="resultsLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="202" max="32767" attributes="0"/>
+                              <EmptySpace pref="227" max="32767" attributes="0"/>
                               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
@@ -193,7 +186,7 @@
                                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="searchField" pref="331" max="32767" attributes="0"/>
+                                  <Component id="searchField" pref="356" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -217,7 +210,7 @@
                           <Component id="resultsLabel" min="-2" max="-2" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="resultsPanel" pref="192" max="32767" attributes="2"/>
+                      <Component id="resultsPanel" pref="190" max="32767" attributes="2"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -316,7 +309,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="artifactPanel" alignment="0" pref="377" max="32767" attributes="0"/>
+                          <Component id="artifactPanel" alignment="0" pref="402" max="32767" attributes="0"/>
                           <Component id="artifactsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -329,7 +322,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="artifactsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="artifactPanel" pref="247" max="32767" attributes="0"/>
+                      <Component id="artifactPanel" pref="245" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
