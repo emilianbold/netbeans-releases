@@ -92,8 +92,8 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 String path = getBreakpoint().getPath();
                 if (debugger.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                     // See IZ 151577 - do some magic to ensure equivalent paths really do match
-                    path = path.replace("\\", "/").toLowerCase();
-                    fullname = fullname.replace("\\", "/").toLowerCase();
+                    path = path.replace("\\", "/").toLowerCase(); // NOI18N
+                    fullname = fullname.replace("\\", "/").toLowerCase(); // NOI18N
                 } else if (debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                     // See IZ 151577 - do some magic to ensure equivalent paths really do match
                     path = path.toLowerCase();
