@@ -301,6 +301,18 @@ public class JsCodeCompletionTest extends JsTestBase {
         checkCompletion("testfiles/completion/lib/domproperties.js", ".s^", true);
     }
 
+    public void testE4X1() throws Exception {
+        checkCompletion("testfiles/completion/lib/e4x.js", "order.^", true);
+    }
+
+    public void testE4X2() throws Exception {
+        checkCompletion("testfiles/completion/lib/e4x.js", "order.item.^qty", true);
+    }
+
+    public void testE4X3() throws Exception {
+        checkCompletion("testfiles/completion/lib/e4x.js", "order.i^tem.qty", true);
+    }
+
     public void testCall1() throws Exception {
         checkComputeMethodCall("testfiles/calls/call1.js", "x.addEventListener(type, ^listener, useCapture)", "listener", true);
     }
