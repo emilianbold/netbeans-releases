@@ -113,6 +113,8 @@ public class ModulesActivator {
             doEnableModules ();
         } catch (Exception x) {
             Exceptions.printStackTrace (x);
+        } finally {
+            FoDFileSystem.getInstance().refresh();
         }
     }
     

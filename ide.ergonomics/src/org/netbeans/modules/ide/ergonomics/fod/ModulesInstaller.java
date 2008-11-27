@@ -198,6 +198,8 @@ public class ModulesInstaller {
                     NotifyDescriptor.OK_OPTION
                     );
             DialogDisplayer.getDefault ().notifyLater (nd);
+        } finally {
+            FoDFileSystem.getInstance().refresh();
         }
     }
     
