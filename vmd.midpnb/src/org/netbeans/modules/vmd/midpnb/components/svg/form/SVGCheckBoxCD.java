@@ -88,50 +88,52 @@ public class SVGCheckBoxCD extends ComponentDescriptor{
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList (
-                /*new PropertyDescriptor( SVGLabelCD.PROP_TEXT, 
+                new PropertyDescriptor( SVGRadioButtonCD.PROP_SELECTED, 
+                        MidpTypes.TYPEID_BOOLEAN, 
+                        MidpTypes.createBooleanValue (Boolean.FALSE), false, false, 
+                        MidpVersionable.MIDP_2),
+                new PropertyDescriptor( SVGLabelCD.PROP_TEXT, 
                                 MidpTypes.TYPEID_JAVA_LANG_STRING, 
                                 MidpTypes.createStringValue( DEFAULT_TEXT ), true, true,
                                 MidpVersionable.MIDP_2)
-                new PropertyDescriptor( SVGRadioButtonCD.PROP_SELECTED, 
-                                        MidpTypes.TYPEID_BOOLEAN, 
-                                        MidpTypes.createBooleanValue (Boolean.FALSE), false, false, 
-                                        MidpVersionable.MIDP_2)*/
+                
                 
                 );
     }
     
     private Presenter createSetterPresenter () {
         return new CodeSetterPresenter ().
-                addParameters(MidpParameter.create(SVGLabelCD.PROP_TEXT,
+                addParameters(MidpParameter.create(//SVGLabelCD.PROP_TEXT,
                         SVGRadioButtonCD.PROP_SELECTED)).
                 addSetters(MidpSetter.createSetter("setText", 
                         MidpVersionable.MIDP_2).addParameters(SVGLabelCD.
-                                PROP_TEXT))/*.
+                                PROP_TEXT)).
                  addSetters(MidpSetter.createSetter("setSelected", 
                        MidpVersionable.MIDP_2).addParameters( SVGRadioButtonCD.
-                                                PROP_SELECTED))              */  ;
+                                                PROP_SELECTED)) ;
     }
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                .addProperty(NbBundle.getMessage(SVGCheckBoxCD.class, 
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES).
+                addProperty(NbBundle.getMessage(SVGCheckBoxCD.class, 
                         "DISP_Text"), 
                         PropertyEditorString.createInstance(
                                 NbBundle.getMessage(SVGRadioButtonCD.class, 
-                                "LBL_SVGCheckBox_Text")), SVGLabelCD.PROP_TEXT)/*.
+                                "LBL_SVGCheckBox_Text")), SVGLabelCD.PROP_TEXT).
                  addProperty(NbBundle.getMessage(SVGCheckBoxCD.class, 
                                 "DISP_IsSelected"), 
-                         PropertyEditorBooleanUC.createInstance())*/; // NOI18N
+                         PropertyEditorBooleanUC.createInstance(), 
+                         SVGRadioButtonCD.PROP_SELECTED); // NOI18N
                 
     }
 
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList(
-                // properies
-                //createPropertiesPresenter(),
-                //createSetterPresenter(),
+                // properties
+                createPropertiesPresenter(),
+                createSetterPresenter(),
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),

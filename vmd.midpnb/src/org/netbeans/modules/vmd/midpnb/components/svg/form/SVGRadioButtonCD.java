@@ -89,14 +89,14 @@ public class SVGRadioButtonCD extends ComponentDescriptor{
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList (
-                /*new PropertyDescriptor( SVGLabelCD.PROP_TEXT, 
+                new PropertyDescriptor( SVGLabelCD.PROP_TEXT, 
                         MidpTypes.TYPEID_JAVA_LANG_STRING, 
                         MidpTypes.createStringValue( "" ), true, true,
                         MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_SELECTED, 
                         MidpTypes.TYPEID_BOOLEAN, 
                         MidpTypes.createBooleanValue (Boolean.FALSE), false, false, 
-                        MidpVersionable.MIDP_2)*/
+                        MidpVersionable.MIDP_2)
                 );
     }
     
@@ -111,7 +111,7 @@ public class SVGRadioButtonCD extends ComponentDescriptor{
                                 "LBL_SVGRadioButton_Text")), SVGLabelCD.PROP_TEXT).
                  addProperty(NbBundle.getMessage(SVGRadioButtonCD.class, 
                                 "DISP_IsSelected"), 
-                         PropertyEditorBooleanUC.createInstance()); // NOI18N
+                         PropertyEditorBooleanUC.createInstance(), PROP_SELECTED); // NOI18N
                 
     }
     
@@ -126,8 +126,8 @@ public class SVGRadioButtonCD extends ComponentDescriptor{
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList(
                 // properties
-                //createPropertiesPresenter(),
-                //createSetterPresenter(),
+                createPropertiesPresenter(),
+                createSetterPresenter(),
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),
