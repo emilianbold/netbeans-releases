@@ -41,33 +41,12 @@
 
 package org.netbeans.modules.cnd.api.compilers;
 
-import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
 
 
 /**
@@ -439,49 +418,6 @@ public class ReadRegistryTestCase extends NbTestCase {
             buf.append(getFile(pattern3, "3", s));
         }
         assertTrue(golden.equals(buf.toString()));
-    }
-
-    public void testSchema() throws Exception {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject folder = fs.findResource("Services/CndToolChain"); //NOI18N
-        if (folder != null && folder.isFolder()) {
-            FileObject[] files = folder.getChildren();
-            for (FileObject file : files) {
-                parse(file);
-            }
-        }
-    }
-    
-    private void parse(final FileObject file) throws Exception {
-        InputSource source = new InputSource(file.getInputStream());
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        Schema schema = schemaFactory.newSchema(new StreamSource(ReadRegistryTestCase.class.getResourceAsStream("/org/netbeans/modules/cnd/api/compilers/toolchaindefinition.xsd")));
-        
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setValidating(true);
-        factory.setNamespaceAware(true);
-        factory.setSchema(schema);
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        builder.setErrorHandler(new ErrorHandler() {
-            public void warning(SAXParseException exception) throws SAXException {
-                System.err.println(file.getNameExt()+":"+exception.getLineNumber()+":"+exception.getColumnNumber());
-                throw exception;
-            }
-            public void error(SAXParseException exception) throws SAXException {
-                if ("Document is invalid: no grammar found.".equals(exception.getMessage())) {
-                    return;
-                } else if ("Document root element \"toolchaindefinition\", must match DOCTYPE root \"null\".".equals(exception.getMessage())) {
-                    return;
-                }
-                System.err.println(file.getNameExt()+":"+exception.getLineNumber()+":"+exception.getColumnNumber());
-                throw exception;
-            }
-            public void fatalError(SAXParseException exception) throws SAXException {
-                System.err.println(file.getNameExt()+":"+exception.getLineNumber()+":"+exception.getColumnNumber());
-                throw exception;
-            }
-        });
-        builder.parse(source);
     }
 
     private String getFile(Pattern pattern, String prefix, String s) {
