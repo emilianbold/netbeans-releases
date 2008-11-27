@@ -772,7 +772,16 @@ public class InstallSupportImpl {
             String label) throws MalformedURLException, IOException {
         
         int increment = 0;
-        BufferedInputStream bsrc = new BufferedInputStream (source.openStream());
+        progress.progress (label, aggregateDownload);
+        InputStream is = null;
+        try {
+            is = source.openStream();
+        } catch (FileNotFoundException x) {
+            err.log (Level.INFO, x.getMessage(), x);
+            throw new IOException(NbBundle.getMessage(InstallSupportImpl.class,
+                    "InstallSupportImpl_Download_Unavailable", source));            
+        }
+        BufferedInputStream bsrc = new BufferedInputStream (is);
         BufferedOutputStream bdest = new BufferedOutputStream (new FileOutputStream (dest));
         
         err.log (Level.FINEST, "Copy " + source + " to " + dest + "[" + estimatedSize + "]");
