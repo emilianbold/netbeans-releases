@@ -13,8 +13,6 @@ if [ -z "$TMP" ]; then
   TMP="/tmp"
 fi
 
-t
-
 ANT_OPTS="-Xmx512m -XX:MaxPermSize=128m"
 export ANT_OPTS
 HGMERGE=merge
@@ -91,7 +89,7 @@ fi
 
 RESULT=`pwd`/nbbuild/build/test-results.txt
 export RESULT
-rm $RESULT
+rm -f $RESULT
 
 testmodule() {
     if ant $ANT_PARAM -f $1/build.xml test-unit -Dtest-unit-sys-prop.ignore.random.failures=true; then
