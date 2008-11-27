@@ -168,7 +168,7 @@ public final class GroovyElementHandler {
         for (IndexedField indexedField : fields) {
             LOGGER.log(Level.FINEST, "field from index : {0} ", indexedField.getName());
 
-            System.out.println("INDEX: " + indexedField.getName() + " " + indexedField.getType() + " " + org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedField.getModifiers(), Modifier.PRIVATE));
+            //System.out.println("INDEX: " + indexedField.getName() + " " + indexedField.getType() + " " + org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedField.getModifiers(), Modifier.PRIVATE));
             result.put(getSignature(indexedField), new CompletionItem.JavaFieldItem(
                     className, indexedField.getName(), null, org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedField.getModifiers(), Modifier.PRIVATE), anchor, emphasise));
         }

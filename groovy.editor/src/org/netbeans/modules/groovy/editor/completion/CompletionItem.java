@@ -196,9 +196,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public Set<Modifier> getModifiers() {
-            // FIXME - fix tests
-            //return Utilities.modelModifiersToGsf(modifiers);
-            return Collections.emptySet();
+            return Utilities.modelModifiersToGsf(modifiers);
         }
 
         @Override

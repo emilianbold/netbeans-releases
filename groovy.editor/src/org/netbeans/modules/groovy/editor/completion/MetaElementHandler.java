@@ -97,7 +97,7 @@ public final class MetaElementHandler {
             LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
             for (Object method : metaClz.getMetaMethods()) {
                 LOG.log(Level.FINEST, method.toString());
-                System.out.println("Method " + method.toString());
+                //System.out.println("Method " + method.toString());
                 populateProposal(clz, method, prefix, anchor, result);
             }
 
@@ -128,7 +128,7 @@ public final class MetaElementHandler {
             for (Object field : metaClz.getProperties()) {
                 LOG.log(Level.FINEST, field.toString());
                 MetaProperty prop = (MetaProperty) field;
-                System.out.println("META: " + prop.getName() + " " + prop.getType().getSimpleName() + " " + Utilities.reflectionModifiersToModel(prop.getModifiers()));
+                //System.out.println("META: " + prop.getName() + " " + prop.getType().getSimpleName() + " " + Utilities.reflectionModifiersToModel(prop.getModifiers()));
                 result.put(new FieldSignature(prop.getName()), new CompletionItem.FieldItem(
                         prop.getName(), prop.getModifiers(), anchor, info, prop.getType().getSimpleName()));
             }
