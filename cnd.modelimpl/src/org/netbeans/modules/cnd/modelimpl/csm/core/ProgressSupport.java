@@ -84,7 +84,7 @@ public class ProgressSupport {
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads
                 listener.fileInvalidated(file);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 DiagnosticExceptoins.register(e);
             }
         }
@@ -97,7 +97,7 @@ public class ProgressSupport {
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads
                 listener.fileParsingStarted(file);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 DiagnosticExceptoins.register(e);
             }
         }
@@ -110,7 +110,7 @@ public class ProgressSupport {
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads
                 listener.fileParsingFinished(file);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 DiagnosticExceptoins.register(e);
             }
         }
@@ -123,7 +123,7 @@ public class ProgressSupport {
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads
                 listener.projectParsingStarted(project);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 DiagnosticExceptoins.register(e);
             }
         }
@@ -133,7 +133,7 @@ public class ProgressSupport {
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads
                 listener.projectParsingFinished(project);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 DiagnosticExceptoins.register(e);
             }
         }
@@ -143,7 +143,7 @@ public class ProgressSupport {
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads
                 listener.projectLoaded(project);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 DiagnosticExceptoins.register(e);
             }
         }
@@ -153,7 +153,7 @@ public class ProgressSupport {
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads
                 listener.parserIdle();
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 DiagnosticExceptoins.register(e);
             }
         }
@@ -166,7 +166,7 @@ public class ProgressSupport {
         for (CsmProgressListener listener : getProgressListeners()) {
             try { // have to do this to not allow a listener to crush code model threads
                 listener.projectFilesCounted(project, cnt);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 DiagnosticExceptoins.register(e);
             }
         }
