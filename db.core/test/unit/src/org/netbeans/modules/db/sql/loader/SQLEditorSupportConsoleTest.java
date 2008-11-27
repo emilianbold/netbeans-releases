@@ -210,11 +210,6 @@ public class SQLEditorSupportConsoleTest extends NbTestCase {
         public MySQLEditorSupport(SQLDataObject obj) {
             super(obj);
         }
-
-        @Override
-        public boolean canClose() {
-            return super.canClose();
-        }
         
         public void saveDocument() throws IOException {
             super.saveDocument();
