@@ -170,7 +170,7 @@ public class MakefileConfiguration {
 //                if (file.exists()) {
 //                    return path;
 //                }
-            return getMakeConfiguration().getBaseDir() + "/"  + getOutput().getValue();
+            return getMakeConfiguration().getBaseDir() + "/"  + getOutput().getValue(); // NOI18N
         }
     }
     
