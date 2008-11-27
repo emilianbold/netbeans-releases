@@ -106,6 +106,27 @@ public class NotifyDescriptor extends Object {
     /** Name of property for the OK button validation. */
     public static final String PROP_VALID = "valid"; // NOI18N
 
+    /** Name of property for the error message at the bottom of the wizard.
+     * To set such message use {@link #createNotificationLineSupport}
+     *
+     * @since 7.10
+     */
+    public static final String PROP_ERROR_NOTIFICATION = "errorNotification"; // NOI18N
+
+    /** Name of property for the error message at the bottom of the wizard.
+     * To set such message use {@link #createNotificationLineSupport}
+     *
+     * @since 7.10
+     */
+    public static final String PROP_WARNING_NOTIFICATION = "warningNotification"; // NOI18N
+
+    /** Name of property for the error message at the bottom of the wizard.
+     * To set such message use {@link #createNotificationLineSupport}
+     *
+     * @since 7.10
+     */
+    public static final String PROP_INFO_NOTIFICATION = "infoNotification"; // NOI18N
+
     //
     // Return values
     //
@@ -193,6 +214,8 @@ public class NotifyDescriptor extends Object {
 
     /** Is OK button valid (enabled). */
     private boolean valid = true;
+
+    private NotificationLineSupport notificationLineSupport = null;
 
     /** The object specifying the detail object. */
 
@@ -577,6 +600,62 @@ public class NotifyDescriptor extends Object {
         getterCalled();
 
         return title;
+    }
+
+    /** Create {@link NotificationLineSupport} if you want to notify users
+     * using info/warning/error messages in designed line at the bottom
+     * of your dialog. These message will be labelled with appropriate icons.
+     * <br>
+     * Note: Call this method <b>before</b> you call {@link DialogDisplayer#createDialog}
+     *
+     * @return NotificationLineSupport
+     * @since 7.10
+     */
+    public final NotificationLineSupport createNotificationLineSupport() {
+        notificationLineSupport = new NotificationLineSupport (this);
+        return notificationLineSupport;
+    }
+
+    /** Returns NotificationLineSupport if it was created or <code>null</code> if doesn't.
+     * <br>
+     * Note: NotificationLineSupport will not be created by default, API client
+     * has to create this support purposely with the exception {@link WizardDescriptor}
+     * which has such capability longer.
+     *
+     * @see #createNotificationLineSupport() 
+     * @return NotificationLineSupport or null if was not created yet
+     * @since 7.10
+     */
+    public final NotificationLineSupport getNotificationLineSupport() {
+        return notificationLineSupport;
+    }
+
+    void setInformationMessage (String msg) {
+        if (notificationLineSupport == null) {
+            throw new IllegalStateException ("NotificationLineSupport wasn't created yet.");
+        }
+        firePropertyChange (PROP_INFO_NOTIFICATION, null, msg);
+    }
+
+    void setWarningMessage (String msg) {
+        if (notificationLineSupport == null) {
+            throw new IllegalStateException ("NotificationLineSupport wasn't created yet.");
+        }
+        firePropertyChange (PROP_WARNING_NOTIFICATION, null, msg);
+    }
+
+    void setErrorMessage (String msg) {
+        if (notificationLineSupport == null) {
+            throw new IllegalStateException ("NotificationLineSupport wasn't created yet.");
+        }
+        firePropertyChange (PROP_ERROR_NOTIFICATION, null, msg);
+    }
+
+    void clearMessages () {
+        if (notificationLineSupport == null) {
+            throw new IllegalStateException ("NotificationLineSupport wasn't created yet.");
+        }
+        firePropertyChange (PROP_INFO_NOTIFICATION, null, null);
     }
 
     /**

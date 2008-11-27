@@ -58,6 +58,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.*;
+import org.openide.util.ImageUtilities;
 
 
 /** Permits dialogs to be displayed.
@@ -251,6 +252,14 @@ public abstract class DialogDisplayer {
             private final Object[] closingOptions;
             private final ActionListener buttonListener;
             private boolean haveFinalValue = false;
+            private Color nbErrorForeground;
+            private Color nbWarningForeground;
+            private Color nbInfoForeground;
+            private JLabel notificationLine;
+            private static final int MSG_TYPE_ERROR = 1;
+            private static final int MSG_TYPE_WARNING = 2;
+            private static final int MSG_TYPE_INFO = 3;
+
 
             public StandardDialog(
                 String title, boolean modal, NotifyDescriptor nd, Object[] closingOptions, ActionListener buttonListener
@@ -311,6 +320,30 @@ public abstract class DialogDisplayer {
 
                 //System.err.println("updateMessage: " + nd.getMessage());
                 messageComponent = message2Component(nd.getMessage());
+                if (! (nd instanceof WizardDescriptor) && nd.getNotificationLineSupport () != null) {
+                    JComponent toAdd = new JPanel (new BorderLayout ());
+                    toAdd.add (messageComponent, BorderLayout.CENTER);
+
+                    nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
+                    if (nbErrorForeground == null) {
+                        //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
+                        nbErrorForeground = new Color(255, 0, 0); // RGB suggested by jdinga in #65358
+                    }
+
+                    nbWarningForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
+                    if (nbWarningForeground == null) {
+                        nbWarningForeground = new Color(51, 51, 51); // Label.foreground
+                    }
+
+                    nbInfoForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
+                    if (nbInfoForeground == null) {
+                        nbInfoForeground = UIManager.getColor("Label.foreground"); //NOI18N
+                    }
+
+                    notificationLine = new FixedHeightLabel ();
+                    toAdd.add (notificationLine, BorderLayout.SOUTH);
+                    messageComponent = toAdd;
+                }
                 getContentPane().add(messageComponent, BorderLayout.CENTER);
             }
 
@@ -457,8 +490,62 @@ public abstract class DialogDisplayer {
                             dialog.updateOptions();
                             dialog.validate();
                             dialog.repaint();
-                        } else {
-                        }
+                    } else if (NotifyDescriptor.PROP_INFO_NOTIFICATION.equals (ev.getPropertyName ())) {
+                        updateNotificationLine (StandardDialog.MSG_TYPE_INFO, ev.getNewValue ());
+                    } else if (NotifyDescriptor.PROP_WARNING_NOTIFICATION.equals (ev.getPropertyName ())) {
+                        updateNotificationLine (StandardDialog.MSG_TYPE_WARNING, ev.getNewValue ());
+                    } else if (NotifyDescriptor.PROP_ERROR_NOTIFICATION.equals (ev.getPropertyName ())) {
+                        updateNotificationLine (StandardDialog.MSG_TYPE_ERROR, ev.getNewValue ());
+                    }
+            }
+            private void updateNotificationLine (int msgType, Object o) {
+                String msg = o == null ? null : o.toString ();
+                if (msg != null && msg.trim().length() > 0) {
+                    switch (msgType) {
+                        case StandardDialog.MSG_TYPE_ERROR:
+                            prepareMessage(dialog.notificationLine,
+                                new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/error.gif")),
+                                dialog.nbErrorForeground);
+                            break;
+                        case StandardDialog.MSG_TYPE_WARNING:
+                            prepareMessage(dialog.notificationLine,
+                                new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/warning.gif")),
+                                dialog.nbWarningForeground);
+                            break;
+                        case StandardDialog.MSG_TYPE_INFO:
+                            prepareMessage(dialog.notificationLine,
+                                new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/info.png")),
+                                dialog.nbInfoForeground);
+                            break;
+                        default:
+                    }
+                    dialog.notificationLine.setToolTipText (msg);
+                } else {
+                    prepareMessage(dialog.notificationLine, null, null);
+                }
+                dialog.notificationLine.setText(msg);
+            }
+
+            private void prepareMessage(JLabel label, ImageIcon icon, Color fgColor) {
+                label.setIcon(icon);
+                label.setForeground(fgColor);
+            }
+        }
+
+        private static final class FixedHeightLabel extends JLabel {
+
+            private static final int ESTIMATED_HEIGHT = 16;
+
+            public FixedHeightLabel () {
+                super ();
+            }
+
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension preferredSize = super.getPreferredSize();
+                assert ESTIMATED_HEIGHT == ImageUtilities.loadImage ("org/netbeans/modules/dialogs/warning.gif").getHeight (null) : "Use only 16px icon.";
+                preferredSize.height = Math.max (ESTIMATED_HEIGHT, preferredSize.height);
+                return preferredSize;
             }
         }
 

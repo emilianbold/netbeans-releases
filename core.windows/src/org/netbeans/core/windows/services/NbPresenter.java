@@ -42,6 +42,7 @@
 package org.netbeans.core.windows.services;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.DefaultKeyboardFocusManager;
 import java.awt.Dialog;
@@ -73,9 +74,11 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -88,6 +91,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicLookAndFeel;
 import javax.swing.plaf.metal.MetalLookAndFeel;
+import org.jdesktop.layout.GroupLayout;
 import org.netbeans.core.windows.Constants;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
@@ -95,6 +99,7 @@ import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -142,9 +147,17 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     private JScrollPane currentScrollPane;
     private boolean leaf = false;
     private JPanel currentButtonsPanel;
+    private JLabel notificationLine;
     private Component[] currentPrimaryButtons;
     private Component[] currentSecondaryButtons;
     
+    private static final int MSG_TYPE_ERROR = 1;
+    private static final int MSG_TYPE_WARNING = 2;
+    private static final int MSG_TYPE_INFO = 3;
+    private Color nbErrorForeground;
+    private Color nbWarningForeground;
+    private Color nbInfoForeground;
+
     /** useful only for DialogDescriptor */
     private int currentAlign;
     
@@ -261,6 +274,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         if ((currentMessage == null) || !currentMessage.equals(newMessage)) {
             uninitializeMessage();
 
+            Component toAdd = null;
+
             if (descriptor.getMessageType() == NotifyDescriptor.PLAIN_MESSAGE &&
                 (newMessage instanceof Component)) {
                 // if plain message => use directly the component
@@ -287,14 +302,75 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                     }
                 };
                 currentScrollPane.setViewportView(currentMessage);
-                getContentPane().add(currentScrollPane, BorderLayout.CENTER);
+                toAdd = currentScrollPane;
+            } else {
+                toAdd = currentMessage;
             }
-            else {
-                getContentPane().add(currentMessage, BorderLayout.CENTER);
+            
+            if (! (descriptor instanceof WizardDescriptor) && descriptor.getNotificationLineSupport () != null) {
+                JPanel enlargedToAdd = new JPanel (new BorderLayout ());
+                enlargedToAdd.add (toAdd, BorderLayout.CENTER);
+
+                nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
+                if (nbErrorForeground == null) {
+                    //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
+                    nbErrorForeground = new Color(255, 0, 0); // RGB suggested by jdinga in #65358
+                }
+
+                nbWarningForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
+                if (nbWarningForeground == null) {
+                    nbWarningForeground = new Color(51, 51, 51); // Label.foreground
+                }
+
+                nbInfoForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
+                if (nbInfoForeground == null) {
+                    nbInfoForeground = UIManager.getColor("Label.foreground"); //NOI18N
+                }
+
+                notificationLine = new FixedHeightLabel ();
+                JPanel notificationPanel = new JPanel ();
+                GroupLayout layout = new GroupLayout(notificationPanel);
+                notificationPanel.setLayout(layout);
+                layout.setHorizontalGroup(
+                    layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(notificationLine)
+                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                );
+                layout.setVerticalGroup(
+                    layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(notificationLine, FixedHeightLabel.ESTIMATED_HEIGHT, FixedHeightLabel.ESTIMATED_HEIGHT, Short.MAX_VALUE)
+                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                );
+                enlargedToAdd.add (notificationPanel, BorderLayout.SOUTH);
+
+                // toAdd is now enlargedToAdd
+                toAdd = enlargedToAdd;
             }
+
+            getContentPane ().add (toAdd, BorderLayout.CENTER);
         }
     }
     
+    private static final class FixedHeightLabel extends JLabel {
+
+        private static final int ESTIMATED_HEIGHT = 16;
+
+        public FixedHeightLabel () {
+            super ();
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            Dimension preferredSize = super.getPreferredSize();
+            assert ESTIMATED_HEIGHT == ImageUtilities.loadImage ("org/netbeans/core/windows/resources/warning.png").getHeight (null) : "Use only 16px icon.";
+            preferredSize.height = Math.max (ESTIMATED_HEIGHT, preferredSize.height);
+            return preferredSize;
+        }
+    }
+
     private void uninitializeMessage() {
         if (currentMessage != null) {
             if (currentScrollPane != null) {
@@ -785,6 +861,39 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         getRootPane().setDefaultButton(null);
     }
     
+    private void updateNotificationLine (int msgType, Object o) {
+        String msg = o == null ? null : o.toString ();
+        if (msg != null && msg.trim().length() > 0) {
+            switch (msgType) {
+                case MSG_TYPE_ERROR:
+                    prepareMessage(notificationLine,
+                        new ImageIcon (ImageUtilities.loadImage ("org/netbeans/core/windows/resources/error.png")),
+                        nbErrorForeground);
+                    break;
+                case MSG_TYPE_WARNING:
+                    prepareMessage(notificationLine,
+                        new ImageIcon (ImageUtilities.loadImage ("org/netbeans/core/windows/resources/warning.png")),
+                        nbWarningForeground);
+                    break;
+                case MSG_TYPE_INFO:
+                    prepareMessage(notificationLine,
+                        new ImageIcon (ImageUtilities.loadImage ("org/netbeans/core/windows/resources/info.png")),
+                        nbInfoForeground);
+                    break;
+                default:
+            }
+            notificationLine.setToolTipText (msg);
+        } else {
+            prepareMessage(notificationLine, null, null);
+        }
+        notificationLine.setText(msg);
+    }
+
+    private void prepareMessage(JLabel label, ImageIcon icon, Color fgColor) {
+        label.setIcon(icon);
+        label.setForeground(fgColor);
+    }
+
     /** Enables/disables OK button if it is present
      */
     private void updateOKButton(boolean valid) {
@@ -943,6 +1052,15 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             if (fo != null) fo.requestFocus();
         } else if (DialogDescriptor.PROP_VALID.equals(evt.getPropertyName())) {
             updateOKButton(((Boolean)(evt.getNewValue())).booleanValue());
+        } else if (NotifyDescriptor.PROP_INFO_NOTIFICATION.equals (evt.getPropertyName ())) {
+            // XXX: need set update on true?
+            updateNotificationLine (MSG_TYPE_INFO, evt.getNewValue ());
+        } else if (NotifyDescriptor.PROP_WARNING_NOTIFICATION.equals (evt.getPropertyName ())) {
+            // XXX: need set update on true?
+            updateNotificationLine (MSG_TYPE_WARNING, evt.getNewValue ());
+        } else if (NotifyDescriptor.PROP_ERROR_NOTIFICATION.equals (evt.getPropertyName ())) {
+            // XXX: need set update on true?
+            updateNotificationLine (MSG_TYPE_ERROR, evt.getNewValue ());
         }
         
         if (update) {
