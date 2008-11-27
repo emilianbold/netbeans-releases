@@ -123,7 +123,7 @@ public class Commit extends GeneralPHP
           //"ManipulateStandalonePHP",
           //"CreateCustomPHPApplication",
 
-          "CreatePHPWithExistingSources",
+          "CreatePHPWithExistingSources"
           //"ManipulatePHPWithExistingSources"
         )
         .enableModules( ".*" )
