@@ -92,8 +92,9 @@ public class JDBCTable extends TableImplementation {
         return "JDBCTable[name='" + name + "']"; // NOI18N
     }
 
-    protected JDBCColumn createJDBCColumn(String name) {
-        return new JDBCColumn(this.getTable(), name);
+    protected JDBCColumn createJDBCColumn(ResultSet rs) throws SQLException {
+        int position = rs.getInt("ORDINAL_POSITION");
+        return new JDBCColumn(this.getTable(), position, JDBCValue.createTableColumnValue(rs));
     }
 
     protected void createColumns() {
@@ -102,9 +103,8 @@ public class JDBCTable extends TableImplementation {
             ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getColumns(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name, "%"); // NOI18N
             try {
                 while (rs.next()) {
-                    String columnName = rs.getString("COLUMN_NAME"); // NOI18N
-                    Column column = createJDBCColumn(columnName).getColumn();
-                    newColumns.put(columnName, column);
+                    Column column = createJDBCColumn(rs).getColumn();
+                    newColumns.put(column.getName(), column);
                     LOGGER.log(Level.FINE, "Created column {0}", column);
                 }
             } finally {

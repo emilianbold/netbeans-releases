@@ -41,13 +41,13 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import antlr.Token;
 import antlr.TokenStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
@@ -63,7 +63,7 @@ public final class APTMacroMapSnapshot {
         this.parent = parent;
     }
     
-    public final APTMacro getMacro(Token token) {
+    public final APTMacro getMacro(APTToken token) {
         return getMacro(token.getText());
     }
     
@@ -117,8 +117,9 @@ public final class APTMacroMapSnapshot {
         
     //This is a single instance of a class to indicate that macro is undefined,
     //not a child of APTMacro to track errors more easily
-    public static final UndefinedMacro UNDEFINED_MACRO = new UndefinedMacro();
+    public static final APTMacro UNDEFINED_MACRO = new UndefinedMacro();
     private static class UndefinedMacro implements APTMacro {
+        @Override
         public String toString() {
             return "Macro undefined"; // NOI18N
         }
@@ -131,11 +132,11 @@ public final class APTMacroMapSnapshot {
             throw new UnsupportedOperationException("Not supported in fake impl"); // NOI18N
         }
 
-        public Token getName() {
+        public APTToken getName() {
             throw new UnsupportedOperationException("Not supported in fake impl"); // NOI18N
         }
 
-        public Collection<Token> getParams() {
+        public Collection<APTToken> getParams() {
             throw new UnsupportedOperationException("Not supported in fake impl"); // NOI18N
         }
 

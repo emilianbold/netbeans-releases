@@ -366,9 +366,6 @@ public class AstRenderer {
         }
 
         CsmAST csmAST = AstUtil.getFirstCsmAST(name);
-        if (name == null) {
-            return false;
-        }
 
         StringBuilder varName = new StringBuilder(name.getText());
         while (name.getNextSibling() != null) {

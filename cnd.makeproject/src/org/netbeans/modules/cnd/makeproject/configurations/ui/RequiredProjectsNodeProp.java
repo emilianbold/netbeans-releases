@@ -45,21 +45,22 @@ import java.beans.PropertyEditorSupport;
 import java.util.List;
 import java.util.ArrayList;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 
-public class RequiredProjectsNodeProp<E> extends PropertySupport {
+public class RequiredProjectsNodeProp extends PropertySupport {
 
-    private VectorConfiguration<E> vectorConfiguration;
+    private VectorConfiguration<LibraryItem> vectorConfiguration;
     Project project;
     MakeConfiguration conf;
     String baseDir;
     String[] texts;
 
-    public RequiredProjectsNodeProp(VectorConfiguration<E> vectorConfiguration, Project project, MakeConfiguration conf, String baseDir, String[] texts) {
+    public RequiredProjectsNodeProp(VectorConfiguration<LibraryItem> vectorConfiguration, Project project, MakeConfiguration conf, String baseDir, String[] texts) {
         super(texts[0], List.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
         this.project = project;
@@ -103,7 +104,7 @@ public class RequiredProjectsNodeProp<E> extends PropertySupport {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-        ArrayList<E> clone = new ArrayList<E>();
+        ArrayList<LibraryItem> clone = new ArrayList<LibraryItem>();
         clone.addAll(vectorConfiguration.getValue());
         return new DirectoriesEditor(clone);
     }
@@ -119,10 +120,10 @@ public class RequiredProjectsNodeProp<E> extends PropertySupport {
 
     private class DirectoriesEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
-        private List<E> value;
+        private List<LibraryItem> value;
         private PropertyEnv env;
 
-        public DirectoriesEditor(List<E> value) {
+        public DirectoriesEditor(List<LibraryItem> value) {
             this.value = value;
         }
 
@@ -146,7 +147,7 @@ public class RequiredProjectsNodeProp<E> extends PropertySupport {
 
         @Override
         public java.awt.Component getCustomEditor() {
-            return new RequiredProjectsPanel(project, conf, baseDir, value.toArray(), this, env);
+            return new RequiredProjectsPanel(project, conf, baseDir, value, this, env);
         }
 
         @Override

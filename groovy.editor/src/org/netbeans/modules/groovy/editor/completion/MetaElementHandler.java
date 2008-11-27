@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.groovy.reflection.CachedClass;
+import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 
@@ -58,7 +59,7 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 // FIXME this should somehow use compilation classpath
 public final class MetaElementHandler {
 
-    private static final Logger LOG = Logger.getLogger(GroovyElementHandler.class.getName());
+    private static final Logger LOG = Logger.getLogger(MetaElementHandler.class.getName());
 
     private final CompilationInfo info;
 

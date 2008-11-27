@@ -56,11 +56,15 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -89,14 +93,21 @@ import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -124,6 +135,14 @@ public class ProjectTab extends TopComponent
     private transient final ProjectTreeView btv;
 
     private final JLabel noProjectsLabel = new JLabel(NbBundle.getMessage(ProjectTab.class, "NO_PROJECT_OPEN"));
+
+    private boolean synchronizeViews = false;
+
+    private FileObject objectToSelect;
+
+    private Task selectionTask;
+
+    private static final int NODE_SELECTION_DELAY = 200;
 
     public ProjectTab( String id ) {
         this();
@@ -162,6 +181,12 @@ public class ProjectTab extends TopComponent
         add( btv, BorderLayout.CENTER ); 
         
         associateLookup( ExplorerUtils.createLookup(manager, map) );
+
+        selectionTask = createSelectionTask();
+
+        Preferences nbPrefs = NbPreferences.forModule(SyncEditorWithViewsAction.class);
+        synchronizeViews = nbPrefs.getBoolean(SyncEditorWithViewsAction.SYNC_ENABLED_PROP_NAME, false);
+        nbPrefs.addPreferenceChangeListener(new NbPrefsListener());
         
     }
 
@@ -374,24 +399,77 @@ public class ProjectTab extends TopComponent
     }
 
     // SEARCHING NODES
-    
+
+    private static final Lookup context = Utilities.actionsGlobalContext();
+
+    private static final Lookup.Result foSelection = context.lookup(new Lookup.Template(FileObject.class));
+
+    private static final Lookup.Result doSelection = context.lookup(new Lookup.Template(DataObject.class));
+
+    private final LookupListener baseListener = new LookupListener() {
+        public void resultChanged(LookupEvent ev) {
+            if (TopComponent.getRegistry().getActivated() == ProjectTab.this) {
+                // Do not want to go into a loop.
+                return;
+            }
+            if (synchronizeViews) {
+                Collection fos = foSelection.allInstances();
+                if (fos.size() == 1) {
+                    selectNodeAsyncNoSelect((FileObject) fos.iterator().next());
+                } else {
+                    Collection dos = doSelection.allInstances();
+                    if (dos.size() == 1) {
+                        selectNodeAsyncNoSelect(((DataObject) dos.iterator().next()).getPrimaryFile());
+                    }
+                }
+            }
+        }
+    };
+
+    private final LookupListener weakListener = (LookupListener) WeakListeners.create(LookupListener.class, baseListener, null);
+
+    private void startListening() {
+        foSelection.addLookupListener(weakListener);
+        doSelection.addLookupListener(weakListener);
+        baseListener.resultChanged(null);
+    }
+
+    private void stopListening() {
+        foSelection.removeLookupListener(weakListener);
+        doSelection.removeLookupListener(weakListener);
+    }
+
+    protected void componentShowing() {
+        super.componentShowing();
+        startListening();
+    }
+
+    protected void componentHidden() {
+        super.componentHidden();
+        stopListening();
+    }
+
     // Called from the SelectNodeAction
     
     private final RequestProcessor RP = new RequestProcessor();
     
-    public void selectNodeAsync(final FileObject object) {
-        
+    public void selectNodeAsync(FileObject object) {
         setCursor( Utilities.createProgressCursor( this ) );
         open();
         requestActive();
-        
-        // Do it in different thread than AWT
-        RP.post( new Runnable() {
+        selectNodeAsyncNoSelect(object);
+    }
+
+    private Task createSelectionTask() {
+        Task task = RP.create(new Runnable() {
             public void run() {
-                ProjectsRootNode root = (ProjectsRootNode)manager.getRootContext();
-                 Node tempNode = root.findNode( object );                
+                if (objectToSelect == null) {
+                    return;
+                }
+                ProjectsRootNode root = (ProjectsRootNode) manager.getRootContext();
+                 Node tempNode = root.findNode(objectToSelect);
                  if (tempNode == null) {
-                     Project project = FileOwnerQuery.getOwner(object);
+                     Project project = FileOwnerQuery.getOwner(objectToSelect);
                      if (project != null && !OpenProjectList.getDefault().isOpen(project)) {
                          DialogDisplayer dd = DialogDisplayer.getDefault();
                          String message = NbBundle.getMessage(ProjectTab.class, "MSG_openProject_confirm", //NOI18N
@@ -404,12 +482,12 @@ public class ProjectTab extends TopComponent
                              if (!OpenProjectList.getDefault().isOpen(project)) {
                                  OpenProjects.getDefault().open(new Project[] { project }, false);
                              }
-                             tempNode = root.findNode( object );
+                             tempNode = root.findNode(objectToSelect);
                          }
                      }
                  }
                  final Node selectedNode = tempNode;
-                  // Back to AWT                // Back to AWT
+                // Back to AWT             // Back to AWT
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {
                         if ( selectedNode != null ) {
@@ -423,16 +501,21 @@ public class ProjectTab extends TopComponent
                             }
                         }
                         else {
-                            StatusDisplayer.getDefault().setStatusText( 
-                                NbBundle.getMessage( ProjectTab.class,  
+                            StatusDisplayer.getDefault().setStatusText(
+                                NbBundle.getMessage( ProjectTab.class,
                                                      ID_LOGICAL.equals( id ) ? "MSG_NodeNotFound_ProjectsTab" : "MSG_NodeNotFound_FilesTab" ) ); // NOI18N
                         }
-                        setCursor( null );        
+                        setCursor( null );
                     }
                 } );
             }
-        } );
-         
+        });
+        return task;
+    }
+
+    private void selectNodeAsyncNoSelect(final FileObject object) {
+        objectToSelect = object;
+        selectionTask.schedule(NODE_SELECTION_DELAY);
     }
     
     public boolean selectNode(FileObject object) {
@@ -732,6 +815,16 @@ public class ProjectTab extends TopComponent
         public void mouseReleased(MouseEvent e) {
             if (e.isPopupTrigger() && id.equals(ID_LOGICAL)) {
                 showPopup(e.getX(), e.getY());
+            }
+        }
+
+    }
+
+    private class NbPrefsListener implements PreferenceChangeListener {
+
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            if (SyncEditorWithViewsAction.SYNC_ENABLED_PROP_NAME.equals(evt.getKey())) {
+                synchronizeViews = Boolean.parseBoolean(evt.getNewValue());
             }
         }
 

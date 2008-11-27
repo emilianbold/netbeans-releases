@@ -489,6 +489,10 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                         <xsl:attribute name="name">classname</xsl:attribute>
                         <xsl:attribute name="default">${main.class}</xsl:attribute>
                     </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
+                    </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
@@ -505,7 +509,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                 XXX: introduce run.classpath and use it for debug.classpath
                              -->
                             <classpath>
-                                <path path="${{debug.classpath}}:${{j2ee.platform.classpath}}"/>
+                                <path path="@{{classpath}}:${{j2ee.platform.classpath}}"/>
                             </classpath>
                             <syspropertyset>
                                 <propertyref prefix="run-sys-prop."/>
@@ -1283,7 +1287,11 @@ exists or setup the property manually. For example like this:
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
                 <webproject1:java classname="${{run.class}}"/>
             </target>
-            
+            <target name="run-test-with-main">
+                <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
+                <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
+                <webproject1:java classname="${{run.class}}" classpath="${{run.test.classpath}}"/>
+            </target>
             <xsl:comment>
                 DEBUGGING SECTION
             </xsl:comment>
@@ -1333,12 +1341,28 @@ exists or setup the property manually. For example like this:
             <target name="connect-client-debugger" if="do.debug.client">
                 <webproject1:nbjsdebugstart webUrl="${{client.url}}"/>
             </target>
-            
+
+            <target name="-debug-start-debuggee-main-test">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single</xsl:attribute>
+                <fail unless="debug.class">Must select one file in the IDE or set debug.class</fail>
+                <webproject1:debug classname="${{debug.class}}" classpath="${{debug.test.classpath}}"/>
+            </target>
+
+            <target name="debug-test-with-main">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-debug-start-debugger-main-test,-debug-start-debuggee-main-test</xsl:attribute>
+            </target>
+
             <target name="debug-single">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,debug</xsl:attribute>
             </target>
-            
+            <target name="-debug-start-debugger-main-test">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <webproject1:nbjpdastart name="${{debug.class}}" classpath="${{debug.test.classpath}}"/>
+             </target>
             <target name="-debug-start-debugger">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>

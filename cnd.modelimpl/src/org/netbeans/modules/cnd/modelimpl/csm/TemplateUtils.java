@@ -193,6 +193,10 @@ public class TemplateUtils {
                     // now create parameter
                     parameterStart = child;
                     AST varDecl = child.getFirstChild();
+                    // skip "typename"
+                    if (varDecl != null && varDecl.getType() == CPPTokenTypes.LITERAL_typename) {
+                        varDecl = varDecl.getNextSibling();
+                    }
                     if (varDecl != null && varDecl.getType() == CPPTokenTypes.LITERAL_enum) {
                         varDecl = varDecl.getNextSibling();
                         if(varDecl == null || varDecl.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND) {

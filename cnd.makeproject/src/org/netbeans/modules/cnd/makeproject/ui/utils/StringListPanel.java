@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.Vector;
 import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -60,7 +61,7 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
     private PropertyEditorSupport editor;
     private HelpCtx helpCtx;
 
-    public StringListPanel(Object[] data, boolean addPathPanel, BooleanConfiguration inheritValues, String inheritText, PropertyEditorSupport editor, PropertyEnv env, HelpCtx helpCtx) {
+    public StringListPanel(List<String> data, boolean addPathPanel, BooleanConfiguration inheritValues, String inheritText, PropertyEditorSupport editor, PropertyEnv env, HelpCtx helpCtx) {
         this.addPathPanel = addPathPanel;
         this.inheritValues = inheritValues;
         this.editor = editor;
@@ -95,16 +96,16 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
         //instructionsTextArea.setText(txt);
     }
 
-    public void setListData(Object[] data) {
+    public void setListData(List<String> data) {
         myListEditorPanel.setListData(data);
     }
 
-    public Vector getListData() {
+    public Vector<String> getListData() {
         return myListEditorPanel.getListData();
     }
 
     private Object getPropertyValue() throws IllegalStateException {
-        return new ArrayList(getListData());
+        return new ArrayList<String>(getListData());
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -215,15 +216,15 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
         inheritValues.setValue(inheritCheckBox.isSelected());
     }//GEN-LAST:event_inheritCheckBoxActionPerformed
 
-    private static class MyListEditorPanel extends ListEditorPanel {
+    private static class MyListEditorPanel extends ListEditorPanel<String> {
 
-        public MyListEditorPanel(Object[] objects) {
+        public MyListEditorPanel(List<String> objects) {
             super(objects);
             getDefaultButton().setVisible(false);
         }
 
         @Override
-        public Object addAction() {
+        public String addAction() {
             NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("ADD_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
             DialogDisplayer.getDefault().notify(notifyDescriptor);
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
@@ -277,13 +278,13 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
         }
 
         @Override
-        public Object copyAction(Object o) {
-            return (String) o;
+        public String copyAction(String o) {
+            return o;
         }
 
         @Override
-        public void editAction(Object o) {
-            String s = (String) o;
+        public void editAction(String o) {
+            String s = o;
 
             NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
             notifyDescriptor.setInputText(s);
@@ -292,7 +293,7 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            Vector vector = super.getListData();
+            Vector<String> vector = super.getListData();
             Object[] arr = super.getListData().toArray();
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == o) {

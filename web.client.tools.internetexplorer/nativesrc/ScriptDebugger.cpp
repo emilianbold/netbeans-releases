@@ -42,6 +42,7 @@
 #include "DebugDocument.h"
 #include "Utils.h"
 #include <tlhelp32.h>
+#include <msdbg.h>
 
 BOOL ScriptDebugger::alreadyStoppedOnFirstLine = FALSE;
 
@@ -844,52 +845,90 @@ void ScriptDebugger::setDebugApplication(IRemoteDebugApplication *pRemoteDebugAp
     }
 }
 
+HRESULT ScriptDebugger::CoCreateDebugProgramProvider(void **ppv) {
+    //pdm.dll may not be registered in the windows system registry, therefore using dynamic approach
+    HRESULT hr = E_FAIL;
+    HMODULE hDll = ::LoadLibrary(_T("pdm.dll"));
+    if(hDll != NULL) {
+        typedef HRESULT (__stdcall *pDllGetClassObject)(REFCLSID rclsid, REFIID riid, LPVOID FAR* ppv);
+        pDllGetClassObject pFnGetClassObject = (pDllGetClassObject)::GetProcAddress(hDll, "DllGetClassObject");
+        if (pFnGetClassObject != NULL) {
+            CComPtr<IClassFactory> spClassFactory;
+            hr = pFnGetClassObject(CLSID_MsProgramProvider, IID_IClassFactory, (void **)&spClassFactory);
+            if(SUCCEEDED(hr)) {
+                hr = spClassFactory->CreateInstance(NULL, IID_IDebugProgramProvider2, ppv);
+            }
+        }
+        ::FreeLibrary(hDll);
+    }
+    return hr;
+}
+
 ScriptDebugger *ScriptDebugger::createScriptDebugger() {
     HRESULT hr = E_FAIL;
     CComPtr<IRemoteDebugApplication> spRemoteDebugApp;
-    CComPtr<IMachineDebugManager> spMachineDebugManager;
-    hr = spMachineDebugManager.CoCreateInstance(CLSID_MachineDebugManager, NULL, CLSCTX_ALL); 
-    CComPtr<IEnumRemoteDebugApplications> spEnumDebugApps;
-    ULONG count = 0;
-    hr = spMachineDebugManager->EnumApplications(&spEnumDebugApps);
-    if(hr == S_OK) {
-        do {
-            CComPtr<IRemoteDebugApplication> spCurrentRemoteDebugApp;
-            //Enumerate debuggable applications and select the one corresponding
-            //to the current process
-            hr = spEnumDebugApps->Next(1, &spCurrentRemoteDebugApp, &count);
-            spRemoteDebugApp = spCurrentRemoteDebugApp;
-            if(hr == S_OK && count > 0) {
-                CComBSTR name;
-                spCurrentRemoteDebugApp->GetName(&name);
-                Utils::log(1, _T("Debuggable application - %s\n"), (TCHAR *)name);
-                if(name != NULL) {
-                    CComPtr<IEnumRemoteDebugApplicationThreads> spThreads;
-                    hr = spRemoteDebugApp->EnumThreads(&spThreads);
-                    if(spThreads != NULL) {
-                        CComPtr<IRemoteDebugApplicationThread> spRemoteDebugAppThreads;
-                        ULONG threadCount;
-                        hr = spThreads->Next(1, &spRemoteDebugAppThreads, &threadCount);
-                        if(hr == S_OK && threadCount > 0) {
-                            DWORD dwThreadID;
-                            hr = spRemoteDebugAppThreads->GetSystemThreadId(&dwThreadID);
-                            Utils::log(1, _T("Debuggable application thread - %d\n"), dwThreadID);
-                            if(hr == S_OK && isCurrentprocessThread(dwThreadID)) {
+
+    //Try to use debug program provider. It will be available if the user has installed 
+    //IE8 or Visual Studio 2003 and later
+    CComPtr<IDebugProgramProvider2> spPDM;
+    hr = CoCreateDebugProgramProvider((void **)&spPDM);
+    if(SUCCEEDED(hr)) {
+        const AD_PROCESS_ID processId = { AD_PROCESS_ID_SYSTEM, { GetCurrentProcessId() } };
+        PROVIDER_PROCESS_DATA processData = {0};
+        const CONST_GUID_ARRAY ScriptEngineFilter = { 1, &guidScriptEng };
+        hr = spPDM->GetProviderProcessData(PFLAG_DEBUGGEE|PFLAG_GET_PROGRAM_NODES|PFLAG_ATTACHED_TO_DEBUGGEE|PFLAG_GET_IS_DEBUGGER_PRESENT,
+            NULL, processId, ScriptEngineFilter, &processData);
+        if(hr == S_OK && processData.ProgramNodes.dwCount > 0) {
+            CComQIPtr<IDebugProviderProgramNode2> spProviderProgramNode = processData.ProgramNodes.Members[0];
+            spProviderProgramNode->UnmarshalDebuggeeInterface(IID_IRemoteDebugApplication, (void **)&spRemoteDebugApp);
+        }
+    }else {
+        //If debug program provider is missing, use MDM and PDM components to get hold of 
+        //remote debug application
+        CComPtr<IMachineDebugManager> spMachineDebugManager;
+        hr = spMachineDebugManager.CoCreateInstance(CLSID_MachineDebugManager, NULL, CLSCTX_ALL); 
+        CComPtr<IEnumRemoteDebugApplications> spEnumDebugApps;
+        ULONG count = 0;
+        hr = spMachineDebugManager->EnumApplications(&spEnumDebugApps);
+        if(hr == S_OK) {
+            do {
+                CComPtr<IRemoteDebugApplication> spCurrentRemoteDebugApp;
+                //Enumerate debuggable applications and select the one corresponding
+                //to the current process
+                hr = spEnumDebugApps->Next(1, &spCurrentRemoteDebugApp, &count);
+                spRemoteDebugApp = spCurrentRemoteDebugApp;
+                if(hr == S_OK && count > 0) {
+                    CComBSTR name;
+                    spCurrentRemoteDebugApp->GetName(&name);
+                    Utils::log(1, _T("Debuggable application - %s\n"), (TCHAR *)name);
+                    if(name != NULL) {
+                        CComPtr<IEnumRemoteDebugApplicationThreads> spThreads;
+                        hr = spRemoteDebugApp->EnumThreads(&spThreads);
+                        if(spThreads != NULL) {
+                            CComPtr<IRemoteDebugApplicationThread> spRemoteDebugAppThreads;
+                            ULONG threadCount;
+                            hr = spThreads->Next(1, &spRemoteDebugAppThreads, &threadCount);
+                            if(hr == S_OK && threadCount > 0) {
+                                DWORD dwThreadID;
+                                hr = spRemoteDebugAppThreads->GetSystemThreadId(&dwThreadID);
+                                Utils::log(1, _T("Debuggable application thread - %d\n"), dwThreadID);
+                                if(hr == S_OK && isCurrentprocessThread(dwThreadID)) {
+                                    break;
+                                }
+                            }else if(hr == S_FALSE) {
                                 break;
                             }
-                        }else if(hr == S_FALSE) {
-                            break;
+                        }else {
+                            Utils::log(1, _T("Threads enumeration completed, error code - %x\n"), hr);
                         }
-                    }else {
-                        Utils::log(1, _T("Threads enumeration completed, error code - %x\n"), hr);
                     }
+                }else {
+                    Utils::log(1, _T("Debuggable applications enumeration completed, error code - %x\n"), hr);
                 }
-            }else {
-                Utils::log(1, _T("Debuggable applications enumeration completed, error code - %x\n"), hr);
-            }
-        }while(count > 0);
-    } else {
-        Utils::log(1, _T("Did not find debuggable application, error code - %x\n"), hr);
+            }while(count > 0);
+        } else {
+            Utils::log(1, _T("Did not find debuggable application, error code - %x\n"), hr);
+        }
     }
 
     if(spRemoteDebugApp != NULL) {

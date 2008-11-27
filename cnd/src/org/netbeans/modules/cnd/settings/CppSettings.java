@@ -367,7 +367,7 @@ public class CppSettings extends SharedClassObject {
         //putProperty(PROP_PARSING_DELAY, new Integer(delay));
         int oldValue = getParsingDelay();
         getPreferences().putInt(PROP_PARSING_DELAY, delay);
-        firePropertyChange(PROP_PARSING_DELAY, new Integer(oldValue), new Integer(delay));
+        firePropertyChange(PROP_PARSING_DELAY, Integer.valueOf(oldValue), Integer.valueOf(delay));
     }
 
     /**

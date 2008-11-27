@@ -107,10 +107,14 @@ final class TestsuiteNode extends AbstractNode {
     static String toTooltipText(List<OutputLine> lines) {
         StringBuilder result = new StringBuilder();
         result.append("<html>"); //NOI18N
-        for (Iterator<OutputLine> it = lines.iterator(); it.hasNext(); ) {
-            result.append(it.next().getLine());
-            if (it.hasNext()) {
-                result.append("<br>"); //NOI18N
+        if (lines.isEmpty()) {
+            result.append("<i>" + NbBundle.getMessage(TestsuiteNode.class, "MSG_NoOutput") + "</i>"); //NOI18N
+        } else {
+            for (Iterator<OutputLine> it = lines.iterator(); it.hasNext();) {
+                result.append(it.next().getLine());
+                if (it.hasNext()) {
+                    result.append("<br>"); //NOI18N
+                }
             }
         }
         result.append("</html>"); //NOI18N

@@ -664,6 +664,19 @@ public class JsFormatterTest extends JsTestBase {
                 "if(true&&(/alpha/i).test()){}", null
                 );
     }
+
+    public void test153819() throws Exception {
+        insertNewline(
+           "if (true) {\n" +
+           "    for (var a in b)\n" +
+           "            foo();^",
+           "if (true) {\n" +
+           "    for (var a in b)\n" +
+           "            foo();\n" +
+           "        ^", null
+         );
+    }
+
     
 //    public void testLineContinuation4() throws Exception {
 //        format("def foo\nfoo\nif true\nx\nend\nend", 

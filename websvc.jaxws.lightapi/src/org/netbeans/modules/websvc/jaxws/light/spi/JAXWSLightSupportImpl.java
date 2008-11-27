@@ -48,66 +48,69 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.openide.filesystems.FileObject;
 
-/**
+/** SPI for JAXWSSupport.
  *
  * @author Milan Kuchtiak
  */
 
-/** SPI for JAXWSSupport
- */ 
 public interface JAXWSLightSupportImpl {
-    
-    /**
-     * Add web service/client to project
+
+    /** Add JAX-WS service/client to project.
+     *
      * @param service service or client
      */
-    public void addService(JaxWsService service);
-    
-    /**
-     * Returns the list of services and clients the project
+    void addService(JaxWsService service);
+
+    /** Returns the list of JAX-WS services and clients.
+     *
      * @return list of web services
      */
-    public List<JaxWsService> getServices();    
-    
-    /**
-     * Remove the web service entries from the project properties
+    List<JaxWsService> getServices();
+
+    /** Remove JAX-WS service from project.
+     *
      * @param service service
      */
-    public void removeService(JaxWsService service);
+    void removeService(JaxWsService service);
 
-    /** Get WSDL folder for the project (folder containing wsdl files)
+    /** Get WSDL folder for the project (folder containing wsdl files).
+     *
      *  The folder is used to save remote or local wsdl files to be available within the jar/war files.
      *  it is usually META-INF/wsdl folder (or WEB-INF/wsdl for web application)
      *  @param createFolder if (createFolder==true) the folder will be created (if not created before)
-     *  @return the file object (folder) where wsdl files are located in project 
+     *  @return the file object (folder) where wsdl files are located in project
+     *  @throws IOException trown when folder cannot be created
      */
-    public FileObject getWsdlFolder(boolean createFolder) throws java.io.IOException;
-    
-    /** Get folder for local WSDL and XML artifacts for given service
+    FileObject getWsdlFolder(boolean createFolder) throws java.io.IOException;
+
+    /** Get folder for local WSDL and XML artifacts for given service.
+     *
      * This is the location where wsdl/xml files are downloaded to the project.
      * JAX-WS java artifacts will be generated from these local files instead of remote.
      * @param createFolder if (createFolder==true) the folder will be created (if not created before)
-     * @return the file object (folder) where wsdl files are located in project 
+     * @return the file object (folder) where wsdl files are located in project
      */
-    public FileObject getLocalWsdlFolder(boolean createFolder);
-    
-    /** Get folder for local jaxb binding (xml) files for given service
+    FileObject getLocalWsdlFolder(boolean createFolder);
+
+    /** Get folder for local jaxb binding (xml) files for given service.
+     *
      *  This is the location where external jaxb binding files are downloaded to the project.
      *  JAX-WS java artifacts will be generated using these local binding files instead of remote.
+     *
      * @param createFolder if (createFolder==true) the folder will be created (if not created before)
-     * @return the file object (folder) where jaxb binding files are located in project 
+     * @return the file object (folder) where jaxb binding files are located in project
      */
-    public FileObject getBindingsFolder(boolean createFolder);
-    
-    /** Get EntityCatalog for local copies of wsdl and schema files
+    FileObject getBindingsFolder(boolean createFolder);
+
+    /** Get EntityCatalog for local copies of wsdl and schema files.
+     * @return URL for catalog file
      */
-    public URL getCatalog();
-    
-    /**
-     * Returns a metadata model of a webservices deployment descriptor
+    URL getCatalog();
+
+    /** Get metadata model of a webservices deployment descriptor.
      *
      * @return metadata model of a webservices deployment descriptor
      */
-    public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel();
-    
+    MetadataModel<WebservicesMetadata> getWebservicesMetadataModel();
+
 }

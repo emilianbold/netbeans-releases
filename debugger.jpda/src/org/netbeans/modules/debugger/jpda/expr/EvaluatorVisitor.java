@@ -2629,10 +2629,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     @Override
     public Mirror visitVariable(VariableTree arg0, EvaluationContext evaluationContext) {
         // Variable declaration
-        javax.lang.model.element.Name name = arg0.getName();
+        String name = arg0.getName().toString();
+        if (evaluationContext.getScriptVariableByName(name) != null) {
+            Assert2.error(arg0, "localVariableAlreadyDefined", name);
+        }
         Tree typeTree = arg0.getType();
         Type type = (Type)typeTree.accept(this, evaluationContext);
-        ScriptVariable var = evaluationContext.createScriptLocalVariable(name.toString(), type);
+        ScriptVariable var = evaluationContext.createScriptLocalVariable(name, type);
         ExpressionTree initializer = arg0.getInitializer();
         if (initializer != null) {
             Mirror initialValue = initializer.accept(this, evaluationContext);

@@ -62,7 +62,7 @@ public class ProjectOptionsPanel extends JPanel {
     private boolean changed;
     private boolean listen = false;
     
-    private ArrayList propertyChangeListeners = new ArrayList();
+    private ArrayList<PropertyChangeListener> propertyChangeListeners = new ArrayList<PropertyChangeListener>();
     
     private DocumentListener documentListener;
     
@@ -196,9 +196,11 @@ public class ProjectOptionsPanel extends JPanel {
     }
     
     public void firePropertyChange(PropertyChangeEvent evt) {
-        PropertyChangeListener[] listeners = (PropertyChangeListener[])propertyChangeListeners.toArray(new PropertyChangeListener[propertyChangeListeners.size()]);
-        for (int i = 0; i < listeners.length; i++)
-            listeners[i].propertyChange(evt);
+        ArrayList<PropertyChangeListener> newList = new ArrayList<PropertyChangeListener>();
+        newList.addAll(propertyChangeListeners);
+        for (PropertyChangeListener listener : newList) {
+            listener.propertyChange(evt);
+        }
     }
     
     private static String getString(String key) {

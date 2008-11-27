@@ -49,16 +49,28 @@ made subject to such option by the copyright holder.
 
     <target name="release" depends="projectized.release">
         <mkdir dir="${cluster}/modules/ext/struts"/>
-        <unzip src="external/struts-1.2.9-lib.zip" dest="${cluster}/modules/ext/struts">
+        <unzip src="external/struts-1.3.8-lib.zip" dest="${cluster}/modules/ext/struts">
             <patternset>
-                <include name="struts-1.2.9-lib/antlr.jar"/>
-                <include name="struts-1.2.9-lib/commons-beanutils.jar"/>
-                <include name="struts-1.2.9-lib/commons-digester.jar"/>
-                <include name="struts-1.2.9-lib/commons-fileupload.jar"/>
-                <include name="struts-1.2.9-lib/commons-logging.jar"/>
-                <include name="struts-1.2.9-lib/commons-validator.jar"/>
-                <include name="struts-1.2.9-lib/jakarta-oro.jar"/>
-                <include name="struts-1.2.9-lib/struts.jar"/>
+                <include name="struts-1.3.8-lib/antlr-2.7.2.jar"/>
+                <include name="struts-1.3.8-lib/bsf-2.3.0.jar"/>
+                <include name="struts-1.3.8-lib/commons-beanutils-1.7.0.jar"/>
+                <include name="struts-1.3.8-lib/commons-chain-1.1.jar"/>
+                <include name="struts-1.3.8-lib/commons-digester-1.8.jar"/>
+                <include name="struts-1.3.8-lib/commons-fileupload-1.1.1.jar"/>
+                <include name="struts-1.3.8-lib/commons-io-1.1.jar"/>
+                <include name="struts-1.3.8-lib/commons-logging-1.0.4.jar"/>
+                <include name="struts-1.3.8-lib/commons-validator-1.3.1.jar"/>
+                <include name="struts-1.3.8-lib/jstl-1.0.2.jar"/>
+                <include name="struts-1.3.8-lib/oro-2.0.8.jar"/>
+                <include name="struts-1.3.8-lib/standard-1.0.2.jar"/>
+                <include name="struts-1.3.8-lib/struts-core-1.3.8.jar"/>
+                <include name="struts-1.3.8-lib/struts-el-1.3.8.jar"/>
+                <include name="struts-1.3.8-lib/struts-extras-1.3.8.jar"/>
+                <include name="struts-1.3.8-lib/struts-faces-1.3.8.jar"/>
+                <include name="struts-1.3.8-lib/struts-mailreader-dao-1.3.8.jar"/>
+                <include name="struts-1.3.8-lib/struts-scripting-1.3.8.jar"/>
+                <include name="struts-1.3.8-lib/struts-taglib-1.3.8.jar"/>
+                <include name="struts-1.3.8-lib/struts-tiles-1.3.8.jar"/>
             </patternset>
             <mapper type="flatten"/>
         </unzip>
@@ -76,7 +88,7 @@ made subject to such option by the copyright holder.
     
     <target name="s2bgen" depends="s2binit">
      <echo message="generating code generation input file information" />
-	<schema2beans schema="${s2b_res_root}/struts-config_1_2-custom.dtd"
+	<schema2beans schema="${s2b_res_root}/struts-config_1_3-custom.dtd"
 	  mddFile="${s2b_res_root}/struts-config_1_2.mdd"
 	  package="org.netbeans.modules.web.struts.config.model"
 	  validate="false"

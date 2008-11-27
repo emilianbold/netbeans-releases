@@ -301,7 +301,7 @@ class Screen extends JComponent implements Accessible {
 	    switch (part) {
 		case CHARACTER:
 		    // return new String(l.charArray(), b.col, 1);
-                    return new String("" + l.charAt(b.col));
+            return String.valueOf(l.charAt(b.col));
 		case WORD:
 		    BExtent bword = term.buf.find_word(term.word_delineator, b);
 		    Extent word = bword.toExtent(term.firsta);
@@ -380,12 +380,12 @@ class Screen extends JComponent implements Accessible {
 
 	accessible_context.firePropertyChange(
 	    AccessibleContext.ACCESSIBLE_TEXT_PROPERTY, 
-	    null, new Integer(pos));
+	    null, Integer.valueOf(pos));
 	// sending null, pos is how JTextComponent does it.
 
 	accessible_context.firePropertyChange(
 	    AccessibleContext.ACCESSIBLE_CARET_PROPERTY, 
-	    new Integer(pos), new Integer(oldPos));
+	    Integer.valueOf(pos), Integer.valueOf(oldPos));
 
 	oldPos = pos;
     }

@@ -404,7 +404,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         }
 
         public Object getValue() {
-            return new Integer(getTool());
+            return Integer.valueOf(getTool());
         }
 
         public void setValue(Object v) {
@@ -452,7 +452,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         }
     }
 
-    private static class StringRONodeProp extends PropertySupport {
+    private static class StringRONodeProp extends PropertySupport<String> {
 
         String value;
 
@@ -461,11 +461,11 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             this.value = value;
         }
 
-        public Object getValue() {
+        public String getValue() {
             return value;
         }
 
-        public void setValue(Object v) {
+        public void setValue(String v) {
         }
     }
 

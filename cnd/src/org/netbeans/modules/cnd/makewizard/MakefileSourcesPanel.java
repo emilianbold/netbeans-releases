@@ -125,7 +125,7 @@ public class MakefileSourcesPanel extends EnterItemsPanel {
             int i;
 
             for (i = 0; i < slist.length; i++) {
-                String srcFile = slist[i].toString();
+                String srcFile = slist[i];
 
                 if (srcFile.startsWith("/")) { // NOI18N
                     absCount++;

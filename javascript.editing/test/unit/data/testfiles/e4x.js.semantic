@@ -1,18 +1,18 @@
 // From http://www.w3schools.com/e4x/e4x_example.asp
 var |>GLOBAL:order<| = new |>CLASS:XML<|()
 
-|>GLOBAL:order<|=<order id="555">
-<date>2005-08-01</date>
-<customer>
-  <firstname>John</firstname>
-  <lastname>Johnson</lastname>
-</customer>
-<item>
-  <name>Maxilaku</name>
-  <qty>5</qty>
-  <price>155.00</price>
-</item>
-</order>
+|>GLOBAL:order<|=|>CUSTOM1:<|>CUSTOM2:order<| id="555">|>CUSTOM3:
+<|<|>CUSTOM2:date<|>|>CUSTOM3:2005-08-01<|</|>CUSTOM2:date<|>|>CUSTOM3:
+<|<|>CUSTOM2:customer<|>|>CUSTOM3:
+  <|<|>CUSTOM2:firstname<|>|>CUSTOM3:John<|</|>CUSTOM2:firstname<|>|>CUSTOM3:
+  <|<|>CUSTOM2:lastname<|>|>CUSTOM3:Johnson<|</|>CUSTOM2:lastname<|>|>CUSTOM3:
+<|</|>CUSTOM2:customer<|>|>CUSTOM3:
+<|<|>CUSTOM2:item<|>|>CUSTOM3:
+  <|<|>CUSTOM2:name<|>|>CUSTOM3:Maxilaku<|</|>CUSTOM2:name<|>|>CUSTOM3:
+  <|<|>CUSTOM2:qty<|>|>CUSTOM3:5<|</|>CUSTOM2:qty<|>|>CUSTOM3:
+  <|<|>CUSTOM2:price<|>|>CUSTOM3:155.00<|</|>CUSTOM2:price<|>|>CUSTOM3:
+<|</|>CUSTOM2:item<|>|>CUSTOM3:
+<|</|>CUSTOM2:order<|><|
 
 // Calculate the price:
 var |>GLOBAL:total<|=|>GLOBAL:order<|.item.qty * |>GLOBAL:order<|.item.price
@@ -24,11 +24,11 @@ var |>GLOBAL:total<|=|>GLOBAL:order<|.item.qty * |>GLOBAL:order<|.item.price
 
 //Add a new item:
 |>GLOBAL:order<|.item+=
-<item>
-  <name>Pavlova</name>
-  <qty>10</qty>
-  <price>128.00</price>
-</item>
+|>CUSTOM1:<|>CUSTOM2:item<|>|>CUSTOM3:
+  <|<|>CUSTOM2:name<|>|>CUSTOM3:Pavlova<|</|>CUSTOM2:name<|>|>CUSTOM3:
+  <|<|>CUSTOM2:qty<|>|>CUSTOM3:10<|</|>CUSTOM2:qty<|>|>CUSTOM3:
+  <|<|>CUSTOM2:price<|>|>CUSTOM3:128.00<|</|>CUSTOM2:price<|>|>CUSTOM3:
+<|</|>CUSTOM2:item<|><|
 
 //Display the order id:
 |>GLOBAL:document<|.write(|>GLOBAL:order<|.@id)

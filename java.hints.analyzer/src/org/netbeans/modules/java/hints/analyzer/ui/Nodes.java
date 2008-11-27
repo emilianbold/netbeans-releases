@@ -43,11 +43,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -178,9 +176,9 @@ public class Nodes {
         public Action[] getActions(boolean context) {
             return new Action[0];
         }
-        
-    }
-    
+
+        }
+
     private static Lookup lookupForNode(Node n, Map<Node, List<ErrorDescription>> fileNodes, Map<ErrorDescription, List<FixDescription>> errors2Fixes) {
       List<FixDescription> fixes = new LinkedList<FixDescription>();
         
@@ -279,7 +277,7 @@ public class Nodes {
             return new Node[] {key};
         }
     }
-    
+
     private static final class ErrorDescriptionChildren extends Children.Keys<ErrorDescription> {
 
         private java.util.Map<ErrorDescription, List<FixDescription>> errors2Fixes;
@@ -380,9 +378,7 @@ public class Nodes {
 
         @Override
         public Action[] getActions(boolean context) {
-            return new Action[]{
-                OpenAction.get(OpenAction.class),
-            };
+            return new Action[0];
         }
         
     }
