@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.php.cc;
+package org.netbeans.test.php.navigation;
 
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -59,20 +59,27 @@ import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import java.util.List;
+import org.netbeans.jemmy.util.Dumper;
+import java.io.*;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.jemmy.operators.WindowOperator;
+import org.netbeans.jemmy.Timeouts;
 
 /**
  *
  * @author michaelnazarov@netbeans.org
  */
 
-public class Issue141880 extends cc
+public class navigation_0001 extends navigation
 {
-  static final String TEST_PHP_NAME = "PhpProject_cc_Issue141880";
+  static final String TEST_PHP_NAME = "PhpProject_navigation_0001";
 
-  public Issue141880( String arg0 )
+  public navigation_0001( String arg0 )
   {
     super( arg0 );
   }
@@ -80,9 +87,11 @@ public class Issue141880 extends cc
   public static Test suite( )
   {
     return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue141880.class ).addTest(
+      NbModuleSuite.createConfiguration( navigation_0001.class ).addTest(
           "CreateApplication",
-          "Issue141880"
+          "Create_a_PHP_web_page",
+          "Navigate_to_a_specified_line",
+          "Navigate_to_an_invalid_line"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -99,44 +108,50 @@ public class Issue141880 extends cc
     endTest( );
   }
 
-  public void Issue141880( ) throws Exception
+  public void Create_a_PHP_web_page( )
   {
     startTest( );
 
-    // Get editor
-    EditorOperator eoPHP = new EditorOperator( "index.php" );
-    Sleep( 1000 );
-    // Locate comment
-    eoPHP.setCaretPosition( "// put your code here", false );
-    // Add new line
-    eoPHP.insert( "\n$aaa = \"Hello\";\n" );
-    Sleep( 1000 );
-
-    // Check constructor
-    String sCode = "$bbb = \"$a";
-    for( int i = 0; i < sCode.length( ); i++ )
-    {
-      // Press Ctrl+Space
-      eoPHP.typeKey( sCode.charAt( i ) );
-      Sleep( 1000 );
-    }
-    eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    Sleep( 1000 );
-
-    // Check code completion list
-
-    String[] asIdeals = { "$aaa", "$argc", "$argv" };
-
-    CompletionInfo jCompl = GetCompletion( );
-    //List list = jCompl.getCompletionItems( );
-    // Magic CC number for complete list
-    if( asIdeals.length != jCompl.size( ) )
-      fail( "Invalid CC list size: " + jCompl.size( ) + ", expected: " + asIdeals.length );
-    // Check each
-    CheckCompletionItems( jCompl, asIdeals );
-
-    jCompl.hideAll( );
+    CreatePHPFile( TEST_PHP_NAME, "PHP Web Page", null );
 
     endTest( );
   }
+
+  protected void GoToLine( int iLineToGo, int iLineToCome )
+  {
+    EditorOperator eoPHP = new EditorOperator( "EmptyPHPWebPage.php" );
+    eoPHP.clickForPopup( );
+    JPopupMenuOperator menu = new JPopupMenuOperator( );
+    menu.pushMenuNoBlock( "Navigate|Line..." );
+    JDialogOperator jdGoto = new JDialogOperator( "Go To Line" );
+    JComboBoxOperator jcLine = new JComboBoxOperator( jdGoto, 0 );
+    jcLine.enterText( "" + iLineToGo );
+    JButtonOperator jbGoto = new JButtonOperator( jdGoto, "Go To" );
+    jbGoto.push( );
+    jdGoto.waitClosed( );
+    int iLine = eoPHP.getLineNumber( );
+    if( iLineToCome != iLine )
+    {
+      fail( "Navigate go to line came to incorrect one. Found: " + iLine + ", expected: " + iLineToCome );
+    }
+  }
+
+  public void Navigate_to_a_specified_line( )
+  {
+    startTest( );
+
+    GoToLine( 8, 8 );
+
+    endTest( );
+  }
+
+  public void Navigate_to_an_invalid_line( )
+  {
+    startTest( );
+
+    GoToLine( 100, 17 );
+
+    endTest( );
+  }
+
 }
