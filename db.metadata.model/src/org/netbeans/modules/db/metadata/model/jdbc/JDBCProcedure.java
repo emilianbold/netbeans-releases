@@ -54,6 +54,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Parameter;
 import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
 import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.Value;
 import org.netbeans.modules.db.metadata.model.spi.ProcedureImplementation;
 
 /**
@@ -69,6 +70,7 @@ public class JDBCProcedure extends ProcedureImplementation {
 
     private Map<String, Column> columns;
     private Map<String, Parameter> parameters;
+    private Value returnValue;
 
     public JDBCProcedure(JDBCSchema jdbcSchema, String name) {
         this.jdbcSchema = jdbcSchema;
@@ -112,12 +114,26 @@ public class JDBCProcedure extends ProcedureImplementation {
     }
 
     @Override
+    public Value getReturnValue() {
+        return initReturnValue();
+    }
+
+    @Override
     public String toString() {
         return "JDBCProcedure[name='" + name + "']"; // NOI18N
     }
 
-    protected JDBCColumn createJDBCColumn(String name) {
-        return new JDBCColumn(this.getProcedure(), name);
+    protected JDBCColumn createJDBCColumn(int position, ResultSet rs) throws SQLException {
+        return new JDBCColumn(this.getProcedure(), position, JDBCValue.createProcedureValue(rs));
+    }
+
+    protected JDBCParameter createJDBCParameter(int position, ResultSet rs) throws SQLException {
+        Direction direction = JDBCUtils.getDirection(rs.getShort("COLUMN_TYPE"));
+        return new JDBCParameter(this, JDBCValue.createProcedureValue(rs), direction, position);
+    }
+
+    protected JDBCValue createJDBCValue(ResultSet rs) throws SQLException {
+        return JDBCValue.createProcedureValue(rs);
     }
 
     protected void createProcedureInfo() {
@@ -125,6 +141,8 @@ public class JDBCProcedure extends ProcedureImplementation {
         
         Map<String, Column> newColumns = new LinkedHashMap<String, Column>();
         Map<String, Parameter> newParams = new LinkedHashMap<String, Parameter>();
+        int resultCount = 0;
+        int paramCount = 0;
 
         try {
             ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getProcedureColumns(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name, "%"); // NOI18N
@@ -133,16 +151,16 @@ public class JDBCProcedure extends ProcedureImplementation {
                     short columnType = rs.getShort("COLUMN_TYPE");
                     switch (columnType) {
                         case DatabaseMetaData.procedureColumnResult:
-                            addColumn(rs, newColumns);
+                            addColumn(++resultCount, rs, newColumns);
                             break;
                         case DatabaseMetaData.procedureColumnIn:
                         case DatabaseMetaData.procedureColumnInOut:
                         case DatabaseMetaData.procedureColumnOut:
                         case DatabaseMetaData.procedureColumnUnknown:
-                            addParameter(rs, newParams);
+                            addParameter(++paramCount, rs, newParams);
                             break;
                         case DatabaseMetaData.procedureColumnReturn:
-                            LOGGER.log(Level.INFO, "Unexpected: got a return value column in the metadata for procedure " + name);
+                            setReturnValue(rs);
                             break;
                         default:
                             LOGGER.log(Level.INFO, "Encountered unexpected column type " + columnType + " when retrieving metadadta for procedure " + name);
@@ -158,33 +176,21 @@ public class JDBCProcedure extends ProcedureImplementation {
         parameters = Collections.unmodifiableMap(newParams);
     }
 
-    private void addColumn(ResultSet rs, Map<String,Column> newColumns) throws SQLException {
-        String columnName = rs.getString("COLUMN_NAME"); // NOI18N
-        Column column = createJDBCColumn(columnName).getColumn();
-        newColumns.put(columnName, column);
+    private void addColumn(int position, ResultSet rs, Map<String,Column> newColumns) throws SQLException {
+        Column column = createJDBCColumn(position, rs).getColumn();
+        newColumns.put(column.getName(), column);
         LOGGER.log(Level.FINE, "Created column {0}", column);
     }
 
-    private static Direction getDirection(short sqlDirection) {
-        switch (sqlDirection) {
-            case DatabaseMetaData.procedureColumnOut:
-                return Direction.OUT;
-            case DatabaseMetaData.procedureColumnInOut:
-                return Direction.INOUT;
-            case DatabaseMetaData.procedureColumnIn:
-                return Direction.IN;
-            default:
-                LOGGER.log(Level.INFO, "Unknown direction value from DatabaseMetadat.getProcedureColumns(): " + sqlDirection);
-                return Direction.IN;
-        }
-    }
-
-    private void addParameter(ResultSet rs, Map<String,Parameter> newParams) throws SQLException {
-        Direction direction = getDirection(rs.getShort("COLUMN_TYPE")); // NOI8N
-        Parameter param = new JDBCParameter(this, JDBCValue.createProcedureValue(rs), direction).getParameter();
-
+    private void addParameter(int position, ResultSet rs, Map<String,Parameter> newParams) throws SQLException {
+        Parameter  param = createJDBCParameter(position, rs).getParameter();
         newParams.put(param.getName(), param);
         LOGGER.log(Level.FINE, "Created parameter {0}", param);
+    }
+
+    private void setReturnValue(ResultSet rs) throws SQLException {
+        returnValue = createJDBCValue(rs).getValue();
+        LOGGER.log(Level.FINE, "Created return value {0}", returnValue);
     }
 
     private Map<String, Column> initColumns() {
@@ -201,5 +207,13 @@ public class JDBCProcedure extends ProcedureImplementation {
         }
         createProcedureInfo();
         return parameters;
+    }
+
+    private Value initReturnValue() {
+        if (returnValue != null) {
+            return returnValue;
+        }
+        createProcedureInfo();
+        return returnValue;
     }
 }

@@ -52,6 +52,7 @@ import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.jdbc.JDBCMetadata;
 import org.netbeans.modules.db.metadata.model.jdbc.mssql.MSSQLMetadata;
+import org.netbeans.modules.db.metadata.model.jdbc.mysql.MySQLMetadata;
 import org.netbeans.modules.db.metadata.model.jdbc.oracle.OracleMetadata;
 
 /**
@@ -132,6 +133,11 @@ public class JDBCConnMetadataModel implements MetadataModelImplementation {
             if ("Oracle".equals(dmd.getDatabaseProductName())) { // NOI18N
                 return new OracleMetadata(conn, defaultSchemaName);
             }
+
+            if ("mysql".equalsIgnoreCase(dmd.getDatabaseProductName())) { // NOI18N
+                return new MySQLMetadata(conn, defaultSchemaName);
+            }
+            
             String driverName = dmd.getDriverName();
             if (driverName != null) {
                 if (driverName.contains("Microsoft SQL Server") || driverName.contains("jTDS")) { // NOI18N

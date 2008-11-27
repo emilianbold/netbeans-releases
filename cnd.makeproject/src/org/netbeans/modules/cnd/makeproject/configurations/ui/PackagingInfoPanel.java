@@ -41,7 +41,6 @@
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -63,7 +62,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
-public class PackagingInfoPanel extends ListEditorPanel {
+public class PackagingInfoPanel extends ListEditorPanel<PackagerInfoElement> {
 
     private PackagingConfiguration packagingConfiguration;
     private JTable targetList;
@@ -73,55 +72,57 @@ public class PackagingInfoPanel extends ListEditorPanel {
     private JTextArea docArea;
 
     public PackagingInfoPanel(List<PackagerInfoElement> infoList, PackagingConfiguration packagingConfiguration) {
-        super(infoList.toArray(), new JButton[]{new JButton(), new JButton()});
+        super(infoList, new JButton[]{new JButton(), new JButton()});
         getAddButton().setVisible(false);
         this.packagingConfiguration = packagingConfiguration;
-        
+
         this.addButton = extraButtons[0];
         addButton.setText(getString("PackagingFilesPanel.addButton.text"));
-	addButton.setMnemonic(getString("PackagingFilesPanel.addButton.mn").charAt(0));
+        addButton.setMnemonic(getString("PackagingFilesPanel.addButton.mn").charAt(0));
         addButton.getAccessibleContext().setAccessibleDescription(getString("PackagingFilesPanel.addButton.ad"));
         addButton.addActionListener(new AddButtonAction());
-        
+
         this.addEntryButton = extraButtons[1];
         addEntryButton.setText(getString("PackagingFilesPanel.addParameterButton.text"));
-	addEntryButton.setMnemonic(getString("PackagingFilesPanel.addParameterButton.mn").charAt(0));
+        addEntryButton.setMnemonic(getString("PackagingFilesPanel.addParameterButton.mn").charAt(0));
         addEntryButton.getAccessibleContext().setAccessibleDescription(getString("PackagingFilesPanel.addParameterButton.ad"));
         addEntryButton.addActionListener(new AddEntryButtonAction());
 
         getEditButton().setVisible(false);
         getDefaultButton().setVisible(false);
-        
+
         if (infoList.size() > 0 && infoList.get(0).isMandatory()) {
             getRemoveButton().setEnabled(false);
         }
     }
-    
+
     public void setDocArea(JTextArea docArea) {
         this.docArea = docArea;
     }
 
     class AddButtonAction implements java.awt.event.ActionListener {
+
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             addObjectAction(new PackagerInfoElement(packagingConfiguration.getType().getValue(), "", "")); // NOI18N
         }
     }
-    
+
     class AddEntryButtonAction implements java.awt.event.ActionListener {
+
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-	    PackagingNewEntryPanel packagingNewEntryPanel = new PackagingNewEntryPanel(packagingConfiguration);
-	    DialogDescriptor dialogDescriptor = new DialogDescriptor(packagingNewEntryPanel, getString("AddNewParameterDialogTitle"));
-	    DialogDisplayer.getDefault().notify(dialogDescriptor);
-	    if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)
-		return;
+            PackagingNewEntryPanel packagingNewEntryPanel = new PackagingNewEntryPanel(packagingConfiguration);
+            DialogDescriptor dialogDescriptor = new DialogDescriptor(packagingNewEntryPanel, getString("AddNewParameterDialogTitle"));
+            DialogDisplayer.getDefault().notify(dialogDescriptor);
+            if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION) {
+                return;
+            }
             addObjectAction(packagingNewEntryPanel.getInfoElement());
         }
     }
 
-
     @Override
-    public Object copyAction(Object o) {
-        PackagerInfoElement elem = (PackagerInfoElement) o;
+    public PackagerInfoElement copyAction(PackagerInfoElement o) {
+        PackagerInfoElement elem = o;
         return new PackagerInfoElement(elem.getPackager(), new String(elem.getName()), new String(elem.getValue()));
     }
 
@@ -129,12 +130,12 @@ public class PackagingInfoPanel extends ListEditorPanel {
     public String getCopyButtonText() {
         return getString("PackagingFilesPanel.duplicateButton.text");
     }
-    
+
     @Override
     public char getCopyButtonMnemonics() {
         return getString("PackagingFilesPanel.duplicateButton.mn").charAt(0);
     }
-    
+
     @Override
     public String getCopyButtonAD() {
         return getString("PackagingFilesPanel.duplicateButton.ad");
@@ -144,7 +145,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
     public String getListLabelText() {
         return getString("PackagingInfoPanel.listlabel.text");
     }
-    
+
     @Override
     public char getListLabelMnemonic() {
         return getString("PackagingInfoPanel.listlabel.mn").toCharArray()[0];
@@ -189,7 +190,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
             // Disable Remove button for mandatory entries
             int i = getSelectedIndex();
             if (listData.size() >= 0 && i >= 0 && i < listData.size()) {
-                PackagerInfoElement infoElement = (PackagerInfoElement)listData.get(i);
+                PackagerInfoElement infoElement = listData.get(i);
                 if (infoElement.isMandatory()) {
                     getRemoveButton().setEnabled(false);
                 }
@@ -227,9 +228,9 @@ public class PackagingInfoPanel extends ListEditorPanel {
 //		setRowHeight(19);
             getAccessibleContext().setAccessibleDescription(""); // NOI18N
             getAccessibleContext().setAccessibleName(""); // NOI18N
-            
+
             getSelectionModel().addListSelectionListener(new MyListSelectionListener());
-            
+
             putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         }
 
@@ -281,18 +282,18 @@ public class PackagingInfoPanel extends ListEditorPanel {
 //	    }
 //	}
     }
-    
+
     public void refresh() {
         updateDoc();
     }
-    
+
     class MyListSelectionListener implements ListSelectionListener {
 
         public void valueChanged(ListSelectionEvent arg0) {
             updateDoc();
         }
     }
-    
+
     public void updateDoc() {
         if (docArea == null) {
             return;
@@ -303,96 +304,67 @@ public class PackagingInfoPanel extends ListEditorPanel {
         if (listData.size() == 0 || i < 0 || i >= listData.size()) {
             return;
         }
-        
-        PackagerInfoElement elem = (PackagerInfoElement)listData.get(i);
+
+        PackagerInfoElement elem = listData.get(i);
         if (elem.getName().equals("ARCH")) { //NOI18N
             docArea.setText(getString("PACKAGING_ARCH_DOC"));
-        }
-        else if (elem.getName().equals("CATEGORY")) { //NOI18N
+        } else if (elem.getName().equals("CATEGORY")) { //NOI18N
             docArea.setText(getString("PACKAGING_CATEGORY_DOC"));
-        }
-        else if (elem.getName().equals("NAME")) { //NOI18N
+        } else if (elem.getName().equals("NAME")) { //NOI18N
             docArea.setText(getString("PACKAGING_NAME_DOC"));
-        }
-        else if (elem.getName().equals("PKG")) { //NOI18N
+        } else if (elem.getName().equals("PKG")) { //NOI18N
             docArea.setText(getString("PACKAGING_PKG_DOC"));
-        }
-        else if (elem.getName().equals("VERSION")) { // NOI18N
+        } else if (elem.getName().equals("VERSION")) { // NOI18N
             docArea.setText(getString("PACKAGING_VERSION_DOC"));
-        }
-        else if (elem.getName().equals("BASEDIR")) { // NOI18N
+        } else if (elem.getName().equals("BASEDIR")) { // NOI18N
             docArea.setText(getString("PACKAGING_BASEDIR_DOC"));
-        }
-        else if (elem.getName().equals("CLASSES")) { // NOI18N
+        } else if (elem.getName().equals("CLASSES")) { // NOI18N
             docArea.setText(getString("PACKAGING_CLASSES_DOC"));
-        }
-        else if (elem.getName().equals("DESC")) { // NOI18N
+        } else if (elem.getName().equals("DESC")) { // NOI18N
             docArea.setText(getString("PACKAGING_DESC_DOC"));
-        }
-        else if (elem.getName().equals("EMAIL")) { // NOI18N
+        } else if (elem.getName().equals("EMAIL")) { // NOI18N
             docArea.setText(getString("PACKAGING_EMAIL_DOC"));
-        }
-        else if (elem.getName().equals("HOTLINE")) { // NOI18N
+        } else if (elem.getName().equals("HOTLINE")) { // NOI18N
             docArea.setText(getString("PACKAGING_HOTLINE_DOC"));
-        }
-        else if (elem.getName().equals("INTONLY")) { //NOI18N
+        } else if (elem.getName().equals("INTONLY")) { //NOI18N
             docArea.setText(getString("PACKAGING_INTONLY_DOC"));
-        }
-        else if (elem.getName().equals("ISTATES")) { //NOI18N
+        } else if (elem.getName().equals("ISTATES")) { //NOI18N
             docArea.setText(getString("PACKAGING_ISTATES_DOC"));
-        }
-        else if (elem.getName().equals("MAXINST")) { //NOI18N
+        } else if (elem.getName().equals("MAXINST")) { //NOI18N
             docArea.setText(getString("PACKAGING_MAXINST_DOC"));
-        }
-        else if (elem.getName().equals("ORDER")) { //NOI18N
+        } else if (elem.getName().equals("ORDER")) { //NOI18N
             docArea.setText(getString("PACKAGING_ORDER_DOC"));
-        }
-        else if (elem.getName().equals("PSTAMP")) { //NOI18N
+        } else if (elem.getName().equals("PSTAMP")) { //NOI18N
             docArea.setText(getString("PACKAGING_PSTAMP_DOC"));
-        }
-        else if (elem.getName().equals("RSTATES")) { //NOI18N
+        } else if (elem.getName().equals("RSTATES")) { //NOI18N
             docArea.setText(getString("PACKAGING_RSTATES_DOC"));
-        }
-        else if (elem.getName().equals("SUNW_ISA")) { //NOI18N
+        } else if (elem.getName().equals("SUNW_ISA")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_ISA_DOC"));
-        }
-        else if (elem.getName().equals("SUNW_LOC")) { //NOI18N
+        } else if (elem.getName().equals("SUNW_LOC")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_LOC_DOC"));
-        }
-        else if (elem.getName().equals("SUNW_PKG_DIR")) { //NOI18N
+        } else if (elem.getName().equals("SUNW_PKG_DIR")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PKG_DIR_DOC"));
-        }
-        else if (elem.getName().equals("SUNW_PKG_ALLZONES")) { //NOI18N
+        } else if (elem.getName().equals("SUNW_PKG_ALLZONES")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PKG_ALLZONES_DOC"));
-        }
-        else if (elem.getName().equals("SUNW_PKG_HOLLOW")) { //NOI18N
+        } else if (elem.getName().equals("SUNW_PKG_HOLLOW")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PKG_HOLLOW_DOC"));
-        }
-        else if (elem.getName().equals("SUNW_PKG_THISZONE")) { //NOI18N
+        } else if (elem.getName().equals("SUNW_PKG_THISZONE")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PKG_THISZONE_DOC"));
-        }
-        else if (elem.getName().equals("SUNW_PKGLIST")) { //NOI18N
+        } else if (elem.getName().equals("SUNW_PKGLIST")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PKGLIST_DOC"));
-        }
-        else if (elem.getName().equals("SUNW_PKGTYPE")) { //NOI18N
+        } else if (elem.getName().equals("SUNW_PKGTYPE")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PKGTYPE_DOC"));
-        }
-        else if (elem.getName().equals("SUNW_PKGVERS")) { //NOI18N
+        } else if (elem.getName().equals("SUNW_PKGVERS")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PKGVERS_DOC"));
-        }
-        else if (elem.getName().equals("SUNW_PRODNAME")) { //NOI18N
+        } else if (elem.getName().equals("SUNW_PRODNAME")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PRODNAME_DOC"));
-        }
-        else if (elem.getName().equals("SUNW_PRODVERS")) { //NOI18N
+        } else if (elem.getName().equals("SUNW_PRODVERS")) { //NOI18N
             docArea.setText(getString("PACKAGING_SUNW_PRODVERS_DOC"));
-        }
-        else if (elem.getName().equals("ULIMIT")) { //NOI18N
+        } else if (elem.getName().equals("ULIMIT")) { //NOI18N
             docArea.setText(getString("PACKAGING_ULIMIT_DOC"));
-        }
-        else if (elem.getName().equals("VENDOR")) { //NOI18N
+        } else if (elem.getName().equals("VENDOR")) { //NOI18N
             docArea.setText(getString("PACKAGING_VENDOR_DOC"));
-        }
-        else if (elem.getName().equals("VSTOCK")) { //NOI18N
+        } else if (elem.getName().equals("VSTOCK")) { //NOI18N
             docArea.setText(getString("PACKAGING_VSTOCK_DOC"));
         }
     }
@@ -402,7 +374,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
             JLabel label = (JLabel) super.getTableCellRendererComponent(table, color, isSelected, hasFocus, row, col);
-            PackagerInfoElement elem = (PackagerInfoElement) listData.elementAt(row);
+            PackagerInfoElement elem = listData.elementAt(row);
             if (col == 0) {
             } else if (col == 1) {
                 String val = elem.getValue();
@@ -437,7 +409,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
         @Override
         public Object getValueAt(int row, int col) {
 //            return listData.elementAt(row);
-            PackagerInfoElement elem = (PackagerInfoElement) listData.elementAt(row);
+            PackagerInfoElement elem = listData.elementAt(row);
             if (col == 0) {
                 return elem.getName();
             }
@@ -455,7 +427,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
 
         @Override
         public void setValueAt(Object value, int row, int col) {
-            PackagerInfoElement elem = (PackagerInfoElement) listData.elementAt(row);
+            PackagerInfoElement elem = listData.elementAt(row);
             if (col == 0) {
                 elem.setName((String) value);
             } else if (col == 1) {

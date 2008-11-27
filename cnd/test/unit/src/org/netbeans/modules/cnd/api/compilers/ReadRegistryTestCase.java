@@ -419,7 +419,7 @@ public class ReadRegistryTestCase extends NbTestCase {
         }
         assertTrue(golden.equals(buf.toString()));
     }
-    
+
     private String getFile(Pattern pattern, String prefix, String s) {
         Matcher m = pattern.matcher(s);
         if (m.find()) {

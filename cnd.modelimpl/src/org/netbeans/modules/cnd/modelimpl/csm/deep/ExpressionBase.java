@@ -107,7 +107,7 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
         }
     }
 
-    public List/*<CsmExpression>*/ getOperands() {
+    public List<CsmExpression> getOperands() {
         if( operands == null ) {
             operands = new ArrayList<CsmExpression>();
         }

@@ -105,6 +105,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="parsing.api">
+             <api name="general"/>
+             <summary>Migrated to the parsing.api</summary>
+             <version major="0" minor="42"/>
+             <date day="24" month="11" year="2008"/>
+             <author login="tzezula"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="yes" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 The java source module migrated to use the common parsing api.
+             </description>
+             <class package="org.netbeans.api.java.source" name="JavaParserResultTask"/>
+             <class package="org.netbeans.api.java.source" name="ClasspathInfo"/>
+             <class package="org.netbeans.api.java.source" name="CompilationInfo"/>
+             <class package="org.netbeans.api.java.source" name="CompilationController"/>
+             <class package="org.netbeans.api.java.source" name="ModificationResult"/>
+             <class package="org.netbeans.api.java.source" name="WorkingCopy"/>
+        </change>
         <change id="CodeStyle.getDefault">
              <api name="general"/>
              <summary>Better ways of getting CodeStyle instance</summary>

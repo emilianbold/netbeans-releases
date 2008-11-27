@@ -72,7 +72,6 @@ import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
@@ -286,7 +285,7 @@ public class GdbDebugger implements PropertyChangeListener {
             if (pae.getID() == DEBUG_ATTACH) {
                 String pgm = null;
                 boolean isSharedLibrary = false;
-                final String path = getFullPath(runDirectory, pae.getExecutable());
+                final String path = getFullPath(baseDir, pae.getExecutable());
 
                 programPID = lookupProvider.lookupFirst(null, Long.class);
                 if (((MakeConfiguration) pae.getConfiguration()).isDynamicLibraryConfiguration()) {
@@ -1936,7 +1935,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private static String getExecutableOrSharedLibrary(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {
         MakeArtifact ma = new MakeArtifact(mcd, conf);
-        String buildResult = ma.getOutput();
+        String buildResult = ma.getOutput().replace("\\", "/");  // NOI18N
 
         if (buildResult == null || buildResult.length() == 0) {
             buildResult = getBuildResult();
@@ -1957,7 +1956,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
             for (String dir : paths) {
                 dir = dir.replace("\\", "/");  // NOI18N
-                String path = IpeUtils.toAbsolutePath(dir, buildResult);
+                String path = dir + '/' + buildResult; // gdb *requires* forward slashes!
                 if (isExecutableOrSharedLibrary(conf, path)) {
                     return path;
                 }
