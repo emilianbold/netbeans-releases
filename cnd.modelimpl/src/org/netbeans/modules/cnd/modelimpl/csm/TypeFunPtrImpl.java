@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -63,7 +62,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  */
 public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
 
-    private List<CsmUID<CsmParameter>> functionParameters;
+    private Collection<CsmUID<CsmParameter>> functionParameters;
     private short functionPointerDepth;
 
     TypeFunPtrImpl(CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
