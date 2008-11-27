@@ -133,6 +133,14 @@ public class JDBCSchema extends SchemaImplementation {
         return new JDBCTable(this, name);
     }
 
+    protected JDBCProcedure createJDBCProcedure(String procedureName) {
+        return new JDBCProcedure(this, procedureName);
+    }
+
+    protected JDBCView createJDBCView(String viewName) {
+        return new JDBCView(this, viewName);
+    }
+
     protected void createTables() {
         LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
         Map<String, Table> newTables = new LinkedHashMap<String, Table>();
@@ -154,11 +162,7 @@ public class JDBCSchema extends SchemaImplementation {
         tables = Collections.unmodifiableMap(newTables);
     }
 
-    private JDBCView createJDBCView(String viewName) {
-        return new JDBCView(this, viewName);
-    }
-
-    private void createViews() {
+    protected void createViews() {
         LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
         Map<String, View> newViews = new LinkedHashMap<String, View>();
         try {
@@ -177,6 +181,27 @@ public class JDBCSchema extends SchemaImplementation {
             throw new MetadataException(e);
         }
         views = Collections.unmodifiableMap(newViews);
+    }
+
+    protected void createProcedures() {
+        LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
+        Map<String, Procedure> newProcedures = new LinkedHashMap<String, Procedure>();
+        try {
+            ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getProcedures(jdbcCatalog.getName(), name, "%"); // NOI18N
+            try {
+                while (rs.next()) {
+                    String procedureName = rs.getString("PROCEDURE_NAME"); // NOI18N
+                    Procedure procedure = createJDBCProcedure(procedureName).getProcedure();
+                    newProcedures.put(procedureName, procedure);
+                    LOGGER.log(Level.FINE, "Created procedure {0}", procedure);
+                }
+            } finally {
+                rs.close();
+            }
+        } catch (SQLException e) {
+            throw new MetadataException(e);
+        }
+        procedures = Collections.unmodifiableMap(newProcedures);
     }
 
     private Map<String, Table> initTables() {
@@ -199,27 +224,6 @@ public class JDBCSchema extends SchemaImplementation {
         return views;
     }
 
-    private void createProcedures() {
-        LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
-        Map<String, Procedure> newProcedures = new LinkedHashMap<String, Procedure>();
-        try {
-            ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getProcedures(jdbcCatalog.getName(), name, "%"); // NOI18N
-            try {
-                while (rs.next()) {
-                    String procedureName = rs.getString("PROCEDURE_NAME"); // NOI18N
-                    Procedure procedure = createJDBCProcedure(procedureName).getProcedure();
-                    newProcedures.put(procedureName, procedure);
-                    LOGGER.log(Level.FINE, "Created procedure {0}", procedure);
-                }
-            } finally {
-                rs.close();
-            }
-        } catch (SQLException e) {
-            throw new MetadataException(e);
-        }
-        procedures = Collections.unmodifiableMap(newProcedures);
-    }
-
     private Map<String, Procedure> initProcedures() {
         if (procedures != null) {
             return procedures;
@@ -228,10 +232,4 @@ public class JDBCSchema extends SchemaImplementation {
         createProcedures();
         return procedures;
     }
-
-    private JDBCProcedure createJDBCProcedure(String procedureName) {
-        return new JDBCProcedure(this, procedureName);
-    }
-
-
 }
