@@ -65,11 +65,11 @@ public class IOBridge {
     private static int delegating = 0;
     private static InputStream origIn;
     private static PrintStream origOut, origErr;
-    private static Map delegateIns = new HashMap();
-    private static Map delegateOuts = new HashMap();
-    private static Map delegateErrs = new HashMap();
+    private static Map<ThreadGroup, InputStream> delegateIns = new HashMap<ThreadGroup, InputStream>();
+    private static Map<ThreadGroup, PrintStream>delegateOuts = new HashMap<ThreadGroup, PrintStream>();
+    private static Map<ThreadGroup, PrintStream> delegateErrs = new HashMap<ThreadGroup, PrintStream>();
     /** list, not set, so can be reentrant - treated as a multiset */
-    private static List suspendedDelegationTasks = new ArrayList();
+    private static List<Thread> suspendedDelegationTasks = new ArrayList<Thread>();
     
     /**
      * Handle I/O scoping for overlapping project runs.
@@ -152,7 +152,7 @@ public class IOBridge {
             while (tg != null && !delegateIns.containsKey(tg)) {
                 tg = tg.getParent();
             }
-            InputStream is = (InputStream)delegateIns.get(tg);
+            InputStream is = delegateIns.get(tg);
             if (is != null && !suspendedDelegationTasks.contains(t)) {
                 return is;
             } else if (delegating > 0) {

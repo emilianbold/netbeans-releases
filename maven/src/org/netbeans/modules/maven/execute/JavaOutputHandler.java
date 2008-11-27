@@ -50,6 +50,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import org.apache.maven.embedder.MavenEmbedderLogger;
 import org.apache.maven.monitor.event.EventMonitor;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -58,6 +59,7 @@ import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.openide.execution.ExecutorTask;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -107,7 +109,7 @@ class JavaOutputHandler extends AbstractOutputHandler implements EventMonitor, M
     /**
      * @deprecated for tests only..
      */
-    void setup(HashMap procs, OutputWriter std, OutputWriter err) {
+    @Deprecated void setup(HashMap<String, Set<OutputProcessor>> procs, OutputWriter std, OutputWriter err) {
         processors = procs;
         stdErr = err;
         stdOut = std;
