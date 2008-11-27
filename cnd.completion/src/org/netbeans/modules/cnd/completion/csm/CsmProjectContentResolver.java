@@ -244,37 +244,37 @@ public final class CsmProjectContentResolver {
     }
 
     /** ================= help methods =======================================*/
-    public List getGlobalVariables(String strPrefix, boolean match) {
+    public List<CsmVariable> getGlobalVariables(String strPrefix, boolean match) {
         if (project == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         CsmNamespace globNS = project.getGlobalNamespace();
         // add global variables
-        List res = getNamespaceVariables(globNS, strPrefix, match, false, false);
+        List<CsmVariable> res = getNamespaceVariables(globNS, strPrefix, match, false, false);
         if (res != null && sort) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
         return res;
     }
 
-    public List getGlobalFunctions(String strPrefix, boolean match) {
+    public List<CsmFunction> getGlobalFunctions(String strPrefix, boolean match) {
         if (project == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         CsmNamespace globNS = project.getGlobalNamespace();
-        List res = getNamespaceFunctions(globNS, strPrefix, match, false, false);
+        List<CsmFunction> res = getNamespaceFunctions(globNS, strPrefix, match, false, false);
         if (res != null && sort) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
         return res;
     }
 
-    public List getGlobalNamespaces(String strPrefix, boolean match) {
+    public List<CsmNamespace> getGlobalNamespaces(String strPrefix, boolean match) {
         if (project == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         CsmNamespace globNS = project.getGlobalNamespace();
-        List res = getNestedNamespaces(globNS, strPrefix, match);
+        List<CsmNamespace> res = getNestedNamespaces(globNS, strPrefix, match);
         if (res != null && sort) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
@@ -939,7 +939,7 @@ public final class CsmProjectContentResolver {
         return res;
     }
 
-    public List/*<CsmField>*/ getFields(CsmClass clazz, boolean staticOnly) {
+    public List<CsmField> getFields(CsmClass clazz, boolean staticOnly) {
         return getFields(clazz, clazz, "", staticOnly, false, true, false);
     }
 
@@ -965,13 +965,13 @@ public final class CsmProjectContentResolver {
         return res;
     }
 
-    public List/*<CsmMember>*/ getFieldsAndMethods(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses, boolean scopeAccessedClassifier) {
+    public List<CsmMember> getFieldsAndMethods(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses, boolean scopeAccessedClassifier) {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.VARIABLE,
             CsmDeclaration.Kind.FUNCTION,
             CsmDeclaration.Kind.FUNCTION_DEFINITION
         };
-        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses, scopeAccessedClassifier, false);
+        List<CsmMember> res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses, scopeAccessedClassifier, false);
         if (isSortNeeded() && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
