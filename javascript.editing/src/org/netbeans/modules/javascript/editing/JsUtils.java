@@ -56,6 +56,10 @@ public class JsUtils {
         return f != null && "json".equals(f.getExt()); // NOI18N
     }
 
+    public static boolean isEjsFile(FileObject f) {
+        return f != null && "ejs".equals(f.getExt()); // NOI18N
+    }
+
     public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     public static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     

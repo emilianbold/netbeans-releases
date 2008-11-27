@@ -156,7 +156,12 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         }
         
         List<Node> regexps = new ArrayList<Node>();
-        AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME, Token.E4X }, regexps);
+        if (JsUtils.isEjsFile(info.getFileObject())) {
+            // No E4X highlights in EJS files
+            AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME }, regexps);
+        } else {
+            AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME, Token.E4X }, regexps);
+        }
         for (Node node : regexps) {
             OffsetRange range = AstUtilities.getNameRange(node);
             if (node.isStringNode() && JsModel.isGeneratedIdentifier(node.getString())) {
