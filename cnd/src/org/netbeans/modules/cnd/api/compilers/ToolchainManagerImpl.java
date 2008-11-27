@@ -767,9 +767,9 @@ import org.xml.sax.helpers.DefaultHandler;
             if (compiler.getPredefinedMacros() != null) {
                 for(PredefinedMacro p : compiler.getPredefinedMacros()){
                     Element ee = doc.createElement("macro"); // NOI18N
-                    ee.setAttribute("stringvalue", p.getMacro());
+                    ee.setAttribute("stringvalue", p.getMacro()); // NOI18N
                     if (p.getFlags() != null) {
-                        ee.setAttribute("flags", p.getFlags());
+                        ee.setAttribute("flags", p.getFlags()); // NOI18N
                     }
                     e.appendChild(ee);
                 }
@@ -1820,7 +1820,7 @@ import org.xml.sax.helpers.DefaultHandler;
                 if (c.predefinedMacros == null) {
                     c.predefinedMacros = new ArrayList<PredefinedMacro>();
                 }
-                PredefinedMacro m = new PredefinedMacroImpl(getValue(attributes, "stringvalue"), getValue(attributes, "flags"));
+                PredefinedMacro m = new PredefinedMacroImpl(getValue(attributes, "stringvalue"), getValue(attributes, "flags")); // NOI18N
                 c.predefinedMacros.add(m);
                 return;
             }
