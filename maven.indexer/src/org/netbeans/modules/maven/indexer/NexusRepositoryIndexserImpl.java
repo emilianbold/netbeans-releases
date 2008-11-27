@@ -118,7 +118,6 @@ import org.sonatype.nexus.index.creator.JarFileContentsIndexCreator;
 import org.sonatype.nexus.index.creator.MinimalArtifactInfoIndexCreator;
 import org.sonatype.nexus.index.search.SearchEngine;
 import org.sonatype.nexus.index.updater.IndexUpdater;
-import sun.nio.cs.ext.ISCII91;
 
 /**
  *
