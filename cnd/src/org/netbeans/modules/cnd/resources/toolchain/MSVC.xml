@@ -50,8 +50,8 @@
             <macro stringvalue="_Wp64" flags="-Wp64"/>
             <macro stringvalue="_Wp64" flags="-Wp64"/>
         </system_macros>
-        <user_include flags="/I"/>
-        <user_macro flags="/D"/>
+        <user_include flags="-I"/>
+        <user_macro flags="-D"/>
         <development_mode>
             <fast_build flags=""/>
             <debug flags="" default="true"/>
@@ -123,22 +123,22 @@
             <macro stringvalue="_Wp64" flags="-Wp64"/>
             <macro stringvalue="_Wp64" flags="-Wp64"/>
         </system_macros>
-        <user_include flags="/I"/>
-        <user_macro flags="/D"/>
+        <user_include flags="-I"/>
+        <user_macro flags="-D"/>
         <development_mode>
-            <fast_build flags="/Od"/>
-            <debug flags="/Od" default="true"/>
-            <performance_debug flags="/Ox"/>
+            <fast_build flags="-Od"/>
+            <debug flags="-Od" default="true"/>
+            <performance_debug flags="-Ox"/>
             <test_coverage flags=""/>
             <diagnosable_release flags=""/>
             <release flags=""/>
             <performance_release flags=""/>
         </development_mode>
         <warning_level>
-            <no_warnings flags="/W0"/>
-            <default flags="/W3" default="true"/>
-            <more_warnings flags="/W4"/>
-            <warning2error flags="/W3 /WX"/>
+            <no_warnings flags="-W0"/>
+            <default flags="-W3" default="true"/>
+            <more_warnings flags="-W4"/>
+            <warning2error flags="-W3 -WX"/>
         </warning_level>
         <architecture>
             <default flags="" default="true"/>
