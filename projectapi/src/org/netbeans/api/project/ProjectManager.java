@@ -50,7 +50,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -65,7 +64,6 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -702,7 +700,7 @@ public final class ProjectManager {
         public Icon getIcon() {
             if (icon == null) {
                 if (path != null) {
-                    icon = ImageUtilities.image2Icon(ImageUtilities.loadImage(path));
+                    icon = ImageUtilities.image2Icon(ImageUtilities.loadImage(path, true));
                 }
             }
             return icon;
