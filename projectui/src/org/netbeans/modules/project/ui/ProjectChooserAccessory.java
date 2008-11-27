@@ -387,6 +387,16 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         return OpenProjectList.fileToProject( dir );
     }
 
+    private static ProjectManager.Result getProjectResult(File dir) {
+        FileObject fo = FileUtil.toFileObject(dir);
+        if (fo != null && /* #60518 */ fo.isFolder()) {
+            return ProjectManager.getDefault().isProject2(fo);
+        } else {
+            return null;
+        }
+
+    }
+
     private void setAccessoryEnablement( boolean enable, int numberOfProjects ) {
         jLabelProjectName.setEnabled( enable );
         jTextFieldProjectName.setEnabled( enable );
@@ -605,10 +615,19 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         }
 
         public void run() {
-            Project p = OpenProjectList.fileToProject(lookingForIcon);
+            ProjectManager.Result r = getProjectResult(lookingForIcon);
             Icon icon;
-            if (p != null) {
-                icon = ProjectUtils.getInformation(p).getIcon();
+            if (r != null) {
+                icon = r.getIcon();
+                if (icon == null) {
+                    Project p = getProject(lookingForIcon);
+                    if (p != null) {
+                        icon = ProjectUtils.getInformation(p).getIcon();
+                    } else {
+                        // Could also badge with an error icon:
+                        icon = chooser.getFileSystemView().getSystemIcon(lookingForIcon);
+                    }
+                }
             } else {
                 // Could also badge with an error icon:
                 icon = chooser.getFileSystemView().getSystemIcon(lookingForIcon);
