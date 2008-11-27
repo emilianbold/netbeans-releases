@@ -374,6 +374,13 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="macro">
+        <xs:complexType>
+            <xs:attribute name="stringvalue" type="xs:string"/>
+            <xs:attribute name="flags" type="xs:string" use="optional" />
+        </xs:complexType>
+    </xs:element>
+
     <xs:element name="make">
         <xs:complexType>
             <xs:sequence>
@@ -579,6 +586,9 @@
 
     <xs:element name="system_macros">
         <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="tns:macro" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
             <xs:attribute name="flags" type="xs:string" use="optional" />
             <xs:attribute name="parser" type="xs:string" use="optional" />
         </xs:complexType>

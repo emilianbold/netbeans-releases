@@ -9,6 +9,47 @@
         <compiler name="cl"/>
         <recognizer pattern=".*[\\/]VC7[\\/]bin[\\/]?$"/>
         <version flags=""/>
+        <system_macros>
+            <macro stringvalue="__STDC__"/>
+            <macro stringvalue="_ATL_VER"/>
+            <macro stringvalue="_CHAR_UNSIGNED" flags="-J"/>
+            <macro stringvalue="_CHAR_UNSIGNED" flags="-J"/>
+            <macro stringvalue="__CLR_VER"/>
+            <macro stringvalue="__cplusplus_cli=200406" flags="-clr -clr:pure -clr:safe"/>
+            <macro stringvalue="__COUNTER__"/>
+            <macro stringvalue="_CPPRTTI" flags="-GR"/>
+            <macro stringvalue="_CPPUNWIND" flags="-GX"/>
+            <macro stringvalue="_DEBUG" flags="-LDd -MDd -MTd"/>
+            <macro stringvalue="_DLL" flags="-MD -MDd"/>
+            <macro stringvalue="__FUNCDNAME__" flags="-EP -P"/>
+            <macro stringvalue="__FUNCSIG__" flags="-EP -P"/>
+            <macro stringvalue="__FUNCTION__" flags="-EP -P"/>
+            <macro stringvalue="_INTEGRAL_MAX_BITS=32"/>
+            <macro stringvalue="_M_CEE" flags="-clr -clr:pure -clr:safe -clr:oldSyntax"/>
+            <macro stringvalue="_M_CEE_PURE" flags="-clr:pure"/>
+            <macro stringvalue="_M_CEE_SAFE" flags="-clr:safe"/>
+            <macro stringvalue="_M_IX86=600"/>
+            <macro stringvalue="_M_IX86_FP=0" flags="-arch"/>
+            <macro stringvalue="_M_IX86_FP=1" flags="-arch:SSE"/>
+            <macro stringvalue="_M_IX86_FP=2" flags="-arch:SSE2"/>
+            <!--macro stringvalue="_M_X64"/-->
+            <macro stringvalue="_MANAGED" flags="-clr"/>
+            <macro stringvalue="_MFC_VER=0x0700" flags="-clr"/>
+            <macro stringvalue="_MSC_BUILD=1"/>
+            <macro stringvalue="_MSC_EXTENSIONS=1" flags="-Ze"/>
+            <macro stringvalue="_MSC_FULL_VER=150020706"/>
+            <macro stringvalue="_MSC_VER=1500"/>
+            <macro stringvalue="__MSVC_RUNTIME_CHECKS" flags="-RTC"/>
+            <macro stringvalue="_MT" flags="-MT -MTd"/>
+            <macro stringvalue="_NATIVE_WCHAR_T_DEFINED" flags="-Zc:wchar_t"/>
+            <macro stringvalue="_OPENMP" flags="-openmp"/>
+            <macro stringvalue="_VC_NODEFAULTLIB" flags="-Zl"/>
+            <macro stringvalue="_WCHAR_T_DEFINED" flags="-Zc:wchar_t"/>
+            <macro stringvalue="_WIN32"/>
+            <!--macro stringvalue="_WIN64"/-->
+            <macro stringvalue="_Wp64" flags="-Wp64"/>
+            <macro stringvalue="_Wp64" flags="-Wp64"/>
+        </system_macros>
         <user_include flags="/I"/>
         <user_macro flags="/D"/>
         <development_mode>
@@ -40,6 +81,48 @@
         <compiler name="cl"/>
         <recognizer pattern=".*[\\/]VC7[\\/]bin[\\/]?$"/>
         <version flags=""/>
+        <system_macros>
+            <macro stringvalue="__STDC__"/>
+            <macro stringvalue="__cplusplus"/>
+            <macro stringvalue="_ATL_VER"/>
+            <macro stringvalue="_CHAR_UNSIGNED" flags="-J"/>
+            <macro stringvalue="_CHAR_UNSIGNED" flags="-J"/>
+            <macro stringvalue="__CLR_VER"/>
+            <macro stringvalue="__cplusplus_cli=200406" flags="-clr -clr:pure -clr:safe"/>
+            <macro stringvalue="__COUNTER__"/>
+            <macro stringvalue="_CPPRTTI" flags="-GR"/>
+            <macro stringvalue="_CPPUNWIND" flags="-GX"/>
+            <macro stringvalue="_DEBUG" flags="-LDd -MDd -MTd"/>
+            <macro stringvalue="_DLL" flags="-MD -MDd"/>
+            <macro stringvalue="__FUNCDNAME__" flags="-EP -P"/>
+            <macro stringvalue="__FUNCSIG__" flags="-EP -P"/>
+            <macro stringvalue="__FUNCTION__" flags="-EP -P"/>
+            <macro stringvalue="_INTEGRAL_MAX_BITS=32"/>
+            <macro stringvalue="_M_CEE" flags="-clr -clr:pure -clr:safe -clr:oldSyntax"/>
+            <macro stringvalue="_M_CEE_PURE" flags="-clr:pure"/>
+            <macro stringvalue="_M_CEE_SAFE" flags="-clr:safe"/>
+            <macro stringvalue="_M_IX86=600"/>
+            <macro stringvalue="_M_IX86_FP=0" flags="-arch"/>
+            <macro stringvalue="_M_IX86_FP=1" flags="-arch:SSE"/>
+            <macro stringvalue="_M_IX86_FP=2" flags="-arch:SSE2"/>
+            <!--macro stringvalue="_M_X64"/-->
+            <macro stringvalue="_MANAGED" flags="-clr"/>
+            <macro stringvalue="_MFC_VER=0x0700" flags="-clr"/>
+            <macro stringvalue="_MSC_BUILD=1"/>
+            <macro stringvalue="_MSC_EXTENSIONS=1" flags="-Ze"/>
+            <macro stringvalue="_MSC_FULL_VER=150020706"/>
+            <macro stringvalue="_MSC_VER=1500"/>
+            <macro stringvalue="__MSVC_RUNTIME_CHECKS" flags="-RTC"/>
+            <macro stringvalue="_MT" flags="-MT -MTd"/>
+            <macro stringvalue="_NATIVE_WCHAR_T_DEFINED" flags="-Zc:wchar_t"/>
+            <macro stringvalue="_OPENMP" flags="-openmp"/>
+            <macro stringvalue="_VC_NODEFAULTLIB" flags="-Zl"/>
+            <macro stringvalue="_WCHAR_T_DEFINED" flags="-Zc:wchar_t"/>
+            <macro stringvalue="_WIN32"/>
+            <!--macro stringvalue="_WIN64"/-->
+            <macro stringvalue="_Wp64" flags="-Wp64"/>
+            <macro stringvalue="_Wp64" flags="-Wp64"/>
+        </system_macros>
         <user_include flags="/I"/>
         <user_macro flags="/D"/>
         <development_mode>
