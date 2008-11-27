@@ -106,6 +106,7 @@ public class SubprojectProviderImpl implements SubprojectProvider {
 
     private void addOpenedCandidates(Set<Project> resultset) {
         Set<Project> opened = MavenFileOwnerQueryImpl.getInstance().getOpenedProjects();
+        @SuppressWarnings("unchecked")
         List<Artifact> compileArtifacts = project.getOriginalMavenProject().getCompileArtifacts();
         List<String> artPaths = new ArrayList<String>();
         for (Artifact ar : compileArtifacts) {

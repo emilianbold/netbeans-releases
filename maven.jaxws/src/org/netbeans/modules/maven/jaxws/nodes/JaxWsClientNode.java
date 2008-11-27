@@ -46,17 +46,19 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
 import org.netbeans.modules.maven.jaxws.WSUtils;
 import org.netbeans.modules.maven.jaxws.actions.JaxWsRefreshAction;
 import org.netbeans.modules.maven.jaxws.wizards.JaxWsClientCreator;
-import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
@@ -278,15 +280,13 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
             // remove entry in wsimport configuration
             Project project = FileOwnerQuery.getOwner(wsdlFileObject);
             if (project != null) {
-                try {
-                    ModelHandle mavenHandle = ModelHandleUtils.createModelHandle(project);
-                    if (mavenHandle != null) {
-                        MavenModelUtils.removeWsdlFile(mavenHandle, client.getLocalWsdl());
-                        ModelHandleUtils.writeModelHandle(mavenHandle, project);
+                ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
+                    public void performOperation(POMModel model) {
+                        MavenModelUtils.removeWsdlFile(model, client.getLocalWsdl());
                     }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+                };
+                FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+                Utilities.performPOMModelOperations(pom, Collections.singletonList(oper));
             }
             // remove wsdl file
             wsdlFileObject.delete();
@@ -496,7 +496,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                         DialogDisplayer.getDefault().notify(desc);
                     }
                     if (wsdlFo != null) {
-                        String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
+                        final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
 
                         if (!relativePath.equals(client.getLocalWsdl())) {
                             Project project = FileOwnerQuery.getOwner(wsdlFo);
@@ -512,15 +512,13 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                             }
                             wsdlFileObject = wsdlFo;
                             // update project's pom.xml
-                            try {
-                                ModelHandle mavenHandle = ModelHandleUtils.createModelHandle(project);
-                                if (mavenHandle != null) {
-                                    MavenModelUtils.renameWsdlFile(mavenHandle, client.getLocalWsdl(), relativePath);
-                                    ModelHandleUtils.writeModelHandle(mavenHandle, project);
+                            ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
+                                public void performOperation(POMModel model) {
+                                    MavenModelUtils.renameWsdlFile(model, client.getLocalWsdl(), relativePath);
                                 }
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
+                            };
+                            FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+                            Utilities.performPOMModelOperations(pom, Collections.singletonList(oper));
                         }
                     } // endif
                     updateNode();
