@@ -68,7 +68,6 @@ public class SnapshotLivenessResultsPanel extends LivenessResultsPanel implement
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private JMenuItem popupShowSource;
     private JMenuItem popupShowStacks;
     private JPopupMenu popup;
     private LivenessMemoryResultsSnapshot snapshot;
@@ -94,8 +93,6 @@ public class SnapshotLivenessResultsPanel extends LivenessResultsPanel implement
 
         if (source == popupShowStacks) {
             actionsHandler.showStacksForClass(selectedClassId, getSortingColumn(), getSortingOrder());
-        } else if (source == popupShowSource) {
-            showSourceForClass(selectedClassId);
         }
     }
 
@@ -114,29 +111,12 @@ public class SnapshotLivenessResultsPanel extends LivenessResultsPanel implement
     protected JPopupMenu getPopupMenu() {
         if (popup == null) {
             popup = new JPopupMenu();
-
-            Font boldfont = popup.getFont().deriveFont(Font.BOLD);
-
-            popupShowSource = new JMenuItem();
-            popupShowSource.setText(GO_SOURCE_POPUP_ITEM);
-            popupShowSource.setFont(boldfont);
-            popup.add(popupShowSource);
-            popupShowSource.addActionListener(this);
-
-            if (snapshot.containsStacks()) {
-                popup.addSeparator();
-                popupShowStacks = new JMenuItem();
-                popupShowStacks.setText(STACK_TRACES_POPUP_ITEM);
-                popup.add(popupShowStacks);
-                popupShowStacks.addActionListener(this);
-            }
         }
 
         return popup;
     }
 
     protected void performDefaultAction(int classId) {
-        showSourceForClass(classId);
     }
 
     private void fetchResultsFromSnapshot() {

@@ -239,6 +239,7 @@ public class HistoryPanel extends GraphPanel implements ChartModelListener, VMTe
 
     private void createBigLegend() {
         bigLegendPanel = new JPanel();
+        bigLegendPanel.setOpaque(false);
 
         JLabel userThreadsBig = new JLabel(history.getSeriesName(0),
                                            new ColorIcon(history.getSeriesColor(0), Color.BLACK, 18, 9), SwingConstants.LEADING);

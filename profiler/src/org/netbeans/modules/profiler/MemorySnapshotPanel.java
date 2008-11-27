@@ -40,7 +40,6 @@
 
 package org.netbeans.modules.profiler;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.results.ResultsSnapshot;
 import org.netbeans.lib.profiler.results.memory.AllocMemoryResultsSnapshot;
@@ -94,7 +93,7 @@ public class MemorySnapshotPanel extends SnapshotPanel implements ChangeListener
             else if (PresoObjAllocCCTNode.VM_ALLOC_CLASS.equals(className) && PresoObjAllocCCTNode.VM_ALLOC_METHOD.equals(methodName))
                      Profiler.getDefault().displayWarning(CANNOT_SHOW_REFLECTION_SRC_MSG);
             // Display source
-            else NetBeansProfiler.getDefaultNB().openJavaSource(project, className, methodName, methodSig);
+            else NetBeansProfiler.getDefaultNB().openJavaSource(className, methodName, methodSig);
         }
 
         public void showStacksForClass(int selectedClassId, int sortingColumn, boolean sortingOrder) {
@@ -137,8 +136,6 @@ public class MemorySnapshotPanel extends SnapshotPanel implements ChangeListener
     private JTabbedPane tabs = new JTabbedPane(JTabbedPane.BOTTOM);
     private MemoryResultsPanel memoryPanel;
     private MemoryResultsSnapshot snapshot;
-    private Project project;
-    private SaveSnapshotAction saveAction;
     private SnapshotInfoPanel infoPanel;
     private SnapshotReverseMemCallGraphPanel reversePanel;
 
@@ -146,7 +143,6 @@ public class MemorySnapshotPanel extends SnapshotPanel implements ChangeListener
 
     public MemorySnapshotPanel(LoadedSnapshot ls, int sortingColumn, boolean sortingOrder) {
         this.snapshot = (MemoryResultsSnapshot) ls.getSnapshot();
-        this.project = ls.getProject();
 
         setLayout(new BorderLayout());
 
@@ -199,7 +195,6 @@ public class MemorySnapshotPanel extends SnapshotPanel implements ChangeListener
         toolBar.putClientProperty("JToolBar.isRollover", Boolean.TRUE); //NOI18N
         toolBar.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
 
-        toolBar.add(saveAction = new SaveSnapshotAction(ls));
         toolBar.add(new ExportSnapshotAction(ls));
         toolBar.add(new SaveViewAction(this));
 
@@ -215,9 +210,6 @@ public class MemorySnapshotPanel extends SnapshotPanel implements ChangeListener
             ab.setText(""); // NOI18N
             ab.setToolTipText(FIND_ACTION_TOOLTIP);
         }
-
-        toolBar.addSeparator();
-        toolBar.add(new CompareSnapshotsAction(ls));
 
         // find is disabled on memory results table
         findActionPresenter.setEnabled(false);
@@ -450,7 +442,6 @@ public class MemorySnapshotPanel extends SnapshotPanel implements ChangeListener
 
     public void updateSavedState() {
         infoPanel.updateInfo();
-        saveAction.updateState();
     }
 
     private String getDefaultSnapshotFileName(ResultsSnapshot snapshot) {

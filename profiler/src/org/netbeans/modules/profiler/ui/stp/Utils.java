@@ -41,21 +41,18 @@
 
 package org.netbeans.modules.profiler.ui.stp;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
+import org.netbeans.modules.profiler.ui.ProfilerDialogs;
+import org.openide.WizardDescriptor;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.io.IOException;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
-import org.netbeans.modules.profiler.attach.AttachWizard;
-import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 
 
 /**
@@ -70,11 +67,11 @@ public class Utils {
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    public static AttachSettings getAttachSettings(Project project) {
+    public static AttachSettings getAttachSettings() {
         AttachSettings attachSettings = null;
 
         try {
-            attachSettings = NetBeansProfiler.loadAttachSettings(project);
+            attachSettings = NetBeansProfiler.loadAttachSettings();
         } catch (IOException ex) {
         }
 
@@ -134,23 +131,13 @@ public class Utils {
         return type == ProfilingSettings.PROFILE_MONITOR;
     }
 
-    public static String getProjectName(Project project) {
-        if (project == null) {
+    public static String getProjectName() {
             return SelectProfilingTask.EXTERNAL_APPLICATION_STRING;
-        }
-
-        ProjectInformation pi = ProjectUtils.getInformation(project);
-
-        return pi.getDisplayName();
     }
 
-    public static SelectProfilingTask.SettingsConfigurator getSettingsConfigurator(Project project) {
-        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
+    public static SelectProfilingTask.SettingsConfigurator getSettingsConfigurator() {
 
-        SelectProfilingTask.SettingsConfigurator configurator = ptp.getSettingsConfigurator();
-        if (configurator == null) return DefaultSettingsConfigurator.SHARED_INSTANCE;
-
-        return configurator;
+            return DefaultSettingsConfigurator.SHARED_INSTANCE; // Just to be sure, should not happen
     }
 
     public static JPanel createFillerPanel() {
@@ -175,14 +162,14 @@ public class Utils {
         return horizontalSeparator;
     }
 
-    public static AttachSettings selectAttachSettings(Project project) {
-        AttachSettings attachSettings = getAttachSettings(project);
+    public static AttachSettings selectAttachSettings() {
+        AttachSettings attachSettings = getAttachSettings();
 
         if (attachSettings == null) {
             attachSettings = new AttachSettings();
         }
 
-        return AttachWizard.getDefault().configure(attachSettings);
+        return null;
 //        AttachWizard attachWizard = new AttachWizard();
 //        attachWizard.init(attachSettings);
 //

@@ -374,7 +374,7 @@ public class CompareSnapshotsAction extends AbstractAction {
             }
 
             // Add saved snapshots
-            FileObject[] snapshotsOnDisk = ResultsManager.getDefault().listSavedSnapshots(snapshot.getProject());
+            FileObject[] snapshotsOnDisk = ResultsManager.getDefault().listSavedSnapshots();
             FileObject snapshotFile = (snapshot.getFile() != null) ? FileUtil.toFileObject(snapshot.getFile()) : null;
 
             for (int i = 0; i < snapshotsOnDisk.length; i++) {
