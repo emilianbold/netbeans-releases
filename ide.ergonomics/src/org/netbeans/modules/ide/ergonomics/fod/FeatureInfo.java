@@ -68,15 +68,17 @@ public final class FeatureInfo {
     final Map<String,String> nbproject = new HashMap<String,String>();
     final Map<String,String> files = new HashMap<String,String>();
     private Properties properties;
+    final String clusterName;
 
-    private FeatureInfo(Set<String> cnbs, URL delegateLayer, Properties p) {
+    private FeatureInfo(String clusterName, Set<String> cnbs, URL delegateLayer, Properties p) {
         this.cnbs = cnbs;
         this.delegateLayer = delegateLayer;
         this.properties = p;
+        this.clusterName = clusterName;
     }
     
 
-    public static FeatureInfo create(URL delegateLayer, URL bundle) throws IOException {
+    public static FeatureInfo create(String clusterName, URL delegateLayer, URL bundle) throws IOException {
         Properties p = new Properties();
         p.load(bundle.openStream());
         String cnbs = p.getProperty("cnbs");
@@ -84,7 +86,7 @@ public final class FeatureInfo {
         TreeSet<String> s = new TreeSet<String>();
         s.addAll(Arrays.asList(cnbs.split(",")));
 
-        FeatureInfo info = new FeatureInfo(s, delegateLayer, p);
+        FeatureInfo info = new FeatureInfo(clusterName, s, delegateLayer, p);
         final String prefix = "nbproject.";
         final String prefFile = "project.file.";
         for (Object k : p.keySet()) {

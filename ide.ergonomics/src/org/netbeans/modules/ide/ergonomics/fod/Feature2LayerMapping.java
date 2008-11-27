@@ -43,14 +43,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -89,10 +89,50 @@ public class Feature2LayerMapping {
         return map;
     }
     
+    public static Collection<? extends FeatureInfo> features() {
+        return featureTypesLookup().lookupAll(FeatureInfo.class);
+    }
+    
+    public static void dumpModules() {
+        if (!FoDFileSystem.LOG.isLoggable(Level.FINE)) {
+            return;
+        }
+        for (FeatureInfo info : features()) {
+            Set<String> enabled = new TreeSet<String>();
+            Set<String> disabled = new TreeSet<String>();
+            for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+                if (info.getCodeNames().contains(m.getCodeNameBase())) {
+                    if (m.isEnabled()) {
+                        enabled.add(m.getCodeNameBase());
+                    } else {
+                        disabled.add(m.getCodeNameBase());
+                    }
+                }
+            }
+            if (enabled.isEmpty()) {
+                FoDFileSystem.LOG.fine(info.clusterName + " disabled"); // NOTICES
+                continue;
+            }
+            if (disabled.isEmpty()) {
+                FoDFileSystem.LOG.fine(info.clusterName + " enabled"); // NOTICES
+                continue;
+            }
+            FoDFileSystem.LOG.fine(
+                info.clusterName + " enabled " + enabled.size() + " disabled " + disabled.size()); // NOTICES
+
+            for (String cnb : disabled) {
+                FoDFileSystem.LOG.finest("- " + cnb); // NOI18N
+            }
+            for (String cnb : enabled) {
+                FoDFileSystem.LOG.finest("+ " + cnb); // NOI18N
+            }
+        }
+        
+    }
+    
     public Collection<URL> getLayerURLs () {
         List<URL> res = new ArrayList<URL>();
-        Lookup.Result<FeatureInfo> result = featureTypesLookup().lookupResult(FeatureInfo.class);
-        for (FeatureInfo pt2m : result.allInstances ()) {
+        for (FeatureInfo pt2m : features()) {
             URL url = FeatureInfoAccessor.DEFAULT.getDelegateLayer(pt2m);
             if (url != null) {
                 res.add(url);
@@ -105,8 +145,7 @@ public class Feature2LayerMapping {
         if (layer == null) {
             return null;
         }
-        Lookup.Result<FeatureInfo> result = featureTypesLookup().lookupResult(FeatureInfo.class);
-        for (FeatureInfo pt2m : result.allInstances ()) {
+        for (FeatureInfo pt2m : features()) {
             if (layer.equals(FeatureInfoAccessor.DEFAULT.getDelegateLayer(pt2m))) {
                 return FeatureInfoAccessor.DEFAULT.getCodeName(pt2m);
             }
@@ -147,7 +186,7 @@ public class Feature2LayerMapping {
                 if (layer != null && bundle != null) {
                     FeatureInfo info;
                     try {
-                        info = FeatureInfo.create(layer, bundle);
+                        info = FeatureInfo.create(clusterName, layer, bundle);
                         ic.add(info);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);

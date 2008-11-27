@@ -62,7 +62,7 @@ import org.xml.sax.SAXException;
 public class FoDFileSystem extends MultiFileSystem 
 implements Runnable {
     private static FoDFileSystem INSTANCE;
-    final static Logger LOG = Logger.getLogger (FoDFileSystem.class.getPackage ().toString ());
+    final static Logger LOG = Logger.getLogger (FoDFileSystem.class.getPackage().getName());
     private static RequestProcessor RP = new RequestProcessor("Ergonomics"); // NOI18N
     private RequestProcessor.Task refresh = RP.create(this);
 
@@ -90,13 +90,13 @@ implements Runnable {
     public void run() {
         Lookup.Result<FeatureInfo> result = Feature2LayerMapping.featureTypesLookup().lookupResult(FeatureInfo.class);
         boolean empty = true;
-        
+
         LOG.fine("collecting layers"); // NOI18N
         List<XMLFileSystem> delegate = new ArrayList<XMLFileSystem>();
         for (FeatureInfo info : result.allInstances ()) {
             Internal internal = FeatureInfoAccessor.DEFAULT.getInternal(info);
             if (!internal.isEnabled()) {
-                LOG.finest("adding feature " + info.getPreferredCodeNameBase()); // NOI18N
+                LOG.finest("adding feature " + info.clusterName); // NOI18N
                 delegate.add(internal.getXMLFileSystem());
             } else {
                 empty = false;
@@ -114,6 +114,7 @@ implements Runnable {
         LOG.fine("delegating to " + delegate.size() + " layers"); // NOI18N
         setDelegates(delegate.toArray(new FileSystem[0]));
         LOG.fine("done");
+        Feature2LayerMapping.dumpModules();
     }
 
     public FeatureInfo whichProvides(FileObject template) {
