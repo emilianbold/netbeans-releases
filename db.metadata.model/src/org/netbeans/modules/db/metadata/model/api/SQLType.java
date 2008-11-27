@@ -82,8 +82,6 @@ public enum SQLType {
 
     private final int javasqltype;
 
-    private static EnumSet<SQLType> variableTypes;
-
     SQLType(int type) {
         this.javasqltype = type;
     }
@@ -94,7 +92,7 @@ public enum SQLType {
      * @param type the SQLType type specifier
      * @return the matching java.sql.Type type specifier
      */
-    public int getJavaSQLType(SQLType type) {
+    public static int getJavaSQLType(SQLType type) {
         return type.javasqltype;
     }
 }

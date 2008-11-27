@@ -37,74 +37,66 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.jdbc;
+package org.netbeans.modules.db.metadata.model.jdbc.mysql;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import org.netbeans.modules.db.metadata.model.api.Nullable;
+import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
 import org.netbeans.modules.db.metadata.model.api.SQLType;
-import org.netbeans.modules.db.metadata.model.api.Tuple;
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import org.netbeans.modules.db.metadata.model.jdbc.JDBCParameter;
+import org.netbeans.modules.db.metadata.model.jdbc.JDBCProcedure;
+import org.netbeans.modules.db.metadata.model.jdbc.JDBCSchema;
+import org.netbeans.modules.db.metadata.model.jdbc.JDBCUtils;
+import org.netbeans.modules.db.metadata.model.jdbc.JDBCValue;
 
 /**
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class JDBCColumn extends ColumnImplementation {
-
-    private final Tuple parent;
-    private final JDBCValue value;
-    private final int ordinalPosition;
-
-    public JDBCColumn(Tuple parent, int ordinalPosition, JDBCValue value) {
-        this.parent = parent;
-        this.value = value;
-        this.ordinalPosition = ordinalPosition;
+public class MySQLProcedure extends JDBCProcedure {
+    public MySQLProcedure(JDBCSchema jdbcSchema, String name) {
+        super(jdbcSchema, name);
     }
 
-    public final Tuple getParent() {
-        return parent;
+    @Override
+    protected JDBCParameter createJDBCParameter(int position, ResultSet rs) throws SQLException {
+        Direction direction = JDBCUtils.getDirection(rs.getShort("COLUMN_TYPE"));
+        return new JDBCParameter(this, createValue(rs), direction, position);
     }
 
-    public final String getName() {
-        return value.getName();
+    @Override
+    protected JDBCValue createJDBCValue(ResultSet rs) throws SQLException {
+        return createValue(rs);
     }
 
     @Override
     public String toString() {
-        return "JDBCColumn[" + value + ", ordinal_position=" + ordinalPosition + "]"; // NOI18N
+        return "MySQLProcedure[name=" + getName() + "]";
     }
 
-    @Override
-    public int getPrecision() {
-        return value.getPrecision();
+    /**
+     * A "special" version because MySQL returns character lengths in
+     * the precision column instead of the length column - sheesh.
+     */
+    private static JDBCValue createValue(ResultSet rs) throws SQLException {
+        String name = rs.getString("COLUMN_NAME");
+
+        int length = 0;
+        int precision = 0;
+
+        SQLType type = JDBCUtils.getSQLType(rs.getInt("DATA_TYPE"));
+        if (JDBCUtils.isNumericType(type)) {
+            precision = rs.getInt("PRECISION");
+        } else {
+            length = rs.getInt("PRECISION");
+        }
+        short scale = rs.getShort("SCALE");
+        short radix = rs.getShort("RADIX");
+        Nullable nullable = JDBCUtils.getProcedureNullable(rs.getShort("NULLABLE"));
+
+        return new JDBCValue(name, type, length, precision, radix, scale, nullable);
     }
 
-    @Override
-    public short getRadix() {
-        return value.getRadix();
-    }
 
-    @Override
-    public short getScale() {
-        return value.getScale();
-    }
-
-    @Override
-    public SQLType getType() {
-        return value.getType();
-    }
-
-    @Override
-    public int getLength() {
-        return value.getLength();
-    }
-
-    @Override
-    public Nullable getNullable() {
-        return value.getNullable();
-    }
-
-    @Override
-    public int getOrdinalPosition() {
-        return ordinalPosition;
-    }
 }
