@@ -126,7 +126,7 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
                 ProjectChooser.setProjectsFolder(parent);
             }
             
-            Set resultSet = new LinkedHashSet();
+            Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
 //            final Archetype archetype = (Archetype)wiz.getProperty("archetype"); //NOI18N<
             dirF.getParentFile().mkdirs();
             
@@ -241,7 +241,7 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
 
     private int runArchetype(File dirF, String gr, String art, String ver, String pack, Archetype arch) {
         BeanRunConfig config = new BeanRunConfig();
-        config.setActivatedProfiles(Collections.EMPTY_LIST);
+        config.setActivatedProfiles(Collections.<String>emptyList());
         config.setExecutionDirectory(dirF);
         config.setExecutionName(NbBundle.getMessage(MavenWizardIterator.class, "RUN_Project_Creation"));
         config.setGoals(Collections.singletonList(MavenCommandSettings.getDefault().getCommand(MavenCommandSettings.COMMAND_CREATE_ARCHETYPE))); //NOI18N

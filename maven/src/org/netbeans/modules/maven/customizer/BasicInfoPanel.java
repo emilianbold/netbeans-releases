@@ -44,8 +44,8 @@ import org.netbeans.modules.maven.api.customizer.support.ReflectionTextComponent
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.modules.maven.model.pom.Project;
 
 /**
  *
@@ -63,7 +63,7 @@ public class BasicInfoPanel extends javax.swing.JPanel {
     }
     
     private void initValues() {
-        Model mdl = handle.getPOMModel();
+        Project mdl = handle.getPOMModel().getProject();
         MavenProject project = handle.getProject().getParent();
         listeners = new ArrayList<TextComponentUpdater>();
         try {
