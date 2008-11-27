@@ -42,11 +42,10 @@ package org.netbeans.modules.csl.editor.fold;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.csl.core.AbstractTaskFactory;
 import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -58,24 +57,18 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Lahoda
  */
-public class GsfFoldManagerTaskFactory extends TaskFactory {
+public final class GsfFoldManagerTaskFactory extends AbstractTaskFactory {
 
     /** Creates a new instance of GsfFoldManagerTaskFactory */
     public GsfFoldManagerTaskFactory() {
-        super();
+        super(true);
     }
 
     @Override
-    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        String mimeType = snapshot.getMimeType();
-        Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
-        if (l != null) {
-            FileObject file = snapshot.getSource().getFileObject();
-            if (file != null) {
-                return Collections.singleton(GsfFoldManager.JavaElementFoldTask.getTask(file));
-            } else {
-                return Collections.<SchedulerTask>emptySet();
-            }
+    protected Collection<? extends SchedulerTask> createTasks(Language l, Snapshot snapshot) {
+        FileObject file = snapshot.getSource().getFileObject();
+        if (file != null) {
+            return Collections.singleton(GsfFoldManager.JavaElementFoldTask.getTask(file));
         } else {
             return null;
         }
