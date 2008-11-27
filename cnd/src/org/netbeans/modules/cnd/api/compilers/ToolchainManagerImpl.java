@@ -1027,7 +1027,7 @@ import org.xml.sax.helpers.DefaultHandler;
             element.appendChild(c);
         }
         if (linker.getLibraryFlag() != null) {
-            c = doc.createElement("library"); // NOI18N
+            c = doc.createElement("library_flag"); // NOI18N
             c.setAttribute("flags", linker.getLibraryFlag()); // NOI18N
             element.appendChild(c);
         }
@@ -1693,7 +1693,7 @@ import org.xml.sax.helpers.DefaultHandler;
                 } else if (path.endsWith(".dynamic_library_search")) { // NOI18N
                     l.dynamicLibrarySearchFlag = getValue(attributes, "flags"); // NOI18N
                     return;
-                } else if (path.endsWith(".library")) { // NOI18N
+                } else if (path.endsWith(".library_flag")) { // NOI18N
                     l.libraryFlag = getValue(attributes, "flags"); // NOI18N
                     return;
                 } else if (path.endsWith(".PIC")) { // NOI18N

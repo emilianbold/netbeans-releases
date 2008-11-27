@@ -48,8 +48,8 @@ made subject to such option by the copyright holder.
     <base_folder regestry="hklm\software\Microsoft\VisualStudio\SxS\VC7"  pattern=".*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]VC7[\\/]bin[\\/]?$"/>
     <command_folder regestry="hklm\software\microsoft\windows\currentversion\uninstall\msys-1.0_is1" pattern="Inno Setup: App Path.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]msys[\\/]1.0[\\/]bin[\\/]?$"/>
     <c>
-        <recognizer pattern=".*[\\/]VC7[\\/]bin[\\/]?$"/>
         <compiler name="cl"/>
+        <recognizer pattern=".*[\\/]VC7[\\/]bin[\\/]?$"/>
         <version flags=""/>
         <user_include flags="/I"/>
         <user_macro flags="/D"/>
@@ -79,8 +79,8 @@ made subject to such option by the copyright holder.
         <precompiled_header flags="" suffix="" append="true" />
     </c>
     <cpp>
-        <recognizer pattern=".*[\\/]VC7[\\/]bin[\\/]?$"/>
         <compiler name="cl"/>
+        <recognizer pattern=".*[\\/]VC7[\\/]bin[\\/]?$"/>
         <version flags=""/>
         <user_include flags="/I"/>
         <user_macro flags="/D"/>
@@ -112,17 +112,17 @@ made subject to such option by the copyright holder.
     <scanner>
         <error pattern="([a-zA-Z]:[^:\n]*|[^:\n]*):([^:\n]*):([^:\n]*):([^\n]*)" language="c,cpp,fortran,assembler"/>
         <error pattern="([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*" language="c,cpp,fortran,assembler"/>
-        <stack_header pattern="In file included from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"/>
-        <stack_next pattern="                 from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"/>
-        <change_directory pattern="cd\\s+([\\S]+)[\\s;]"/>
         <enter_directory pattern="[gd]?make\\[([0-9]+)\\]: Entering[\\w+\\s+]+`([^']*)'"/>
         <leave_directory pattern="[gd]?make\\[([0-9]+)\\]: Leaving[\\w+\\s+]+`([^']*)'"/>
+        <change_directory pattern="cd\\s+([\\S]+)[\\s;]"/>
+        <stack_header pattern="In file included from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"/>
+        <stack_next pattern="                 from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"/>
     </scanner>
     <linker>
         <library_prefix stringvalue="lib"/>
         <library_search flags="-L"/>
         <dynamic_library_search flags="-Wl,-rpath "/>
-        <library flags="-l"/>
+        <library_flag flags="-l"/>
         <PIC flags="-fPIC "/>
         <static_library flags="-static"/>
         <dynamic_library flags="-dynamic"/>
