@@ -179,7 +179,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         }
         String errorMessage = canUseFileName (rootFolder, gui.getPackageFileName(), gui.getTargetName(), template.getExt ());        
         if (gui != null) {
-            setLocalizedMessage(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
+            wizard.getNotificationLineSupport ().setErrorMessage (errorMessage);
         }
         if (errorMessage!=null) returnValue=false;                
         
@@ -274,22 +274,18 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
     
     private void setErrorMessage( String key ) {
         if ( key == null ) {
-            setLocalizedMessage(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+            wizard.getNotificationLineSupport().clearMessages();
         } else {
-            setLocalizedMessage(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(JavaTargetChooserPanelGUI.class, key));
+            wizard.getNotificationLineSupport().setErrorMessage(NbBundle.getMessage(JavaTargetChooserPanelGUI.class, key));
         }
     }
     
     private void setInfoMessage(String key) {
         if (key == null) {
-            setLocalizedMessage(WizardDescriptor.PROP_INFO_MESSAGE, null);
+            wizard.getNotificationLineSupport().clearMessages();
         } else {
-            setLocalizedMessage(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(JavaTargetChooserPanelGUI.class, key));
+            wizard.getNotificationLineSupport().setInformationMessage (NbBundle.getMessage(JavaTargetChooserPanelGUI.class, key));
         }
-    }
-    
-    private void setLocalizedMessage(String msgType, String message) {
-        wizard.putProperty(msgType, message);
     }
     
     private FileObject getTargetFolderFromGUI (WizardDescriptor wd) {
