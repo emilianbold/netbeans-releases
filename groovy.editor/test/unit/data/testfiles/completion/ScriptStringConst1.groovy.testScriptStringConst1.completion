@@ -3,4 +3,4 @@ Code completion result for source line:
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 METHOD     toShort()                                  Short
-METHOD     toString()                                 String
+METHOD     toString()                      [PUBLIC]   String

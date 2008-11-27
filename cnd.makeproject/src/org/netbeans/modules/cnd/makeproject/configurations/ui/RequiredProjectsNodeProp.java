@@ -52,7 +52,7 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 
-public class RequiredProjectsNodeProp extends PropertySupport {
+public class RequiredProjectsNodeProp extends PropertySupport<List> {
 
     private VectorConfiguration<LibraryItem> vectorConfiguration;
     Project project;
@@ -78,13 +78,13 @@ public class RequiredProjectsNodeProp extends PropertySupport {
         }
     }
 
-    public Object getValue() {
+    public List getValue() {
         return vectorConfiguration.getValue();
     }
 
     @SuppressWarnings("unchecked")
-    public void setValue(Object v) {
-        vectorConfiguration.setValue((List) v);
+    public void setValue(List v) {
+        vectorConfiguration.setValue(v);
     }
 
     @Override

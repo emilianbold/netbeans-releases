@@ -3,5 +3,5 @@ l.comp|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 METHOD     compareTo(Character)                       int
-METHOD     compareTo(Long)                            int
+METHOD     compareTo(Long)                 [PUBLIC]   int
 METHOD     compareTo(Number)                          int

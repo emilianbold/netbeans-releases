@@ -1193,6 +1193,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
             folder.removeChangeListener(this);

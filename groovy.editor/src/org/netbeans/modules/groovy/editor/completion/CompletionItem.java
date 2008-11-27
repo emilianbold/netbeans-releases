@@ -129,7 +129,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         private final String parameterString;
 
-        private final TypeMirror returnType;
+        private final String returnType;
 
         private final Set<javax.lang.model.element.Modifier> modifiers;
 
@@ -137,11 +137,17 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         public JavaMethodItem(String className, String simpleName, String parameterString, TypeMirror returnType,
                 Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, boolean emphasise) {
+            this(className, simpleName, parameterString,
+                    Utilities.getTypeName(returnType, false).toString(), modifiers, anchorOffset, emphasise);
+        }
+
+        public JavaMethodItem(String className, String simpleName, String parameterString, String returnType,
+                Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, boolean emphasise) {
             super(null, anchorOffset);
             this.className = className;
             this.simpleName = simpleName;
             this.parameterString = parameterString;
-            this.returnType = returnType;
+            this.returnType = NbUtilities.stripPackage(returnType);
             this.modifiers = modifiers;
             this.emphasise = emphasise;
         }
@@ -173,7 +179,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             // FIXME
             String retType = "";
             if (returnType != null) {
-                retType = Utilities.getTypeName(returnType, false).toString();
+                retType = returnType;
             }
 
             formatter.appendText(retType);
@@ -190,9 +196,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public Set<Modifier> getModifiers() {
-            // FIXME - fix tests
-            //return Utilities.modelModifiersToGsf(modifiers);
-            return Collections.emptySet();
+            return Utilities.modelModifiersToGsf(modifiers);
         }
 
         @Override

@@ -86,6 +86,7 @@ public class VectorNodeProp extends PropertySupport<List> {
         return vectorConfiguration.getValue();
     }
 
+    @SuppressWarnings("unchecked")
     public void setValue(List v) {
         vectorConfiguration.setValue(v);
     }
