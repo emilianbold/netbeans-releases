@@ -48,7 +48,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
@@ -89,20 +88,6 @@ public class RubyProcessCreator implements Callable<Process> {
         descriptor.addBinPath(true);
         this.descriptor = descriptor;
         this.charsetName = charsetName;
-    }
-
-    /**
-     * Wraps the given locator as a LineConvertors.FileLocator. Just a temp utility
-     * method to ease the migration to extexecution.
-     */
-    public static LineConvertors.FileLocator wrap(final FileLocator locator) {
-        LineConvertors.FileLocator wrapper = new LineConvertors.FileLocator() {
-
-            public FileObject find(String filename) {
-                return locator.find(filename);
-            }
-        };
-        return wrapper;
     }
 
     public Process call() throws Exception {

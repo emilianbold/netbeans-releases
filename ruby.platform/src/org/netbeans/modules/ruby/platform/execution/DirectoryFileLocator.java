@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.platform.execution;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.api.extexecution.print.LineConvertors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -52,7 +53,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class DirectoryFileLocator implements FileLocator {
+public class DirectoryFileLocator implements FileLocator, LineConvertors.FileLocator {
     private FileObject root;
 
     public DirectoryFileLocator(FileObject root) {

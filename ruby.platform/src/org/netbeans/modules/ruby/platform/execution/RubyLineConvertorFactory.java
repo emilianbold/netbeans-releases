@@ -44,6 +44,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
+import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 
 /**
  *
@@ -116,12 +117,11 @@ public final class RubyLineConvertorFactory implements LineConvertorFactory {
      * @return
      */
     public static List<LineConvertor> getStandardConvertors(FileLocator locator) {
-        LineConvertors.FileLocator wrapper = RubyProcessCreator.wrap(locator);
         List<LineConvertor> result = new ArrayList<LineConvertor>(4);
-        result.add(LineConvertors.filePattern(wrapper, RAILS_RECOGNIZER, EXT_RE, 1, 2));
-        result.add(LineConvertors.filePattern(wrapper, RUBY_COMPILER_WIN_MY, EXT_RE, 1, 2));
-        result.add(LineConvertors.filePattern(wrapper, RUBY_COMPILER, EXT_RE, 1, 2));
-        result.add(LineConvertors.filePattern(wrapper, RUBY_COMPILER_WIN, EXT_RE, 1, 2));
+        result.add(LineConvertors.filePattern(locator, RAILS_RECOGNIZER, EXT_RE, 1, 2));
+        result.add(LineConvertors.filePattern(locator, RUBY_COMPILER_WIN_MY, EXT_RE, 1, 2));
+        result.add(LineConvertors.filePattern(locator, RUBY_COMPILER, EXT_RE, 1, 2));
+        result.add(LineConvertors.filePattern(locator, RUBY_COMPILER_WIN, EXT_RE, 1, 2));
         return result;
     }
 
