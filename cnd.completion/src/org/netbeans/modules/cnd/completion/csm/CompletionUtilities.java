@@ -54,9 +54,11 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.CsmCompletionResult;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
@@ -69,7 +71,12 @@ import org.netbeans.modules.editor.NbEditorUtilities;
  */
 public class CompletionUtilities {
 
-    public static List/*<CsmDeclaration*/ findFunctionLocalVariables(Document doc, int offset, FileReferencesContext fileReferncesContext) {
+    /**
+     * Constructor is private to prevent instantiation.
+     */
+    private CompletionUtilities() {}
+
+    public static List<CsmDeclaration> findFunctionLocalVariables(Document doc, int offset, FileReferencesContext fileReferncesContext) {
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
         if (file == null || !file.isValid()) {
             return Collections.<CsmDeclaration>emptyList();
@@ -78,16 +85,16 @@ public class CompletionUtilities {
         return CsmContextUtilities.findFunctionLocalVariables(context);
     }
 
-    public static List/*<CsmDeclaration*/ findClassFields(Document doc, int offset) {
+    public static List<CsmField> findClassFields(Document doc, int offset) {
         CsmClass clazz = findClassOnPosition(doc, offset);
-        List res = null;
+        List<CsmField> res = null;
         if (clazz != null) {
             res = new CsmProjectContentResolver().getFields(clazz, false);
         }
         return res;
     }
 
-    public static List/*<CsmDeclaration*/ findFileVariables(Document doc, int offset) {
+    public static List<CsmDeclaration> findFileVariables(Document doc, int offset) {
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
         if (file == null || !file.isValid()) {
             return Collections.<CsmDeclaration>emptyList();
@@ -96,7 +103,7 @@ public class CompletionUtilities {
         return CsmContextUtilities.findFileLocalVariables(context);
     }
 
-    public static List/*<CsmDeclaration*/ findGlobalVariables(Document doc, int offset) {
+    public static List<CsmVariable> findGlobalVariables(Document doc, int offset) {
         CsmProject prj = CsmUtilities.getCsmProject(doc);
         if (prj == null) {
             return null;

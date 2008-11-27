@@ -87,14 +87,14 @@ final class IndirectAction<T extends Lookup.Provider, R> extends ContextAction<T
     }
 
     @Override
-    void addNotify() {
-        super.addNotify();
+    void internalAddNotify() {
+        super.internalAddNotify();
         delegate.addPropertyChangeListener(pcl);
     }
 
     @Override
-    void removeNotify() {
-        super.removeNotify();
+    void internalRemoveNotify() {
+        super.internalRemoveNotify();
         delegate.removePropertyChangeListener(pcl);
     }
 

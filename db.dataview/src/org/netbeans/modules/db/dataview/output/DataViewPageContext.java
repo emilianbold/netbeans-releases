@@ -43,7 +43,6 @@ package org.netbeans.modules.db.dataview.output;
 import java.util.List;
 import org.openide.util.NbBundle;
 
-
 /**
  * Holds data view page pointers and the current page data set
  * 
@@ -55,6 +54,7 @@ class DataViewPageContext {
     private int totalRows = -1;
     private int currentPos = 1;
     private List<Object[]> rows;
+
     DataViewPageContext(int pageSize) {
         this.pageSize = pageSize;
     }
@@ -69,6 +69,10 @@ class DataViewPageContext {
 
     List<Object[]> getCurrentRows() {
         return rows;
+    }
+
+    Object getColumnData(int row, int column) {
+        return rows.get(row)[column];
     }
 
     int getTotalRows() {
@@ -131,7 +135,7 @@ class DataViewPageContext {
 
         Integer curPage = currentPos / pageSize + (pageSize == 1 ? 0 : 1);
         Integer totalPages = totalRows / pageSize + (totalRows % pageSize > 0 ? 1 : 0);
-        return  NbBundle.getMessage(DataViewPageContext.class, "LBL_page_of", curPage, totalPages);
+        return NbBundle.getMessage(DataViewPageContext.class, "LBL_page_of", curPage, totalPages);
     }
 
     synchronized void setPageSize(int pageSize) {

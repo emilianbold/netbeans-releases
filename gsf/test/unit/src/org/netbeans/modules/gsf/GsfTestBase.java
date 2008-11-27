@@ -1144,12 +1144,12 @@ public abstract class GsfTestBase extends NbTestCase {
     }
     
     private void checkNoOverlaps(Set<OffsetRange> ranges, Document doc) throws BadLocationException {
-        // Make sure there are no overlapping ranges
+        // Make sure there are no overlapping ranges (but containment is allowed)
         List<OffsetRange> sortedRanges = new ArrayList<OffsetRange>(ranges);
         Collections.sort(sortedRanges);
         OffsetRange prevRange = OffsetRange.NONE;
         for (OffsetRange range : sortedRanges) {
-            if (range.getStart() < prevRange.getEnd()) {
+            if (range.getStart() < prevRange.getEnd() && range.getEnd() > prevRange.getEnd()) {
                 fail("OffsetRanges should be non-overlapping! " + prevRange + 
                         "(" + doc.getText(prevRange.getStart(), prevRange.getLength()) + ") and " + range + 
                         "(" + doc.getText(range.getStart(), range.getLength()) + ")");

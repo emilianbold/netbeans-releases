@@ -77,6 +77,7 @@ public class CPExtenderLookupMerger implements LookupMerger<ProjectClassPathExte
         return instance;
     }
 
+    @SuppressWarnings("deprecation")
     private class Extender implements ProjectClassPathExtender {
         
         private Lookup context;

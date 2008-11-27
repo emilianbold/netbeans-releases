@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.Token;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTIfndef;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * #ifndef directive implementation
@@ -64,7 +64,7 @@ public final class APTIfndefNode extends APTIfdefConditionBaseNode
     }
     
     /** Creates a new instance of APTIfdefNode */
-    public APTIfndefNode(Token token) {
+    public APTIfndefNode(APTToken token) {
         super(token);
     }
     

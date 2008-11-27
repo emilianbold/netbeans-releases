@@ -53,7 +53,6 @@ public class RakeRunnerTest extends RubyProjectTestBase {
     }
 
     public void testDoStandardConfiguration() throws Exception {
-        registerLayer();
         RubyProject project = createTestProject();
 
         RakeRunner runner = new RakeRunner(project);

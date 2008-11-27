@@ -41,18 +41,27 @@ package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
-import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
+
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
-import org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -61,6 +70,10 @@ import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 public class SVGLabelCD extends ComponentDescriptor{
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGLabel"); // NOI18N
+    
+    public static final String PROP_TEXT = "text";  // NOI18N
+    
+    private static final String LABEL = "Label";    // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);
@@ -74,30 +87,63 @@ public class SVGLabelCD extends ComponentDescriptor{
     public VersionDescriptor getVersionDescriptor() {
         return MidpVersionDescriptor.MIDP_2;
     }
+    
+    /*@Override
+    public void postInitialize (DesignComponent component) {
+        Object value = component.readProperty( PROP_TEXT ).
+            getPrimitiveValue();
+        PropertyValue prop;
+        if ( value == null ){
+            prop = MidpTypes.createStringValue( "");
+        }
+        else { 
+            prop = MidpTypes.createStringValue( value.toString().trim() );
+        }
+        component.writeProperty (PROP_TEXT, prop);
+    }*/
 
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList (
+                new PropertyDescriptor(SVGComponentCD.PROP_FOCUSABLE, 
+                        MidpTypes.TYPEID_BOOLEAN, 
+                        MidpTypes.createBooleanValue (Boolean.FALSE), false, false, 
+                        MidpVersionable.MIDP_2),
+                new PropertyDescriptor( PROP_TEXT, 
+                                MidpTypes.TYPEID_JAVA_LANG_STRING, 
+                                MidpTypes.createStringValue( LABEL ), true, true,
+                                MidpVersionable.MIDP_2)
+                
                 );
     }
-
+    
+    private static DefaultPropertiesPresenter createPropertiesPresenter() {
+        return new DefaultPropertiesPresenter()
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
+                .addProperty(NbBundle.getMessage(SVGLabelCD.class, 
+                        "DISP_Text"), 
+                        PropertyEditorString.createInstance(
+                                NbBundle.getMessage(SVGLabelCD.class, 
+                                "LBL_SVGLabel_Text")), PROP_TEXT); // NOI18N
+                
+    }
+    
+    private Presenter createSetterPresenter () {
+        return new CodeSetterPresenter ().
+                addParameters(MidpParameter.create(PROP_TEXT)).
+                addSetters(MidpSetter.createSetter("setText", 
+                        MidpVersionable.MIDP_2).addParameters(PROP_TEXT));
+    }
+    
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList(
+                // properties
+                createPropertiesPresenter(),
                 //code
+                createSetterPresenter(),
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
-                MidpCodePresenterSupport.createAddImportPresenter(),
-                new CodeClassInitHeaderFooterPresenter() {
-
-            @Override
-            public void generateClassInitializationHeader(MultiGuardedSection section) {   
-            }
-
-            @Override
-            public void generateClassInitializationFooter(MultiGuardedSection section) {
-                section.getWriter().write(CodeReferencePresenter.generateDirectAccessCode(getComponent()) +".setFocusable(false);"); //NOI18N
-            }
-        }
-                
+                MidpCodePresenterSupport.createAddImportPresenter()
         );
     }
 

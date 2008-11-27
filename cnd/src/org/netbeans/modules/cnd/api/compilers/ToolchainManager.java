@@ -131,6 +131,8 @@ public abstract class ToolchainManager {
 
         String getVersionPattern();
 
+        boolean skipSearch();
+
         AlternativePath[] getAlternativePath();
     }
 
@@ -162,9 +164,11 @@ public abstract class ToolchainManager {
 
         String getMacroFlags();
 
-        String getUserMacroFlag();
-
         String getMacroParser();
+
+        List<PredefinedMacro> getPredefinedMacros();
+
+        String getUserMacroFlag();
 
         String[] getDevelopmentModeFlags();
 
@@ -191,6 +195,12 @@ public abstract class ToolchainManager {
         String getPrecompiledHeaderSuffix();
 
         boolean getPrecompiledHeaderSuffixAppend();
+    }
+
+    public interface PredefinedMacro {
+        String getMacro();
+
+        String getFlags();
     }
 
     public interface MakeDescriptor extends ToolDescriptor {

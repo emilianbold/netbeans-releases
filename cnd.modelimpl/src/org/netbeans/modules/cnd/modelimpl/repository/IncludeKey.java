@@ -38,11 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
@@ -56,39 +54,38 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /*package*/
 final class IncludeKey extends OffsetableKey {
-    
+
     public IncludeKey(CsmInclude obj) {
-	super(obj, Utils.getCsmIncludeKindkey(), NameCache.getManager().getString(obj.getIncludeName())); // NOI18N
+        super(obj, Utils.getCsmIncludeKindKey(), NameCache.getManager().getString(obj.getIncludeName())); // NOI18N
     }
-    
+
     /*package*/ IncludeKey(DataInput aStream) throws IOException {
-	super(aStream);
+        super(aStream);
     }
-    
-    
+
     public PersistentFactory getPersistentFactory() {
-	return CsmObjectFactory.instance();
+        return CsmObjectFactory.instance();
     }
-    
+
     @Override
     public String toString() {
-	String retValue;
-	
-	retValue = "InclKey: " + super.toString(); // NOI18N
-	return retValue;
+        String retValue;
+
+        retValue = "InclKey: " + super.toString(); // NOI18N
+        return retValue;
     }
-    
+
     @Override
     public int getSecondaryDepth() {
-	return super.getSecondaryDepth() + 1;
+        return super.getSecondaryDepth() + 1;
     }
-    
+
     @Override
     public int getSecondaryAt(int level) {
-	if (level == 0) {
-	    return KeyObjectFactory.KEY_INCLUDE_KEY;
-	}  else {
-	    return super.getSecondaryAt(level - 1);
-	}
+        if (level == 0) {
+            return KeyObjectFactory.KEY_INCLUDE_KEY;
+        } else {
+            return super.getSecondaryAt(level - 1);
+        }
     }
 }

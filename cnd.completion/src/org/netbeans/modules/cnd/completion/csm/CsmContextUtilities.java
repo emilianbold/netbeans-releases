@@ -92,7 +92,7 @@ public class CsmContextUtilities {
     private CsmContextUtilities() {
     }
 
-    public static List/*<CsmDeclaration*/ findGlobalVariables(CsmProject prj) {
+    public static List<CsmVariable> findGlobalVariables(CsmProject prj) {
         CsmProjectContentResolver resolver = new CsmProjectContentResolver(prj);
         return resolver.getGlobalVariables("", false);
     }
@@ -393,10 +393,9 @@ public class CsmContextUtilities {
         return isInContext(fullContext, elem);
     }
     
-    @SuppressWarnings("unchecked")
-    private static List/*<CsmDeclaration>*/ mergeDeclarations(List/*<CsmDeclaration>*/ prevScopeDecls, List/*<CsmDeclaration>*/ newScopeDecls) {
+    private static List<CsmDeclaration> mergeDeclarations(List<CsmDeclaration> prevScopeDecls, List<CsmDeclaration> newScopeDecls) {
         // new scope elements have priority 
-        List res = new ArrayList();
+        List<CsmDeclaration> res = new ArrayList<CsmDeclaration>();
         if (newScopeDecls != null && newScopeDecls.size() > 0) {
             res.addAll(newScopeDecls);
         }

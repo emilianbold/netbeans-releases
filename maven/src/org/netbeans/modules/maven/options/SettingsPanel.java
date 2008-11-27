@@ -66,7 +66,6 @@ import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.ActionMappings;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.NbGlobalActionGoalProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
@@ -714,11 +713,12 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JTextField txtLocalRepository;
     // End of variables declaration//GEN-END:variables
     
-    public void setValues(Settings sett) {
+    public void setValues(org.netbeans.modules.maven.model.settings.Settings sett) {
         changed = false;
-        cbOffline.setSelected(sett.isOffline());
+        Boolean offline = sett.isOffline();
+        cbOffline.setSelected(offline != null ? offline.booleanValue() : false);
         cbPluginRegistry.setSelected(MavenExecutionSettings.getDefault().isUsePluginRegistry());
-        txtLocalRepository.setText(sett.getLocalRepository());
+        txtLocalRepository.setText(sett.getLocalRepository() != null ? sett.getLocalRepository() : "");
         cbErrors.setSelected(MavenExecutionSettings.getDefault().isShowErrors());
         cbErrors.putClientProperty(CP_SELECTED, Boolean.valueOf(cbErrors.isSelected()));
         cbDebug.setSelected(MavenExecutionSettings.getDefault().isShowDebug());
@@ -757,8 +757,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         comIndex.setSelectedIndex(RepositoryPreferences.getInstance().getIndexUpdateFrequency());
     }
     
-    public void applyValues(Settings sett) {
-        sett.setOffline(cbOffline.isSelected());
+    public void applyValues(org.netbeans.modules.maven.model.settings.Settings sett) {
+        sett.setOffline(cbOffline.isSelected() ? Boolean.TRUE : null);
         String locrepo = txtLocalRepository.getText().trim();
         if (locrepo.length() == 0) {
             locrepo = null;

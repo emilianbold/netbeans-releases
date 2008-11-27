@@ -335,6 +335,7 @@
                 <package>org.netbeans.modules.groovy.editor.api.elements</package>
                 <package>org.netbeans.modules.groovy.editor.api.lexer</package>
                 <package>org.netbeans.modules.groovy.editor.api.parser</package>
+                <package>org.netbeans.modules.groovy.editor.spi.completion</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/groovy-all.jar</runtime-relative-path>

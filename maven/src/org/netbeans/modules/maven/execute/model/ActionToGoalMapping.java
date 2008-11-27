@@ -8,8 +8,6 @@ package org.netbeans.modules.maven.execute.model;
  //- Imported classes and packages -/
 //---------------------------------/
 
-import java.util.Date;
-
 /**
  * Class ActionToGoalMapping.
  * 
@@ -30,12 +28,13 @@ public class ActionToGoalMapping implements java.io.Serializable {
      *                     @deprecated is ethe
      * netbeans.hint.packaging POM property instead.
      */
+    @Deprecated
     private String packaging;
 
     /**
      * Field actions.
      */
-    private java.util.List actions;
+    private java.util.List<NetbeansActionMapping> actions;
 
 
       //-----------/
@@ -49,10 +48,6 @@ public class ActionToGoalMapping implements java.io.Serializable {
      */
     public void addAction(NetbeansActionMapping netbeansActionMapping)
     {
-        if ( !(netbeansActionMapping instanceof NetbeansActionMapping) )
-        {
-            throw new ClassCastException( "ActionToGoalMapping.addActions(netbeansActionMapping) parameter must be instanceof " + NetbeansActionMapping.class.getName() );
-        }
         getActions().add( netbeansActionMapping );
     } //-- void addAction(NetbeansActionMapping) 
 
@@ -61,11 +56,11 @@ public class ActionToGoalMapping implements java.io.Serializable {
      * 
      * @return java.util.List
      */
-    public java.util.List getActions()
+    public java.util.List<NetbeansActionMapping> getActions()
     {
         if ( this.actions == null )
         {
-            this.actions = new java.util.ArrayList();
+            this.actions = new java.util.ArrayList<NetbeansActionMapping>();
         }
         
         return this.actions;
@@ -82,6 +77,7 @@ public class ActionToGoalMapping implements java.io.Serializable {
      * 
      * @return String
      */
+    @Deprecated
     public String getPackaging()
     {
         return this.packaging;
@@ -106,7 +102,7 @@ public class ActionToGoalMapping implements java.io.Serializable {
      * 
      * @param actions
      */
-    public void setActions(java.util.List actions)
+    public void setActions(java.util.List<NetbeansActionMapping> actions)
     {
         this.actions = actions;
     } //-- void setActions(java.util.List) 
@@ -122,6 +118,7 @@ public class ActionToGoalMapping implements java.io.Serializable {
      * 
      * @param packaging
      */
+    @Deprecated
     public void setPackaging(String packaging)
     {
         this.packaging = packaging;

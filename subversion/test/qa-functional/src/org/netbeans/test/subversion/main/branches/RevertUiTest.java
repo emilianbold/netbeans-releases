@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -40,8 +41,6 @@ public class RevertUiTest extends JellyTestCase{
     public File projectPath;
     static Logger log;
     
-    String os_name;
-    
     /** Creates a new instance of RevertUiTest */
     public RevertUiTest(String name) {
         super(name);
@@ -60,14 +59,6 @@ public class RevertUiTest extends JellyTestCase{
         
     }
     
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
-    }
-    
     public static Test suite() {
          return NbModuleSuite.create(
                  NbModuleSuite.createConfiguration(RevertUiTest.class).addTest(
@@ -82,6 +73,11 @@ public class RevertUiTest extends JellyTestCase{
         try {
             MessageHandler mh = new MessageHandler("Committing");
             log.addHandler(mh);
+
+            TestKit.closeProject(PROJECT_NAME);
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                new NewProjectWizardOperator().invoke().close();
+
             TestKit.TIME_OUT = 25;
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));

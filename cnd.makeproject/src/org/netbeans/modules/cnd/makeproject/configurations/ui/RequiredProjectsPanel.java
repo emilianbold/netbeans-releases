@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.beans.PropertyChangeEvent;
@@ -47,6 +46,7 @@ import java.beans.PropertyEditorSupport;
 import java.util.ResourceBundle;
 import java.util.Vector;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
@@ -60,33 +60,33 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
+
     private Project project;
     private MakeConfiguration conf;
     private MyListEditorPanel myListEditorPanel;
     private String baseDir;
     private PropertyEditorSupport editor;
-
     private JButton addProjectButton;
     private JButton addStandardLibraryButton;
     private JButton addLibraryButton;
     private JButton addLibraryFileButton;
     private JButton addLibraryOption;
-    
-    public RequiredProjectsPanel(Project project, MakeConfiguration conf, String baseDir, Object[] data, PropertyEditorSupport editor, PropertyEnv env) {
-	this.project = project;
-	this.conf = conf;
-	this.baseDir = baseDir;
+
+    public RequiredProjectsPanel(Project project, MakeConfiguration conf, String baseDir, List<LibraryItem> data, PropertyEditorSupport editor, PropertyEnv env) {
+        this.project = project;
+        this.conf = conf;
+        this.baseDir = baseDir;
         this.editor = editor;
         initComponents();
-	//
-	addProjectButton = new JButton(getString("ADD_PROJECTS_BUTTON_TXT")); // NOI18N
-	addProjectButton.setToolTipText(getString("ADD_PROJECTS_BUTTON_TT")); // NOI18N
-	addProjectButton.setMnemonic(getString("ADD_PROJECTS_BUTTON_MN").charAt(0)); // NOI18N
-        
-	JButton[] extraButtons = new JButton[] {addProjectButton};
-	myListEditorPanel = new MyListEditorPanel(data, extraButtons);
+        //
+        addProjectButton = new JButton(getString("ADD_PROJECTS_BUTTON_TXT")); // NOI18N
+        addProjectButton.setToolTipText(getString("ADD_PROJECTS_BUTTON_TT")); // NOI18N
+        addProjectButton.setMnemonic(getString("ADD_PROJECTS_BUTTON_MN").charAt(0)); // NOI18N
+
+        JButton[] extraButtons = new JButton[]{addProjectButton};
+        myListEditorPanel = new MyListEditorPanel(data, extraButtons);
         addProjectButton.addActionListener(new AddProjectButtonAction());
-	//
+        //
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -95,27 +95,27 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
         outerPanel.add(myListEditorPanel, gridBagConstraints);
         instructionsTextArea.setBackground(instructionPanel.getBackground());
         setPreferredSize(new java.awt.Dimension(700, 350));
-        
+
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         env.addPropertyChangeListener(this);
     }
 
     public void setInstructionsText(String txt) {
-	instructionsTextArea.setText(txt);
+        instructionsTextArea.setText(txt);
     }
 
-    public void setListData(Object[] data){
-	myListEditorPanel.setListData(data);
+    public void setListData(List<LibraryItem> data) {
+        myListEditorPanel.setListData(data);
     }
 
-    public Vector getListData() {
-	return myListEditorPanel.getListData();
+    public Vector<LibraryItem> getListData() {
+        return myListEditorPanel.getListData();
     }
 
     private Object getPropertyValue() throws IllegalStateException {
-	return new ArrayList(getListData());
+        return new ArrayList<LibraryItem>(getListData());
     }
-        
+
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
             editor.setValue(getPropertyValue());
@@ -168,67 +168,68 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.insets = new java.awt.Insets(2, 12, 0, 12);
         add(instructionPanel, gridBagConstraints);
     }
-    
-    private class MyListEditorPanel extends TableEditorPanel {
-	public MyListEditorPanel(Object[] objects, JButton[] extraButtons) {
-	    super(objects, extraButtons, baseDir);
-	    getAddButton().setVisible(false);
-	    getCopyButton().setVisible(false);
-	    getEditButton().setVisible(false);
-	    getDefaultButton().setVisible(false);
-	}
 
-	public String getListLabelText() {
-	    return getString("PROJECTS_TXT");
-	}
-	public char getListLabelMnemonic() {
-	    return getString("PROJECTS_MN").charAt(0);
-	}
+    private class MyListEditorPanel extends TableEditorPanel {
+
+        public MyListEditorPanel(List<LibraryItem> objects, JButton[] extraButtons) {
+            super(objects, extraButtons, baseDir);
+            getAddButton().setVisible(false);
+            getCopyButton().setVisible(false);
+            getEditButton().setVisible(false);
+            getDefaultButton().setVisible(false);
+        }
+
+        @Override
+        public String getListLabelText() {
+            return getString("PROJECTS_TXT");
+        }
+
+        @Override
+        public char getListLabelMnemonic() {
+            return getString("PROJECTS_MN").charAt(0);
+        }
     }
 
     class AddProjectButtonAction implements java.awt.event.ActionListener {
-	public void actionPerformed(java.awt.event.ActionEvent evt) {
-	    MakeArtifact[] artifacts = MakeArtifactChooser.showDialog(MakeArtifactChooser.ArtifactType.PROJECT, project, myListEditorPanel);
-	    if (artifacts != null) {
-		for (int i = 0; i < artifacts.length; i++) {
-		    String location;
-		    String workingdir;
-		    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-			location = IpeUtils.toAbsoluteOrRelativePath(baseDir, artifacts[i].getProjectLocation());
-			workingdir = IpeUtils.toAbsoluteOrRelativePath(baseDir, artifacts[i].getWorkingDirectory());
-		    }
-		    else if (PathPanel.getMode() == PathPanel.REL) {
-			location = IpeUtils.toRelativePath(baseDir, artifacts[i].getProjectLocation());
-			workingdir = IpeUtils.toRelativePath(baseDir, artifacts[i].getWorkingDirectory());
-		    }
-		    else {
-			location = artifacts[i].getProjectLocation();
-			workingdir = artifacts[i].getWorkingDirectory();
-		    }
-		    location = FilePathAdaptor.normalize(location);
-		    workingdir = FilePathAdaptor.normalize(workingdir);
-		    artifacts[i].setProjectLocation(location);
-		    artifacts[i].setWorkingDirectory(workingdir);
+
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            MakeArtifact[] artifacts = MakeArtifactChooser.showDialog(MakeArtifactChooser.ArtifactType.PROJECT, project, myListEditorPanel);
+            if (artifacts != null) {
+                for (int i = 0; i < artifacts.length; i++) {
+                    String location;
+                    String workingdir;
+                    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                        location = IpeUtils.toAbsoluteOrRelativePath(baseDir, artifacts[i].getProjectLocation());
+                        workingdir = IpeUtils.toAbsoluteOrRelativePath(baseDir, artifacts[i].getWorkingDirectory());
+                    } else if (PathPanel.getMode() == PathPanel.REL) {
+                        location = IpeUtils.toRelativePath(baseDir, artifacts[i].getProjectLocation());
+                        workingdir = IpeUtils.toRelativePath(baseDir, artifacts[i].getWorkingDirectory());
+                    } else {
+                        location = artifacts[i].getProjectLocation();
+                        workingdir = artifacts[i].getWorkingDirectory();
+                    }
+                    location = FilePathAdaptor.normalize(location);
+                    workingdir = FilePathAdaptor.normalize(workingdir);
+                    artifacts[i].setProjectLocation(location);
+                    artifacts[i].setWorkingDirectory(workingdir);
                     artifacts[i].setBuild(false);
-		    myListEditorPanel.addObjectAction(new LibraryItem.ProjectItem(artifacts[i]));
-		}
-	    }
-	}
+                    myListEditorPanel.addObjectAction(new LibraryItem.ProjectItem(artifacts[i]));
+                }
+            }
+        }
     }
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel instructionPanel;
     private javax.swing.JTextArea instructionsTextArea;
     private javax.swing.JPanel outerPanel;
     // End of variables declaration//GEN-END:variables
-    
     /** Look up i18n strings here */
     private static ResourceBundle bundle;
+
     private static String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(RequiredProjectsPanel.class);
-	}
-	return bundle.getString(s);
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(RequiredProjectsPanel.class);
+        }
+        return bundle.getString(s);
     }
 }

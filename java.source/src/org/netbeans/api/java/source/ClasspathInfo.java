@@ -47,9 +47,14 @@ import java.net.URL;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import javax.swing.text.Document;
 import javax.tools.JavaFileManager;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.CachingFileManager;
@@ -65,6 +70,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -153,7 +159,25 @@ public final class ClasspathInfo {
                 cachedCompileClassPath,
                 outputClassPath);        
     }
-    
+
+    @Override
+    public int hashCode() {
+        return this.srcClassPath == null ? 0 : this.srcClassPath.entries().size();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof ClasspathInfo) {
+            ClasspathInfo other = (ClasspathInfo) obj;
+            return this.srcClassPath == null ? other.srcClassPath == null : this.srcClassPath.equals(other.srcClassPath) &&
+                   this.compileClassPath.equals(other.compileClassPath) &&
+                   this.bootClassPath.equals(other.bootClassPath);
+        }
+        return false;
+    }
     // Factory methods ---------------------------------------------------------
     
     
@@ -174,7 +198,39 @@ public final class ClasspathInfo {
             return create (fo);
         }
     }
-    
+
+    /**
+     * Creates a new instance of the ClasspathInfo for given Document.
+     * <div class="nonnormative">
+     * <p>
+     * It uses the {@link Document#StreamDescriptionProperty} to obtain the
+     * {@link DataObject} for the {@link Document} and creates a {@link ClasspathInfo}
+     * for the primary file of the {@link DataObject}
+     * </p>
+     * </div>
+     * @param doc a document for which the {@link ClasspathInfo} should be created
+     * @return a {@link ClasspathInfo} or null when the document source cannot be
+     * found.
+     * @since 0.42
+     */
+    public static ClasspathInfo create(final Document doc) {
+        Parameters.notNull("doc", doc);
+        final Object source = doc.getProperty(Document.StreamDescriptionProperty);
+        if (source instanceof DataObject) {
+            DataObject dObj = (DataObject) source;
+            return create(dObj.getPrimaryFile());
+        } else {
+            final String mimeType = (String) doc.getProperty("mimeType"); //NOI18N
+            if ("text/x-dialog-binding".equals(mimeType)) { //NOI18N
+                InputAttributes attributes = (InputAttributes) doc.getProperty(InputAttributes.class);
+                LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
+                FileObject fileObject = (FileObject) attributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
+                if (fileObject != null)
+                    return create(fileObject);
+            }
+            return null;
+        }
+    }
     
     private static ClasspathInfo create (final FileObject fo, final JavaFileFilterImplementation filter,
             final boolean backgroundCompilation, final boolean ignoreExcludes,

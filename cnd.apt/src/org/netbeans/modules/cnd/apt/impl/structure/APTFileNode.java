@@ -99,6 +99,7 @@ public final class APTFileNode extends APTContainerNode
         return path;
     }
 
+    @Override
     public void dispose() {
         if (isTokenized()) {
             new CleanTokensWalker(this).visit();
@@ -168,16 +169,18 @@ public final class APTFileNode extends APTContainerNode
             // do nothing
         }
 
-//        protected Token onToken(Token token) {
+//        protected APTToken onToken(APTToken token) {
 //            // do nothing
 //            return token;
 //        }    
 
+        @Override
         protected void onStreamNode(APT apt) {
             // clean node's stream
             apt.dispose();
         }
         
+        @Override
         protected void onOtherNode(APT apt) {
             // clean tokens for 
             //APT.Type.INVALID:

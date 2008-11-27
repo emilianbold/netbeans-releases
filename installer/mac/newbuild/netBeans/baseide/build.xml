@@ -20,20 +20,29 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="Base IDE" basedir="." default="build-pkg">  
-       
-    <property name="appdir" value="${basedir}/build/app/${appname}.app"/>    
-    
-    <target name="build-app" description="Builds Mac OS X application bundle">
-        <echo>Creating ${appname}.app bundle using buid/netbeans as master</echo>
-        
-        <mkdir dir="${appdir}/Contents"/>
+
+
+    <property name="builddir" value="${basedir}/build"/>
+    <property name="appdir" value="${builddir}/app/${appname}.app"/>
+    <property name="scriptsdir" value="${builddir}/scripts"/>
+
+    <target name="clean">
+        <delete dir="${builddir}"/>
+    </target>
+
+    <target name="init">
         <mkdir dir="${appdir}/Contents/MacOS"/>
         <mkdir dir="${appdir}/Contents/Resources"/>
-        
+        <mkdir dir="${scriptsdir}"/>
+    </target>
+
+    <target name="build-app" description="Builds Mac OS X application bundle">
+        <echo>Creating ${appname}.app bundle using build/netbeans as master</echo>
+               
         <echo message="Copying netbeans home dir to ${appdir}/Contents/Resources/NetBeans"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cp -RPp ${basedir}/build/netbeans '${appdir}/Contents/Resources/NetBeans'"/>
+            <arg value="cp -RPp ${builddir}/netbeans '${appdir}/Contents/Resources/NetBeans'"/>
         </exec>
         
         <echo message="Delete launchers for another platforms"/>
@@ -63,22 +72,26 @@ Microsystems, Inc. All Rights Reserved.
     
     
     
-    <target name="build-pkg" depends="build-app">
-        <echo message="NETBEANS_INSTALL_DIR=&quot;${app.name}&quot;${line.separator}GLASSFISH_INSTALL_DIR=&quot;${glassfish.install.dir}&quot;${line.separator}TOMCAT_INSTALL_DIR=&quot;${tomcat.install.dir}&quot;${line.separator}NB_CLUSTER_DIR=&quot;${nbClusterDir}&quot;${line.separator}GLASSFISH_V3_INSTALL_DIR=&quot;${glassfish.v3.install.dir}&quot;${line.separator}MYSQL_INSTALL_DIR=&quot;${mysql.install.dir}&quot;${line.separator}" file="pkg/scripts/env.sh"/>
+    <target name="build-pkg" depends="init, build-app">
+        <echo message="NETBEANS_INSTALL_DIR=&quot;${app.name}&quot;${line.separator}GLASSFISH_INSTALL_DIR=&quot;${glassfish.install.dir}&quot;${line.separator}TOMCAT_INSTALL_DIR=&quot;${tomcat.install.dir}&quot;${line.separator}NB_CLUSTER_DIR=&quot;${nbClusterDir}&quot;${line.separator}GLASSFISH_V3_INSTALL_DIR=&quot;${glassfish.v3.install.dir}&quot;${line.separator}MYSQL_INSTALL_DIR=&quot;${mysql.install.dir}&quot;${line.separator}" file="${scriptsdir}/env.sh"/>
         
-        <copy file="pkg/Info.plist" filtering="true" tofile="${basedir}/build/Info.plist">
+        <copy file="pkg/Info.plist" filtering="true" tofile="${builddir}/Info.plist">
             <filterset>
                 <filter token="APPVERSION" value="${baseide.version}"/> 
                 <filter token="INSTALLDIR" value="${install.dir}"/>
                 <filter token="BASEVERSION" value="${baseide.version}"/>                
             </filterset>
         </copy>
+
+        <copy  todir="${scriptsdir}">
+            <fileset dir="${basedir}/pkg/scripts"/>
+        </copy>
         
-        <copy file="${basedir}/../../commonfiles/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
-        <copy file="${basedir}/../../commonfiles/get_current_jdk.sh" tofile="${basedir}/pkg/scripts/get_current_jdk.sh"/>
+        <copy file="${basedir}/../../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
+        <copy file="${basedir}/../../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
         
         
-        <copy file="${basedir}/../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="pkg/scripts/Description.plist">
+        <copy file="${basedir}/../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${builddir}/Description.plist">
             <filterset>
                 <filter token="TITLE" value="${netbeans-Title}"/>
             </filterset>
@@ -89,7 +102,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="/Developer/Tools/packagemaker -build -v -p ${basedir}/../../build/baseide.pkg -f ${basedir}/build/app -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
+            <arg value="/Developer/Tools/packagemaker -build -v -p ${basedir}/../../build/baseide.pkg -f ${builddir}/app -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
         </exec>
     </target>
     

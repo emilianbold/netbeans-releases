@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
+import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +49,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionType;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.completion.JavaElementHandler.ClassType;
@@ -116,6 +118,9 @@ public final class CompleteElementHandler {
         fillSuggestions(MetaElementHandler.forCompilationInfo(info)
                 .getMethods(typeNode.getName(), prefix, anchor), result);
 
+        fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
+                .getMethods(completionType, typeNode.getName(), prefix, anchor), result);
+
         if (typeNode.getSuperClass() != null) {
             fillSuggestions(getMethods(completionType, typeNode.getSuperClass(),
                     ClassType.SUPERCLASS, prefix, anchor), result);
@@ -176,12 +181,4 @@ public final class CompleteElementHandler {
         }
     }
 
-    public static enum CompletionType {
-
-        OBJECT,
-
-        THIS,
-
-        SUPER
-    }
 }

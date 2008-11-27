@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
@@ -158,8 +159,13 @@ public class UIDCsmConverter {
     public static <T extends CsmInclude> Iterator<T> UIDsToIncludes(Collection<CsmUID<T>> uids, CsmFilter filter) {
         return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
     }
-    
-    private static <T extends CsmIdentifiable> Collection<T> UIDsToList(Collection<CsmUID<T>> uids, boolean allowNullsAndSkip) {
+
+    public static <T> Collection<T> UIDsToCsmObjects(Collection<CsmUID<T>> uids) {
+        Collection<T> out = UIDsToList(uids, false);
+        return out;
+    }
+
+    private static <T> Collection<T> UIDsToList(Collection<CsmUID<T>> uids, boolean allowNullsAndSkip) {
         allowNullsAndSkip |= TraceFlags.SAFE_UID_ACCESS;
         return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), allowNullsAndSkip);
     }
@@ -199,5 +205,23 @@ public class UIDCsmConverter {
     
     public static <T extends CsmIdentifiable> CsmUID<T> identifiableToUID(CsmIdentifiable<T> obj) {
         return obj == null ? null : obj.getUID();
+    }
+
+    public static <T extends CsmObject> Collection<CsmUID<T>> CsmObjectsToUIDs(Collection<T> objs) {
+        if (objs == null) {
+            return null;
+        }
+        if (objs.isEmpty()) {
+            return new ArrayList<CsmUID<T>>(0);
+        }
+        Collection<CsmUID<T>> out = new ArrayList<CsmUID<T>>(objs.size());
+        for (CsmObject csmObj : objs) {
+            if (CsmKindUtilities.isIdentifiable(csmObj)) {
+                @SuppressWarnings("unchecked")
+                CsmIdentifiable<T> id = (CsmIdentifiable<T>) csmObj;
+                out.add(id.getUID());
+            }
+        }
+        return out;
     }
 }

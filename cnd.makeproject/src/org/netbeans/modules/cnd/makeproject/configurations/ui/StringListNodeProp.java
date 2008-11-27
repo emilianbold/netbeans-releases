@@ -53,7 +53,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
 
-public class StringListNodeProp extends PropertySupport {
+public class StringListNodeProp extends PropertySupport<List> {
 
     private VectorConfiguration<String> configuration;
     private BooleanConfiguration inheritValues;
@@ -79,13 +79,12 @@ public class StringListNodeProp extends PropertySupport {
         }
     }
 
-    public Object getValue() {
+    public List getValue() {
         return configuration.getValue();
     }
 
-    @SuppressWarnings("unchecked")
-    public void setValue(Object v) {
-        configuration.setValue((List) v);
+    public void setValue(List v) {
+        configuration.setValue(v);
     }
 
     @Override
@@ -156,7 +155,7 @@ public class StringListNodeProp extends PropertySupport {
             if (inheritValues != null) {
                 text = texts[3];
             }
-            return new StringListPanel(value.toArray(new String[value.size()]), addPathPanel, inheritValues, text, this, env, helpCtx);
+            return new StringListPanel(value, addPathPanel, inheritValues, text, this, env, helpCtx);
         }
 
         @Override
