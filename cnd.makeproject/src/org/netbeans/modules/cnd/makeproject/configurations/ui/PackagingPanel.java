@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.awt.Dimension;
@@ -53,6 +52,7 @@ import java.util.Vector;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -63,7 +63,8 @@ import org.openide.util.NbBundle;
  *
  * @author  thp
  */
-public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener  {
+public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
+
     PackagingConfiguration packagingConfiguration;
     private PropertyEditorSupport editor;
     private MakeConfiguration conf;
@@ -71,59 +72,56 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private PackagingInfoPanel packagingInfoPanel = null;
     private PackagingFilesOuterPanel packagingFilesOuterPanel = null;
     private PackagingFilesPanel packagingFilesPanel = null;
-    
+
     /** Creates new form PackagingPanel */
     public PackagingPanel(PackagingConfiguration packagingConfiguration, PropertyEditorSupport editor, PropertyEnv env, MakeConfiguration conf) {
         initComponents();
-        
+
         this.packagingConfiguration = packagingConfiguration;
         this.editor = editor;
         this.conf = conf;
-        
+
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         env.addPropertyChangeListener(this);
-        
+
         // Add tabs
         String type = packagingConfiguration.getType().getValue();
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
         if (packager.hasInfoList()) {
             packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getHeaderSubList(type), packagingConfiguration));
             packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
-        }
-        else {
+        } else {
             packagingFilesPanel = new PackagingFiles4Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
         packagingFilesOuterPanel = new PackagingFilesOuterPanel(packagingFilesPanel, packagingConfiguration);
-        
+
         tabbedPane.addTab(getString("InfoPanelText"), packagingInfoOuterPanel);
         tabbedPane.addTab(getString("FilePanelText"), packagingFilesOuterPanel);
-        
+
         if (packager.hasInfoList()) {
             // Add tabs
-            tabbedPane.setEnabledAt(0,true);
-            tabbedPane.setEnabledAt(1,true);
+            tabbedPane.setEnabledAt(0, true);
+            tabbedPane.setEnabledAt(1, true);
             tabbedPane.setSelectedIndex(0);
-        }
-        else {
+        } else {
             // Add tabs
-            tabbedPane.setEnabledAt(0,false);
-            tabbedPane.setEnabledAt(1,true);
+            tabbedPane.setEnabledAt(0, false);
+            tabbedPane.setEnabledAt(1, true);
             tabbedPane.setSelectedIndex(1);
         }
-        
+
         //  See IZ 142846
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        int width = ((int)dim.getWidth()/10)*6;
+        int width = ((int) dim.getWidth() / 10) * 6;
         setPreferredSize(new Dimension(width, 500));
     }
 
-        
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
             editor.setValue(getPropertyValue());
         }
     }
-    
+
     private Object getPropertyValue() throws IllegalStateException {
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
         if (packager.hasInfoList()) {
@@ -142,16 +140,15 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             }
             packagingConfiguration.getInfo().setValue(newList);
         }
-        
-        packagingConfiguration.getFiles().setValue(new ArrayList(packagingFilesPanel.getListData()));
-	return packagingConfiguration;
-        
+
+        packagingConfiguration.getFiles().setValue(new ArrayList<PackagerFileElement>(packagingFilesPanel.getListData()));
+        return packagingConfiguration;
     }
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx("Libraries"); // NOI18N
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -176,18 +173,16 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         tabbedPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingPanel.class, "PackagingPanel.tabbedPane.AccessibleContext.accessibleName")); // NOI18N
         tabbedPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingPanel.class, "PackagingPanel.tabbedPane.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
-
     /** Look up i18n strings here */
     private static ResourceBundle bundle;
+
     private static String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(PackagingPanel.class);
-	}
-	return bundle.getString(s);
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(PackagingPanel.class);
+        }
+        return bundle.getString(s);
     }
 }

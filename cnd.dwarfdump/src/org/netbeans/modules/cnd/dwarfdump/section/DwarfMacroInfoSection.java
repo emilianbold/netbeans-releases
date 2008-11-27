@@ -71,7 +71,7 @@ public class DwarfMacroInfoSection extends ElfSection {
     }
     
     public DwarfMacinfoTable getMacinfoTable(long offset) {
-        Long lOffset = new Long(offset);
+        Long lOffset = Long.valueOf(offset);
         DwarfMacinfoTable table = macinfoTables.get(lOffset);
         
         if (table == null) {

@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.discovery.wizard;
 
 import java.awt.Dimension;
+import java.util.List;
 import java.util.Vector;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -81,7 +82,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel {
         return outerPanel;
     }
     
-    public AdditionalLibrariesListPanel(Object[] objects) {
+    public AdditionalLibrariesListPanel(List objects) {
         super(objects);
         getDefaultButton().setVisible(false);
         getUpButton().setVisible(false);

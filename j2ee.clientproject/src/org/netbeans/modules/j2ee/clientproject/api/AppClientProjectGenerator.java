@@ -159,9 +159,14 @@ public class AppClientProjectGenerator {
         projectDir.createFolder(DEFAULT_TEST_FOLDER);
         
         // create application-client.xml
-        String resource = (J2eeModule.JAVA_EE_5.equals(j2eeLevel)
-                ? "org-netbeans-modules-j2ee-clientproject/application-client-5.xml" // NOI18N
-                : "org-netbeans-modules-j2ee-clientproject/application-client-1.4.xml"); // NOI18N
+        String resource;
+        if (J2eeModule.JAVA_EE_5.equals(j2eeLevel)) {
+                 resource = "org-netbeans-modules-j2ee-clientproject/application-client-5.xml"; // NOI18N
+        } else if (J2eeModule.J2EE_14.equals(j2eeLevel)) {
+                 resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.4.xml"; // NOI18N
+        } else {
+                 resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.3.xml"; // NOI18N
+        }
         FileObject ddFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(resource), confRoot, "application-client"); //NOI18N
         AppClient appClient = DDProvider.getDefault().getDDRoot(ddFile);
         appClient.setDisplayName(name);
@@ -342,9 +347,14 @@ public class AppClientProjectGenerator {
             }
         } else {
             // XXX just temporary, since now the import would fail due to another bug
-            String resource = (J2eeModule.JAVA_EE_5.equals(j2eeLevel)
-                    ? "org-netbeans-modules-j2ee-clientproject/application-client-5.xml" // NOI18N
-                    : "org-netbeans-modules-j2ee-clientproject/application-client-1.4.xml"); // NOI18N
+            String resource;
+            if (J2eeModule.JAVA_EE_5.equals(j2eeLevel)) {
+                resource = "org-netbeans-modules-j2ee-clientproject/application-client-5.xml"; // NOI18N
+            } else if (J2eeModule.J2EE_14.equals(j2eeLevel)) {
+                resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.4.xml"; // NOI18N
+            } else {
+                resource = "org-netbeans-modules-j2ee-clientproject/application-client-1.3.xml"; // NOI18N
+            }  
             FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(resource),
                     confFolderFO, "application-client"); //NOI18N
         }

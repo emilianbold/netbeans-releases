@@ -38,11 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.util.List;
-import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -53,31 +51,33 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 public class PropertiesItemAction extends NodeAction {
-    
-    protected boolean enable(Node[] activatedNodes)  {
+
+    protected boolean enable(Node[] activatedNodes) {
         return activatedNodes.length == 1;
     }
-    
+
     public String getName() {
         return NbBundle.getBundle(getClass()).getString("CTL_PropertiesItemActionName"); // NOI18N
     }
-    
+
     public void performAction(Node[] activatedNodes) {
         for (int i = 0; i < activatedNodes.length; i++) {
             Node n = activatedNodes[i];
-            Folder folder = (Folder)n.getValue("Folder"); // NOI18N
-            Item item = (Item)n.getValue("Item"); // NOI18N
-            Project project = (Project)n.getValue("Project"); // NOI18N
-            if (project == null)
+            Folder folder = (Folder) n.getValue("Folder"); // NOI18N
+            Item item = (Item) n.getValue("Item"); // NOI18N
+            Project project = (Project) n.getValue("Project"); // NOI18N
+            if (project == null) {
                 return; // FIXUP
-            MakeCustomizerProvider cp = project.getLookup().lookup( MakeCustomizerProvider.class );
-            if (cp == null)
+            }
+            MakeCustomizerProvider cp = project.getLookup().lookup(MakeCustomizerProvider.class);
+            if (cp == null) {
                 return; // FIXUP
+            }
             cp.showCustomizer(item);
-            //dumpNativeFileInfo(item);
+        //dumpNativeFileInfo(item);
         }
     }
-    
+
     private void dumpNativeFileInfo(Item item) {
         System.out.println("---------------------------------------------------------- " + item.getPath()); // NOI18N
         dumpList("SystemIncludePaths", item.getSystemIncludePaths()); // NOI18N
@@ -85,16 +85,17 @@ public class PropertiesItemAction extends NodeAction {
         dumpList("SystemMacroDefinitions", item.getSystemMacroDefinitions()); // NOI18N
         dumpList("UserMacroDefinitions", item.getUserMacroDefinitions()); // NOI18N
     }
-    public void dumpList(String txt, List list) {
-        Vector vector = new Vector(list);
-        for (int i = 0; i < vector.size(); i++)
-            System.out.println(txt + ":" + vector.elementAt(i)); // NOI18N
+
+    public void dumpList(String txt, List<String> list) {
+        for (String s : list) {
+            System.out.println(txt + ":" + s); // NOI18N
+        }
     }
-    
+
     public HelpCtx getHelpCtx() {
         return null;
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;

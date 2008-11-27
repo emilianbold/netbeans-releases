@@ -38,10 +38,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.Token;
 import antlr.TokenStream;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -62,49 +60,51 @@ import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
  */
 public abstract class APTIncludeBaseNode extends APTTokenBasedNode
         implements Serializable {
+
     private static final long serialVersionUID = -2311241687965334550L;
     // support pp-tokens as include stream
     // expanded later based on macro map;
     // we support INCLUDE_STRING, SYS_INLUDE_STRING
     // and macro expansion like #include MACRO_EXPRESSION
-    private Token includeFileToken = EMPTY_INCLUDE;
-    
+    private APTToken includeFileToken = EMPTY_INCLUDE;
     private int endOffset = 0;
+
     /** Copy constructor */
-    /**package*/ APTIncludeBaseNode(APTIncludeBaseNode orig) {
+    /**package*/
+    APTIncludeBaseNode(APTIncludeBaseNode orig) {
         super(orig);
         this.includeFileToken = orig.includeFileToken;
     }
-    
+
     /** Constructor for serialization */
     protected APTIncludeBaseNode() {
     }
-    
+
     /**
      * Creates a new instance of APTIncludeBaseNode
      */
-    protected APTIncludeBaseNode(Token token) {
+    protected APTIncludeBaseNode(APTToken token) {
         super(token);
     }
-    
+
     @Override
     public int getEndOffset() {
         return endOffset;
     }
-    
+
     public APT getFirstChild() {
         return null;
     }
-    
+
     public void setFirstChild(APT child) {
         // do nothing
         assert (false) : "include doesn't support children"; // NOI18N
     }
-    
-    public boolean accept(Token token) {
+
+    public boolean accept(APTToken token) {
         int ttype = token.getType();
         if (APTUtils.isEndDirectiveToken(ttype)) {
-            endOffset = ((APTToken)token).getOffset();
+            endOffset = token.getOffset();
             return false;
         }
         // eat all till END_PREPROC_DIRECTIVE
@@ -115,7 +115,7 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
                     this.includeFileToken = token;
                 } else {
                     // append new token
-                    ((MultiTokenInclude)includeFileToken).addToken(token);                    
+                    ((MultiTokenInclude) includeFileToken).addToken(token);
                 }
                 break;
             case APTTokenTypes.COMMENT:
@@ -134,37 +134,37 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
                         includeFileToken = new MultiTokenInclude(includeFileToken);
                     }
                     // append new token
-                    ((MultiTokenInclude)includeFileToken).addToken(token);
+                    ((MultiTokenInclude) includeFileToken).addToken(token);
                 }
         }
         return true;
     }
-    
+
     @Override
     public String getText() {
         String ret = super.getText();
         if (isSimpleIncludeToken()) {
-            ret += " INCLUDE{" + (isSystem(null) ? "<S> ":"<U> ") + getInclude()+"}"; // NOI18N
+            ret += " INCLUDE{" + (isSystem(null) ? "<S> " : "<U> ") + getInclude() + "}"; // NOI18N
         } else if (includeFileToken == EMPTY_INCLUDE) {
             ret += " INCLUDE{ **EMPTY** }"; // NOI18N
         } else {
-            ret += " INCLUDE{ <M> " + getInclude()+"}"; // NOI18N
+            ret += " INCLUDE{ <M> " + getInclude() + "}"; // NOI18N
         }
         return ret;
     }
     ////////////////////////////////////////////////////////////////////////////
     // impl of interfaces APTInclude and APTIncludeNext
-    
+
     public TokenStream getInclude() {
         if (isSimpleIncludeToken()) {
             return new TokenBasedTokenStream(includeFileToken);
         } else if (includeFileToken == EMPTY_INCLUDE) {
             return APTUtils.EMPTY_STREAM;
         } else {
-            return new ListBasedTokenStream(((MultiTokenInclude)includeFileToken).getTokenList());
+            return new ListBasedTokenStream(((MultiTokenInclude) includeFileToken).getTokenList());
         }
     }
-    
+
     public String getFileName(APTMacroCallback callback) {
         String file = getIncludeString(callback);
         String out = ""; // NOI18N
@@ -189,49 +189,49 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
         }
         return out;
     }
-    
+
     public boolean isSystem(APTMacroCallback callback) {
         String file = getIncludeString(callback);
         return file.length() > 0 ? file.charAt(0) == '<' : false; // NOI18N
     }
-    
+
     private String getIncludeString(APTMacroCallback callback) {
         assert (includeFileToken != null);
         String file;
         if (!isSimpleIncludeToken()) {
-            file = stringize(((MultiTokenInclude)includeFileToken).getTokenList(), callback);
+            file = stringize(((MultiTokenInclude) includeFileToken).getTokenList(), callback);
         } else {
             file = includeFileToken.getText();
         }
         return file;
     }
-    
+
     private boolean isSimpleIncludeToken() {
         assert (includeFileToken != null);
         return includeFileToken.getType() == APTTokenTypes.INCLUDE_STRING ||
                 includeFileToken.getType() == APTTokenTypes.SYS_INCLUDE_STRING;
     }
-    
     private static final MultiTokenInclude EMPTY_INCLUDE = new MultiTokenInclude(null);
-    
+
     //TODO: what about Serializable
     private static class MultiTokenInclude extends APTTokenAbstact {
-        private List<Token> origTokens;
-        
-        public MultiTokenInclude(Token token) {
+
+        private List<APTToken> origTokens;
+
+        public MultiTokenInclude(APTToken token) {
             if (token != null) {
-                origTokens = new ArrayList<Token>(1);
+                origTokens = new ArrayList<APTToken>(1);
                 origTokens.add(token);
             } else {
-                origTokens = new ArrayList<Token>(0);
+                origTokens = new ArrayList<APTToken>(0);
             }
         }
-        
-        public void addToken(Token token) {
+
+        public void addToken(APTToken token) {
             assert origTokens != null;
             origTokens.add(token);
         }
-        
+
         @Override
         public String getText() {
             if (origTokens.size() > 0) {
@@ -240,13 +240,13 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
                 return "{no include information}"; // NOI18N
             }
         }
-        
-        public List<Token> getTokenList() {
+
+        public List<APTToken> getTokenList() {
             return origTokens;
         }
     };
-    
-    private static String stringize(List<Token> tokens, APTMacroCallback callback) {
+
+    private static String stringize(List<APTToken> tokens, APTMacroCallback callback) {
         TokenStream expanded;
         if (callback != null) {
             expanded = new APTExpandedStream(new ListBasedTokenStream(tokens), callback);
@@ -255,5 +255,4 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
         }
         return APTUtils.stringize(expanded, true);
     }
-    
 }

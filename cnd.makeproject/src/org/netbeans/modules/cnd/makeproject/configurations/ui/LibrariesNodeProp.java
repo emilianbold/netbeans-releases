@@ -82,7 +82,6 @@ public class LibrariesNodeProp extends PropertySupport {
         return configuration.getValue();
     }
 
-    @SuppressWarnings("unchecked")
     public void setValue(Object v) {
         configuration.setValue((List) v);
     }
@@ -144,7 +143,7 @@ public class LibrariesNodeProp extends PropertySupport {
         }
 
         public java.awt.Component getCustomEditor() {
-            return new LibrariesPanel(project, conf, baseDir, value.toArray(), this, env);
+            return new LibrariesPanel(project, conf, baseDir, value, this, env);
         }
 
         public boolean supportsCustomEditor() {

@@ -48,18 +48,30 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/web/struts/resources/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/antlr.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-beanutils.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-digester.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-logging.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-validator.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/jakarta-oro.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.commons_fileupload/modules/ext/commons-fileupload-1.0.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/antlr-2.7.2.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/bsf-2.3.0.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-beanutils-1.7.0.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-chain-1.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-digester-1.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-fileupload-1.1.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-io-1.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-logging-1.0.4.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-validator-1.3.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/jstl-1.0.2.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/oro-2.0.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/standard-1.0.2.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-core-1.3.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-el-1.3.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-extras-1.3.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-faces-1.3.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-mailreader-dao-1.3.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-scripting-1.3.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-taglib-1.3.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts-tiles-1.3.8.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-            <resource>jar:nbinst:///docs/struts-1.2.9-javadoc.zip!/</resource>
+            <resource>jar:nbinst:///docs/struts-1.3.8-javadoc.zip!/</resource>
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->

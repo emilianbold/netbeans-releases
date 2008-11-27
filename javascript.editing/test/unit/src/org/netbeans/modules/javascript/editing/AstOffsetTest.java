@@ -41,6 +41,7 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.List;
 import java.util.Map;
+import org.mozilla.nb.javascript.Context;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.editor.BaseDocument;
@@ -59,8 +60,13 @@ public class AstOffsetTest extends JsTestBase {
     
     public AstOffsetTest(String testName) {
         super(testName);
-    }            
-    
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        SupportedBrowsers.getInstance().setLanguageVersion(Context.VERSION_DEFAULT);
+    }
+
     @Override
     protected String describeNode(CompilationInfo info, Object obj, boolean includePath) throws Exception {
         Node node = (Node)obj;
@@ -215,8 +221,9 @@ public class AstOffsetTest extends JsTestBase {
         checkOffsets("testfiles/issue149019.js");
     }
 
-//    public void testDestructuringAssignment() throws Exception {
-//        // http://developer.mozilla.org/en/docs/New_in_JavaScript_1.7#Destructuring_assignment
-//        checkOffsets("testfiles/destructuring_assignment.js");
-//    }
+    public void testJavaScript17Stuff() throws Exception {
+        // http://developer.mozilla.org/en/docs/New_in_JavaScript_1.7
+        SupportedBrowsers.getInstance().setLanguageVersion(Context.VERSION_1_7);
+        checkOffsets("testfiles/javascript17.js");
+    }
 }

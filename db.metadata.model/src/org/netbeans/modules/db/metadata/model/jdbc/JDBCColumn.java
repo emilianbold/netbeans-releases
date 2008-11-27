@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.db.metadata.model.jdbc;
 
+import org.netbeans.modules.db.metadata.model.api.Nullable;
+import org.netbeans.modules.db.metadata.model.api.SQLType;
 import org.netbeans.modules.db.metadata.model.api.Tuple;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 
@@ -49,11 +51,13 @@ import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 public class JDBCColumn extends ColumnImplementation {
 
     private final Tuple parent;
-    private final String name;
+    private final JDBCValue value;
+    private final int ordinalPosition;
 
-    public JDBCColumn(Tuple parent, String name) {
+    public JDBCColumn(Tuple parent, int ordinalPosition, JDBCValue value) {
         this.parent = parent;
-        this.name = name;
+        this.value = value;
+        this.ordinalPosition = ordinalPosition;
     }
 
     public final Tuple getParent() {
@@ -61,11 +65,46 @@ public class JDBCColumn extends ColumnImplementation {
     }
 
     public final String getName() {
-        return name;
+        return value.getName();
     }
 
     @Override
     public String toString() {
-        return "JDBCColumn[name='" + name + "']"; // NOI18N
+        return "JDBCColumn[" + value + ", ordinal_position=" + ordinalPosition + "]"; // NOI18N
+    }
+
+    @Override
+    public int getPrecision() {
+        return value.getPrecision();
+    }
+
+    @Override
+    public short getRadix() {
+        return value.getRadix();
+    }
+
+    @Override
+    public short getScale() {
+        return value.getScale();
+    }
+
+    @Override
+    public SQLType getType() {
+        return value.getType();
+    }
+
+    @Override
+    public int getLength() {
+        return value.getLength();
+    }
+
+    @Override
+    public Nullable getNullable() {
+        return value.getNullable();
+    }
+
+    @Override
+    public int getOrdinalPosition() {
+        return ordinalPosition;
     }
 }

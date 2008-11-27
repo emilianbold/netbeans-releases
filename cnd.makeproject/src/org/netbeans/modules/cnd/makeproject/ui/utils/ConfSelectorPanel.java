@@ -139,14 +139,14 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
     }
 
     public Configuration[] getSelectedConfs() {
-        Vector vector = new Vector();
+        Vector<Configuration> vector = new Vector<Configuration>();
         for (int i = 0; i < configurationItems.length; i++) {
             if (checkBoxes[i].isSelected()) {
                 vector.add(configurationItems[i]);
             }
         }
 
-        return (Configuration[]) vector.toArray(new Configuration[vector.size()]);
+        return vector.toArray(new Configuration[vector.size()]);
     }
 
     /** This method is called from within the constructor to

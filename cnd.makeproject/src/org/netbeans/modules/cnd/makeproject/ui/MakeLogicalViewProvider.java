@@ -401,7 +401,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     private static Node findProjectNode(Node root, Project p) {
         Node[] n = root.getChildren().getNodes(true);
-        Template t = new Template(null, null, p);
+        Template<Project> t = new Template<Project>(null, null, p);
 
         for (int cntr = 0; cntr < n.length; cntr++) {
             if (n[cntr].getLookup().lookupItem(t) != null) {
@@ -830,7 +830,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
             @Override
             public void run() {
-                setFiles(Collections.EMPTY_SET /*folder.getAllItemsAsFileObjectSet(true)*/); // See IZ 100394 for details
+                setFiles(new HashSet<FileObject>() /*Collections.EMPTY_SET*/ /*folder.getAllItemsAsFileObjectSet(true)*/); // See IZ 100394 for details
                 List<Folder> allFolders = new ArrayList<Folder>();
                 allFolders.add(folder);
                 allFolders.addAll(folder.getAllFolders(true));
@@ -1556,7 +1556,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return true;
         }
 
-        public Iterator objectsToSearch() {
+        public Iterator<DataObject> objectsToSearch() {
             return folder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
         }
     }

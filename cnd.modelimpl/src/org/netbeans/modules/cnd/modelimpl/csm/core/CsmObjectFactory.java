@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MethodDDImpl;
@@ -75,6 +76,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.NamespaceAliasImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypedefImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDirectiveImpl;
@@ -230,6 +232,11 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = ENUMERATOR_IMPL;
         } else if (object instanceof IncludeImpl) {
             aHandler = INCLUDE_IMPL;
+        } else if (object instanceof ParameterListImpl) {
+            aHandler = PARAM_LIST_IMPL;
+            if (object instanceof FunctionParameterListImpl) {
+                aHandler = FUNCTION_PARAM_LIST_IMPL;
+            }
         } else if (object instanceof MacroImpl) {
             aHandler = MACRO_IMPL;
         } else if (object instanceof FriendClassImpl) {
@@ -398,6 +405,14 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new IncludeImpl(stream);
                 break;
                 
+            case PARAM_LIST_IMPL:
+                obj = new ParameterListImpl(stream);
+                break;
+
+            case FUNCTION_PARAM_LIST_IMPL:
+                obj = new FunctionParameterListImpl(stream);
+                break;
+
             case MACRO_IMPL:
                 obj = new MacroImpl(stream);
                 break;
@@ -508,7 +523,9 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int ENUMERATOR_IMPL                = PARAMETER_IMPL + 1;
 
     private static final int INCLUDE_IMPL                   = ENUMERATOR_IMPL + 1;
-    private static final int MACRO_IMPL                     = INCLUDE_IMPL + 1;
+    private static final int PARAM_LIST_IMPL                = INCLUDE_IMPL + 1;
+    private static final int FUNCTION_PARAM_LIST_IMPL       = PARAM_LIST_IMPL + 1;
+    private static final int MACRO_IMPL                     = FUNCTION_PARAM_LIST_IMPL + 1;
     
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        
