@@ -61,6 +61,7 @@ public enum DoxygenTokenId implements TokenId {
 
     IDENT("comment"), // NOI18N
     TAG("doxygen-tag"), // NOI18N
+    POINTER_MARK("html-tag"), // NOI18N
     HTML_TAG("html-tag"), // NOI18N
     DOT("comment"), // NOI18N
     HASH("comment"), // NOI18N

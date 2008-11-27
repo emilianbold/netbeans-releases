@@ -502,9 +502,10 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
 
     protected final Token<CppTokenId> finishComment(boolean createToken) {
         int c = read(true);
-        if (c == '*') { // either doxygen comment or empty multi-line comment /**/
+        int firstChar = c;
+        if (firstChar == '*' || firstChar == '!') { // either doxygen comment or empty multi-line comment /**/
             c = read(true);
-            if (c == '/') {
+            if (c == '/' && firstChar != '!') {
                 return !createToken ? null : token(CppTokenId.BLOCK_COMMENT);
             }
             while (true) { // in doxygen comment
@@ -521,7 +522,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                 }
                 c = read(true);
             }
-        } else { // in multi-line comment (and not after '*')
+        } else { // in multi-line comment (and not after '*' or '!')
             while (true) {
                 c = read(true);
                 while (c == '*') {
