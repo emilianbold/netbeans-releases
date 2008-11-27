@@ -20,6 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="Mac Installer" basedir="." default="build-all-dmg">
+
     
     <import file="${basedir}/build.pro"/>
     <property file="${basedir}/Bundle.properties"/>
