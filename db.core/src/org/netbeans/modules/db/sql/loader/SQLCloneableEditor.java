@@ -383,20 +383,6 @@ public class SQLCloneableEditor extends CloneableEditor {
         return resultingLookup;
     }
 
-    protected void componentDeactivated() {
-        SQLEditorSupport sqlEditorSupport = sqlEditorSupport();
-        // #132333: need to test if the support is still valid (it may be not, because
-        // the DataObject was deleted as the editor was closing.)
-        if (sqlEditorSupport.isValid()) {
-            try {
-                cloneableEditorSupport().saveDocument();
-            } catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
-            }
-        }
-        super.componentDeactivated();
-    }
-
     protected void componentClosed() {
         sqlExecution.editorClosed();
         super.componentClosed();
