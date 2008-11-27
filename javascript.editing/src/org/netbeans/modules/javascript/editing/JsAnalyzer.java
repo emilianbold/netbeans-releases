@@ -223,11 +223,11 @@ public class JsAnalyzer implements StructureScanner {
 
                     if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR ||
                         // Only make nested classes/modules foldable, similar to what the java editor is doing
-                        (range.getStart() > Utilities.getRowStart(doc, range.getStart()))) {
+                        (range.getStart() > Utilities.getRowStart(doc, Math.min(range.getStart(), doc.getLength())))) {
 
                         int start = range.getStart();
                         // Start the fold at the END of the line
-                        start = org.netbeans.editor.Utilities.getRowEnd(doc, start);
+                        start = org.netbeans.editor.Utilities.getRowEnd(doc, Math.min(start, doc.getLength()));
                         int end = range.getEnd();
                         if (start != (-1) && end != (-1) && start < end && end <= doc.getLength()) {
                             range = new OffsetRange(start, end);
