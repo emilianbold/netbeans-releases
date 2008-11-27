@@ -337,7 +337,6 @@
                 <xs:element ref="tns:binary_standard" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:conforming_standard" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 
@@ -372,6 +371,13 @@
                 <xs:element ref="tns:dynamic_library_basic" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:output_file"   minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="macro">
+        <xs:complexType>
+            <xs:attribute name="stringvalue" type="xs:string"/>
+            <xs:attribute name="flags" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 
@@ -580,6 +586,9 @@
 
     <xs:element name="system_macros">
         <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="tns:macro" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
             <xs:attribute name="flags" type="xs:string" use="optional" />
             <xs:attribute name="parser" type="xs:string" use="optional" />
         </xs:complexType>

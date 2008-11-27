@@ -67,7 +67,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public class AdditionalLibrariesListPanel extends ListEditorPanel {
+public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
     
     public static JPanel wrapPanel(ListEditorPanel innerPanel) {
         JPanel outerPanel = new JPanel();
@@ -82,7 +82,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel {
         return outerPanel;
     }
     
-    public AdditionalLibrariesListPanel(List objects) {
+    public AdditionalLibrariesListPanel(List<String> objects) {
         super(objects);
         getDefaultButton().setVisible(false);
         getUpButton().setVisible(false);
@@ -91,7 +91,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel {
     }
     
     @Override
-    public Object addAction() {
+    public String addAction() {
         String seed = null;
         if (FileChooser.getCurrectChooserFile() != null) {
             seed = FileChooser.getCurrectChooserFile().getPath();
@@ -158,14 +158,14 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel {
     }
     
     @Override
-    public Object copyAction(Object o) {
-        return new String((String) o);
+    public String copyAction(String o) {
+        return o;
     }
     
     @SuppressWarnings("unchecked") // NOI18N
     @Override
-    public void editAction(Object o) {
-        String s = (String)o;
+    public void editAction(String o) {
+        String s = o;
         
         InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
         notifyDescriptor.setInputText(s);

@@ -754,7 +754,8 @@ import org.xml.sax.helpers.DefaultHandler;
             element.appendChild(e);
         }
         if (compiler.getMacroFlags() != null ||
-                compiler.getMacroParser() != null) {
+                compiler.getMacroParser() != null ||
+                compiler.getPredefinedMacros() != null) {
             e = doc.createElement("system_macros"); // NOI18N
             if (compiler.getMacroFlags() != null) {
                 e.setAttribute("flags", compiler.getMacroFlags()); // NOI18N
@@ -763,6 +764,16 @@ import org.xml.sax.helpers.DefaultHandler;
                 e.setAttribute("parser", compiler.getMacroParser()); // NOI18N
             }
             element.appendChild(e);
+            if (compiler.getPredefinedMacros() != null) {
+                for(PredefinedMacro p : compiler.getPredefinedMacros()){
+                    Element ee = doc.createElement("macro"); // NOI18N
+                    ee.setAttribute("stringvalue", p.getMacro());
+                    if (p.getFlags() != null) {
+                        ee.setAttribute("flags", p.getFlags());
+                    }
+                    e.appendChild(ee);
+                }
+            }
         }
         if (compiler.getUserMacroFlag() != null) {
             e = doc.createElement("user_macro"); // NOI18N
@@ -1302,6 +1313,7 @@ import org.xml.sax.helpers.DefaultHandler;
         String macrosFlags;
         String macrosOutputParser;
         String userMacroFlag;
+        List<PredefinedMacro> predefinedMacros;
         String outputObjectFileFlags;
         String dependencyGenerationFlags;
         String precompiledHeaderFlags;
@@ -1804,6 +1816,13 @@ import org.xml.sax.helpers.DefaultHandler;
                 return;
             } else if (checkAlternativePath(attributes, c.alternativePath)) {
                 return;
+            } else if (path.endsWith(".system_macros.macro")) { // NOI18N
+                if (c.predefinedMacros == null) {
+                    c.predefinedMacros = new ArrayList<PredefinedMacro>();
+                }
+                PredefinedMacro m = new PredefinedMacroImpl(getValue(attributes, "stringvalue"), getValue(attributes, "flags"));
+                c.predefinedMacros.add(m);
+                return;
             }
             String flags = getValue(attributes, "flags"); // NOI18N
             if (flags == null) {
@@ -2261,6 +2280,10 @@ import org.xml.sax.helpers.DefaultHandler;
             return tool.macrosOutputParser;
         }
 
+        public List<PredefinedMacro> getPredefinedMacros() {
+            return tool.predefinedMacros;
+        }
+
         public String getUserMacroFlag() {
             return tool.userMacroFlag;
         }
@@ -2315,6 +2338,25 @@ import org.xml.sax.helpers.DefaultHandler;
 
         public boolean getPrecompiledHeaderSuffixAppend() {
             return tool.precompiledHeaderSuffixAppend;
+        }
+
+    }
+    
+    private static final class PredefinedMacroImpl implements PredefinedMacro {
+        String macro;
+        String flags;
+
+        PredefinedMacroImpl(String macro, String flags){
+            this.macro = macro;
+            this.flags = flags;
+        }
+
+        public String getMacro() {
+            return macro;
+        }
+
+        public String getFlags() {
+            return flags;
         }
 
     }
