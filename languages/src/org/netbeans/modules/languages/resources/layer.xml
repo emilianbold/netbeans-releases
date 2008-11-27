@@ -50,6 +50,8 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="Editors">
+        <file name="org-netbeans-modules-languages-ParserImpl$AParserFactory.instance"/>
+        <file name="org-netbeans-modules-languages-ParserListenerFactoryImpl.instance"/>
         <folder name="AnnotationTypes">
             <file name="Error.xml" url="Error.xml"/>
             <file name="SyntaxError.xml" url="SyntaxError.xml"/>

@@ -77,7 +77,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     private final Object lock = new Object();
     private final Object cacheLock = new Object();
     private final List<ChangeListener> listeners;
-    private Set cachedProjects;
+    private Set<NbMavenProjectImpl> cachedProjects;
     private PropertyChangeListener projectListener;
     private static final Logger LOG = Logger.getLogger(MavenFileOwnerQueryImpl.class.getName());
     
@@ -245,26 +245,30 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         return ProjectManager.mutex().readAccess(new Action<Set<NbMavenProjectImpl>>() {
             public Set<NbMavenProjectImpl> run() {
                 synchronized (cacheLock) {
-                    Set currentProjects;
-                    List iterating;
+                    Set<NbMavenProjectImpl> currentProjects;
+                    List<NbMavenProjectImpl> iterating;
                     if (cachedProjects != null) {
-                        return new HashSet(cachedProjects);
+                        return new HashSet<NbMavenProjectImpl>(cachedProjects);
                     }
                     synchronized (lock) {
                         currentProjects = new HashSet<NbMavenProjectImpl>(set);
-                        iterating = new ArrayList(set);
+                        iterating = new ArrayList<NbMavenProjectImpl>(set);
                     }
                     int index = 0;
                     // iterate all opened projects and figure their subprojects.. consider these as well. do so recursively.
                     //TODO performance.. this could be expensive, maybe cache somehow
                     while (index < iterating.size()) {
-                        NbMavenProjectImpl prj = (NbMavenProjectImpl) iterating.get(index);
+                        NbMavenProjectImpl prj = iterating.get(index);
                         SubprojectProvider sub = prj.getLookup().lookup(SubprojectProvider.class);
                         if (sub != null) {
                             Set<? extends Project> subs = sub.getSubprojects();
                             subs.removeAll(currentProjects);
-                            currentProjects.addAll(subs);
-                            iterating.addAll(subs);
+                            for (Project p : subs) {
+                                if (p instanceof NbMavenProjectImpl) {
+                                    currentProjects.add((NbMavenProjectImpl)p);
+                                    iterating.add((NbMavenProjectImpl)p);
+                                }
+                            }
                         }
                         index = index + 1;
                     }

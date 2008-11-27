@@ -52,6 +52,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 
+import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.api.java.source.JavaSource;
 
 import org.openide.awt.Mnemonics;
@@ -74,7 +75,6 @@ import java.awt.Insets;
 import java.io.IOException;
 import javax.naming.event.EventDirContext;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.java.source.ui.DialogBinding;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
 import org.netbeans.spi.debugger.jpda.EditorContext;
@@ -198,7 +198,7 @@ public class WatchPanel {
         try {
             int offset = NbDocument.findLineOffset(doc, line);
             //editorPane.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
-            JavaSource js = DialogBinding.bindComponentToFile(file, offset, 0, editorPane);
+            DialogBinding.bindComponentToFile(file, offset, 0, editorPane);
         } catch (IndexOutOfBoundsException ioobex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioobex);
         }

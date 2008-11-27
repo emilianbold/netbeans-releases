@@ -101,7 +101,7 @@ public class VersionCommand {
             if (provider != null) {
                 provider.run(tool.getHostKey(),
                         path + " " + getVersionFlags() + " 2>&1", // NOI18N
-                        Collections.EMPTY_MAP);
+                        Collections.<String, String>emptyMap());
                 version = extractVersion(new StringReader(provider.getOutput()));
             }
         }

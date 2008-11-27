@@ -155,14 +155,14 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
             }
         }
         
-        List<Node> regexps = new ArrayList<Node>();
+        List<Node> nodes = new ArrayList<Node>();
         if (JsUtils.isEjsFile(info.getFileObject())) {
             // No E4X highlights in EJS files
-            AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME }, regexps);
+            AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME }, nodes);
         } else {
-            AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME, Token.E4X }, regexps);
+            AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME, Token.E4X }, nodes);
         }
-        for (Node node : regexps) {
+        for (Node node : nodes) {
             OffsetRange range = AstUtilities.getNameRange(node);
             if (node.isStringNode() && JsModel.isGeneratedIdentifier(node.getString())) {
                 continue;
@@ -178,18 +178,42 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
                 highlights.put(range, ColoringAttributes.METHOD_SET);
             } else {
                 assert type == Token.E4X;
+                // TODO - highlight the whole thing even if it contains JsCode? Also,
+                // xml scan the string portions that are directly reachable under an ADD?
+
+                highlights.put(range, ColoringAttributes.CUSTOM1_SET);
+
                 Node child = node.getFirstChild();
                 if (child != null && child.getType() == Token.STRING) {
                     // It's an E4X string without embedded code (those would have
                     // a Token.ADD child instead of Token.STRING) which means we
                     // should be able to parse these guys and show some XML colors
                     // and other info.
-                    // For now, just highlight.
-                    highlights.put(range, ColoringAttributes.CUSTOM1_SET);
 
                     String xml = child.getString();
                     // Simple "parsing" of the String to identify element regions
                     parseXml(highlights, xml, child.getSourceStart());
+                } else {
+                    // Highlight all nodes reachable through ADD parents; these will
+                    // be XML string fragments
+                    List<Node> stringNodes = new ArrayList<Node>();
+                    AstUtilities.addNodesByType(node, new int[] { Token.STRING }, stringNodes);
+                    for (Node n : stringNodes) {
+                        boolean isXmlString = true;
+                        Node curr = n.getParentNode();
+                        while (curr != null && curr != node) {
+                            if (curr.getType() != Token.ADD) {
+                                isXmlString = false;
+                            }
+                            curr = curr.getParentNode();
+                        }
+                        if (isXmlString) {
+                            String xml = n.getString();
+                            // Simple "parsing" of the String to identify element regions
+                            parseXml(highlights, xml, n.getSourceStart());
+                        }
+                    }
+
                 }
             }
         }

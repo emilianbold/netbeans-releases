@@ -200,13 +200,14 @@ public class DependenciesNode extends AbstractNode {
         
         @Override
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<DependencyWrapper>emptyList());
             NbMavenProject.removePropertyChangeListener(project, this);
             super.removeNotify();
         }
         
+        @SuppressWarnings("unchecked") // a lot of calls to maven lists..
         int regenerateKeys() {
-            TreeSet lst = new TreeSet(new DependenciesComparator());
+            TreeSet<DependencyWrapper> lst = new TreeSet<DependencyWrapper>(new DependenciesComparator());
             MavenProject mp = project.getOriginalMavenProject();
             if (type == TYPE_COMPILE) {
                 lst.addAll(create(mp.getCompileDependencies(), mp.getArtifacts()));
@@ -332,7 +333,7 @@ public class DependenciesNode extends AbstractNode {
             putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependenciesNode.class, "BTN_Add_Library"));
         }
         public void actionPerformed(ActionEvent event) {
-            AddDependencyPanel pnl = new AddDependencyPanel();
+            AddDependencyPanel pnl = new AddDependencyPanel(project.getOriginalMavenProject());
         
             DialogDescriptor dd = new DialogDescriptor(pnl, org.openide.util.NbBundle.getMessage(DependenciesNode.class, "TIT_Add_Library"));
             dd.setClosingOptions(new Object[] {
@@ -345,8 +346,12 @@ public class DependenciesNode extends AbstractNode {
             });
             Object ret = DialogDisplayer.getDefault().notify(dd);
             if (pnl.getOkButton() == ret) {
-               ModelUtils. addDependency(project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
-                       pnl.getGroupId(), pnl.getArtifactId(), pnl.getVersion(),
+                String version = pnl.getVersion();
+                if (version != null && version.trim().length() == 0) {
+                    version = null;
+                }
+                ModelUtils.addDependency(project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
+                       pnl.getGroupId(), pnl.getArtifactId(), version,
                        null, pnl.getScope(), null,false);
             }
         }
@@ -449,6 +454,7 @@ public class DependenciesNode extends AbstractNode {
     
     private static class DependenciesComparator implements Comparator<DependencyWrapper> {
 
+        @SuppressWarnings("unchecked")
         public int compare(DependencyWrapper art1, DependencyWrapper art2) {
             if (art1 == NULL && art2 == NULL) {
                 return 0;

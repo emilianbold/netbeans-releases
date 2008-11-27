@@ -210,7 +210,7 @@ public class InstallPanel extends javax.swing.JPanel {
         props.put("file", fil.getAbsolutePath()); //NOI18N
         props.put("generatePom", "false"); //NOI18N
         brc.setProperties(props);
-        brc.setActivatedProfiles(Collections.EMPTY_LIST);
+        brc.setActivatedProfiles(Collections.<String>emptyList());
         brc.setTaskDisplayName(NbBundle.getMessage(InstallPanel.class, "TXT_InstallTask"));
         RunUtils.executeMaven(brc); //NOI18N
         //TODO how to handle errors

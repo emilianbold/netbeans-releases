@@ -640,7 +640,7 @@ public class MakeConfiguration extends Configuration {
         return compilerSet.getName() + "-" + Platforms.getPlatform(platform).getName(); // NOI18N
     }
 
-    public Set/*<Project>*/ getSubProjects() {
+    public Set<Project> getSubProjects() {
         Set<Project> subProjects = new HashSet<Project>();
         LibrariesConfiguration librariesConfiguration = getLinkerConfiguration().getLibrariesConfiguration();
         LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();

@@ -46,11 +46,15 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;                                                                                                                                                                                           
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;                                                                                                                                                                                        
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;                                                                                                                                                                                                    
 import javax.lang.model.element.Element;                                                                                                                                                                                       
@@ -315,17 +319,12 @@ public final class TreePathHandle {
 
     private static final class TreeDelegate implements Delegate {
         
-        private PositionRef position;
-
-        private KindPath kindPath;
-
-        private FileObject file;
-
-        private ElementHandle enclosingElement;
-
-        private boolean enclElIsCorrespondingEl;
-
-        private Tree.Kind kind;
+        private final PositionRef position;
+        private final KindPath kindPath;
+        private final FileObject file;
+        private final ElementHandle enclosingElement;
+        private final boolean enclElIsCorrespondingEl;
+        private final Tree.Kind kind;
 
         private TreeDelegate(PositionRef position, KindPath kindPath, FileObject file, ElementHandle element, boolean enclElIsCorrespondingEl) {
             this.kindPath = kindPath;
@@ -344,7 +343,11 @@ public final class TreePathHandle {
                         kind = Tree.Kind.VARIABLE;
                     } else if (k == ElementKind.METHOD || k == ElementKind.CONSTRUCTOR) {
                         kind = Tree.Kind.METHOD;
+                    } else {
+                        kind = null;
                     }
+                } else {
+                    kind = null;
                 }
             }
         }
@@ -391,6 +394,31 @@ public final class TreePathHandle {
                     debug.append(ex.getMessage());
                 }
 
+                try {
+                    debug.append("\n---------------------------------------------------\n");
+                    Class fileObjectFactoryClass = Class.forName("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory");
+                    Field allFactoriesField = fileObjectFactoryClass.getDeclaredField("AllFactories");
+                    Map<?, ?> factories = (Map<?, ?>) allFactoriesField.get(null);
+                    Class callerClass = Class.forName("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory$Caller");
+                    Method getValidFileObjectMethod = fileObjectFactoryClass.getMethod("getValidFileObject", File.class, callerClass);
+                    Object othersCaller = callerClass.getEnumConstants()[4];
+                    for (Map.Entry<?, ?> entry : factories.entrySet()) {
+                        File rootFile = (File) entry.getKey();
+                        Object fof = entry.getValue();
+                        debug.append("FileObjectFactory=" + fof);
+                        debug.append("\n");
+                        debug.append("RootFile=" + rootFile + ", hash=" + rootFile.hashCode());
+                        debug.append("\n");
+                        FileObject foMine = (FileObject) getValidFileObjectMethod.invoke(fof, FileUtil.toFile(mine), othersCaller);
+                        FileObject foRemote = (FileObject) getValidFileObjectMethod.invoke(fof, FileUtil.toFile(remote), othersCaller);
+                        debug.append("foMine: id=" + System.identityHashCode(foMine) + ", valid=" + foMine.isValid());
+                        debug.append("\n");
+                        debug.append("foRemote: id=" + System.identityHashCode(foRemote) + ", valid=" + foRemote.isValid());
+                        debug.append("\n---------------------------------------------------\n");
+                    }
+                } catch (Exception e) {
+                    debug.append("Reflection failed: "+e.getMessage());
+                }
                 throw new IllegalArgumentException(debug.toString());
             }
             Element element = enclosingElement.resolve(compilationInfo);
@@ -544,10 +572,10 @@ public final class TreePathHandle {
     
     private static final class ElementDelegate implements Delegate {
 
-        private ElementHandle<? extends Element> el;
-        private URL source;
-        private String qualName;
-        private ClasspathInfo cpInfo;
+        private final ElementHandle<? extends Element> el;
+        private final URL source;
+        private final String qualName;
+        private final ClasspathInfo cpInfo;
 
         public ElementDelegate(ElementHandle<? extends Element> el, URL source, String qualName, ClasspathInfo cpInfo) {
             this.el = el;
