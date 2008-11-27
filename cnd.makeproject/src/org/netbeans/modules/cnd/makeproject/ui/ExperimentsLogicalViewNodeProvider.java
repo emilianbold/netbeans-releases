@@ -88,7 +88,7 @@ class ExperimentsRootNode extends AbstractNode {
     }
 }
 
-class ExperimentsRootNodeChildren extends Children.Keys implements ChangeListener {
+class ExperimentsRootNodeChildren extends Children.Keys<ExperimentsGroupNode> implements ChangeListener {
 
     Project project;
 
@@ -96,17 +96,20 @@ class ExperimentsRootNodeChildren extends Children.Keys implements ChangeListene
         this.project = project;
     }
 
+    @Override
     protected void addNotify() {
         super.addNotify();
         setKeys(getKeys());
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
     protected void removeNotify() {
         setKeys(Collections.EMPTY_SET);
         super.removeNotify();
     }
 
-    protected Node[] createNodes(Object key) {
+    protected Node[] createNodes(ExperimentsGroupNode key) {
         Node node = null;
         if (key instanceof ExperimentsGroupNode) {
             node = (Node) key;
@@ -120,7 +123,7 @@ class ExperimentsRootNodeChildren extends Children.Keys implements ChangeListene
         setKeys(getKeys());
     }
 
-    private Collection getKeys() {
+    private Collection<ExperimentsGroupNode> getKeys() {
         Vector<ExperimentsGroupNode> v = new Vector<ExperimentsGroupNode>();
         v.add(new ExperimentsGroupNode(project, "Heap Tracing")); // NOI18N
         v.add(new ExperimentsGroupNode(project, "Data Race Detection")); // NOI18N
@@ -137,25 +140,29 @@ class ExperimentsGroupNode extends AbstractNode {
         setDisplayName(name);
     }
 
+    @Override
     public Image getIcon(int type) {
         return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolder.gif"); // NOI18N
     }
 
+    @Override
     public Image getOpenedIcon(int type) {
         return ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/defaultFolderOpen.gif"); // NOI18N
     }
 
+    @Override
     public boolean canRename() {
         return false;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[]{
                     new ImportExperimentAction(),};
     }
 }
 
-class ExperimentsGroupNodeChildren extends Children.Keys implements ChangeListener {
+class ExperimentsGroupNodeChildren extends Children.Keys<Experiment> implements ChangeListener {
 
     Project project;
 
@@ -170,19 +177,14 @@ class ExperimentsGroupNodeChildren extends Children.Keys implements ChangeListen
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void removeNotify() {
         setKeys(Collections.EMPTY_SET);
         super.removeNotify();
     }
 
-    protected Node[] createNodes(Object key) {
-        Node node = null;
-        if (key instanceof Experiment) {
-            node = (Node) key;
-        } else {
-            ; // FIXUP: error
-        }
-        return new Node[]{node};
+    protected Node[] createNodes(Experiment key) {
+        return new Node[]{key};
     }
 
     public void stateChanged(ChangeEvent e) {

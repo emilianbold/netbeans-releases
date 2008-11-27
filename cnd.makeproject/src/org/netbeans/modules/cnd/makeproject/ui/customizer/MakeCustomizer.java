@@ -1401,7 +1401,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
     /** Children used for configuration
      */
-    private class PropertyNodeChildren extends Children.Keys {
+    private class PropertyNodeChildren extends Children.Keys<CustomizerNode> {
 
         private Collection<CustomizerNode> descriptions;
 
@@ -1416,12 +1416,13 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public void removeNotify() {
             setKeys(Collections.EMPTY_LIST);
         }
 
-        protected Node[] createNodes(Object key) {
-            return new Node[]{new PropertyNode((CustomizerNode) key)};
+        protected Node[] createNodes(CustomizerNode key) {
+            return new Node[]{new PropertyNode(key)};
         }
     }
 

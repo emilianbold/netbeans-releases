@@ -82,7 +82,6 @@ public class LibrariesNodeProp extends PropertySupport {
         return configuration.getValue();
     }
 
-    @SuppressWarnings("unchecked")
     public void setValue(Object v) {
         configuration.setValue((List) v);
     }
