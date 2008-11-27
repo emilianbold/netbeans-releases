@@ -1087,6 +1087,15 @@ decl_namespace
 		)
 	;
 
+namespace_alias_definition
+	{String qid; String name = "";}
+	:
+		LITERAL_namespace
+		ns2:ID{_td = true;name=ns2.getText();declaratorID((name),qiType);}
+		ASSIGNEQUAL qid = qualified_id SEMICOLON!
+		{#namespace_alias_definition = #(#[CSM_NAMESPACE_ALIAS, name], #namespace_alias_definition);}
+	;
+
 //
 // it's a caller's responsibility to check isCPlusPlus
 //
@@ -1512,6 +1521,8 @@ declaration
 		{endDeclaration();}
 	|	
 		using_declaration	// DW 19/04/04
+    |
+        namespace_alias_definition
 	;
 
 linkage_specification
@@ -2161,7 +2172,7 @@ ctor_head
 
 ctor_decl_spec
 	:
-	(literal_inline|LITERAL_explicit)*
+    ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_explicit)*
 	;
 
 ctor_declarator[boolean definition]
@@ -2230,7 +2241,7 @@ dtor_head[boolean definition]
 
 dtor_decl_spec
 	:
-	(literal_inline|LITERAL_virtual)*
+	((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual)*
 	;
 
 /* ********
@@ -2524,7 +2535,7 @@ template_parameter_list
  */
 template_parameter
 	:
-	(options{generateAmbigWarnings = false;}:
+	(   ((LITERAL_class|LITERAL_typename) (ID)? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
 		(LITERAL_class|LITERAL_typename) 
 		(id:ID  (ASSIGNEQUAL assigned_type_name)? )?
 		{templateTypeParameter((id == null) ? "" : id.getText());}
@@ -2636,7 +2647,7 @@ statement
 		// TODO: external_declaration is too generic here. Refactor this!
 		external_declaration
         |
-                ( is_declaration ) => 
+                ( is_declaration | LITERAL_namespace ) =>
                 {if (statementTrace>=1) 
 			printf("statement_1[%d]: declaration\n", LT(1).getLine());
 		}

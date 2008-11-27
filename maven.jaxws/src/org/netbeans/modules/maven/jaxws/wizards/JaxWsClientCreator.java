@@ -52,13 +52,16 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
 import org.netbeans.modules.maven.jaxws.WSUtils;
-import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.netbeans.modules.websvc.api.support.ClientCreator;
 import java.io.IOException;
 
+import java.util.Collections;
 import org.netbeans.api.project.Project;
 
 import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportIml;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
@@ -130,46 +133,23 @@ public class JaxWsClientCreator implements ClientCreator {
             }
             if (wsdlFo != null) {
                 MavenModelUtils.addJaxws21Library(project);
-                String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);               
-                String[] filepaths = PluginPropertyUtils.getPluginPropertyList(project,
-                       "org.codehaus.mojo", //NOI18N
-                       "jaxws-maven-plugin", //NOI18N
-                       "wsdlFiles", //NOI18N
-                       "wsdlFile", //NOI18N
-                       "wsimport"); //NOI18N
-                              
-                try {
-                    ModelHandle mavenHandle = ModelHandleUtils.createModelHandle(project);
-                    if (mavenHandle != null) {
-                        
-                        Plugin jaxWsPlugin = MavenModelUtils.getJaxWSPlugin(mavenHandle);
-                        if (jaxWsPlugin == null) {
-                            // add jax-ws plugin
-                            jaxWsPlugin = MavenModelUtils.addJaxWSPlugin(mavenHandle);
-                        }                       
-                        if (jaxWsPlugin != null) {
-                            // writing wsdlFile to plugin
-                            MavenModelUtils.addWsdlFile(mavenHandle, jaxWsPlugin, relativePath);
-                        }
-                        
-                        // adding resource to WEB-INF/ META-INF
+                final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
+                JaxWsService service = new JaxWsService(relativePath, false);
+                ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                    public void performOperation(POMModel model) {
+                        org.netbeans.modules.maven.model.pom.Plugin plugin = MavenModelUtils.addJaxWSPlugin(model);
+                        MavenModelUtils.addWsdlFile(plugin, relativePath);
                         J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
                         if (provider != null) { // expecting web project
-                            Plugin warPlugin = MavenModelUtils.getWarPlugin(mavenHandle);
-
-                            if (warPlugin == null) {
-                                warPlugin = MavenModelUtils.addWarlugin(mavenHandle);
-                            }
+                            MavenModelUtils.addWarPlugin(model);
                         } else { // J2SE Project
-                            MavenModelUtils.addWsdlResources(mavenHandle);
+                            MavenModelUtils.addWsdlResources(model);
                         }
-                        
-                        ModelHandleUtils.writeModelHandle(mavenHandle, project);
-                                          }
-                    
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+                    }
+                };
+                Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"),
+                        Collections.singletonList(operation));
+                jaxWsSupport.addService(service);
                 Preferences prefs = ProjectUtils.getPreferences(project, JaxWsService.class,true);
                 if (prefs != null) {
                     prefs.put(wsdlFo.getName(), wsdlUrl);

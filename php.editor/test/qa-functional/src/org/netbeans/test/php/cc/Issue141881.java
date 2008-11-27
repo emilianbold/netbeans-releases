@@ -122,13 +122,13 @@ public class Issue141881 extends cc
 
     String[] asIdeals = { "xx" };
 
-    CompletionJListOperator jCompl = GetCompletion( );
+    CompletionInfo jCompl = GetCompletion( );
     if( null == jCompl )
       fail( "Unale to find completion list in any form." );
-    List list = jCompl.getCompletionItems( );
+    //List list = jCompl.getCompletionItems( );
     // Magic CC number for complete list
-    if( asIdeals.length != list.size( ) )
-      fail( "Invalid CC list size: " + list.size( ) + ", expected: " + asIdeals.length );
+    if( asIdeals.length != jCompl.size( ) )
+      fail( "Invalid CC list size: " + jCompl.size( ) + ", expected: " + asIdeals.length );
     // Check each
     CheckCompletionItems( jCompl, asIdeals );
 

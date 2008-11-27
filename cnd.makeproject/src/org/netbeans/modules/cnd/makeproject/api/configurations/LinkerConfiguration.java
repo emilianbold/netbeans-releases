@@ -341,8 +341,8 @@ public class LinkerConfiguration implements AllOptionsProvider {
         set1.setDisplayName(getString("GeneralTxt"));
         set1.setShortDescription(getString("GeneralHint"));
         set1.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
-        set1.put(new VectorNodeProp<String>(getAdditionalLibs(), null, getMakeConfiguration().getBaseDir(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories"))); // NOI18N
-        set1.put(new VectorNodeProp<String>(getDynamicSearch(), null, getMakeConfiguration().getBaseDir(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories"))); // NOI18N
+        set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseDir(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories"))); // NOI18N
+        set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseDir(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories"))); // NOI18N
         sheet.put(set1);
         Sheet.Set set2 = new Sheet.Set();
         set2.setName("Options"); // NOI18N
@@ -457,8 +457,8 @@ public class LinkerConfiguration implements AllOptionsProvider {
         }
 
         @Override
-        public void setValue(Object v) {
-            if (IpeUtils.hasMakeSpecialCharacters((String) v)) {
+        public void setValue(String v) {
+            if (IpeUtils.hasMakeSpecialCharacters(v)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
                 return;
             }

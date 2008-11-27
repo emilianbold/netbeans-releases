@@ -155,7 +155,6 @@ made subject to such option by the copyright holder.
     <fortran>
         <compiler name="ffortran,f95,f90,f77"/>
         <recognizer pattern="/opt/SunStudioExpress"/>
-        <version flags="-V"/>
         <version flags="-V" pattern=".*Sun Ceres Fortran 95 8.3"/>
         <development_mode>
             <fast_build flags=""/>
@@ -177,8 +176,8 @@ made subject to such option by the copyright holder.
             <bits_32 flags="-m32"/>
             <bits_64 flags="-m64"/>
         </architecture>
-        <output_object_file flags="-o " />
         <strip flags="-s"/>
+        <output_object_file flags="-o " />
     </fortran>
     <assembler>
         <compiler name="as"/>
@@ -221,7 +220,7 @@ made subject to such option by the copyright holder.
         <library_prefix stringvalue="lib"/>
         <library_search flags="-L"/>
         <dynamic_library_search flags="-R"/>
-        <library flags="-l"/>
+        <library_flag flags="-l"/>
         <PIC flags="-KPIC "/>
         <static_library flags="-Bstatic"/>
         <dynamic_library flags="-Bdynamic"/>

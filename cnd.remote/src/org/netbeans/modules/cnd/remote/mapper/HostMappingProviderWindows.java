@@ -63,11 +63,8 @@ public class HostMappingProviderWindows implements HostMappingProvider {
         try {
             Process process = Runtime.getRuntime().exec("net use"); //NOI18N
             InputStream output = process.getInputStream();
-            process.waitFor();
             mappings = parseNetUseOutput(RemoteUtils.getHostName(otherHkey), new InputStreamReader(output));
             return mappings;
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

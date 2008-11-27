@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -59,13 +59,18 @@ public class MavenJaxWsServicesProvider implements WebServiceDataProvider, Prope
     private Project prj;
     private List<WebService> providers = new LinkedList<WebService>();
     private List<WebService> consumers = new LinkedList<WebService>();
-    
+
+    /** Constructor.
+     *
+     * @param prj project
+     * @param jaxWsSupport JAXWSLightSupport
+     */
     public MavenJaxWsServicesProvider(Project prj, JAXWSLightSupport jaxWsSupport) {
-        this.jaxWsSupport=jaxWsSupport;
+        this.jaxWsSupport = jaxWsSupport;
         this.prj = prj;
         jaxWsSupport.addPropertyChangeListener(this);
     }
-    
+
     public List<WebService> getServiceProviders() {
         return providers;
     }
@@ -84,7 +89,7 @@ public class MavenJaxWsServicesProvider implements WebServiceDataProvider, Prope
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (JAXWSLightSupport.PROPERTY_SERVICE_ADDED.equals(evt.getPropertyName())) {
-            MavenWebService mavenService = new MavenWebService((JaxWsService)evt.getNewValue(), prj);
+            MavenWebService mavenService = new MavenWebService((JaxWsService) evt.getNewValue(), prj);
             WebService webService = WebServiceFactory.createWebService(mavenService);
             if (webService.isServiceProvider()) {
                 providers.add(webService);
@@ -92,10 +97,10 @@ public class MavenJaxWsServicesProvider implements WebServiceDataProvider, Prope
                 consumers.add(webService);
             }
         } else if (JAXWSLightSupport.PROPERTY_SERVICE_REMOVED.equals(evt.getPropertyName())) {
-            JaxWsService jaxWsService = (JaxWsService)evt.getOldValue();
+            JaxWsService jaxWsService = (JaxWsService) evt.getOldValue();
             if (jaxWsService.isServiceProvider()) {
                 String implClass = jaxWsService.getImplementationClass();
-                for (WebService service: providers) {               
+                for (WebService service : providers) {
                     if (implClass.equals(service.getIdentifier())) {
                         providers.remove(service);
                         break;
@@ -103,7 +108,7 @@ public class MavenJaxWsServicesProvider implements WebServiceDataProvider, Prope
                 }
             } else {
                 String wsdlFile = jaxWsService.getLocalWsdl();
-                for (WebService service: consumers) {               
+                for (WebService service : consumers) {
                     if (wsdlFile.equals(service.getIdentifier())) {
                         consumers.remove(service);
                         break;

@@ -41,37 +41,36 @@ package org.netbeans.spi.actions;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 
 /**
- * Merges multiple contextActions or their stubs.
+ * Merges multiple NbActions or their stubs.
  *
  * @author Tim Boudreau
  */
-final class MergeAction implements ContextAwareAction, PropertyChangeListener {
-    private static final String ENABLED = "enabled"; //NOI18N
-    private Action[] actions;
-    private PropertyChangeSupport supp = new PropertyChangeSupport(this);
+final class MergeAction extends NbAction implements PropertyChangeListener {
+    private NbAction[] actions;
     private Map<String, Object> knownValues = new HashMap<String, Object>();
     private Action delegateAction;
     private volatile boolean enabled;
     final boolean allowOnlyOne;
 
-    public MergeAction(Action[] actions, boolean allowOnlyOne) {
+    public MergeAction(NbAction[] actions, boolean allowOnlyOne) {
         this.actions = actions;
         this.allowOnlyOne = allowOnlyOne;
         assert actions.length > 0;
+        assert new HashSet<Action>(Arrays.asList(actions)).size() == actions.length :
+            "Duplicate actions in " + Arrays.asList(actions);
         for (int i = 0; i < actions.length; i++) {
             Parameters.notNull("Action " + i, actions[i]); //NOI18N
-            assert actions[i] instanceof ContextAction || actions[i] instanceof ActionStub;
         }
         //prime our key set common keys
         knownValues.put(NAME, null);
@@ -83,15 +82,14 @@ final class MergeAction implements ContextAwareAction, PropertyChangeListener {
         knownValues.put(SMALL_ICON, null);
         knownValues.put(MNEMONIC_KEY, null);
         knownValues.put("noIconInMenu", null);
-        knownValues.put(ENABLED, null);
+        knownValues.put(PROP_ENABLED, null);
     }
 
-    public MergeAction(Action[] actions) {
+    public MergeAction(NbAction[] actions) {
         this (actions, false);
     }
 
     Action updateDelegateAction() {
-        assert attached;
         synchronized (this) {
             return setDelegateAction(findEnabledAction());
         }
@@ -106,7 +104,7 @@ final class MergeAction implements ContextAwareAction, PropertyChangeListener {
                 boolean nowEnabled = getDelegateAction().isEnabled();
                 if (nowEnabled != enabled) {
                     enabled = nowEnabled;
-                    supp.firePropertyChange(ENABLED, !enabled, enabled);
+                    firePropertyChange(PROP_ENABLED, !enabled, enabled);
                 }
                 if (a != null) {
                     sievePropertyChanges();
@@ -119,19 +117,15 @@ final class MergeAction implements ContextAwareAction, PropertyChangeListener {
     Action findEnabledAction() {
         Action result = null;
         int enaCount = 0;
-        for (Action a : actions) {
-            //We want to, if necessary, briefly addNotify() the action,
-            //so run it inside an ActionRunnable.
-            ActionRunnable<Boolean> ar = new ActionRunnable<Boolean>() {
+        //We want to, if necessary, briefly addNotify() the action,
+        //so run it inside an ActionRunnable.
+        ActionRunnable<Boolean> ar = new ActionRunnable<Boolean>() {
 
-                public Boolean run(ContextAction<?> a) {
-                    return a.isEnabled();
-                }
-
-                public Boolean run(ActionStub<?> a) {
-                    return a.isEnabled();
-                }
-            };
+            public Boolean run(NbAction a) {
+                return a.isEnabled();
+            }
+        };
+        for (NbAction a : actions) {
             if (runActive(ar, a)) {
                 enaCount++;
                 if (!allowOnlyOne) {
@@ -153,7 +147,7 @@ final class MergeAction implements ContextAwareAction, PropertyChangeListener {
         synchronized (this) {
             result = delegateAction;
             if (result == null || !result.isEnabled()) {
-                if (attached) {
+                if (attached()) {
                     result = updateDelegateAction();
                 } else {
                     result = findEnabledAction();
@@ -168,108 +162,61 @@ final class MergeAction implements ContextAwareAction, PropertyChangeListener {
 
     private void sievePropertyChanges() {
         Map<String, Object> nue = new HashMap<String, Object>();
-//        Action del = getDelegateAction();
         for (String key : knownValues.keySet()) {
             Object expected = knownValues.get(key);
             Object found = getValue(key);//del.getValue(key);
-//            Object found = del.getValue(key);
             if (found != expected) {
                 nue.put(key, found);
-                supp.firePropertyChange(key, expected, found);
+                firePropertyChange(key, expected, found);
             }
         }
     }
 
-    interface ActionRunnable<T> {
-
-        T run(ContextAction<?> a);
-
-        T run(ActionStub<?> a);
-    }
-
-    <T> T runActive(ActionRunnable<T> ar, Action a) {
-        assert a instanceof ContextAction || a instanceof ActionStub;
-//        synchronized (a instanceof ActionStub ? ((ActionStub)a).lock() :
-//            ((ContextAction) a).STATE_LOCK) {
-            boolean wasActive = a instanceof ContextAction ? ((ContextAction) a).attached : ((ActionStub) a).attached;
-            try {
-                if (!wasActive) {
-                    if (a instanceof ContextAction) {
-                        ((ContextAction) a).addNotify();
-                        return ar.run((ContextAction) a);
-                    } else {
-                        ((ActionStub) a).addNotify();
-                        return ar.run((ActionStub) a);
-                    }
-                }
-                if (a instanceof ContextAction) {
-                    return ar.run((ContextAction) a);
-                } else {
-                    return ar.run((ActionStub) a);
-                }
-            } finally {
-                if (!wasActive) {
-                    if (a instanceof ContextAction) {
-                        ((ContextAction) a).removeNotify();
-                    } else {
-                        ((ActionStub) a).removeNotify();
-                    }
-                }
-            }
-//        }
-    }
-    volatile boolean attached;
-
-    synchronized void addNotify() {
-        attached = true;
+    @Override
+    protected synchronized void addNotify() {
         for (Action a : actions) {
             a.addPropertyChangeListener(this);
         }
         updateDelegateAction();
     }
 
-    synchronized void removeNotify() {
-        attached = false;
+    @Override
+    protected synchronized void removeNotify() {
         for (Action a : actions) {
             a.removePropertyChangeListener(this);
         }
         setDelegateAction(null);
     }
 
-    public Action createContextAwareInstance(Lookup actionContext) {
-        Action[] stubs = new Action[actions.length];
+    @Override
+    protected NbAction internalCreateContextAwareInstance(Lookup actionContext) {
+        NbAction[] stubs = new NbAction[actions.length];
         for (int i = 0; i < stubs.length; i++) {
-            stubs[i] = ((ContextAwareAction) actions[i]).createContextAwareInstance(actionContext);
+            stubs[i] = (NbAction)
+                    actions[i].createContextAwareInstance(actionContext);
         }
         MergeAction result = new MergeAction(stubs, allowOnlyOne);
         result.knownValues.putAll(knownValues);
         result.pairs.putAll(pairs);
         return result;
     }
-    private Map<String, Object> pairs = new HashMap<String, Object>();
 
+    @Override
     public Object getValue(final String key) {
-        Object result = pairs.get(key);
+        Object result = super.getValue(key);
         if (result == null) {
-//            synchronized (this) {
-                if (isEnabled()) {
-                    Action del = getDelegateAction();
-                    result = del.getValue(key);
-                }
-//            }
+            if (isEnabled()) {
+                Action del = getDelegateAction();
+                result = del.getValue(key);
+            }
         }
         if (result == null) {
             ActionRunnable<Object> ar = new ActionRunnable<Object>() {
-
-                public Object run(ContextAction<?> a) {
-                    return a.getValue(key);
-                }
-
-                public Object run(ActionStub<?> a) {
+                public Object run(NbAction a) {
                     return a.getValue(key);
                 }
             };
-            for (Action a : actions) {
+            for (NbAction a : actions) {
                 result = runActive(ar, a);
                 if (result != null) {
                     break;
@@ -281,21 +228,19 @@ final class MergeAction implements ContextAwareAction, PropertyChangeListener {
     }
     boolean logged;
 
+    @Override
     public void putValue(String key, Object value) {
         if (!logged) {
             Logger.getLogger(MergeAction.class.getName()).log(Level.INFO,
                     "putValue (" + key + ',' + value + //NOI18N
                     "called on merged action.  This is probably a mistake."); //NOI18N
         }
-        pairs.put(key, value);
-    }
-
-    public void setEnabled(boolean b) {
-        throw new UnsupportedOperationException("Illegal"); //NOI18N
+        super.putValue(key, value);
     }
 
     public boolean isEnabled() {
-        return updateEnabled();
+        boolean result = updateEnabled();
+        return result;
     }
 
     boolean updateEnabled() {
@@ -306,20 +251,6 @@ final class MergeAction implements ContextAwareAction, PropertyChangeListener {
             }
         }
         return enabled;
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        supp.addPropertyChangeListener(listener);
-        if (supp.getPropertyChangeListeners().length == 1) {
-            addNotify();
-        }
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        supp.removePropertyChangeListener(listener);
-        if (supp.getPropertyChangeListeners().length == 0) {
-            removeNotify();
-        }
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -334,21 +265,21 @@ final class MergeAction implements ContextAwareAction, PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
         boolean old = enabled;
         synchronized (this) {
-            if (attached) {
+            if (attached()) {
                 updateDelegateAction();
             }
         }
         boolean nowEnabled = isEnabled();
-        if (!ENABLED.equals(evt.getPropertyName())) {
+        if (!PROP_ENABLED.equals(evt.getPropertyName())) {
             Object last = knownValues.get(evt.getPropertyName());
             Object mine = getValue(evt.getPropertyName());
             if (mine != last) {
-                supp.firePropertyChange(evt.getPropertyName(), last, mine);
+                firePropertyChange(evt.getPropertyName(), last, mine);
             }
             knownValues.put(evt.getPropertyName(), evt.getNewValue());
         }
         if (old != nowEnabled) {
-            supp.firePropertyChange(ENABLED, old, nowEnabled);
+            firePropertyChange(PROP_ENABLED, old, nowEnabled);
         }
     }
 

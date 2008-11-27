@@ -162,7 +162,7 @@ public final class FontCD extends ComponentDescriptor {
     }
 
     public static Map<String, PropertyValue> getKindTypes() {
-        if (kindTypes == null) {
+        if (kindTypes == null || kindTypes.isEmpty()) {
             kindTypes = new TreeMap<String, PropertyValue>();
             kindTypes.put(LABEL_KIND_DEFAULT, MidpTypes.createIntegerValue(VALUE_KIND_DEFAULT)); // NOI18N
             kindTypes.put(LABEL_KIND_CUSTOM, MidpTypes.createIntegerValue(VALUE_KIND_CUSTOM)); // NOI18N
@@ -173,7 +173,7 @@ public final class FontCD extends ComponentDescriptor {
     }
     
     public static Map<String, PropertyValue> getFaceTypes() {
-        if (faceTypes == null) {
+        if (faceTypes == null || kindTypes.isEmpty()) {
             faceTypes = new TreeMap<String, PropertyValue>();
             faceTypes.put(LABEL_FACE_SYSTEM, MidpTypes.createIntegerValue(VALUE_FACE_SYSTEM));
             faceTypes.put(LABEL_FACE_MONOSPACE, MidpTypes.createIntegerValue(VALUE_FACE_MONOSPACE));
@@ -183,7 +183,7 @@ public final class FontCD extends ComponentDescriptor {
     }
 
     public static Map<String, PropertyValue>  getSizeTypes() {
-        if (sizeTypes == null) {
+        if (sizeTypes == null || kindTypes.isEmpty()) {
             sizeTypes = new TreeMap<String, PropertyValue>();
             sizeTypes.put(LABEL_SIZE_MEDIUM, MidpTypes.createIntegerValue(VALUE_SIZE_MEDIUM));
             sizeTypes.put(LABEL_SIZE_SMALL, MidpTypes.createIntegerValue(VALUE_SIZE_SMALL));
@@ -193,7 +193,7 @@ public final class FontCD extends ComponentDescriptor {
     }
 
     public static Map<String, PropertyValue>  getStyleTypes() {
-        if (styleTypes == null) {
+        if (styleTypes == null || styleTypes.isEmpty()) {
             styleTypes = new TreeMap<String, PropertyValue>();
             styleTypes.put(LABEL_STYLE_PLAIN, MidpTypes.createIntegerValue(VALUE_STYLE_PLAIN));
             styleTypes.put(LABEL_STYLE_BOLD, MidpTypes.createIntegerValue(VALUE_STYLE_BOLD));

@@ -132,8 +132,8 @@ made subject to such option by the copyright holder.
             <bits_32 flags="-m32"/>
             <bits_64 flags="-m64"/>
         </architecture>
-        <output_object_file flags="-o " />
         <strip flags="-s"/>
+        <output_object_file flags="-o " />
     </fortran>
     <assembler>
         <compiler name="as"/>
@@ -158,23 +158,23 @@ made subject to such option by the copyright holder.
             <bits_32 flags="--32"/>
             <bits_64 flags="--64"/>
         </architecture>
-        <output_object_file flags="-o " />
         <strip flags="-s"/>
+        <output_object_file flags="-o " />
     </assembler>
     <scanner>
         <error pattern="([a-zA-Z]:[^:\n]*|[^:\n]*):([^:\n]*):([^:\n]*):([^\n]*)" language="c,cpp,fortran,assembler"/>
         <error pattern="([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*" language="c,cpp,fortran,assembler"/>
-        <stack_header pattern="In file included from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"/>
-        <stack_next pattern="                 from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"/>
-        <change_directory pattern="cd\\s+([\\S]+)[\\s;]"/>
         <enter_directory pattern="[gd]?make\\[([0-9]+)\\]: Entering[\\w+\\s+]+`([^']*)'"/>
         <leave_directory pattern="[gd]?make\\[([0-9]+)\\]: Leaving[\\w+\\s+]+`([^']*)'"/>
+        <change_directory pattern="cd\\s+([\\S]+)[\\s;]"/>
+        <stack_header pattern="In file included from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"/>
+        <stack_next pattern="                 from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"/>
     </scanner>
     <linker>
         <library_prefix stringvalue="lib"/>
         <library_search flags="-L"/>
         <dynamic_library_search flags="-Wl,-rpath "/>
-        <library flags="-l"/>
+        <library_flag flags="-l"/>
         <PIC flags="-fPIC "/>
         <static_library flags="-static"/>
         <dynamic_library flags="-dynamic"/>
@@ -192,6 +192,10 @@ made subject to such option by the copyright holder.
     </make>
     <debugger>
         <tool name="gdb"/>
+        <alternative_path>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
         <version flags="--version" />
     </debugger>
 </toolchaindefinition>

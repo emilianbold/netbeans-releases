@@ -93,14 +93,14 @@ public final class HyperlinkEnv {
             
             if (ContextUtilities.isValueToken(documentContext.getCurrentToken())) {
                 type = Type.ATTRIB_VALUE;
-                currentTag = (Tag) documentContext.getCurrentElement();
+                currentTag = documentContext.getCurrentElement();
                 attribName = ContextUtilities.getAttributeTokenImage(documentContext);
                 token = documentContext.getCurrentToken();
                 valueString = token.getImage();
                 valueString = valueString.substring(1, valueString.length() - 1); // Strip quotes
             } else if (ContextUtilities.isAttributeToken(documentContext.getCurrentToken())) {
                 type = Type.ATTRIB;
-                currentTag = (Tag) documentContext.getCurrentElement();
+                currentTag = documentContext.getCurrentElement();
                 token = documentContext.getCurrentToken();
                 attribName = token.getImage();
             }

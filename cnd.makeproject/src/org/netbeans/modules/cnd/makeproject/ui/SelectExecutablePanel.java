@@ -38,11 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
@@ -62,6 +62,7 @@ import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 
 public class SelectExecutablePanel extends javax.swing.JPanel {
+
     private JList exeList;
     private FileFilter elfExecutableFileFilter = ElfExecutableFileFilter.getInstance();
     private FileFilter exeExecutableFileFilter = PeExecutableFileFilter.getInstance();
@@ -69,80 +70,86 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     private DocumentListener documentListener;
     private DialogDescriptor dialogDescriptor;
     private MakeConfiguration conf;
-    
+
     /** Creates new form SelectExecutable */
     public SelectExecutablePanel(MakeConfiguration conf) {
         this.conf = conf;
         initComponents();
         instructionsTextArea.setBackground(getBackground());
-        
+
         File root = new File(conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir());
         String[] executables = findAllExecutables(root);
         exeList = new JList(executables);
         executableList.setViewportView(exeList);
-        
+
         exeList.addListSelectionListener(new MyListSelectionListener());
-        
-        if (executables.length > 0)
+
+        if (executables.length > 0) {
             exeList.setSelectedIndex(0);
-        
+        }
+
         documentListener = new DocumentListener() {
+
             public void insertUpdate(DocumentEvent e) {
                 validateExe();
             }
-            
+
             public void removeUpdate(DocumentEvent e) {
                 validateExe();
             }
-            
+
             public void changedUpdate(DocumentEvent e) {
                 validateExe();
             }
         };
         executableTextField.getDocument().addDocumentListener(documentListener);
-        
+
         setPreferredSize(new java.awt.Dimension(600, 300));
-        
+
         validateExe();
     }
-    
+
     public void setDialogDescriptor(DialogDescriptor dialogDescriptor) {
         this.dialogDescriptor = dialogDescriptor;
         validateExe();
     }
-    
+
     class MyListSelectionListener implements ListSelectionListener {
+
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting() == false) {
                 int i = exeList.getSelectedIndex();
                 if (i >= 0) {
-                    executableTextField.setText((String)exeList.getSelectedValue());
+                    executableTextField.setText((String) exeList.getSelectedValue());
                     validateExe();
                 }
             }
         }
     }
-    
+
     private void validateExe() {
         String errorText = null;
         File exe = new File(executableTextField.getText());
-        if (executableTextField.getText().length() == 0)
+        if (executableTextField.getText().length() == 0) {
             errorText = getString("NO_EXE_ERROR");
-        else if (!exe.exists())
+        } else if (!exe.exists()) {
             errorText = getString("EXE_DOESNT_EXISTS");
-        else if (exe.isDirectory() || (!elfExecutableFileFilter.accept(exe) && !exeExecutableFileFilter.accept(exe) && !machOExecutableFileFilter.accept(exe)))
+        } else if (exe.isDirectory() || (!elfExecutableFileFilter.accept(exe) && !exeExecutableFileFilter.accept(exe) && !machOExecutableFileFilter.accept(exe))) {
             errorText = getString("FILE_NOT_AN_EXECUTABLE");
+        }
         if (errorText != null) {
             errorLabel.setText(errorText);
-            if (dialogDescriptor != null)
+            if (dialogDescriptor != null) {
                 dialogDescriptor.setValid(false);
+            }
         } else {
             errorLabel.setText(" "); // NOI18N
-            if (dialogDescriptor != null)
+            if (dialogDescriptor != null) {
                 dialogDescriptor.setValid(true);
+            }
         }
     }
-    
+
     public String getExecutable() {
         return executableTextField.getText();
     }
@@ -152,12 +159,12 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
             // Something is wrong
             return new String[]{};
         }
-        ArrayList list = new ArrayList();
+        ArrayList<String> list = new ArrayList<String>();
         addExecutables(root, list);
-        return (String[])list.toArray(new String[list.size()]);
+        return list.toArray(new String[list.size()]);
     }
-    
-    private void addExecutables(File dir, ArrayList filesAdded) {
+
+    private void addExecutables(File dir, List<String> filesAdded) {
         File[] files = dir.listFiles();
         for (int i = 0; i < files.length; i++) {
             if (files[i].isDirectory()) {
@@ -167,27 +174,31 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
                 // a file's suffix cannot see the difference between the source file and
                 // the data file. Only the source file should be added.
                 if (files[i].getName().equals("SCCS")) // NOI18N
+                {
                     continue;
+                }
                 addExecutables(files[i], filesAdded);
             } else {
-                if (AllFileFilter.getInstance().accept(files[i]))
+                if (AllFileFilter.getInstance().accept(files[i])) {
                     continue;
+                }
                 if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
-                    if (exeExecutableFileFilter.accept(files[i]))
+                    if (exeExecutableFileFilter.accept(files[i])) {
                         filesAdded.add(files[i].getPath());
-                }
-                else if (conf.getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
-                    if (machOExecutableFileFilter.accept(files[i]))
+                    }
+                } else if (conf.getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
+                    if (machOExecutableFileFilter.accept(files[i])) {
                         filesAdded.add(files[i].getPath());
-                }
-                else {
-                    if (elfExecutableFileFilter.accept(files[i]))
+                    }
+                } else {
+                    if (elfExecutableFileFilter.accept(files[i])) {
                         filesAdded.add(files[i].getPath());
+                    }
                 }
             }
         }
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -301,11 +312,11 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         }
         FileFilter[] filters;
         if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
-            filters = new FileFilter[] {PeExecutableFileFilter.getInstance()};
+            filters = new FileFilter[]{PeExecutableFileFilter.getInstance()};
         } else if (conf.getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
-            filters = new FileFilter[] {MacOSXExecutableFileFilter.getInstance()};
+            filters = new FileFilter[]{MacOSXExecutableFileFilter.getInstance()};
         } else {
-            filters = new FileFilter[] {ElfExecutableFileFilter.getInstance()};
+            filters = new FileFilter[]{ElfExecutableFileFilter.getInstance()};
         }
         JFileChooser fileChooser = new FileChooser(
                 getString("CHOOSER_TITLE_TXT"),
@@ -313,17 +324,15 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
                 JFileChooser.FILES_ONLY,
                 filters,
                 seed,
-                false
-                );
+                false);
         int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION)
+        if (ret == JFileChooser.CANCEL_OPTION) {
             return;
-      
+        }
+
         String path = FilePathAdaptor.normalize(fileChooser.getSelectedFile().getPath());
         executableTextField.setText(path);
     }//GEN-LAST:event_browseButtonActionPerformed
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel ExecutableListLabel;
     private javax.swing.JButton browseButton;
@@ -334,7 +343,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     private javax.swing.JTextArea instructionsTextArea;
     private javax.swing.JList list;
     // End of variables declaration//GEN-END:variables
-    
+
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(SelectExecutablePanel.class, s);

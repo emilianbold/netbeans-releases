@@ -39,23 +39,94 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
+import org.netbeans.modules.db.metadata.model.spi.ValueImplementation;
+
 /**
- * A Value is a data value used when working with the database.  It can be
+ * Defines a value used when working with the database.  It can be
  * a column in a table, a column in a result set, or a parameter in a procedure
  * or a function.
  *
  * @author David Van Couvering
  */
-public abstract class Value extends MetadataElement {
-    public abstract SQLType getType();
+public class Value extends MetadataElement {
+    private final ValueImplementation impl;
 
-    public abstract int getPrecision();
+    Value(ValueImplementation impl) {
+        this.impl = impl;
+    }
 
-    public abstract int getLength();
+    @Override
+    public MetadataElement getParent() {
+        return impl.getParent();
+    }
 
-    public abstract short getScale();
+    @Override
+    public String getName() {
+        return impl.getName();
+    }
+    
+    /**
+     * Return the SQL type of this value
+     *
+     * @return the SQL type of this value
+     */
+    public SQLType getType() {
+        return impl.getType();
+    }
 
-    public abstract short getRadix();
+    /**
+     * Return the precision for this value.  Precision is defined as the total
+     * number of possible digits for this value
+     *
+     * @return the precision for this value or 0 if precision does nt apply to this type
+     */
+    public int getPrecision() {
+        return impl.getPrecision();
+    }
 
-    public abstract Nullable getNullable();
+    /**
+     * Return the length of this value for variable length values such as
+     * characters.  Length has no meaning for fixed-length types like numerics.
+     *
+     * @return the length of this value or 0 if length does not apply to this type.
+     */
+    public int getLength() {
+        return impl.getLength();
+    }
+
+    /**
+     * Return the scale for this value.  This is the number of digits to the
+     * right of the decimal point.
+     *
+     * @return the scale for this value or 0 if scale does not apply to this type
+     */
+    public short getScale() {
+        return impl.getScale();
+    }
+
+    /**
+     * Return the radix for this value, where applicable.  This is defined number of digits
+     * used in expressing a number.  For example, binary numbers have a radix
+     * of 2, hex numbers have a radix of 16 and decimal numbers have a radix
+     * of 10.  Non-numeric values have a radix of 0.
+     *
+     * @return the radix for this value, or 0 if a radix does not apply to this type
+     */
+    public short getRadix() {
+        return impl.getRadix();
+    }
+
+    /**
+     * Return whether this value is nullable or not
+     *
+     * @return whether this value is nullable
+     */
+    public Nullable getNullable() {
+        return impl.getNullable();
+    }
+
+    @Override
+    public String toString() {
+        return impl.toString();
+    }
 }

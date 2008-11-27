@@ -88,7 +88,7 @@ public class DwarfAbbriviationTableSection extends ElfSection {
     }
 
     public DwarfAbbriviationTable getAbbriviationTable(long offset) {
-        Long lOffset = new Long(offset);
+        Long lOffset = Long.valueOf(offset);
         DwarfAbbriviationTable table = tables.get(lOffset);
         
         if (table == null) {
