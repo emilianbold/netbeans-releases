@@ -170,6 +170,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if (register) {
             registerInProject();
         }
+        if (this.parameterList == null) {
+            System.err.println("not created list for " + this.toString() + " at " + super.getOffsetString() + " in " + file.getAbsolutePath());
+        }
     }
 
     public void setScope(CsmScope scope) {
