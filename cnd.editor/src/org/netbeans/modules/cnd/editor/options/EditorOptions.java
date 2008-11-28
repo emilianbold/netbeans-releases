@@ -304,7 +304,7 @@ public class EditorOptions {
     private static final String K_AND_R_PROFILE = "KandR"; // NOI18N
     private static final String MYSQL_PROFILE = "MySQL"; // NOI18N
 
-    public static final String[] PREDEFINED_STYLES = new String[] {
+    static final String[] PREDEFINED_STYLES = new String[] {
                                  DEFAULT_PROFILE, APACHE_PROFILE, GNU_PROFILE,
                                  LUNIX_PROFILE, ANSI_PROFILE, OPEN_SOLARIS_PROFILE,
                                  K_AND_R_PROFILE, MYSQL_PROFILE

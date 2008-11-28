@@ -351,8 +351,6 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                     indent = getTokenIndent(tt);
                                     break;
                             }
-                        } else {
-                            indent = getTokenIndent(tt);
                         }
                         break;
 
