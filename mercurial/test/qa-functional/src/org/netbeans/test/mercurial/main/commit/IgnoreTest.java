@@ -19,6 +19,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.mercurial.operators.VersioningOperator;
@@ -68,7 +69,7 @@ public class IgnoreTest extends JellyTestCase {
             TestKit.showStatusLabels();
             TestKit.prepareProject(TestKit.PROJECT_CATEGORY, TestKit.PROJECT_TYPE, PROJECT_NAME);
             ProjectSupport.waitScanFinished();
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             new ProjectsTabOperator().getProjectRootNode(TestKit.PROJECT_NAME).performPopupActionNoBlock("Versioning|Initialize Mercurial Project");
             
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
@@ -82,12 +83,12 @@ public class IgnoreTest extends JellyTestCase {
 
             TestKit.waitText(mh);
 
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaappignunign|NewClassIgnUnign");
             node.select();
             org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
             String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
             assertEquals("Wrong color of node - file color should be ignored!!!", TestKit.IGNORED_COLOR, color);
@@ -105,11 +106,11 @@ public class IgnoreTest extends JellyTestCase {
             node.select();
             node.performPopupAction("Mercurial|Toggle Ignore");
             TestKit.waitText(mh);
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaappignunign|NewClassIgnUnign");
             node.select();
             nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
             status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
             assertEquals("Wrong color of node - file color should be new!!!", TestKit.NEW_COLOR, color);
@@ -125,7 +126,7 @@ public class IgnoreTest extends JellyTestCase {
             node.select();
             node.performPopupAction("Mercurial|Status");
             TestKit.waitText(mh);
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             VersioningOperator vo = VersioningOperator.invoke();
             TableModel model = vo.tabFiles().getModel();
             assertEquals("Versioning view should be empty", 1, model.getRowCount());
