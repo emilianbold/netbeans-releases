@@ -619,7 +619,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         if(rootFiles.size() == 1) {
             File root = null; 
             for (File file : rootFiles) {
-                repo = Mercurial.getInstance().getRepositoryRoot(root);
+                repo = Mercurial.getInstance().getRepositoryRoot(file);
                 if(repo == null) {
                     Mercurial.LOG.warning("Couldn't find repository root for file " + file);
                 } else {
