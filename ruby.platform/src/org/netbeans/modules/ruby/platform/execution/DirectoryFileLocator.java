@@ -53,7 +53,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class DirectoryFileLocator implements FileLocator, LineConvertors.FileLocator {
+public class DirectoryFileLocator implements LineConvertors.FileLocator {
     private FileObject root;
 
     public DirectoryFileLocator(FileObject root) {

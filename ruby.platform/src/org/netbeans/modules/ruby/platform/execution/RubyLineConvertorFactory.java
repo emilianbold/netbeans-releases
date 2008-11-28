@@ -66,7 +66,7 @@ public final class RubyLineConvertorFactory implements LineConvertorFactory {
     /* Keeping old one. Get rid of this with more specific recongizers? */
     static final Pattern RUBY_COMPILER_WIN =
             Pattern.compile("^(?:(?:\\[|\\]|\\-|\\:|[0-9]|\\s|\\,)*)(?:\\s*from )?" + FILE_WIN + SEP + LINE + ROL); // NOI18N
-    static final Pattern RAILS_RECOGNIZER =
+    public static final Pattern RAILS_RECOGNIZER =
             Pattern.compile(".*#\\{RAILS_ROOT\\}/" + STD_SUFFIX); // NOI18N
     public static final Pattern RUBY_TEST_OUTPUT = Pattern.compile("\\s*test.*\\[" + STD_SUFFIX); // NOI18N
     /** Regexp. for extensions. */
