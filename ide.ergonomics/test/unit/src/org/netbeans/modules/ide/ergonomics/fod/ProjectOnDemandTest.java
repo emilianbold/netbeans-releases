@@ -40,6 +40,8 @@
 package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -68,13 +70,14 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ProjectOnDemandTest extends NbTestCase {
+public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeListener {
     FileObject root;
     private static final InstanceContent ic = new InstanceContent();
 
     static {
         Feature2LayerMapping.assignFeatureTypesLookup(new AbstractLookup(ic));
     }
+    private int change;
     
     
     public ProjectOnDemandTest(String testName) {
@@ -168,18 +171,35 @@ public class ProjectOnDemandTest extends NbTestCase {
         ProjectInformation info = p.getLookup().lookup(ProjectInformation.class);
         assertNotNull("Info about icon", info);
         assertNotNull("Icon provided", info.getIcon());
-        
+        info.addPropertyChangeListener(this);
+
         TestFactory.recognize = root;
         OpenProjects.getDefault().open(new Project[] { p }, false);
         
         assertEquals("No Dialog currently created", 0, DD.cnt);
         
         List<Project> arr = Arrays.asList(OpenProjects.getDefault().openProjects().get());
-        if (arr.contains(p)) {
-            fail("fake project shall not be there: " + arr);
-        }
         assertEquals("However one instance is there", 1, arr.size());
+        Project newP = arr.get(0).getLookup().lookup(Project.class);
+        if (p == newP) {
+            fail("New project is made available, not old: " + newP);
+        }
+        assertEquals("Right type", TestFactory.class, newP.getClass());
+        TestFactory tf = (TestFactory)newP;
+        assertEquals("Open hook called", 1, tf.opened);
+
+        assertEquals("Project info changed", 1, change);
+        assertEquals("One listener attached", 1, tf.listenerCount);
+        assertEquals("Info delegates", "x", info.getName());
+        assertEquals("Info delegates2", "y", info.getDisplayName());
+        assertEquals("Info delegates icon", null, info.getIcon());
     }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        change++;
+    }
+
+
 
     public static final class DD extends DialogDisplayer {
         static int cnt = 0;

@@ -39,9 +39,13 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.concurrent.ExecutionException;
 import javax.swing.Icon;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.project.Project;
@@ -57,6 +61,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -90,22 +95,22 @@ public class FeatureProjectFactory implements ProjectFactory {
     }
 
     private static final class FeatureNonProject extends ProjectOpenedHook
-    implements Project, Runnable, ProjectInformation {
-        private final FileObject dir;
+    implements Project, Runnable {
+        private final FeatureDelegate delegate;
         private final FeatureInfo info;
         private final Lookup lookup;
         private final ProjectState state;
         private boolean success = false;
 
         public FeatureNonProject(FileObject dir, FeatureInfo info, ProjectState state) {
-            this.dir = dir;
+            this.delegate = new FeatureDelegate(dir, this);
             this.info = info;
-            this.lookup = Lookups.singleton(this);
+            this.lookup = Lookups.proxy(delegate);
             this.state = state;
         }
         
         public FileObject getProjectDirectory() {
-            return dir;
+            return delegate.dir;
         }
 
         public Lookup getLookup() {
@@ -115,16 +120,21 @@ public class FeatureProjectFactory implements ProjectFactory {
         @Override
         protected void projectOpened() {
             RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY).waitFinished ();
-            OpenProjects.getDefault().close(new Project[] { this });
+            ProjectOpenedHook hook;
             if (success) {
                 try {
                     state.notifyDeleted();
                     Project p = ProjectManager.getDefault().findProject(getProjectDirectory());
                     if (p == this) {
-                        throw new IllegalStateException("New project shall be found! " + p);
+                        throw new IllegalStateException("New project shall be found! " + p); // NOI18N
                     }
-                    OpenProjects.getDefault().open(new Project[]{p}, false);
-                } catch (IOException ex) {
+                    delegate.associate(p);
+
+                    hook = p.getLookup().lookup(ProjectOpenedHook.class);
+                    Method m = ProjectOpenedHook.class.getDeclaredMethod("projectOpened"); // NOI18N
+                    m.setAccessible(true);
+                    m.invoke(hook);
+                } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
@@ -147,32 +157,78 @@ public class FeatureProjectFactory implements ProjectFactory {
                 ModulesActivator enabler = new ModulesActivator (toEnable, findModules);
                 enabler.getEnableTask ().waitFinished ();
                 success = true;
+            } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
+                success = true;
             }
         }
+    } // end of FeatureNonProject
+
+    private static final class FeatureDelegate 
+    implements Lookup.Provider, ProjectInformation {
+        private final FileObject dir;
+        private final PropertyChangeSupport support;
+        Lookup delegate;
+
+
+        public FeatureDelegate(FileObject dir, Project feature) {
+            this.dir = dir;
+            this.delegate = Lookups.fixed(feature, this);
+            this.support = new PropertyChangeSupport(this);
+        }
+
+        public Lookup getLookup() {
+            return delegate;
+        }
+
 
         public String getName() {
+            ProjectInformation info = delegate.lookup(ProjectInformation.class);
+            if (info != this) {
+                return info.getName();
+            }
             return dir.getNameExt();
         }
 
         public String getDisplayName() {
+            ProjectInformation info = delegate.lookup(ProjectInformation.class);
+            if (info != this) {
+                return info.getDisplayName();
+            }
             return getName();
         }
 
         public Icon getIcon() {
+            ProjectInformation info = delegate.lookup(ProjectInformation.class);
+            if (info != this) {
+                return info.getIcon();
+            }
             return ImageUtilities.image2Icon(
                 ImageUtilities.loadImage("org/netbeans/modules/ide/ergonomics/fod/project.png") // NOI18N
             );
         }
 
         public Project getProject() {
-            return this;
+            return delegate.lookup(Project.class);
         }
 
         public void addPropertyChangeListener(PropertyChangeListener listener) {
+            support.addPropertyChangeListener(listener);
         }
 
         public void removePropertyChangeListener(PropertyChangeListener listener) {
+            support.removePropertyChangeListener(listener);
         }
-        
+
+        final void associate(Project p) {
+            assert dir.equals(p.getProjectDirectory());
+            ProjectInformation info = p.getLookup().lookup(ProjectInformation.class);
+            if (info != null) {
+                for (PropertyChangeListener l : support.getPropertyChangeListeners()) {
+                    info.addPropertyChangeListener(l);
+                }
+            }
+            delegate = p.getLookup();
+            support.firePropertyChange(null, null, null);
+        }
     }
 }
