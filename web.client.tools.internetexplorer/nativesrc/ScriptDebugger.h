@@ -313,5 +313,6 @@ private:
     static BOOL alreadyStoppedOnFirstLine;
     DWORD registerForDebugDocTextEvents(IDebugDocumentText *pDebugDocText, CComObject<DebugDocument> *pDebugDoc);
     void unregisterForDebugDocTextEvents(IDebugDocumentText *pDebugDocText, DWORD cookie);
+    static HRESULT CoCreateDebugProgramProvider(void **ppv);
 };
 

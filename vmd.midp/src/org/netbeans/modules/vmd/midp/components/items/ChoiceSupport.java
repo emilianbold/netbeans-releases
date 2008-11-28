@@ -68,7 +68,7 @@ public final class ChoiceSupport {
     public static final int VALUE_TEXT_WRAP_OFF = 2;
     
     public static Map<String, PropertyValue> getListTypes() {
-        if (listTypes == null) {
+        if (listTypes == null || listTypes.isEmpty()) {
             listTypes = new TreeMap<String, PropertyValue>();
             listTypes.put("EXCLUSIVE", MidpTypes.createIntegerValue(VALUE_EXCLUSIVE)); // NOI18N
             listTypes.put("IMPLICIT", MidpTypes.createIntegerValue(VALUE_IMPLICIT));   // NOI18N
@@ -78,7 +78,7 @@ public final class ChoiceSupport {
     }
     
     public static Map<String, PropertyValue>  getChoiceGroupTypes() {
-        if (choiceGroupTypes == null) {
+        if (choiceGroupTypes == null || choiceGroupTypes.isEmpty()) {
             choiceGroupTypes = new TreeMap<String, PropertyValue>();
             choiceGroupTypes.put("EXCLUSIVE", MidpTypes.createIntegerValue(VALUE_EXCLUSIVE));  // NOI18N
             choiceGroupTypes.put("POPUP", MidpTypes.createIntegerValue(VALUE_POPUP));          // NOI18N
@@ -88,7 +88,7 @@ public final class ChoiceSupport {
     }
     
     public static Map<String, PropertyValue> getFitPolicyValues() {
-        if (fitPolicyValues == null) {
+        if (fitPolicyValues == null || fitPolicyValues.isEmpty()) {
             fitPolicyValues = new TreeMap<String, PropertyValue>();
             fitPolicyValues.put("TEXT_WRAP_DEFAULT", MidpTypes.createIntegerValue(VALUE_TEXT_WRAP_DEFAULT)); // NOI18N
             fitPolicyValues.put("TEXT_WRAP_ON", MidpTypes.createIntegerValue(VALUE_TEXT_WRAP_ON));           // NOI18N

@@ -404,7 +404,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         }
 
         public Object getValue() {
-            return new Integer(getTool());
+            return Integer.valueOf(getTool());
         }
 
         public void setValue(Object v) {

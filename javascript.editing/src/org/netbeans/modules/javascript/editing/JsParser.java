@@ -447,6 +447,10 @@ public class JsParser implements IncrementalParser {
                 return null;
             }
 
+            if (oldFunctionStart > newFunctionEnd) {
+                return null;
+            }
+
             String source = context.source.substring(oldFunctionStart, newFunctionEnd);
             Sanitize sanitizing = Sanitize.NEVER;
             boolean sanitizedSource = false;

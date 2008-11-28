@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.Token;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -71,15 +70,16 @@ public abstract class APTTokenBasedNode extends APTBaseNode
     }
     
     /** Creates a new instance of APTTokenBasedNode */
-    protected APTTokenBasedNode(Token token) {
-        this.token = (APTToken) token;
+    protected APTTokenBasedNode(APTToken token) {
+        this.token = token;
     }
     
+    @Override
     public void dispose() {
         this.token = APTUtils.EOF_TOKEN;
     }
     
-    public Token getToken() {
+    public APTToken getToken() {
         return token;
     }   
         

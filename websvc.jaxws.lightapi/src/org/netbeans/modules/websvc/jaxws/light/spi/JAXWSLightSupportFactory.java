@@ -55,13 +55,13 @@ public final class JAXWSLightSupportFactory {
 
     private JAXWSLightSupportFactory() {
     }
-    /** Create JAXWSLightSupport object from spi object
-     * 
+    /** Create JAXWSLightSupport object from spi object.
+     *
      * @param spiJAXWSSupport spi object for JAXWSSupport
      * @return JAXWSLightSupport object
      */
     public static JAXWSLightSupport createJAXWSSupport(JAXWSLightSupportImpl spiJAXWSSupport) {
         return JAXWSLightSupportAccessor.DEFAULT.createJAXWSSupport(spiJAXWSSupport);
     }
-	
+
 }

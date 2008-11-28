@@ -41,41 +41,37 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.profiles.ui;
 
-import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Sheet;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
+import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
+import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandlerProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.PrioritizedCustomizerNode;
 import org.openide.util.HelpCtx;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
 public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
 
-    private ResourceBundle bundle;
+    public final static int GDB_PRIORITY = 200;
+
     private CustomizerNode customizerNode = null;
     
     public CustomizerNode factoryCreate() {
         if (customizerNode == null) {
-            customizerNode = new GdbCustomizerNode("Debug", getString("Debug")); // NOI18N
+            customizerNode = new GdbCustomizerNode("Debug", NbBundle.getMessage(GdbCustomizerNodeProvider.class, "DebugDisplayName")); // NOI18N
         }
 	return customizerNode;
     }
 
-    /** Look up i18n strings here */
-    private String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(GdbCustomizerNodeProvider.class);
-	}
-	return bundle.getString(s);
-    }
+    static class GdbCustomizerNode extends CustomizerNode implements PrioritizedCustomizerNode, CustomProjectActionHandlerProvider {
 
-    static class GdbCustomizerNode extends CustomizerNode {
-
-	public GdbCustomizerNode(String name, String displayName) {
+        public GdbCustomizerNode(String name, String displayName) {
 	    super(name, displayName, null);
 	}
 
@@ -89,6 +85,14 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
         @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx("ProjectPropsDebugging"); // NOI18N
+        }
+
+        public int getPriority() {
+            return GDB_PRIORITY;
+        }
+
+        public CustomProjectActionHandler factoryCreate() {
+            return new GdbActionHandler();
         }
     }
 }

@@ -182,6 +182,14 @@ public class CSSStructureScanner implements StructureScanner {
                 if (node.kind() == CSSParserTreeConstants.JJTSTYLERULE) {
                     int so = AstUtils.documentPosition(node.startOffset(), source);
                     int eo = AstUtils.documentPosition(node.endOffset(), source);
+                    for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+                        SimpleNode n = (SimpleNode) node.jjtGetChild(i);
+                        if (n.kind() == CSSParserTreeConstants.JJTSELECTORLIST) {
+                            // shift fold start to the end of rule name:
+                            so = AstUtils.documentPosition(n.endOffset(), source);
+                            break;
+                        }
+                    }
                     try {
                         //document is not locked so need to check current boundaries
                         if (so >= 0 && eo < doc.getLength() && Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {

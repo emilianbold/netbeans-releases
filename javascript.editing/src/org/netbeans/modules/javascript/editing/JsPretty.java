@@ -131,7 +131,7 @@ public class JsPretty {
                         visitWhile(root);
                     } else if (id == JsTokenId.FOR) {
                         visitOtherBlock(root);
-                    } else if (child.getType() == Token.VAR) {
+                    } else if (child.getType() == Token.VAR) { // TODO - check LET here?
                         visitOtherBlock(root);
                     } else {
                         visitDefault(root);
@@ -272,7 +272,13 @@ public class JsPretty {
             Node child = node.getFirstChild();
             while (child != null) {
                 if (child.getType() == Token.BLOCK) {
-                    visitBlockWithoutIndenting(child);
+                    if (stack.isEmpty()) {
+                        visitBlockWithoutIndenting(child);
+                    } else {
+                        decreaseIndent("visitCatch-block");
+                        walk(child);
+                        increaseIndent("visitCatch-block");
+                    }
                 } else {
                     walk(child);
                 }

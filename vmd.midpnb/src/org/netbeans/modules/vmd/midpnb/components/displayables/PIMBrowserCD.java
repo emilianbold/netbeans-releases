@@ -64,7 +64,6 @@ import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 import java.util.*;
 
@@ -158,7 +157,7 @@ public final class PIMBrowserCD extends ComponentDescriptor {
     }
     
     public static Map<String, PropertyValue> getListTypes() {
-        if (listTypes == null) {
+        if (listTypes == null || listTypes.isEmpty()) {
             listTypes = new TreeMap<String, PropertyValue>();
             listTypes.put("CONTACT_LIST", MidpTypes.createIntegerValue(VALUE_CONTACT_LIST)); // NOI18N
             listTypes.put("EVENT_LIST", MidpTypes.createIntegerValue(VALUE_EVENT_LIST));   // NOI18N
@@ -168,7 +167,7 @@ public final class PIMBrowserCD extends ComponentDescriptor {
     }
     
     public static Map<String, PropertyValue> getAccessTypes() {
-        if (accessTypes == null) {
+        if (accessTypes == null || accessTypes.isEmpty()) {
             accessTypes = new TreeMap<String, PropertyValue>();
             accessTypes.put("READ_ONLY", MidpTypes.createIntegerValue(VALUE_READ_ONLY)); // NOI18N
             accessTypes.put("WRITE_ONLY", MidpTypes.createIntegerValue(VALUE_WRITE_ONLY));   // NOI18N

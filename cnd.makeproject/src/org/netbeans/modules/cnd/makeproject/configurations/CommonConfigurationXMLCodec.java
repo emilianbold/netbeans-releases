@@ -73,6 +73,8 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
  */
 /**
  * Change History:
+ * V52
+ *   ASSEMBLER_REQUIRED_ELEMENT
  * V51
  *   Now storing package type as name and not int
  * V50 - 09.10.08 - NB 6.5
@@ -142,7 +144,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 51;
+    public final static int CURRENT_VERSION = 52;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -168,6 +170,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String C_REQUIRED_ELEMENT = "cRequired"; // NOI18N
     protected final static String CPP_REQUIRED_ELEMENT = "cppRequired"; // NOI18N
     protected final static String FORTRAN_REQUIRED_ELEMENT = "fortranRequired"; // NOI18N
+    protected final static String ASSEMBLER_REQUIRED_ELEMENT = "assemblerRequired"; // NOI18N
     protected final static String PLATFORM_ELEMENT = "platform"; // NOI18N
     protected final static String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
     // Compile Type
@@ -362,6 +365,9 @@ public abstract class CommonConfigurationXMLCodec
         }
         if (makeConfiguration.getFortranRequired().getValue() != makeConfiguration.getFortranRequired().getDefault()) {
             xes.element(FORTRAN_REQUIRED_ELEMENT, "" + makeConfiguration.getFortranRequired().getValue());
+        }
+        if (makeConfiguration.getAssemblerRequired().getValue() != makeConfiguration.getAssemblerRequired().getDefault()) {
+            xes.element(ASSEMBLER_REQUIRED_ELEMENT, "" + makeConfiguration.getAssemblerRequired().getValue());
         }
         xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getPlatform().getValue()); // NOI18N
         if (makeConfiguration.getDependencyChecking().getModified()) {

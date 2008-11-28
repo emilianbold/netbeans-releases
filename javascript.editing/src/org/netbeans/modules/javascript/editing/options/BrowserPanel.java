@@ -267,6 +267,7 @@ public class BrowserPanel extends JSPreferencesPanel {
 
         languageLabel.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.languageLabel.text")); // NOI18N
 
+        languageCombo.setMaximumRowCount(10);
         languageCombo.setModel(getVersionModel());
         languageCombo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {

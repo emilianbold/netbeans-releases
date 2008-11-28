@@ -43,19 +43,18 @@ package org.netbeans.modules.websvc.jaxws.light.spi;
 
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 
-/**
- * Provider interface for JAXWSLightSupport
+/** Provider interface for JAXWSLightSupport.
  *
  * @author Milan Kuchtiak
  */
 public interface JAXWSLightSupportProvider {
-    
+
     /** Returns JAXWSLightSupport object. The implementation of this class is loaded into project's lookup.
      * The common way is to implement this method using {@link JAXWSLightSupportFactory}
-     * 
+     *
      * @see JAXWSLightSupportFactory#createJAXWSSupport
      * @return JAXWSLightSupport api object of JAXWSLightSupport
      */
-    public JAXWSLightSupport findJAXWSSupport();
-    
+    JAXWSLightSupport findJAXWSSupport();
+
 }

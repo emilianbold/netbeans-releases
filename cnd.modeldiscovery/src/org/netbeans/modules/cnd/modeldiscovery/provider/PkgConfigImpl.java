@@ -269,9 +269,9 @@ public class PkgConfigImpl implements PkgConfig {
             }
         }
         Map<String, Pair> res = new HashMap<String, Pair>();
-        for(String path : map.keySet()){
-            Pair pair = new Pair(path,map.get(path));
-            File dir = RemoteFile.create(pi.getHkey(), path); // NOI18N
+        for (Map.Entry<String, Set<PackageConfiguration>> entry : map.entrySet()) {
+            Pair pair = new Pair(entry.getKey(), entry.getValue());
+            File dir = RemoteFile.create(pi.getHkey(), entry.getKey());
             addLibraryItem(res, pair, "", dir, 0); // NOI18N
         }
         return res;
