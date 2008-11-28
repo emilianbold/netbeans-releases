@@ -137,17 +137,24 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         if (brace != null) {
             // check whether it's followed by asterisk
             next = brace.getNextSibling();
-            if (next == null || next.getType() != CPPTokenTypes.CSM_PTR_OPERATOR) {
+            if (next == null) {
                 return false;
             }
-
-            // skip adjacent asterisks
-            do {
-                next = next.getNextSibling();
-                if (instance != null) {
-                    ++instance.functionPointerDepth;
+            if (inFunctionParams && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
+                // this is start of function params
+                next = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+            } else {
+                if (next.getType() != CPPTokenTypes.CSM_PTR_OPERATOR) {
+                    return false;
                 }
-            } while (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR);
+                // skip adjacent asterisks
+                do {
+                    next = next.getNextSibling();
+                    if (instance != null) {
+                        ++instance.functionPointerDepth;
+                    }
+                } while (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR);
+            }
         }
 
         if (inFunctionParams && next == null) {
@@ -163,11 +170,14 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
             // fine. this could be variable of function type
         } else if (next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
             AST lookahead = next.getNextSibling();
+            AST lookahead2 = lookahead == null ? null : lookahead.getNextSibling();
             if (lookahead != null && lookahead.getType() == CPPTokenTypes.RPAREN) {
                 // OK. This could be function type in typedef - in this case we get
                 // CSM_QUALIFIED_ID instead of CSM_VARIABLE_DECLARATION.
-            } else if (inFunctionParams && lookahead != null && lookahead.getType() == CPPTokenTypes.CSM_PARMLIST) {
+            } else if (inFunctionParams && lookahead != null && lookahead.getType() == CPPTokenTypes.LPAREN
+                    && lookahead2 != null && lookahead2.getType() == CPPTokenTypes.CSM_PARMLIST) {
                 // OK. This could be function as a parameter
+                next = lookahead;
             } else {
                 next = lookahead;
                 // check function returns function

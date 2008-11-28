@@ -1296,7 +1296,7 @@ public class AstRenderer {
     }
 
     public static List<CsmParameter> renderParameters(AST ast, final CsmFile file, CsmScope scope) {
-        List<CsmParameter> parameters = new ArrayList<CsmParameter>();
+        ArrayList<CsmParameter> parameters = new ArrayList<CsmParameter>();
         if (ast != null && (ast.getType() == CPPTokenTypes.CSM_PARMLIST ||
                 ast.getType() == CPPTokenTypes.CSM_KR_PARMLIST)) {
             for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
@@ -1308,6 +1308,7 @@ public class AstRenderer {
                 }
             }
         }
+        parameters.trimToSize();
         return parameters;
     }
 
