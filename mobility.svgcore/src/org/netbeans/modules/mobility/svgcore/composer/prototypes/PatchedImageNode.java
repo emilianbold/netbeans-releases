@@ -78,6 +78,7 @@ public final class PatchedImageNode extends ImageNode implements PatchedTransfor
         return null;
     }
     
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedImageNode(doc);
     }    

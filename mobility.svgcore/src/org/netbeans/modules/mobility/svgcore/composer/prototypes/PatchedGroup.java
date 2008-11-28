@@ -40,10 +40,10 @@
  */
 package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 
-import com.sun.perseus.model.*;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
 import com.sun.perseus.model.Group;
+import com.sun.perseus.model.ModelNode;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.w3c.dom.Node;
@@ -89,11 +89,13 @@ public final class PatchedGroup extends Group implements PatchedTransformableEle
         return null;
     }
     
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedGroup(doc);
     }    
     
     //Fix for Perseus bug
+    @Override
     public SVGRect getScreenBBox() {
         SVGRect bBox = super.getScreenBBox();
         if (bBox == null) {
@@ -106,6 +108,7 @@ public final class PatchedGroup extends Group implements PatchedTransformableEle
     }
 
     //Fix for Perseus bug
+    @Override
     public SVGRect getBBox() {
         SVGRect bBox = super.getBBox();
         if (bBox == null) {

@@ -75,6 +75,7 @@ public final class PatchedFont extends Font implements PatchedElement {
         }
     }
             
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedFont(doc);
     }    
