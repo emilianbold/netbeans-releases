@@ -598,8 +598,8 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     private void loadMappings() {
         DefaultListModel model = new DefaultListModel();
 
-        boolean isWar = "war".equalsIgnoreCase(handle.getProject().getPackaging());
         if (handle != null) {
+            boolean isWar = "war".equalsIgnoreCase(handle.getProject().getPackaging());
             addSingleAction(ActionProvider.COMMAND_BUILD, model);
             addSingleAction(ActionProvider.COMMAND_CLEAN, model);
             addSingleAction(ActionProvider.COMMAND_REBUILD, model);
