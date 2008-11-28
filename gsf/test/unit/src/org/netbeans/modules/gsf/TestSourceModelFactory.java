@@ -3,6 +3,7 @@ package org.netbeans.modules.gsf;
 import java.io.IOException;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
@@ -36,12 +37,20 @@ public class TestSourceModelFactory extends SourceModelFactory {
         }
 
         public void runUserActionTask(CancellableTask<CompilationInfo> task, boolean shared) throws IOException {
+            if (currentTest == null) {
+                throw new RuntimeException("You must set TestSourceModelFactory.currentTest before running this test!");
+            }
+
             try {
                 String text = GsfTestBase.read(fo);
                 BaseDocument doc = GsfTestBase.createDocument(text);
-                if (currentTest == null) {
-                    throw new RuntimeException("You must set TestSourceModelFactory.currentTest before running this test!");
-                }
+                String mimeType = fo.getMIMEType();
+                doc.putProperty("mimeType", mimeType);
+                org.netbeans.modules.gsf.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+                GsfTestBase.assertNotNull(mimeType, language);
+                GsfLanguage gsfLanguage = language.getGsfLanguage();
+                GsfTestBase.assertNotNull(mimeType, gsfLanguage);
+                doc.putProperty(Language.class, gsfLanguage.getLexerLanguage());
                 GsfTestCompilationInfo testInfo = new GsfTestCompilationInfo(currentTest, fo, doc, text);
 
                 task.run(testInfo);

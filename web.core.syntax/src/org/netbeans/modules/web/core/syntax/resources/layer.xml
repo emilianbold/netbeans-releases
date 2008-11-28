@@ -181,6 +181,8 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
+                <file name="org-netbeans-modules-web-core-syntax-JSPParserFactory.instance" />
+                <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance" />
                 <folder name="text">
                     <folder name="html">
                         <folder name="CodeTemplates">

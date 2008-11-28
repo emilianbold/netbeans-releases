@@ -49,7 +49,9 @@ import java.util.TreeMap;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.Nullable;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
+import org.netbeans.modules.db.metadata.model.api.SQLType;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.View;
@@ -346,6 +348,41 @@ public class TestMetadata extends MetadataImplementation {
 
         public String getName() {
             return name;
+        }
+
+        @Override
+        public int getOrdinalPosition() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public int getLength() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Nullable getNullable() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public int getPrecision() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public short getRadix() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public short getScale() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public SQLType getType() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 

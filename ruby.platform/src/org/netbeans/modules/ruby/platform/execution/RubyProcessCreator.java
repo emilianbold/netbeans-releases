@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
+import java.util.logging.Logger;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.print.LineConvertors;
@@ -63,15 +64,20 @@ import org.openide.util.Utilities;
  *
  * @author Erno Mononen
  */
-public class RubyProcessCreator implements Callable<Process> {
+public final class RubyProcessCreator implements Callable<Process> {
 
+    private static final Logger LOGGER = Logger.getLogger(RubyProcessCreator.class.getName());
+    
     /** When not set (the default) do stdio syncing for native Ruby binaries */
     private static final boolean SYNC_RUBY_STDIO = System.getProperty("ruby.no.sync-stdio") == null; // NOI18N
+
     /** Set to suppress using the -Kkcode flag in case you're using a weird interpreter which doesn't support it */
     //private static final boolean SKIP_KCODE = System.getProperty("ruby.no.kcode") == null; // NOI18N
     private static final boolean SKIP_KCODE = true;
+
     /** When not set (the default) bypass the JRuby launcher unix/ba-file scripts and launch VM directly */
     private static final boolean LAUNCH_JRUBY_SCRIPT = System.getProperty("ruby.use.jruby.script") != null; // NOI18N
+    
     private final RubyExecutionDescriptor descriptor;
     private final String charsetName;
 
@@ -105,14 +111,29 @@ public class RubyProcessCreator implements Callable<Process> {
         return wrapper;
     }
 
+    public boolean isAbleToCreateProcess() {
+        if (descriptor.debug) {
+            RubyDebuggerImplementation debugger = Lookup.getDefault().lookup(RubyDebuggerImplementation.class);
+            if (debugger == null) {
+                LOGGER.severe("RubyDebuggerImplementation implementation is not available"); // NOI18N
+                return false;
+            }
+            debugger.describeProcess(descriptor);
+            return debugger.prepare();
+        }
+        return true;
+    }
+
     public Process call() throws Exception {
         if (descriptor.debug) {
             RubyDebuggerImplementation debugger = Lookup.getDefault().lookup(RubyDebuggerImplementation.class);
-            debugger.describeProcess(descriptor);
-            if (debugger == null || !debugger.canDebug()) {
-                assert false; //
-                return null;
+            if (debugger == null) {
+                throw new IllegalStateException("RubyDebuggerImplementation implementation is not available."); // NOI18N
             }
+            if (!debugger.prepare()) {
+                throw new IllegalStateException("Cannot prepare application to debug. Should be checked before."); // NOI18N
+            }
+            debugger.describeProcess(descriptor);
             return debugger.debug();
         }
         ExternalProcessBuilder builder = null;

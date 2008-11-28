@@ -45,7 +45,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
@@ -68,7 +67,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 48;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 49;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -139,8 +138,8 @@ public final class RepositoryUtils {
         }
     }
 
-    public static CsmUID put(CsmIdentifiable csmObj) {
-        CsmUID uid = null;
+    public static <T> CsmUID<T> put(CsmIdentifiable<T> csmObj) {
+        CsmUID<T> uid = null;
         if (csmObj != null) {
             uid = csmObj.getUID();
             assert uid != null;
@@ -198,12 +197,16 @@ public final class RepositoryUtils {
         }
     }
 
-    public static <T extends CsmOffsetableDeclaration> List<CsmUID<T>> put(List<T> decls) {
+    public static <T> Collection<CsmUID<T>> put(Collection<T> decls) {
         assert decls != null;
         List<CsmUID<T>> uids = new ArrayList<CsmUID<T>>(decls.size());
         for (T decl : decls) {
-            CsmUID<T> uid = put(decl);
-            uids.add(uid);
+            if (decl instanceof CsmIdentifiable) {
+                @SuppressWarnings("unchecked")
+                CsmIdentifiable<T> id = (CsmIdentifiable<T>) decl;
+                CsmUID<T> uid = put(id);
+                uids.add(uid);
+            }
         }
         return uids;
     }

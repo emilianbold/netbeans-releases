@@ -43,15 +43,17 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Logger;
+import org.netbeans.modules.db.metadata.model.api.MetadataElement;
 import org.netbeans.modules.db.metadata.model.api.Nullable;
 import org.netbeans.modules.db.metadata.model.api.SQLType;
+import org.netbeans.modules.db.metadata.model.spi.ValueImplementation;
 
 /**
  * This class factors out common methods
  *
  * @author David
  */
-class JDBCValue {
+public class JDBCValue extends ValueImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(JDBCValue.class.getName());
 
@@ -70,31 +72,47 @@ class JDBCValue {
      * @return a newly created JDBCValue instance
      * @throws java.sql.SQLException
      */
-    static JDBCValue createProcedureValue(ResultSet rs) throws SQLException {
+    public static JDBCValue createProcedureValue(ResultSet rs) throws SQLException {
         String name = rs.getString("COLUMN_NAME");
         SQLType type = JDBCUtils.getSQLType(rs.getInt("DATA_TYPE"));
         int length = rs.getInt("LENGTH");
         int precision = rs.getInt("PRECISION");
         short scale = rs.getShort("SCALE");
         short radix = rs.getShort("RADIX");
-        Nullable nullable = getNullable(rs.getShort("NULLABLE"));
+        Nullable nullable = JDBCUtils.getProcedureNullable(rs.getShort("NULLABLE"));
 
         return new JDBCValue(name, type, length, precision, radix, scale, nullable);
     }
 
-    private static Nullable getNullable(int dbmdProcedureNullable) {
-        switch (dbmdProcedureNullable) {
-            case DatabaseMetaData.procedureNoNulls:
-                return Nullable.NOT_NULLABLE;
-            case DatabaseMetaData.procedureNullable:
-                return Nullable.NULLABLE;
-            case DatabaseMetaData.procedureNullableUnknown:
-            default:
-                return Nullable.UNKNOWN;
+    /**
+     * Create a value from a row in DBMD.getColumns()
+     *
+     * @param rs the result set from getProcedureColumns, assumed to be at a valid row
+     * @return a newly created JDBCValue instance
+     * @throws java.sql.SQLException
+     */
+    public static JDBCValue createTableColumnValue(ResultSet rs) throws SQLException {
+        String name = rs.getString("COLUMN_NAME");
+        SQLType type = JDBCUtils.getSQLType(rs.getInt("DATA_TYPE"));
+
+        int length = 0;
+        int precision = 0;
+
+        if (JDBCUtils.isCharType(type)) {
+            length = rs.getInt("COLUMN_SIZE");
+        } else {
+            precision = rs.getInt("COLUMN_SIZE");
         }
+
+        
+        short scale = rs.getShort("DECIMAL_DIGITS");
+        short radix = rs.getShort("NUM_PREC_RADIX");
+        Nullable nullable = JDBCUtils.getColumnNullable(rs.getShort("NULLABLE"));
+
+        return new JDBCValue(name, type, length, precision, radix, scale, nullable);
     }
-    JDBCValue(String name, SQLType type, int length,
-            int precision, short radix, short scale, Nullable nullable) {
+
+    public JDBCValue(String name, SQLType type, int length, int precision, short radix, short scale, Nullable nullable) {
         this.name = name;
         this.type = type;
         this.length = length;
@@ -104,31 +122,31 @@ class JDBCValue {
         this.nullable = nullable;
     }
 
-    int getLength() {
+    public int getLength() {
         return length;
     }
 
-    String getName() {
+    public String getName() {
         return name;
     }
 
-    Nullable getNullable() {
+    public Nullable getNullable() {
         return nullable;
     }
 
-    int getPrecision() {
+    public int getPrecision() {
         return precision;
     }
 
-    short getRadix() {
+    public short getRadix() {
         return radix;
     }
 
-    short getScale() {
+    public short getScale() {
         return scale;
     }
 
-    SQLType getType() {
+    public SQLType getType() {
         return type;
     }
 
@@ -136,6 +154,11 @@ class JDBCValue {
     public String toString() {
         return "name=" + name + ", type=" + type + ", length=" + getLength() + ", precision=" + getPrecision() +
                 ", radix=" + getRadix() + ", scale=" + getScale() + ", nullable=" + nullable;
+    }
+
+    @Override
+    public MetadataElement getParent() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

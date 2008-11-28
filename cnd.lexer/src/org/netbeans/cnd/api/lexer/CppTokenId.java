@@ -293,6 +293,7 @@ public enum CppTokenId implements TokenId {
     FLOAT_LITERAL_INVALID(null, "number"); // NOI18N
     
     // make sure string names are the same used in the tokenIds above
+    public static final String IDENTIFIER_CATEGORY = "identifier"; // NOI18N
     public static final String WHITESPACE_CATEGORY = "whitespace"; // NOI18N
     public static final String COMMENT_CATEGORY = "comment"; // NOI18N
     public static final String KEYWORD_CATEGORY = "keyword"; // NOI18N

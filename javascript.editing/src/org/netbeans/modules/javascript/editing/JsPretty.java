@@ -41,12 +41,19 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Stack;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -60,6 +67,13 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.util.Exceptions;
+import org.w3c.dom.Document;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 
 /**
  * AST based formatter, walks over AST tree together with lexer tokens
@@ -156,6 +170,9 @@ public class JsPretty {
                 case Token.TRY:
                     visitBlockWithoutIndenting(root);
                     break;
+                case Token.E4X:
+                    visitE4X(root);
+                    break;
                 case Token.CATCH:
                     visitCatch(root);
                     break;
@@ -238,6 +255,113 @@ public class JsPretty {
         }
         decreaseIndent("visitObjectLit");
         acceptOffset(root.getSourceEnd());
+    }
+
+    private void visitE4X(Node root) {
+        if (root.hasChildren()) {
+            Node child = root.getFirstChild();
+            if (child.getType() == Token.STRING) {
+                // Only try formatting simple XML code fragments, not XML containing
+                // embedded JavaScript code
+                String xml = child.getString();
+
+                try {
+                    InputSource source = new InputSource(new StringReader(xml));
+                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                    // Doesn't work
+                    //factory.setIgnoringElementContentWhitespace(true);
+                    factory.setValidating(false);
+                    factory.setExpandEntityReferences(false);
+                    DocumentBuilder docBuilder = factory.newDocumentBuilder();
+                    docBuilder.setEntityResolver(new EntityResolver() {
+
+                        public org.xml.sax.InputSource resolveEntity(String pubid, String sysid) {
+                            return new org.xml.sax.InputSource(new ByteArrayInputStream(new byte[0]));
+                        }
+                    });
+                    Document domDoc = docBuilder.parse(source);
+                    domDoc.setStrictErrorChecking(false);
+                    domDoc.setXmlStandalone(true);
+
+                    // Strip whitespace
+                    stripWhitespace(domDoc.getDocumentElement());
+
+                    OutputFormat format = new OutputFormat(domDoc);
+                    format.setIndenting(true);
+
+                    int lineWidth = CodeStylePreferences.get(doc).getPreferences().getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
+
+                    int firstIndent = Utilities.getVisualColumn(doc, child.getSourceStart());
+                    // We will be indenting the text after the fact, so subtract
+                    // for that here
+                    lineWidth -= firstIndent;
+
+                    if (lineWidth > 0) {
+                        format.setLineWidth(lineWidth);
+                    }
+                    format.setIndent(IndentUtils.indentLevelSize(doc));
+                    format.setPreserveSpace(false);
+                    format.setOmitDocumentType(true);
+                    format.setOmitXMLDeclaration(true);
+                    format.setStandalone(true);
+                    format.setLineSeparator("\n"); // NOI18N
+
+                    XMLSerializer serializer = new XMLSerializer(format);
+                    StringWriter sw = new StringWriter();
+                    serializer.setOutputCharStream(sw);
+                    serializer.serialize(domDoc);
+
+                    // Adjust indentation such that all lines are indented to the same extent the
+                    // first element is...
+                    String extraIndent = IndentUtils.createIndentString(doc, firstIndent);
+                    StringBuilder sb = new StringBuilder();
+                    for (String line : sw.toString().split("\n")) { // NOI18N
+                        if (sb.length() > 0) { // No indentation on the first line
+                            sb.append("\n"); // NOI18N
+                            sb.append(extraIndent);
+                        }
+                        sb.append(line);
+                    }
+
+                    String formatted = sb.toString();
+
+                    if (!formatted.equals(xml)) {
+                        addDiff(child.getSourceStart(), child.getSourceStart() + xml.length(), formatted, "visitE4X");
+                    }
+
+                    lastHandledOffset = child.getSourceStart() + xml.length();
+                    return;
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (SAXException ex) {
+                    // Keep errors silent during formatting - this is USER SOURCE
+                    // so parser errors may happen...
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ParserConfigurationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else {
+                visitDefault(root);
+                return;
+            }
+        }
+        acceptOffset(root.getSourceEnd());
+    }
+
+    private void stripWhitespace(org.w3c.dom.Node node) {
+        if (node.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+            String text = node.getNodeValue();
+            String trimmed = text.trim();
+            if (trimmed.length() < text.length()) {
+                node.setNodeValue(trimmed);
+            }
+        }
+        if (node.hasChildNodes()) {
+            for (org.w3c.dom.Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
+                stripWhitespace(child);
+            }
+        }
     }
     
     private void visitOtherBlock(Node root) {

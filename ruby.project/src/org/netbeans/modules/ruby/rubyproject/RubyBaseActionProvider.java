@@ -150,8 +150,10 @@ public abstract class RubyBaseActionProvider implements ActionProvider, ScriptDe
         }
         RubyExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraConvertors);
         RubyProcessCreator rpc = new RubyProcessCreator(desc, getSourceEncoding());
-        ExecutionService service = ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName);
-        service.run();
+        if (rpc.isAbleToCreateProcess()) {
+            ExecutionService service = ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName);
+            service.run();
+        }
     }
 
     protected String getSourceEncoding() {

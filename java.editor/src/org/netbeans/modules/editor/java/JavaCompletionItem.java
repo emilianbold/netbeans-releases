@@ -49,7 +49,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,6 +70,11 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
@@ -689,12 +693,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             final int finalLen = len;
-            JavaSource js = JavaSource.forDocument(doc);
+            Source s = Source.create(doc);
             try {
-                js.runUserActionTask(new Task<CompilationController>() {
-
-                    public void run(final CompilationController controller) throws IOException {
+                ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
                         controller.toPhase(Phase.RESOLVED);
+                        final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
                         DeclaredType type = typeHandle.resolve(controller);
                         final TypeElement elem = type != null ? (TypeElement)type.asElement() : null;
                         boolean asTemplate = false;
@@ -793,7 +799,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 public void run () {
                                     try {
                                         Position semiPosition = semiPos > -1 && !insideNew ? doc.createPosition(semiPos) : null;
-                                        TreePath tp = controller.getTreeUtilities().pathFor(offset);
+                                        TreePath tp = controller.getTreeUtilities().pathFor(embeddedOffset);
                                         CharSequence cs = enclName == null ? elem != null ? elem.getSimpleName() : simpleName : AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem));
                                         if (!insideNew)
                                             cs = text.insert(0, cs);
@@ -811,7 +817,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             if (insideNew && type != null && type.getKind() == TypeKind.DECLARED) {
                                 ExecutableElement ctor = null;
                                 Trees trees = controller.getTrees();
-                                Scope scope = controller.getTreeUtilities().scopeFor(offset);
+                                Scope scope = controller.getTreeUtilities().scopeFor(embeddedOffset);
                                 int val = 0; // no constructors seen yet
                                 for (ExecutableElement ee : ElementFilter.constructorsIn(elem.getEnclosedElements())) {
                                     if (trees.isAccessible(scope, ee, type)) {
@@ -849,8 +855,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             }
                         }
                     }
-                }, true);
-            } catch (IOException ioe) {                
+                });
+            } catch (ParseException pe) {
             }
         }
         
@@ -1310,12 +1316,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 if (isPrimitive) {
                     try {
                         final String[] ret = new String[1];
-                        JavaSource js = JavaSource.forDocument(c.getDocument());
-                        js.runUserActionTask(new Task<CompilationController>() {
-
-                            public void run(CompilationController controller) throws Exception {
-                                controller.toPhase(JavaSource.Phase.PARSED);
-                                TreePath tp = controller.getTreeUtilities().pathFor(c.getSelectionEnd());
+                        Source s = Source.create(c.getDocument());
+                        ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                                controller.toPhase(Phase.PARSED);
+                                int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(c.getSelectionEnd());
+                                TreePath tp = controller.getTreeUtilities().pathFor(embeddedOffset);
                                 Tree tree = tp.getLeaf();
                                 if (tree.getKind() == Tree.Kind.IDENTIFIER || tree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
                                     tp = tp.getParentPath();
@@ -1328,9 +1336,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 if (tp.getLeaf().getKind() == Tree.Kind.EXPRESSION_STATEMENT || tp.getLeaf().getKind() == Tree.Kind.BLOCK)
                                     ret[0] = ";"; //NOI18N
                             }
-                        }, true);
+                        });
                         toAdd = ret[0];
-                    } catch (IOException ex) {
+                    } catch (ParseException ex) {
                     }
                 }
             }
@@ -1510,21 +1518,22 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 });
             }
             try {
-                JavaSource js = JavaSource.forDocument(doc);
-                js.runModificationTask(new Task<WorkingCopy>() {
-
-                    public void run(WorkingCopy copy) throws IOException {
+                ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
                         copy.toPhase(Phase.ELEMENTS_RESOLVED);
                         ExecutableElement ee = elementHandle.resolve(copy);                        
                         if (ee == null)
                             return;
-                        TreePath tp = copy.getTreeUtilities().pathFor(offset);
+                        final int embeddedOffset = copy.getSnapshot().getEmbeddedOffset(offset);
+                        TreePath tp = copy.getTreeUtilities().pathFor(embeddedOffset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
                             if (Utilities.inAnonymousOrLocalClass(tp))
                                 copy.toPhase(Phase.RESOLVED);
                             int idx = 0;
                             for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
-                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < offset)
+                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < embeddedOffset)
                                     idx++;
                                 else
                                     break;
@@ -1536,7 +1545,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         }
                     }
                 }).commit();
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 Logger.getLogger("global").log(Level.WARNING, null, ex);
             }
         }
@@ -1670,21 +1679,22 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 });
             }
             try {
-                JavaSource js = JavaSource.forDocument(doc);
-                js.runModificationTask(new Task<WorkingCopy>() {
-
-                    public void run(WorkingCopy copy) throws IOException {
+                ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
                         copy.toPhase(Phase.ELEMENTS_RESOLVED);
                         VariableElement ve = elementHandle.resolve(copy);                        
                         if (ve == null)
                             return;
-                        TreePath tp = copy.getTreeUtilities().pathFor(offset);
+                        final int embeddedOffset = copy.getSnapshot().getEmbeddedOffset(offset);
+                        TreePath tp = copy.getTreeUtilities().pathFor(embeddedOffset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
                             if (Utilities.inAnonymousOrLocalClass(tp))
                                 copy.toPhase(Phase.RESOLVED);
                             int idx = 0;
                             for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
-                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < offset)
+                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < embeddedOffset)
                                     idx++;
                                 else
                                     break;
@@ -1699,7 +1709,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         }
                     }
                 }).commit();
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 Logger.getLogger("global").log(Level.WARNING, null, ex);
             }
         }
@@ -1940,13 +1950,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
             });
             if (isAbstract && text.length() > 3) {
                 try {
-                    JavaSource js = JavaSource.forDocument(doc);
                     final int off = offset + text.indexOf('{') + 1;
-                    js.runModificationTask(new Task<WorkingCopy>() {
-
-                        public void run(WorkingCopy copy) throws IOException {
-                            copy.toPhase(JavaSource.Phase.RESOLVED);
-                            TreePath path = copy.getTreeUtilities().pathFor(off);                            
+                    ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
+                            copy.toPhase(Phase.RESOLVED);
+                            final int embeddedOffset = copy.getSnapshot().getEmbeddedOffset(off);
+                            TreePath path = copy.getTreeUtilities().pathFor(embeddedOffset);
                             while (path.getLeaf() != path.getCompilationUnit()) {
                                 Tree tree = path.getLeaf();
                                 Tree parentTree = path.getParentPath().getLeaf();                                
@@ -2137,13 +2148,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 try {
                     if (position [0] != null)
                         offset2 [0] = position [0].getOffset();
-                    JavaSource js = JavaSource.forDocument(c.getDocument());
                     final int off = offset2 [0] + text.indexOf('{') + 1;
-                    js.runModificationTask(new Task<WorkingCopy>() {
-
-                        public void run(WorkingCopy copy) throws IOException {
-                            copy.toPhase(JavaSource.Phase.RESOLVED);
-                            TreePath path = copy.getTreeUtilities().pathFor(off);                            
+                    ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
+                            copy.toPhase(Phase.RESOLVED);
+                            final int embeddedOffset = copy.getSnapshot().getEmbeddedOffset(off);
+                            TreePath path = copy.getTreeUtilities().pathFor(embeddedOffset);
                             while (path.getLeaf() != path.getCompilationUnit()) {
                                 Tree tree = path.getLeaf();
                                 Tree parentTree = path.getParentPath().getLeaf();                                
@@ -2155,7 +2167,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             }
                         }
                     }).commit();
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                 }
             }
         }
@@ -2416,19 +2428,21 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             final int finalLen = len;
-            JavaSource js = JavaSource.forDocument(doc);
+            Source s = Source.create(doc);
             try {
-                js.runUserActionTask(new Task<CompilationController>() {
-
-                    public void run(final CompilationController controller) throws IOException {
-                        controller.toPhase(JavaSource.Phase.RESOLVED);
+                ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                        controller.toPhase(Phase.RESOLVED);
+                        final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
                         final DeclaredType type = typeHandle.resolve(controller);
                         // Update the text
                         doc.runAtomic (new Runnable () {
                             public void run () {
                                 try {
                                     Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
-                                    TreePath tp = controller.getTreeUtilities().pathFor(offset);
+                                    TreePath tp = controller.getTreeUtilities().pathFor(embeddedOffset);
                                     text.insert(0, "@" + AutoImport.resolveImport(controller, tp, type)); //NOI18N
                                     String textToReplace = doc.getText(offset, finalLen);
                                     if (textToReplace.contentEquals(text)) return;
@@ -2442,8 +2456,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             }
                         });
                     }
-                }, true);
-            } catch (IOException ioe) {                
+                });
+            } catch (ParseException pe) {
             }
         }
     }
@@ -2727,12 +2741,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             final int finalLen = len;
-            JavaSource js = JavaSource.forDocument(doc);
+            Source s = Source.create(doc);
             try {
-                js.runUserActionTask(new Task<CompilationController>() {
-
-                    public void run(CompilationController controller) throws IOException {
-                        controller.toPhase(JavaSource.Phase.RESOLVED);
+                ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                        controller.toPhase(Phase.RESOLVED);
                         DeclaredType type = typeHandle.resolve(controller);
                         StringBuilder sb = new StringBuilder();
                         int cnt = 1;
@@ -2820,8 +2835,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             ctm.createTemporary(sb.toString()).insert(c);
                         }
                     }
-                }, true);
-            } catch (IOException ioe) {                
+                });
+            } catch (ParseException pe) {
             }
         }
 
@@ -2951,12 +2966,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 });
             }
             try {
-                JavaSource js = JavaSource.forDocument(c.getDocument());
-                js.runModificationTask(new Task<WorkingCopy>() {
-
-                    public void run(WorkingCopy copy) throws IOException {
-                        copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        TreePath tp = copy.getTreeUtilities().pathFor(offset);
+                ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
+                        copy.toPhase(Phase.ELEMENTS_RESOLVED);
+                        final int embeddedOffset = copy.getSnapshot().getEmbeddedOffset(offset);
+                        TreePath tp = copy.getTreeUtilities().pathFor(embeddedOffset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
                             TypeElement parent = parentHandle.resolve(copy);
                             ArrayList<VariableElement> fieldElements = new ArrayList<VariableElement>();
@@ -2964,7 +2980,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 fieldElements.add((VariableElement)handle.resolve(copy));
                             int idx = 0;
                             for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
-                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < offset)
+                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < embeddedOffset)
                                     idx++;
                                 else
                                     break;
@@ -2979,7 +2995,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         }
                     }
                 }).commit();
-            } catch (IOException ex) {
+            } catch (Exception ex) {
             }
         }
 
@@ -3035,13 +3051,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
         final int[] ret = new int[] {-2};
         final int offset = c.getSelectionEnd();
         try {
-            JavaSource js = JavaSource.forDocument(c.getDocument());
-            js.runUserActionTask(new Task<CompilationController>() {
-
-                public void run(CompilationController controller) throws Exception {
-                    controller.toPhase(JavaSource.Phase.PARSED);
+            Source s = Source.create(c.getDocument());
+            ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                    controller.toPhase(Phase.PARSED);
+                    final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
                     Tree t = null;
-                    TreePath tp = controller.getTreeUtilities().pathFor(offset);
+                    TreePath tp = controller.getTreeUtilities().pathFor(embeddedOffset);
                     while (t == null && tp != null) {
                         switch(tp.getLeaf().getKind()) {
                             case EXPRESSION_STATEMENT:
@@ -3060,19 +3078,19 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     if (t != null) {
                         SourcePositions sp = controller.getTrees().getSourcePositions();
                         int endPos = (int)sp.getEndPosition(tp.getCompilationUnit(), t);
-                        TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(controller, offset, endPos);
+                        TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(controller, embeddedOffset, endPos);
                         if (ts != null) {
                             ret[0] = ts.token().id() == JavaTokenId.SEMICOLON ? -1 : ts.offset() + ts.token().length();
                         }
                     } else {
                         TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-                        ts.move(offset);
+                        ts.move(embeddedOffset);
                         if (ts.moveNext() &&  ts.token().id() == JavaTokenId.SEMICOLON)
                             ret[0] = -1;
                     }
                 }
-            }, true);
-        } catch (IOException ex) {
+            });
+        } catch (ParseException ex) {
         }
         return ret[0];
     }

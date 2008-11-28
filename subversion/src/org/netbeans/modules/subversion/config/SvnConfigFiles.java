@@ -610,23 +610,40 @@ public class SvnConfigFiles implements PreferenceChangeListener {
             String appdataPath = WINDOWS_USER_APPDATA;
             if(appdataPath == null || appdataPath.equals("")) {                                     // NOI18N
                 return "";                                                                          // NOI18N
-            }
-            String appdata = "";                                                                    // NOI18N
-            int idx = appdataPath.lastIndexOf("\\");                                                // NOI18N
-            if(idx > -1) {
-                appdata = appdataPath.substring(idx + 1);
-                if(appdata.trim().equals("")) {                                                     // NOI18N
-                    int previdx = appdataPath.lastIndexOf("\\", idx);                               // NOI18N
-                    if(idx > -1) {
-                        appdata = appdataPath.substring(previdx + 1, idx);
-                    }
-                }
-            } else {
-                return "";                                                                          // NOI18N
-            }
-            return globalProfile + "/" + appdata;                                                   // NOI18N
+            }                                                                                       // NOI18N
+            return getWinUserAppdata(appdataPath, globalProfile);                                          // NOI18N
         }
         return "";                                                                                  // NOI18N
     }
-        
+
+    private static String getWinUserAppdata(String appdataPath, String globalProfile) {
+        appdataPath = trimBackslash(appdataPath);
+        globalProfile = trimBackslash(globalProfile);
+        String appdata = "";                                                                        // NOI18N
+        int idx = appdataPath.lastIndexOf("\\");                                                    // NOI18N
+        if (idx > -1) {
+            appdata = appdataPath.substring(idx + 1);
+            if (appdata.trim().equals("")) {                                                        // NOI18N
+                int previdx = appdataPath.lastIndexOf("\\", idx);                                   // NOI18N
+                if (idx > -1) {
+                    appdata = appdataPath.substring(previdx + 1, idx);
+                }
+            }
+        } else {
+            return "";                                                                              // NOI18N
+        }
+        if(globalProfile.endsWith("\\")) {                                                          // NOI18N
+            globalProfile = globalProfile.substring(0, globalProfile.length() - 1);
+        }
+        return globalProfile + "/" + appdata;                                                       // NOI18N
+    }
+
+    private static String trimBackslash(String appdataPath) {
+        if (appdataPath.endsWith("\\")) {
+            // NOI18N
+            appdataPath = appdataPath.substring(0, appdataPath.length() - 1);
+        }
+        return appdataPath;
+    }
+    
 }

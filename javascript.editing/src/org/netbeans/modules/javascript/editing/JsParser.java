@@ -886,10 +886,9 @@ public class JsParser implements IncrementalParser {
         final int targetVersion = SupportedBrowsers.getInstance().getLanguageVersion();
         compilerEnv.setLanguageVersion(targetVersion);
 
-        if (targetVersion >= org.mozilla.nb.javascript.Context.VERSION_1_7) {
-            // Let's try E4X... why not?
-            compilerEnv.setXmlAvailable(true);
-        }
+        boolean e4x = (targetVersion == org.mozilla.nb.javascript.Context.VERSION_DEFAULT) ||
+            (targetVersion >= org.mozilla.nb.javascript.Context.VERSION_1_7);
+        compilerEnv.setXmlAvailable(e4x);
         compilerEnv.setStrictMode(true);
         compilerEnv.setGeneratingSource(false);
         compilerEnv.setGenerateDebugInfo(false);

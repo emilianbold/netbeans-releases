@@ -441,7 +441,7 @@ public class GeneralPHP extends JellyTestCase {
     JCheckBoxOperator box = new JCheckBoxOperator( jdProperties, sTag );
     if( box.isSelected( ) ^ b )
       box.clickMouse( );
-    //Sleep( 100 );
+    //Sleep( 10000 );
     // Close dialog
     JButtonOperator bOk = new JButtonOperator( jdProperties, "OK" );
     bOk.push( );

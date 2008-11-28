@@ -114,8 +114,15 @@ public class MavenSettingsSingleton {
         }
         return sets;
     }
-    
-    public static ProfilesRoot createProfilesModel(FileObject projectDir) {
+
+    /**
+     * @deprecated use the XAM-based model for editing the profiles file,
+     * see org.netbeans.modules.maven.profile package
+     *
+     * @param projectDir
+     * @return
+     */
+    public @Deprecated static ProfilesRoot createProfilesModel(FileObject projectDir) {
         FileObject profiles = projectDir.getFileObject("profiles.xml");
         ProfilesRoot prof = null;
         if (profiles != null) {

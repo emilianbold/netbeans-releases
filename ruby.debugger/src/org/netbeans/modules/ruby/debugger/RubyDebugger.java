@@ -90,7 +90,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     private RubySession rubySession;
 
     /**
-     * User for remote debugging.
+     * Used for remote debugging.
      * <P>
      * TODO: Replace by valid RubyFileLocator.
      */
@@ -99,41 +99,55 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             return null;
         }
     };
-    
+
+    private final static String CLASSIC_DEBUGGER_PATH = "ruby/debug-commons-0.9.5/classic-debug.rb"; // NOI18N
+
     static {
-        String path = "ruby/debug-commons-0.9.5/classic-debug.rb"; // NOI18N
         File classicDebug = InstalledFileLocator.getDefault().locate(
-                path, "org.netbeans.modules.ruby.debugger", false); // NOI18N
+                CLASSIC_DEBUGGER_PATH, "org.netbeans.modules.ruby.debugger", false); // NOI18N
         if (classicDebug == null || !classicDebug.isFile()) {
-            throw new IllegalStateException("Cannot locate classic debugger in NetBeans Ruby cluster (" + path + ')'); // NOI18N
+            PATH_TO_CLASSIC_DEBUG_DIR = null;
+        } else {
+            PATH_TO_CLASSIC_DEBUG_DIR = classicDebug.getParentFile().getAbsolutePath();
         }
-        PATH_TO_CLASSIC_DEBUG_DIR = classicDebug.getParentFile().getAbsolutePath();
     }
     
     public void describeProcess(RubyExecutionDescriptor descriptor) {
         this.descriptor = descriptor;
     }
-    
-    public boolean canDebug() {
-        return !descriptor.getPlatform().isRubinius();
+
+    public boolean prepare() {
+        if (descriptor.getPlatform().isRubinius()) {
+            return false;
+        }
+        if (!checkAndTuneSettings(descriptor)) {
+            return false;
+        }
+        final RubyPlatform platform = descriptor.getPlatform();
+        if (!platform.hasFastDebuggerInstalled() && PATH_TO_CLASSIC_DEBUG_DIR == null) {
+            LOGGER.severe("Cannot locate classic debugger in NetBeans Ruby cluster (" + // NOI18N
+                    CLASSIC_DEBUGGER_PATH + "). Neither fast debugger is available. Cannot debug."); // NOI18N
+            return false;
+        }
+        return true;
     }
     
     public Process debug() {
-        Process p = null;
         try {
             rubySession = startDebugging(descriptor);
             if (rubySession != null) {
                 rubySession.getProxy().attach(RubyBreakpointManager.getBreakpoints());
-                p = rubySession.getProxy().getDebugTarget().getProcess();
+                return rubySession.getProxy().getDebugTarget().getProcess();
+            } else {
+                throw new IllegalStateException("Unable to create Ruby debugging session");
             }
         } catch (IOException e) {
             getFinishAction().run();
-            problemOccurred(e);
+            throw new RuntimeException(e);
         } catch (RubyDebuggerException e) {
             getFinishAction().run();
-            problemOccurred(e);
+            throw new RuntimeException(e);
         }
-        return p;
     }
 
     public void attach(final String host, final int port, final int timeout) {
@@ -187,10 +201,6 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         final RubyPlatform platform = descriptor.getPlatform();
         boolean jrubySet = platform.isJRuby();
 
-        if (!checkAndTuneSettings(descriptor)) {
-            return null;
-        }
-        
         RubyDebuggerFactory.Descriptor debugDesc = new RubyDebuggerFactory.Descriptor();
         debugDesc.useDefaultPort(false);
         debugDesc.setJRuby(jrubySet);
@@ -230,6 +240,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         LOGGER.finer("Using timeout: " + timeout + 's'); // NOI18N
         String interpreter = platform.getInterpreter();
         if (!platform.hasFastDebuggerInstalled()) {
+            assert PATH_TO_CLASSIC_DEBUG_DIR != null : "PATH_TO_CLASSIC_DEBUG_DIR should be checked before";
             LOGGER.fine("Running classic(slow) debugger...");
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
                     PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);

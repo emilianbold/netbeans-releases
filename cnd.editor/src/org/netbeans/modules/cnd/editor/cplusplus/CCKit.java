@@ -79,9 +79,14 @@ import org.netbeans.modules.editor.indent.api.Reformat;
 
 /** C++ editor kit with appropriate document */
 public class CCKit extends NbEditorKit {
+    /* package */ static final String previousCamelCasePosition = "previous-camel-case-position"; //NOI18N
+    /* package */ static final String nextCamelCasePosition = "next-camel-case-position"; //NOI18N
+    /* package */ static final String selectPreviousCamelCasePosition = "select-previous-camel-case-position"; //NOI18N
+    /* package */ static final String selectNextCamelCasePosition = "select-next-camel-case-position"; //NOI18N
+    /* package */ static final String deletePreviousCamelCasePosition = "delete-previous-camel-case-position"; //NOI18N
+    /* package */ static final String deleteNextCamelCasePosition = "delete-next-camel-case-position"; //NOI18N
 
     private InputAttributes lexerAttrs = null;
-    private static final String ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY = "abbrev-ignore-modification"; // NOI18N
 
     @Override
     public String getContentType() {
@@ -135,6 +140,7 @@ public class CCKit extends NbEditorKit {
     protected 
     @Override
     Action[] createActions() {
+        Action[] superActions = super.createActions();
         Action[] ccActions = new Action[]{
             new CCDefaultKeyTypedAction(),
             new CCFormatAction(),
@@ -144,11 +150,29 @@ public class CCKit extends NbEditorKit {
             getToggleCommentAction(),
             getCommentAction(),
             getUncommentAction(),
+
+            new NextCamelCasePosition(findAction(superActions, nextWordAction)),
+            new PreviousCamelCasePosition(findAction(superActions, previousWordAction)),
+            new SelectNextCamelCasePosition(findAction(superActions, selectionNextWordAction)),
+            new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction)),
+            new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)),
+            new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)),
+
             new InsertSemicolonAction(true),
             new InsertSemicolonAction(false),};
-        ccActions = TextAction.augmentList(super.createActions(), ccActions);
+        ccActions = TextAction.augmentList(superActions, ccActions);
 
         return ccActions;
+    }
+
+    private static Action findAction(Action[] actions, String name) {
+        for (Action a : actions) {
+            Object nameObj = a.getValue(Action.NAME);
+            if (nameObj instanceof String && name.equals(nameObj)) {
+                return a;
+            }
+        }
+        return null;
     }
 
 //    public static class CppFoldTestAction extends BaseAction {

@@ -217,7 +217,7 @@ made subject to such option by the copyright holder.
         <library_prefix stringvalue="lib"/>
         <library_search flags="-L"/>
         <dynamic_library_search flags="-R"/>
-        <library flags="-l"/>
+        <library_flag flags="-l"/>
         <PIC flags="-KPIC "/>
         <static_library flags="-Bstatic"/>
         <dynamic_library flags="-Bdynamic"/>
