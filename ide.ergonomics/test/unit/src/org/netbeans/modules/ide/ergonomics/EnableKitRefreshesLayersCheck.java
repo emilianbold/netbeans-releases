@@ -39,26 +39,51 @@
 
 package org.netbeans.modules.ide.ergonomics;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+import java.util.Collections;
+import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
+import org.netbeans.api.autoupdate.OperationSupport;
+import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class VerifyErgonomicsIDETest {
-    private VerifyErgonomicsIDETest() {
+public class EnableKitRefreshesLayersCheck extends NbTestCase {
+    public EnableKitRefreshesLayersCheck(String n) {
+        super(n);
     }
+    
+    public void testJavaCanBeTurnedOn() throws Exception {
+        FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Menu");
+        assertNull("No edit menu", root.getFileObject("Edit"));
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.emptyConfiguration().
-            addTest(ProjectTemplatesCheck.class).
-            addTest(AllClustersProcessedCheck.class).
-            addTest(EnableKitRefreshesLayersCheck.class).
-            gui(false).
-            clusters("ergonomics.*").
-            clusters(".*")
-        );
+
+        UpdateUnit enable = null;
+        for (UpdateUnit uu : UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.KIT_MODULE)) {
+            if ("org.netbeans.modules.java.kit".equals(uu.getCodeName())) {
+                enable = uu;
+                break;
+            }
+        }
+        assertNotNull("Module found", enable);
+        assertNotNull("Installed", enable.getInstalled());
+        assertFalse("Disabled", enable.getInstalled().isEnabled());
+        OperationContainer<OperationSupport> oc = OperationContainer.createForEnable();
+        OperationInfo<OperationSupport> info = oc.add(enable.getInstalled());
+        if (info != null) {
+            oc.add(info.getRequiredElements());
+        }
+        oc.getSupport().doOperation(null);
+
+        assertTrue("Enabled now", enable.getInstalled().isEnabled());
+
+        FoDFileSystem.getInstance().waitFinished();
+        assertNotNull("edit menu present", root.getFileObject("Edit"));
     }
 }

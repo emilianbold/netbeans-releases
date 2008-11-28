@@ -38,18 +38,22 @@
  */
 package org.netbeans.modules.ide.ergonomics.fod;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfoAccessor.Internal;
-import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.xml.sax.SAXException;
@@ -60,16 +64,20 @@ import org.xml.sax.SAXException;
  */
 @ServiceProvider(service=FileSystem.class)
 public class FoDFileSystem extends MultiFileSystem 
-implements Runnable {
+implements Runnable, PropertyChangeListener, LookupListener {
     private static FoDFileSystem INSTANCE;
     final static Logger LOG = Logger.getLogger (FoDFileSystem.class.getPackage().getName());
     private static RequestProcessor RP = new RequestProcessor("Ergonomics"); // NOI18N
     private RequestProcessor.Task refresh = RP.create(this);
+    private Lookup.Result<ModuleInfo> result;
 
     public FoDFileSystem() {
         assert INSTANCE == null;
         INSTANCE = this;
         setPropagateMasks(true);
+        result = Lookup.getDefault().lookupResult(ModuleInfo.class);
+        result.addLookupListener(this);
+        resultChanged(null);
         refresh();
     }
 
@@ -86,14 +94,17 @@ implements Runnable {
         refresh.schedule(0);
         refresh.waitFinished();
     }
+
+    public void waitFinished() {
+        refresh.waitFinished();
+    }
     
     public void run() {
-        Lookup.Result<FeatureInfo> result = Feature2LayerMapping.featureTypesLookup().lookupResult(FeatureInfo.class);
         boolean empty = true;
 
         LOG.fine("collecting layers"); // NOI18N
         List<XMLFileSystem> delegate = new ArrayList<XMLFileSystem>();
-        for (FeatureInfo info : result.allInstances ()) {
+        for (FeatureInfo info : Feature2LayerMapping.features()) {
             Internal internal = FeatureInfoAccessor.DEFAULT.getInternal(info);
             if (!internal.isEnabled()) {
                 LOG.finest("adding feature " + info.clusterName); // NOI18N
@@ -118,10 +129,8 @@ implements Runnable {
     }
 
     public FeatureInfo whichProvides(FileObject template) {
-        Lookup.Result<FeatureInfo> result = Feature2LayerMapping.featureTypesLookup().lookupResult(FeatureInfo.class);
-
         String path = template.getPath();
-        for (FeatureInfo info : result.allInstances()) {
+        for (FeatureInfo info : Feature2LayerMapping.features()) {
             Internal internal = FeatureInfoAccessor.DEFAULT.getInternal(info);
             XMLFileSystem fs = internal.getXMLFileSystem();
             if (fs.findResource(path) != null) {
@@ -132,10 +141,8 @@ implements Runnable {
     }
     
     public URL getDelegateFileSystem(FileObject template) {
-        Lookup.Result<FeatureInfo> result = Feature2LayerMapping.featureTypesLookup().lookupResult(FeatureInfo.class);
-        
         String path = template.getPath();
-        for (FeatureInfo pt2m : result.allInstances ()) {
+        for (FeatureInfo pt2m : Feature2LayerMapping.features()) {
             Internal internal = FeatureInfoAccessor.DEFAULT.getInternal(pt2m);
             XMLFileSystem fs = internal.getXMLFileSystem();
             if (fs.findResource(path) != null) {
@@ -143,6 +150,20 @@ implements Runnable {
             }
         }
         return null;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (ModuleInfo.PROP_ENABLED.equals(evt.getPropertyName())) {
+            refresh.schedule(500);
+        }
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        for (ModuleInfo m : result.allInstances()) {
+            m.removePropertyChangeListener(this);
+            m.addPropertyChangeListener(this);
+        }
+        refresh.schedule(500);
     }
 
 }
