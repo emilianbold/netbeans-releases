@@ -36,27 +36,63 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.nav;
+
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.InstantRenamer;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.Occurence;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Jan Lahoda
  */
 public class InstantRenamerImpl implements InstantRenamer {
+    //private HashSet<OffsetRange> occurences = null;
+
+    private List<Occurence<? extends ModelElement>> allOccurences = Collections.emptyList();
 
     public boolean isRenameAllowed(CompilationInfo info, int caretOffset, String[] explanationRetValue) {
         //XXX: implement me:
+        allOccurences.clear();
+        Model model = ModelFactory.getModel(info);
+        Occurence<? extends ModelElement> caretOccurence = model.getOccurence(caretOffset);
+        if (caretOccurence != null) {
+            FileObject fileObject = info.getFileObject();
+            ModelElement decl = caretOccurence.getDeclaration();
+            if (fileObject != decl.getFileObject()) {
+                return false;
+            }
+            if (caretOccurence.getAllDeclarations().size() > 1) {
+                if (decl instanceof MethodScope) {
+                    MethodScope methodScope = (MethodScope) decl;
+                    if (methodScope.isConstructor()) {
+                        allOccurences = caretOccurence.getAllOccurences();
+                        return true;
+                    }
+                }
+                return false;
+            }
+            allOccurences = caretOccurence.getAllOccurences();
+        }
         return true;
     }
 
     public Set<OffsetRange> getRenameRegions(CompilationInfo info, int caretOffset) {
-        return new HashSet<OffsetRange>(OccurrencesFinderImpl.compute(info, caretOffset));
-    }
+        Set<OffsetRange> retval = new HashSet<OffsetRange>();
+        for (Occurence<? extends ModelElement> occurence : allOccurences) {
+            retval.add(occurence.getOffsetRange());
+        }
 
+        return retval != null ? retval : Collections.<OffsetRange>emptySet();
+    }
 }
