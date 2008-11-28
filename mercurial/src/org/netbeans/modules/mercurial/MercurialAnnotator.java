@@ -619,9 +619,13 @@ public class MercurialAnnotator extends VCSAnnotator {
         if(rootFiles.size() == 1) {
             File root = null; 
             for (File file : rootFiles) {
-                root = file;
                 repo = Mercurial.getInstance().getRepositoryRoot(root);
-                break;
+                if(repo == null) {
+                    Mercurial.LOG.warning("Couldn't find repository root for file " + file);
+                } else {
+                    root = file;
+                    break;
+                }
             }
             if (!repo.getAbsolutePath().equals(root.getAbsolutePath())) {
                 // not from repo root => do not annnotate with folder name 
@@ -645,7 +649,9 @@ public class MercurialAnnotator extends VCSAnnotator {
             }
             for (File file : rootFiles) {            
                 repo = Mercurial.getInstance().getRepositoryRoot(file);
-                if (!repo.getAbsolutePath().equals(parentFile.getAbsolutePath())) {
+                if(repo == null) {
+                    Mercurial.LOG.warning("Couldn't find repository root for file " + file);
+                } else if (!repo.getAbsolutePath().equals(parentFile.getAbsolutePath())) {
                     // not from repo root => do not annnotate with folder name 
                     return uptodateFormat.format(new Object [] { nameHtml, ""});
                 } 
