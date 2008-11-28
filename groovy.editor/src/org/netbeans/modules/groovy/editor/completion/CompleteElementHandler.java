@@ -39,10 +39,8 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
-import java.util.EnumSet;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -82,23 +80,8 @@ public final class CompleteElementHandler {
 
         //Map<MethodSignature, CompletionItem> meta = new HashMap<MethodSignature, CompletionItem>();
 
-        Set<AccessLevel> levels;
-
-        String packageName1 = source.getPackageName() == null ? "" : source.getPackageName();
-        String packageName2 = node.getPackageName() == null ? "" : node.getPackageName();
-
-        if (node.equals(source)) {
-            levels = AccessLevel.forThis();
-        } else if (packageName1.equals(packageName2)) {
-            levels = AccessLevel.forPackage();
-        } else if (source.getSuperClass() == null && node.getName().equals("java.lang.Object") // NOI18N
-                || source.getSuperClass() != null && source.getSuperClass().getName().equals(node.getName())) {
-            levels = AccessLevel.forSuper();
-        } else {
-            levels = EnumSet.of(AccessLevel.PUBLIC);
-        }
-
-        Map<MethodSignature, CompletionItem> result = getMethodsInner(source, node, prefix, anchor, 0, levels);
+        Map<MethodSignature, CompletionItem> result = getMethodsInner(
+                source, node, prefix, anchor, 0, AccessLevel.create(source, node));
 
         //fillSuggestions(meta, result);
         return result;
@@ -119,20 +102,7 @@ public final class CompleteElementHandler {
             ClassNode source, ClassNode node, String prefix, int anchor, int level, Set<AccessLevel> access) {
 
         boolean leaf = (level == 0);
-
-        HashSet<AccessLevel> modifiedAccess = new HashSet<AccessLevel>(access);
-        if (!leaf) {
-            modifiedAccess.remove(AccessLevel.PRIVATE);
-        }
-        String packageName1 = source.getPackageName() == null ? "" : source.getPackageName();
-        String packageName2 = node.getPackageName() == null ? "" : node.getPackageName();
-
-        if (!packageName1.equals(packageName2)) {
-            modifiedAccess.remove(AccessLevel.PACKAGE);
-        } else {
-            modifiedAccess.add(AccessLevel.PACKAGE);
-        }
-
+        Set<AccessLevel> modifiedAccess = AccessLevel.update(access, source, node);
 
         Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
         ClassNode typeNode = loadDefinition(node);
