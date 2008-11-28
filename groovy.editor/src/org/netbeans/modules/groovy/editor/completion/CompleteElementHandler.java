@@ -138,7 +138,7 @@ public final class CompleteElementHandler {
         ClassNode typeNode = loadDefinition(node);
 
         Map<MethodSignature, ? extends CompletionItem> groovyItems = GroovyElementHandler.forCompilationInfo(info)
-                .getMethods(typeNode.getName(), prefix, anchor, leaf);
+                .getMethods(typeNode.getName(), prefix, anchor, leaf, access);
 
         fillSuggestions(groovyItems, result);
 

@@ -702,6 +702,7 @@ public final class GroovyIndex {
         String fqn = map.getValue(GroovyIndexer.FQN_NAME);
 
         int typeIndex = signature.indexOf(';');
+        String methodSignature = signature;
         String type = "void";
         if (typeIndex != -1) {
             int endIndex = signature.indexOf(';', typeIndex + 1);
@@ -709,7 +710,7 @@ public final class GroovyIndex {
                 endIndex = signature.length();
             }
             type = signature.substring(typeIndex + 1, endIndex);
-            signature = signature.substring(0, typeIndex);
+            methodSignature = signature.substring(0, typeIndex);
         }
 
         // Extract attributes
@@ -724,10 +725,9 @@ public final class GroovyIndex {
                 attributes = signature.substring(attributeIndex+1, signature.length());
             }
 
-            //signature = signature.substring(0, attributeIndex);
         }
 
-        IndexedMethod m = IndexedMethod.create(this, signature, type, fqn, clz, fileUrl, attributes, flags);
+        IndexedMethod m = IndexedMethod.create(this, methodSignature, type, fqn, clz, fileUrl, attributes, flags);
 
         m.setInherited(inherited);
         return m;
