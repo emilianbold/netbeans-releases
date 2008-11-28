@@ -39,10 +39,12 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
+import java.util.EnumSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
+import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 
 /**
@@ -53,7 +55,7 @@ public enum AccessLevel {
 
     PUBLIC {
         @Override
-        public ElementAcceptor getAcceptor() {
+        public ElementAcceptor getJavaAcceptor() {
             return new ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror type) {
                     return e.getModifiers().contains(Modifier.PUBLIC);
@@ -64,7 +66,7 @@ public enum AccessLevel {
 
     PACKAGE {
         @Override
-        public ElementAcceptor getAcceptor() {
+        public ElementAcceptor getJavaAcceptor() {
             return new ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror type) {
                     Set<Modifier> modifiers = e.getModifiers();
@@ -78,7 +80,7 @@ public enum AccessLevel {
 
     PROTECTED {
         @Override
-        public ElementAcceptor getAcceptor() {
+        public ElementAcceptor getJavaAcceptor() {
             return new ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror type) {
                     return e.getModifiers().contains(Modifier.PROTECTED);
@@ -89,7 +91,7 @@ public enum AccessLevel {
 
     PRIVATE {
         @Override
-        public ElementAcceptor getAcceptor() {
+        public ElementAcceptor getJavaAcceptor() {
             return new ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror type) {
                     return e.getModifiers().contains(Modifier.PRIVATE);
@@ -98,5 +100,17 @@ public enum AccessLevel {
         }
     };
 
-    public abstract ElementAcceptor getAcceptor();
+    public abstract ElementAcceptor getJavaAcceptor();
+
+    public static Set<AccessLevel> forThis() {
+        return EnumSet.allOf(AccessLevel.class);
+    }
+
+    public static Set<AccessLevel> forSuper() {
+        return EnumSet.complementOf(EnumSet.of(AccessLevel.PRIVATE));
+    }
+
+    public static Set<AccessLevel> forPackage() {
+        return EnumSet.of(AccessLevel.PUBLIC, AccessLevel.PACKAGE);
+    }
 }

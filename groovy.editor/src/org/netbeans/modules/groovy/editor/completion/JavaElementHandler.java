@@ -165,15 +165,6 @@ public final class JavaElementHandler {
         return javaSource;
     }
 
-    public static enum ClassCompletionType {
-
-        CLASS,
-
-        SUPERCLASS,
-
-        SUPERINTERFACE
-    }
-
     private static class MethodCompletionHelper implements Task<CompilationController> {
 
         private final CountDownLatch cnt;
@@ -220,7 +211,7 @@ public final class JavaElementHandler {
                             return false;
                         }
                         for (AccessLevel level : levels) {
-                            if (level.getAcceptor().accept(e, type)) {
+                            if (level.getJavaAcceptor().accept(e, type)) {
                                 return true;
                             }
                         }
@@ -338,7 +329,7 @@ public final class JavaElementHandler {
                             return false;
                         }
                         for (AccessLevel level : levels) {
-                            if (level.getAcceptor().accept(e, type)) {
+                            if (level.getJavaAcceptor().accept(e, type)) {
                                 return true;
                             }
                         }
