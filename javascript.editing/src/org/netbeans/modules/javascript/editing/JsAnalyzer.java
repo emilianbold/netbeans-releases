@@ -167,7 +167,7 @@ public class JsAnalyzer implements StructureScanner {
                 // and other info.
                 String xml = node.getString();
 
-                int startOffset = LexUtilities.getLexerOffset(info, node.getSourceStart());
+                int startOffset = LexUtilities.getLexerOffset(result, node.getSourceStart());
                 if (startOffset == -1) {
                     startOffset = node.getSourceStart();
                 }

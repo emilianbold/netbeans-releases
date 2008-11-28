@@ -183,7 +183,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer {
         }
         
         List<Node> nodes = new ArrayList<Node>();
-        if (JsUtils.isEjsFile(info.getFileObject())) {
+        if (JsUtils.isEjsFile(rpr.getSnapshot().getSource().getFileObject())) {
             // No E4X highlights in EJS files
             AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME }, nodes);
         } else {
