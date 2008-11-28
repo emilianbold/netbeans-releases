@@ -44,7 +44,6 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
-import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 
 /**
@@ -62,6 +61,11 @@ public enum AccessLevel {
                 }
             };
         }
+
+        @Override
+        public boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers) {
+            return modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PUBLIC);
+        }
     },
 
     PACKAGE {
@@ -76,6 +80,13 @@ public enum AccessLevel {
                 }
             };
         }
+
+        @Override
+        public boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers) {
+            return !modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PRIVATE)
+                    && !modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PROTECTED)
+                    && !modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PUBLIC);
+        }
     },
 
     PROTECTED {
@@ -86,6 +97,11 @@ public enum AccessLevel {
                     return e.getModifiers().contains(Modifier.PROTECTED);
                 }
             };
+        }
+
+        @Override
+        public boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers) {
+            return modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PROTECTED);
         }
     },
 
@@ -98,9 +114,16 @@ public enum AccessLevel {
                 }
             };
         }
+
+        @Override
+        public boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers) {
+            return modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PRIVATE);
+        }
     };
 
     public abstract ElementAcceptor getJavaAcceptor();
+
+    public abstract boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers);
 
     public static Set<AccessLevel> forThis() {
         return EnumSet.allOf(AccessLevel.class);

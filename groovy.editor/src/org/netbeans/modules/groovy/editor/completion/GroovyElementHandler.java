@@ -52,6 +52,7 @@ import javax.lang.model.element.Modifier;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
+import org.netbeans.modules.groovy.editor.api.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedField;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedMethod;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
@@ -80,7 +81,7 @@ public final class GroovyElementHandler {
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
-            String prefix, int anchor, boolean emphasise) {
+            String prefix, int anchor, boolean emphasise, Set<AccessLevel> levels) {
 
         GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
 
@@ -113,6 +114,10 @@ public final class GroovyElementHandler {
         Map<MethodSignature, CompletionItem.JavaMethodItem> result = new HashMap<MethodSignature, CompletionItem.JavaMethodItem>();
         for (IndexedMethod indexedMethod : methods) {
             LOGGER.log(Level.FINEST, "method from index : {0} ", indexedMethod.getName());
+
+            if (!accept(levels, indexedMethod)) {
+                continue;
+            }
 
             // FIXME move sig to method item
             List<String> params = indexedMethod.getParameters();
@@ -175,7 +180,7 @@ public final class GroovyElementHandler {
 
         return result;
     }
-    
+
     private MethodSignature getSignature(IndexedMethod method) {
         String[] parameters = method.getParameters().toArray(new String[method.getParameters().size()]);
         return new MethodSignature(method.getName(), parameters);
@@ -183,5 +188,15 @@ public final class GroovyElementHandler {
 
     private FieldSignature getSignature(IndexedField field) {
         return new FieldSignature(field.getName());
+    }
+
+    private boolean accept(Set<AccessLevel> levels, IndexedElement element) {
+        for (AccessLevel level : levels) {
+            if (level.accept(element.getModifiers())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
