@@ -88,10 +88,16 @@ public class CodeUtils {
 
     public static String extractClassName(ClassName clsName) {
         Expression name = clsName.getName();
-        while (name instanceof Variable) {
-            Variable var = (Variable) name;
-            name = var.getName();
+        while (name instanceof Variable || name instanceof FieldAccess) {
+            if (name instanceof Variable) {
+                Variable var = (Variable) name;
+                name = var.getName();
+            } else if (name instanceof FieldAccess) {
+                FieldAccess fld = (FieldAccess) name;
+                name = fld.getField().getName();
+            }
         }
+        
         assert name instanceof Identifier :
             "unsupported type of ClassName.getClassName().getName(): "
             + name.getClass().getName() + " : " + name.toString();
