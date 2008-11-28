@@ -102,16 +102,15 @@ public enum AccessLevel {
 
     public abstract ElementAcceptor getJavaAcceptor();
 
-    public static Set<AccessLevel> getAccessLevels(ClassNode source, ClassNode type) {
+    public static Set<AccessLevel> forThis() {
+        return EnumSet.allOf(AccessLevel.class);
+    }
 
-        if (source == null) {
-            return EnumSet.of(AccessLevel.PUBLIC);
-        }
+    public static Set<AccessLevel> forSuper() {
+        return EnumSet.complementOf(EnumSet.of(AccessLevel.PRIVATE));
+    }
 
-        if (source.equals(type)) {
-            return EnumSet.allOf(AccessLevel.class);
-        }
-
-        return EnumSet.of(AccessLevel.PUBLIC);
+    public static Set<AccessLevel> forPackage() {
+        return EnumSet.of(AccessLevel.PUBLIC, AccessLevel.PACKAGE);
     }
 }

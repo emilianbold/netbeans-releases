@@ -6,6 +6,7 @@ METHOD     addShutdownHook(Closure)                   void
 METHOD     any()                                      boolean
 METHOD     any(Closure)                               boolean
 METHOD     asType(Class)                              Object
+METHOD     clone()                         [PROTECTE  Object
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
 METHOD     dump()                                     String
@@ -14,6 +15,7 @@ METHOD     eachWithIndex(Closure)                     Object
 METHOD     equals(Object)                  [PUBLIC]   boolean
 METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
+METHOD     finalize()                      [PROTECTE  void
 METHOD     find(Closure)                              Object
 METHOD     findAll(Closure)                           List
 METHOD     findIndexOf(Closure)                       int

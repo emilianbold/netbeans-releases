@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
+import java.util.EnumSet;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -79,7 +81,24 @@ public final class CompleteElementHandler {
             ClassNode source, ClassNode node, String prefix, int anchor) {
 
         //Map<MethodSignature, CompletionItem> meta = new HashMap<MethodSignature, CompletionItem>();
-        Map<MethodSignature, CompletionItem> result = getMethodsInner(source, node, prefix, anchor, 0);
+
+        Set<AccessLevel> levels;
+
+        String packageName1 = source.getPackageName() == null ? "" : source.getPackageName();
+        String packageName2 = node.getPackageName() == null ? "" : node.getPackageName();
+
+        if (node.equals(source)) {
+            levels = AccessLevel.forThis();
+        } else if (packageName1.equals(packageName2)) {
+            levels = AccessLevel.forPackage();
+        } else if (source.getSuperClass() == null && node.getName().equals("java.lang.Object") // NOI18N
+                || source.getSuperClass() != null && source.getSuperClass().getName().equals(node.getName())) {
+            levels = AccessLevel.forSuper();
+        } else {
+            levels = EnumSet.of(AccessLevel.PUBLIC);
+        }
+
+        Map<MethodSignature, CompletionItem> result = getMethodsInner(source, node, prefix, anchor, 0, levels);
 
         //fillSuggestions(meta, result);
         return result;
@@ -97,34 +116,51 @@ public final class CompleteElementHandler {
 
     // FIXME configure acess levels
     private Map<MethodSignature, CompletionItem> getMethodsInner(
-            ClassNode source, ClassNode node, String prefix, int anchor, int level) {
+            ClassNode source, ClassNode node, String prefix, int anchor, int level, Set<AccessLevel> access) {
 
         boolean leaf = (level == 0);
+
+        HashSet<AccessLevel> modifiedAccess = new HashSet<AccessLevel>(access);
+        if (!leaf) {
+            modifiedAccess.remove(AccessLevel.PRIVATE);
+        }
+        String packageName1 = source.getPackageName() == null ? "" : source.getPackageName();
+        String packageName2 = node.getPackageName() == null ? "" : node.getPackageName();
+
+        if (!packageName1.equals(packageName2)) {
+            modifiedAccess.remove(AccessLevel.PACKAGE);
+        } else {
+            modifiedAccess.add(AccessLevel.PACKAGE);
+        }
+
 
         Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
         ClassNode typeNode = loadDefinition(node);
 
-        Set<AccessLevel> levels = AccessLevel.getAccessLevels(source, typeNode);
+        Map<MethodSignature, ? extends CompletionItem> groovyItems = GroovyElementHandler.forCompilationInfo(info)
+                .getMethods(typeNode.getName(), prefix, anchor, leaf);
 
-        fillSuggestions(GroovyElementHandler.forCompilationInfo(info)
-                .getMethods(typeNode.getName(), prefix, anchor, leaf), result);
+        fillSuggestions(groovyItems, result);
 
-        String[] typeParameters = new String[(typeNode.isUsingGenerics() && typeNode.getGenericsTypes() != null)
-                ? typeNode.getGenericsTypes().length : 0];
-        for (int i = 0; i < typeParameters.length; i++) {
-            GenericsType genType = typeNode.getGenericsTypes()[i];
-            if (genType.getUpperBounds() != null) {
-                typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
-                        genType.getUpperBounds()[0].getName());
-            } else {
-                typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
-                        genType.getName());
+        // we can't go groovy and java - helper methods would be visible
+        if (groovyItems.isEmpty()) {
+            String[] typeParameters = new String[(typeNode.isUsingGenerics() && typeNode.getGenericsTypes() != null)
+                    ? typeNode.getGenericsTypes().length : 0];
+            for (int i = 0; i < typeParameters.length; i++) {
+                GenericsType genType = typeNode.getGenericsTypes()[i];
+                if (genType.getUpperBounds() != null) {
+                    typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
+                            genType.getUpperBounds()[0].getName());
+                } else {
+                    typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
+                            genType.getName());
+                }
             }
-        }
 
-        fillSuggestions(JavaElementHandler.forCompilationInfo(info)
-                .getMethods(typeNode.getName(), prefix, anchor, typeParameters,
-                        leaf, levels), result);
+            fillSuggestions(JavaElementHandler.forCompilationInfo(info)
+                    .getMethods(typeNode.getName(), prefix, anchor, typeParameters,
+                            leaf, modifiedAccess), result);
+        }
 
         // FIXME not sure about order of the meta methods, perhaps interface
         // methods take precedence
@@ -136,15 +172,15 @@ public final class CompleteElementHandler {
 
         if (typeNode.getSuperClass() != null) {
             fillSuggestions(getMethodsInner(source, typeNode.getSuperClass(),
-                    prefix, anchor, level + 1), result);
+                    prefix, anchor, level + 1, modifiedAccess), result);
         } else if (leaf) {
             fillSuggestions(JavaElementHandler.forCompilationInfo(info)
-                    .getMethods("java.lang.Object", prefix, anchor, new String[]{}, false, levels), result); // NOI18N
+                    .getMethods("java.lang.Object", prefix, anchor, new String[]{}, false, modifiedAccess), result); // NOI18N
         }
 
         for (ClassNode inter : typeNode.getInterfaces()) {
             fillSuggestions(getMethodsInner(source, inter,
-                    prefix, anchor, level + 1), result);
+                    prefix, anchor, level + 1, modifiedAccess), result);
         }
 
         return result;
