@@ -50,9 +50,5 @@ made subject to such option by the copyright holder.
     <Toolbar name="UndoRedo" />
     <Toolbar name="Memory"/>
   </Row>
-  <Row>
-    <Toolbar name="WorkspaceSwitcher" visible="true" />
-    <Toolbar name="StatusLine" visible="true" />
-  </Row>
 
 </Configuration>
