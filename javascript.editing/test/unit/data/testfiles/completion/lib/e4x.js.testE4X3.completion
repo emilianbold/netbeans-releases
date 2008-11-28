@@ -1,0 +1,5 @@
+Code completion result for source line:
+var total=order.i|tem.qty * order.item.price
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+TAG        item                                       null

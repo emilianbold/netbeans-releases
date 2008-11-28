@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project name="tomcat" basedir="." default="build-pkg">
-    
-    <property name="appdir" value="${basedir}/build/app"/>
-    
+
+    <property name="builddir" value="${basedir}/build"/>
+    <property name="appdir" value="${builddir}/app"/>
+    <property name="scriptsdir" value="${builddir}/scripts"/>
+
     <target name="clean">
-        <delete dir="build"/>
-        <mkdir dir="${basedir}/build"/>
+        <delete dir="${builddir}"/>
     </target>
+
+    <target name="init">
+        <mkdir dir="${appdir}"/>
+        <mkdir dir="${scriptsdir}"/>
+    </target>
+
     
     <target name="get-bits">
         <echo message="Downloading Tomcat from ${tomcat_location}" />
@@ -18,7 +25,7 @@
         <echo message="Unzipping Tomcat" />
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir}/build ; unzip tomcat_image.zip -d ${appdir}; rm ${basedir}/build/tomcat_image.zip"/>
+            <arg value="cd ${builddir} ; unzip tomcat_image.zip -d ${appdir}; rm ${builddir}/tomcat_image.zip"/>
         </exec>
         <!-- move stuff one level up -->
         <exec executable="sh" failonerror="yes">
@@ -32,7 +39,7 @@
         </exec>        
     </target>
 
-    <target name="build-pkg" depends="clean, unzip">
+    <target name="build-pkg" depends="clean, init, unzip">
         <exec executable="sh" failonerror="yes" outputproperty="size">
             <arg value="-c"/>
             <arg value="du -sk build | sed 's/[\t]*build//'"/>
@@ -46,30 +53,35 @@
         </exec>
              
         
-        <copy file="pkg/Info.plist" filtering="true" tofile="${basedir}/build/Info.plist">
+        <copy file="pkg/Info.plist" filtering="true" tofile="${builddir}/Info.plist">
             <filterset>
                 <filter token="INSTALLDIR" value="${tomcat.install.dir}"/>
                 <filter token="APPVERSION" value="${tomcat.version}"/>
             </filterset>
         </copy>
         
-        <copy file="${basedir}/../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="pkg/scripts/Description.plist">
+        <copy file="${basedir}/../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="${builddir}/Description.plist">
             <filterset>
                 <filter token="TITLE" value="${tomcat-title}"/>
             </filterset>
         </copy>
+
+
+        <copy  todir="${scriptsdir}">
+            <fileset dir="${basedir}/pkg/scripts"/>
+        </copy>
         
-        <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
-        <copy file="${basedir}/../commonfiles/get_current_jdk.sh" tofile="${basedir}/pkg/scripts/get_current_jdk.sh"/>
-        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/env.sh" tofile="${basedir}/pkg/scripts/env.sh"/>
-        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/addproduct_id.sh" tofile="${basedir}/pkg/scripts/addproduct_id.sh"/>          
-        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/add_tc.sh" tofile="${basedir}/pkg/scripts/add_tc.sh"/>
-        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${basedir}/pkg/scripts/perm.sh"/>
+        <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
+        <copy file="${basedir}/../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/build/scripts/env.sh" tofile="${scriptsdir}/env.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/addproduct_id.sh" tofile="${scriptsdir}/addproduct_id.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/add_tc.sh" tofile="${scriptsdir}/add_tc.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${scriptsdir}/perm.sh"/>
         
         <echo message="Building tomcat.pkg into ${basedir}/../build/tomcat.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/tomcat.pkg -f ${appdir} -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
+            <arg value="cd ${basedir}; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/tomcat.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
         </exec>
     </target>
 </project>

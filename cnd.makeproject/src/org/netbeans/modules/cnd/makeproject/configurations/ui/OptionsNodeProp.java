@@ -52,7 +52,7 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 
-public class OptionsNodeProp extends PropertySupport {
+public class OptionsNodeProp extends PropertySupport<String> {
 
     private OptionsConfiguration commandLineConfiguration;
     private BooleanConfiguration inheritValues;
@@ -82,12 +82,12 @@ public class OptionsNodeProp extends PropertySupport {
         }
     }
 
-    public Object getValue() {
+    public String getValue() {
         return commandLineConfiguration.getValue();
     }
 
-    public void setValue(Object v) {
-        String s = CppUtils.reformatWhitespaces((String) v);
+    public void setValue(String v) {
+        String s = CppUtils.reformatWhitespaces(v);
         commandLineConfiguration.setValue(s);
     }
 

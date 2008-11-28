@@ -54,8 +54,7 @@ import org.openide.util.NbBundle;
 /**
  * Panel just asking for basic info.
  */
-public class PanelConfigureProject implements WizardDescriptor.Panel, NewMakeProjectWizardIterator.Name,
-        WizardDescriptor.FinishablePanel {
+public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescriptor>, NewMakeProjectWizardIterator.Name, WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
     private WizardDescriptor wizardDescriptor;
     private String name;
@@ -131,11 +130,11 @@ public class PanelConfigureProject implements WizardDescriptor.Panel, NewMakePro
         }
     }
 
-    public void readSettings(Object settings) {
+    public void readSettings(WizardDescriptor settings) {
         if (initialized) {
             return;
         }
-        wizardDescriptor = (WizardDescriptor) settings;
+        wizardDescriptor = settings;
         component.read(wizardDescriptor);
 
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
@@ -147,8 +146,8 @@ public class PanelConfigureProject implements WizardDescriptor.Panel, NewMakePro
         initialized = true;
     }
 
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
+    public void storeSettings(WizardDescriptor settings) {
+        WizardDescriptor d = settings;
         component.store(d);
     }
 

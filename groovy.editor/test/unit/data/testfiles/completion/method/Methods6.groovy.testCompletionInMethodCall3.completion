@@ -3,8 +3,8 @@ if (new File("/").is|) {
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 METHOD     is(Object)                                 boolean
-METHOD     isAbsolute()                               boolean
+METHOD     isAbsolute()                    [PUBLIC]   boolean
 METHOD     isCase(Object)                             boolean
-METHOD     isDirectory()                              boolean
-METHOD     isFile()                                   boolean
-METHOD     isHidden()                                 boolean
+METHOD     isDirectory()                   [PUBLIC]   boolean
+METHOD     isFile()                        [PUBLIC]   boolean
+METHOD     isHidden()                      [PUBLIC]   boolean

@@ -127,31 +127,31 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
         protected void query(CompletionResultSet resultSet, Document doc,
                 int caretOffset) {
             
-            SimplifiedJSPServlet simplifiedJSPServlet = new SimplifiedJSPServlet(doc);
-            try{
-                simplifiedJSPServlet.process();
-                String fakedClassBody = simplifiedJSPServlet.getVirtualClassBody();
-                int shiftedOffset = simplifiedJSPServlet.getShiftedOffset(caretOffset);
-                
-                if (shiftedOffset >= 0){
-                    logger.fine("JSP CC: delegating CC query to java file:\n" //NOI18N
-                            + fakedClassBody.substring(0, shiftedOffset)
-                            + "|" + fakedClassBody.substring(shiftedOffset) + "\n"); //NOI18N
-                    
-                    CompletionQueryDelegatedToJava delegate = new CompletionQueryDelegatedToJava(
-                            caretOffset, shiftedOffset, queryType);
-                    
-                    delegate.create(doc, fakedClassBody);
-                    List<? extends CompletionItem> items =  delegate.getCompletionItems();
-                    resultSet.addAllItems(items);
-                } else{
-                    logger.severe("caretOffset outside of embedded java code"); //NOI18N
-                }
-            } catch (BadLocationException e){
-                logger.log(Level.SEVERE, e.getMessage(), e);
-            } finally{
-                resultSet.finish();
-            }
+//            SimplifiedJSPServlet simplifiedJSPServlet = new SimplifiedJSPServlet(doc);
+//            try{
+//                simplifiedJSPServlet.process();
+//                String fakedClassBody = simplifiedJSPServlet.getVirtualClassBody();
+//                int shiftedOffset = simplifiedJSPServlet.getShiftedOffset(caretOffset);
+//                
+//                if (shiftedOffset >= 0){
+//                    logger.fine("JSP CC: delegating CC query to java file:\n" //NOI18N
+//                            + fakedClassBody.substring(0, shiftedOffset)
+//                            + "|" + fakedClassBody.substring(shiftedOffset) + "\n"); //NOI18N
+//                    
+//                    CompletionQueryDelegatedToJava delegate = new CompletionQueryDelegatedToJava(
+//                            caretOffset, shiftedOffset, queryType);
+//                    
+//                    delegate.create(doc, fakedClassBody);
+//                    List<? extends CompletionItem> items =  delegate.getCompletionItems();
+//                    resultSet.addAllItems(items);
+//                } else{
+//                    logger.severe("caretOffset outside of embedded java code"); //NOI18N
+//                }
+//            } catch (BadLocationException e){
+//                logger.log(Level.SEVERE, e.getMessage(), e);
+//            } finally{
+//                resultSet.finish();
+//            }
         }
     }
     
@@ -168,12 +168,12 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
         }
         
         protected void process(FileObject fileObject, JavaSource javaSource){
-            try{
-                completionItems = JavaCompletionProvider.query(
-                        javaSource, queryType, shiftedOffset, caretOffset);
-            } catch (IOException e){
-                logger.log(Level.SEVERE, e.getMessage(), e);
-            }
+//            try{
+//                completionItems = JavaCompletionProvider.query(
+//                        javaSource, queryType, shiftedOffset, caretOffset);
+//            } catch (IOException e){
+//                logger.log(Level.SEVERE, e.getMessage(), e);
+//            }
         }
         
         List<? extends CompletionItem> getCompletionItems(){

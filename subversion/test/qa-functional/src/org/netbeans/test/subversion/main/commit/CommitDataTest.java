@@ -84,7 +84,7 @@ public class CommitDataTest extends JellyTestCase {
     
     public void testCommitFile() throws Exception {
         try {
-            MessageHandler mh = new MessageHandler("Committing");
+            MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
             TestKit.closeProject(PROJECT_NAME);
             if (TestKit.getOsName().indexOf("Mac") > -1)

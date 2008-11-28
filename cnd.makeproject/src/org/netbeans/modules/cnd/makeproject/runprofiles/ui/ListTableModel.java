@@ -61,7 +61,7 @@ public class ListTableModel extends AbstractTableModel {
     int colCount = 0;
     private ArrayList<String> column0 = null;
     private ArrayList<String> column1 = null;
-    
+
     public ListTableModel() {
         super();
     }
@@ -120,9 +120,9 @@ public class ListTableModel extends AbstractTableModel {
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
         //System.out.println("Setting value " + value + " at rowIndex " + rowIndex + " and columnIndex " + columnIndex + " where rowCount is " + rowCount);
         if (columnIndex == 0) {
-            column0.set(rowIndex, (String)value);
+            column0.set(rowIndex, (String) value);
         } else {
-            column1.set(rowIndex, (String)value);
+            column1.set(rowIndex, (String) value);
         }
     }
 
@@ -152,7 +152,7 @@ public class ListTableModel extends AbstractTableModel {
     //fireTableStructureChanged(); // XXX just rows inserted!
     }
 
-    public void setData(int rows, ArrayList<String> col0, ArrayList col1) {
+    public void setData(int rows, ArrayList<String> col0, ArrayList<String> col1) {
         rowCount = rows;
         column0 = col0;
         column1 = col1;

@@ -47,7 +47,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.openide.nodes.Node;
 
-public class CompilerSetNodeProp extends Node.Property {
+public class CompilerSetNodeProp extends Node.Property<String> {
 
     private CompilerSet2Configuration configuration;
     private boolean canWrite;
@@ -57,7 +57,7 @@ public class CompilerSetNodeProp extends Node.Property {
     private String oldname;
 
     public CompilerSetNodeProp(CompilerSet2Configuration configuration, boolean canWrite, String txt1, String txt2, String txt3) {
-        super(Integer.class);
+        super(String.class);
         this.configuration = configuration;
         this.canWrite = canWrite;
         //this.txt1 = txt1;
@@ -90,12 +90,12 @@ public class CompilerSetNodeProp extends Node.Property {
         }
     }
 
-    public Object getValue() {
+    public String getValue() {
         return configuration.getCompilerSetName().getValue();
     }
 
-    public void setValue(Object v) {
-        configuration.setValue((String) v);
+    public void setValue(String v) {
+        configuration.setValue(v);
     }
 
     @Override

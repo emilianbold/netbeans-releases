@@ -105,6 +105,9 @@ public abstract class SvnCommand implements CommandNotificationListener {
 
     void setNotificationHandler(NotificationHandler notificationHandler) {
         this.notificationHandler = notificationHandler;
+        if(!notifyOutput()) {
+            notificationHandler.disableLog();
+        }
     }    
     
     void prepareCommand() throws IOException {

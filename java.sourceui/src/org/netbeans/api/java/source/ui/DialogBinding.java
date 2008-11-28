@@ -27,18 +27,9 @@
  */
 package org.netbeans.api.java.source.ui;
 
-import java.lang.ref.WeakReference;
-import java.util.Collections;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.PositionConverter;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -58,38 +49,10 @@ public final class DialogBinding {
      * @return {@link JavaSource} or null
      * @throws {@link IllegalArgumentException} if fileObject is null
      * @since 1.1
+     * @deprecated Use {@link org.netbeans.api.editor.DialogBinding#bindComponentToFile(FileObject,int,int,JTextComponent)} instead.
      */
     public static JavaSource bindComponentToFile(FileObject fileObject, int offset, int length, JTextComponent component) throws IllegalArgumentException {
-        if (fileObject == null) {
-            throw new IllegalArgumentException ("fileObject == null");  //NOI18N
-        }
-        if (!fileObject.isValid()) {
-            return null;
-        }
-        if (!"text/x-java".equals(FileUtil.getMIMEType(fileObject)) && !"java".equals(fileObject.getExt())) {  //NOI18N
-            //TODO: JavaSource cannot be created for all kinds of files, but text/x-java is too restrictive:
-            return null;
-        }
-        Document doc = component.getDocument();
-        
-        if (doc.getProperty(JavaSource.class) != null) {
-            throw new IllegalArgumentException("A JavaSource is already attached to the given component.");
-        }
-        
-        final JavaSource js = JavaSourceAccessor.getINSTANCE().create(ClasspathInfo.create(fileObject), JavaSourceAccessor.getINSTANCE().create(fileObject, offset, length, component), Collections.singletonList(fileObject));
-        
-        doc.putProperty(JavaSource.class, new WeakReference<JavaSource>(null) {
-            @Override
-            public JavaSource get() {
-                return js;
-            }
-        });
-        
-        if (doc.getProperty(Language.class) == null) {
-            doc.putProperty(Language.class, JavaTokenId.language());
-        }
-        
-        return js;
+        org.netbeans.api.editor.DialogBinding.bindComponentToFile(fileObject, offset, length, component);
+        return null;
     }
-
 }

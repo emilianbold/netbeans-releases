@@ -80,7 +80,7 @@ public class DeleteTest extends JellyTestCase {
     
     public void testDeleteRevert() throws Exception {
         try {
-            MessageHandler mh = new MessageHandler("Committing");
+            MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
 
             TestKit.closeProject(PROJECT_NAME);

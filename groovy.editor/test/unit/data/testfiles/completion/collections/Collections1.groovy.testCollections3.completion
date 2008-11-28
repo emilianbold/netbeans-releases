@@ -2,10 +2,10 @@ Code completion result for source line:
 (1..10).a|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
-METHOD     add(E)                                     boolean
-METHOD     add(int, E)                                void
-METHOD     addAll(Collection<? extends E>             boolean
-METHOD     addAll(int, Collection<? exten             boolean
+METHOD     add(E)                          [PUBLIC]   boolean
+METHOD     add(int, E)                     [PUBLIC]   void
+METHOD     addAll(Collection<? extends E>  [PUBLIC]   boolean
+METHOD     addAll(int, Collection<? exten  [PUBLIC]   boolean
 METHOD     addShutdownHook(Closure)                   void
 METHOD     any()                                      boolean
 METHOD     any(Closure)                               boolean

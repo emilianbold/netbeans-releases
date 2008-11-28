@@ -326,7 +326,7 @@ public class ProviderControl {
         while (tokenizer.hasMoreTokens()) {
             list.add(tokenizer.nextToken());
         }
-        AdditionalLibrariesListPanel libPanel = new AdditionalLibrariesListPanel(list.toArray());
+        AdditionalLibrariesListPanel libPanel = new AdditionalLibrariesListPanel(list);
         DialogDescriptor dialogDescriptor = new DialogDescriptor(AdditionalLibrariesListPanel.wrapPanel(libPanel),
                 getString("ADDITIONAL_LIBRARIES_TXT"));
         DialogDisplayer.getDefault().notify(dialogDescriptor);

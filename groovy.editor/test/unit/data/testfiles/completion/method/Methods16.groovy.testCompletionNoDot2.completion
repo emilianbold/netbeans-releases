@@ -5,4 +5,4 @@ x|
 CLASS      XmlNodePrinter                             null
 CLASS      XmlParser                                  null
 CLASS      XmlSlurper                                 null
-METHOD     x()                                        
+METHOD     x()                             [PUBLIC]   Object

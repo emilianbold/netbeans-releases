@@ -187,18 +187,18 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         return sheet;
     }
    
-    private static class StringRONodeProp extends PropertySupport {
+    private static class StringRONodeProp extends PropertySupport<String> {
         String value;
         public StringRONodeProp(String name, String value) {
             super(name, String.class, name, name, true, false);
             this.value = value;
         }
         
-        public Object getValue() {
+        public String getValue() {
             return value;
         }
         
-        public void setValue(Object v) {
+        public void setValue(String v) {
         }
     }
 //    public String toString() {

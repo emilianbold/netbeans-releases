@@ -42,8 +42,6 @@
 package org.netbeans.modules.db.sql.loader;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObjectExistsException;
