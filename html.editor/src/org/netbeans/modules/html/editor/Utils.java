@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,30 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.editor.gsf;
+package org.netbeans.modules.html.editor;
 
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ResultIterator;
 
 /**
  *
- * @author marek
+ * @author marekfukala
  */
-public class AstUtils {
+public class Utils {
 
-    /** Recomputes the offset if source != null otherwise simply returns the astPostion
-     * 
-     * @param astPosition
-     * @param source
-     * @return real offset in the document
-     */
-    public static int documentPosition(int astOffset, TranslatedSource source) {
-        return source == null ? astOffset : source.getLexicalOffset(astOffset);
+    /** finds first ResultIterator */
+    public static ResultIterator getResultIterator(ResultIterator ri, String mimetype) {
+        for(Embedding e : ri.getEmbeddings() ) {
+            ResultIterator eri = ri.getResultIterator(e);
+            if(e.getMimeType().equals(mimetype)) {
+                return eri;
+            } else {
+                ResultIterator eeri = getResultIterator(eri, mimetype);
+                if(eeri != null) {
+                    return eeri;
+                }
+            }
+        }
+        return null;
     }
-    
+
+
+
 }
