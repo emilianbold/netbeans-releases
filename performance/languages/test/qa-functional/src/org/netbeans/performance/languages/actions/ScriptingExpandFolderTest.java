@@ -41,19 +41,17 @@
 
 package org.netbeans.performance.languages.actions;
 
-import junit.framework.Test;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.languages.Projects;
+import org.netbeans.performance.languages.ScriptingUtilities;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.jellytools.actions.RestoreWindowAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.languages.Projects;
-import org.netbeans.performance.languages.ScriptingUtilities;
-
-import org.netbeans.performance.languages.setup.ScriptingSetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -62,22 +60,20 @@ import org.netbeans.junit.NbModuleSuite;
  * @author mkhramov@netbeans.org
  */
 public class ScriptingExpandFolderTest extends PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Actions suite";
+
     /** Name of the folder which test creates and expands */
     protected String project;
-    
     /** Path to the folder which test creates and expands */
     protected String pathToFolderNode;
-    
     /** Node represantation of the folder which test creates and expands */
     protected Node nodeToBeExpanded;
-    
     /** Projects tab */
     protected ProjectsTabOperator projectTab;
     
     public ScriptingExpandFolderTest(String testName) {
         super(testName);
     }
+
     public ScriptingExpandFolderTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
     }
@@ -97,7 +93,6 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
         
         projectTab.getProjectRootNode(project).collapse();
         
-        turnBadgesOff();
         repaintManager().addRegionFilter( LoggingRepaintManager.EXPLORER_FILTER);        
     }
     
@@ -109,11 +104,8 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     }
     
     public ComponentOperator open(){
-//        nodeToBeExpanded.tree().clickOnPath(nodeToBeExpanded.getTreePath(), 2);
         repaintManager().addRegionFilter(repaintManager().EXPLORER_FILTER);
-            nodeToBeExpanded.tree().doExpandPath(nodeToBeExpanded.getTreePath());
-//        nodeToBeExpanded.tree().clickMouse(2);
-//        nodeToBeExpanded.waitExpanded();
+        nodeToBeExpanded.tree().doExpandPath(nodeToBeExpanded.getTreePath());
         nodeToBeExpanded.expand();
         return null;
     }
@@ -126,14 +118,12 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     @Override
     public void shutdown() {
         repaintManager().resetRegionFilters();
-        turnBadgesOn();
         projectTab.getProjectRootNode(project).collapse();
         new RestoreWindowAction().performAPI(projectTab);
     }
-    
+
     public void testExpandRubyProjectNode() {
-        WAIT_AFTER_OPEN = 3000;
-        WAIT_AFTER_PREPARE = 2000;
+        WAIT_AFTER_OPEN = 2000;
         project = Projects.RUBY_PROJECT;
         pathToFolderNode = "";
         expectedTime = 1000;
@@ -141,8 +131,7 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     }
 
     public void testExpandFolderWith100RubyFiles() {
-        WAIT_AFTER_OPEN = 3000;
-        WAIT_AFTER_PREPARE = 2000;
+        WAIT_AFTER_OPEN = 2000;
         project = Projects.RUBY_PROJECT;
         pathToFolderNode = "Source Files" + "|" + "100RbFiles";
         expectedTime = 1000;
@@ -150,8 +139,7 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     }
 
     public void testExpandRailsProjectNode() {
-        WAIT_AFTER_OPEN = 3000;
-        WAIT_AFTER_PREPARE = 2000;
+        WAIT_AFTER_OPEN = 2000;
         project = Projects.RAILS_PROJECT;
         pathToFolderNode = "";
         expectedTime = 1000;
@@ -159,8 +147,7 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     }
 
     public void testExpandPHPProjectNode() {
-        WAIT_AFTER_OPEN = 3000;
-        WAIT_AFTER_PREPARE = 2000;
+        WAIT_AFTER_OPEN = 2000;
         project = Projects.PHP_PROJECT;
         pathToFolderNode = "";
         expectedTime = 1000;
@@ -168,50 +155,32 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     }
 
     public void testExpandFolderWith100RailsFiles() {
-        WAIT_AFTER_OPEN = 3000;
-        WAIT_AFTER_PREPARE = 2000;
+        WAIT_AFTER_OPEN = 2000;
         project = Projects.RAILS_PROJECT;
-        pathToFolderNode = "Views" + "|" + "100RhtmlFiles";
+        pathToFolderNode = "Unit Tests" + "|" + "100RhtmlFiles";
         expectedTime = 1000;
         doMeasurement();        
     }
     public void testExpandFolderWith100JSFiles() {
-        WAIT_AFTER_OPEN = 3000;
-        WAIT_AFTER_PREPARE = 2000;
+        WAIT_AFTER_OPEN = 2000;
         project = Projects.SCRIPTING_PROJECT;
         pathToFolderNode = "Web Pages" + "|" + "100JsFiles";
         expectedTime = 1000;
         doMeasurement();           
     }
     public void testExpandFolderWith100CssFiles() {
-        WAIT_AFTER_OPEN = 3000;
-        WAIT_AFTER_PREPARE = 2000;
+        WAIT_AFTER_OPEN = 2000;
         project = Projects.SCRIPTING_PROJECT;
         pathToFolderNode = "Web Pages" + "|" + "100CssFiles";
         expectedTime = 1000;
         doMeasurement();           
     }  
     public void testExpandFolderWith100PhpFiles() {
-        WAIT_AFTER_OPEN = 3000;
-        WAIT_AFTER_PREPARE = 2000;
+        WAIT_AFTER_OPEN = 2000;
         project = Projects.PHP_PROJECT;
         pathToFolderNode = "Source Files" + "|" + "100PhpFiles";
         expectedTime = 1000;
         doMeasurement();
     }
     
-    /**
-     * turn badges off
-     */
-    protected void turnBadgesOff() {
-        System.setProperty("perf.dont.resolve.java.badges", "true");
-    }
-
-    /**
-     * turn badges on
-     */
-    protected void turnBadgesOn() {
-        System.setProperty("perf.dont.resolve.java.badges", "false");
-    }    
-
 }

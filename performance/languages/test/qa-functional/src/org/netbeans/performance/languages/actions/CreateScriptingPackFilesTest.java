@@ -41,45 +41,40 @@
 
 package org.netbeans.performance.languages.actions;
 
-
-import junit.framework.Test;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.DeleteAction;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
-
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
+
+import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  * Test create Web Pack projects
  *
  * @author  mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
-public class CreateScriptingPackFilesTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class CreateScriptingPackFilesTest extends PerformanceTestCase {
    
-    private String doccategory, doctype, docname, docfolder, suffix, projectfolder, buildedname;
+    private String doccategory, doctype, docname, suffix, projectfolder, buildedname;
     private NewFileNameLocationStepOperator location;
-    
     private String project_name = "";
-    private ProjectsTabOperator pto;
     private Node projectRoot;
-    public static final String suiteName="Scripting UI Responsiveness Actions suite";
+
     /**
      * Creates a new instance of CreateWebPackFiles
      * @param testName the name of the test
      */
     public CreateScriptingPackFilesTest(String testName) {
         super(testName);
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=2000;
     }
     
     /**
@@ -89,6 +84,8 @@ public class CreateScriptingPackFilesTest extends org.netbeans.modules.performan
      */
     public CreateScriptingPackFilesTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=2000;
     }
 
     public static NbTestSuite suite() {
@@ -100,138 +97,61 @@ public class CreateScriptingPackFilesTest extends org.netbeans.modules.performan
     }
     
     public void testCreatePHPPage(){
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=15000;
         docname = "PHPPage"; //NOI18N
-        
         doccategory = "PHP"; //NOI18N        
         doctype ="PHP Web Page"; //NOI18N
-	docfolder = "web";
-	suffix = ".php";
+        suffix = ".php";
         projectfolder = ScriptingUtilities.SOURCE_PACKAGES;
         project_name = Projects.PHP_PROJECT;        
-	doMeasurement();
+        doMeasurement();
     }
     
     public void testCreatePHPFile(){
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=15000;
         docname = "PHPFile"; //NOI18N
-
         doccategory = "PHP"; //NOI18N        
         doctype ="PHP File"; //NOI18N
-	docfolder = "web";
-	suffix = ".php";
+    	suffix = ".php";
         projectfolder = ScriptingUtilities.SOURCE_PACKAGES;
         project_name = Projects.PHP_PROJECT;
-	doMeasurement();
+    	doMeasurement();
     }
     
     
     public ComponentOperator open(){
-        log("::open::");
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         location.finish();
-	
-        return null; //new EditorOperator(docname+"_"+(index)+suffix);
+        return new EditorOperator(buildedname);
     }
     
     @Override
     public void initialize(){
-	log("::initialize::");
         closeAllModal();
-        pto = ScriptingUtilities.invokePTO();
-                
-        projectRoot = null;
-        try {
-            projectRoot = pto.getProjectRootNode(project_name);
-            projectRoot.select();
-            
-        } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
-            fail("Cannot find and select project root node");
-        }
-        
     }
 
     public void prepare(){
-        log("::prepare::");
-
         try {
-            projectRoot = pto.getProjectRootNode(project_name);
+            projectRoot = ScriptingUtilities.invokePTO().getProjectRootNode(project_name);
             projectRoot.select();
-            
         } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
             fail("Cannot find and select project root node");
         }
-        
-        // Workaround for issue 143497
+   
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
-
-        waitNoEvent(2000);
-        
-        // We can't select project as it's name is not available
         
         wizard.selectCategory(doccategory);
         wizard.selectFileType(doctype);
-	
         wizard.next();
 
-        waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
         buildedname = docname+"_"+System.currentTimeMillis();
         location.txtObjectName().setText(buildedname);
-
-	JTextFieldOperator pathField = new JTextFieldOperator(wizard,2);
-	pathField.setText(docfolder);
-        waitNoEvent(1000);
     }
 
     @Override
     public void close(){
-        log("::close");
-        cleanupTest();        
-    }
-    
-    private void cleanupTest() {
-        log(":: do cleanup.....");
-        long nodeTimeout = pto.getTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
-        long dialogTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("DialogWaiter.WaitDialogTimeout");
-        
-        pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
-        JemmyProperties.getCurrentTimeouts().setTimeout("DialogWaiter.WaitDialogTimeout", 60000);
-        
-        waitNoEvent(2000);
-        
-        try {
-            Node projectRootNode = pto.getProjectRootNode(project_name);
-            projectRootNode.select();
-            //waitNoEvent(2000);
-            Node objNode;
-            objNode = new Node(projectRootNode,projectfolder);
-            objNode.select();
-            objNode = new Node(projectRootNode,projectfolder+"|"+ buildedname+suffix);
-            objNode.select();             
-            new DeleteAction().performPopup(objNode);
-            String dialogCaption = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.navigation.Bundle", "MSG_ConfirmDeleteObjectTitle");
-            new NbDialogOperator(dialogCaption).yes();
-            
-        } catch (TimeoutExpiredException timeoutExpiredException) {
-            
-            log("Cleanup failed because of: "+timeoutExpiredException.getMessage());
-            pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout);
-            JemmyProperties.getCurrentTimeouts().setTimeout("DialogWaiter.WaitDialogTimeout",dialogTimeout);
-            return;
-        }
-        pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout); 
-        JemmyProperties.getCurrentTimeouts().setTimeout("DialogWaiter.WaitDialogTimeout",dialogTimeout);
-        log(":: cleanup passed");
-    }
-    
-    @Override
-    public void shutdown() {
-        log("::shutdown");
-        super.shutdown();
+        EditorOperator.closeDiscardAll();
     }
 
 }
