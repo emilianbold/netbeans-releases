@@ -150,7 +150,7 @@ public final class ExtractLayer extends Task {
             }
             copyPattern = Pattern.compile(sb.toString());
         } catch (Exception ex) {
-            throw new BuildException(ex);
+            throw new BuildException("Cannot parse " + layer, ex);
         }
         ResArray bundles = new ResArray();
         ResArray icons = new ResArray();

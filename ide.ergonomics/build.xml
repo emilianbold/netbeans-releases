@@ -110,8 +110,6 @@
 &lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd"&gt;
 &lt;filesystem&gt;
-    &lt;folder name="Templates"&gt;
-        &lt;folder name="Project"&gt;
             </header>
             <filterchain>
                 <ignoreblank byline="true"/>
@@ -119,8 +117,6 @@
             <fileset dir="${proxytmp}/extracted">
             </fileset>
             <footer>
-        &lt;/folder&gt;
-    &lt;/folder&gt;
 &lt;/filesystem&gt;
             </footer>
         </concat>

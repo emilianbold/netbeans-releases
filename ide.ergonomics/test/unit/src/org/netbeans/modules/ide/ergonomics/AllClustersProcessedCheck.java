@@ -60,8 +60,11 @@ public class AllClustersProcessedCheck extends NbTestCase {
 
         StringBuilder sb = new StringBuilder();
         for (String c : clusters.split(":")) {
-            String n = new File(c).getName().replaceFirst("[0-9]+$", "");
+            String n = new File(c).getName().replaceFirst("[\\.0-9]+$", "");
             if (n.equals("platform")) {
+                continue;
+            }
+            if (n.equals("harness")) {
                 continue;
             }
             if (n.equals("ide")) {
@@ -71,6 +74,9 @@ public class AllClustersProcessedCheck extends NbTestCase {
                 continue;
             }
             if (n.equals("extra")) {
+                continue;
+            }
+            if (n.equals("nb")) {
                 continue;
             }
 

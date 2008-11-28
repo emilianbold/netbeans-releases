@@ -4,14 +4,20 @@
     <xsl:param name="cluster.name"/>
 
     <xsl:template match="/">
-        <xsl:apply-templates mode="project-wizard"/>
-    </xsl:template>
-
-    <xsl:template match="filesystem" mode="project-wizard">
         <xsl:element name="filesystem">
-            <xsl:apply-templates mode="project-wizard"/>
+            <xsl:element name="folder">
+                <xsl:attribute name="name">Templates</xsl:attribute>
+                <xsl:element name="folder">
+                    <xsl:attribute name="name">Project</xsl:attribute>
+                    <xsl:apply-templates
+                        select="//*/folder[@name='Templates']/folder[@name='Project']/*"
+                        mode="project-wizard"
+                    />
+                </xsl:element>
+            </xsl:element>
         </xsl:element>
     </xsl:template>
+
     <xsl:template match="file" mode="project-wizard">
         <xsl:element name="file">
             <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>

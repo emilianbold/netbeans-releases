@@ -4,7 +4,13 @@
     <xsl:param name="cluster.name"/>
 
     <xsl:template match="filesystem/folder[@name='Templates']/folder[@name='Project']">
-        <xsl:apply-templates mode="project-wizard"/>
+        <xsl:element name="folder">
+            <xsl:attribute name="name">Templates</xsl:attribute>
+            <xsl:element name="folder">
+                <xsl:attribute name="name">Project</xsl:attribute>
+                <xsl:apply-templates mode="project-wizard"/>
+            </xsl:element>
+        </xsl:element>
     </xsl:template>
 
     <xsl:template match="file" mode="project-wizard">
