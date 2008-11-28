@@ -315,6 +315,7 @@ public final class ModelVisitor extends DefaultVisitor {
 
     @Override
     public void visit(GlobalStatement node) {
+        super.visit(node);
         List<Variable> variables = node.getVariables();
         for (Variable var : variables) {
             String varName = CodeUtils.extractVariableName(var);
@@ -339,7 +340,6 @@ public final class ModelVisitor extends DefaultVisitor {
                 }
             }
         }
-        super.visit(node);
     }
 
     @Override
