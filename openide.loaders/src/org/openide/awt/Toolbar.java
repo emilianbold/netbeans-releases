@@ -56,7 +56,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
@@ -436,7 +435,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                 }
             }
             if( cookies.length == 0 ) {
-                label = new JButton("<"+getDisplayName()+">");
+                label = new JButton("<"+Actions.cutAmpersand(getDisplayName())+">");
                 Toolbar.this.add(label);
             }
 
