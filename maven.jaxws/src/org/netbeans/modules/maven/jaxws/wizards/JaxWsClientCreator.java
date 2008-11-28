@@ -139,7 +139,7 @@ public class JaxWsClientCreator implements ClientCreator {
                     public void performOperation(POMModel model) {
                         org.netbeans.modules.maven.model.pom.Plugin plugin = MavenModelUtils.addJaxWSPlugin(model);
                         MavenModelUtils.addWsdlFile(plugin, relativePath);
-                        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+                        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
                         if (provider != null) { // expecting web project
                             MavenModelUtils.addWarPlugin(model);
                         } else { // J2SE Project
