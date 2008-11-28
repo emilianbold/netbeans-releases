@@ -70,6 +70,12 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
     public DefaultLanguageConfig() {
     }
 
+    //the method is not added to the GsfLanguage interface so far
+    //so compatibility is preserved
+    public CommentHandler getCommentHandler() {
+        return null;
+    }
+
     public String getLineCommentPrefix() {
         return null;
     }

@@ -41,6 +41,7 @@
 package org.netbeans.modules.html.editor;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
@@ -55,12 +56,16 @@ import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.html.editor.Utils;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.Phase;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
@@ -167,30 +172,35 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
             return null;
         }
 
-        Source source = Source.forDocument(context.getDocument());
+        final Source source = Source.create(context.getDocument());
         if (source == null) {
             return null;
         }
 
         final int [][] ret = new int [1][];
         try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
 
-                public void cancel() {
-                }
-
-                public void run(CompilationController parameter) throws Exception {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
                     if (!testMode && MatcherContext.isTaskCanceled()) {
                         return;
                     }
-                    
-                    parameter.toPhase(Phase.PARSED);
-                    
-                    HtmlParserResult result = (HtmlParserResult) parameter.getEmbeddedResult(HTMLKit.HTML_MIME_TYPE, context.getSearchOffset());
-                    if(result == null) {
+
+                    if(!source.getMimeType().equals(HTMLKit.HTML_MIME_TYPE)) {
+                        //find embedded result iterator
+                        resultIterator = Utils.getResultIterator(resultIterator, HTMLKit.HTML_MIME_TYPE);
+                    }
+
+                    if(resultIterator == null) {
                         ret[0] = new int[]{context.getSearchOffset(), context.getSearchOffset()};
                         return;
                     }
+
+                    Result result = resultIterator.getParserResult();
+
+                    result.
+
                     AstNode root = result.root();
 
                     int searched =  result.getTranslatedSource() == null
@@ -237,9 +247,12 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                             }
                         }
                     }
+
                 }
-            }, true);
-        } catch (IOException ex) {
+
+            });
+
+        } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
 
