@@ -74,6 +74,7 @@ public final class PatchedSymbol extends Symbol implements PatchedElement {
         }
     }
 
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedSymbol(doc);
     }    

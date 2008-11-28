@@ -41,7 +41,6 @@
 package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 
 import com.sun.perseus.builder.SVGTinyModelFactory;
-import com.sun.perseus.model.*;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.SVG;
 import com.sun.perseus.util.SVGConstants;
