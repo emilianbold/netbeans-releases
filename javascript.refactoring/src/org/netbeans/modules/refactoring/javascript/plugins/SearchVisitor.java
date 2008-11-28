@@ -44,7 +44,7 @@ package org.netbeans.modules.refactoring.javascript.plugins;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.napi.gsfret.source.Phase;
+import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.napi.gsfret.source.WorkingCopy;
 import org.netbeans.modules.refactoring.javascript.JsElementCtx;
 import org.openide.ErrorManager;

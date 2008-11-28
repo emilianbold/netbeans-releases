@@ -40,8 +40,8 @@
 package org.netbeans.modules.javascript.hints.infrastructure;
 
 import java.util.List;
-import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.Rule.SelectionRule;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.Rule.SelectionRule;
 
 /**
  * Represents a rule to be run on text selection
@@ -51,7 +51,7 @@ import org.netbeans.modules.gsf.api.Rule.SelectionRule;
 public abstract class JsSelectionRule implements SelectionRule {
     public abstract void run(JsRuleContext context, List<Hint> result);
     
-    public void run(org.netbeans.modules.gsf.api.RuleContext context, List<Hint> result) {
+    public void run(org.netbeans.modules.csl.api.RuleContext context, List<Hint> result) {
         run((JsRuleContext)context, result);
     }
 }
