@@ -81,6 +81,7 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.spi.project.ActionProvider;
@@ -599,7 +600,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         DefaultListModel model = new DefaultListModel();
 
         if (handle != null) {
-            boolean isWar = "war".equalsIgnoreCase(handle.getProject().getPackaging());
+            boolean isWar = NbMavenProject.TYPE_WAR.equalsIgnoreCase(handle.getProject().getPackaging());
             addSingleAction(ActionProvider.COMMAND_BUILD, model);
             addSingleAction(ActionProvider.COMMAND_CLEAN, model);
             addSingleAction(ActionProvider.COMMAND_REBUILD, model);
