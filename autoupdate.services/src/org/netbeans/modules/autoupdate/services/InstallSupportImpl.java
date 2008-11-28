@@ -772,7 +772,6 @@ public class InstallSupportImpl {
             String label) throws MalformedURLException, IOException {
         
         int increment = 0;
-        progress.progress (label, aggregateDownload);
         InputStream is = null;
         try {
             is = source.openStream();
