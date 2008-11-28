@@ -64,7 +64,9 @@ import org.apache.tools.ant.taskdefs.Concat;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.FilterChain;
+import org.apache.tools.ant.types.Resource;
 import org.apache.tools.ant.types.ResourceCollection;
+import org.apache.tools.ant.types.resources.StringResource;
 import org.apache.tools.ant.types.resources.ZipResource;
 import org.apache.tools.ant.util.FlatFileNameMapper;
 import org.apache.tools.zip.ZipEntry;
@@ -150,8 +152,8 @@ public final class ExtractLayer extends Task {
         } catch (Exception ex) {
             throw new BuildException(ex);
         }
-        ZipArray bundles = new ZipArray();
-        ZipArray icons = new ZipArray();
+        ResArray bundles = new ResArray();
+        ResArray icons = new ResArray();
         StringBuilder modules = new StringBuilder();
         String sep = "\n    ";
 
@@ -196,6 +198,7 @@ public final class ExtractLayer extends Task {
 
         Concat concat = new Concat();
         concat.setProject(getProject());
+        bundles.add(new StringResource(""));
         concat.add(bundles);
         concat.setDestfile(bundle);
         if (bundleFilter != null) {
@@ -289,7 +292,7 @@ public final class ExtractLayer extends Task {
             }
         });
     }
-    private static final class ZipArray extends ArrayList<ZipResource>
+    private static final class ResArray extends ArrayList<Resource>
     implements ResourceCollection {
         public boolean isFilesystemOnly() {
             return false;

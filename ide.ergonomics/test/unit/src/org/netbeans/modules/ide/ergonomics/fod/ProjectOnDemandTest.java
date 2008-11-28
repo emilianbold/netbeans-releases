@@ -134,6 +134,7 @@ public class ProjectOnDemandTest extends NbTestCase {
         }
 
         FeatureInfo info = FeatureInfo.create(
+            "cluster",
             ProjectOnDemandTest.class.getResource("FeatureInfo.xml"),
             ProjectOnDemandTest.class.getResource("TestBundle.properties")
         );

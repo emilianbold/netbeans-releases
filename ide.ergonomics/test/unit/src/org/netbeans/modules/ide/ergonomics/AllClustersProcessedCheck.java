@@ -39,25 +39,49 @@
 
 package org.netbeans.modules.ide.ergonomics;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+import java.io.File;
+import java.net.URL;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class VerifyErgonomicsIDETest {
-    private VerifyErgonomicsIDETest() {
+public class AllClustersProcessedCheck extends NbTestCase {
+    public AllClustersProcessedCheck(String n) {
+        super(n);
     }
+    
+    public void testAllClustersProcessedCheck() {
+        String clusters = System.getProperty("netbeans.dirs");
+        assertNotNull("clusters OK", clusters);
+        ClassLoader l = Thread.currentThread().getContextClassLoader();
+        assertNotNull("Classloader found", l);
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.emptyConfiguration().
-            addTest(ProjectTemplatesCheck.class).
-            addTest(AllClustersProcessedCheck.class).
-            gui(false).
-            clusters("ergonomics.*").
-            clusters(".*")
-        );
+        StringBuilder sb = new StringBuilder();
+        for (String c : clusters.split(":")) {
+            String n = new File(c).getName().replaceFirst("[0-9]+$", "");
+            if (n.equals("platform")) {
+                continue;
+            }
+            if (n.equals("ide")) {
+                continue;
+            }
+            if (n.equals("ergonomics")) {
+                continue;
+            }
+            if (n.equals("extra")) {
+                continue;
+            }
+
+            URL u = l.getResource("org/netbeans/modules/ide/ergonomics/" + n + "/Bundle.properties");
+            if (u == null) {
+                sb.append("Missing ").append(n).append('\n');
+            }
+        }
+
+        if (sb.length() > 0) {
+            fail("Cannot find some clusters:\n" + sb);
+        }
     }
 }
