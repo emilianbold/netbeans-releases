@@ -60,7 +60,6 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
-import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
 import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
@@ -87,10 +86,6 @@ import org.w3c.dom.Element;
 public class RailsProjectGenerator {
 
     private static final Logger LOGGER = Logger.getLogger(RailsProjectGenerator.class.getName());
-
-    public static final RegexpOutputRecognizer RAILS_GENERATOR =
-        new RegexpOutputRecognizer("^   (   create|    force|identical|     skip)\\s+([\\w|/]+\\.\\S+)\\s*$", // NOI18N
-            2, -1, -1);
 
     static final Pattern RAILS_GENERATOR_PATTERN = Pattern.compile("^   (   create|    force|identical|     skip)\\s+([\\w|/]+\\.\\S+)\\s*$"); // NOI18N
 

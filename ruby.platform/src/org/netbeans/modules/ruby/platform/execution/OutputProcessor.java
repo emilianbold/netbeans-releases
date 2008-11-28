@@ -40,22 +40,18 @@
  */
 package org.netbeans.modules.ruby.platform.execution;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 
-import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
-import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
 /**
@@ -67,56 +63,10 @@ import org.openide.windows.OutputListener;
  * @todo Rename me!
  * @author Tor Norbye
  */
-public class OutputProcessor implements OutputListener {
+public final class OutputProcessor {
     
     public static final Logger LOGGER = Logger.getLogger(OutputListener.class.getName());
     
-    private final String file;
-    private final int lineno;
-    private final FileLocator fileLocator;
-
-    public OutputProcessor(String file, int lineno, FileLocator fileLocator) {
-        // TODO : columns?
-        this.file = file;
-        this.lineno = lineno < 0 ? 0 : lineno;
-        this.fileLocator = fileLocator;
-    }
-
-    public void outputLineSelected(OutputEvent ev) {
-        //throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void outputLineAction(OutputEvent ev) {
-        // Find file such and such and warp to it
-        FileObject fo = findFile(file);
-
-        if (fo != null) {
-            open(fo, lineno);
-        }
-    }
-
-    private FileObject findFile(final String path) {
-        if (fileLocator != null) {
-            FileObject fo = fileLocator.find(path);
-            if (fo != null) {
-                return fo;
-            }
-        }
-
-        // Perhaps it's an absolute path of some sort... try to resolve those
-        // Absolute path? Happens for stack traces in JRuby libraries and such
-        File file  = new File(path);
-        if (file.isFile()) {
-            return FileUtil.toFileObject(FileUtil.normalizeFile(file));
-        } else {
-            LOGGER.warning("Cannot resolve file for \"" + path + "\" path.");
-            return null;
-        }
-    }
-
-    public void outputLineCleared(OutputEvent ev) {
-    }
-
     public static boolean open(final FileObject fo, final int lineno) {
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
