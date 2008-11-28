@@ -65,6 +65,7 @@ import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
  * @author mkuchtiak
  */
 public class WSStackUtils {
+    public static final String DEVNULL = "DEV-NULL"; //NOI18N
     private Project project;
     private J2eePlatform j2eePlatform;
 
@@ -75,10 +76,10 @@ public class WSStackUtils {
     }
 
     private J2eePlatform getJ2eePlatform(Project project){
-        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         if(provider != null){
             String serverInstanceID = provider.getServerInstanceID();
-            if(serverInstanceID != null && serverInstanceID.length() > 0) {
+            if(serverInstanceID != null && !serverInstanceID.equals(DEVNULL)) {
                 try {
                     return Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
                 } catch (InstanceRemovedException ex) {
@@ -123,7 +124,9 @@ public class WSStackUtils {
 
     public static ServerType getServerType(Project project) {
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider == null || j2eeModuleProvider.getServerInstanceID() == null) {
+        if (j2eeModuleProvider == null || 
+            j2eeModuleProvider.getServerInstanceID() == null ||
+            WSStackUtils.DEVNULL.equals(j2eeModuleProvider.getServerInstanceID())) {
             return ServerType.NOT_SPECIFIED;
         }
         String serverId = j2eeModuleProvider.getServerID();

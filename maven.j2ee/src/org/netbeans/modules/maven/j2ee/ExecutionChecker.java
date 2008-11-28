@@ -53,9 +53,6 @@ import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
-import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
-import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel;
 import org.netbeans.modules.maven.model.ModelOperation;
@@ -78,7 +75,7 @@ import org.openide.windows.OutputWriter;
 public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesChecker {
 
     private Project project;
-    public static final String DEV_NULL = "WTF-NULL"; //NOI18N
+    public static final String DEV_NULL = "DEV-NULL"; //NOI18N
     public static final String MODULEURI = "netbeans.deploy.clientModuleUri"; //NOI18N
     public static final String CLIENTURLPART = "netbeans.deploy.clientUrlPart"; //NOI18N
 
