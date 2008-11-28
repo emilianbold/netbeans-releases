@@ -76,7 +76,6 @@ class SearchExecutor implements Runnable {
     
     private int                         completedSearches;
     private boolean                     searchCanceled;
-    private List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
 
     public SearchExecutor(SearchHistoryPanel master) {
         this.master = master;
@@ -161,7 +160,7 @@ class SearchExecutor implements Runnable {
      */ 
     private synchronized void appendResults(String rootUrl, HgLogMessage[] logMessages) {
         Map<String, String> historyPaths = new HashMap<String, String>();
-
+        List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
         // traverse in reverse chronological order
         for (int i = logMessages.length - 1; i >= 0; i--) {
             HgLogMessage logMessage = logMessages[i];
@@ -193,22 +192,25 @@ class SearchExecutor implements Runnable {
                 event.setFile(file);
             }
             results.add(rev);
-        }
-        if(results.isEmpty()) results = null;
-        
-        checkFinished();
+        }                
+        checkFinished(results);
     }
 
     private boolean searchingUrl() {
         return master.getRepositoryUrl() != null;
     }
     
-    private void checkFinished() {
+    private void checkFinished(final List<RepositoryRevision> results) {
         completedSearches++;
         if (searchingUrl() && completedSearches >= 1 || workFiles.size() == completedSearches) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    master.setResults(results);
+                    if(results.isEmpty()) {
+                        master.setResults(null);
+                    } else {
+                        master.setResults(results);
+                    }
+                    
                 }
             });
         }
