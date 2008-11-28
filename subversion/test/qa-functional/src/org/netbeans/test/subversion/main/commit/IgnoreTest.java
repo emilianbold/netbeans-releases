@@ -81,7 +81,7 @@ public class IgnoreTest extends JellyTestCase {
     
     public void testIgnoreUnignoreFile() throws Exception {
         try {
-            MessageHandler mh = new MessageHandler("Committing");
+            MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
 
             TestKit.closeProject(PROJECT_NAME);

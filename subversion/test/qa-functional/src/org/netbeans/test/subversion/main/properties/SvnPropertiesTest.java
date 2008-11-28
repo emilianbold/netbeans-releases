@@ -82,18 +82,18 @@ public class SvnPropertiesTest extends JellyTestCase {
     public static Test suite() {
          return NbModuleSuite.create(
                  NbModuleSuite.createConfiguration(SvnPropertiesTest.class).addTest(
-                    "SvnPropertiesTest"
+                    "propTest"
                  )
                  .enableModules(".*")
                  .clusters(".*")
         );
      }
 
-    public void SvnPropertiesTest() throws Exception {
+    public void propTest() throws Exception {
         try {
-            MessageHandler mh = new MessageHandler("Committing");
+            MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
-
+            TestKit.closeProject(PROJECT_NAME);
             if (TestKit.getOsName().indexOf("Mac") > -1)
                 new NewProjectWizardOperator().invoke().close();
             
