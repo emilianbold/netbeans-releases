@@ -112,7 +112,7 @@ public class DwarfMacinfoTable {
     }
     
     private void readFileSourceTable() throws IOException {
-        long length = section.readMacinfoTable(this, fileSourceTableOffset, false);
+        /*long length =*/ section.readMacinfoTable(this, fileSourceTableOffset, false);
         fileSourceTableRead = true;
     }
     
