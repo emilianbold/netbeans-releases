@@ -160,18 +160,6 @@ public enum AccessLevel {
         return modifiedAccess;
     }
 
-    public static Set<AccessLevel> forThis() {
-        return EnumSet.allOf(AccessLevel.class);
-    }
-
-    public static Set<AccessLevel> forSuper() {
-        return EnumSet.complementOf(EnumSet.of(AccessLevel.PRIVATE));
-    }
-
-    public static Set<AccessLevel> forPackage() {
-        return EnumSet.of(AccessLevel.PUBLIC, AccessLevel.PACKAGE);
-    }
-
     private static String getPackageName(ClassNode node) {
         if (node.getPackageName() != null) {
             return node.getPackageName();
