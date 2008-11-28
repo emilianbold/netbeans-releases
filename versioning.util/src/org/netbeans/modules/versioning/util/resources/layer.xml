@@ -94,11 +94,8 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="OptionsDialog">
-        <folder name="advancedOptionsFolder">
-            <file name="org-netbeans-modules-versioning-util-VcsAdvancedOptions.instance">
-                <attr name="keywords" bundlevalue="Versioning"/>
-                <attr name="keywordsCategory" stringvalue="Versioning"/>
-            </file>
+        <folder name="Advanced">
+            <file name="org-netbeans-modules-versioning-util-VcsAdvancedOptions.instance"/>
         </folder>
     </folder>
 </filesystem>
