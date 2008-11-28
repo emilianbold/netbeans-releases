@@ -58,7 +58,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,6 +66,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.groovy.grails.api.GrailsConstants;
+import org.netbeans.modules.groovy.grailsproject.completion.ControllerCompletionProvider;
 import org.netbeans.modules.groovy.grailsproject.ui.TemplatesImpl;
 import org.netbeans.modules.groovy.support.spi.GroovyFeature;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
@@ -124,6 +124,8 @@ public final class GrailsProject implements Project {
                 new AuxiliaryConfigurationImpl(),
                 new RecommendedTemplatesImpl(),
                 new GroovyFeatureImpl(),
+                // FIXME check this
+                new ControllerCompletionProvider(),
                 logicalView, //Logical view of project implementation
                 cpProvider
             );

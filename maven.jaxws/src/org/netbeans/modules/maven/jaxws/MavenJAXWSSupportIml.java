@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -66,14 +66,19 @@ import org.openide.filesystems.FileUtil;
  * @author mkuchtiak
  */
 public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
-    Project prj;
+    private Project prj;
     private List<JaxWsService> services = new LinkedList<JaxWsService>();
+    /** Path for catalog file. */
     public static final String CATALOG_PATH = "src/jax-ws-catalog.xml"; //NOI18N
-    
+
+    /** Constructor.
+     *
+     * @param prj project
+     */
     MavenJAXWSSupportIml(Project prj) {
         this.prj = prj;
     }
-    
+
     public void addService(JaxWsService service) {
         services.add(service);
     }
@@ -94,22 +99,10 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
                     Preferences prefs = ProjectUtils.getPreferences(prj, JaxWsService.class, true);
                     if (prefs != null) {
                         prefs.remove(wsdlFo.getName());
-                    }                    
+                    }
                 }
             }
-            
         }
-    }
-
-    public JaxWsService getService(String implClass) {
-        for (JaxWsService s:services) {
-            if (implClass.equals(s.getImplementationClass())) return s;
-        }
-        return null;
-    }
-
-    public boolean isFromWSDL(JaxWsService service) {
-        return service.getLocalWsdl() != null;
     }
 
     public FileObject getWsdlFolder(boolean create) throws IOException {
@@ -121,8 +114,7 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
         File wsdlDir = FileUtilities.resolveFilePath(FileUtil.toFile(prj.getProjectDirectory()), wsdlFolderPath);
         if (wsdlDir.exists()) {
             return FileUtil.toFileObject(wsdlDir);
-        }
-        else if (createFolder) {
+        } else if (createFolder) {
             boolean created = wsdlDir.mkdirs();
             if (created) {
                 return FileUtil.toFileObject(wsdlDir);
@@ -145,17 +137,18 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
     }
 
     public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
-        if (webservicesMetadataModel == null) {        
+        if (webservicesMetadataModel == null) {
             J2eeModuleProvider j2eeModuleProvider = prj.getLookup().lookup(J2eeModuleProvider.class);
             if (j2eeModuleProvider != null) {
-                webservicesMetadataModel = j2eeModuleProvider.getJ2eeModule().getMetadataModel(WebservicesMetadata.class);
+                webservicesMetadataModel =
+                        j2eeModuleProvider.getJ2eeModule().getMetadataModel(WebservicesMetadata.class);
             }
         }
         return webservicesMetadataModel;
     }
-    
-    private MetadataModel<WebservicesMetadata> webservicesMetadataModel;
-    
+
+    private MetadataModel < WebservicesMetadata > webservicesMetadataModel;
+
     private String getWsdlDir() {
         Plugin jaxWsPlugin = null;
         try {
@@ -165,8 +158,11 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
             ex.printStackTrace();
         }
         if (jaxWsPlugin != null) {
-            String dirPath = PluginPropertyUtils.getPluginProperty(prj, "org.codehaus.mojo", "jaxws-maven-plugin", "wsdlDirectory", 
-                    "wsimport");
+            String dirPath = PluginPropertyUtils.getPluginProperty(prj,
+                    "org.codehaus.mojo", //NOI18N
+                    "jaxws-maven-plugin", //NOI18N
+                    "wsdlDirectory", //NOI18N
+                    "wsimport"); //NOI18N
             if (dirPath != null) {
                 return dirPath;
             } else {
@@ -174,7 +170,7 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
             }
         } else {
             return "src/wsdl"; //NOI18N
-        }        
+        }
     }
 
 

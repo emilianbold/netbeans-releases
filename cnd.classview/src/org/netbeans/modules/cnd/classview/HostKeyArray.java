@@ -384,10 +384,11 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
                 needUpdate = true;
             }
         }
-        for(PersistentKey key : members.keySet()){
-            if (myKeys.containsKey(key)){
+        for (java.util.Map.Entry<PersistentKey, SortedName> entry : members.entrySet()) {
+            PersistentKey key = entry.getKey();
+            if (myKeys.containsKey(key)) {
                 // update
-                myKeys.put(key,members.get(key));
+                myKeys.put(key, entry.getValue());
                 CsmOffsetableDeclaration what = findDeclaration(key);
                 if (what == null) {
                     // remove non-existent element
@@ -399,14 +400,14 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
                     if (l != null) {
                         l.stateChanged(new ChangeEvent(what));
                     }
-                    if (CsmKindUtilities.isClassifier(what)||
-                            CsmKindUtilities.isEnum(what)){
+                    if (CsmKindUtilities.isClassifier(what) ||
+                            CsmKindUtilities.isEnum(what)) {
                         recursive.add(what);
                     }
                 }
             } else {
                 // new
-                myKeys.put(key,members.get(key));
+                myKeys.put(key, entry.getValue());
                 myChanges.remove(key);
                 needUpdate = true;
             }

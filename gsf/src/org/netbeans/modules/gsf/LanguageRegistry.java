@@ -49,11 +49,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
@@ -71,7 +69,11 @@ import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
 import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -450,19 +452,7 @@ public class LanguageRegistry implements Iterable<Language> {
 
     public Iterator<Language> iterator() {
         if (languages == null) {
-            return new Iterator<Language>() {
-
-                public boolean hasNext() {
-                    return false;
-                }
-
-                public Language next() {
-                    return null;
-                }
-
-                public void remove() {
-                }
-            };
+            return Collections.<Language>emptyList().iterator();
         } else {
             return languages.iterator();
         }
@@ -472,16 +462,23 @@ public class LanguageRegistry implements Iterable<Language> {
         if (languages == null) {
             // Temporary
             userdirCleanup();
+            reread(false);
+        }
+    }
 
-            readSfs();
-            
-            if (languages != null) {
-                mimeToLanguage = new HashMap<String,Language>(2*languages.size());
-                for (Language language : languages) {
-                    String mimeType = language.getMimeType();
-                    assert mimeType.equals(mimeType.toLowerCase()) : mimeType;
-                    mimeToLanguage.put( mimeType,language);
-                }
+
+    final void reread(boolean refreshExtensions) {
+        readSfs();
+        if (refreshExtensions) {
+            GsfDataLoader.getLoader(GsfDataLoader.class).initExtensions();
+        }
+        if (languages != null) {
+            mimeToLanguage = new HashMap<String,Language>(2*languages.size());
+            for (Language language : languages) {
+                String mimeType = language.getMimeType();
+                assert mimeType.equals(mimeType.toLowerCase()) : mimeType;
+                mimeToLanguage.put( mimeType,language);
+            }
 
                 // Ensure that we don't clobber databases (if in dev builds)
                 // When languages.ejs subclassed the JsLanguage config class,
@@ -515,10 +512,11 @@ public class LanguageRegistry implements Iterable<Language> {
 //                        }
 //                    }
 //                }
-            }
         }
     }
 
+    private ConfigListener listener;
+    private FileChangeListener weakListener;
     private void readSfs() {
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
         FileObject f = sfs.findResource(FOLDER);
@@ -527,12 +525,20 @@ public class LanguageRegistry implements Iterable<Language> {
             return;
         }
 
+        if (listener == null) {
+            listener = new ConfigListener();
+            weakListener = FileUtil.weakFileChangeListener(listener, f);
+            f.addFileChangeListener(weakListener);
+        }
+
         // Read languages
         FileObject[] children = f.getChildren();
-        languages = new ArrayList<Language>();
+        ArrayList<Language> tmpLanguages = new ArrayList<Language>();
 
         for (int i = 0; i < children.length; i++) {
             FileObject mimePrefixFile = children[i];
+            mimePrefixFile.removeFileChangeListener(weakListener);
+            mimePrefixFile.addFileChangeListener(weakListener);
 
             // Read languages
             FileObject[] innerChildren = mimePrefixFile.getChildren();
@@ -547,7 +553,7 @@ public class LanguageRegistry implements Iterable<Language> {
                 }
 
                 Language language = new Language(mime);
-                languages.add(language);
+                tmpLanguages.add(language);
 
                 Boolean useCustomEditorKit = (Boolean)mimeFile.getAttribute("useCustomEditorKit"); // NOI18N
                 if (useCustomEditorKit != null && useCustomEditorKit.booleanValue()) {
@@ -606,6 +612,7 @@ public class LanguageRegistry implements Iterable<Language> {
                 }
             }
         }
+        languages = tmpLanguages;
     }
 
     private void userdirCleanup() {
@@ -915,4 +922,32 @@ public class LanguageRegistry implements Iterable<Language> {
             Exceptions.printStackTrace(ioe);
         }
     }
+
+    private final class ConfigListener implements FileChangeListener {
+
+        public void fileFolderCreated(FileEvent fe) {
+            reread(true);
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            reread(true);
+        }
+
+        public void fileChanged(FileEvent fe) {
+            reread(true);
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            reread(true);
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            reread(true);
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            reread(true);
+        }
+    } // end of ConfigListener
+
 }

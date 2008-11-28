@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.DataInput;
@@ -54,72 +53,72 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
 /*package*/
 abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
-    
+
     protected final int fileNameIndex;
-    
+
     protected ProjectFileNameBasedKey(String prjName, String fileName) {
-	super(prjName);
-	assert fileName != null;
-	this.fileNameIndex = KeyUtilities.getFileIdByName(getUnitId(), fileName);
+        super(prjName);
+        assert fileName != null;
+        this.fileNameIndex = KeyUtilities.getFileIdByName(getUnitId(), fileName);
     }
-    
+
     protected ProjectFileNameBasedKey(FileImpl file) {
-	this(getProjectName(file), file.getAbsolutePath());
+        this(getProjectName(file), file.getAbsolutePath());
     }
-    
+
     protected static String getProjectName(FileImpl file) {
-	assert (file != null);
-	ProjectBase prj = file.getProjectImpl(true);
-	assert (prj != null);
-	return prj == null ? "<No Project Name>" : prj.getUniqueName().toString();  // NOI18N
+        assert (file != null);
+        ProjectBase prj = file.getProjectImpl(true);
+        assert (prj != null);
+        return prj == null ? "<No Project Name>" : prj.getUniqueName().toString();  // NOI18N
     }
-    
+
     @Override
     public void write(DataOutput aStream) throws IOException {
-	super.write(aStream);
-	aStream.writeInt(fileNameIndex);
+        super.write(aStream);
+        aStream.writeInt(fileNameIndex);
     }
-    
+
     protected ProjectFileNameBasedKey(DataInput aStream) throws IOException {
-	super(aStream);
-	this.fileNameIndex = aStream.readInt();
+        super(aStream);
+        this.fileNameIndex = aStream.readInt();
     }
-    
+
     @Override
     public int hashCode() {
-	int key = super.hashCode();
-	key = 17*key + fileNameIndex;
-	return key;
+        int key = super.hashCode();
+        key = 17 * key + fileNameIndex;
+        return key;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
-	if (!super.equals(obj)) {
-	    return false;
-	}
-	ProjectFileNameBasedKey other = (ProjectFileNameBasedKey)obj;
-	
-	return this.fileNameIndex==other.fileNameIndex;
+        if (!super.equals(obj)) {
+            return false;
+        }
+        ProjectFileNameBasedKey other = (ProjectFileNameBasedKey) obj;
+
+        return this.fileNameIndex == other.fileNameIndex;
     }
-    
+
     protected String getFileName() {
-	return KeyUtilities.getFileNameById(getUnitId(), this.fileNameIndex);
+        return KeyUtilities.getFileNameById(getUnitId(), this.fileNameIndex);
     }
-    
+
     /** A special safe method, mainly for toString / tracing */
     protected String getFileNameSafe() {
-	return KeyUtilities.getFileNameByIdSafe(getUnitId(), this.fileNameIndex);
+        return KeyUtilities.getFileNameByIdSafe(getUnitId(), this.fileNameIndex);
     }
-    
+
     @Override
     public int getDepth() {
-	assert super.getDepth() == 0;
-	return 1;
+        assert super.getDepth() == 0;
+        return 1;
     }
-    
+
     @Override
     public CharSequence getAt(int level) {
-	assert super.getDepth() == 0 && level < getDepth();
-	return getFileName();
+        assert super.getDepth() == 0 && level < getDepth();
+        return getFileName();
     }
 }

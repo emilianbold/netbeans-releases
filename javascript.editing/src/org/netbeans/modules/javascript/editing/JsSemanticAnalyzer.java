@@ -139,7 +139,8 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         for (Node node : globalVars) {
             String s = node.getString();
             //filter out generated code
-            if (JsModel.isGeneratedIdentifier(s)) {
+            // and zero-length nodes (they may have names but these are generated)
+            if (JsModel.isGeneratedIdentifier(s) || node.getSourceStart() == node.getSourceEnd()) {
                 continue;
             }
             OffsetRange range = AstUtilities.getNameRange(node);

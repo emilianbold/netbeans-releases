@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.Token;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * base implementation for APTContainer
@@ -68,11 +68,11 @@ public abstract class APTContainerNode extends APTBaseNode implements Serializab
         return child;
     }     
 
-    public boolean accept(Token t) {
+    public boolean accept(APTToken t) {
         return false;
     }    
     
-    public Token getToken() {
+    public APTToken getToken() {
         return null;
     } 
     

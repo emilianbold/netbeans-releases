@@ -73,6 +73,7 @@ made subject to such option by the copyright holder.
             <bits_64 flags="-m64"/>
         </architecture>
         <strip flags="-s"/>
+        <output_object_file flags="-o " />
         <dependency_generation flags="-MMD -MP -MF $@.d" />
         <precompiled_header flags="-o $@" suffix=".gch" append="true" />
     </c>
@@ -104,6 +105,7 @@ made subject to such option by the copyright holder.
             <bits_64 flags="-m64"/>
         </architecture>
         <strip flags="-s"/>
+        <output_object_file flags="-o " />
         <dependency_generation flags="-MMD -MP -MF $@.d" />
         <precompiled_header flags="-o $@" suffix=".gch" append="true" />
     </cpp>
@@ -130,6 +132,7 @@ made subject to such option by the copyright holder.
             <bits_32 flags="-m32"/>
             <bits_64 flags="-m64"/>
         </architecture>
+        <output_object_file flags="-o " />
         <strip flags="-s"/>
     </fortran>
     <assembler>
@@ -155,6 +158,7 @@ made subject to such option by the copyright holder.
             <bits_32 flags="--32"/>
             <bits_64 flags="--64"/>
         </architecture>
+        <output_object_file flags="-o " />
         <strip flags="-s"/>
     </assembler>
     <scanner>
@@ -175,14 +179,23 @@ made subject to such option by the copyright holder.
         <static_library flags="-static"/>
         <dynamic_library flags="-dynamic"/>
         <dynamic_library_basic flags="-shared "/>
+        <output_file flags="-o "/>
     </linker>
     <make>
         <tool name="gmake,make"/>
+        <alternative_path>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
         <version flags="--version" />
         <dependency_support code="include $(wildcard $(addsuffix .d, ${OBJECTFILES}))\n" />
     </make>
     <debugger>
         <tool name="gdb"/>
+        <alternative_path>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
         <version flags="--version" />
     </debugger>
 </toolchaindefinition>

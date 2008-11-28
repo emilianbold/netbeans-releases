@@ -212,7 +212,7 @@ public abstract class BaseTestCase extends NbTestCase {
     }
 
     protected String getHKey(){
-        assert isRemoteSupported != null : "Run canTestRemote() first."; //NOI18N
+        assert isRemoteSupported != null : "Run canTestRemote() before any remote development tests logic."; //NOI18N
         return remoteHKey;
     }
 
@@ -230,7 +230,7 @@ public abstract class BaseTestCase extends NbTestCase {
                 int n = ui.indexOf('@');
                 String remotePassword = ui.substring(m+1, n);
                 remoteHKey = ui.substring(0,m) + ui.substring(n);
-                RemoteUserInfo.getUserInfo(getHKey(), false).setPassword(remotePassword, false);
+                RemoteUserInfo.getUserInfo(remoteHKey, false).setPassword(remotePassword, false);
             } else {
                 remoteHKey = ui;
             }

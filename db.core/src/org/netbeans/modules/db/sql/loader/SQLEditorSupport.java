@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.db.sql.loader;
 
 import java.awt.BorderLayout;
@@ -93,185 +92,155 @@ import org.openide.windows.CloneableOpenSupport;
  * DataObject is deleted when the editor is closed, and the contents is saved when the editor is 
  * deactivated or upon exiting NetBeans.
  *
- * @author Jesse Beaumont, Andrei Badea
+ * @author Jesse Beaumont, Andrei Badea, John Baker
  */
-public class SQLEditorSupport extends DataEditorSupport 
-        implements OpenCookie, EditCookie, EditorCookie.Observable, 
+public class SQLEditorSupport extends DataEditorSupport
+        implements OpenCookie, EditCookie, EditorCookie.Observable,
         PrintCookie, SQLExecuteCookie, CloseCookie {
-    
+
     private static final Logger LOGGER = Logger.getLogger(SQLEditorSupport.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    
     static final String EDITOR_CONTAINER = "sqlEditorContainer"; // NOI18N
-    
     private static final String MIME_TYPE = "text/x-sql"; // NOI18N
-    
     private final PropertyChangeSupport sqlPropChangeSupport = new PropertyChangeSupport(this);
-    
     // the RequestProcessor used for executing statements.
     private final RequestProcessor rp = new RequestProcessor("SQLExecution", 1, true); // NOI18N
-    
     // the database connection to execute against
     private DatabaseConnection dbconn;
-    
     // whether we are executing statements
     private boolean executing;
-    
     // execution results. Not synchronized since accessed only from rp of throughput 1.
     private SQLExecutionResults executionResults;
-    
     // execution logger
     private SQLExecutionLoggerImpl logger;
-    
     /** 
      * SaveCookie for this support instance. The cookie is adding/removing 
      * data object's cookie set depending on if modification flag was set/unset. 
      */
     private final SaveCookie saveCookie = new SaveCookie() {
+
         public void save() throws IOException {
             saveDocument();
         }
     };
-    
+
     public SQLEditorSupport(SQLDataObject obj) {
         super(obj, new Environment(obj));
         setMIMEType(MIME_TYPE);
     }
-    
-    protected boolean notifyModified () {
-        if (!super.notifyModified()) 
+
+    @Override
+    protected boolean notifyModified() {
+        if (!super.notifyModified()) {
             return false;
-        
-        if (!isConsole()) {
-            FileObject fo = getDataObject().getPrimaryFile();
-            // Add the save cookie to the data object
-            SQLDataObject obj = (SQLDataObject)getDataObject();
-            if (obj.getCookie(SaveCookie.class) == null) {
-                obj.addCookie(saveCookie);
-                obj.setModified(true);
-            }
         }
+
+        FileObject fo = getDataObject().getPrimaryFile();
+        // Add the save cookie to the data object
+        SQLDataObject obj = (SQLDataObject) getDataObject();
+        if (obj.getCookie(SaveCookie.class) == null) {
+            obj.addCookie(saveCookie);
+            obj.setModified(true);
+        }
+
 
         return true;
     }
 
-    protected void notifyUnmodified () {
+    @Override
+    protected void notifyUnmodified() {
         super.notifyUnmodified();
 
         // Remove the save cookie from the data object
-        SQLDataObject obj = (SQLDataObject)getDataObject();
+        SQLDataObject obj = (SQLDataObject) getDataObject();
         Cookie cookie = obj.getCookie(SaveCookie.class);
         if (cookie != null && cookie.equals(saveCookie)) {
             obj.removeCookie(saveCookie);
             obj.setModified(false);
         }
     }
-    
+
+    @Override
     protected String messageToolTip() {
-        if (isConsole()) {
-            return getDataObject().getPrimaryFile().getName();
-        } else {
-            return super.messageToolTip();
-        }
+        return super.messageToolTip();
     }
-    
+
+    @Override
     protected String messageName() {
-        if (!isValid()) return ""; // NOI18N
-        
-        if (isConsole()) {
-            // just the name, no modified or r/o flags
-            return getDataObject().getName();
-        } else {
-            return super.messageName();
+        if (!isValid()) {
+            return ""; // NOI18N
         }
+
+        return super.messageName();
     }
-    
+
+    @Override
     protected String messageHtmlName() {
-        if (!isValid()) return ""; // NOI18N
-        
-        if (isConsole()) {
-            // just the name, no modified or r/o flags
-            String name = getDataObject().getName();
-            if (name != null) {
-                if (!name.startsWith("<html>")) { // NOI18N
-                    name = "<html>" + name; // NOI18N
-                }
-            }
-            return name;
-        } else {
-            return super.messageHtmlName();
+        if (!isValid()) {
+            return ""; // NOI18N
         }
+
+        return super.messageHtmlName();
     }
-    
+
+    @Override
     protected void notifyClosed() {
         super.notifyClosed();
-        
         closeExecutionResult();
         closeLogger();
-        
-        if (isConsole() && isValid()) {
-            try {
-                getDataObject().delete();
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
     }
-    
+
+    @Override
     protected boolean canClose() {
-        if (isConsole()) {
-            return true;
-        } else {
-            return super.canClose();
-        }
+        return super.canClose();
     }
-    
-    boolean isConsole() {
-        return ((SQLDataObject)getDataObject()).isConsole();
-    }
-    
+
     boolean isValid() {
         return getDataObject().isValid();
     }
-    
+
+    @Override
     protected CloneableEditor createCloneableEditor() {
         return new SQLCloneableEditor(this);
     }
-    
+
+    @Override
     protected Component wrapEditorComponent(Component editor) {
         JPanel container = new JPanel(new BorderLayout());
         container.setName(EDITOR_CONTAINER); // NOI18N
         container.add(editor, BorderLayout.CENTER);
         return container;
     }
-    
+
+    @Override
     public void open() {
         SQLCoreUILogger.logEditorOpened();
         super.open();
     }
-    
+
+    @Override
     public void edit() {
         SQLCoreUILogger.logEditorOpened();
         super.edit();
     }
-    
+
     void addSQLPropertyChangeListener(PropertyChangeListener listener) {
         sqlPropChangeSupport.addPropertyChangeListener(listener);
     }
-    
+
     void removeSQLPropertyChangeListener(PropertyChangeListener listener) {
         sqlPropChangeSupport.removePropertyChangeListener(listener);
     }
-    
+
     synchronized DatabaseConnection getDatabaseConnection() {
         return dbconn;
     }
-    
+
     public synchronized void setDatabaseConnection(DatabaseConnection dbconn) {
         this.dbconn = dbconn;
         sqlPropChangeSupport.firePropertyChange(SQLExecution.PROP_DATABASE_CONNECTION, null, null);
     }
-    
+
     public void execute() {
         Document doc = getDocument();
         if (doc == null) {
@@ -287,7 +256,7 @@ public class SQLEditorSupport extends DataEditorSupport
         }
         execute(sql, 0, sql.length());
     }
-    
+
     /**
      * Executes either all or a part of the given sql string (which can contain
      * zero or more SQL statements). If startOffset &lt; endOffset, the part of
@@ -298,72 +267,74 @@ public class SQLEditorSupport extends DataEditorSupport
      * have to be delimited by \n.
      */
     void execute(String sql, int startOffset, int endOffset) {
-        DatabaseConnection dbconn;
+        DatabaseConnection dbConnection;
         synchronized (this) {
-            dbconn = this.dbconn;
+            dbConnection = this.dbconn;
         }
-        if (dbconn == null) {
+        if (dbConnection == null) {
             return;
         }
-        SQLExecutor executor = new SQLExecutor(this, dbconn, sql, startOffset, endOffset);
+        SQLExecutor executor = new SQLExecutor(this, dbConnection, sql, startOffset, endOffset);
         RequestProcessor.Task task = rp.create(executor);
         executor.setTask(task);
         task.schedule(0);
     }
-    
+
     synchronized boolean isExecuting() {
         return executing;
     }
-    
+
     private synchronized void setExecuting(boolean executing) {
         this.executing = executing;
         sqlPropChangeSupport.firePropertyChange(SQLExecution.PROP_EXECUTING, null, null);
     }
-    
+
     private void setResultsToEditors(final SQLExecutionResults results) {
-       Mutex.EVENT.writeAccess(new Runnable() {
+        Mutex.EVENT.writeAccess(new Runnable() {
+
             public void run() {
                 List<Component> components = null;
-                
+
                 if (results != null) {
                     components = new ArrayList<Component>();
 
                     for (SQLExecutionResult result : results.getResults()) {
-                        for(Component component : result.getDataView().createComponents()){
+                        for (Component component : result.getDataView().createComponents()) {
                             components.add(component);
                         }
                     }
                 }
-                
+
                 Enumeration editors = allEditors.getComponents();
                 while (editors.hasMoreElements()) {
-                    SQLCloneableEditor editor = (SQLCloneableEditor)editors.nextElement();
+                    SQLCloneableEditor editor = (SQLCloneableEditor) editors.nextElement();
 
                     editor.setResults(components);
                 }
             }
         });
     }
-    
+
     private void setExecutionResults(SQLExecutionResults executionResults) {
         this.executionResults = executionResults;
     }
-    
+
     private void closeExecutionResult() {
         setResultsToEditors(null);
-        
+
         Runnable run = new Runnable() {
+
             public void run() {
                 if (executionResults != null) {
                     executionResults = null;
                 }
             }
         };
-        
+
         // need to run the Runnable in the request processor
         // since it makes JDBC calls, possibly blocking
         // the calling thread
-        
+
         // closeExceptionResult is sometimes called in the RP,
         // e.g. while executing statements
         if (rp.isRequestProcessorThread()) {
@@ -372,63 +343,56 @@ public class SQLEditorSupport extends DataEditorSupport
             rp.post(run);
         }
     }
-    
+
     private SQLExecutionLoggerImpl createLogger() {
         closeLogger();
-        
+
         String loggerDisplayName = null;
-        if (isConsole()) {
-            loggerDisplayName = getDataObject().getName();
-        } else {
-            loggerDisplayName = getDataObject().getNodeDelegate().getDisplayName();
-        }
-        
+        loggerDisplayName = getDataObject().getNodeDelegate().getDisplayName();
+
         synchronized (this) {
             logger = new SQLExecutionLoggerImpl(loggerDisplayName, this);
         }
         return logger;
     }
-    
+
     private synchronized void closeLogger() {
         if (logger != null) {
             logger.close();
         }
     }
-    
+
     private final static class SQLExecutor implements Runnable, Cancellable {
-        
+
         private final SQLEditorSupport parent;
 
         // the connections which the statements are executed against
         private final DatabaseConnection dbconn;
-        
         // the currently executed statement(s)
         private final String sql;
-        
-        private final int startOffset, endOffset;
-        
+        private final int startOffset,  endOffset;
         // the task representing the execution of statements
         private RequestProcessor.Task task;
-        
+
         public SQLExecutor(SQLEditorSupport parent, DatabaseConnection dbconn, String sql, int startOffset, int endOffset) {
             assert parent != null;
             assert dbconn != null;
             assert sql != null;
-            
+
             this.parent = parent;
             this.dbconn = dbconn;
             this.sql = sql;
             this.startOffset = startOffset;
             this.endOffset = endOffset;
         }
-        
+
         public void setTask(RequestProcessor.Task task) {
             this.task = task;
         }
-        
+
         public void run() {
             assert task != null : "Should have called setTask()"; // NOI18N
-            
+
             parent.setExecuting(true);
             try {
                 if (LOG) {
@@ -437,6 +401,7 @@ public class SQLEditorSupport extends DataEditorSupport
                 }
 
                 Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
+
                     public Void run() {
                         ConnectionManager.getDefault().showConnectionDialog(dbconn);
                         return null;
@@ -454,6 +419,7 @@ public class SQLEditorSupport extends DataEditorSupport
                 // need to save the document, otherwise the Line.Set.getOriginal mechanism does not work
                 try {
                     Mutex.EVENT.readAccess(new Mutex.ExceptionAction<Void>() {
+
                         public Void run() throws Exception {
                             parent.saveDocument();
                             return null;
@@ -486,7 +452,7 @@ public class SQLEditorSupport extends DataEditorSupport
                 parent.setExecuting(false);
             }
         }
-        
+
         private void handleExecutionResults(SQLExecutionResults executionResults, SQLExecutionLoggerImpl logger) {
             if (executionResults == null) {
                 // execution cancelled
@@ -495,7 +461,7 @@ public class SQLEditorSupport extends DataEditorSupport
             }
 
             parent.setExecutionResults(executionResults);
-            
+
             if (executionResults.size() <= 0) {
                 // no results, but successfull
                 setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfully"));
@@ -511,11 +477,11 @@ public class SQLEditorSupport extends DataEditorSupport
                 setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfully"));
             }
         }
-        
+
         private void setStatusText(String statusText) {
             StatusDisplayer.getDefault().setStatusText(statusText);
         }
-        
+
         public boolean cancel() {
             return task.cancel();
         }
@@ -528,9 +494,7 @@ public class SQLEditorSupport extends DataEditorSupport
     static final class Environment extends DataEditorSupport.Env {
 
         public static final long serialVersionUID = 7968926994844480435L;
-
         private transient boolean modified = false;
-
         private transient FileLock fileLock;
 
         public Environment(SQLDataObject obj) {
@@ -542,44 +506,33 @@ public class SQLEditorSupport extends DataEditorSupport
         }
 
         protected FileLock takeLock() throws IOException {
-            MultiDataObject obj = (MultiDataObject)getDataObject();
+            MultiDataObject obj = (MultiDataObject) getDataObject();
             fileLock = obj.getPrimaryEntry().takeLock();
             return fileLock;
         }
 
+        @Override
         public void markModified() throws IOException {
-            if (findSQLEditorSupport().isConsole()) {
-                modified = true;
-            } else {
-                super.markModified();
-            }
+            super.markModified();
         }
 
+        @Override
         public void unmarkModified() {
-            if (findSQLEditorSupport().isConsole()) {
-                modified = false;
-                if (fileLock != null && fileLock.isValid()) {
-                    fileLock.releaseLock();
-                }
-            } else {
-                super.unmarkModified();
-            }
+            super.unmarkModified();
         }
 
+        @Override
         public boolean isModified() {
-            if (findSQLEditorSupport().isConsole()) {
-                return modified;
-            } else {
-                return super.isModified();
-            }
+            return super.isModified();
         }
 
+        @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
             return findSQLEditorSupport();
         }
 
         private SQLEditorSupport findSQLEditorSupport() {
-            return (SQLEditorSupport)getDataObject().getCookie(SQLEditorSupport.class);
+            return (SQLEditorSupport) getDataObject().getCookie(SQLEditorSupport.class);
         }
     }
 }

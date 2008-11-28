@@ -306,10 +306,8 @@ public class CsmTracer {
 	    }
 	    sb.append(" TEXT=" + type.getText()); // NOI18N
 	}
-	if( type instanceof CsmOffsetable ) {
-	    sb.append(' ');
-	    sb.append(getOffsetString(type, traceFile));
-	}
+    sb.append(' ');
+    sb.append(getOffsetString(type, traceFile));
 	return sb.toString();
     }
 

@@ -60,6 +60,7 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     private boolean cRequired;
     private boolean cppRequired;
     private boolean fortranRequired;
+    private boolean asRequired;
     private boolean showBuildTools;
     private boolean showDebugTools;
     private boolean enableRequiredCompilersCB;
@@ -77,6 +78,7 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
         cRequired = false;
         cppRequired = false;
         fortranRequired = false;
+        asRequired = false;
         showBuildTools = false;
         showDebugTools = false;
         enableRequiredCompilersCB = true;
@@ -197,6 +199,14 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     
     public void setFortranRequired(boolean enabled) {
         fortranRequired = enabled;
+    }
+
+    public boolean isAsRequired() {
+        return asRequired;
+    }
+
+    public void setAsRequired(boolean enabled) {
+        asRequired = enabled;
     }
     
     public boolean showRequiredTools() {

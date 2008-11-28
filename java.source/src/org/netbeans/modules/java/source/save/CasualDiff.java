@@ -1951,7 +1951,8 @@ public class CasualDiff {
             printer.print(makeAround[0].fixedText());
         }
         int oldIndex = 0;
-        for (int index = 0, j = 0; j < result.length; j++) {
+        boolean wasComma = false;
+        for (int j = 0; j < result.length; j++) {
             ResultItem<JCTree> item = result[j];
             switch (item.operation) {
                 case MODIFY: {
@@ -1972,7 +1973,11 @@ public class CasualDiff {
                 }
                 // insert new element
                 case INSERT: {
-                    if (index++ > 0) printer.print(" ");
+                    if (wasComma) {
+                        if (VeryPretty.getCodeStyle(workingCopy).spaceAfterComma()) {
+                            printer.print(" ");
+                        }
+                    }
                     printer.print(item.element);
                     break;
                 }
@@ -2000,7 +2005,7 @@ public class CasualDiff {
                 default: 
                     break;
             }
-            if (commaNeeded(result, item)) {
+            if (wasComma = commaNeeded(result, item)) {
                 printer.print(",");
             }
         }

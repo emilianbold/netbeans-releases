@@ -299,6 +299,7 @@ public class CodeUtils {
         return null;
     }
 
+    @CheckForNull
     public static String extractFunctionName(FunctionInvocation functionInvocation){
         return extractFunctionName(functionInvocation.getFunctionName());
     }
@@ -311,6 +312,7 @@ public class CodeUtils {
         return methodDeclaration.getFunction().getFunctionName().getName();
     }
 
+    @CheckForNull
     public static String extractFunctionName(FunctionName functionName){
         if (functionName.getName() instanceof Identifier) {
             Identifier id = (Identifier) functionName.getName();

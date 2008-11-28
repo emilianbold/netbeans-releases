@@ -47,9 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
-import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -108,7 +106,7 @@ final class Report {
         //PENDING - should be synchronized
         tests.add(test);
         
-        if (test.trouble == null) {
+        if (test.getTrouble() == null) {
             detectedPassedTests++;
         }
     }
@@ -172,126 +170,6 @@ final class Report {
         /* Called from the EventDispatch thread */
         
         return (failures + errors) != 0;
-    }
-    
-    /**
-     */
-    static final class Testcase {
-
-        private final TestType type;
-
-        String className;
-        String name;
-        int timeMillis;
-        Trouble trouble;
-        private Status status;
-        /**
-         * The location, i.e. the file and line number of this test case. 
-         */
-        private String location;
-
-        public Testcase(TestType type) {
-            this.type = type;
-        }
-
-        TestType getType() {
-            return type;
-        }
-
-        void setLocation(String location) {
-            this.location = location;
-        }
-
-        /**
-         * Gets the location, i.e. the path to the file and line number of the test case.
-         * May be null if such info is not available.
-         * @return
-         */
-        String getLocation() {
-            return location;
-        }
-        
-        void setStatus(Status status) {
-            this.status = status;
-        }
-
-        Status getStatus() {
-            if (status != null) {
-                return status;
-            }
-            if (trouble == null) {
-                return Status.PASSED;
-            }
-            return trouble.isError() ? Status.ERROR : Status.FAILED;
-        }
-        /**
-         * Gets the line from the stack trace representing the last line in the test class.
-         * If that can't be resolved
-         * then returns the second line of the stack trace (the
-         * first line represents the error message) or <code>null</code> if there
-         * was no (usable) stack trace attached.
-         *
-         * @return
-         */
-        String getTestCaseLineFromStackTrace() {
-            if (trouble == null) {
-                return null;
-            }
-            String[] stacktrace = trouble.stackTrace;
-            if (stacktrace == null || stacktrace.length <= 1) {
-                return null;
-            }
-            if (stacktrace.length > 2) {
-                String underscoreName = RubyUtils.camelToUnderlinedName(className);
-                for (int i = 0; i < stacktrace.length; i++) {
-                    if (stacktrace[i].contains(underscoreName) && stacktrace[i].contains(name)) {
-                        return stacktrace[i];
-                    }
-                }
-            }
-            return stacktrace[1];
-
-        }
-    }
-    
-    /**
-     */
-    static final class Trouble {
-        
-        static final String COMPARISON_FAILURE_JUNIT3
-                = "junit.framework.ComparisonFailure";                  //NOI18N
-        static final String COMPARISON_FAILURE_JUNIT4
-                = "org.junit.ComparisonFailure";                        //NOI18N
-
-        boolean error;
-        String message;
-        String exceptionClsName;
-        String[] stackTrace;
-        Trouble nestedTrouble;
-        
-        /**
-         */
-        Trouble(boolean error) {
-            this.error = error;
-        }
-        
-        /** */
-        boolean isError() {
-            return error;
-        }
-
-        /** */
-        boolean isComparisonFailure() {
-            return (exceptionClsName != null)
-                   && (exceptionClsName.equals(COMPARISON_FAILURE_JUNIT3)
-                       || exceptionClsName.equals(COMPARISON_FAILURE_JUNIT4));
-        }
-
-        /** */
-        boolean isFakeError() {
-            return error && isComparisonFailure();
-        }
-
     }
     
 }

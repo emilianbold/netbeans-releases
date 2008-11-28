@@ -205,7 +205,7 @@ public final class Manager {
                        final Report report) {
 
         /* Called from the AntLogger's thread */
-        
+
         final ResultDisplayHandler displayHandler = getDisplayHandler(session);
         displayHandler.displayReport(report);
         displayInWindow(session, displayHandler);

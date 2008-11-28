@@ -41,11 +41,12 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.actions;
 
-import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandlerProvider;
 import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandlerProvider;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandlerProvider.class)
 public class GdbActionHandlerProvider implements CustomProjectActionHandlerProvider {
+
     public CustomProjectActionHandler factoryCreate() {
         return new GdbActionHandler();
     }

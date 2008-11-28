@@ -76,20 +76,21 @@ public class RspecHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase(TestType.RSPEC);
+            Testcase testcase = new Testcase(TestType.RSPEC);
             String location = matcher.group(1);
             if (location != null && !"".equals(location)) {
                 testcase.setLocation(matcher.group(1));
             }
-            testcase.timeMillis = toMillis(matcher.group(3));
-            testcase.className = matcher.group(2);
-            testcase.name = matcher.group(2);
-            testcase.trouble = new Report.Trouble(false);
-            testcase.trouble.stackTrace = filterStackTrace(matcher.group(4), matcher.group(5));
+            testcase.setTimeMillis(toMillis(matcher.group(3)));
+            testcase.setClassName(matcher.group(2));
+            testcase.setName(matcher.group(2));
+            testcase.setTrouble(new Trouble(false));
+            testcase.getTrouble().stackTrace = filterStackTrace(matcher.group(4), matcher.group(5));
             session.addTestCase(testcase);
-            for (String line : testcase.trouble.stackTrace) {
+            for (String line : testcase.getTrouble().stackTrace) {
                 manager.displayOutput(session, line, false);
             }
+            testcase.addOutputLines(getRecognizedOutput());
         }
 
         @Override
@@ -131,14 +132,14 @@ public class RspecHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase(TestType.RSPEC);
-            testcase.timeMillis = toMillis(matcher.group(3));
-            testcase.className = session.getSuiteName();
+            Testcase testcase = new Testcase(TestType.RSPEC);
+            testcase.setTimeMillis(toMillis(matcher.group(3)));
+            testcase.setClassName(session.getCurrentSuite().getName());
             String location = matcher.group(1);
             if (location != null && !"".equals(location)) {
                 testcase.setLocation(matcher.group(1));
             }
-            testcase.name = matcher.group(2);
+            testcase.setName(matcher.group(2));
             session.addTestCase(testcase);
         }
     }
@@ -151,16 +152,16 @@ public class RspecHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase(TestType.RSPEC);
-            testcase.timeMillis = toMillis(matcher.group(3));
-            testcase.className = session.getSuiteName();
+            Testcase testcase = new Testcase(TestType.RSPEC);
+            testcase.setTimeMillis(toMillis(matcher.group(3)));
+            testcase.setClassName(session.getCurrentSuite().getName());
             String location = matcher.group(1);
             if (location != null && !"".equals(location)) {
                 testcase.setLocation(matcher.group(1));
             }
-            testcase.name = matcher.group(2);
-            testcase.trouble = new Report.Trouble(false);
-            testcase.trouble.stackTrace = new String[]{matcher.group(4)};
+            testcase.setName(matcher.group(2));
+            testcase.setTrouble(new Trouble(false));
+            testcase.getTrouble().stackTrace = new String[]{matcher.group(4)};
             testcase.setStatus(Status.PENDING);
             session.addTestCase(testcase);
         }
@@ -204,7 +205,7 @@ public class RspecHandlerFactory implements TestHandlerFactory {
                 manager.testStarted(session);
             }
             String suiteName = matcher.group(1);
-            session.setSuiteName(suiteName);
+            session.addSuite(new TestSuite(suiteName));
             manager.displaySuiteRunning(session, suiteName);
         }
     }

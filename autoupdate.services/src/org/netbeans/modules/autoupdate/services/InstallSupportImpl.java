@@ -665,7 +665,13 @@ public class InstallSupportImpl {
 
         URL source = toUpdateImpl.getInstallInfo().getDistribution();
         err.log (Level.FINE, "Source URL for " + toUpdateImpl.getCodeName () + " is " + source);
-        
+        if(source==null) {
+            final String errorString = NbBundle.getMessage(InstallSupportImpl.class, 
+                    "InstallSupportImpl_NullSource", toUpdateImpl.getCodeName()); // NOI18N
+            err.log (Level.INFO, errorString);
+            throw new OperationException (OperationException.ERROR_TYPE.INSTALL, errorString);
+        }
+
         boolean isNbmFile = source.getFile ().toLowerCase (Locale.US).endsWith (Utilities.NBM_EXTENTSION.toLowerCase (Locale.US));
 
         File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), isNbmFile);

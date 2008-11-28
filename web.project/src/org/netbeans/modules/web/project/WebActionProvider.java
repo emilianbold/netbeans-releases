@@ -275,7 +275,7 @@ class WebActionProvider implements ActionProvider {
             setDirectoryDeploymentProperty(p);
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
-                targetNames = setupTestSingle(p, files);
+                targetNames = setupRunSingle(p, files);
             } else {
                 if (!isSelectedServer()) {
                     return null;
@@ -382,7 +382,7 @@ class WebActionProvider implements ActionProvider {
             setDirectoryDeploymentProperty(p);
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
-                targetNames = setupTestSingle(p, files);
+                targetNames = setupTestSingle( p, files);
             } else {
                 if (!isSelectedServer()) {
                     return null;
@@ -410,7 +410,7 @@ class WebActionProvider implements ActionProvider {
                         
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
-                targetNames = setupDebugTestSingle(p, files);
+                targetNames = setupDeubgRunSingle(p, files);
             } else {
                 if (!isSelectedServer()) {
                     return null;
@@ -731,12 +731,14 @@ class WebActionProvider implements ActionProvider {
         //TEST PART
         } else if (command.equals(COMMAND_TEST_SINGLE)) {
             setDirectoryDeploymentProperty(p);
-            FileObject[] files = findTestSourcesForSources(context);
+            //FileObject[] files = findTestSourcesForSources(context);
+            FileObject[] files = findTestSources(context, true);
             targetNames =
                     setupTestSingle(p, files);
         } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
             setDirectoryDeploymentProperty(p);
-            FileObject[] files = findTestSourcesForSources(context);
+            //FileObject[] files = findTestSourcesForSources(context);
+            FileObject[] files = findTestSources(context, true);
             targetNames =
                     setupDebugTestSingle(p, files);
         } else {
@@ -770,6 +772,44 @@ class WebActionProvider implements ActionProvider {
 
             return true;
         }
+    }
+
+    private String[] setupRunSingle(Properties p, FileObject[] files)
+    {
+        FileObject[] rootz = project.getTestSourceRoots().getRoots();
+        FileObject file = files[0];
+        String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        FileObject root = getRoot(testSrcPath, files[0]);
+
+        if (clazz.endsWith(".java")) // NOI18N
+        {
+            clazz = clazz.substring(0, clazz.length() - 5);
+        }
+
+        p.setProperty("run.class", clazz); // NOI18N
+        p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        return new String[] { "run-test-with-main" }; // NOI18N
+    }
+
+    private String[] setupDeubgRunSingle(Properties p, FileObject[] files)
+    {
+        FileObject[] rootz = project.getTestSourceRoots().getRoots();
+        FileObject file = files[0];
+        String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        FileObject root = getRoot(testSrcPath, files[0]);
+
+        if (clazz.endsWith(".java")) // NOI18N
+        {
+            clazz = clazz.substring(0, clazz.length() - 5);
+        }
+
+        p.setProperty("debug.class", clazz); // NOI18N
+        p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        return new String[] { "debug-test-with-main" }; // NOI18N
     }
 
     private String[] setupTestSingle(Properties p, FileObject[] files) {
@@ -996,9 +1036,11 @@ class WebActionProvider implements ActionProvider {
 
             return false;
         } else if (command.equals(COMMAND_TEST_SINGLE)) {
-            return findTestSourcesForSources(context) != null;
+            //return findTestSourcesForSources(context) != null;
+            return findTestSources(context, true) != null;
         } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
-            FileObject[] files = findTestSourcesForSources(context);
+            //FileObject[] files = findTestSourcesForSources(context);
+            FileObject[] files = findTestSources(context, true);
             return files != null && files.length == 1;
         } else {
             // other actions are global

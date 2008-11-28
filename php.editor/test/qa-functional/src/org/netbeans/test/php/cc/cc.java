@@ -53,14 +53,15 @@ import java.util.List;
 
 public class cc extends GeneralPHP
 {
-
-  static final protected int COMPLETE_CC_LIST_SIZE = 5512;
-    
   public cc( String arg0 )
   {
     super( arg0 );
   }
 
+  protected static final int DOLLAR_COMPLETION_LIST = 16;
+  protected static final int JAVADOC_COMPLETION_LIST = 32;
+
+/*
     protected CompletionJListOperator GetCompletion( )
     {
       CompletionJListOperator comp = null;
@@ -96,7 +97,9 @@ public class cc extends GeneralPHP
         Sleep( 100 );//try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) {}
       }
     }
+*/
 
+/*
     protected void CheckCompletionItems(
         CompletionJListOperator jlist,
         String[] asIdeal
@@ -121,6 +124,7 @@ public class cc extends GeneralPHP
         }
       }
     }
+*/
 
   protected void WaitCompletionScanning( )
   {

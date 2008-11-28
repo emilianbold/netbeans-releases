@@ -106,6 +106,16 @@ FUNCTION DEFINITION compr  [73:1/1710-77:2/1816] FunctionDDImpl SCOPE: $Global$
     RETURNS bool TEXT=bool  [74:8/1754-74:12/1758]
     STATEMENT COMPOUND  [75:1/1789-77:2/1816] SCOPE: compr 
         STATEMENT RETURN  [76:5/1795-76:24/1814] SCOPE: Stmt  [75:1/1789-77:2/1816] text: 'return t >= (int)l;'
+CLASS time_resolution_traits<typename frac_sec_type,typename frac_sec_type::int_type resolution_adjust> (time_resolution_traits ) [80:1/1864-86:2/2026] lcurly=1978 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+        FUNCTION DEFINITION time_resolution_traits  [84:5/1992-85:6/2024] ConstructorDDImpl SCOPE: time_resolution_traits 
+            SIGNATURE time_resolution_traits()
+            UNIQUE NAME f:time_resolution_traits::time_resolution_traits()
+            DECLARATION: time_resolution_traits  [84:5/1992-85:6/2024]
+            PARAMETERS:
+            RETURNS <*no_classifier*> TEXT=  [null-null]
+            STATEMENT COMPOUND  [84:30/2017-85:6/2024] SCOPE: time_resolution_traits 
 
 ========== Dumping model of PROJECT DummyProject
 CLASS OrderedStatic<class,class,Loki::NullType> (OrderedStatic<class,class,Loki::NullType> ) [1:1/0-19:6/625] lcurly=148 SCOPE: $Global$ 
@@ -201,4 +211,14 @@ FUNCTION DEFINITION compr  [73:1/1710-77:2/1816] FunctionDDImpl SCOPE: $Global$
     RETURNS bool TEXT=bool  [74:8/1754-74:12/1758]
     STATEMENT COMPOUND  [75:1/1789-77:2/1816] SCOPE: compr 
         STATEMENT RETURN  [76:5/1795-76:24/1814] SCOPE: Stmt  [75:1/1789-77:2/1816] text: 'return t >= (int)l;'
+CLASS time_resolution_traits<typename frac_sec_type,typename frac_sec_type::int_type resolution_adjust> (time_resolution_traits ) [80:1/1864-86:2/2026] lcurly=1978 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+        FUNCTION DEFINITION time_resolution_traits  [84:5/1992-85:6/2024] ConstructorDDImpl SCOPE: time_resolution_traits 
+            SIGNATURE time_resolution_traits()
+            UNIQUE NAME f:time_resolution_traits::time_resolution_traits()
+            DECLARATION: time_resolution_traits  [84:5/1992-85:6/2024]
+            PARAMETERS:
+            RETURNS <*no_classifier*> TEXT=  [null-null]
+            STATEMENT COMPOUND  [84:30/2017-85:6/2024] SCOPE: time_resolution_traits 
 

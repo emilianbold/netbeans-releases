@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.editor.filecreation;
 
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -161,20 +160,20 @@ public class ExtensionsSettings {
     }
 
     public synchronized void setExtensionList(CndExtensionList value) {
-        String st = "";
+        StringBuilder st = new StringBuilder();
         Enumeration<String> list = value.extensions();
         assert list.hasMoreElements(); // setting empty extension list is an error and should be verified on higher level
         while (list.hasMoreElements()) {
             if (st.length() > 0) {
-                st += DELIMITER;
+                st.append(DELIMITER);
             }
-            st += list.nextElement();
+            st.append(list.nextElement());
         }
         savedExtensionsList = value;
         if (!isKnownExtension(getDefaultExtension())) {
             setDefaultExtension(savedExtensionsList.extensions().nextElement(), false);
         }
-        preferences.put(EXTENSIONS_LIST_PREFIX + name, st);
+        preferences.put(EXTENSIONS_LIST_PREFIX + name, st.toString());
     }
 
     public boolean isKnownExtension(String ext) {

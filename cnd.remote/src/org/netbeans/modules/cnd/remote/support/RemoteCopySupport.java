@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.util.logging.Logger;
 import org.openide.util.Exceptions;
 
 /**
@@ -57,6 +58,8 @@ import org.openide.util.Exceptions;
  */
 public class RemoteCopySupport extends RemoteConnectionSupport {
 
+    private static final Logger LOG = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    
     public RemoteCopySupport(String key, int port) {
         super(key, port);
         revitalize();
@@ -179,7 +182,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
                 fos = null;
 
                 if (checkAck(in) != 0) {
-                    System.exit(0);
+                    return false;
                 }
 
                 // send '\0'
@@ -187,7 +190,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
                 out.write(buf, 0, 1);
                 out.flush();
 
-                System.err.println("Copying: filesize=" + filesize + "b, file=" + file + " took " + (System.currentTimeMillis() - start) + " ms");
+                LOG.finest("Copying: filesize=" + filesize + "b, file=" + file + " took " + (System.currentTimeMillis() - start) + " ms");
             }
 
         } catch (Exception e) {
@@ -232,7 +235,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             channel.connect();
 
             if (checkAck(in) != 0) {
-                System.exit(0);
+                return false;
             }
 
             // send "C0644 filesize filename", where filename should not include '/'
@@ -247,7 +250,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             out.write(command.getBytes());
             out.flush();
             if (checkAck(in) != 0) {
-                System.exit(0);
+                return false;
             }
 
             // send a content of lfile
@@ -267,7 +270,7 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             out.write(buf, 0, 1);
             out.flush();
             if (checkAck(in) != 0) {
-                System.exit(0);
+                return false;
             }
             out.close();
 
@@ -310,13 +313,11 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
                 sb.append((char) c);
             } while (c != '\n');
             if (b == 1) { // error
-
-                System.out.print(sb.toString());
+                LOG.warning("Error: Invalid value during reading remote string: " + sb.toString());
             }
 
             if (b == 2) { // fatal error
-
-                System.out.print(sb.toString());
+                LOG.warning("Fatal error: Invalid value during reading remote string: " + sb.toString());
             }
 
         }
@@ -354,10 +355,10 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
             in.close();
             is.close();
 
-            System.err.println("run `" + command + "` took " + (System.currentTimeMillis() - startTime) + " ms.");
+            LOG.finest("run `" + command + "` took " + (System.currentTimeMillis() - startTime) + " ms.");
             String output = out.toString();
             if (output.length() > 0) {
-                System.err.println(output);
+                LOG.finest(output);
             }
         } catch (JSchException ex) {
             Exceptions.printStackTrace(ex);

@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
-import antlr.Token;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
 import java.io.File;
@@ -92,7 +91,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
     @Override
     protected void onDefine(APT apt) {
         APTDefine defineNode = (APTDefine) apt;
-        APTToken name = (APTToken) defineNode.getName();
+        APTToken name = defineNode.getName();
         addReference(name, new MacroInfo(csmFile, defineNode.getOffset(), defineNode.getEndOffset(), null));
         analyzeList(defineNode.getBody());
         super.onDefine(apt);
@@ -112,20 +111,20 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
 
     @Override
     protected boolean onIfndef(APT apt) {
-        analyzeToken((APTToken) ((APTIfndef)apt).getMacroName());
+        analyzeToken(((APTIfndef) apt).getMacroName());
         return super.onIfndef(apt);
     }
 
     @Override
     protected boolean onIfdef(APT apt) {
-        analyzeToken((APTToken) ((APTIfdef)apt).getMacroName());
+        analyzeToken(((APTIfdef) apt).getMacroName());
         return super.onIfdef(apt);
     }
     private final List<CsmReference> references = new ArrayList<CsmReference>();
 
     @Override
     protected void onUndef(APT apt) {
-        analyzeToken((APTToken) ((APTUndefine)apt).getName());
+        analyzeToken(((APTUndefine) apt).getName());
         super.onUndef(apt);
     }
 
@@ -152,8 +151,8 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         return null; // tokenstream set to EOF? it's no good
     }
 
-    private void analyzeToken(Token token) {
-        APTToken apttoken = (APTToken) token;
+    private void analyzeToken(APTToken token) {
+        APTToken apttoken = token;
         if (apttoken != null) {
             APTMacro m = getMacroMap().getMacro(apttoken);
             if (m != null) {
@@ -176,9 +175,9 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         }
     }
 
-    private void analyzeList(List<Token> tokens) {
+    private void analyzeList(List<APTToken> tokens) {
         if (tokens != null) {
-            for (Token token : tokens) {
+            for (APTToken token : tokens) {
                 analyzeToken(token);
             }
         }
@@ -187,7 +186,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
     private void analyzeStream(TokenStream ts) {
         if (ts != null) {
             try {
-                for (Token token = ts.nextToken(); !APTUtils.isEOF(token); token = ts.nextToken()) {
+                for (APTToken token = (APTToken) ts.nextToken(); !APTUtils.isEOF(token); token = (APTToken) ts.nextToken()) {
                     analyzeToken(token);
                 }
             } catch (TokenStreamException ex) {

@@ -109,6 +109,11 @@ public class JspLineBreakpoint extends Breakpoint {
         javalb.setPrintText(printText);
         
         String context = Utils.getContextPath(url);
+        // fix for 146793
+        if (context == null || context.trim().length() == 0) {
+             context = "web";  //NOI18N
+        }
+        
         String condition = "request.getContextPath().equals(\"" + context + "\")"; // NOI18N
         javalb.setCondition(condition);
         Utils.log("condition: " + condition);

@@ -190,13 +190,13 @@ public class MakefileReviewPanel extends MakefileWizardPanel
                         "Error: Unknown target type in summary");	// NOI18N
             }
             if (td.getSourcesList() == null) {
-                append("LBL_SingleTargetSrcs", new Integer(0));		// NOI18N
+                append("LBL_SingleTargetSrcs", Integer.valueOf(0)); // NOI18N
             } else {
                 if (td.getSourcesList().length == 1) {
                     append("LBL_SingleTargetSrcs1");			// NOI18N
                 } else {
                     append("LBL_SingleTargetSrcs", // NOI18N
-                            new Integer(td.getSourcesList().length));
+                            Integer.valueOf(td.getSourcesList().length));
                 }
             }
         } else {
@@ -218,21 +218,21 @@ public class MakefileReviewPanel extends MakefileWizardPanel
                         append("LBL_MultiExe1", td.getName());		// NOI18N
                     } else {
                         append("LBL_MultiExe", td.getName(), // NOI18N
-                                new Integer(srcCnt));
+                                Integer.valueOf(srcCnt));
                     }
                 } else if (td.isArchive()) {
                     if (srcCnt == 1) {
                         append("LBL_MultiArchive1", td.getName());	// NOI18N
                     } else {
                         append("LBL_MultiArchive", td.getName(), // NOI18N
-                                new Integer(srcCnt));
+                                Integer.valueOf(srcCnt));
                     }
                 } else if (td.isSharedLib()) {
                     if (srcCnt == 1) {
                         append("LBL_MultiSharedLib1", td.getName());	// NOI18N
                     } else {
                         append("LBL_MultiSharedLib", td.getName(), // NOI18N
-                                new Integer(srcCnt));
+                                Integer.valueOf(srcCnt));
                     }
                 } else if (td.isMakeTarget()) {
                     append("LBL_MultiMake", td.getName());		// NOI18N
@@ -241,7 +241,7 @@ public class MakefileReviewPanel extends MakefileWizardPanel
                         append("LBL_MultiCustom1", td.getName());	// NOI18N
                     } else {
                         append("LBL_MultiCustom", td.getName(), // NOI18N
-                                new Integer(srcCnt));
+                                Integer.valueOf(srcCnt));
                     }
                 } else if (IpeUtils.IfdefDiagnostics) {
                     System.out.println(
