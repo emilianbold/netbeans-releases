@@ -60,10 +60,11 @@ import org.openide.util.Union2;
  * @author Radek Matous
  */
 class VariableNameImpl extends ScopeImpl implements VariableName {
+    private boolean globallyVisible;
     VariableNameImpl(IndexScopeImpl inScope, IndexedVariable indexedVariable) {
         this(inScope, indexedVariable.getName(),
                 Union2.<String/*url*/, FileObject>createFirst(indexedVariable.getFilenameUrl()),
-                new OffsetRange(indexedVariable.getOffset(),indexedVariable.getOffset()+indexedVariable.getName().length()));
+                new OffsetRange(indexedVariable.getOffset(),indexedVariable.getOffset()+indexedVariable.getName().length()), true);
     }
     VarAssignmentImpl createElement(ScopeImpl scope, Variable varNode, Assignment assignment, Map<String, VariableNameImpl> allAssignments) {
         VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, varNode,assignment, allAssignments);
@@ -71,11 +72,12 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         return retval;
     }
 
-    VariableNameImpl(ScopeImpl inScope, Program program, Variable variable) {
-        this(inScope, toName(variable), inScope.getFile(), toOffsetRange(variable));
+    VariableNameImpl(ScopeImpl inScope, Program program, Variable variable, boolean globallyVisible) {
+        this(inScope, toName(variable), inScope.getFile(), toOffsetRange(variable), globallyVisible);
     }
-    VariableNameImpl(ScopeImpl inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange) {
+    private VariableNameImpl(ScopeImpl inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, boolean globallyVisible) {
         super(inScope, name, file, offsetRange, PhpKind.VARIABLE);
+        this.globallyVisible = globallyVisible;
     }
 
     static String toName(Variable node) {
@@ -133,5 +135,16 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         List<? extends TypeScope> empty = Collections.emptyList();
         VarAssignment assignment = findAssignment(offset);
         return (assignment != null) ? assignment.getTypes() : empty;
+    }
+
+    public boolean isGloballyVisible() {
+        return globallyVisible;
+    }
+
+    /**
+     * @param globallyVisible the globallyVisible to set
+     */
+    void setGloballyVisible(boolean globallyVisible) {
+        this.globallyVisible = globallyVisible;
     }
 }

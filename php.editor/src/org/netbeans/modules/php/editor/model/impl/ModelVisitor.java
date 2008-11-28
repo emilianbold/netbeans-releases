@@ -68,6 +68,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
+import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
@@ -294,24 +295,49 @@ public final class ModelVisitor extends DefaultVisitor {
         ScopeImpl scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
 
-        while (scope != null) {
-            //assert scope instanceof VariableContainerImpl : scope;
-            if (scope instanceof VariableContainerImpl) {
-                VariableContainerImpl ps = (VariableContainerImpl) scope;
-                Map<String, VariableNameImpl> map = vars.get(ps);
-                if (map == null) {
-                    map = new HashMap<String, VariableNameImpl>();
-                    vars.put(ps, map);
-                }
-                String name = VariableNameImpl.toName(node);
-                VariableName original = map.get(name);
-                if (original == null) {
-                    map.put(name, ps.createElement(modelBuilder.getProgram(), node));
-                }
-            } else {
-                assert scope instanceof ClassScopeImpl : scope;
+        if (scope instanceof VariableContainerImpl) {
+            VariableContainerImpl ps = (VariableContainerImpl) scope;
+            Map<String, VariableNameImpl> map = vars.get(ps);
+            if (map == null) {
+                map = new HashMap<String, VariableNameImpl>();
+                vars.put(ps, map);
             }
-            break;
+            String name = VariableNameImpl.toName(node);
+            VariableName original = map.get(name);
+            if (original == null) {
+                map.put(name, ps.createElement(modelBuilder.getProgram(), node));
+            }
+        } else {
+            assert scope instanceof ClassScopeImpl : scope;
+        }
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(GlobalStatement node) {
+        List<Variable> variables = node.getVariables();
+        for (Variable var : variables) {
+            String varName = CodeUtils.extractVariableName(var);
+            //TODO: ugly
+            if (varName == null) {
+                continue;
+            }
+            ScopeImpl scope = modelBuilder.getCurrentScope();
+            if (scope instanceof VariableContainerImpl) {
+                VariableContainerImpl vc = (VariableContainerImpl) scope;
+                List<? extends VariableNameImpl> variablesImpl = vc.getVariablesImpl(varName);
+                VariableNameImpl varElem = ModelUtils.getFirst(variablesImpl);
+                if (varElem != null) {
+                    varElem.setGloballyVisible(true);
+                } else {
+                    vc = (VariableContainerImpl) modelBuilder.getFileScope();
+                    variablesImpl = vc.getVariablesImpl(varName);
+                    varElem = ModelUtils.getFirst(variablesImpl);
+                    if (varElem != null) {
+                        varElem.setGloballyVisible(true);
+                    }
+                }
+            }
         }
         super.visit(node);
     }

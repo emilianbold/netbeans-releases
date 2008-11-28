@@ -67,7 +67,7 @@ final class FileScope extends ModelScopeImpl implements ModelScope, VariableCont
     private List<CodeMarkerImpl> codeMarkers = new ArrayList<CodeMarkerImpl>();
 
     public VariableNameImpl createElement(Program program, Variable node) {
-        VariableNameImpl retval = new VariableNameImpl(this, program, node);
+        VariableNameImpl retval = new VariableNameImpl(this, program, node, true);
         addElement(retval);
         return retval;
     }

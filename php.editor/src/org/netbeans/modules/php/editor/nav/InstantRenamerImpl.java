@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.editor.nav;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -45,12 +46,14 @@ import java.util.Set;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.InstantRenamer;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.model.VariableName;
 
 /**
  *
@@ -60,28 +63,35 @@ public class InstantRenamerImpl implements InstantRenamer {
     private List<Occurence<? extends ModelElement>> allOccurences = Collections.emptyList();
 
     public boolean isRenameAllowed(CompilationInfo info, int caretOffset, String[] explanationRetValue) {
+        //TODO: put some comments into status line if false is returned
         allOccurences.clear();
         OccurencesSupport occurencesSupport = ModelFactory.getModel(info).getOccurencesSupport(caretOffset);
         Occurence<? extends ModelElement> caretOccurence = occurencesSupport.getOccurence();
         if (caretOccurence != null) {
-            FileObject fileObject = info.getFileObject();
             ModelElement decl = caretOccurence.getDeclaration();
-            if (fileObject != decl.getFileObject()) {
-                return false;
-            }
             if (caretOccurence.getAllDeclarations().size() > 1) {
-                if (decl instanceof MethodScope) {
-                    MethodScope methodScope = (MethodScope) decl;
-                    if (methodScope.isConstructor()) {
-                        allOccurences = caretOccurence.getAllOccurences();
-                        return true;
-                    }
-                }
                 return false;
             }
-            allOccurences = caretOccurence.getAllOccurences();
+            if (decl instanceof VariableName) {
+                VariableName varName = (VariableName) decl;
+                if (!varName.isGloballyVisible()) {                    
+                    return checkAll(caretOccurence);
+                }
+            } else if (decl instanceof MethodScope) {
+                MethodScope meth = (MethodScope) decl;
+                PhpModifiers phpModifiers = meth.getPhpModifiers();
+                if (phpModifiers.isPrivate()) {
+                    return checkAll(caretOccurence);
+                }
+            } else if (decl instanceof FieldElement) {
+                FieldElement fld = (FieldElement) decl;
+                PhpModifiers phpModifiers = fld.getPhpModifiers();
+                if (phpModifiers.isPrivate()) {
+                    return checkAll(caretOccurence);
+                }
+            }
         }
-        return true;
+        return false;
     }
 
     public Set<OffsetRange> getRenameRegions(CompilationInfo info, int caretOffset) {
@@ -89,6 +99,22 @@ public class InstantRenamerImpl implements InstantRenamer {
         for (Occurence<? extends ModelElement> occurence : allOccurences) {
             retval.add(occurence.getOffsetRange());
         }
+        allOccurences.clear();
         return retval != null ? retval : Collections.<OffsetRange>emptySet();
+    }
+
+    private boolean checkAll(Occurence<? extends ModelElement> caretOccurence) {
+        List<Occurence<? extends ModelElement>> collected = new ArrayList<Occurence<? extends ModelElement>>();
+        List<Occurence<? extends ModelElement>> all = caretOccurence.getAllOccurences();
+        for (Occurence<? extends ModelElement> occurence : all) {
+            if (occurence.getAllDeclarations().size() == 1 ) {
+                collected.add(occurence);
+            } else {
+                allOccurences.clear();
+                return false;
+            }
+        }
+        allOccurences = collected;
+        return true;
     }
 }
