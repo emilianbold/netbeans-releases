@@ -46,26 +46,23 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.InstantRenamer;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.MethodScope;
-import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.Occurence;
+import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Jan Lahoda, Radek Matous
  */
 public class InstantRenamerImpl implements InstantRenamer {
-    //private HashSet<OffsetRange> occurences = null;
-
     private List<Occurence<? extends ModelElement>> allOccurences = Collections.emptyList();
 
     public boolean isRenameAllowed(CompilationInfo info, int caretOffset, String[] explanationRetValue) {
-        //XXX: implement me:
         allOccurences.clear();
-        Model model = ModelFactory.getModel(info);
-        Occurence<? extends ModelElement> caretOccurence = model.getOccurence(caretOffset);
+        OccurencesSupport occurencesSupport = ModelFactory.getModel(info).getOccurencesSupport(caretOffset);
+        Occurence<? extends ModelElement> caretOccurence = occurencesSupport.getOccurence();
         if (caretOccurence != null) {
             FileObject fileObject = info.getFileObject();
             ModelElement decl = caretOccurence.getDeclaration();
@@ -92,7 +89,6 @@ public class InstantRenamerImpl implements InstantRenamer {
         for (Occurence<? extends ModelElement> occurence : allOccurences) {
             retval.add(occurence.getOffsetRange());
         }
-
         return retval != null ? retval : Collections.<OffsetRange>emptySet();
     }
 }

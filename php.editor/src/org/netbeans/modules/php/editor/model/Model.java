@@ -39,12 +39,9 @@
 
 package org.netbeans.modules.php.editor.model;
 
-import java.util.List;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 /**
  * @author Radek Matous
@@ -57,43 +54,14 @@ public final class Model {
         this.info = info;
     }
 
-    @CheckForNull
-    public Program getProgram() {
-        return Utils.getRoot(info);
-    }
-
-    public IndexScope getIndexScope() {        
-        return ModelVisitor.getIndexScope(info);
-    }
-
-    public ModelScope getModelScope() {
-        return getModelVisitor().getModelScope();
-    }
-
-    public TypeResolver getTypeResolver() {
-        return new TypeResolver(getModelVisitor());
-    }
-
-    public CompletionSupport getCompletionSupport(int offset) {
-        return new CompletionSupport( getModelVisitor(),info.getDocument(), offset);
-    }
-
-    public Occurence<? extends ModelElement> getOccurence(final int offset) {
-        return getModelVisitor(offset).getOccurence(offset);
-    }
-
     public OccurencesSupport getOccurencesSupport(final int offset) {
         return new OccurencesSupport(getModelVisitor(offset), offset);
     }
 
 
-    /*public List<Occurence<? extends ModelElement>> getAllOccurences(Occurence<? extends ModelElement> occurence) {
-        return ModelVisitor.getAllOccurences(getModelScope(),occurence);
-    }*/
-
-    private ModelVisitor getModelVisitor() {
+    /*private ModelVisitor getModelVisitor() {
         return getModelVisitor(-1);
-    }
+    }*/
 
     /**
      * @return the modelVisitor

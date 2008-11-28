@@ -61,6 +61,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.Occurence;
+import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
@@ -154,7 +155,8 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
     public static DeclarationLocation findDeclarationImpl(CompilationInfo info, int caretOffset) {
         DeclarationLocation retval = DeclarationLocation.NONE;
-        Occurence<? extends ModelElement> underCaret = ModelFactory.getModel(info).getOccurence(caretOffset);
+        OccurencesSupport occurencesSupport = ModelFactory.getModel(info).getOccurencesSupport(caretOffset);
+        Occurence<? extends ModelElement> underCaret = occurencesSupport.getOccurence();
         if (underCaret != null) {
             ModelElement declaration = underCaret.getDeclaration();
             retval = new DeclarationLocation(declaration.getFileObject(), declaration.getOffset());

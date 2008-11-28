@@ -40,8 +40,6 @@ package org.netbeans.modules.php.editor.model;
 
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
-import org.netbeans.modules.php.editor.index.PHPIndex;
-import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 
 /**
  * @author Radek Matous
@@ -54,7 +52,7 @@ public class ModelFactory {
         return new Model(info);
     }
 
-    public static IndexScope getIndex(PHPIndex index) {
+    /*public static IndexScope getIndex(PHPIndex index) {
         return ModelVisitor.getIndexScope(index);
-    }
+    }*/
 }
