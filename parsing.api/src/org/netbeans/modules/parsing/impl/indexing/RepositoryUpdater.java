@@ -43,7 +43,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +54,6 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -65,6 +66,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.TopologicalSortException;
 
 /**
  *
@@ -75,13 +77,14 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
     private static RepositoryUpdater instance;
 
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
+    private static final Logger TEST_LEGGER = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
 
     private final Set<URL>scannedRoots = Collections.synchronizedSet(new HashSet<URL>());
     private final Set<URL>scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());
     private final Set<URL>scannedUnknown = Collections.synchronizedSet(new HashSet<URL>());
     private final PathRegistry regs = PathRegistry.getDefault();
     private final PathRecognizerRegistry recognizers = PathRecognizerRegistry.getDefault();
-    private volatile State state;
+    private volatile State state = State.CREATED;
     private volatile Task worker;
 
     private RepositoryUpdater () {
@@ -133,76 +136,12 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
 
     public void pathsChanged(PathRegistryEvent event) {
         assert event != null;
-//        final EventKind eventKind = event.getEventKind();
-//        assert eventKind != null;
-//        final PathKind pathKind = event.getPathKind();
-//        assert pathKind != null;
-//        final Collection<? extends ClassPath> affected = event.getAffectedPaths();
-//        assert affected != null;
-//        switch (eventKind) {
-//            case PATHS_ADDED:
-//                handlePathsAdded (affected, pathKind);
-//                break;
-//            case PATHS_REMOVED:
-//                handlePathsRemoved (affected, pathKind);
-//                break;
-//            case PATHS_CHANGED:
-//                handlePathsChanged (affected, pathKind);
-//                break;
-//            case INCLUDES_CHANGED:
-//                handleIncludesChanged (affected, pathKind);
-//                break;
-//            default:
-//                throw new IllegalArgumentException();
-//        }
+        final Iterable<? extends PathRegistryEvent.Change> changes = event.getChanges();
+        assert changes != null;
+        final Work w = new RootsWork (WorkType.COMPILE_BATCH,changes);
+        submit (w);
     }
     
-    private void handlePathsAdded (final Collection<? extends ClassPath> affected, final PathKind kind) {
-        final Work w = new RootsWork(WorkType.COMPILE_BATCH, affected, kind);
-        submit(w);
-    }
-
-    private void handlePathsRemoved (final Collection<? extends ClassPath> affected, final PathKind kind) {
-        switch (kind) {
-            case BINARY:
-                removeAll (affected,this.scannedBinaries);
-                break;
-            case SOURCE:
-                removeAll (affected,this.scannedRoots);
-                break;
-            case UNKNOWN_SOURCE:
-                removeAll (affected,this.scannedUnknown);
-                break;
-            default:
-                throw new IllegalArgumentException();
-        }
-    }
-
-    //where
-    private void removeAll (Collection<? extends ClassPath> affected, Set<URL> from) {
-        assert affected != null;
-        assert from != null;
-        synchronized (from) {
-            for (ClassPath cp : affected) {
-                for (ClassPath.Entry e : cp.entries()) {
-                    from.remove(e.getURL());
-                }
-            }
-        }
-    }
-
-    private void handlePathsChanged (final Collection<? extends ClassPath> affected, final PathKind kind) {
-        final Work w = new RootsWork(WorkType.COMPILE_BATCH, affected, kind);
-        submit(w);
-    }
-
-    private void handleIncludesChanged (final Collection<? extends ClassPath> affected, final PathKind kind) {
-
-    }
-
-
-
-
     public static synchronized RepositoryUpdater getDefault() {
         if (instance == null) {
             instance = new RepositoryUpdater();
@@ -266,6 +205,21 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
         return null;
     }
 
+    //Unit test method
+    Set<URL> getScannedBinaries () {
+        return this.scannedBinaries;
+    }
+
+    //Unit test method
+    Set<URL> getScannedSources () {
+        return this.scannedRoots;
+    }
+
+    //Unit test method
+    Set<URL> getScannedUnknowns () {
+        return this.scannedUnknown;
+    }
+
     private enum State {CREATED, INITIALIZED, CLOSED};
 
     private enum WorkType {COMPILE_BATCH, COMPILE};
@@ -309,26 +263,18 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
     }
 
     private static class RootsWork extends Work {
-        private final Collection<? extends ClassPath> cps;
-        private final PathKind kind;
+        private final Iterable<? extends PathRegistryEvent.Change> changes;
 
         
-        public RootsWork (final WorkType type, final Collection<? extends ClassPath> cps, final PathKind kind) {
+        public RootsWork (final WorkType type, Iterable<? extends PathRegistryEvent.Change> changes) {
             super (type);
-            assert cps != null;
-            this.cps = cps;
-            assert kind != null;
-            this.kind = kind;
+            assert changes != null;
+            this.changes = changes;
         }
 
-        public Collection<? extends ClassPath> getClassPaths() {
-            return this.cps;
+        public Iterable<? extends PathRegistryEvent.Change> getChanges() {
+            return this.changes;
         }
-
-        public PathKind getPathKind () {
-            return this.kind;
-        }
-
     }
 
     private class Task extends ParserResultTask {
@@ -371,7 +317,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                 final WorkType type = work.getType();
                 switch (type) {
                     case COMPILE_BATCH:
-                        
+                        batchCompile(((RootsWork)work).getChanges());
                         break;
                     case COMPILE:
                         
@@ -395,8 +341,58 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             return !empty;
         }
 
-        private void findDependencies(final URL rootURL, final Stack<URL> cycleDetector, final Map<URL, List<URL>> depGraph,
-                final Set<URL> binaries, final String[] binaryClassPathIds) {
+        private void batchCompile (final Iterable<? extends PathRegistryEvent.Change> changes) {            
+            assert changes != null;
+            try {
+                final DependenciesContext ctx = new DependenciesContext(scannedRoots, scannedBinaries, true);
+                final List<URL> newRoots = new LinkedList<URL>();
+                newRoots.addAll (regs.getSources());
+                newRoots.addAll (regs.getUnknownRoots());                
+                ctx.newBinaries.addAll(regs.getBinaries());
+                ctx.newBinaries.removeAll(ctx.oldBinaries);
+                final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();
+                
+                for (URL url : newRoots) {
+                    findDependencies (url, depGraph, ctx, recognizers.getBinaryIds());
+                }
+                ctx.newRoots.addAll(org.openide.util.Utilities.topologicalSort(depGraph.keySet(), depGraph));
+                scanBinaries(ctx);
+                scanSources(ctx);
+            } catch (final TopologicalSortException tse) {
+                final IllegalStateException ise = new IllegalStateException ();
+                throw (IllegalStateException) ise.initCause(tse);
+            }            
+        }
+
+        private void scanBinaries (final DependenciesContext ctx) {
+            assert ctx != null;
+            TEST_LEGGER.log(Level.FINEST, "scanBinary", ctx.newBinaries);       //NOI18N
+            for (URL binary : ctx.newBinaries) {
+                scanBinary (binary);
+                ctx.scannedBinaries.add(binary);
+            }
+        }
+
+        private void scanBinary (URL root) {
+        }
+
+        private void scanSources  (final DependenciesContext ctx) {
+            assert ctx != null;
+            TEST_LEGGER.log(Level.FINEST, "scanSources", ctx.newRoots);         //NOI18N
+            for (URL source : ctx.newRoots) {
+                scanSource (source);
+                ctx.scannedRoots.add(source);
+            }
+        }
+
+        private void scanSource (URL root) {
+        }
+
+        private void findDependencies(final URL rootURL, final Map<URL, List<URL>> depGraph, DependenciesContext ctx, final Set<String> binaryClassPathIds) {
+            if (ctx.useInitialState && ctx.scannedRoots.contains(rootURL)) {
+                ctx.oldRoots.remove(rootURL);
+                return;
+            }
             if (depGraph.containsKey(rootURL)) {
                 return;
             }
@@ -404,8 +400,8 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             if (rootFo == null) {
                 return;
             }
-            cycleDetector.push(rootURL);
-            final List<ClassPath> pathToResolve = new ArrayList<ClassPath>(binaryClassPathIds.length);
+            ctx.cycleDetector.push(rootURL);
+            final List<ClassPath> pathToResolve = new ArrayList<ClassPath>(binaryClassPathIds.size());
             for (String binaryClassPathId : binaryClassPathIds) {
                 ClassPath cp = ClassPath.getClassPath(rootFo, binaryClassPathId);
                 if (cp != null) {
@@ -419,20 +415,52 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                     final URL[] sourceRoots = regs.sourceForBinaryQuery(url, cp, false);
                     if (sourceRoots != null) {
                         for (URL sourceRoot : sourceRoots) {
-                            if (!sourceRoot.equals(rootURL) && !cycleDetector.contains(sourceRoot)) {
+                            if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
                                 deps.add(sourceRoot);
-                                findDependencies(sourceRoot, cycleDetector, depGraph, binaries, binaryClassPathIds);
+                                findDependencies(sourceRoot, depGraph, ctx, binaryClassPathIds);
                             }
                         }
                     }
                     else {
-                        
+                        //What does it mean?
+                        if (ctx.useInitialState) {
+                            if (!ctx.scannedBinaries.contains(url)) {
+                                ctx.newBinaries.add (url);
+                            }
+                            ctx.oldBinaries.remove(url);
+                        }
                     }
                 }
             }
             depGraph.put(rootURL, deps);
-            cycleDetector.pop();
+            ctx.cycleDetector.pop();
         }
+
+    }
+
+    private static class DependenciesContext {
+        private final Set<URL> oldRoots;
+        private final Set<URL> oldBinaries;
+        private final Set<URL> scannedRoots;
+        private final Set<URL> scannedBinaries;
+        private final Stack<URL> cycleDetector;
+        private final List<URL> newRoots;
+        private final Set<URL> newBinaries;
+        private final boolean useInitialState;
+
+        public DependenciesContext (final Set<URL> scannedRoots, final Set<URL> scannedBinaries, boolean useInitialState) {
+            assert scannedRoots != null;
+            assert scannedBinaries != null;
+            this.scannedRoots = scannedRoots;
+            this.scannedBinaries = scannedBinaries;
+            this.useInitialState = useInitialState;
+            cycleDetector = new Stack<URL>();
+            oldRoots = new HashSet<URL> (scannedRoots);
+            oldBinaries = new HashSet<URL> (scannedBinaries);
+            this.newRoots = new ArrayList<URL>();
+            this.newBinaries = new HashSet<URL>();
+        }
+
 
     }
 

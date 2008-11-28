@@ -157,7 +157,7 @@ public class PathRegistry implements Runnable {
                     }
                 }
                 if (fire) {
-                    this.resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.UNKNOWN_SOURCE, Collections.singleton(definingClassPath));
+                    this.resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.UNKNOWN_SOURCE, null, Collections.singleton(definingClassPath));
                 }
                 return result;
             }
@@ -398,14 +398,14 @@ public class PathRegistry implements Runnable {
     }
 
     private void resetCacheAndFire (final EventKind eventKind,
-            final PathKind pathKind,
+            final PathKind pathKind, final String pathId,
             final Set<? extends ClassPath> paths) {
         synchronized (this) {
             this.sourcePaths = null;
             this.binaryPath = null;
             this.unknownSourcePath = null;
             this.timeStamp++;
-            this.changes.add(new PathRegistryEvent.Change(eventKind, pathKind, paths));
+            this.changes.add(new PathRegistryEvent.Change(eventKind, pathKind, pathId, paths));
         }
 
         LOGGER.log(Level.FINE, "resetCacheAndFire"); // NOI18N
@@ -575,7 +575,7 @@ public class PathRegistry implements Runnable {
                 fire = (unknownRoots.remove (key) != null);
             }
             if (fire) {
-                resetCacheAndFire(EventKind.PATHS_REMOVED, PathKind.UNKNOWN_SOURCE,null);
+                resetCacheAndFire(EventKind.PATHS_REMOVED, PathKind.UNKNOWN_SOURCE, null, null);
             }
         }
     }
@@ -585,23 +585,25 @@ public class PathRegistry implements Runnable {
             private WeakReference<Object> lastPropagationId;
 
             public void pathsAdded(GlobalPathRegistryEvent event) {
-                final PathKind pk = getPathKind (event.getId());
+                final String pathId = event.getId();
+                final PathKind pk = getPathKind (pathId);
                 if (pk != null) {
-                    resetCacheAndFire (EventKind.PATHS_ADDED, pk, event.getChangedPaths());
+                    resetCacheAndFire (EventKind.PATHS_ADDED, pk, pathId, event.getChangedPaths());
                 }
             }
 
             public void pathsRemoved(GlobalPathRegistryEvent event) {
-                final PathKind pk = getPathKind (event.getId());
+                final String pathId = event.getId();
+                final PathKind pk = getPathKind (pathId);
                 if (pk != null) {
-                    resetCacheAndFire (EventKind.PATHS_REMOVED, pk, event.getChangedPaths());
+                    resetCacheAndFire (EventKind.PATHS_REMOVED, pk, pathId, event.getChangedPaths());
                 }
             }
 
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if (ClassPath.PROP_ENTRIES.equals(propName)) {
-                    resetCacheAndFire (EventKind.PATHS_CHANGED,null, Collections.singleton((ClassPath)evt.getSource()));
+                    resetCacheAndFire (EventKind.PATHS_CHANGED,null, null, Collections.singleton((ClassPath)evt.getSource()));
                 }
                 else if (ClassPath.PROP_INCLUDES.equals(propName)) {
                     final Object newPropagationId = evt.getPropagationId();
@@ -611,13 +613,13 @@ public class PathRegistry implements Runnable {
                         lastPropagationId = new WeakReference<Object>(newPropagationId);
                     }
                     if (fire) {
-                        resetCacheAndFire (EventKind.PATHS_CHANGED, PathKind.SOURCE, Collections.singleton((ClassPath)evt.getSource()));
+                        resetCacheAndFire (EventKind.PATHS_CHANGED, PathKind.SOURCE, null, Collections.singleton((ClassPath)evt.getSource()));
                     }
                 }
             }
 
             public void stateChanged (final ChangeEvent event) {
-                resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.BINARY,null);
+                resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.BINARY,null, null);
             }
     }
 }

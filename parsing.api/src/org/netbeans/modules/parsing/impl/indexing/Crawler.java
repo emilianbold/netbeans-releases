@@ -39,67 +39,13 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.util.EventObject;
-import java.util.Set;
-import org.netbeans.api.java.classpath.ClassPath;
-
 /**
  *
  * @author Tomas Zezula
  */
-public class PathRegistryEvent extends EventObject {
-
-    public static final class Change {
-
-        private final EventKind eventKind;
-        private final PathKind pathKind;
-        private final Set<? extends ClassPath> pahs;
-        private final String pathId;
-
-        public Change (final EventKind eventKind,
-                       final PathKind pathKind,
-                       final String pathId,
-                       final Set<? extends ClassPath> paths) {
-
-            assert eventKind != null;
-            assert pathKind != null;
-            assert pathId != null;
-            this.pahs = paths;
-            this.eventKind = eventKind;
-            this.pathKind = pathKind;
-            this.pathId = pathId;
-        }
-
-        public Set<? extends ClassPath> getAffectedPaths () {
-            return this.pahs;
-        }
-
-        public EventKind getEventKind () {
-            return eventKind;
-        }
-
-        public PathKind getPathKind () {
-            return pathKind;
-        }
-
-        public String getPathType () {
-            return this.pathId;
-        }
-
-    }
+public abstract class Crawler {
 
 
-    private final Iterable<? extends Change> changes;
-
-    public PathRegistryEvent (final PathRegistry regs, final Iterable<? extends Change> changes) {
-        super (regs);
-        assert changes != null;
-        this.changes = changes;
-    }
-
-    public Iterable<? extends Change> getChanges () {
-        return this.changes;
-    }
-    
+    public abstract void collectResources();
 
 }

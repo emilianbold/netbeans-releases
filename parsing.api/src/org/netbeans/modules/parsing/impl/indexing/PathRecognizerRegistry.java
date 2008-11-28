@@ -67,6 +67,20 @@ public class PathRecognizerRegistry implements LookupListener {
     }
 
 
+    public Set<String> getSourceIds () {
+        final Map<String,Set<String>> idMap = getIdMap();
+        return idMap.keySet();
+    }
+
+    public Set<String> getBinaryIds () {
+        final Map<String,Set<String>> idMap = getIdMap();
+        final Set<String> result = new HashSet<String>();
+        for (Set<String> val : idMap.values()) {
+            result.addAll(val);
+        }
+        return result;
+    }
+
     public void collectIds (final Set<String> sourceIds, final Set<String> binaryIds) {
         Map<String,Set<String>> idMap = getIdMap();
         for (Map.Entry<String,Set<String>> e : idMap.entrySet()) {
