@@ -322,7 +322,7 @@ public class HintsTestBase extends NbTestCase {
         
         Document doc = ec.openDocument();
         
-        List<ErrorDescription> errors = new ErrorHintsProvider(testSource).computeErrors(info, doc);
+        List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(info, doc);
         List<Fix> fixes = new ArrayList<Fix>();
         
         for (ErrorDescription d : errors) {
@@ -344,7 +344,7 @@ public class HintsTestBase extends NbTestCase {
         
         Document doc = ec.openDocument();
         
-        List<ErrorDescription> errors = new ErrorHintsProvider(testSource).computeErrors(info, doc);
+        List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(info, doc);
         List<Fix> fixes = new ArrayList<Fix>();
         
         for (ErrorDescription d : errors) {
@@ -384,7 +384,7 @@ public class HintsTestBase extends NbTestCase {
         try {
             Document doc = ec.openDocument();
             
-            List<ErrorDescription> errors = new ErrorHintsProvider(testSource).computeErrors(info, doc);
+            List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(info, doc);
             List<Fix> fixes = new ArrayList<Fix>();
             
             for (ErrorDescription d : errors) {

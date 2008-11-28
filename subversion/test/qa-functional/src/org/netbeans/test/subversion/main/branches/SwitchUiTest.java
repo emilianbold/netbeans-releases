@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.junit.NbModuleSuite;
@@ -40,8 +41,6 @@ public class SwitchUiTest extends JellyTestCase{
     public File projectPath;
     static Logger log;
     
-    String os_name;
-    
     /** Creates a new instance of SwitchUiTest */
     public SwitchUiTest(String name) {
         super(name);
@@ -60,14 +59,6 @@ public class SwitchUiTest extends JellyTestCase{
         
     }
     
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
-    }
-    
     public static Test suite() {
          return NbModuleSuite.create(
                  NbModuleSuite.createConfiguration(SwitchUiTest.class).addTest(
@@ -82,6 +73,11 @@ public class SwitchUiTest extends JellyTestCase{
         try {
             MessageHandler mh = new MessageHandler("Committing");
             log.addHandler(mh);
+            
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                new NewProjectWizardOperator().invoke().close();
+
+            TestKit.closeProject(PROJECT_NAME);
 
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));

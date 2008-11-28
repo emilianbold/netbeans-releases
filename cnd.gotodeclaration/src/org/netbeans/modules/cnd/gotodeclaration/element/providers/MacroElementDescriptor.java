@@ -35,58 +35,55 @@ import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementDescriptor;
 
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 
-
 /**
  * An ElementDescriptor for macros (CsmMacro)
  * @author Vladimir Kvashin
  */
 
-/* package */ 
+/* package */
 class MacroElementDescriptor extends BaseElementDescriptor implements ElementDescriptor {
 
     private final CsmMacro macro;
     private String displayName = null;
     private String contextName = null;
     private static Icon icon;
-    
+
     MacroElementDescriptor(CsmMacro macro) {
-	this.macro = macro;
-	List<? extends CharSequence> params = macro.getParameters();
-	if( params == null || params.size() == 0 ) {
+        this.macro = macro;
+        List<? extends CharSequence> params = macro.getParameters();
+        if (params == null || params.size() == 0) {
             displayName = macro.getName().toString();
-	}
-	else {
-	    StringBuilder sb = new StringBuilder(macro.getName());
-	    sb.append('(');
-	    for (int i = 0; i < params.size(); i++) {
-		if( i > 0 ) {
-		    sb.append(',');
-		}
-		sb.append(params.get(i));
-	    }
-	    sb.append(')');
-	    displayName = sb.toString();
-	}
-	contextName = macro.getContainingFile().getName().toString();
-	if( icon == null ) {
+        } else {
+            StringBuilder sb = new StringBuilder(macro.getName());
+            sb.append('(');
+            for (int i = 0; i < params.size(); i++) {
+                if (i > 0) {
+                    sb.append(',');
+                }
+                sb.append(params.get(i));
+            }
+            sb.append(')');
+            displayName = sb.toString();
+        }
+        contextName = macro.getContainingFile().getName().toString();
+        if (icon == null) {
             icon = new ImageIcon(CsmImageLoader.getImage(macro));
-	}
+        }
     }
-    
+
     protected CsmOffsetable getElement() {
-	return macro;
+        return macro;
     }
 
     protected String getContextNameImpl() {
-	return contextName;
+        return contextName;
     }
 
     public String getDisplayName() {
-	return displayName;
+        return displayName;
     }
 
     public Icon getIcon() {
-	return icon;
+        return icon;
     }
-
 }

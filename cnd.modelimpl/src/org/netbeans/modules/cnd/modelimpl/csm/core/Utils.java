@@ -151,9 +151,14 @@ public class Utils {
         }
     }
     
-    public static String getCsmIncludeKindkey() {
+    public static String getCsmIncludeKindKey() {
         // Returned string should be differed from getCsmDeclarationKindkey()
         return "I"; // NOI18N
+    }
+
+    public static String getCsmParamListKindKey() {
+        // Returned string should be differed from getCsmDeclarationKindkey()
+        return "P"; // NOI18N
     }
 
     public static CharSequence[] getAllClassifiersUniqueNames(CharSequence uniqueName) {

@@ -74,6 +74,7 @@ public final class PatchedHKern extends HKern implements PatchedElement {
         }
     }
             
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedHKern(doc);
     }    

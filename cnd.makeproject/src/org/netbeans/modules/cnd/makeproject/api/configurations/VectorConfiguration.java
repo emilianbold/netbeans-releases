@@ -83,6 +83,7 @@ public class VectorConfiguration<E> {
      * See IZ 122300
      */
     @Deprecated
+    @SuppressWarnings("unchecked")
     public void setValue(String s) {
         List list = CppUtils.tokenizeString(s);
         setValue(list);
@@ -101,7 +102,6 @@ public class VectorConfiguration<E> {
 //    public String[] getValueAsArray() {
 //        return (String[]) getValue().toArray(new String[getValue().size()]);
 //    }
-
     public boolean getModified() {
         return value.size() != 0;
     }

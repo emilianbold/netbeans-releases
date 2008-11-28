@@ -100,7 +100,7 @@ public class MakefileIncludesPanel extends EnterItemsPanel {
             ArrayList<String> notDir = new ArrayList<String>();
 
             for (int i = 0; i < ilist.length; i++) {
-                String incDir = ilist[i].toString();
+                String incDir = ilist[i];
 
                 File dir;
                 if (incDir.startsWith(File.separator)) {

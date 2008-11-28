@@ -53,6 +53,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.jaxws.WSStackUtils;
 import org.netbeans.modules.maven.jaxws.nodes.JaxWsNode;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
@@ -78,6 +79,7 @@ public class WsTesterPageAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -133,7 +135,7 @@ public class WsTesterPageAction extends NodeAction {
     
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes==null || activatedNodes.length==0) return false;
-        FileObject srcRoot = (FileObject)activatedNodes[0].getLookup().lookup(FileObject.class);
+        FileObject srcRoot = activatedNodes[0].getLookup().lookup(FileObject.class);
         if (srcRoot!=null) {
             Project project = FileOwnerQuery.getOwner(srcRoot);
             if (project!=null) {
@@ -144,10 +146,11 @@ public class WsTesterPageAction extends NodeAction {
     }
     
     private boolean isTesterPageSupported(Project project) {
-        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (provider != null) {
             String serverInstanceId = provider.getServerInstanceID();
-            if (serverInstanceId != null) {
+            if (serverInstanceId != null && !WSStackUtils.DEVNULL.equals(serverInstanceId)) { //NOI18N
+                //- dev null means, there's no server defined.. somehow it cannot really be null..
                 try {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
                     WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);

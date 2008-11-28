@@ -128,8 +128,8 @@ public final class TextProvider extends ComponentProvider {
         }
         List<Object> source = new ArrayList<Object>();
         source.add(document);
-        source.add(new Integer(start));
-        source.add(new Integer(end));
+        source.add(Integer.valueOf(start));
+        source.add(Integer.valueOf(end));
         ActionEvent event = new ActionEvent(source, 0, null);
         action.actionPerformed(event);
         Object object = event.getSource();

@@ -96,8 +96,9 @@ public class UMLUserInterface
             // 86994, in sdi mode, use the current activated TC instead of IDE 
             // main window as the parent for the dialog
             Component comp = WindowManager.getDefault().getRegistry().getActivated();
-            Window window = SwingUtilities.getWindowAncestor(comp);
-            if (window instanceof Frame)
+            Window window = null;
+            if(comp!=null)window=SwingUtilities.getWindowAncestor(comp);
+            if (window!=null && window instanceof Frame)
                 return (Frame)window;
             else
             {

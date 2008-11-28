@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.DataInput;
@@ -50,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -64,11 +62,11 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  */
 public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
 
-    private List<CsmUID<CsmParameter>> functionParameters;
+    private Collection<CsmUID<CsmParameter>> functionParameters;
     private short functionPointerDepth;
-        
+
     TypeFunPtrImpl(CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
-	super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
+        super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
     }
 
     void init(AST ast, boolean inFunctionParameters) {
@@ -129,14 +127,14 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
     }
 
     public static boolean isFunctionPointerParamList(AST ast, boolean inFunctionParameters) {
-	return initFunctionPointerParamList(ast, null, inFunctionParameters);
+        return initFunctionPointerParamList(ast, null, inFunctionParameters);
     }
-    
+
     private static boolean initFunctionPointerParamList(AST ast, TypeFunPtrImpl instance, boolean inFunctionParams) {
         AST next = null;
-	// find opening brace
-	AST brace = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LPAREN);
-	if( brace != null ) {
+        // find opening brace
+        AST brace = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LPAREN);
+        if (brace != null) {
             // check whether it's followed by asterisk
             next = brace.getNextSibling();
             if (next == null || next.getType() != CPPTokenTypes.CSM_PTR_OPERATOR) {
@@ -149,18 +147,17 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
                 if (instance != null) {
                     ++instance.functionPointerDepth;
                 }
-            } 
-	    while( next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR );
+            } while (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR);
         }
-        
+
         if (inFunctionParams && next == null) {
             next = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         }
 
-        if( next == null) {
+        if (next == null) {
             return false;
         }
-        
+
         // check that it's followed by exprected token
         if (next.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
             // fine. this could be variable of function type
@@ -169,7 +166,7 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
             if (lookahead != null && lookahead.getType() == CPPTokenTypes.RPAREN) {
                 // OK. This could be function type in typedef - in this case we get
                 // CSM_QUALIFIED_ID instead of CSM_VARIABLE_DECLARATION.
-            } else if(inFunctionParams && lookahead != null && lookahead.getType() == CPPTokenTypes.CSM_PARMLIST) {
+            } else if (inFunctionParams && lookahead != null && lookahead.getType() == CPPTokenTypes.CSM_PARMLIST) {
                 // OK. This could be function as a parameter
             } else {
                 next = lookahead;
@@ -200,6 +197,7 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         if (next != null && next.getType() == CPPTokenTypes.RPAREN) {
             next = next.getNextSibling();
             // skip LPAREN (let's not assume it's obligatory)
+            AST lParent = next;
             if (next != null && next.getType() == CPPTokenTypes.LPAREN) {
                 next = next.getNextSibling();
             }
@@ -227,7 +225,7 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
             return false;
         }
     }
-    
+
     @Override
     public void dispose() {
         super.dispose();
@@ -238,20 +236,18 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
-    
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
-	output.writeShort(functionPointerDepth);
+        output.writeShort(functionPointerDepth);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUIDCollection(functionParameters, output, false);
     }
 
     public TypeFunPtrImpl(DataInput input) throws IOException {
         super(input);
-	functionPointerDepth = input.readShort();
+        functionPointerDepth = input.readShort();
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         functionParameters = factory.readUIDCollection(new ArrayList<CsmUID<CsmParameter>>(), input);
     }
-    
 }

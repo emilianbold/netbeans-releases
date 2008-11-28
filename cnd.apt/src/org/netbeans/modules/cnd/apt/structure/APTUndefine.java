@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.structure;
 
-import antlr.Token;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * #undef directive
@@ -51,5 +51,5 @@ public interface APTUndefine extends APT {
     /** 
      * returns token of macro name
      */    
-    public Token getName();
+    public APTToken getName();
 }

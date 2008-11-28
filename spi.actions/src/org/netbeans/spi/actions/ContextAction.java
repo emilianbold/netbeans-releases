@@ -135,10 +135,9 @@ import javax.swing.ImageIcon;
  * @see org.openide.util.Utilities#actionsGlobalContext
  * @author Tim Boudreau
  */
-public abstract class ContextAction<T> extends AbstractAction {
+public abstract class ContextAction<T> extends NbAction {
     final Class<T> type;
     private final StubListener stubListener = new StubListener();
-    final Object STATE_LOCK = new Object();
     //A context aware instance which we use internally to trigger
     //enabled changes as long as there is at least one property change
     //listener attached to us.
@@ -241,15 +240,6 @@ public abstract class ContextAction<T> extends AbstractAction {
     }
 
     /**
-     * Overridden to throw an UnsupportedOperationException.  Do not call.
-     * @param newValue
-     */
-    @Override
-    public final void setEnabled(boolean newValue) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
      * Override to actually do whatever this action does.  This method is
      * passed the collection of all objects of type <code>&lt;T&gt;
      * present in the selection context (the lookup).
@@ -279,7 +269,8 @@ public abstract class ContextAction<T> extends AbstractAction {
      * @param actionContext The context this action instance should operate on.
      * @return
      */
-    public final Action createContextAwareInstance(Lookup actionContext) {
+    @Override
+    protected final NbAction internalCreateContextAwareInstance(Lookup actionContext) {
         return createStub (actionContext);
     }
 
@@ -289,14 +280,14 @@ public abstract class ContextAction<T> extends AbstractAction {
 
     private ActionStub<T> createInternalStub () {
         //Don't synchronize, just ensure we are only called from sync methods
-        assert Thread.holdsLock(STATE_LOCK);
+        assert Thread.holdsLock(lock());
         ActionStub<T> result = createStub (Utilities.actionsGlobalContext());
         return result;
     }
 
     ActionStub<T> getStub() {
-        synchronized (STATE_LOCK) {
-            if (stub == null && attached) {
+        synchronized (lock()) {
+            if (stub == null && attached()) {
                 stub = createInternalStub();
                 stub.addPropertyChangeListener(stubListener);
             }
@@ -331,49 +322,34 @@ public abstract class ContextAction<T> extends AbstractAction {
     }
 
     @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        synchronized (STATE_LOCK) {
-            super.addPropertyChangeListener(listener);
-            int count = getPropertyChangeListeners().length;
-            if (count == 1) {
-                addNotify();
-            }
-        }
+    void internalAddNotify() {
+        stub = getStub();
+        stub.resultChanged(null);
+        super.internalAddNotify();
     }
 
     @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        synchronized (STATE_LOCK) {
-            super.removePropertyChangeListener(listener);
-            int count = getPropertyChangeListeners().length;
-            if (count == 0) {
-                removeNotify();
-            }
+    void internalRemoveNotify() {
+        try {
+            super.internalRemoveNotify();
+        } finally {
+            stub.removePropertyChangeListener(stubListener);
+            stub = null;
         }
     }
 
-    volatile boolean attached;
-    void addNotify() {
-//        assert Thread.holdsLock(STATE_LOCK);
-        attached = true;
-        stub = getStub();
-        stub.resultChanged(null);
-    }
-
-    void removeNotify() {
-//        assert Thread.holdsLock(STATE_LOCK);
-        attached = false;
-        stub.removePropertyChangeListener(stubListener);
-        stub = null;
-    }
-
-    boolean isAttached() {
-        return attached;
+    /**
+     * Recompute the enabled state of this action.  Call this method if your
+     * action depends on some external value to compute its enabled state,
+     * when that value changes.
+     */
+    protected final void refresh() {
+        getStub().resultChanged(null);
     }
 
     //for unit tests
     Collection<? extends T> stubCollection() {
-        synchronized (STATE_LOCK) {
+        synchronized (lock()) {
             return stub == null ? null : stub.collection();
         }
     }
@@ -447,53 +423,5 @@ public abstract class ContextAction<T> extends AbstractAction {
     public static <T extends Lookup.Provider, R> ContextAction<T>
             createIndirectAction(Class<T> lkpProviderType, ContextAction<R> theRealAction) {
         return createIndirectAction (lkpProviderType, theRealAction, true);
-    }
-
-    /**
-     * Create an action that merges several <code>ContextAction</code>s.  This
-     * is useful, for example, if you want to create a global action which is enabled
-     * if the user has, say, selected a Project, <i>or</i> if 
-     * the selected Node is owned by a Project.  Instead of writing one
-     * action with complex enablement logic, you write one action which is
-     * sensitive to Nodes (or DataObjects, or whatever) and one which is
-     * directly sensitive to Projects.  Each has its own fairly simple
-     * enablement logic. 
-     * <p/>
-     * Since this action merges multiple actions, some rules apply as far
-     * as which action gets called when and for what, in the case of display
-     * names and enablement status.  This works as follows:
-     * <ul>
-     * <li>If one of the actions in the array is enabled
-     *     <ul>
-     *     <li>The returned ContextAwareAction is enabled</li>
-     *     <li>The first enabled action in the array supplies the return
-     *         values for calls to <code>getValue("someKey")</code> - i.e. the 
-     *         first enabled action controls the display name, icon, etc.
-     *         If the first enabled action returns null from <code>getValue()</code>,
-     *         the next enabled action is tried, and so forth, until there
-     *         is a non-null result.  If there is no enabled action which
-     *         returns non-null from <code>getValue()</code>, then the first
-     *         non-null value returned by any action in the array, starting
-     *         with the first, is used.
-     *     </li>
-     *     </ul>
-     * </li>
-     * </li>
-     * </ul>
-     *
-     * @param actions An array of ContextActions.
-     * @param exclusive If true, the resulting action will be <i>disabled</i> if
-     * more than one of the passed actions is <i>enabled</i>.  This is sometimes
-     * useful, for example, if performing the same action over very disparate
-     * types of object (say, closing both a file and a project) would be
-     * non-intuitive.
-     * @return An action.
-     */
-    public static ContextAwareAction merge (boolean exclusive, ContextAction<?>... actions) {
-        return new MergeAction(actions, exclusive);
-    }
-
-    public static ContextAwareAction merge (ContextAction<?>... actions) {
-        return new MergeAction(actions);
     }
 }

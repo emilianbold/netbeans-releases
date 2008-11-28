@@ -96,7 +96,7 @@ public class ArchetypeProviderImpl {
             }
         }
         BeanRunConfig config = new BeanRunConfig();
-        config.setActivatedProfiles(Collections.EMPTY_LIST);
+        config.setActivatedProfiles(Collections.<String>emptyList());
         config.setExecutionDirectory(directory);
         config.setExecutionName(NbBundle.getMessage(ArchetypeProviderImpl.class, "RUN_Project_Creation"));
         //TODO externalize somehow to allow advanced users to change the value..

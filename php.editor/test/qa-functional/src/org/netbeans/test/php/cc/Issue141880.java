@@ -125,7 +125,7 @@ public class Issue141880 extends cc
 
     // Check code completion list
 
-    String[] asIdeals = { "aaa", "argc", "argv" };
+    String[] asIdeals = { "$aaa", "$argc", "$argv" };
 
     CompletionInfo jCompl = GetCompletion( );
     //List list = jCompl.getCompletionItems( );

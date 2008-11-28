@@ -124,14 +124,13 @@ public abstract class CCCCompiler extends BasicCompiler {
                 }
             } else {
                 List<String> newEnv = new ArrayList<String>();
-                for (String key : env.keySet()) {
-                    String value = env.get(key);
+                for (Map.Entry<String, String> entry : env.entrySet()) {
+                    String key = entry.getKey();
+                    String value = entry.getValue();
                     if (key.equals(pi.getPathName())) {
                         newEnv.add(pi.getPathName() + "=" + path + pi.pathSeparator() + value); // NOI18N
-                    }
-                    else {
-                        String entry = key + "=" + (value != null ? value : ""); // NOI18N
-                        newEnv.add(entry);
+                    } else {
+                        newEnv.add(key + "=" + (value != null ? value : "")); // NOI18N
                     }
                 }
                 process = Runtime.getRuntime().exec(command + " " + tmpFile(),newEnv.toArray(new String[newEnv.size()])); // NOI18N

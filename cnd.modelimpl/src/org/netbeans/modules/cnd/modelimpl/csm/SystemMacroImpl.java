@@ -44,7 +44,9 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmMacroParameter;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
+import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -163,6 +165,10 @@ public class SystemMacroImpl implements CsmMacro {
         }
         retValue.append("' [" + (isUserDefined ? "user defined" : "system") + "]"); // NOI18N
         return retValue.toString();
+    }
+
+    public CsmParameterList<CsmParameterList, CsmMacroParameter> getParameterList() {
+        return null;
     }
 
     private static final class SelfUID<T> implements CsmUID<T> {

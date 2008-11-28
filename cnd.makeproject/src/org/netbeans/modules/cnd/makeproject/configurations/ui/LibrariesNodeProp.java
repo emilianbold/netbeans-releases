@@ -52,7 +52,7 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 
-public class LibrariesNodeProp extends PropertySupport {
+public class LibrariesNodeProp extends PropertySupport<List> {
 
     private LibrariesConfiguration<LibraryItem> configuration;
     Project project;
@@ -78,13 +78,13 @@ public class LibrariesNodeProp extends PropertySupport {
         }
     }
 
-    public Object getValue() {
+    public List getValue() {
         return configuration.getValue();
     }
 
     @SuppressWarnings("unchecked")
-    public void setValue(Object v) {
-        configuration.setValue((List) v);
+    public void setValue(List v) {
+        configuration.setValue(v);
     }
 
     @Override
@@ -127,9 +127,11 @@ public class LibrariesNodeProp extends PropertySupport {
             this.value = value;
         }
 
+        @Override
         public void setAsText(String text) {
         }
 
+        @Override
         public String getAsText() {
             boolean addSep = false;
             StringBuilder ret = new StringBuilder();
@@ -144,7 +146,7 @@ public class LibrariesNodeProp extends PropertySupport {
         }
 
         public java.awt.Component getCustomEditor() {
-            return new LibrariesPanel(project, conf, baseDir, value.toArray(), this, env);
+            return new LibrariesPanel(project, conf, baseDir, value, this, env);
         }
 
         public boolean supportsCustomEditor() {

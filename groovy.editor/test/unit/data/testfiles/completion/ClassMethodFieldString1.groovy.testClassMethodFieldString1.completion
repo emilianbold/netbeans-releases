@@ -4,5 +4,5 @@ stringField.toL|
 ------------------------------------
 METHOD     toList()                                   List
 METHOD     toLong()                                   Long
-METHOD     toLowerCase()                              String
-METHOD     toLowerCase(Locale)                        String
+METHOD     toLowerCase()                   [PUBLIC]   String
+METHOD     toLowerCase(Locale)             [PUBLIC]   String

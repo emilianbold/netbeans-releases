@@ -269,7 +269,8 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
         return explorerManager;
     }
 
-    public List<NbMavenProjectImpl> getOpenProjects(Artifact artifact, int type) {
+    public @SuppressWarnings("unchecked")
+        List<NbMavenProjectImpl> getOpenProjects(Artifact artifact, int type) {
         List<NbMavenProjectImpl> mavenProjects = new ArrayList<NbMavenProjectImpl>();
         //get all open projects
 
@@ -284,7 +285,7 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
                 List<Artifact> artifacts = new ArrayList<Artifact>();
                 switch (type) {
                     case TYPE_DEPENDENCY:
-                         {
+                        {
                             artifacts.addAll(mp.getDependencyArtifacts());
                         }
                         break;

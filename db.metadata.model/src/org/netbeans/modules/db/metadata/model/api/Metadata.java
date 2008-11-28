@@ -50,6 +50,7 @@ import org.netbeans.modules.db.metadata.model.spi.ParameterImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ProcedureImplementation;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
+import org.netbeans.modules.db.metadata.model.spi.ValueImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ViewImplementation;
 
 /**
@@ -166,8 +167,14 @@ public class Metadata {
         }
 
         @Override
+        public Value createValue(ValueImplementation impl) {
+            return new Value(impl);
+        }
+
+        @Override
         public CatalogImplementation getCatalogImpl(Catalog catalog) {
             return catalog.impl;
         }
+
     }
 }

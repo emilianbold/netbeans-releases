@@ -134,7 +134,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel implements ActionLis
                 formFocusLost(evt);
             }
         });
-        setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+        setLayout(new java.awt.BorderLayout());
 
         jPanel1.setBackground(getTextBackground());
         jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(getComboBorderColor()));
@@ -202,7 +202,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel implements ActionLis
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
         jPanel1.add(jSeparator1, gridBagConstraints);
 
-        add(jPanel1);
+        add(jPanel1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 private void formFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusLost
@@ -452,6 +452,11 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
                 prefWidth = new Dimension(computePrefWidth(), orig.height);
             }
             return prefWidth;
+        }
+
+        @Override
+        public Dimension getMinimumSize() {
+            return getPreferredSize();
         }
     }
 

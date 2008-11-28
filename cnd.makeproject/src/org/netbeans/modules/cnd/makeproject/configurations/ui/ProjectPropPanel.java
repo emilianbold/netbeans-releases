@@ -49,6 +49,7 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
@@ -77,12 +78,12 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
         makeConfigurationDescriptor = (MakeConfigurationDescriptor) configurationDescriptor;
         initComponents();
         projectTextField.setText(FileUtil.toFile(project.getProjectDirectory()).getPath());
-        sourceRootPanel.add(sourceRootChooser = new SourceRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getSourceRootsAsArray()));
+        sourceRootPanel.add(sourceRootChooser = new SourceRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getSourceRoots()));
 
         MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
         makeCustomizerProvider.addActionListener(this);
-        
-        originalEncoding = ((MakeProject)project).getSourceEncoding();
+
+        originalEncoding = ((MakeProject) project).getSourceEncoding();
 //        if (originalEncoding != null) {
 //            try {
 //                FileEncodingQuery.setDefaultEncoding(Charset.forName(value));
@@ -93,40 +94,40 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
         if (originalEncoding == null) {
             originalEncoding = Charset.defaultCharset().name();
         }
-        
+
         encoding.setModel(new EncodingModel(this.originalEncoding));
         encoding.setRenderer(new EncodingRenderer());
-        
 
-        encoding.addActionListener(new ActionListener () {
+
+        encoding.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent arg0) {
                 handleEncodingChange();
-            }            
+            }
         });
     }
-    
-    private void handleEncodingChange () {
+
+    private void handleEncodingChange() {
     }
-    
+
     public void save() {
         Charset enc = (Charset) encoding.getSelectedItem();
         String encName;
         if (enc != null) {
             encName = enc.name();
-        }
-        else {
+        } else {
             encName = originalEncoding;
         }
-        ((MakeProject)project).setSourceEncoding(encName);
-        
+        ((MakeProject) project).setSourceEncoding(encName);
+
     }
-    
+
     private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
-        
+
         public EncodingRenderer() {
             setOpaque(true);
         }
-        
+
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             assert value instanceof Charset;
             setName("ComboBox.listRenderer"); // NOI18N
@@ -134,25 +135,24 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
             setIcon(null);
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());             
+                setForeground(list.getSelectionForeground());
             } else {
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
             }
             return this;
         }
-        
+
         @Override
         public String getName() {
             String name = super.getName();
             return name == null ? "ComboBox.renderer" : name; // NOI18N
         }
-        
     }
-    
+
     private static class EncodingModel extends DefaultComboBoxModel {
-        
-        public EncodingModel (String originalEncoding) {
+
+        public EncodingModel(String originalEncoding) {
             Charset defEnc = null;
             for (Charset c : Charset.availableCharsets().values()) {
                 if (c.name().equals(originalEncoding)) {
@@ -165,7 +165,7 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
                 //May happen when the project was set up on the platform
                 //which supports more encodings
                 try {
-                    defEnc = new UnknownCharset (originalEncoding);
+                    defEnc = new UnknownCharset(originalEncoding);
                     addElement(defEnc);
                 } catch (IllegalCharsetNameException e) {
                     //The source.encoding property is completely broken
@@ -178,13 +178,13 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
             setSelectedItem(defEnc);
         }
     }
-    
+
     private static class UnknownCharset extends Charset {
-        
-        UnknownCharset (String name) {
-            super (name, new String[0]);
+
+        UnknownCharset(String name) {
+            super(name, new String[0]);
         }
-    
+
         public boolean contains(Charset c) {
             throw new UnsupportedOperationException();
         }
@@ -209,7 +209,7 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
 
     class SourceRootChooser extends DirectoryChooserInnerPanel {
 
-        public SourceRootChooser(String baseDir, Object[] feed) {
+        public SourceRootChooser(String baseDir, List<String> feed) {
             super(baseDir, feed);
             getCopyButton().setVisible(false);
             getEditButton().setVisible(false);
@@ -235,7 +235,6 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
             return getString("ADD_BUTTON_TXT");
         }
     }
-    
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -318,6 +317,7 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
     private javax.swing.JTextField projectTextField;
     private javax.swing.JPanel sourceRootPanel;
     // End of variables declaration//GEN-END:variables
+
     private static String getString(String key) {
         return NbBundle.getMessage(ProjectPropPanel.class, key);
     }

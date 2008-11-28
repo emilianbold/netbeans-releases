@@ -68,6 +68,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
+import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 
 /**
  * Represents a handle for {@link TypeMirror} which can be kept and later resolved

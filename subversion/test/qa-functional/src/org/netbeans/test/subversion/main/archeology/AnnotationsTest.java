@@ -9,17 +9,22 @@
 
 package org.netbeans.test.subversion.main.archeology;
 
+import java.awt.event.InputEvent;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
@@ -42,7 +47,6 @@ public class AnnotationsTest extends JellyTestCase {
     public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
     public PrintStream stream;
-    String os_name;
     Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
     static Logger log;
@@ -64,14 +68,6 @@ public class AnnotationsTest extends JellyTestCase {
         }
     }
     
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
-    }
-    
     public static Test suite() {
          return NbModuleSuite.create(
                  NbModuleSuite.createConfiguration(AnnotationsTest.class).addTest(
@@ -86,6 +82,9 @@ public class AnnotationsTest extends JellyTestCase {
         try {
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
+            TestKit.closeProject(PROJECT_NAME);
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                NewProjectWizardOperator.invoke().close();
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -121,10 +120,15 @@ public class AnnotationsTest extends JellyTestCase {
             TestKit.removeHandlers(log);
             log.addHandler(mh);
 
+            EditorOperator.closeDiscardAll();
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             node.performPopupAction("Subversion|Show Annotations");
             TestKit.waitText(mh);
-            
+            EditorOperator eo = new EditorOperator("Main.java");
+            eo.clickMouse(40, 50, 1, InputEvent.BUTTON3_MASK);
+            JPopupMenuOperator pmo = new JPopupMenuOperator();
+            pmo.pushMenu("Hide Annotations");
+
             stream.flush();
             stream.close();
         } catch (Exception e) {

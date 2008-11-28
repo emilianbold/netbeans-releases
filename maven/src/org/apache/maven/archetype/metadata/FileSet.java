@@ -8,13 +8,12 @@ package org.apache.maven.archetype.metadata;
  //- Imported classes and packages -/
 //---------------------------------/
 
-import java.util.Date;
-
 /**
  * Class FileSet.
  * 
  * @version $Revision$ $Date$
  */
+@SuppressWarnings({"unchecked", "deprecation"}) //generated class
 public class FileSet implements java.io.Serializable {
 
 

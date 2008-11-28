@@ -61,7 +61,7 @@ import org.openide.nodes.Children;
  *
  * @author  Milos Kleint
  */
-class OthersRootChildren extends Children.Keys {
+class OthersRootChildren extends Children.Keys<SourceGroup> {
     
     private NbMavenProjectImpl project;
     private PropertyChangeListener changeListener;
@@ -88,7 +88,7 @@ class OthersRootChildren extends Children.Keys {
     
     @Override
     protected void removeNotify() {
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<SourceGroup>emptySet());
         NbMavenProject.removePropertyChangeListener(project, changeListener);
         super.removeNotify();
         
@@ -113,8 +113,7 @@ class OthersRootChildren extends Children.Keys {
     }
     
     
-    protected Node[] createNodes(Object key) {
-        SourceGroup grp = (SourceGroup)key;
+    protected Node[] createNodes(SourceGroup grp) {
         Node[] toReturn = new Node[1];
         DataFolder dobj = DataFolder.findFolder(grp.getRootFolder());
         Children childs = dobj.createNodeChildren(VisibilityQueryDataFilter.VISIBILITY_QUERY_FILTER);

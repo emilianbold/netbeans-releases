@@ -98,23 +98,53 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
         }        
     }
     
+    public SourceFileObject (final FileObject file, final FileObject root, final JavaFileFilterImplementation filter, final CharSequence content) throws IOException {
+        this (file, root, filter);
+        update(content);
+    }
+    
+    //where
+    private String toString (final CharSequence c) {
+        if (c instanceof String) {
+            return (String) c;
+        }
+        else {
+            return c.toString();
+        }
+    }
+    
     /** Creates a new instance of SourceFileObject */
     public SourceFileObject (final FileObject file, final FileObject root, final JavaFileFilterImplementation filter, final boolean renderNow) throws IOException {
+        this (file, root, filter);
+        if (renderNow && this.kind != Kind.CLASS) {
+            getCharContentImpl(true);
+        }
+    }
+    
+    private SourceFileObject (final FileObject file, final FileObject root, final JavaFileFilterImplementation filter) {
         assert file != null;
         this.file = file;
         this.root = root;
         this.filter = filter;
         String ext = this.file.getExt();        
         this.kind = filter == null ? FileObjects.getKind(ext) : Kind.SOURCE; //#141411
-        if (renderNow && this.kind != Kind.CLASS) {
-            getCharContentImpl(true);
-        }
     }
 
     
     public void update () throws IOException {
         if (this.kind != Kind.CLASS) {
             getCharContentImpl(true);
+        }
+    }
+    
+    public void update (final CharSequence content) throws IOException {
+        if (content == null) {
+            update();
+        }
+        else {            
+            final CharBuffer charBuffer = CharBuffer.wrap (content);
+            this.text = toString(content);
+            tokens = TokenHierarchy.create(charBuffer, false, JavaTokenId.language(), null, null);
         }
     }
     

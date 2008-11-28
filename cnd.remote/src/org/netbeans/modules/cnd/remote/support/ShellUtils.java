@@ -66,8 +66,8 @@ public class ShellUtils {
         StringBuilder cmdline = new StringBuilder();
         String exportCommand = getExportCommand(isCshShell);
         String middleFix = isCshShell ? " " : "="; // NOI18N
-        for (String ev : env.keySet()) {
-            cmdline.append(exportCommand).append(ev).append(middleFix).append("\"").append(env.get(ev)).append("\";"); // NOI18N
+        for (Map.Entry<String, String> entry : env.entrySet()) {
+            cmdline.append(exportCommand).append(entry.getKey()).append(middleFix).append('\"').append(entry.getValue()).append("\";"); // NOI18N
         }
         return cmdline.toString();
     }

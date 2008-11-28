@@ -73,6 +73,7 @@ public class CatCommand extends SvnCommand {
         this.rev = rev;        
         this.file = null;
         type = CatType.url;
+
     }
     
     public CatCommand(File file, SVNRevision rev) {        

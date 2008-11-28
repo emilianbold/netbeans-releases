@@ -74,6 +74,7 @@ import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
 import org.netbeans.modules.javascript.editing.JsParser.Sanitize;
@@ -1328,6 +1329,14 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
 
+            // E4X
+            if (type != null && type.startsWith("XML<") && type.endsWith(">")) { // NOI18N
+                // Extract XML
+                String xml = type.substring(4, type.length()-1);
+                addXmlItems(xml, proposals, request);
+                return true;
+            }
+
             // I'm not doing any data flow analysis at this point, so
             // I can't do anything with a LHS like "foo.". Only actual types.
             if ((type != null) && (type.length() > 0)) {
@@ -1444,7 +1453,33 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 
         return false;
     }
-    
+
+    private void addXmlItems(String xml, List<CompletionProposal> proposals, CompletionRequest request) {
+        // Parse
+        JsAnalyzer.XmlStructureItem xmlItem = JsAnalyzer.XmlStructureItem.get(xml, 0);
+
+        // Add items for all the XML items
+        Set<String> names = new HashSet<String>();
+        addXmlItems(xmlItem, names);
+
+        NameKind kind = request.kind;
+        String prefix = request.prefix;
+        for (String tag : names) {
+            if (((kind == NameKind.EXACT_NAME) && prefix.equals(tag)) ||
+                    ((kind != NameKind.EXACT_NAME) && startsWith(tag, prefix))) {
+                KeywordItem item = new KeywordItem(tag, null, request);
+                item.setKind(ElementKind.TAG);
+                proposals.add(item);
+            }
+        }
+    }
+
+    private void addXmlItems(StructureItem item, Set<String> names) {
+        names.add(item.getName());
+        for (StructureItem child : item.getNestedItems()) {
+            addXmlItems(child, names);
+        }
+    }
     
     /** Determine if we're trying to complete the name for a "new" (in which case
      * we show available constructors.
@@ -2675,6 +2710,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         private static final String Js_KEYWORD = "org/netbeans/modules/javascript/editing/javascript.png"; //NOI18N
         private final String keyword;
         private final String description;
+        private ElementKind kind = ElementKind.KEYWORD;
 
         KeywordItem(String keyword, String description, CompletionRequest request) {
             super(null, request);
@@ -2689,7 +2725,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 
         @Override
         public ElementKind getKind() {
-            return ElementKind.KEYWORD;
+            return kind;
         }
 
         @Override
@@ -2712,6 +2748,11 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 
         @Override
         public ImageIcon getIcon() {
+            if (kind != ElementKind.KEYWORD) {
+                // Use GSF default
+                return null;
+            }
+
             if (keywordIcon == null) {
                 keywordIcon = new ImageIcon(ImageUtilities.loadImage(Js_KEYWORD));
             }
@@ -2733,6 +2774,10 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         @Override
         public boolean isSmart() {
             return false;
+        }
+
+        private void setKind(ElementKind kind) {
+            this.kind = kind;
         }
     }
 

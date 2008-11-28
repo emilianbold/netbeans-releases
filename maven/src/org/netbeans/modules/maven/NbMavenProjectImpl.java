@@ -710,6 +710,7 @@ public final class NbMavenProjectImpl implements Project {
 
     private Lookup createBasicLookup() {
         CPExtender extender = new CPExtender(this);
+        @SuppressWarnings("deprecation")
         Lookup staticLookup = Lookups.fixed(new Object[]{
                     projectInfo,
                     this,

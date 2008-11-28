@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.Component;
@@ -59,72 +58,75 @@ final class SourceFoldersDescriptorPanel implements WizardDescriptor.Panel, NewM
     private WizardDescriptor wizardDescriptor;
     private SourceFoldersPanel component;
     private String name;
-    
+
     /** Create the wizard panel descriptor. */
     public SourceFoldersDescriptorPanel() {
-	name = NbBundle.getMessage(SourceFoldersDescriptorPanel.class, "SourceFoldersName"); // NOI18N
+        name = NbBundle.getMessage(SourceFoldersDescriptorPanel.class, "SourceFoldersName"); // NOI18N
     }
-    
+
     public Component getComponent() {
         if (component == null) {
             component = new SourceFoldersPanel(this);
-	    component.setName(name);
+            component.setName(name);
         }
         return component;
     }
 
     public String getName() {
-	return name;
+        return name;
     }
 
     public WizardDescriptor getWizardDescriptor() {
-	return wizardDescriptor;
+        return wizardDescriptor;
     }
-    
+
     public HelpCtx getHelp() {
         return new HelpCtx("NewMakeWizardP3"); // NOI18N
     }
-    
+
     public boolean isValid() {
-	boolean valid = ((SourceFoldersPanel)getComponent()).valid(wizardDescriptor);
-	if (valid)
-	    wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
-	return valid;
+        boolean valid = ((SourceFoldersPanel) getComponent()).valid(wizardDescriptor);
+        if (valid) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
+        }
+        return valid;
     }
-    
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
+
     protected final void fireChangeEvent() {
-        Iterator it;
+        Iterator<ChangeListener> it;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+            it.next().stateChanged(ev);
         }
     }
 
     public void stateChanged(ChangeEvent e) {
-	fireChangeEvent();
+        fireChangeEvent();
     }
-    
+
     public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor)settings;        
-        component.read (wizardDescriptor);
+        wizardDescriptor = (WizardDescriptor) settings;
+        component.read(wizardDescriptor);
     }
-    
+
     public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor)settings;
+        WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
     }
 }

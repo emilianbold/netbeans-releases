@@ -102,8 +102,22 @@ public final class SetExecutionUriAction extends NodeAction {
             if (activatedNodes[0] != null) {
                 DataObject data = (DataObject)activatedNodes[0].getCookie(DataObject.class);
                 if (data != null) {
-                    String mimetype = data.getPrimaryFile().getMIMEType();
-                    Boolean servletAttr = (Boolean)data.getPrimaryFile().getAttribute("org.netbeans.modules.web.IsServletFile"); //NOI18N
+                    FileObject javaClass = data.getPrimaryFile();
+                    String mimetype = javaClass.getMIMEType();
+                    final String servletFileKey = "org.netbeans.modules.web.IsServletFile"; //NOI18N
+                    Boolean servletAttr = (Boolean)javaClass.getAttribute(servletFileKey);
+                    if (!Boolean.TRUE.equals(servletAttr)) {
+                        WebModule webModule = WebModule.getWebModule(javaClass);
+                        boolean isServletFile = isServletFile(webModule, javaClass);
+                        if (isServletFile) {
+                            try {
+                                javaClass.setAttribute(servletFileKey, Boolean.TRUE); //NOI18N
+                            } catch (java.io.IOException ex) {
+                                //we tried
+                            }
+                        }
+                        servletAttr = Boolean.valueOf(isServletFile);
+                    }
                     return "text/x-java".equals(mimetype) && Boolean.TRUE.equals(servletAttr); //NOI18N
                 }
             }
@@ -176,6 +190,45 @@ public final class SetExecutionUriAction extends NodeAction {
             mappingList.toArray(mappings);
             return mappings;
         } catch (java.io.IOException ex) {return null;}  
+    }
+    
+    private static boolean isServletFile(WebModule webModule, FileObject javaClass) {
+        if (webModule == null || javaClass == null) {
+            return false;
+        }
+        
+        FileObject webInf = webModule.getWebInf();
+        if (webInf == null) {
+            return false;
+        }
+        
+        FileObject fo = webInf.getFileObject(ProjectWebModule.FILE_DD);
+        if (fo == null) {
+            return false;
+        }
+        
+        ClassPath classPath = ClassPath.getClassPath (javaClass, ClassPath.SOURCE);
+        if (classPath == null) {
+            return false;
+        }
+        
+        String className = classPath.getResourceName(javaClass,'.',false);
+        if (className == null) {
+            return false;
+        }
+        
+        try {
+            WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
+            Servlet[] servlets = webApp.getServlet();
+            for (int i=0;i<servlets.length;i++) {
+                if (className.equals(servlets[i].getServletClass())) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (java.io.IOException ex) {
+            return false;
+        }  
     }
     
 }

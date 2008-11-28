@@ -152,8 +152,7 @@ public class CompilerPathPanel extends MakefileWizardPanel implements FocusListe
 	add(nueText, grid);
 
 	JButton chooser = new JButton(getString("BTN_Chooser"));	// NOI18N
-	String mnem = "MNEM_Chooser" +			// NOI18N
-				new Integer(lnum);
+	String mnem = "MNEM_Chooser" + lnum; // NOI18N
 	chooser.setMnemonic(getString(mnem).charAt(0));
 	grid.anchor = GridBagConstraints.WEST;
 	grid.gridx = 2;
@@ -201,6 +200,7 @@ public class CompilerPathPanel extends MakefileWizardPanel implements FocusListe
 
 
     /** Create the widgets if not initialized */
+    @Override
     public void addNotify() {
 
 	if (!initialized) {
@@ -223,6 +223,7 @@ public class CompilerPathPanel extends MakefileWizardPanel implements FocusListe
 
 
     /** Get the data from the panel and update the target */
+    @Override
     public void removeNotify() {
 	super.removeNotify();
 
