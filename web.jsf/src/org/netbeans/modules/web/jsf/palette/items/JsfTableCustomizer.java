@@ -99,9 +99,9 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
     
     public boolean showDialog() {
         dialogOK = false;
-        String displayName = NbBundle.getMessage(JsfTableCustomizer.class, "NAME_jsp-JsfTable"); // NOI18N
+        String displayName = bundle.getString("NAME_jsp-JsfTable"); // NOI18N
         descriptor = new DialogDescriptor
-                (this, NbBundle.getMessage(JsfTableCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
+                (this, bundle.getString("LBL_Customizer_InsertPrefix") + " " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent event) {
