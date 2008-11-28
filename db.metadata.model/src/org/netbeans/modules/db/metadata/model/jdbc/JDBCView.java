@@ -94,8 +94,9 @@ public class JDBCView extends ViewImplementation {
         return MetadataUtilities.find(name, initColumns());
     }
 
-    protected JDBCColumn createJDBCColumn(String name) {
-        return new JDBCColumn(this.getView(), name);
+    protected JDBCColumn createJDBCColumn(ResultSet rs) throws SQLException {
+        int ordinalPosition = rs.getInt("ORDINAL_POSITION");
+        return new JDBCColumn(this.getView(), ordinalPosition, JDBCValue.createTableColumnValue(rs));
     }
 
     protected void createColumns() {
@@ -104,9 +105,8 @@ public class JDBCView extends ViewImplementation {
             ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getColumns(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name, "%"); // NOI18N
             try {
                 while (rs.next()) {
-                    String columnName = rs.getString("COLUMN_NAME"); // NOI18N
-                    Column column = createJDBCColumn(columnName).getColumn();
-                    newColumns.put(columnName, column);
+                    Column column = createJDBCColumn(rs).getColumn();
+                    newColumns.put(column.getName(), column);
                     LOGGER.log(Level.FINE, "Created column {0}", column);
                 }
             } finally {

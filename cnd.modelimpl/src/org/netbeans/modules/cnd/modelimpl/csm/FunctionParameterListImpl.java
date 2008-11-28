@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 
 /**
  *
@@ -66,7 +65,7 @@ import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionParameterList, CsmParameter> implements CsmFunctionParameterList {
     private final CsmUID<ParameterListImpl<CsmParameterList, CsmKnRName>> krListUID;
 
-    private FunctionParameterListImpl(CsmFile file, int start, int end, Collection<CsmUID<CsmParameter>> parameters, ParameterListImpl<CsmParameterList, CsmKnRName> krList) {
+    private FunctionParameterListImpl(CsmFile file, int start, int end, Collection<CsmParameter> parameters, ParameterListImpl<CsmParameterList, CsmKnRName> krList) {
         super(file, start, end, parameters);
         @SuppressWarnings("unchecked")
         CsmUID<ParameterListImpl<CsmParameterList, CsmKnRName>> uID = krList == null ? null : (CsmUID<ParameterListImpl<CsmParameterList, CsmKnRName>>)(CsmUID)krList.getUID();
@@ -78,16 +77,42 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
     }
 
     /*package*/ static FunctionParameterListImpl create(CsmFile file, AST funAST, CsmScope scope) {
-        AST lParen = funAST;
-        AST paramList = funAST;
-        return create(file, lParen, paramList, scope);
+        if (true) return null;
+        AST lParen = null;
+        AST rParen = null;
+        AST paramList = null;
+        AST krList = null;
+        AST prev = null;
+        AST token;
+        for (token = funAST.getFirstChild(); token != null; token = token.getNextSibling()) {
+            if (token.getType() == CPPTokenTypes.CSM_PARMLIST) {
+                paramList = token;
+                // previous is "("
+                lParen = prev;
+                // next is ")"
+                rParen = token.getNextSibling();
+                break;
+            }
+            prev = token;
+        }
+        if (rParen != null) {
+            krList = rParen.getNextSibling();
+        } else {
+            return null;
+        }
+        return create(file, lParen, rParen, paramList, krList, scope);
     }
 
-    /*package*/ static FunctionParameterListImpl create(CsmFile file, AST lParen, AST ast, CsmScope scope) {
+    /*package*/ static FunctionParameterListImpl create(CsmFile file, AST lParen, AST rParen, AST firstList, AST secondList, CsmScope scope) {
+        if (lParen == null || lParen.getType() != CPPTokenTypes.LPAREN
+            || rParen == null || rParen.getType() != CPPTokenTypes.RPAREN) {
+            return null;
+        }
         List<CsmParameter> parameters = new ArrayList<CsmParameter>();
-        if (ast != null && (ast.getType() == CPPTokenTypes.CSM_PARMLIST ||
-                ast.getType() == CPPTokenTypes.CSM_KR_PARMLIST)) {
-            for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
+        AST paramList = secondList == null ? firstList : secondList;
+        if (paramList != null && (paramList.getType() == CPPTokenTypes.CSM_PARMLIST ||
+                paramList.getType() == CPPTokenTypes.CSM_KR_PARMLIST)) {
+            for (AST token = paramList.getFirstChild(); token != null; token = token.getNextSibling()) {
                 if (token.getType() == CPPTokenTypes.CSM_PARAMETER_DECLARATION) {
                     List<ParameterImpl> params = AstRenderer.renderParameter(token, file, scope);
                     if (params != null) {
@@ -96,13 +121,12 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
                 }
             }
         }
-        return null;
+        return new FunctionParameterListImpl(file, getStartOffset(lParen), getEndOffset(rParen), parameters, null);
     }
 
-    /*package*/ static FunctionParameterListImpl create(CsmFunctionParameterList paramList, Collection<CsmParameter> parameters) {
-        //TODO
-        return null;
-//        return new ParameterListImpl(paramList.getContainingFile(), paramList.getStartOffset(), paramList.getEndOffset(), parameters, null);
+    /*package*/ static FunctionParameterListImpl create(CsmFunctionParameterList originalParamList, Collection<CsmParameter> parameters) {
+        return new FunctionParameterListImpl(originalParamList.getContainingFile(), originalParamList.getStartOffset(),
+                originalParamList.getEndOffset(), parameters, null);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -119,38 +143,38 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         this.krListUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
 
-    private static List<CsmKnRName> readKRList(ArrayList<CsmKnRName> arrayList, DataInput input) throws IOException {
-        int collSize = input.readInt();
-        if (collSize == AbstractObjectFactory.NULL_POINTER) {
-            return null;
-        }
-        List<CsmKnRName> res = new ArrayList<CsmKnRName>();
-        assert collSize >= 0;
-        for (int i = 0; i < collSize; ++i) {
-            CsmKnRName param = readKRName();
-            assert param != null;
-            res.add(param);
-        }
-        return res;
-    }
-
-    private static CsmKnRName readKRName() throws IOException {
-        return null;
-    }
-
-    private static void writeKRName(CsmKnRName name, DataOutput output) throws IOException {
-    }
-
-    private void writeKRList(List<CsmKnRName> krList, DataOutput output) throws IOException {
-        if (krList == null) {
-            output.writeInt(AbstractObjectFactory.NULL_POINTER);
-        } else {
-            int len = krList.size();
-            output.writeInt(len);
-            for (int i = 0; i < len; i++) {
-                assert krList.get(i) != null;
-                writeKRName(krList.get(i), output);
-            }
-        }
-    }
+//    private static List<CsmKnRName> readKRList(ArrayList<CsmKnRName> arrayList, DataInput input) throws IOException {
+//        int collSize = input.readInt();
+//        if (collSize == AbstractObjectFactory.NULL_POINTER) {
+//            return null;
+//        }
+//        List<CsmKnRName> res = new ArrayList<CsmKnRName>();
+//        assert collSize >= 0;
+//        for (int i = 0; i < collSize; ++i) {
+//            CsmKnRName param = readKRName();
+//            assert param != null;
+//            res.add(param);
+//        }
+//        return res;
+//    }
+//
+//    private static CsmKnRName readKRName() throws IOException {
+//        return null;
+//    }
+//
+//    private static void writeKRName(CsmKnRName name, DataOutput output) throws IOException {
+//    }
+//
+//    private void writeKRList(List<CsmKnRName> krList, DataOutput output) throws IOException {
+//        if (krList == null) {
+//            output.writeInt(AbstractObjectFactory.NULL_POINTER);
+//        } else {
+//            int len = krList.size();
+//            output.writeInt(len);
+//            for (int i = 0; i < len; i++) {
+//                assert krList.get(i) != null;
+//                writeKRName(krList.get(i), output);
+//            }
+//        }
+//    }
 }

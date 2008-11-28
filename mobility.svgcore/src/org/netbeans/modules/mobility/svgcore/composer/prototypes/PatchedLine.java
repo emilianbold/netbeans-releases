@@ -78,6 +78,7 @@ public final class PatchedLine extends Line implements PatchedTransformableEleme
         }
     }
     
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedLine(doc);
     }    

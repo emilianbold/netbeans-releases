@@ -4,16 +4,16 @@ Code completion result for source line:
 ------------------------------------
 METHOD     div(Character)                             Number
 METHOD     div(Number)                                Number
-METHOD     divide(BigDecimal)                         BigDecimal
-METHOD     divide(BigDecimal, MathContext             BigDecimal
-METHOD     divide(BigDecimal, RoundingMod             BigDecimal
-METHOD     divide(BigDecimal, int)                    BigDecimal
-METHOD     divide(BigDecimal, int, Roundi             BigDecimal
-METHOD     divide(BigDecimal, int, int)               BigDecimal
-METHOD     divideAndRemainder(BigDecimal)             BigDecimal[]
-METHOD     divideAndRemainder(BigDecimal,             BigDecimal[]
-METHOD     divideToIntegralValue(BigDecim             BigDecimal
-METHOD     divideToIntegralValue(BigDecim             BigDecimal
-METHOD     doubleValue()                              double
+METHOD     divide(BigDecimal)              [PUBLIC]   BigDecimal
+METHOD     divide(BigDecimal, MathContext  [PUBLIC]   BigDecimal
+METHOD     divide(BigDecimal, RoundingMod  [PUBLIC]   BigDecimal
+METHOD     divide(BigDecimal, int)         [PUBLIC]   BigDecimal
+METHOD     divide(BigDecimal, int, Roundi  [PUBLIC]   BigDecimal
+METHOD     divide(BigDecimal, int, int)    [PUBLIC]   BigDecimal
+METHOD     divideAndRemainder(BigDecimal)  [PUBLIC]   BigDecimal[]
+METHOD     divideAndRemainder(BigDecimal,  [PUBLIC]   BigDecimal[]
+METHOD     divideToIntegralValue(BigDecim  [PUBLIC]   BigDecimal
+METHOD     divideToIntegralValue(BigDecim  [PUBLIC]   BigDecimal
+METHOD     doubleValue()                   [PUBLIC]   double
 METHOD     downto(Number, Closure)                    void
 METHOD     dump()                                     String

@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -61,13 +62,13 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
  * implementation of offsetable object to represent functions' parameters
  * @author Vladimir Voskresensky
  */
-public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableIdentifiableBase<T> implements CsmParameterList<T, K> {
+public class ParameterListImpl<T, K> extends OffsetableIdentifiableBase<T> implements CsmParameterList<T, K> {
 
     private final Collection<CsmUID<K>> parameters;
 
-    protected ParameterListImpl(CsmFile file, int start, int end, Collection<CsmUID<K>> parameters) {
+    protected ParameterListImpl(CsmFile file, int start, int end, Collection<K> parameters) {
         super(file, start, end);
-        this.parameters = parameters;
+        this.parameters = RepositoryUtils.put(parameters);
     }
 
     public Collection<K> getParameters() {
@@ -133,9 +134,7 @@ public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableI
     ////////////////////////////////////////////////////////////////////////////
     // help factory methods
     public static <T, K extends CsmNamedElement> ParameterListImpl<T, K> create(CsmFile file, int start, int end, Collection<K> parameters) {
-        Collection<CsmUID<K>> uids = UIDCsmConverter.CsmObjectsToUIDs(parameters);
-        // convert objects to UIDs
-        return new ParameterListImpl<T, K>(file, start, end, uids);
+        return new ParameterListImpl<T, K>(file, start, end, parameters);
     }
 
     public static ParameterListImpl<CsmParameterList, CsmMacroParameter> create(CsmFile file, APTMacro macro) {

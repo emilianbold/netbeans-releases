@@ -105,12 +105,13 @@ public class CppLexerBatchTestCase extends TestCase {
     }
 
     public void testComments() {
-        String text = "/*ml-comment*//**//***//**\n*doxygen-comment*//* a";
+        String text = "/*ml-comment*//**//***//*! doxygen*//**\n*doxygen-comment*//* a";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.BLOCK_COMMENT, "/*ml-comment*/");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.BLOCK_COMMENT, "/**/");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DOXYGEN_COMMENT, "/***/");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DOXYGEN_COMMENT, "/*! doxygen*/");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DOXYGEN_COMMENT, "/**\n*doxygen-comment*/");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.BLOCK_COMMENT, "/* a");
         assertEquals(PartType.START, ts.token().partType());

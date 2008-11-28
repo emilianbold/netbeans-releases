@@ -43,8 +43,6 @@ package org.netbeans.modules.ruby.railsprojects;
 
 import java.util.regex.Matcher;
 import junit.framework.TestCase;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
-import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
 
 /**
  * Tests for the pattern that recognizes files when creating a rails project.
@@ -96,15 +94,10 @@ public class RailsProjectGeneratorPatternTest extends TestCase {
     }
 
     public void testFiletypes() {
-        RegexpOutputRecognizer recognizer = RailsProjectGenerator.RAILS_GENERATOR;
-        FileLocation location;
-
         String[] extensions = new String[] { "html.erb", "rb", "mab", "rjs", "rxml", "rake", "erb", "builder", "rhtml", "yml", "js", "erb", "html", "cgi", "fcgi", "txt", "png", "gif", "css"};
         for (String ext : extensions) {
             String s = "      create  app/helpers/application_helper." + ext;
-            location = recognizer.processLine(s);
-            assertNotNull("Failed to recognize " + s, location);
-            assertEquals("app/helpers/application_helper." + ext, location.file);
+            assertTrue(matcher(s).matches());
         }
     }
 

@@ -50,7 +50,7 @@ import java.io.File;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewPHPProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
@@ -68,14 +68,14 @@ public class CreatePHPProjectTest extends PerformanceTestCase {
     {
         super(testName);        
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;        
+        WAIT_AFTER_OPEN=20000;
     }
     
     public CreatePHPProjectTest(String testName, String performanceDataName)
     {
         super(testName,performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;        
+        WAIT_AFTER_OPEN=20000;
     }
 
     public static NbTestSuite suite() {
@@ -93,6 +93,8 @@ public class CreatePHPProjectTest extends PerformanceTestCase {
 
     @Override
     public void prepare(){
+        repaintManager().addRegionFilter(repaintManager().IGNORE_STATUS_LINE_FILTER);
+        repaintManager().addRegionFilter(repaintManager().IGNORE_DIFF_SIDEBAR_FILTER);
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
@@ -108,15 +110,13 @@ public class CreatePHPProjectTest extends PerformanceTestCase {
     
     public ComponentOperator open(){
         wizard_location.finish();
-                CommonUtilities.waitProjectTasksFinished();
-//        wizard_location.waitClosed();
-//        TopComponentOperator.findTopComponent(editor_name, 0);
-//        return null;
-        return null;//new TopComponentOperator(editor_name);
+        return null;
     }
     
     @Override
     public void close(){
+        repaintManager().resetRegionFilters();
+        EditorOperator.closeDiscardAll();
     }    
     
     public void testCreatePhpProject() {

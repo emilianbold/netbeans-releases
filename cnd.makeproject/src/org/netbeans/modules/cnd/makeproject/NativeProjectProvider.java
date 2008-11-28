@@ -316,6 +316,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
     }
 
+    @SuppressWarnings("unchecked")
     private List<NativeProjectItemsListener> getListenersCopy() {
         synchronized (listeners) {
             return (listeners.size() == 0) ? Collections.EMPTY_LIST : new ArrayList<NativeProjectItemsListener>(listeners);

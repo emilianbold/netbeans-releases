@@ -42,11 +42,12 @@ PARAMS=""
 SUSPEND="n"
 CONSOLE="-J-Dnetbeans.logger.console=true"
 DBGPORT=${DBGPORT-5858}
-USERDIR="--userdir /tmp/${USER}/cnd-userdir"
+TMP_PREFIX=${TMP_PREFIX-/var/tmp}
+USERDIR="--userdir ${TMP_PREFIX}/${USER}/cnd-userdir"
 PARSERRORS="-J-Dparser.report.errors=true"
 DEBUG="-J-Xdebug -J-Djava.compiler=NONE -J-Xrunjdwp:transport=dt_socket,server=y"
 PRG=$0
-NB_COPY="/tmp/${USER}/nb-copy"
+NB_COPY="${TMP_PREFIX}/${USER}/nb-copy"
 
 while [ -h "$PRG" ]; do
     ls=`ls -ld "$PRG"`

@@ -41,21 +41,18 @@
 
 package org.netbeans.performance.languages.actions;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.performance.languages.Projects;
+import org.netbeans.performance.languages.ScriptingUtilities;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
-import java.awt.Font;
-import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
-import org.netbeans.performance.languages.Projects;
-import org.netbeans.performance.languages.ScriptingUtilities;
-
-import org.netbeans.performance.languages.setup.ScriptingSetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -63,28 +60,26 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author Administrator
  */
-public class TypingInScriptingEditorTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Actions suite";
+public class TypingInScriptingEditorTest extends PerformanceTestCase {
+
     protected Node fileToBeOpened;
     protected String testProject;
     protected String fileName; 
     protected String nodePath;
-    
     private EditorOperator editorOperator;
     protected static ProjectsTabOperator projectsTab = null;
-    
     private int caretBlinkRate;
-    private Font font;
     
     public TypingInScriptingEditorTest(String testName) {
         super(testName);
         expectedTime = UI_RESPONSE;       
-        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations             
+        WAIT_AFTER_OPEN=200;
     }
+
     public TypingInScriptingEditorTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = UI_RESPONSE;       
-        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations             
+        WAIT_AFTER_OPEN=200;
     }
 
     public static NbTestSuite suite() {
@@ -97,41 +92,36 @@ public class TypingInScriptingEditorTest extends org.netbeans.modules.performanc
 
     @Override
     public void initialize() {
-        log("::initialize");
-        closeAllModal();
         String path = nodePath+"|"+fileName;
-        log("attempting to open: "+path);
-        
         fileToBeOpened = new Node(getProjectNode(testProject),path);
+        new OpenAction().performAPI(fileToBeOpened);
+        editorOperator = EditorWindowOperator.getEditor(fileName);
+        caretBlinkRate =  editorOperator.txtEditorPane().getCaret().getBlinkRate();
+        editorOperator.txtEditorPane().getCaret().setBlinkRate(0);
     }
     
     @Override
     public void prepare() {
-        log("::prepare");
-        new OpenAction().performAPI(fileToBeOpened);
-        editorOperator = EditorWindowOperator.getEditor(fileName);
-        
-        caretBlinkRate =  editorOperator.txtEditorPane().getCaret().getBlinkRate();
-        
-        editorOperator.txtEditorPane().getCaret().setBlinkRate(0);
         editorOperator.setCaretPosition(8, 1);        
         repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
-        waitNoEvent(2000);        
     }
 
     @Override
     public ComponentOperator open() {
-        log("::typing...");
         editorOperator.typeKey('z');        
         return null;
     }
+
     @Override
     public void close() {
-        editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);
-        repaintManager().resetRegionFilters();        
-        EditorOperator.closeDiscardAll();
-        
     }
+
+    public void shutdown() {
+        editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);
+        repaintManager().resetRegionFilters();
+        EditorOperator.closeDiscardAll();
+    }
+
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
             projectsTab = ScriptingUtilities.invokePTO();
@@ -145,72 +135,75 @@ public class TypingInScriptingEditorTest extends org.netbeans.modules.performanc
         nodePath = "Source Files";
         doMeasurement();
     }
+
     public void test_RHTML_EditorTyping() {
         testProject = Projects.RAILS_PROJECT;
         fileName = "rhtml20kb.rhtml";
-        nodePath = "Views";
+        nodePath = "Unit Tests";
         doMeasurement();
     }
+
     public void test_JScript_EditorTyping() {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "javascript20kb.js";
         nodePath = "Web Pages";
         doMeasurement();        
     }
+
     public void test_PHP_EditorTyping() {
         testProject = Projects.PHP_PROJECT;
         fileName = "php20kb.php";
         nodePath = "Source Files";
         doMeasurement();
     }
-    /*
-    public void test_JS_EditorTyping() {
-        testProject = "";
-        fileName = "";        
-        nodePath = "";        
-        doMeasurement();
-    }
+    
     public void test_JSON_EditorTyping() {
-        testProject = "";
-        fileName = "";
-        nodePath = "";        
+        testProject = Projects.SCRIPTING_PROJECT;
+        fileName = "json20kB.json";
+        nodePath = "Web Pages";
         doMeasurement();
     }
+
     public void test_CSS_EditorTyping() {
-        testProject = "";
-        fileName = "";
-        nodePath = "";        
+        testProject = Projects.SCRIPTING_PROJECT;
+        fileName = "css20kB.css";
+        nodePath = "Web Pages";
         doMeasurement();
     }
+
     public void test_YML_EditorTyping() {
-        testProject = "";
-        fileName = "";
-        nodePath = "";        
+        testProject = Projects.RAILS_PROJECT;
+        fileName = "yaml20kB.yml";
+        nodePath = "Unit Tests";
         doMeasurement();
     }
+
     public void test_BAT_EditorTyping() {
-        testProject = "";
-        fileName = "";
-        nodePath = "";        
+        testProject = Projects.SCRIPTING_PROJECT;
+        fileName = "bat20kB.bat";
+        nodePath = "Web Pages";
         doMeasurement();
     }
+
     public void test_DIFF_EditorTyping() {
-        testProject = "";
-        fileName = "";
-        nodePath = "";        
+        testProject = Projects.SCRIPTING_PROJECT;
+        fileName = "diff20kB.diff";
+        nodePath = "Web Pages";
         doMeasurement();
     }
+
     public void test_MANIFEST_EditorTyping() {
-        testProject = "";
-        fileName = "";
-        nodePath = "";        
+        testProject = Projects.SCRIPTING_PROJECT;
+        fileName = "manifest20kB.mf";
+        nodePath = "Web Pages";
         doMeasurement();
     }
+
     public void test_SH_EditorTyping() {
-        testProject = "";
-        fileName = "";        
+        testProject = Projects.SCRIPTING_PROJECT;
+        fileName = "sh20kB.sh";
+        nodePath = "Web Pages";
         doMeasurement();
     }
-    */
  
 }

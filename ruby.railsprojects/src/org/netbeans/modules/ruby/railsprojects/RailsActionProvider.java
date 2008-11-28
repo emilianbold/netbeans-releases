@@ -549,12 +549,11 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         desc.additionalArgs(getApplicationArguments());
         desc.fileLocator(new RailsFileLocator(context, project));
         desc.addStandardRecognizers();
-        LineConvertors.FileLocator locator = RubyProcessCreator.wrap(desc.getFileLocator());
-        desc.addOutConvertor(LineConvertors.filePattern(locator,
+        desc.addOutConvertor(LineConvertors.filePattern(desc.getFileLocator(),
                 RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
                 RubyLineConvertorFactory.EXT_RE
                 ,1,2));
-        desc.addErrConvertor(LineConvertors.filePattern(locator,
+        desc.addErrConvertor(LineConvertors.filePattern(desc.getFileLocator(),
                 RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
                 RubyLineConvertorFactory.EXT_RE
                 ,1,2));

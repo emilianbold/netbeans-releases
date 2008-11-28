@@ -21,11 +21,18 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="openesb" basedir="." default="build-pkg">
 
-    <property name="appdir" value="${basedir}/build/app"/>
+    <property name="builddir" value="${basedir}/build"/>
+    <property name="appdir" value="${builddir}/app"/>
+    <property name="scriptsdir" value="${builddir}/scripts"/>
+  
     
     <target name="clean">
-        <delete dir="build"/>
-        <mkdir dir="build"/>
+        <delete dir="${builddir}"/>
+    </target>
+
+    <target name="init">
+        <mkdir dir="${appdir}"/>
+        <mkdir dir="${scriptsdir}"/>
     </target>
                    
     <target name="get-bits">
@@ -35,13 +42,12 @@ Microsystems, Inc. All Rights Reserved.
         <get src="${openesb_core_source}" dest="jbi-core-installer.jar" usetimestamp="true"/-->        
     </target>
     
-    <target name="unzip" depends="get-bits">
-        <mkdir dir="build/app"/>
-        <move file="jbi_components_installer.jar" tofile="build/app/jbi_components_installer.jar"/>
-        <!--move file="jbi-core-installer.jar"       tofile="build/app/jbi-core-installer.jar"/-->        
+    <target name="unzip" depends="get-bits">        
+        <move file="jbi_components_installer.jar" tofile="${appdir}/jbi_components_installer.jar"/>
+        <!--move file="jbi-core-installer.jar"       tofile="${appdir}/jbi-core-installer.jar"/-->
     </target>
     
-    <target name="build-pkg" depends="clean, unzip">
+    <target name="build-pkg" depends="clean, init, unzip">
         <exec executable="sh" failonerror="yes" outputproperty="size">
             <arg value="-c"/>
             <arg value="du -sk build | sed 's/[\t]*build//' | xargs -I {}  expr {} + 15360"/>
@@ -55,27 +61,32 @@ Microsystems, Inc. All Rights Reserved.
         </exec>
 
         
-        <copy file="pkg/Info.plist" filtering="true" tofile="${basedir}/build/Info.plist">
+        <copy file="pkg/Info.plist" filtering="true" tofile="${builddir}/Info.plist">
             <filterset>
                 <filter token="INSTALLDIR" value="${openesb.install.dir}"/>
                 <filter token="APPVERSION" value="${openesb.version}"/>
             </filterset>
         </copy>
         
-        <copy file="${basedir}/../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="pkg/scripts/Description.plist">
+        <copy file="${basedir}/../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="${builddir}/Description.plist">
             <filterset>
                 <filter token="TITLE" value="${openesb-title}"/>
             </filterset>
         </copy>
+
+
+        <copy  todir="${scriptsdir}">
+            <fileset dir="${basedir}/pkg/scripts"/>
+        </copy>
         
-        <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>      
-        <copy file="${basedir}/../commonfiles/get_current_jdk.sh" tofile="${basedir}/pkg/scripts/get_current_jdk.sh"/>
-        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${basedir}/pkg/scripts/perm.sh"/>
+        <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
+        <copy file="${basedir}/../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${scriptsdir}/perm.sh"/>
         
         <echo message="Building openesb.pkg into ${basedir}/../build/openesb.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/openesb.pkg -f ${appdir} -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
+            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/openesb.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
         </exec>
     </target>
     

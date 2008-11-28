@@ -68,7 +68,7 @@
     -->
     <target name="myinit">
         <property environment="env"/>
-        <property name="my_test_result_dir" value="testdistribution" />
+        <property name="my_test_result_dir" value="testdistribution/results" />
         
         <condition property="copy.results">
             <and>

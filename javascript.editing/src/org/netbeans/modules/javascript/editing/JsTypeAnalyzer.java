@@ -395,6 +395,14 @@ public class JsTypeAnalyzer {
             }
             break;
         }
+
+        case Token.E4X: {
+            if (node.getFirstChild() != null && node.getFirstChild().getType() == Token.STRING) {
+                return "XML<" + node.getFirstChild().getString() + ">"; // NOI18N
+            }
+            return "XML"; // NOI18N
+        }
+
         case Token.NAME: {
             //String name = node.getString();
             return getTypeInternal(node.getString());
@@ -429,6 +437,10 @@ public class JsTypeAnalyzer {
             String secondStr = second.getString();
             assert second.getType() == Token.STRING;
             String fqn = firstType + "." + secondStr;
+            if (firstType.startsWith("XML<")) { // NOI18N
+                // Special handling for E4X
+                fqn = firstType;
+            }
             String type = FunctionCache.INSTANCE.getType(fqn, index);
             if (type != null) {
                 return type;
