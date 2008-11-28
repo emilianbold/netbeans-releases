@@ -514,8 +514,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return AstRenderer.isVoidParameter(ast);
     }
 
-    public CsmFunctionParameterList  getParameterList() {
-        return null; //paramList;
+    public FunctionParameterListImpl  getParameterList() {
+        return parameterList;
     }
 
     public Collection<CsmParameter>  getParameters() {
