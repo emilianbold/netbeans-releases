@@ -113,18 +113,18 @@ public class Commit extends GeneralPHP
     return NbModuleSuite.create(
       NbModuleSuite.createConfiguration( Commit.class ).addTest(
           "CreatePHPApplication",
-          //"ManipulateIndexPHP",
+          "ManipulateIndexPHP",
           "CreateEmptyPHP",
-          //"ManipulateEmptyPHP",
+          "ManipulateEmptyPHP",
           "CreateTemplatePHP",
-          //"ManipulateTemplatePHP",
+          "ManipulateTemplatePHP",
 
           //"OpenStandalonePHP",
           //"ManipulateStandalonePHP",
           //"CreateCustomPHPApplication",
 
-          "CreatePHPWithExistingSources"
-          //"ManipulatePHPWithExistingSources"
+          "CreatePHPWithExistingSources",
+          "ManipulatePHPWithExistingSources"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
