@@ -58,6 +58,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.CharBuffer;
 import java.util.Arrays;
@@ -157,6 +158,7 @@ import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.PreviewableFix;
@@ -164,6 +166,8 @@ import org.netbeans.modules.gsf.spi.DefaultError;
 import org.netbeans.modules.gsfret.hints.infrastructure.Pair;
 
 /**
+ * @todo Add stress tests: Test every single position in an occurrences marker,
+ *   test every single position for a declaration finder, etc.
  * @author Tor Norbye
  */
 public abstract class GsfTestBase extends NbTestCase {
@@ -174,6 +178,8 @@ public abstract class GsfTestBase extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        TestSourceModelFactory.currentTest = this;
+        
         super.setUp();
         clearWorkDir();
         System.setProperty("netbeans.user", getWorkDirPath());
@@ -245,7 +251,7 @@ public abstract class GsfTestBase extends NbTestCase {
      */
     public static int getCaretOffset(String text, String caretLine) {
         int caretDelta = caretLine.indexOf('^');
-        assertTrue(caretDelta != -1);
+        assertTrue("No ^ marker for the caret in the text", caretDelta != -1);
         caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
         int lineOffset = text.indexOf(caretLine);
         assertTrue("No occurrence of caretLine " + caretLine + " in text " + text, lineOffset != -1);
@@ -635,6 +641,10 @@ public abstract class GsfTestBase extends NbTestCase {
     
     protected void validateParserResult(@CheckForNull ParserResult result) {
         // Clients can do checks to make sure everything is okay here. 
+    }
+
+    protected List<URL> getExtraCpUrls() {
+        return null;
     }
     
     private GsfTestCompilationInfo getInfo(FileObject fo, BaseDocument doc, String source) throws Exception {
@@ -1472,6 +1482,188 @@ public abstract class GsfTestBase extends NbTestCase {
         }
     }
 
+    protected List<SearchResult> createTestMaps(FileObject testFile) {
+        List<SearchResult> maps = new ArrayList<SearchResult>();
+
+        String dump = readFile(testFile);
+        String[] lines = dump.split("\n");
+
+        for (int lineno = 0; lineno < lines.length; lineno++) {
+            // Skip empty lines
+            String line = lines[lineno].trim();
+            if (line.length() == 0) {
+                continue;
+            }
+
+            Map<String,List<String>> values = new HashMap<String, List<String>>();
+            String url = null;
+            while (lineno < lines.length) {
+                line = lines[lineno];
+                int equal = line.indexOf('=');
+                if (equal == -1) {
+                    break;
+                }
+                String key = line.substring(0, equal);
+                List<String> list = values.get(key);
+                if (list == null) {
+                    list = new ArrayList<String>();
+                    values.put(key, list);
+                }
+                String value = line.substring(equal+1);
+
+                list.add(value);
+                lineno++;
+
+                if ("filename".equals(key)) {
+                    url = value;
+                }
+            }
+
+            if (url != null) {
+                TestSearchResult result = new TestSearchResult(url, values);
+                maps.add(result);
+            }
+        }
+
+        return maps;
+    }
+
+    protected List<SearchResult> createTestMapsFromIndexFile(FileObject testFile) throws MalformedURLException {
+        List<SearchResult> maps = new ArrayList<SearchResult>();
+
+        String dump = readFile(testFile);
+        if (dump == null) {
+            return Collections.emptyList();
+        }
+        String[] lines = dump.split("\n");
+
+        String name = testFile.getNameExt();
+        assertTrue(name.endsWith(".indexed"));
+        name = name.substring(0, name.length()-".indexed".length());
+        FileObject source = testFile.getParent().getFileObject(name);
+        assertNotNull(source);
+
+        for (int lineno = 0; lineno < lines.length; lineno++) {
+            // Skip empty lines
+            String line = lines[lineno].trim();
+            if (line.length() == 0 || !line.startsWith("Document ")) {
+                continue;
+            }
+            lineno++; // Skip Document
+
+            Map<String,List<String>> values = new HashMap<String, List<String>>();
+            while (lineno < lines.length) {
+                line = lines[lineno];
+                if (line.startsWith("Document ")) {
+                    lineno--;
+                    break;
+                }
+                if (line.trim().length() == 0 || line.startsWith("Searchable Keys") || line.startsWith("Not Searchable Keys")) {
+                    lineno++;
+                    continue;
+                }
+                String SEPARATOR = " : ";
+
+                int equal = line.indexOf(SEPARATOR);
+                if (equal == -1) {
+                    break;
+                }
+                String key = line.substring(0, equal).trim();
+                List<String> list = values.get(key);
+                if (list == null) {
+                    list = new ArrayList<String>();
+                    values.put(key, list);
+                }
+                String value = line.substring(equal+SEPARATOR.length()).trim();
+
+                // HACK: Pretty printer in Ruby indexed files are missing a semicolon
+                if ("method".equals(key) || "field".equals(key)) {
+                    int semi = value.indexOf(';');
+                    int pipe = value.indexOf('|');
+                    if (pipe != -1 && semi < pipe) {
+                        value = value.substring(0, pipe) + ";" + value.substring(pipe);
+                    }
+                }
+
+                list.add(value);
+                lineno++;
+            }
+
+            String url = FileUtil.toFile(source).toURI().toURL().toExternalForm();
+            TestSearchResult result = new TestSearchResult(url, values);
+            result.setValue("filename", url);
+            maps.add(result);
+        }
+
+        int documentCount = 0;
+        for (String line : lines) {
+            if (line.startsWith("Document ")) {
+                documentCount++;
+            }
+        }
+        assertEquals(documentCount, maps.size());
+
+        return maps;
+    }
+
+    protected class TestSearchResult implements SearchResult {
+        private final String url;
+        private final Map<String,List<String>> values;
+
+        public TestSearchResult(String url, Map<String,List<String>> values) {
+            this.url = url;
+            this.values = values;
+        }
+
+        public void setValue(String key, String value) {
+            values.put(key, Collections.singletonList(value));
+        }
+
+        public String getPersistentUrl() {
+            return url;
+        }
+
+        public String getValue(String key) {
+            if (values.containsKey(key)) {
+                return values.get(key).get(0);
+            }
+            return null;
+        }
+
+        public String[] getValues(String key) {
+            if (values.containsKey(key)) {
+                List<String> v = values.get(key);
+                return v.toArray(new String[v.size()]);
+            }
+            return null;
+        }
+
+        public Object getIndex() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Object getDocument() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Object getIndexReader() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public File getSegment() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public int getDocumentNumber() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String toString() {
+            return "SearchMap(" + url + ", " + values + ")";
+        }
+    };
+
     ////////////////////////////////////////////////////////////////////////////
     // Structure Analyzer Tests
     ////////////////////////////////////////////////////////////////////////////
@@ -2025,6 +2217,10 @@ public abstract class GsfTestBase extends NbTestCase {
         return s.substring(prevLineBegin, offset)+"|"+s.substring(offset, nextLineEnd);
     }
 
+    protected boolean skipRhs() {
+        return false;
+    }
+
     private String describeCompletion(String caretLine, String text, int caretOffset, NameKind kind, QueryType type, List<CompletionProposal> proposals, 
             boolean includeModifiers, boolean[] deprecatedHolder, final HtmlFormatter formatter) {
         assertTrue(deprecatedHolder != null && deprecatedHolder.length == 1);
@@ -2060,18 +2256,20 @@ public abstract class GsfTestBase extends NbTestCase {
                     return p1L.compareTo(p2L);
                 }
 
-                formatter.reset();
-                String p1Rhs = p1.getRhsHtml(formatter);
-                formatter.reset();
-                String p2Rhs = p2.getRhsHtml(formatter);
-                if (p1Rhs == null) {
-                    p1Rhs = "";
-                }
-                if (p2Rhs == null) {
-                    p2Rhs = "";
-                }
-                if (!p1Rhs.equals(p2Rhs)) {
-                    return p1Rhs.compareTo(p2Rhs);
+                if (!skipRhs()) {
+                    formatter.reset();
+                    String p1Rhs = p1.getRhsHtml(formatter);
+                    formatter.reset();
+                    String p2Rhs = p2.getRhsHtml(formatter);
+                    if (p1Rhs == null) {
+                        p1Rhs = "";
+                    }
+                    if (p2Rhs == null) {
+                        p2Rhs = "";
+                    }
+                    if (!p1Rhs.equals(p2Rhs)) {
+                        return p1Rhs.compareTo(p2Rhs);
+                    }
                 }
 
                 // Yuck - tostring comparison of sets!!
@@ -2157,8 +2355,10 @@ public abstract class GsfTestBase extends NbTestCase {
 
             sb.append("  ");
             
-            formatter.reset();
-            sb.append(proposal.getRhsHtml(formatter));
+            if (!skipRhs()) {
+                formatter.reset();
+                sb.append(proposal.getRhsHtml(formatter));
+            }
             sb.append("\n");
             
             isSmart = proposal.isSmart();
@@ -2757,9 +2957,13 @@ public abstract class GsfTestBase extends NbTestCase {
                 validNodes, positions, invalidNodes);
 
         String annotatedSource = annotateOffsets(validNodes, positions, invalidNodes, info);
-        assertDescriptionMatches(relFilePath, annotatedSource, false, ".offsets");
+        assertDescriptionMatches(relFilePath, annotatedSource, false, getOffsetTestGoldenSuffix());
     }
-    
+
+    /** Suffix to use for golden files for offset tests */
+    protected String getOffsetTestGoldenSuffix() {
+        return ".offsets";
+    }
     
     /** Pass the nodes in an in-order traversal order such that it can properly nest
      * items when they have identical starting or ending endpoints */
@@ -3677,6 +3881,11 @@ public abstract class GsfTestBase extends NbTestCase {
 
     protected void applyHint(NbTestCase test, Rule hint, String relFilePath,
             String selStartLine, String selEndLine, String fixDesc) throws Exception {
+        applyHint(test, hint, relFilePath, selStartLine, selEndLine, fixDesc, false);
+    }
+
+    protected void applyHint(NbTestCase test, Rule hint, String relFilePath,
+            String selStartLine, String selEndLine, String fixDesc, boolean hasEditRegions) throws Exception {
         FileObject fo = getTestFile(relFilePath);
         String text = read(fo);
 
@@ -3703,18 +3912,34 @@ public abstract class GsfTestBase extends NbTestCase {
 
         String caretLine = text.substring(selStartOffset, selEndOffset) + "^";
         
-        applyHint(test, hint, relFilePath, caretLine, fixDesc);
+        applyHint(test, hint, relFilePath, caretLine, fixDesc, hasEditRegions);
     }
 
     protected void applyHint(NbTestCase test, Rule hint, String relFilePath,
             String caretLine, String fixDesc) throws Exception {
+        applyHint(test, hint, relFilePath, caretLine, fixDesc, false);
+    }
+
+    protected void applyHint(NbTestCase test, Rule hint, String relFilePath,
+            String caretLine, String fixDesc, boolean hasEditRegions) throws Exception {
         ComputedHints r = getHints(test, hint, relFilePath, null, caretLine);
         CompilationInfo info = r.info;
         
         HintFix fix = findApplicableFix(r, fixDesc);
         assertNotNull(fix);
 
-        if (fix.isInteractive() && fix instanceof PreviewableFix) {
+        Set<OffsetRange> annotateRegions = null;
+        int annotateCaret = -1;
+
+        if (hasEditRegions) {
+            TestEditRegionsImpl.lastRegions = null;
+            fix.implement();
+            assertNotNull(TestEditRegionsImpl.lastRegions);
+            assertTrue(TestEditRegionsImpl.lastCaretOffset != -1);
+
+            annotateRegions = TestEditRegionsImpl.lastRegions;
+            annotateCaret = TestEditRegionsImpl.lastCaretOffset;
+        } else if (fix.isInteractive() && fix instanceof PreviewableFix) {
             PreviewableFix preview = (PreviewableFix)fix;
             assertTrue(preview.canPreview());
             EditList editList = preview.getEditList();
@@ -3724,7 +3949,34 @@ public abstract class GsfTestBase extends NbTestCase {
         }
         
         Document doc = info.getDocument();
+
         String fixed = doc.getText(0, doc.getLength());
+
+        if (annotateRegions != null) {
+            Set<Integer> begins = new HashSet<Integer>();
+            Set<Integer> ends = new HashSet<Integer>();
+
+            for (OffsetRange range : annotateRegions) {
+                begins.add(range.getStart());
+                ends.add(range.getEnd());
+            }
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < fixed.length(); i++) {
+                if (ends.contains(i)) {
+                    sb.append("<|"); // NOI18N
+                }
+                if (begins.contains(i)) {
+                    sb.append("|>"); // NOI18N
+                }
+                if (i == annotateCaret) {
+                    sb.append("^"); // NOI18N
+                }
+                sb.append(fixed.charAt(i));
+            }
+
+            fixed = sb.toString();
+        }
 
         assertDescriptionMatches(relFilePath, fixed, true, ".fixed");
     }

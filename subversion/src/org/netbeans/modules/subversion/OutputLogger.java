@@ -73,7 +73,6 @@ public class OutputLogger implements ISVNNotifyListener {
     
     private OutputLogger(SVNUrl repositoryRoot) {
         repositoryRootString = repositoryRoot.toString();
-        log = IOProvider.getDefault().getIO(repositoryRootString, false);
     }
 
     private OutputLogger() {
@@ -83,7 +82,7 @@ public class OutputLogger implements ISVNNotifyListener {
         rp.post(new Runnable() {
             public void run() {                        
                 logln(commandLine, false);
-                log.getOut().flush();
+                getLog().getOut().flush();
             }
         });        
     }
@@ -92,7 +91,7 @@ public class OutputLogger implements ISVNNotifyListener {
         rp.post(new Runnable() {
             public void run() {                
                 logln(message, ignoreCommand);
-                log.getOut().flush();
+                getLog().getOut().flush();
             }
         });        
     }
@@ -101,7 +100,7 @@ public class OutputLogger implements ISVNNotifyListener {
         rp.post(new Runnable() {
             public void run() {                
                 logln(message, false);
-                log.getOut().flush();
+                getLog().getOut().flush();
             }
         });            
     }
@@ -110,7 +109,7 @@ public class OutputLogger implements ISVNNotifyListener {
         rp.post(new Runnable() {
             public void run() {                
                 logln(message, ignoreCommand);
-                log.getOut().flush();
+                getLog().getOut().flush();
             }
         });
     }
@@ -138,8 +137,8 @@ public class OutputLogger implements ISVNNotifyListener {
     public void closeLog() {
         rp.post(new Runnable() {
             public void run() {
-                log.getOut().flush();
-                log.getOut().close();        
+                getLog().getOut().flush();
+                getLog().getOut().close();
             }
         });
     }
@@ -147,7 +146,7 @@ public class OutputLogger implements ISVNNotifyListener {
     public void flushLog() {
         rp.post(new Runnable() {
             public void run() {        
-                log.getOut().flush();
+                getLog().getOut().flush();
             }
         });        
     }
@@ -160,11 +159,12 @@ public class OutputLogger implements ISVNNotifyListener {
         if(ignore) {
             return;
         }
-        if (log.isClosed()) {
+        if (getLog().isClosed()) {
+            Subversion.LOG.fine("Creating OutputLogger for " + repositoryRootString);
             log = IOProvider.getDefault().getIO(repositoryRootString, false);
             try {
                 // HACK (mystic logic) workaround, otherwise it writes to nowhere 
-                log.getOut().reset();
+                getLog().getOut().reset();
             } catch (IOException e) {
                 Subversion.LOG.log(Level.SEVERE, null, e);
             }
@@ -172,14 +172,25 @@ public class OutputLogger implements ISVNNotifyListener {
         }
         if (hyperlinkListener != null) {
             try {
-                log.getOut().println(message, hyperlinkListener);
+                getLog().getOut().println(message, hyperlinkListener);
             } catch (IOException e) {
-                log.getOut().write(message);
+                getLog().getOut().write(message);
             }
         } else {
-            log.getOut().write(message);
+            getLog().getOut().write(message);
         }        
-    }      
+    }
+
+    /**
+     * @return the log
+     */
+    private InputOutput getLog() {
+        if(log == null) {
+            Subversion.LOG.fine("Creating OutputLogger for " + repositoryRootString);
+            log = IOProvider.getDefault().getIO(repositoryRootString, false);
+        }
+        return log;
+    }
     
     private static class NullLogger extends OutputLogger {
 
