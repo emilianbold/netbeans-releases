@@ -97,7 +97,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     private JButton okButton;
     private QueryPanel queryPanel;
 
-    private Color defaultProgressC, curProgressC;
+    private Color defaultProgressC, curProgressC, defaultVersionC;
     private static final int PROGRESS_STEP = 10;
     private static final int CYCLE_LOWER_LIMIT = -3;
     private static final int CYCLE_UPPER_LIMIT = 5;
@@ -190,6 +190,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         });
 
         defaultProgressC = progressLabel.getForeground();
+        defaultVersionC = txtVersion.getForeground();
         setSearchInProgressUI(false);
 
         artifactList = new DMListPanel(this, project);
@@ -223,20 +224,34 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     }
 
     private void checkValidState() {
-        if (txtGroupId.getText().trim().length() <= 0) {
+        String gId = txtGroupId.getText().trim();
+        String aId = txtArtifactId.getText().trim();
+        String version = txtVersion.getText().trim();
+
+        boolean dmDefined = tabPane.isEnabledAt(1);
+        if (artifactList != null) {
+            Color c = defaultVersionC;
+            if (dmDefined) {
+                if (findConflict(artifactList.getDMDeps(), gId, aId, version, null) == 1) {
+                    c = Color.RED;
+                }
+            }
+            txtVersion.setForeground(c);
+        }
+
+        if (gId.length() <= 0) {
             okButton.setEnabled(false);
             return;
         }
-        if (txtArtifactId.getText().trim().length() <= 0) {
+        if (aId.length() <= 0) {
             okButton.setEnabled(false);
             return;
         }
-        boolean depMngActive = tabPane.getSelectedIndex() == 1;
-        if (txtVersion.getText().trim().length() <= 0 && !depMngActive) {
+        if (version.length() <= 0 && !dmDefined) {
             okButton.setEnabled(false);
             return;
         }
-        
+
         okButton.setEnabled(true);
     }
 
@@ -278,6 +293,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         jPanel2 = new javax.swing.JPanel();
         artifactsLabel = new javax.swing.JLabel();
         artifactPanel = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
 
         lblGroupId.setLabelFor(txtGroupId);
         org.openide.awt.Mnemonics.setLocalizedText(lblGroupId, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "LBL_GroupId")); // NOI18N
@@ -419,6 +435,10 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         artifactPanel.setBorder(getNbScrollPaneBorder());
         artifactPanel.setLayout(new java.awt.BorderLayout());
 
+        jLabel2.setForeground(javax.swing.UIManager.getDefaults().getColor("textInactiveText"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.jLabel2.text", new Object[] {})); // NOI18N
+        artifactPanel.add(jLabel2, java.awt.BorderLayout.PAGE_END);
+
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -469,6 +489,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     private javax.swing.JComboBox comScope;
     private javax.swing.JPanel coordPanel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel lblArtifactId;
@@ -558,6 +579,51 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             varianceStep = -varianceStep;
         }
         variance += varianceStep;
+    }
+
+    private static List<Dependency> getDepencenciesFromDM (MavenProject project) {
+        MavenProject localProj = project;
+        DependencyManagement curDM;
+        List<Dependency> result = new ArrayList<Dependency>();
+
+        while (localProj.hasParent()) {
+            localProj = localProj.getParent();
+            curDM = localProj.getDependencyManagement();
+            if (curDM != null) {
+                @SuppressWarnings("unchecked")
+                List<Dependency> ds = curDM.getDependencies();
+                result.addAll(ds);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * @return 0 -> no conflicts, 1 -> conflict in version, 2 -> conflict in scope 
+     */
+    private static int findConflict (List<Dependency> deps, String groupId, String artifactId, String version, String scope) {
+        if (deps == null) {
+            return 0;
+        }
+        for (Dependency dep : deps) {
+            if (artifactId != null && artifactId.equals(dep.getArtifactId()) &&
+                    groupId != null && groupId.equals(dep.getGroupId())) {
+                if (version != null && !version.equals(dep.getVersion())) {
+                    return 1;
+                }
+                if (scope != null) {
+                    if (!scope.equals(dep.getScope())) {
+                        return 2;
+                    }
+                } else if (dep.getScope() != null) {
+                    return 2;
+                }
+
+            }
+        }
+
+        return 0;
     }
 
     private static class QueryPanel extends JPanel implements ExplorerManager.Provider, Comparator<String>, PropertyChangeListener {
@@ -823,13 +889,16 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     } // QueryPanel
 
     private static class DMListPanel extends JPanel implements ExplorerManager.Provider,
-            AncestorListener, ActionListener, PropertyChangeListener {
+            AncestorListener, ActionListener, PropertyChangeListener, Runnable {
 
         private ListView lv;
         private ExplorerManager manager;
         private MavenProject project;
         private Node noDMRoot;
         private AddDependencyPanel depPanel;
+
+        private static final Object DM_DEPS_LOCK = new Object();
+        private List<Dependency> dmDeps;
 
         public DMListPanel(AddDependencyPanel depPanel, MavenProject project) {
             this.depPanel = depPanel;
@@ -842,6 +911,9 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             add(lv, BorderLayout.CENTER);
             addAncestorListener(this);
             depPanel.artifactsLabel.setLabelFor(lv);
+
+            // disable tab if DM section not defined
+            RequestProcessor.getDefault().post(this);
         }
 
         public ExplorerManager getExplorerManager() {
@@ -853,8 +925,14 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     dep.getVersion(), dep.getType(), null, null, null, dep.getClassifier());
         }
 
+        private List<Dependency> getDMDeps() {
+            synchronized (DM_DEPS_LOCK) {
+                return dmDeps;
+            }
+        }
+
         private void loadArtifacts() {
-            List<Dependency> deps = getDepencenciesFromDM();
+            List<Dependency> deps = getDMDeps();
             if (deps == null || deps.isEmpty()) {
                 if (noDMRoot == null) {
                     AbstractNode nd = new AbstractNode(Children.LEAF) {
@@ -890,24 +968,6 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             }
         }
 
-        private List<Dependency> getDepencenciesFromDM () {
-            MavenProject localProj = project;
-            DependencyManagement curDM;
-            List<Dependency> result = new ArrayList<Dependency>();
-
-            while (localProj.hasParent()) {                
-                localProj = localProj.getParent();
-                curDM = localProj.getDependencyManagement();
-                if (curDM != null) {
-                    @SuppressWarnings("unchecked")
-                    List<Dependency> ds = curDM.getDependencies();
-                    result.addAll(ds);
-                }
-            }
-
-            return result;
-        }
-
         public void ancestorAdded(AncestorEvent event) {
             loadArtifacts();
         }
@@ -933,6 +993,22 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 depPanel.txtArtifactId.setText("");
                 depPanel.txtVersion.setText("");
             }
+        }
+
+        /** Loads dependencies outside EQ thread, updates tab state in EQ */
+        public void run() {
+            synchronized (DM_DEPS_LOCK) {
+                dmDeps = getDepencenciesFromDM(project);
+            }
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    boolean dmEmpty = dmDeps.isEmpty();
+                    depPanel.tabPane.setEnabledAt(1, !dmEmpty);
+                    if (dmEmpty) {
+                        depPanel.tabPane.setToolTipTextAt(1, NbBundle.getMessage(AddDependencyPanel.class, "TXT_No_DM"));
+                    }
+                }
+            });
         }
 
     }
