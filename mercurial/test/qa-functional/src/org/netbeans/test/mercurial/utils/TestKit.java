@@ -283,17 +283,30 @@ public final class TestKit {
         JMenuItemOperator mo = mbo.showMenuItem("View|Show Versioning Labels");
         JCheckBoxMenuItemOperator cbmio = new JCheckBoxMenuItemOperator((JCheckBoxMenuItem) mo.getSource());
         if (!cbmio.getState()) {
-            cbmio.push();
+            cbmio.doClick();
         }
     }
 
     public static void openProject(File location, String project) throws Exception {
+        if (getOsName().indexOf("Mac") > -1) {
+            new NewProjectWizardOperator().invoke().close();
+        }
         new ActionNoBlock("File|Open Project", null).perform();
         NbDialogOperator nb = new NbDialogOperator("Open Project");
         JFileChooserOperator fco = new JFileChooserOperator(nb);
         fco.setCurrentDirectory(new File(location, project));
         fco.approve();
         ProjectSupport.waitScanFinished();
+    }
+
+    public static String getOsName() {
+        String osName = "uknown";
+        try {
+            osName = System.getProperty("os.name");
+        } catch (Throwable e) {
+
+        }
+        return osName;
     }
 
     public static File loadOpenProject(String projectName, File dataDir) throws Exception {
