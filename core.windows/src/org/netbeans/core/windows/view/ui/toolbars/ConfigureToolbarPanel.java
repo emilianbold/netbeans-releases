@@ -47,8 +47,6 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
@@ -60,9 +58,9 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
-import org.netbeans.core.windows.services.ToolbarFolderNode;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Actions;
 import org.openide.awt.ToolbarPool;
 import org.openide.cookies.InstanceCookie;
@@ -79,7 +77,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.ExTransferable;
-import org.openide.util.datatransfer.NewType;
 
 /**
  * Toolbar Customizer showing a tree of all available actions. Users can drag actions
@@ -149,40 +146,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
             dialog = DialogDisplayer.getDefault().createDialog(dd);
             dialogRef = new WeakReference<Dialog>(dialog);
         }
-        dialog.addWindowListener( new WindowAdapter() {
-            public void windowClosed(WindowEvent e) {
-                endToolbarEditMode();
-            }
-        });
         dialog.setVisible(true);
-        startToolbarEditMode();
-    }
-    
-    static void startToolbarEditMode() {
-        ToolbarPool.getDefault().putClientProperty( "editMode", new Object() ); // NOI18N
-    }
-    
-    static void endToolbarEditMode() {
-        ToolbarPool.getDefault().putClientProperty( "editMode", null ); // NOI18N
-        //remove empty toolbars
-        DataFolder folder = ToolbarPool.getDefault().getFolder();
-        DataObject[] children = folder.getChildren();
-        for( int i=0; i<children.length; i++ ) {
-            final DataFolder subFolder = (DataFolder)children[i].getCookie( DataFolder.class );
-            if( null != subFolder && subFolder.getChildren().length == 0 ) {
-                SwingUtilities.invokeLater( new Runnable() {
-
-                    public void run() {
-                        try {
-                            subFolder.delete();
-                        }
-                        catch (IOException e) {
-                            Logger.getLogger(ConfigureToolbarPanel.class.getName()).log(Level.WARNING, null, e);
-                        }
-                    }
-                });
-            }
-        }
     }
     
     /** @return returns string from bundle for given string pattern */
@@ -191,6 +155,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
     }
 
     private boolean firstTimeInit = true;
+    @Override
     public void paint(java.awt.Graphics g) {
         super.paint(g);
         if( firstTimeInit ) {
@@ -311,14 +276,40 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
     }//GEN-LAST:event_resetToolbars
 
     private void newToolbar(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newToolbar
-        ToolbarFolderNode tf = new ToolbarFolderNode();
-        NewType[] newTypes = tf.getNewTypes();
-        if( null != newTypes && newTypes.length > 0 ) {
-            try {
-                newTypes[0].create();
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
+        NotifyDescriptor.InputLine il = new NotifyDescriptor.InputLine
+                                        (NbBundle.getMessage(ConfigureToolbarPanel.class, "PROP_newToolbarLabel"), //NOI18N
+                                         NbBundle.getMessage(ConfigureToolbarPanel.class, "PROP_newToolbarDialog")); //NOI18N
+        il.setInputText(NbBundle.getMessage(ConfigureToolbarPanel.class, "PROP_newToolbar")); //NOI18N
+
+        Object ok = org.openide.DialogDisplayer.getDefault ().notify (il);
+        if (ok != NotifyDescriptor.OK_OPTION)
+            return;
+        String s = il.getInputText();
+        if( s.trim().length() == 0 )
+            return;
+
+        DataFolder folder = ToolbarPool.getDefault().getFolder();
+        FileObject toolbars = folder.getPrimaryFile();
+        try {
+            FileObject newToolbar = toolbars.getFileObject(s);
+            if (newToolbar == null) {
+                DataObject[] oldKids = folder.getChildren();
+                newToolbar = toolbars.createFolder(s);
+
+                // #13015. Set new item as last one.
+                DataObject[] newKids = new DataObject[oldKids.length + 1];
+                System.arraycopy(oldKids, 0, newKids, 0, oldKids.length);
+                newKids[oldKids.length] = DataObject.find(newToolbar);
+                folder.setOrder(newKids);
+                ToolbarPool.getDefault().waitFinished();
+                ToolbarConfiguration.findConfiguration(ToolbarPool.getDefault().getConfiguration()).repaint();
+            } else {
+                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(ConfigureToolbarPanel.class, "MSG_ToolbarExists", s ) ); // NOI18N
+                org.openide.DialogDisplayer.getDefault().notify( msg );
             }
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
         }
     }//GEN-LAST:event_newToolbar
 
@@ -350,8 +341,49 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
     @Override
     public void addNotify() {
         super.addNotify();
-        
-        checkSmallIcons.setSelected( ToolbarPool.getDefault().getPreferredIconSize() == 16 );
+
+        ToolbarPool pool = ToolbarPool.getDefault();
+        checkSmallIcons.setSelected( pool.getPreferredIconSize() == 16 );
+
+        ToolbarConfiguration tc = ToolbarConfiguration.findConfiguration( pool.getConfiguration() );
+        if( null != tc ) {
+            tc.setToolbarButtonDragAndDropAllowed( true );
+        }
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+
+        ToolbarPool pool = ToolbarPool.getDefault();
+        final ToolbarConfiguration tc = ToolbarConfiguration.findConfiguration( pool.getConfiguration() );
+        if( null != tc ) {
+            tc.setToolbarButtonDragAndDropAllowed( true );
+        }
+        //remove empty toolbars
+        DataFolder folder = pool.getFolder();
+        DataObject[] children = folder.getChildren();
+        for( int i=0; i<children.length; i++ ) {
+            final DataFolder subFolder = children[i].getCookie( DataFolder.class );
+            if( null != subFolder && subFolder.getChildren().length == 0 ) {
+                SwingUtilities.invokeLater( new Runnable() {
+
+                    public void run() {
+                        try {
+                            subFolder.delete();
+                            ToolbarPool.getDefault().waitFinished();
+                            if( null != tc ) {
+                                tc.removeEmptyRows();
+                                tc.save();
+                            }
+                        }
+                        catch (IOException e) {
+                            Logger.getLogger(ConfigureToolbarPanel.class.getName()).log(Level.WARNING, null, e);
+                        }
+                    }
+                });
+            }
+        }
     }
     
     private static class FolderActionNode extends FilterNode {
@@ -359,18 +391,22 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
             super( original, new MyChildren( original ) );
         }
 
+        @Override
         public String getDisplayName() {
             return Actions.cutAmpersand( super.getDisplayName() );
         }
 
+        @Override
         public Transferable drag() throws IOException {
             return Node.EMPTY.drag();
         }
 
+        @Override
         public Transferable clipboardCut() throws IOException {
             return Node.EMPTY.clipboardCut();
         }
 
+        @Override
         public Transferable clipboardCopy() throws IOException {
             return Node.EMPTY.clipboardCopy();
         }
@@ -381,8 +417,9 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                 super(original);
             }
 
+            @Override
             protected Node copyNode(Node node) {
-                DataFolder df = (DataFolder)node.getCookie( DataFolder.class );
+                DataFolder df = node.getCookie( DataFolder.class );
                 if( null == df )
                     return new ItemActionNode( node );
                 return new FolderActionNode( node );
@@ -398,6 +435,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
             super( original, Children.LEAF );
         }
 
+        @Override
         public Transferable drag() throws IOException {
             return new ExTransferable.Single( nodeDataFlavor ) {
                 public Object getData() {
@@ -406,6 +444,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
             };
         }
 
+        @Override
         public String getDisplayName() {
             return Actions.cutAmpersand( super.getDisplayName() );
         }
@@ -418,7 +457,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         private InstanceCookie instanceCookie;
         
         public boolean acceptDataObject( DataObject obj ) {
-            instanceCookie = (InstanceCookie)obj.getCookie( InstanceCookie.class );
+            instanceCookie = obj.getCookie( InstanceCookie.class );
             if( null != instanceCookie ) {
                 try {
                     Object instance = instanceCookie.instanceCreate();
