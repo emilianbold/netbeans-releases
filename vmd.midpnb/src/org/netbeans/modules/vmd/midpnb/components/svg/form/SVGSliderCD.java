@@ -41,15 +41,25 @@ package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
 import java.util.Arrays;
 import java.util.List;
+
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -58,27 +68,87 @@ import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 public class SVGSliderCD extends ComponentDescriptor{
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGSlider"); // NOI18N
+    
+    public static final String PROP_MIN = "min";    // NOI18N
+    
+    public static final String PROP_MAX = "max";    // NOI18N
+    
+    public static final String PROP_VALUE = "value";// NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);
+    }
+    
+    static {
+        SVGComponentCD.addPairType( TYPEID, SVGSliderEventSourceCD.TYPEID );
     }
 
     @Override
     public VersionDescriptor getVersionDescriptor() {
         return MidpVersionDescriptor.MIDP_2;
     }
-
+    
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList (
-                );
-    }
+                new PropertyDescriptor( PROP_MIN, 
+                        MidpTypes.TYPEID_INT, 
+                        MidpTypes.createIntegerValue(0), false, true, 
+                        MidpVersionable.MIDP_2),
+                new PropertyDescriptor( PROP_MAX, 
+                                MidpTypes.TYPEID_INT, 
+                                MidpTypes.createIntegerValue(10), false, true, 
+                                MidpVersionable.MIDP_2),
+                new PropertyDescriptor( PROP_VALUE, 
+                                        MidpTypes.TYPEID_INT, 
+                                        MidpTypes.createIntegerValue(0), false, true, 
+                                        MidpVersionable.MIDP_2));
 
+    }
+    
+    private static DefaultPropertiesPresenter createPropertiesPresenter() {
+        return new DefaultPropertiesPresenter()
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES).
+                addProperty(NbBundle.getMessage(SVGSliderCD.class, 
+                        "DISP_SVGSliderMin"), 
+                        PropertyEditorNumber.createIntegerInstance( false,
+                                NbBundle.getMessage(SVGSliderCD.class, 
+                                "LBL_SVGCheckBox_Min")), PROP_MIN).
+                       addProperty(NbBundle.getMessage(SVGSliderCD.class, 
+                                "DISP_SVGSliderMax"), 
+                                PropertyEditorNumber.createIntegerInstance( false,
+                                        NbBundle.getMessage(SVGSliderCD.class, 
+                                        "LBL_SVGCheckBox_Max")), PROP_MAX).
+                               addProperty(NbBundle.getMessage(SVGSliderCD.class, 
+                                        "DISP_SVGSliderValue"), 
+                                        PropertyEditorNumber.createIntegerInstance( false,
+                                                NbBundle.getMessage(SVGSliderCD.class, 
+                                                "LBL_SVGCheckBox_Value")), PROP_VALUE);// NOI18N
+                
+    }
+    
+    private Presenter createSetterPresenter () {
+        return new CodeSetterPresenter ().
+                addParameters(MidpParameter.create(PROP_MIN, PROP_MAX, 
+                        PROP_VALUE)).
+                addSetters(MidpSetter.createSetter("setMin", 
+                        MidpVersionable.MIDP_2).addParameters(PROP_MIN)).
+                 addSetters(MidpSetter.createSetter("setMax", 
+                       MidpVersionable.MIDP_2).addParameters( PROP_MAX)).
+                 addSetters(MidpSetter.createSetter("setValue", 
+                       MidpVersionable.MIDP_2).addParameters( PROP_VALUE)); // NOI18N
+    }
+    
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList(
+                // properties
+                createPropertiesPresenter(),
                 //code
+                createSetterPresenter(),
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
-                MidpCodePresenterSupport.createAddImportPresenter()
+                MidpCodePresenterSupport.createAddImportPresenter(),
+                new SVGCodeFooter( SVGSliderEventSourceCD.TYPEID )
         );
     }
 

@@ -326,20 +326,20 @@ public class ProviderControl {
         while (tokenizer.hasMoreTokens()) {
             list.add(tokenizer.nextToken());
         }
-        AdditionalLibrariesListPanel libPanel = new AdditionalLibrariesListPanel(list.toArray());
+        AdditionalLibrariesListPanel libPanel = new AdditionalLibrariesListPanel(list);
         DialogDescriptor dialogDescriptor = new DialogDescriptor(AdditionalLibrariesListPanel.wrapPanel(libPanel),
                 getString("ADDITIONAL_LIBRARIES_TXT"));
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue()  == DialogDescriptor.OK_OPTION) {
             Vector newList = libPanel.getListData();
-            String includes = ""; // NOI18N
+            StringBuilder includes = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
                 if (i > 0) {
-                    includes += ";"; // NOI18N
+                    includes.append(';'); // NOI18N
                 }
-                includes += newList.elementAt(i);
+                includes.append(newList.elementAt(i));
             }
-            field.setText(includes);
+            field.setText(includes.toString());
         }
     }
     

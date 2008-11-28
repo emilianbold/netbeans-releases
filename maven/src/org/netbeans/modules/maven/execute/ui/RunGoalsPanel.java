@@ -59,7 +59,6 @@ import hidden.org.codehaus.plexus.util.StringUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
@@ -93,6 +92,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
                 if (provider != null) {
                     final Set<String> strs = provider.getAvailableGoals();
                     try {
+                        @SuppressWarnings("unchecked")
                         List<String> phases = EmbedderFactory.getProjectEmbedder().getLifecyclePhases();
                         strs.addAll(phases);
                     } catch (Exception e) {
@@ -123,7 +123,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 ProjectProfileHandler profileHandler = mavenProject.getLookup().lookup(ProjectProfileHandler.class);
-                final List ret = profileHandler.getAllProfiles();
+                final List<String> ret = profileHandler.getAllProfiles();
                 
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {

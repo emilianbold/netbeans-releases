@@ -158,4 +158,7 @@ public class TraceFlags {
              logMacros = null;
          }
     }
+
+    private TraceFlags() {
+    }
 }

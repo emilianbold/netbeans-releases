@@ -39,9 +39,9 @@
 package org.netbeans.modules.maven.j2ee;
 
 import java.net.URL;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -49,31 +49,39 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.maven.api.Constants;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
+import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
+import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
+import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Properties;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.windows.OutputWriter;
 
 /**
  *
  * @author mkleint
  */
-public class ExecutionChecker implements ExecutionResultChecker {
+public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesChecker {
 
     private Project project;
     public static final String DEV_NULL = "WTF-NULL"; //NOI18N
     public static final String MODULEURI = "netbeans.deploy.clientModuleUri"; //NOI18N
     public static final String CLIENTURLPART = "netbeans.deploy.clientUrlPart"; //NOI18N
-    
-    
+
     ExecutionChecker(Project prj) {
         project = prj;
     }
@@ -109,10 +117,10 @@ public class ExecutionChecker implements ExecutionResultChecker {
             out.println("NetBeans: Deploying on " + serverInstanceID); //NOI18N - no localization in maven build now.
         }
         try {
-                out.println("    debug mode: " + debugmode);//NOI18N - no localization in maven build now.
+            out.println("    debug mode: " + debugmode);//NOI18N - no localization in maven build now.
 //                log.info("    clientModuleUri: " + clientModuleUri);//NOI18N - no localization in maven build now.
 //                log.info("    clientUrlPart: " + clientUrlPart);//NOI18N - no localization in maven build now.
-                out.println("    force redeploy: " + forceRedeploy);//NOI18N - no localization in maven build now.
+            out.println("    force redeploy: " + forceRedeploy);//NOI18N - no localization in maven build now.
 
             String clientUrl = Deployment.getDefault().deploy(jmp, debugmode, clientModuleUri, clientUrlPart, forceRedeploy, new DLogger(out));
             if (clientUrl != null) {
@@ -127,7 +135,7 @@ public class ExecutionChecker implements ExecutionResultChecker {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(clientUrl));
                 }
             }
-            if (debugmode) { 
+            if (debugmode) {
                 ServerDebugInfo sdi = jmp.getServerDebugInfo();
 
                 if (sdi != null) { //fix for bug 57854, this can be null
@@ -149,6 +157,42 @@ public class ExecutionChecker implements ExecutionResultChecker {
         }
     }
 
+    public boolean checkRunConfig(RunConfig config) {
+        boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY));
+        if (depl) {
+            J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
+            if (provider != null) {
+                if (ExecutionChecker.DEV_NULL.equals(provider.getServerInstanceID())) {
+                    SelectAppServerPanel panel = new SelectAppServerPanel();
+                    DialogDescriptor dd = new DialogDescriptor(panel, "Select deployment server");
+                    Object obj = DialogDisplayer.getDefault().notify(dd);
+                    if (obj == NotifyDescriptor.OK_OPTION) {
+                        String instanceId = panel.getSelectedServerInstance();
+                        String serverId = panel.getSelectedServerType();
+                        if (!ExecutionChecker.DEV_NULL.equals(instanceId)) {
+                            boolean permanent = panel.isPermanent();
+                            if (permanent) {
+                                persistServer(instanceId, serverId);
+
+                            } else {
+                                SessionContent sc = project.getLookup().lookup(SessionContent.class);
+                                sc.setServerInstanceId(instanceId);
+                                POHImpl poh = project.getLookup().lookup(POHImpl.class);
+                                poh.projectOpened();
+                                //provider instance not relevant from here
+                                provider = null;
+                            }
+                            return true;
+                        }
+                    }
+                    StatusDisplayer.getDefault().setStatusText("Cannot run action without a selected deployment server.");
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     private static class DLogger implements Deployment.Logger {
 
         private OutputWriter logger;
@@ -161,4 +205,33 @@ public class ExecutionChecker implements ExecutionResultChecker {
             logger.println(string);
         }
     }
+
+    private void persistServer(final String iID, final String sID) {
+        FileObject fo = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+        ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+
+            public void performOperation(POMModel model) {
+                Properties props = model.getProject().getProperties();
+                if (props == null) {
+                    props = model.getFactory().createProperties();
+                    model.getProject().setProperties(props);
+                }
+                props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
+                //TODO also tweak the private properties..
+//                privateProf = handle.getNetbeansPrivateProfile();
+//                org.netbeans.modules.maven.model.profile.Properties privs = privateProf.getProperties();
+//                if (privs == null) {
+//                    privs = handle.getProfileModel().getFactory().createProperties();
+//                    privateProf.setProperties(privs);
+//                }
+//                privs.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, iID);
+            }
+        };
+        Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
+        //#109507 workaround
+        POHImpl poh = project.getLookup().lookup(POHImpl.class);
+        poh.projectOpened();
+        
+    }
+
 }

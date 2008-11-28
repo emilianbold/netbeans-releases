@@ -38,13 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.loaders;
 
-import java.io.IOException;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileLock;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
@@ -61,10 +58,9 @@ public class ShellDataObject extends CndDataObject {
     /** Serial version number */
     static final long serialVersionUID = -5853234372530618782L;
 
-
     /** Constructor for this class */
     public ShellDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
-	super(pf, loader);
+        super(pf, loader);
     }
 
 //    /*
@@ -98,21 +94,19 @@ public class ShellDataObject extends CndDataObject {
 //        }
 //        return getPrimaryFile ();
 //    }
-  
-
     /**
      *  The init method is called from CndDataObject's constructor.
      */
+    @Override
     protected void init() {
-	CookieSet cookies = getCookieSet();
+        CookieSet cookies = getCookieSet();
 
         cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
-	cookies.add(new ShellExecSupport(getPrimaryEntry()));
+        cookies.add(new ShellExecSupport(getPrimaryEntry()));
     }
-
 
     /** Create the delegate node */
     protected Node createNodeDelegate() {
-	return new ShellDataNode(this);
+        return new ShellDataNode(this);
     }
 }

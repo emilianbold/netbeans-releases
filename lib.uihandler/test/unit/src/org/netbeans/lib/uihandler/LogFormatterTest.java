@@ -55,14 +55,6 @@ public class LogFormatterTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-    
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
     public void testFormat() throws IOException {
         LogRecord rec = new LogRecord(Level.SEVERE, "PROBLEM");
         Throwable thrown = new NullPointerException("TESTING");
@@ -73,10 +65,11 @@ public class LogFormatterTest extends NbTestCase {
         assertTrue(result.contains("<level>SEVERE</level>"));
         assertTrue(result.contains("<method>testFormat</method>"));
         assertTrue(result.contains("<message>java.lang.AssertionError: CAUSE PROBLEM</message>"));
-        assertTrue(result.contains("<more>19</more>"));
+        assertTrue(result.contains("<more>"));
+        assertTrue(result.contains("</more>"));
         assertTrue(result.contains(" <class>junit.framework.TestSuite</class>"));
         assertTrue(result.contains("<class>sun.reflect.NativeMethodAccessorImpl</class>"));
-        assertFalse(result.contains("<more>20</more>"));
+        assertFalse(result.contains("<more>80</more>"));
     }
         
     

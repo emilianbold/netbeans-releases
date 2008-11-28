@@ -55,12 +55,11 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.extexecution.api.ExecutionService;
-import org.netbeans.modules.extexecution.api.print.LineConvertor;
-import org.netbeans.modules.extexecution.api.print.LineConvertors;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
-import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
 import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
@@ -87,10 +86,6 @@ import org.w3c.dom.Element;
 public class RailsProjectGenerator {
 
     private static final Logger LOGGER = Logger.getLogger(RailsProjectGenerator.class.getName());
-
-    public static final RegexpOutputRecognizer RAILS_GENERATOR =
-        new RegexpOutputRecognizer("^   (   create|    force|identical|     skip)\\s+([\\w|/]+\\.\\S+)\\s*$", // NOI18N
-            2, -1, -1);
 
     static final Pattern RAILS_GENERATOR_PATTERN = Pattern.compile("^   (   create|    force|identical|     skip)\\s+([\\w|/]+\\.\\S+)\\s*$"); // NOI18N
 
@@ -143,16 +138,15 @@ public class RailsProjectGenerator {
             desc.runThroughRuby(runThroughRuby);
             desc.fileLocator(new DirectoryFileLocator(dirFO));
 
-            LineConvertors.FileLocator locator = RubyProcessCreator.wrap(desc.getFileLocator());
-            LineConvertor convertor = LineConvertors.filePattern(locator, RAILS_GENERATOR_PATTERN, RubyLineConvertorFactory.EXT_RE, 2, -1);
+            LineConvertor convertor = LineConvertors.filePattern(desc.getFileLocator(), RAILS_GENERATOR_PATTERN, RubyLineConvertorFactory.EXT_RE, 2, -1);
             desc.addStandardRecognizers();
             desc.addErrConvertor(convertor);
             desc.addOutConvertor(convertor);
 
             RubyProcessCreator rpc = new RubyProcessCreator(desc);
 
-            org.netbeans.modules.extexecution.api.ExecutionService es =
-                    org.netbeans.modules.extexecution.api.ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName);
+            org.netbeans.api.extexecution.ExecutionService es =
+                    org.netbeans.api.extexecution.ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName);
             try {
                 es.run().get();
             } catch (InterruptedException ex) {

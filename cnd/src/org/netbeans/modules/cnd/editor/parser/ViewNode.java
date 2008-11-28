@@ -99,22 +99,23 @@ public abstract class ViewNode extends AbstractNode {
      * variables come before methods
      */
     private String createSortScope(String scope) {
-        String sortScope = ""; // NOI18N
+        StringBuilder sortScope = new StringBuilder();
         if (scope == null) {
             scopeLevels = 0;
-            sortScope = ""; // NOI18N
         } else {
             scopeLevels = 1;
             int startIndex = 0;
             int index;
             while ((index = scope.indexOf("::", startIndex)) >= 0) { // NOI18N
-                sortScope = sortScope + scopeCluster + scope.substring(startIndex, index) + "::"; // NOI18N
+                sortScope.append(scopeCluster);
+                sortScope.append(scope.substring(startIndex, index));
+                sortScope.append("::"); // NOI18N
                 scopeLevels++;
                 startIndex = index + 2;
             }
-            sortScope = sortScope + scopeCluster + scope.substring(startIndex);
+            sortScope.append(scopeCluster).append(scope.substring(startIndex));
         }
-        return sortScope;
+        return sortScope.toString();
     }
 
     public String getSortName() {

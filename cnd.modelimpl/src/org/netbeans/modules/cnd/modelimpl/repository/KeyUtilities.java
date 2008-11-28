@@ -44,7 +44,9 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
@@ -104,7 +106,11 @@ public class KeyUtilities {
         assert incl != null;
         return new IncludeKey(incl);
     }
-    
+
+    public static <T extends CsmParameterList, K extends CsmNamedElement> Key createParamListKey(CsmParameterList<T, K> paramList) {
+        assert paramList != null;
+        return new ParamListKey(paramList);
+    }
     ////////////////////////////////////////////////////////////////////////////
     
      public static int getUnitId(String unitName) {

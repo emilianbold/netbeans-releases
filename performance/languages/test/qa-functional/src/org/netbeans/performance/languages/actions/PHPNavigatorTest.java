@@ -38,11 +38,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.languages.actions;
+
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager.RegionFilter;
+import org.netbeans.performance.languages.Projects;
+import org.netbeans.performance.languages.ScriptingUtilities;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
 import java.awt.Container;
 import javax.swing.JComponent;
-import junit.framework.Test;
+
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -50,18 +57,15 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.web.NavigatorOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.guitracker.LoggingRepaintManager.RegionFilter;
-import org.netbeans.performance.languages.Projects;
-import org.netbeans.performance.languages.ScriptingUtilities;
 
 /**
  *
  * @author Administrator
  */
-public class PHPNavigatorTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class PHPNavigatorTest extends PerformanceTestCase {
 
-    public static final String suiteName = "Scripting UI Responsiveness Actions suite";
     protected Node fileToBeOpened;
     protected String testProject;
     protected String fileName;
@@ -74,25 +78,29 @@ public class PHPNavigatorTest extends org.netbeans.modules.performance.utilities
 
     public PHPNavigatorTest(String testName) {
         super(testName);
-        expectedTime = UI_RESPONSE;
-        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations             
+        expectedTime = 1000;
+        WAIT_AFTER_OPEN=2000;
     }
 
     public PHPNavigatorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = UI_RESPONSE;
-        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations             
+        expectedTime = 1000;
+        WAIT_AFTER_OPEN=2000;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
+             .addTest(PHPNavigatorTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
     }
 
     @Override
     public void initialize() {
-        log("::initialize");
         closeAllModal();
         String path = nodePath + "|" + fileName;
-        log("attempting to open: " + path);
-
         fileToBeOpened = new Node(getProjectNode(testProject), path);
-
         final Container navigator = (Container)(new NavigatorOperator().getSource());
 
         repaintManager().addRegionFilter(new RegionFilter() {
@@ -100,7 +108,6 @@ public class PHPNavigatorTest extends org.netbeans.modules.performance.utilities
             public boolean accept(JComponent c) {
                 return navigator.isAncestorOf(c);
             }
-
             public String getFilterName() {
                 return "Accept paints only from Navigator";
             }
@@ -108,25 +115,20 @@ public class PHPNavigatorTest extends org.netbeans.modules.performance.utilities
     }
 
     @Override
-    public void tearDown() {
-        super.tearDown();
+    public void shutdown() {
         repaintManager().resetRegionFilters();
     }
 
     @Override
     public void prepare() {
-        log("::prepare");
         new OpenAction().performAPI(fileToBeOpened);
         editorOperator = EditorWindowOperator.getEditor(fileName);
-
         editorOperator.setCaretPosition(lineNumber, column);
-
         new NavigatorOperator().getTree();
     }
 
     @Override
     public ComponentOperator open() {
-        log("::typing...");
         editorOperator.txtEditorPane().setVerification(false);
         editorOperator.txtEditorPane().typeText(textToType);
         return null;
@@ -142,7 +144,6 @@ public class PHPNavigatorTest extends org.netbeans.modules.performance.utilities
         if (projectsTab == null) {
             projectsTab = ScriptingUtilities.invokePTO();
         }
-
         return projectsTab.getProjectRootNode(projectName);
     }
 
@@ -153,7 +154,6 @@ public class PHPNavigatorTest extends org.netbeans.modules.performance.utilities
         lineNumber = 91;
         column = 1;
         textToType = "function closeDB3(){\n";
-        expectedTime = 1000;
         doMeasurement();
     }
 
@@ -164,12 +164,7 @@ public class PHPNavigatorTest extends org.netbeans.modules.performance.utilities
         lineNumber = 88;
         column = 18;
         textToType = "Test";
-        expectedTime = 1000;
         doMeasurement();
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(PHPNavigatorTest.class).enableModules(".*").clusters(".*").reuseUserDir(true));
-    }
 }

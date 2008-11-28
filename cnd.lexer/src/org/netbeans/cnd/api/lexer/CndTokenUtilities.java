@@ -43,6 +43,7 @@ package org.netbeans.cnd.api.lexer;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
@@ -130,6 +131,40 @@ public class CndTokenUtilities {
 
     /**
      * method should be called under read lock
+     * Return the position of the last command separator before the given position.
+     * @param doc documetn
+     * @param pos position in document
+     * @return position of the last command separator before the given position or
+     * 
+     */
+    public static int getLastCommandSeparator(Document doc, int pos) throws BadLocationException {
+        if (pos < 0 || pos > doc.getLength()) {
+            throw new BadLocationException("position is out of range[" + 0 + "-" + doc.getLength() + "]", pos); // NOI18N
+        }
+        if (pos == 0) {
+            return 0;
+        }
+        TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, pos, true, true);
+        if (ts == null) {
+            return 0;
+        }
+        do {
+            switch (ts.token().id()) {
+                case SEMICOLON:
+                case LBRACE:
+                case RBRACE:
+                    return ts.offset();
+            }
+        } while (ts.movePrevious());
+        ts.moveStart();
+        if (ts.moveNext()) {
+            return ts.offset();
+        }
+        return 0;
+    }
+
+    /**
+     * method should be called under read lock
      * move token sequence to the position of preprocessor keyword
      * @param ts token sequence
      * @return true if successfuly moved, false if no preprocessor keyword in given sequence
@@ -138,10 +173,11 @@ public class CndTokenUtilities {
     public static boolean moveToPreprocKeyword(TokenSequence<CppTokenId> ts) {
         if (ts != null && ts.language() == CppTokenId.languagePreproc()) {
             ts.moveStart();
+            ts.moveNext();
             if (!ts.moveNext()) {// skip start #
                 return false;
             }
-            if (shiftToNonWhite(ts, true)) {
+            if (shiftToNonWhite(ts, false)) {
                 switch (ts.token().id()) {
                     case PREPROCESSOR_DEFINE:
                     case PREPROCESSOR_ELIF:

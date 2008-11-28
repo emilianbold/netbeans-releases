@@ -39,7 +39,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
- *
+ * Represent a PHPDoc tag in the php documentation
  * @author Petr Pisl
  */
 public class PHPDocTag extends ASTNode {

@@ -57,6 +57,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
+import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.glassfish.jruby.ui.JRubyServerCustomizer;
 import org.netbeans.modules.glassfish.spi.Recognizer;
@@ -68,11 +72,7 @@ import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
-import org.netbeans.modules.ruby.platform.execution.FileLocator;
-import org.netbeans.modules.ruby.platform.execution.OutputProcessor;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
-import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -630,31 +630,21 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
     // RecognizerCookie support
     // ------------------------------------------------------------------------
     
-//    private static final String WINDOWS_DRIVE = "(?:\\S{1}:[\\\\/])"; // NOI18N
-    private static final String FILE_CHAR = "[^\\s\\[\\]\\:\\\"]"; // NOI18N
-    private static final String FILE = "((?:" + FILE_CHAR + "*))"; // NOI18N
-//    private static final String FILE_WIN = "(" + WINDOWS_DRIVE + "(?:" + FILE_CHAR + ".*))"; // NOI18N
-    private static final String LINE = "([1-9][0-9]*)"; // NOI18N
-    private static final String ROL = ".*\\s?"; // NOI18N
-    private static final String SEP = "\\:"; // NOI18N
-    private static final String STD_SUFFIX = FILE + SEP + LINE + ROL;
-
-    private static final RegexpOutputRecognizer RAILS_RECOGNIZER =
-        new RegexpOutputRecognizer(".*#\\{RAILS_ROOT\\}/" + STD_SUFFIX); // NOI18N
-    
     public Collection<? extends Recognizer> getRecognizers() {
-        return Collections.singleton(wrapRubyRecognizer(new DirectoryFileLocator(
-                FileUtil.toFileObject(FileUtil.normalizeFile(new File("/")))), RAILS_RECOGNIZER));
+        FileLocator locator = new DirectoryFileLocator(FileUtil.toFileObject(FileUtil.normalizeFile(new File("/")))); //NOI18N
+        LineConvertor convertor = LineConvertors.filePattern(locator, RubyLineConvertorFactory.RAILS_RECOGNIZER, RubyLineConvertorFactory.EXT_RE, 1, 2);
+        return Collections.singleton(wrapRubyRecognizer(convertor));
     }
 
-    private Recognizer wrapRubyRecognizer(final FileLocator locator, final OutputRecognizer recognizer) {
+    private Recognizer wrapRubyRecognizer(final LineConvertor convertor) {
         return new Recognizer() {
             public OutputListener processLine(String text) {
                 OutputListener result = null;
-                OutputRecognizer.RecognizedOutput match = recognizer.processLine(text);
-                if(match instanceof OutputRecognizer.FileLocation) {
-                    OutputRecognizer.FileLocation fileLocation = (OutputRecognizer.FileLocation) match;
-                    result = new OutputProcessor(fileLocation.file, fileLocation.line, locator);
+                List<ConvertedLine> match = convertor.convert(text);
+                if (match != null && !match.isEmpty()) {
+                    // relies on an implementation detail of FilePatternConvertor in that
+                    // this assumes the returned listener to be an instance of FindFileListener
+                    result = match.get(0).getListener();
                 }
                 return result;
             }

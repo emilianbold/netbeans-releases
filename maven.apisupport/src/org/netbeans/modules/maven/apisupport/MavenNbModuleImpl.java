@@ -61,10 +61,17 @@ import org.netbeans.modules.maven.embedder.writer.WriterUtils;
 import hidden.org.codehaus.plexus.util.DirectoryScanner;
 import hidden.org.codehaus.plexus.util.IOUtil;
 import hidden.org.codehaus.plexus.util.xml.Xpp3DomBuilder;
+import java.util.Collections;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
+import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMModelFactory;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
@@ -263,28 +270,23 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         
         public void run() {
             FileObject fo = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-            Model model = WriterUtils.loadModel(fo); //NOI18N
-            if (model != null) {
-                synchronized (this) {
-                    for (Dependency dep : toAdd) {
-                        Dependency mdlDep = PluginPropertyUtils.checkModelDependency(model, dep.getGroupId(), dep.getArtifactId(), true);
-                        mdlDep.setVersion(dep.getVersion());
+            ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                public void performOperation(POMModel model) {
+                    synchronized (MavenNbModuleImpl.DependencyAdder.this) {
+                        for (Dependency dep : toAdd) {
+                            org.netbeans.modules.maven.model.pom.Dependency mdlDep =
+                                    ModelUtils.checkModelDependency(model, dep.getGroupId(), dep.getArtifactId(), true);
+                            mdlDep.setVersion(dep.getVersion());
+                        }
+                        toAdd.clear();
                     }
-                    toAdd.clear();
                 }
-                try {
-                    WriterUtils.writePomModel(fo, model);
-                    NbMavenProject.fireMavenProjectReload(project);
-                    project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            } else { //NOPMD
-            //TODO warn somehow?
-            //the pom file is probably being edited..
-            } 
+            };
+            Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
+            //TODO is the manual reload necessary if pom.xml file is being saved?
+            NbMavenProject.fireMavenProjectReload(project);
+            project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
         }
-        
     }
             
 

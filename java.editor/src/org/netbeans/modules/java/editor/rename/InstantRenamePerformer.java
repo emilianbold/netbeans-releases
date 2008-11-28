@@ -84,7 +84,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -364,8 +363,22 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         //#92160: check for local classes:
         if (e.getKind() == ElementKind.CLASS) {//only classes can be local
             Element enclosing = e.getEnclosingElement();
-            
-            return LOCAL_CLASS_PARENTS.contains(enclosing.getKind());
+            final ElementKind enclosingKind = enclosing.getKind();
+
+            //#150352: parent is annonymous class
+            if (enclosingKind == ElementKind.CLASS) {
+                final Set<ElementKind> fm = EnumSet.of(ElementKind.METHOD, ElementKind.FIELD);
+                if (enclosing.getSimpleName().length() == 0 || fm.contains(enclosing.getEnclosingElement().getKind())) {
+                    return true;
+                }
+            }
+
+
+            return LOCAL_CLASS_PARENTS.contains(enclosingKind);
+        }
+
+        if (e.getKind() == ElementKind.TYPE_PARAMETER) {
+            return true;
         }
         
         return false;

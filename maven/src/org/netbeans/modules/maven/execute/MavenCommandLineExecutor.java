@@ -248,6 +248,10 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         } else {
             toRet.add(ex);
         }
+        if (Utilities.isWindows()) { //#153101
+            toRet.add(0, "/c"); //NOI18N
+            toRet.add(0, "cmd"); //NOI18N
+        }
         
         for (Object key : config.getProperties().keySet()) {
             String val = config.getProperties().getProperty((String)key);

@@ -55,9 +55,9 @@ import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectPropert
 import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.extexecution.api.ExecutionService;
-import org.netbeans.modules.extexecution.api.print.LineConvertor;
-import org.netbeans.modules.extexecution.api.print.LineConvertors;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
@@ -549,12 +549,11 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         desc.additionalArgs(getApplicationArguments());
         desc.fileLocator(new RailsFileLocator(context, project));
         desc.addStandardRecognizers();
-        LineConvertors.FileLocator locator = RubyProcessCreator.wrap(desc.getFileLocator());
-        desc.addOutConvertor(LineConvertors.filePattern(locator,
+        desc.addOutConvertor(LineConvertors.filePattern(desc.getFileLocator(),
                 RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
                 RubyLineConvertorFactory.EXT_RE
                 ,1,2));
-        desc.addErrConvertor(LineConvertors.filePattern(locator,
+        desc.addErrConvertor(LineConvertors.filePattern(desc.getFileLocator(),
                 RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
                 RubyLineConvertorFactory.EXT_RE
                 ,1,2));

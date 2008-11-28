@@ -41,7 +41,6 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
     public static final String WORK_PATH = "work";
     public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
-    String os_name;
     Operator.DefaultStringComparator comOperator; 
     Operator.DefaultStringComparator oldOperator;
     static Logger log;
@@ -64,14 +63,6 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
         
     }
     
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
-    }
-    
     public static Test suite() {
          return NbModuleSuite.create(
                  NbModuleSuite.createConfiguration(CreateProjectVersionedDirTest.class).addTest(
@@ -86,6 +77,10 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
         try {
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
+            TestKit.closeProject(PROJECT_NAME);
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                new NewProjectWizardOperator().invoke().close();
+            
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
             Operator.setDefaultStringComparator(comOperator);

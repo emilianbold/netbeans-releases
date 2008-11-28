@@ -267,9 +267,9 @@ public class FortranIndentSupport {
                 TokenItem tokenAfterEnd = startToken.getNext();
                 while (tokenAfterEnd.getTokenID() == WHITESPACE) {
                     tokenAfterEnd = tokenAfterEnd.getNext();
-                }
-                if (tokenAfterEnd == null) {
-                    return null;
+                    if (tokenAfterEnd == null) {
+                        return null;
+                    }
                 }
 
                 if (tokenAfterEnd.getTokenID() == matchTokenID) {
@@ -297,6 +297,11 @@ public class FortranIndentSupport {
                         }
                     } while (nextToken.getTokenID() != KW_THEN);
                     if (nextToken.getImage().indexOf('\n') > -1) {
+                        continue;
+                    }
+                } else if (matchTokenID == KW_TYPE && matchEndKeywordID == KW_ENDTYPE) {
+                    TokenItem next = findImportantToken(startToken.getNext(), null, false);
+                    if (next != null && next.getTokenID() == LPAREN) {
                         continue;
                     }
                 }

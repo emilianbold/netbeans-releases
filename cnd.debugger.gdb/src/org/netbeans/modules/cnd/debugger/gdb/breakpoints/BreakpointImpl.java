@@ -47,6 +47,7 @@ import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
@@ -89,6 +90,15 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 // path to a possiby non-unique relative path and another project has a similar
                 // relative path. See IZ #151761.
                 String path = getBreakpoint().getPath();
+                if (debugger.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
+                    // See IZ 151577 - do some magic to ensure equivalent paths really do match
+                    path = path.replace("\\", "/").toLowerCase(); // NOI18N
+                    fullname = fullname.replace("\\", "/").toLowerCase(); // NOI18N
+                } else if (debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+                    // See IZ 151577 - do some magic to ensure equivalent paths really do match
+                    path = path.toLowerCase();
+                    fullname = fullname.toLowerCase();
+                }
                 if (!path.equals(fullname)) {
                     debugger.getGdbProxy().break_delete(number);
                     breakpoint.setInvalid(err);

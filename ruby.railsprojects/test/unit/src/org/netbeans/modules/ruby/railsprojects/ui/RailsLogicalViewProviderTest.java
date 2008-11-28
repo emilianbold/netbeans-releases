@@ -56,7 +56,6 @@ public class RailsLogicalViewProviderTest extends RailsProjectTestBase {
     }
 
     public void testFindPath() throws Exception {
-        registerLayer();
         RailsProject project = createTestPlainProject();
         LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);
@@ -67,7 +66,6 @@ public class RailsLogicalViewProviderTest extends RailsProjectTestBase {
     }
     
     public void testDoubleCreation() throws Exception { // #116678
-        registerLayer();
         RailsProject project = createTestPlainProject();
         LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);

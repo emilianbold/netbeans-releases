@@ -54,155 +54,154 @@ import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportProvider;
 import org.openide.filesystems.FileObject;
 
-/** JAXWSSupport should be used to manipulate projects representations
+/** JAXWSLightSupport should be used to manipulate projects representations
  *  of JAX-WS services.
  * <p>
- * A client may obtain a JAXWSSupport instance using
+ * A client may obtain a JAXWSLightSupport instance using
  * <code>JAXWSLightSupport.getJAXWSLightSupport(fileObject)</code> static
  * method, for any FileObject in the project directory structure.
  *
  * @author Milan Kuchtiak
  */
 public final class JAXWSLightSupport {
-    
+
+    /**used to notify property change listeners when JAX-WS service is added. */
+    public static final String PROPERTY_SERVICE_ADDED = "service-added"; //NOI18N
+
+    /**used to notify property change listeners when JAX-WS service is removed. */
+    public static final String PROPERTY_SERVICE_REMOVED = "service-removed"; //NOI18N
+
     private JAXWSLightSupportImpl impl;
     private PropertyChangeSupport propertyChangeSupport;
-    
+
     static  {
         JAXWSLightSupportAccessor.DEFAULT = new JAXWSLightSupportAccessor() {
             public JAXWSLightSupport createJAXWSSupport(JAXWSLightSupportImpl spiWebServicesSupport) {
                 return new JAXWSLightSupport(spiWebServicesSupport);
             }
-            
+
             public JAXWSLightSupportImpl getJAXWSSupportImpl(JAXWSLightSupport wss) {
                 return wss == null ? null : wss.impl;
             }
         };
     }
-    
+
     private JAXWSLightSupport(JAXWSLightSupportImpl impl) {
-        
-        if (impl == null)
+
+        if (impl == null) {
             throw new IllegalArgumentException();
+        }
         this.impl = impl;
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
-    
-    /** Lookup project to find JJAXWSLigtSupport
+
+    /** Returns instance of JAXWSLightSupport from project's lookup, or null if not present.
+     *
+     * @param f sole file object in project
+     * @return JAXWSLightSupport object
      */
     public static JAXWSLightSupport getJAXWSLightSupport(FileObject f) {
-        
+
         Project project = FileOwnerQuery.getOwner(f);
         if (project != null) {
-            JAXWSLightSupportProvider provider = (JAXWSLightSupportProvider) project.getLookup().lookup(JAXWSLightSupportProvider.class);           
+            JAXWSLightSupportProvider provider =
+                    (JAXWSLightSupportProvider) project.getLookup().lookup(JAXWSLightSupportProvider.class);
             if (provider != null) {
                 return provider.findJAXWSSupport();
             }
         }
         return null;
     }
-    
+
     // Delegated methods from WebServicesSupportImpl
-    
-    /**
-     * Add web service to jax-ws.xml intended for web services from java
-     * @param serviceName service display name (name of the node ws will be presented in Netbeans), e.g. "SearchService"
-     * @param serviceImpl package name of the implementation class, e.g. "org.netbeans.SerchServiceImpl"
-     * @param isJsr109 Indicates if the web service is being created in a project that supports a JSR 109 container
+
+    /** Add JAX-WS service/client to project.
+     *
+     * @param service service or client
      */
     public void addService(JaxWsService service) {
         impl.addService(service);
-        propertyChangeSupport.firePropertyChange("service-added", null, service);
+        propertyChangeSupport.firePropertyChange(PROPERTY_SERVICE_ADDED, null, service);
     }
 
-    /**
-     * Returns the list of web services in the project
+    /** Returns the list of JAX-WS services and clients.
+     *
      * @return list of web services
      */
     public List<JaxWsService> getServices() {
         return impl.getServices();
-    }  
-  
-    /**
-     * Remove the web service entries from the project properties
-     * @param serviceName service IDE name 
-     * project.xml files
+    }
+
+    /** Remove JAX-WS service from project.
+     *
+     * @param service service
      */
     public void removeService(JaxWsService service) {
         impl.removeService(service);
-        propertyChangeSupport.firePropertyChange("service-removed", service, null);
+        propertyChangeSupport.firePropertyChange(PROPERTY_SERVICE_REMOVED, service, null);
     }
-    
-    /** Determine if the web service was created from WSDL
-     * @param serviceName service name 
-     */
-    public boolean isFromWSDL(JaxWsService service) {
-        return impl.isFromWSDL(service);
-    }
-    
-    /** Get WSDL folder for the project (folder containing wsdl files)
+
+
+    /** Get WSDL folder for the project (folder containing wsdl files).
+     *
      *  The folder is used to save remote or local wsdl files to be available within the jar/war files.
      *  it is usually META-INF/wsdl folder (or WEB-INF/wsdl for web application)
      *  @param createFolder if (createFolder==true) the folder will be created (if not created before)
-     *  @return the file object (folder) where wsdl files are located in project 
+     *  @return the file object (folder) where wsdl files are located in project
+     *  @throws IOException trown when folder cannot be created
      */
-    public FileObject getWsdlFolder(boolean create) throws java.io.IOException {
-        return impl.getWsdlFolder(create);
+    public FileObject getWsdlFolder(boolean createFolder) throws java.io.IOException {
+        return impl.getWsdlFolder(createFolder);
     }
-    
-    /** Get folder for local WSDL and XML artifacts for given service
+
+    /** Get folder for local WSDL and XML artifacts for given service.
+     *
      * This is the location where wsdl/xml files are downloaded to the project.
      * JAX-WS java artifacts will be generated from these local files instead of remote.
      * @param createFolder if (createFolder==true) the folder will be created (if not created before)
-     * @return the file object (folder) where wsdl files are located in project 
+     * @return the file object (folder) where wsdl files are located in project
      */
     public FileObject getLocalWsdlFolder(boolean createFolder) {
         return impl.getLocalWsdlFolder(createFolder);
     }
-    
-    /** Get folder for local jaxb binding (xml) files for given service
+
+    /** Get folder for local jaxb binding (xml) files for given service.
+     *
      *  This is the location where external jaxb binding files are downloaded to the project.
      *  JAX-WS java artifacts will be generated using these local binding files instead of remote.
+     *
      * @param createFolder if (createFolder==true) the folder will be created (if not created before)
-     * @return the file object (folder) where jaxb binding files are located in project 
+     * @return the file object (folder) where jaxb binding files are located in project
      */
     public FileObject getBindingsFolder(boolean createFolder) {
         return impl.getBindingsFolder(createFolder);
     }
-    
-    /** Get EntityCatalog for local copies of wsdl and schema files
+
+    /** Get EntityCatalog for local copies of wsdl and schema files.
+     * @return URL for catalog file
      */
     public URL getCatalog() {
         return impl.getCatalog();
     }
-    
-    /** Get wsdlLocation information
-     * Useful for web service from wsdl (the @WebService wsdlLocation attribute)
-     * @param serviceName service "display" name
-     */
-    public JaxWsService getService(String implClass) {
-        return impl.getService(implClass);
-    }
 
-    /**
-     * Returns the directory that contains the deployment descriptor in the project
-     */    
-    public FileObject getDeploymentDescriptorFolder(){
-        return impl.getDeploymentDescriptorFolder();
-    }
-    /**
-     * Returns a metadata model of a webservices deployment descriptor
+    /** Get metadata model of a webservices deployment descriptor.
      *
      * @return metadata model of a webservices deployment descriptor
      */
     public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
         return impl.getWebservicesMetadataModel();
     }
-    
+    /** Register property change listener to JAX-WS support
+     *
+     * @param pcl
+     */
     public synchronized void addPropertyChangeListener(PropertyChangeListener pcl) {
         propertyChangeSupport.addPropertyChangeListener(pcl);
     }
-    
+    /** Unregister property change listener from JAX-WS support
+     *
+     * @param pcl
+     */
     public synchronized void removePropertyChangeListener(PropertyChangeListener pcl) {
         propertyChangeSupport.removePropertyChangeListener(pcl);
     }

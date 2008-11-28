@@ -51,8 +51,6 @@ import java.net.URLStreamHandler;
 import java.util.Enumeration;
 import junit.framework.TestCase;
 import org.openide.util.Enumerations;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -108,7 +106,7 @@ public class RepositoryTest extends TestCase {
             }
         });
         FileObject r = Repository.getDefault().getDefaultFileSystem().getRoot();
-        assertEquals(2, r.getChildren().length);
+        assertEquals(3, r.getChildren().length);  // org.openide.filesystems.resources.layer.xml, test-layer-1.xml, test-layer-2.xml
         assertNotNull(r.getFileObject("foo"));
         assertNotNull(r.getFileObject("bar"));
     }

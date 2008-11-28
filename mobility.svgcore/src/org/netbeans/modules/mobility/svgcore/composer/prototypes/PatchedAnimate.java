@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 
-import com.sun.perseus.model.*;
 import com.sun.perseus.model.Animate;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
@@ -80,6 +79,7 @@ public final class PatchedAnimate extends Animate implements PatchedAnimationEle
         }
     }
     
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedAnimate(doc, getLocalName());
     }   

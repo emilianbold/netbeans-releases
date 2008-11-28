@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.options;
 
 import java.util.Vector;
@@ -56,57 +55,59 @@ import org.openide.util.NbBundle;
  * Panel used to manage predefined Include Paths and Macro Definitions of the compiler
  */
 public class PredefinedPanel extends javax.swing.JPanel {
+
     private IncludesPanel includesPanel;
     private DefinitionsPanel definitionsPanel;
     private CCCCompiler compiler;
     private ParserSettingsPanel parserSettingsPanel;
-    
+
     /** Creates new form PredefinedPanel */
     public PredefinedPanel(CCCCompiler compiler, ParserSettingsPanel parserSettingsPanel) {
         initComponents();
         this.compiler = compiler;
         this.parserSettingsPanel = parserSettingsPanel;
         updatePanels();
-        
+
         resetButton.getAccessibleContext().setAccessibleDescription(getString("RESET_BUTTON_AD"));
-        
+
         setOpaque(false);
     }
-    
     private static final int INSETS = 0;
     private static final double WEIGTH = 0.1;
 
     private void updatePanels() {
-        List includesList = compiler.getSystemIncludeDirectories();
-        String[] includesAr = (String[])includesList.toArray(new String[includesList.size()]);
-                
+        List<String> includesList = compiler.getSystemIncludeDirectories();
+//        String[] includesAr = (String[])includesList.toArray(new String[includesList.size()]);
+
         if (includesPanel != null) {
             includes.remove(includesPanel);
         }
-        includes.add(includesPanel = new IncludesPanel(includesAr));
-        List definesList = compiler.getSystemPreprocessorSymbols();
-        String[] definesAr = (String[])definesList.toArray(new String[definesList.size()]);
-        
+        includes.add(includesPanel = new IncludesPanel(includesList));
+        List<String> definesList = compiler.getSystemPreprocessorSymbols();
+//        String[] definesAr = (String[])definesList.toArray(new String[definesList.size()]);
+
         if (definitionsPanel != null) {
             macros.remove(definitionsPanel);
         }
-        macros.add(definitionsPanel = new DefinitionsPanel(definesAr));
+        macros.add(definitionsPanel = new DefinitionsPanel(definesList));
     }
-    
+
     public boolean save() {
         boolean wasChanges = false;
-        Vector includes = includesPanel.getListData();
+        Vector<String> includes = includesPanel.getListData();
         wasChanges |= compiler.setSystemIncludeDirectories(includes);
-        Vector definitions = definitionsPanel.getListData();
+        Vector<String> definitions = definitionsPanel.getListData();
         wasChanges |= compiler.setSystemPreprocessorSymbols(definitions);
         return wasChanges;
     }
-    
+
     public void update() {
-        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("update for PredefinedPanel " + compiler.getName());
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
+            System.err.println("update for PredefinedPanel " + compiler.getName());
+        }
         updatePanels();
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -179,90 +180,108 @@ public class PredefinedPanel extends javax.swing.JPanel {
             parserSettingsPanel.setModified(true);
         }
     }//GEN-LAST:event_resetButtonActionPerformed
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel includes;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel macros;
     private javax.swing.JButton resetButton;
     // End of variables declaration//GEN-END:variables
-    
-    private static class IncludesPanel extends ListEditorPanel {
-	public IncludesPanel(Object[] objects) {
-	    super(objects);
-	    getDefaultButton().setVisible(false);
-            
-            if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+
+    private static class IncludesPanel extends ListEditorPanel<String> {
+
+        public IncludesPanel(List<String> objects) {
+            super(objects);
+            getDefaultButton().setVisible(false);
+
+            if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
                 getDataPanel().setOpaque(false);
             }
         }
 
-	public Object addAction() {
-	    String seed = null;
-	    if (FileChooser.getCurrectChooserFile() != null)
-		seed = FileChooser.getCurrectChooserFile().getPath();
-            if (seed == null)
+        @Override
+        public String addAction() {
+            String seed = null;
+            if (FileChooser.getCurrectChooserFile() != null) {
+                seed = FileChooser.getCurrectChooserFile().getPath();
+            }
+            if (seed == null) {
                 seed = System.getProperty("user.home"); // NOI18N
-	    FileChooser fileChooser = new FileChooser(getString("SelectDirectoryTxt"), getString("SelectTxt"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
-	    int ret = fileChooser.showOpenDialog(this);
-	    if (ret == JFileChooser.CANCEL_OPTION)
-		return null;
-	    String itemPath = fileChooser.getSelectedFile().getPath();
-	    return itemPath;
-	}
+            }
+            FileChooser fileChooser = new FileChooser(getString("SelectDirectoryTxt"), getString("SelectTxt"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+            int ret = fileChooser.showOpenDialog(this);
+            if (ret == JFileChooser.CANCEL_OPTION) {
+                return null;
+            }
+            String itemPath = fileChooser.getSelectedFile().getPath();
+            return itemPath;
+        }
 
-	public String getListLabelText() {
-	    return getString("IncludeDirectoriesTxt");
-	}
-	public char getListLabelMnemonic() {
-	    return getString("IncludeDirectoriesMn").charAt(0);
-	}
-    
-	public String getAddButtonText() {
-	    return getString("AddButtonTxt");
-	}
-	public char getAddButtonMnemonics() {
-	    return getString("IAddButtonMn").charAt(0);
-	}
-    
+        @Override
+        public String getListLabelText() {
+            return getString("IncludeDirectoriesTxt");
+        }
+
+        @Override
+        public char getListLabelMnemonic() {
+            return getString("IncludeDirectoriesMn").charAt(0);
+        }
+
+        @Override
+        public String getAddButtonText() {
+            return getString("AddButtonTxt");
+        }
+
+        @Override
+        public char getAddButtonMnemonics() {
+            return getString("IAddButtonMn").charAt(0);
+        }
+
+        @Override
         public char getCopyButtonMnemonics() {
             return getString("ICopyButtonMn").charAt(0);
         }
-	public Object copyAction(Object o) {
-	    return new String((String)o);
-	}
-        
-	public String getRenameButtonText() {
-	    return getString("EditButtonTxt");
-	}
-	public char getRenameButtonMnemonics() {
-	    return getString("EditButtonMn").charAt(0);
-	}
-	public void editAction(Object o) {
-	    String s = (String)o;
 
-	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EditDialogLabelDir"), getString("EditDialogTitle")); // NOI18N
-	    notifyDescriptor.setInputText(s);
-	    DialogDisplayer.getDefault().notify(notifyDescriptor);
-	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
-		return;
-	    String newS = notifyDescriptor.getInputText();
-	    Vector vector = getListData();
-	    Object[] arr = getListData().toArray();
-	    for (int i = 0; i < arr.length; i++) {
-		if (arr[i] == o) {
-		    vector.remove(i);
-		    vector.add(i, newS);
-		    break;
-		}
-	    }
-	}
-        
+        @Override
+        public String copyAction(String o) {
+            return o;
+        }
+
+        @Override
+        public String getRenameButtonText() {
+            return getString("EditButtonTxt");
+        }
+
+        @Override
+        public char getRenameButtonMnemonics() {
+            return getString("EditButtonMn").charAt(0);
+        }
+
+        @Override
+        public void editAction(String o) {
+            String s = o;
+
+            NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EditDialogLabelDir"), getString("EditDialogTitle")); // NOI18N
+            notifyDescriptor.setInputText(s);
+            DialogDisplayer.getDefault().notify(notifyDescriptor);
+            if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
+                return;
+            }
+            String newS = notifyDescriptor.getInputText();
+            Vector<String> vector = getListData();
+            Object[] arr = getListData().toArray();
+            for (int i = 0; i < arr.length; i++) {
+                if (arr[i] == o) {
+                    vector.remove(i);
+                    vector.add(i, newS);
+                    break;
+                }
+            }
+        }
+
         public char getRemoveButtonMnemonics() {
             return getString("IRemoveButtonMn").charAt(0);
         }
-        
+
         public char getUpButtonMnemonics() {
             return getString("IUpButtonMn").charAt(0);
         }
@@ -270,93 +289,110 @@ public class PredefinedPanel extends javax.swing.JPanel {
         public char getDownButtonMnemonics() {
             return getString("IDownButtonMn").charAt(0);
         }
-        
-        
     }
-    
-    private static class DefinitionsPanel extends ListEditorPanel {
-	public DefinitionsPanel(Object[] objects) {
-	    super(objects);
-	    getDefaultButton().setVisible(false);
-            if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+
+    private static class DefinitionsPanel extends ListEditorPanel<String> {
+
+        public DefinitionsPanel(List<String> objects) {
+            super(objects);
+            getDefaultButton().setVisible(false);
+            if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
                 getDataPanel().setOpaque(false);
             }
-	}
+        }
 
-	public Object addAction() {
-	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EditDialogLabelDef"), getString("AddDialogTitle"));
-	    DialogDisplayer.getDefault().notify(notifyDescriptor);
-	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
-		return null;
+        public String addAction() {
+            NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EditDialogLabelDef"), getString("AddDialogTitle"));
+            DialogDisplayer.getDefault().notify(notifyDescriptor);
+            if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
+                return null;
             }
-	    String def = notifyDescriptor.getInputText();
+            String def = notifyDescriptor.getInputText();
             if (def.length() != 0) {
                 return def;
             } else {
                 return null;
             }
-	}
+        }
 
-	public String getListLabelText() {
-	    return getString("MacroDefinitionsTxt");
-	}
-	public char getListLabelMnemonic() {
-	    return getString("MacroDefinitionsMn").charAt(0);
-	}
-    
-	public String getAddButtonText() {
-	    return getString("AddButtonTxt");
-	}
-	public char getAddButtonMnemonics() {
-	    return getString("MAddButtonMn").charAt(0);
-	}
-    
+        @Override
+        public String getListLabelText() {
+            return getString("MacroDefinitionsTxt");
+        }
+
+        @Override
+        public char getListLabelMnemonic() {
+            return getString("MacroDefinitionsMn").charAt(0);
+        }
+
+        @Override
+        public String getAddButtonText() {
+            return getString("AddButtonTxt");
+        }
+
+        @Override
+        public char getAddButtonMnemonics() {
+            return getString("MAddButtonMn").charAt(0);
+        }
+
+        @Override
         public char getCopyButtonMnemonics() {
             return getString("MCopyButtonMn").charAt(0);
         }
-	public Object copyAction(Object o) {
-	    return new String((String)o);
-	}
-        
-	public char getRenameButtonMnemonics() {
-	    return getString("MditButtonMn").charAt(0);
-	}
-	public String getRenameButtonText() {
-	    return getString("EditButtonTxt");
-	}
-	public void editAction(Object o) {
-	    String s = (String)o;
 
-	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EditDialogLabelDef"), getString("EditDialogTitle")); // NOI18N
-	    notifyDescriptor.setInputText(s);
-	    DialogDisplayer.getDefault().notify(notifyDescriptor);
-	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
-		return;
-	    String newS = notifyDescriptor.getInputText();
-	    Vector vector = getListData();
-	    Object[] arr = getListData().toArray();
-	    for (int i = 0; i < arr.length; i++) {
-		if (arr[i] == o) {
-		    vector.remove(i);
-		    vector.add(i, newS);
-		    break;
-		}
-	    }
-	}
+        @Override
+        public String copyAction(String o) {
+            return o;
+        }
 
+        @Override
+        public char getRenameButtonMnemonics() {
+            return getString("MditButtonMn").charAt(0);
+        }
+
+        @Override
+        public String getRenameButtonText() {
+            return getString("EditButtonTxt");
+        }
+
+        @Override
+        public void editAction(String o) {
+            String s = o;
+
+            NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EditDialogLabelDef"), getString("EditDialogTitle")); // NOI18N
+            notifyDescriptor.setInputText(s);
+            DialogDisplayer.getDefault().notify(notifyDescriptor);
+            if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
+                return;
+            }
+            String newS = notifyDescriptor.getInputText();
+            Vector<String> vector = getListData();
+            Object[] arr = getListData().toArray();
+            for (int i = 0; i < arr.length; i++) {
+                if (arr[i] == o) {
+                    vector.remove(i);
+                    vector.add(i, newS);
+                    break;
+                }
+            }
+        }
+
+        @Override
         public char getRemoveButtonMnemonics() {
             return getString("MRemoveButtonMn").charAt(0);
         }
-        
+
+        @Override
         public char getUpButtonMnemonics() {
             return getString("MUpButtonMn").charAt(0);
         }
 
+        @Override
         public char getDownButtonMnemonics() {
             return getString("MDownButtonMn").charAt(0);
-        }       
+        }
     }
-    
+
     private static String getString(String s) {
         return NbBundle.getMessage(PredefinedPanel.class, s);
     }
@@ -365,11 +401,13 @@ public class PredefinedPanel extends javax.swing.JPanel {
         boolean isChanged = false;
         if (this.includesPanel != null) {
             isChanged |= this.includesPanel.isChanged();
-        }        
+        }
         if (this.definitionsPanel != null) {
             isChanged |= this.definitionsPanel.isChanged();
-        }          
-        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("isChanged for PredefinedPanel " + compiler.getName() + " is " + isChanged);
+        }
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
+            System.err.println("isChanged for PredefinedPanel " + compiler.getName() + " is " + isChanged);
+        }
         return isChanged;
     }
 
@@ -377,15 +415,19 @@ public class PredefinedPanel extends javax.swing.JPanel {
         boolean isDataValid = true;
         if (this.includesPanel != null) {
             isDataValid &= this.includesPanel.isDataValid();
-        }        
+        }
         if (this.definitionsPanel != null) {
             isDataValid &= this.definitionsPanel.isDataValid();
-        }   
-        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("isDataValid for PredefinedPanel " + compiler.getName() + " is " + isDataValid);
+        }
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
+            System.err.println("isDataValid for PredefinedPanel " + compiler.getName() + " is " + isDataValid);
+        }
         return isDataValid;
     }
 
-    void cancel() {    
-        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("cancel for PredefinedPanel " + compiler.getName());
+    void cancel() {
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
+            System.err.println("cancel for PredefinedPanel " + compiler.getName());
+        }
     }
 }

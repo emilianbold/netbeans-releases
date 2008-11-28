@@ -50,7 +50,7 @@ import org.openide.nodes.Node;
  *
  * @author Marian Petras
  */
-final class TestsuiteNodeChildren extends Children.Keys<Report.Testcase> {
+final class TestsuiteNodeChildren extends Children.Keys<Testcase> {
 
     /** */
     private static final Node[] EMPTY_NODE_ARRAY = new Node[0];
@@ -90,15 +90,15 @@ final class TestsuiteNodeChildren extends Children.Keys<Report.Testcase> {
     protected void removeNotify() {
         super.removeNotify();
         
-        final Collection<Report.Testcase> emptySet = Collections.emptySet();
+        final Collection<Testcase> emptySet = Collections.emptySet();
         setKeys(emptySet);
         //live = false;                         //PENDING
     }
     
     /**
      */
-    protected Node[] createNodes(final Report.Testcase testcase) {
-        if (filtered && (testcase.trouble == null)) {
+    protected Node[] createNodes(final Testcase testcase) {
+        if (filtered && (testcase.getTrouble() == null)) {
             return EMPTY_NODE_ARRAY;
         }
         return new Node[] {new TestMethodNode(testcase, report.getProject())};
@@ -117,8 +117,8 @@ final class TestsuiteNodeChildren extends Children.Keys<Report.Testcase> {
         }
                 
         if (isInitialized()) {
-            for (Report.Testcase testcase : report.getTests()) {
-                if (testcase.trouble == null) {
+            for (Testcase testcase : report.getTests()) {
+                if (testcase.getTrouble() == null) {
                     refreshKey(testcase);
                 }
             }

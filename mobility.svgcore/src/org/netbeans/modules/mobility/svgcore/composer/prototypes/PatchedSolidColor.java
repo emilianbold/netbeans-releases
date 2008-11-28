@@ -74,6 +74,7 @@ public final class PatchedSolidColor extends LinearGradient implements PatchedEl
         }
     }
             
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedSolidColor(doc);
     }    

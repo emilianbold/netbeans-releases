@@ -76,5 +76,7 @@ made subject to such option by the copyright holder.
     <volume>
         <type>maven-pom</type>
         <resource>http://download.java.net/maven/1/com.sun.xml.ws/poms/jaxws-rt-2.1.4.pom</resource>
+        <!-- mimepull seems to be in different java.net repository, define here to have the repository included.-->
+        <resource>http://download.java.net/maven/2/org/jvnet/mimepull/1.2/mimepull-1.2.pom</resource>
     </volume>
 </library>

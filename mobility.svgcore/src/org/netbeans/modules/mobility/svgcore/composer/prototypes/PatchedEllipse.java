@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 
-import com.sun.perseus.model.*;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
 import com.sun.perseus.model.Ellipse;
@@ -100,7 +99,10 @@ public final class PatchedEllipse extends Ellipse implements PatchedTransformabl
         return changedAttrs;            
     }        
     
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedEllipse(doc, isCircle);
-    }    
+    }
+
+
 }

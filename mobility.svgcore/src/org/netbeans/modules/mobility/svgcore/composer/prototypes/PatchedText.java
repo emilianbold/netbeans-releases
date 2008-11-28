@@ -96,6 +96,7 @@ public final class PatchedText extends Text implements PatchedTransformableEleme
         return changedAttrs;            
     }        
     
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedText(doc);
     }   

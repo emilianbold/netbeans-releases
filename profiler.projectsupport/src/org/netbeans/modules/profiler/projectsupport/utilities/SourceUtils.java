@@ -37,7 +37,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.profiler.projectsupport.utilities;
 
 import com.sun.source.tree.AnnotationTree;
@@ -117,7 +116,6 @@ import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.profiler.utilities.OutputParameter;
 
-
 /**
  * Utilities for interaction with the source representation (Java metamodel) in NetBeans IDE
  *
@@ -136,14 +134,12 @@ public final class SourceUtils {
         private TypeElement jclass;
 
         //~ Constructors ---------------------------------------------------------------------------------------------------------
-
         ResolvedClass(TypeElement jclass, String className) {
             this.jclass = jclass;
             this.vmClassName = className;
         }
 
         //~ Methods --------------------------------------------------------------------------------------------------------------
-
         public TypeElement getJClass() {
             return jclass;
         }
@@ -162,7 +158,6 @@ public final class SourceUtils {
         private String vmMethodSignature;
 
         //~ Constructors ---------------------------------------------------------------------------------------------------------
-
         ResolvedMethod(ExecutableElement method, String className, String methodName, String methodSignature) {
             this.method = method;
             this.vmClassName = className;
@@ -171,7 +166,6 @@ public final class SourceUtils {
         }
 
         //~ Methods --------------------------------------------------------------------------------------------------------------
-
         public ExecutableElement getMethod() {
             return method;
         }
@@ -242,18 +236,16 @@ public final class SourceUtils {
     }
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
     private static final Logger LOGGER = Logger.getLogger(SourceUtils.class.getName());
     private static final FileObject[] NOFILES = new FileObject[0];
     private static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
     private static final String VM_CONSTRUCTUR_SIG = "<init>"; // NOI18N
     private static final String VM_INITIALIZER_SIG = "<clinit>"; // NOI18N
-    private static final String[] APPLET_CLASSES = new String[] { "java.applet.Applet", "javax.swing.JApplet" }; // NOI18N
-    private static final String[] TEST_CLASSES = new String[] { "junit.framework.TestCase", "junit.framework.TestSuite" }; // NOI18N
+    private static final String[] APPLET_CLASSES = new String[]{"java.applet.Applet", "javax.swing.JApplet"}; // NOI18N
+    private static final String[] TEST_CLASSES = new String[]{"junit.framework.TestCase", "junit.framework.TestSuite"}; // NOI18N
     private static final DeclaredTypeResolver declaredTypeResolver = new DeclaredTypeResolver();
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
-
     public static boolean isApplet(FileObject javaFile) {
         return isJavaFile(javaFile) && isInstanceOf(javaFile, APPLET_CLASSES, false); // NOI18N
     }
@@ -271,29 +263,31 @@ public final class SourceUtils {
 
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
+
+                public void cancel() {
+                }
+
+                public void run(final CompilationController controller)
+                        throws Exception {
+                    // Controller has to be in some advanced phase, otherwise controller.getCompilationUnit() == null
+                    if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                        return;
                     }
 
-                    public void run(final CompilationController controller)
-                             throws Exception {
-                        // Controller has to be in some advanced phase, otherwise controller.getCompilationUnit() == null
-                        if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                            return;
+                    TreePathScanner<Void, Void> scanner = new TreePathScanner<Void, Void>() {
+
+                        public Void visitMethod(MethodTree node, Void p) {
+                            Void retValue;
+                            ExecutableElement method = (ExecutableElement) controller.getTrees().getElement(getCurrentPath());
+                            retValue = super.visitMethod(node, p);
+
+                            return retValue;
                         }
+                    };
 
-                        TreePathScanner<Void, Void> scanner = new TreePathScanner<Void, Void>() {
-                            public Void visitMethod(MethodTree node, Void p) {
-                                Void retValue;
-                                ExecutableElement method = (ExecutableElement) controller.getTrees().getElement(getCurrentPath());
-                                retValue = super.visitMethod(node, p);
-
-                                return retValue;
-                            }
-                        };
-
-                        scanner.scan(controller.getCompilationUnit(), null);
-                    }
-                }, true);
+                    scanner.scan(controller.getCompilationUnit(), null);
+                }
+            }, true);
         } catch (IOException e) {
             ProfilerLogger.log(e);
             e.printStackTrace();
@@ -403,23 +397,24 @@ public final class SourceUtils {
 
             try {
                 js.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
+
+                    public void cancel() {
+                    }
+
+                    public void run(final CompilationController controller)
+                            throws Exception {
+                        if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                            return;
                         }
 
-                        public void run(final CompilationController controller)
-                                 throws Exception {
-                            if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                                return;
-                            }
+                        TypeElement parentClass = controller.getTreeUtilities().scopeFor(position).getEnclosingClass();
 
-                            TypeElement parentClass = controller.getTreeUtilities().scopeFor(position).getEnclosingClass();
-
-                            if (parentClass != null) {
-                                // no enclosing class found (i.e. cursor at import)
-                                result.setValue(ElementUtilities.getBinaryName(parentClass));
-                            }
+                        if (parentClass != null) {
+                            // no enclosing class found (i.e. cursor at import)
+                            result.setValue(ElementUtilities.getBinaryName(parentClass));
                         }
-                    }, true);
+                    }
+                }, true);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -427,7 +422,7 @@ public final class SourceUtils {
 
         return result.getValue();
     }
-    
+
     public static String getEnclosingMethodName(FileObject profiledClassFile, final int position) {
         final OutputParameter<String> result = new OutputParameter<String>(null);
 
@@ -440,23 +435,24 @@ public final class SourceUtils {
 
             try {
                 js.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
+
+                    public void cancel() {
+                    }
+
+                    public void run(final CompilationController controller)
+                            throws Exception {
+                        if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                            return;
                         }
 
-                        public void run(final CompilationController controller)
-                                 throws Exception {
-                            if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                                return;
-                            }
+                        ExecutableElement parentMethod = controller.getTreeUtilities().scopeFor(position).getEnclosingMethod();
 
-                            ExecutableElement parentMethod = controller.getTreeUtilities().scopeFor(position).getEnclosingMethod();
-
-                            if (parentMethod != null) {
-                                // no enclosing class found (i.e. cursor at import)
-                                result.setValue(getVMMethodName(parentMethod));
-                            }
+                        if (parentMethod != null) {
+                            // no enclosing class found (i.e. cursor at import)
+                            result.setValue(getVMMethodName(parentMethod));
                         }
-                    }, true);
+                    }
+                }, true);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -487,7 +483,7 @@ public final class SourceUtils {
      * @return true if the class in the FileObject is a subclass of the specified class
      */
     public static boolean isInstanceOf(final FileObject fo, final String className) {
-        return isInstanceOf(fo, new String[] { className }, true);
+        return isInstanceOf(fo, new String[]{className}, true);
     }
 
     /**
@@ -499,9 +495,11 @@ public final class SourceUtils {
     public static boolean hasAnnotation(final FileObject fo, final String annotationName) {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicBoolean result = new AtomicBoolean(false);
-        
+
         JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) return false;
+        if (js == null) {
+            return false;
+        }
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
 
@@ -513,13 +511,16 @@ public final class SourceUtils {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
 
                     TreePathScanner<Void, Void> scanner = new TreePathScanner<Void, Void>() {
+
                         @Override
                         public Void visitAnnotation(AnnotationTree annTree, Void p) {
-                            if (result.get()) return null;
-                            
+                            if (result.get()) {
+                                return null;
+                            }
+
                             TypeMirror tm = controller.getTrees().getTypeMirror(getCurrentPath());
                             if (tm != null) {
-                                TypeElement annType = (TypeElement)controller.getTypes().asElement(tm);
+                                TypeElement annType = (TypeElement) controller.getTypes().asElement(tm);
                                 if (annType != null) {
                                     result.set(result.get() || annotationName.equals(ElementUtilities.getBinaryName(annType)));
                                 }
@@ -541,7 +542,7 @@ public final class SourceUtils {
         }
         return false;
     }
-    
+
     /**
      * Check if given FileObject represents a java class which extends or implements all the provided classes or interfaces
      *
@@ -551,7 +552,7 @@ public final class SourceUtils {
      * @return true if the class in the FileObject is a subclass of the specified class
      */
     public static boolean isInstanceOf(final FileObject fo, final String[] classNames, final boolean allRequired) {
-        final boolean[] result = new boolean[] { false };
+        final boolean[] result = new boolean[]{false};
 
         // get javasource for the java file
         JavaSource js = JavaSource.forFileObject(fo);
@@ -562,80 +563,81 @@ public final class SourceUtils {
 
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
+
+                public void cancel() {
+                }
+
+                public void run(final CompilationController controller)
+                        throws Exception {
+                    // Controller has to be in some advanced phase, otherwise controller.getCompilationUnit() == null
+                    if (controller.toPhase(Phase.ELEMENTS_RESOLVED).compareTo(Phase.ELEMENTS_RESOLVED) < 0) {
+                        return;
                     }
 
-                    public void run(final CompilationController controller)
-                             throws Exception {
-                        // Controller has to be in some advanced phase, otherwise controller.getCompilationUnit() == null
-                        if (controller.toPhase(Phase.ELEMENTS_RESOLVED).compareTo(Phase.ELEMENTS_RESOLVED) < 0) {
-                            return;
+                    Elements elements = controller.getElements();
+                    Trees trees = controller.getTrees();
+                    Types types = controller.getTypes();
+
+                    Collection<TypeElement> classElements = new ArrayList<TypeElement>();
+
+                    for (String className : classNames) {
+                        TypeElement resolvedElement = elements.getTypeElement(className);
+
+                        if (resolvedElement != null) {
+                            classElements.add(resolvedElement);
                         }
+                    }
 
-                        Elements elements = controller.getElements();
-                        Trees trees = controller.getTrees();
-                        Types types = controller.getTypes();
+                    if (classElements.isEmpty()) {
+                        result[0] = false;
 
-                        Collection<TypeElement> classElements = new ArrayList<TypeElement>();
+                        return;
+                    }
 
-                        for (String className : classNames) {
-                            TypeElement resolvedElement = elements.getTypeElement(className);
+                    CompilationUnitTree cu = controller.getCompilationUnit();
+                    List<? extends Tree> topLevels = cu.getTypeDecls();
 
-                            if (resolvedElement != null) {
-                                classElements.add(resolvedElement);
-                            }
-                        }
+                    for (Tree topLevel : topLevels) {
+                        if (topLevel.getKind() == Tree.Kind.CLASS) {
+                            TypeElement type = (TypeElement) trees.getElement(TreePath.getPath(cu, topLevel));
 
-                        if (classElements.isEmpty()) {
-                            result[0] = false;
+                            if (type != null) {
+                                Set<Modifier> modifiers = type.getModifiers();
 
-                            return;
-                        }
+                                if (modifiers.contains(Modifier.PUBLIC) && (classElements != null)) {
+                                    boolean rslt = allRequired;
 
-                        CompilationUnitTree cu = controller.getCompilationUnit();
-                        List<?extends Tree> topLevels = cu.getTypeDecls();
-
-                        for (Tree topLevel : topLevels) {
-                            if (topLevel.getKind() == Tree.Kind.CLASS) {
-                                TypeElement type = (TypeElement) trees.getElement(TreePath.getPath(cu, topLevel));
-
-                                if (type != null) {
-                                    Set<Modifier> modifiers = type.getModifiers();
-
-                                    if (modifiers.contains(Modifier.PUBLIC) && (classElements != null)) {
-                                        boolean rslt = allRequired;
-
-                                        for (TypeElement classElement : classElements) {
-                                            if (classElement == null) {
-                                                continue;
-                                            }
-
-                                            if (allRequired) {
-                                                rslt = rslt && types.isSubtype(type.asType(), classElement.asType());
-
-                                                if (!rslt) {
-                                                    break;
-                                                }
-                                            } else {
-                                                rslt = rslt || types.isSubtype(type.asType(), classElement.asType());
-
-                                                if (rslt) {
-                                                    break;
-                                                }
-                                            }
+                                    for (TypeElement classElement : classElements) {
+                                        if (classElement == null) {
+                                            continue;
                                         }
 
-                                        result[0] = rslt;
+                                        if (allRequired) {
+                                            rslt = rslt && types.isSubtype(type.asType(), classElement.asType());
 
-                                        if (rslt) {
-                                            break;
+                                            if (!rslt) {
+                                                break;
+                                            }
+                                        } else {
+                                            rslt = rslt || types.isSubtype(type.asType(), classElement.asType());
+
+                                            if (rslt) {
+                                                break;
+                                            }
                                         }
+                                    }
+
+                                    result[0] = rslt;
+
+                                    if (rslt) {
+                                        break;
                                     }
                                 }
                             }
                         }
                     }
-                }, true);
+                }
+            }, true);
         } catch (IOException e) {
             ProfilerLogger.log(e);
             e.printStackTrace();
@@ -720,7 +722,7 @@ public final class SourceUtils {
      * @return Tuple [startOffset, endOffset] or [-1, -1] if there is no selection
      */
     public static int[] getSelectionOffsets() {
-        int[] indexes = new int[] { -1, -1 };
+        int[] indexes = new int[]{-1, -1};
         TopComponent tc = TopComponent.getRegistry().getActivated();
 
         if (tc != null) {
@@ -751,24 +753,25 @@ public final class SourceUtils {
         try {
             // use the prepared javasource repository and perform a task
             js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
+
+                public void cancel() {
+                }
+
+                public void run(CompilationController controller)
+                        throws Exception {
+                    if (controller.toPhase(Phase.ELEMENTS_RESOLVED).compareTo(Phase.ELEMENTS_RESOLVED) < 0) {
+                        return;
                     }
 
-                    public void run(CompilationController controller)
-                             throws Exception {
-                        if (controller.toPhase(Phase.ELEMENTS_RESOLVED).compareTo(Phase.ELEMENTS_RESOLVED) < 0) {
-                            return;
-                        }
+                    TypeElement superClass = resolveClassByName(className, controller);
 
-                        TypeElement superClass = resolveClassByName(className, controller);
-
-                        if (superClass != null) {
-                            if (superClass.getKind() == ElementKind.INTERFACE) {
-                                subclasses.addAll(findImplementorsResolved(js.getClasspathInfo(), className));
-                            }
+                    if (superClass != null) {
+                        if (superClass.getKind() == ElementKind.INTERFACE) {
+                            subclasses.addAll(findImplementorsResolved(js.getClasspathInfo(), className));
                         }
                     }
-                }, false);
+                }
+            }, false);
         } catch (IOException ex) {
             ProfilerLogger.log(ex);
         }
@@ -802,31 +805,32 @@ public final class SourceUtils {
 
             try {
                 js.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
+
+                    public void cancel() {
+                    }
+
+                    public void run(final CompilationController controller)
+                            throws Exception {
+                        // Controller has to be in some advanced phase, otherwise controller.getCompilationUnit() == null
+                        if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                            return;
                         }
 
-                        public void run(final CompilationController controller)
-                                 throws Exception {
-                            // Controller has to be in some advanced phase, otherwise controller.getCompilationUnit() == null
-                            if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                                return;
-                            }
+                        TreePathScanner<String, Void> scanner = new TreePathScanner<String, Void>() {
 
-                            TreePathScanner<String, Void> scanner = new TreePathScanner<String, Void>() {
-                                public String visitClass(ClassTree node, Void p) {
-                                    try {
-                                        return ElementUtilities.getBinaryName((TypeElement) controller.getTrees()
-                                                                                                  .getElement(getCurrentPath()));
-                                    } catch (NullPointerException e) {
-                                        ProfilerLogger.log(e);
-                                        return "";
-                                    }
+                            public String visitClass(ClassTree node, Void p) {
+                                try {
+                                    return ElementUtilities.getBinaryName((TypeElement) controller.getTrees().getElement(getCurrentPath()));
+                                } catch (NullPointerException e) {
+                                    ProfilerLogger.log(e);
+                                    return "";
                                 }
-                            };
+                            }
+                        };
 
-                            result[0] = scanner.scan(controller.getCompilationUnit(), null);
-                        }
-                    }, true);
+                        result[0] = scanner.scan(controller.getCompilationUnit(), null);
+                    }
+                }, true);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -881,18 +885,19 @@ public final class SourceUtils {
         final OutputParameter<String> signature = new OutputParameter<String>("");
 
         FileObject file = org.netbeans.api.java.source.SourceUtils.getFile(ElementHandle.create(method), cpInfo);
-        JavaSource js = JavaSource.create(cpInfo, new FileObject[] { file });
+        JavaSource js = JavaSource.create(cpInfo, new FileObject[]{file});
 
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
 
-                    public void run(CompilationController controller)
-                             throws Exception {
-                        signature.setValue(getSignature(method, controller));
-                    }
-                }, true);
+                public void cancel() {
+                }
+
+                public void run(CompilationController controller)
+                        throws Exception {
+                    signature.setValue(getSignature(method, controller));
+                }
+            }, true);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -909,7 +914,7 @@ public final class SourceUtils {
      */
     public static String getVMSignature(ExecutableElement ee) {
         String constructedSig = "("; // NOI18N
-        final List<?extends VariableElement> paramsList = ee.getParameters();
+        final List<? extends VariableElement> paramsList = ee.getParameters();
 
         for (VariableElement param : paramsList) {
             constructedSig += VMUtils.typeToVMSignature(param.asType().toString());
@@ -936,20 +941,20 @@ public final class SourceUtils {
         try {
             // use the prepared javasource repository and perform a task
             js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
 
-                    public void run(CompilationController controller)
-                             throws Exception {
-                        TypeElement resolvedClass = resolveClassByName(className, controller);
+                public void cancel() {
+                }
 
-                        if (resolvedClass != null) {
-                            resolvedFileObject.setValue(org.netbeans.api.java.source.SourceUtils.getFile(ElementHandle.create(resolvedClass),
-                                                                                                         controller
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     .getClasspathInfo()));
-                        }
+                public void run(CompilationController controller)
+                        throws Exception {
+                    TypeElement resolvedClass = resolveClassByName(className, controller);
+
+                    if (resolvedClass != null) {
+                        resolvedFileObject.setValue(org.netbeans.api.java.source.SourceUtils.getFile(ElementHandle.create(resolvedClass),
+                                controller.getClasspathInfo()));
                     }
-                }, false);
+                }
+            }, false);
         } catch (IOException ex) {
             ProfilerLogger.log(ex);
         }
@@ -958,13 +963,13 @@ public final class SourceUtils {
     }
 
     public static Set<ElementHandle<TypeElement>> findImplementors(ClasspathInfo cpInfo, final String superType) {
-        final Set<ClassIndex.SearchKind> kind = new HashSet<ClassIndex.SearchKind>(Arrays.asList(new ClassIndex.SearchKind[] {
-                                                                                                     ClassIndex.SearchKind.IMPLEMENTORS
-                                                                                                 }));
-        final Set<ClassIndex.SearchScope> scope = new HashSet<ClassIndex.SearchScope>(Arrays.asList(new ClassIndex.SearchScope[] {
-                                                                                                        ClassIndex.SearchScope.SOURCE,
-                                                                                                        ClassIndex.SearchScope.DEPENDENCIES
-                                                                                                    }));
+        final Set<ClassIndex.SearchKind> kind = new HashSet<ClassIndex.SearchKind>(Arrays.asList(new ClassIndex.SearchKind[]{
+                    ClassIndex.SearchKind.IMPLEMENTORS
+                }));
+        final Set<ClassIndex.SearchScope> scope = new HashSet<ClassIndex.SearchScope>(Arrays.asList(new ClassIndex.SearchScope[]{
+                    ClassIndex.SearchScope.SOURCE,
+                    ClassIndex.SearchScope.DEPENDENCIES
+                }));
 
         final OutputParameter<Set<ElementHandle<TypeElement>>> implementors = new OutputParameter<Set<ElementHandle<TypeElement>>>(new HashSet<ElementHandle<TypeElement>>());
 
@@ -972,19 +977,19 @@ public final class SourceUtils {
 
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
 
-                    public void run(CompilationController controller)
-                             throws Exception {
-                        TypeElement superElement = controller.getElements().getTypeElement(superType);
+                public void cancel() {
+                }
 
-                        if (!superElement.getModifiers().contains(Modifier.FINAL)) {
-                            implementors.setValue(controller.getClasspathInfo().getClassIndex()
-                                                            .getElements(ElementHandle.create(superElement), kind, scope));
-                        }
+                public void run(CompilationController controller)
+                        throws Exception {
+                    TypeElement superElement = controller.getElements().getTypeElement(superType);
+
+                    if (!superElement.getModifiers().contains(Modifier.FINAL)) {
+                        implementors.setValue(controller.getClasspathInfo().getClassIndex().getElements(ElementHandle.create(superElement), kind, scope));
                     }
-                }, true);
+                }
+            }, true);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -993,13 +998,13 @@ public final class SourceUtils {
     }
 
     public static Set<TypeElement> findImplementorsResolved(ClasspathInfo cpInfo, final String superType) {
-        final Set<ClassIndex.SearchKind> kind = new HashSet<ClassIndex.SearchKind>(Arrays.asList(new ClassIndex.SearchKind[] {
-                                                                                                     ClassIndex.SearchKind.IMPLEMENTORS
-                                                                                                 }));
-        final Set<ClassIndex.SearchScope> scope = new HashSet<ClassIndex.SearchScope>(Arrays.asList(new ClassIndex.SearchScope[] {
-                                                                                                        ClassIndex.SearchScope.SOURCE,
-                                                                                                        ClassIndex.SearchScope.DEPENDENCIES
-                                                                                                    }));
+        final Set<ClassIndex.SearchKind> kind = new HashSet<ClassIndex.SearchKind>(Arrays.asList(new ClassIndex.SearchKind[]{
+                    ClassIndex.SearchKind.IMPLEMENTORS
+                }));
+        final Set<ClassIndex.SearchScope> scope = new HashSet<ClassIndex.SearchScope>(Arrays.asList(new ClassIndex.SearchScope[]{
+                    ClassIndex.SearchScope.SOURCE,
+                    ClassIndex.SearchScope.DEPENDENCIES
+                }));
 
         final Set<TypeElement> implementors = new HashSet<TypeElement>();
 
@@ -1007,26 +1012,26 @@ public final class SourceUtils {
 
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
+
+                public void cancel() {
+                }
+
+                public void run(CompilationController controller)
+                        throws Exception {
+                    if (controller.toPhase(Phase.ELEMENTS_RESOLVED).compareTo(Phase.ELEMENTS_RESOLVED) < 0) {
+                        return;
                     }
 
-                    public void run(CompilationController controller)
-                             throws Exception {
-                        if (controller.toPhase(Phase.ELEMENTS_RESOLVED).compareTo(Phase.ELEMENTS_RESOLVED) < 0) {
-                            return;
-                        }
+                    TypeElement superElement = controller.getElements().getTypeElement(superType);
 
-                        TypeElement superElement = controller.getElements().getTypeElement(superType);
-
-                        if (!superElement.getModifiers().contains(Modifier.FINAL)) {
-                            for (ElementHandle<TypeElement> handle : controller.getClasspathInfo().getClassIndex()
-                                                                               .getElements(ElementHandle.create(superElement),
-                                                                                            kind, scope)) {
-                                implementors.add(handle.resolve(controller));
-                            }
+                    if (!superElement.getModifiers().contains(Modifier.FINAL)) {
+                        for (ElementHandle<TypeElement> handle : controller.getClasspathInfo().getClassIndex().getElements(ElementHandle.create(superElement),
+                                kind, scope)) {
+                            implementors.add(handle.resolve(controller));
                         }
                     }
-                }, true);
+                }
+            }, true);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -1059,82 +1064,9 @@ public final class SourceUtils {
         return !org.netbeans.api.java.source.SourceUtils.getMainClasses(javaFile).isEmpty();
     }
 
-    public static void openSource(Project project, final String className, final String methodName, final String signature) {
-        // *** logging stuff ***
-        ProfilerLogger.debug("Open Source: Project: " + ((project == null) ? "null" : ProjectUtilities.getProjectName(project))); // NOI18N
-        ProfilerLogger.debug("Open Source: Class name: " + className); // NOI18N
-        ProfilerLogger.debug("Open Source: Method name: " + methodName); // NOI18N
-        ProfilerLogger.debug("Open Source: Method sig: " + signature); // NOI18N
-                                                                 // *********************
-                                                                 // create the javasource repository for all the source files
-
-        final JavaSource js = getSources(project);
-
-        try {
-            // use the prepared javasource repository and perform a task
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationController controller)
-                             throws Exception {
-                        controller.toPhase(Phase.ELEMENTS_RESOLVED);
-
-                        Element destinationElement = null;
-
-                        // resolve the class by name
-                        TypeElement classElement = resolveClassByName(className, controller);
-
-                        if ((methodName != null) && (methodName.length() > 0)) {
-                            // if a method name has been specified try to resolve the method
-                            if (classElement != null) {
-                                destinationElement = resolveMethodByName(classElement, methodName, signature);
-                            }
-                        }
-
-                        if (destinationElement == null) {
-                            // unsuccessful attempt to resolve a method -> use the class instead
-                            destinationElement = classElement;
-                        }
-
-                        if (destinationElement != null) {
-                            ProfilerLogger.debug("Opening element: " + destinationElement); // NOI18N
-
-                            final Element openElement = destinationElement;
-                            String st = MessageFormat.format(NbBundle.getMessage(SourceUtils.class, "MDRUtils_OpeningSourceMsg"),
-                                                             new Object[] { openElement.toString() }); // NOI18N
-                            final String finalStatusText = st + " ..."; // NOI18N
-                            StatusDisplayer.getDefault().setStatusText(finalStatusText);
-
-                            SwingUtilities.invokeLater(new Runnable() {
-                                    // manipulates the TopComponent - must be executed in EDT
-                                    public void run() {
-                                        // opens the source code on the found method position
-                                        if (!ElementOpen.open(js.getClasspathInfo(), openElement)) {
-                                            Profiler.getDefault().displayError(MessageFormat.format(NbBundle.getMessage(SourceUtils.class,
-                                                                                                                        "MDRUtils_NoSourceFoundMessage"), // NOI18N
-                                                                                                    new Object[] { className }));
-                                        }
-
-                                        if (finalStatusText.equals(StatusDisplayer.getDefault().getStatusText())) {
-                                            StatusDisplayer.getDefault().setStatusText(""); // NOI18N
-                                        }
-                                    }
-                                });
-                        } else {
-                            Profiler.getDefault()
-                                    .displayError(MessageFormat.format(NbBundle.getMessage(SourceUtils.class,
-                                                                                           "MDRUtils_NoSourceFoundMessage"),
-                                                                       new Object[] { className })); // NOI18N
-                        }
-                    }
-                }, false);
-        } catch (IOException ex) {
-            ProfilerLogger.log(ex);
-        }
-    }
-
-    public static ResolvedClass resolveClassAtPosition(final FileObject fo, final int position, final boolean resolveField) {
+    public static ResolvedClass resolveClassAtPosition(
+            final FileObject fo,
+            final int position, final boolean resolveField) {
         // Get JavaSource for given FileObject
         JavaSource js = JavaSource.forFileObject(fo);
 
@@ -1148,48 +1080,52 @@ public final class SourceUtils {
         // Resolve the method
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
+
+                public void cancel() {
+                }
+
+                public void run(CompilationController ci)
+                        throws Exception {
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                        return;
                     }
 
-                    public void run(CompilationController ci)
-                             throws Exception {
-                        if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                            return;
-                        }
+                    TreePath path = ci.getTreeUtilities().pathFor(position);
 
-                        TreePath path = ci.getTreeUtilities().pathFor(position);
-
-                        if (path == null) {
-                            return;
-                        }
-
-                        Element element = ci.getTrees().getElement(path);
-
-                        if (element == null) {
-                            return;
-                        }
-
-                        // resolve class/enum at cursor
-                        if ((element.getKind() == ElementKind.CLASS) || (element.getKind() == ElementKind.ENUM)) {
-                            TypeElement jclass = (TypeElement) element;
-                            String vmClassName = ElementUtilities.getBinaryName(jclass);
-                            resolvedClass.setValue(new ResolvedClass(jclass, vmClassName));
-
-                            return;
-                        }
-
-                        // resolve field at cursor
-                        if (resolveField
-                                && ((element.getKind() == ElementKind.FIELD) || (element.getKind() == ElementKind.LOCAL_VARIABLE))
-                                && (element.asType().getKind() == TypeKind.DECLARED)) {
-                            TypeElement jclass = getDeclaredType(element.asType());
-                            String vmClassName = ElementUtilities.getBinaryName(jclass);
-                            resolvedClass.setValue(new ResolvedClass(jclass, vmClassName));
-
-                            return;
-                        }
+                    if (path == null) {
+                        return;
                     }
-                }, true);
+
+                    Element element = ci.getTrees().getElement(path);
+
+                    if (element == null) {
+                        return;
+                    }
+
+// resolve class/enum at cursor
+                    if ((element.getKind() == ElementKind.CLASS) || (element.getKind() == ElementKind.ENUM)) {
+                        TypeElement jclass = (TypeElement) element;
+                        String vmClassName = ElementUtilities.getBinaryName(jclass);
+                        resolvedClass.setValue(new ResolvedClass(jclass, vmClassName));
+
+                        return;
+
+                    }
+
+                    // resolve field at cursor
+
+                    if (resolveField && ((element.getKind() == ElementKind.FIELD) || (element.getKind() == ElementKind.LOCAL_VARIABLE)) && (element.asType().getKind() == TypeKind.DECLARED)) {
+                        TypeElement jclass = getDeclaredType(element.asType());
+                        String vmClassName = ElementUtilities.getBinaryName(jclass);
+                        resolvedClass.setValue(new ResolvedClass(jclass, vmClassName));
+
+                        return;
+
+                    }
+
+
+                }
+            }, true);
         } catch (IOException ioex) {
             ProfilerLogger.log(ioex);
             ioex.printStackTrace();
@@ -1206,12 +1142,13 @@ public final class SourceUtils {
      * @param controller The compilation controller to be used to resolve the class
      * @return Returns a TypeElement representing the resolved class or NULL
      */
-    public static TypeElement resolveClassByName(String className, final CompilationController controller) {
+    public static TypeElement resolveClassByName(
+            String className, final CompilationController controller) {
         if ((className == null) || (controller == null)) {
             return null;
         }
 
-        // 1. try to resolve the class
+// 1. try to resolve the class
         TypeElement mainClass = controller.getElements().getTypeElement(className.replace('$', '.')); // NOI18N
 
         if (mainClass == null) {
@@ -1223,61 +1160,69 @@ public final class SourceUtils {
 
                 if (innerSeparatorIndex > 0) {
                     final String origClassName = className;
-                    className = className.substring(0, innerSeparatorIndex);
-                    mainClass = controller.getElements().getTypeElement(className);
+                    className =
+                            className.substring(0, innerSeparatorIndex);
+                    mainClass =
+                            controller.getElements().getTypeElement(className);
 
                     if (mainClass != null) {
                         FileObject fo = org.netbeans.api.java.source.SourceUtils.getFile(ElementHandle.create(mainClass),
-                                                                                         controller.getClasspathInfo());
+                                controller.getClasspathInfo());
                         final OutputParameter<TypeElement> mainClassElement = new OutputParameter<TypeElement>(mainClass);
 
                         try {
                             JavaSource.forFileObject(fo).runUserActionTask(new CancellableTask<CompilationController>() {
-                                    private volatile boolean isCancelled = false;
 
-                                    public void cancel() {
-                                        isCancelled = true;
-                                    }
+                                private volatile boolean isCancelled = false;
 
-                                    public void run(final CompilationController cc)
-                                             throws Exception {
-                                        cc.toPhase(Phase.RESOLVED);
+                                public void cancel() {
+                                    isCancelled = true;
+                                }
 
-                                        TreePathScanner<Void, String> scanner = new TreePathScanner<Void, String>() {
-                                            public Void visitClass(ClassTree node, String p) {
-                                                if (isCancelled) {
+                                public void run(final CompilationController cc)
+                                        throws Exception {
+                                    cc.toPhase(Phase.RESOLVED);
+
+                                    TreePathScanner<Void, String> scanner = new TreePathScanner<Void, String>() {
+
+                                        public Void visitClass(
+                                                ClassTree node, String p) {
+                                            if (isCancelled) {
+                                                return null;
+                                            }
+
+                                            Element classElement = cc.getTrees().getElement(getCurrentPath());
+
+                                            if ((classElement != null) && (classElement.getKind() == ElementKind.CLASS)) {
+                                                if (ElementUtilities.getBinaryName((TypeElement) classElement).equals(p)) {
+                                                    mainClassElement.setValue((TypeElement) classElement);
+
                                                     return null;
                                                 }
 
-                                                Element classElement = cc.getTrees().getElement(getCurrentPath());
-
-                                                if ((classElement != null) && (classElement.getKind() == ElementKind.CLASS)) {
-                                                    if (ElementUtilities.getBinaryName((TypeElement) classElement).equals(p)) {
-                                                        mainClassElement.setValue((TypeElement) classElement);
-
-                                                        return null;
-                                                    }
-                                                }
-
-                                                ;
-
-                                                return super.visitClass(node, p);
                                             }
-                                        };
 
-                                        scanner.scan(cc.getCompilationUnit(), origClassName);
-                                    }
-                                }, false);
+                                            ;
+
+                                            return super.visitClass(node, p);
+                                        }
+                                    };
+
+                                    scanner.scan(cc.getCompilationUnit(), origClassName);
+                                }
+                            }, false);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
 
                         mainClass = mainClassElement.getValue();
                     }
+
                 }
             } catch (IOException e) {
                 ProfilerLogger.log(e);
             }
+
         }
 
         if (mainClass != null) {
@@ -1286,15 +1231,19 @@ public final class SourceUtils {
             ProfilerLogger.debug("Could not resolve: " + className); // NOI18N
         }
 
+
+
+
         if (mainClass == null) {
-            StatusDisplayer.getDefault()
-                           .setStatusText(NbBundle.getMessage(SourceUtils.class, "MDRUtils_ClassNotResolvedMessage", className)); // notify user
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(SourceUtils.class, "MDRUtils_ClassNotResolvedMessage", className)); // notify user
         }
 
         return mainClass;
     }
 
-    public static ResolvedMethod resolveMethodAtPosition(final FileObject fo, final int position) {
+    public static ResolvedMethod resolveMethodAtPosition(
+            final FileObject fo,
+            final int position) {
         // Get JavaSource for given FileObject
         JavaSource js = JavaSource.forFileObject(fo);
 
@@ -1302,40 +1251,40 @@ public final class SourceUtils {
             return null; // not java source
         }
 
-        // Final holder of resolved method
+// Final holder of resolved method
         final OutputParameter<ResolvedMethod> resolvedMethod = new OutputParameter(null);
 
         // Resolve the method
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
+
+                public void cancel() {
+                }
+
+                public void run(CompilationController ci)
+                        throws Exception {
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                        return;
                     }
 
-                    public void run(CompilationController ci)
-                             throws Exception {
-                        if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                            return;
-                        }
+                    TreePath path = ci.getTreeUtilities().pathFor(position);
 
-                        TreePath path = ci.getTreeUtilities().pathFor(position);
-
-                        if (path == null) {
-                            return;
-                        }
-
-                        Element element = ci.getTrees().getElement(path);
-
-                        if ((element != null)
-                                && ((element.getKind() == ElementKind.METHOD) || (element.getKind() == ElementKind.CONSTRUCTOR)
-                                       || (element.getKind() == ElementKind.STATIC_INIT))) {
-                            ExecutableElement method = (ExecutableElement) element;
-                            String vmClassName = ElementUtilities.getBinaryName((TypeElement) method.getEnclosingElement());
-                            String vmMethodName = getVMMethodName(method);
-                            String vmMethodSignature = getVMMethodSignature(method, ci);
-                            resolvedMethod.setValue(new ResolvedMethod(method, vmClassName, vmMethodName, vmMethodSignature));
-                        }
+                    if (path == null) {
+                        return;
                     }
-                }, true);
+
+                    Element element = ci.getTrees().getElement(path);
+
+                    if ((element != null) && ((element.getKind() == ElementKind.METHOD) || (element.getKind() == ElementKind.CONSTRUCTOR) || (element.getKind() == ElementKind.STATIC_INIT))) {
+                        ExecutableElement method = (ExecutableElement) element;
+                        String vmClassName = ElementUtilities.getBinaryName((TypeElement) method.getEnclosingElement());
+                        String vmMethodName = getVMMethodName(method);
+                        String vmMethodSignature = getVMMethodSignature(method, ci);
+                        resolvedMethod.setValue(new ResolvedMethod(method, vmClassName, vmMethodName, vmMethodSignature));
+                    }
+
+                }
+            }, true);
         } catch (IOException ioex) {
             ProfilerLogger.log(ioex);
             ioex.printStackTrace();
@@ -1368,9 +1317,9 @@ public final class SourceUtils {
     private static boolean isMainMethod(ExecutableElement method) {
         return org.netbeans.api.java.source.SourceUtils.isMainMethod(method);
 
-        //    if (method == null || method.getKind() != ElementKind.METHOD) returnfalse;
-        //
-        //    return method.getSimpleName().contentEquals("main") && method.getReturnType().getKind() == TypeKind.VOID && method.getModifiers().contains(Modifier.STATIC); // NOI18N
+    //    if (method == null || method.getKind() != ElementKind.METHOD) returnfalse;
+    //
+    //    return method.getSimpleName().contentEquals("main") && method.getReturnType().getKind() == TypeKind.VOID && method.getModifiers().contains(Modifier.STATIC); // NOI18N
     }
 
     /**
@@ -1378,9 +1327,9 @@ public final class SourceUtils {
      * @param params A list of method parameters
      * @return string with the vm signature of the parameters
      */
-    private static String getParamsSignature(List<?extends VariableElement> params, CompilationInfo ci) {
+    private static String getParamsSignature(List<? extends VariableElement> params, CompilationInfo ci) {
         StringBuffer ret = new StringBuffer();
-        Iterator<?extends VariableElement> it = params.iterator();
+        Iterator<? extends VariableElement> it = params.iterator();
 
         while (it.hasNext()) {
             TypeMirror type = it.next().asType();
@@ -1436,14 +1385,13 @@ public final class SourceUtils {
             case TYPEVAR:
 
                 // TYPEVAR means "T" or "<T extends String>" or "<T extends List&Runnable>"
-                List<?extends TypeMirror> subTypes = ci.getTypes().directSupertypes(type);
+                List<? extends TypeMirror> subTypes = ci.getTypes().directSupertypes(type);
 
                 if (subTypes.size() == 0) {
                     return "java.lang.Object"; // NOI18N // Shouldn't happen
                 }
 
-                if ((subTypes.size() > 1) && subTypes.get(0).toString().equals("java.lang.Object")
-                        && getDeclaredType(subTypes.get(1)).getKind().isInterface()) {
+                if ((subTypes.size() > 1) && subTypes.get(0).toString().equals("java.lang.Object") && getDeclaredType(subTypes.get(1)).getKind().isInterface()) {
                     // NOI18N
                     // Master type is interface
                     return getRealTypeName(subTypes.get(1), ci);
@@ -1451,6 +1399,7 @@ public final class SourceUtils {
                     // Master type is class
                     return getRealTypeName(subTypes.get(0), ci);
                 }
+
             case WILDCARD:
 
                 // WILDCARD means "<?>" or "<? extends Number>" or "<? super T>", shouldn't occur here
@@ -1460,6 +1409,7 @@ public final class SourceUtils {
                 // Unexpected parameter type
                 throw new IllegalArgumentException("Unexpected type parameter: " + type + " of kind " + typeKind); // NOI18N
         }
+
     }
 
     /**
@@ -1482,6 +1432,7 @@ public final class SourceUtils {
                 default:
                     return null;
             }
+
         } catch (IllegalArgumentException e) {
             LOGGER.warning(e.getMessage());
         }
@@ -1492,12 +1443,14 @@ public final class SourceUtils {
     /**
      * Returns the JavaSource repository of a given project or global JavaSource if no project is provided
      */
-    public static JavaSource getSources(Project project) {
+    public static JavaSource getSources(
+            Project project) {
         if (project == null) {
             return getSources((FileObject[]) null);
         } else {
             return getSources(ProjectUtilities.getSourceRoots(project, true));
         }
+
     }
 
     /**
@@ -1508,21 +1461,24 @@ public final class SourceUtils {
         // prepare the classpath based on the source roots
         ClassPath srcPath;
         ClassPath bootPath;
+
         ClassPath compilePath;
 
         if (roots == null || roots.length == 0) {
-            srcPath = ClassPathSupport.createProxyClassPath(GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)
-                                                                              .toArray(new ClassPath[0]));
-            bootPath = JavaPlatform.getDefault().getBootstrapLibraries();
-            compilePath = ClassPathSupport.createProxyClassPath(GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE)
-                                                                                  .toArray(new ClassPath[0]));
+            srcPath = ClassPathSupport.createProxyClassPath(GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE).toArray(new ClassPath[0]));
+            bootPath =
+                    JavaPlatform.getDefault().getBootstrapLibraries();
+            compilePath =
+                    ClassPathSupport.createProxyClassPath(GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE).toArray(new ClassPath[0]));
         } else {
             srcPath = ClassPathSupport.createClassPath(roots);
-            bootPath = ClassPath.getClassPath(roots[0], ClassPath.BOOT);
-            compilePath = ClassPath.getClassPath(roots[0], ClassPath.COMPILE);
+            bootPath =
+                    ClassPath.getClassPath(roots[0], ClassPath.BOOT);
+            compilePath =
+                    ClassPath.getClassPath(roots[0], ClassPath.COMPILE);
         }
 
-        // create ClassPathInfo for JavaSources only -> (bootPath, classPath, sourcePath)
+// create ClassPathInfo for JavaSources only -> (bootPath, classPath, sourcePath)
         final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, srcPath);
 
         // create the javasource repository for all the source files
@@ -1535,7 +1491,8 @@ public final class SourceUtils {
      * @param ee The executable element to use in matching
      * @return Returns true if the given textual name matches the name of the executable element
      */
-    private static boolean methodNameMatch(final String vmName, final ExecutableElement ee) {
+    private static boolean methodNameMatch(final String vmName,
+            final ExecutableElement ee) {
         switch (ee.getKind()) {
             // for method use textual name matching
             case METHOD:
@@ -1551,7 +1508,7 @@ public final class SourceUtils {
                 return vmName.equals(VM_INITIALIZER_SIG);
         }
 
-        // default fail-over
+// default fail-over
         return false;
     }
 
@@ -1561,7 +1518,8 @@ public final class SourceUtils {
      * @param ee The executable element to compare the signature to (method, constructor ...)
      * @return Returns true if the signature of the executable element matches the desired signature
      */
-    private static boolean methodSignatureMatch(final String vmSig, final ExecutableElement ee) {
+    private static boolean methodSignatureMatch(final String vmSig,
+            final ExecutableElement ee) {
         // heuristic: it is hard to distinguish where innerclass starts in CallableFeature params, so let's not deal with
         // this at all
         final String vmSigCheck = vmSig.replaceAll("\\$", "/"); // NOI18N
@@ -1576,9 +1534,10 @@ public final class SourceUtils {
      * @param signature The VM signature of the method
      * @return Returns an ExecutableElement representing the method or null
      */
-    public static ExecutableElement resolveMethodByName(TypeElement parentClass, String methodName, String signature) {
+    public static ExecutableElement resolveMethodByName(
+            TypeElement parentClass, String methodName, String signature) {
         // TODO: static initializer
-        if ((parentClass == null) || (methodName == null) || (signature == null)) {
+        if ((parentClass == null) || (methodName == null)) {
             return null;
         }
 
@@ -1590,26 +1549,31 @@ public final class SourceUtils {
         if (methodName.equals(VM_CONSTRUCTUR_SIG)) {
             methods = constructorsIn(parentClass.getEnclosedElements());
 
-            //    } else if (methodName.equals(VM_INITIALIZER_SIG)) {
-            //      methods = constructorsIn(parentClass.getEnclosedElements());
+        //    } else if (methodName.equals(VM_INITIALIZER_SIG)) {
+        //      methods = constructorsIn(parentClass.getEnclosedElements());
         } else {
             // retrieve all defined methods
             methods = methodsIn(parentClass.getEnclosedElements());
         }
 
-        // loop over all methods
+// loop over all methods
         for (ExecutableElement method : methods) {
             // match the current method against the required method name and signature
             if (methodNameMatch(methodName, method)) {
-                if (methodSignatureMatch(signature, method)) {
+                if (signature != null && methodSignatureMatch(signature, method)) {
                     foundMethod = method;
-                    found = true;
+                    found =
+                            true;
 
                     break;
+
                 }
+
+
 
                 foundMethod = method; // keeping the track of the closest match
             }
+
         }
 
         if (!found) {
@@ -1627,21 +1591,24 @@ public final class SourceUtils {
         if (js != null) {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {
-                        public void run(CompilationController controller)
-                                 throws Exception {
-                            controller.toPhase(JavaSource.Phase.RESOLVED);
-                            validated.setValue(-1); // non-validated default
 
-                            Scope sc = controller.getTreeUtilities().scopeFor(toValidate);
+                    public void run(CompilationController controller)
+                            throws Exception {
+                        controller.toPhase(JavaSource.Phase.RESOLVED);
+                        validated.setValue(-1); // non-validated default
 
-                            if (sc.getEnclosingClass() != null) {
-                                validated.setValue(toValidate);
-                            }
+                        Scope sc = controller.getTreeUtilities().scopeFor(toValidate);
+
+                        if (sc.getEnclosingClass() != null) {
+                            validated.setValue(toValidate);
                         }
-                    }, true);
+
+                    }
+                }, true);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+
         }
 
         return validated.getValue();

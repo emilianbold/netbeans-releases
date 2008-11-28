@@ -108,12 +108,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         setStatus(Status.Initial);
         this.name = ProjectNameCache.getManager().getString(name);
         init(model, platformProject);
-        NamespaceImpl ns = new NamespaceImpl(this);
+        NamespaceImpl ns = new NamespaceImpl(this, false);
         assert ns != null;
         this.globalNamespaceUID = UIDCsmConverter.namespaceToUID(ns);
         declarationsSorageKey = new DeclarationContainer(this).getKey();
         fileContainerKey = new FileContainer(this).getKey();
         graphStorageKey = new GraphContainer(this).getKey();
+        FAKE_GLOBAL_NAMESPACE = new NamespaceImpl(this, true);
     }
 
     private void init(ModelImpl model, Object platformProject) {
@@ -132,16 +133,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private boolean checkConsistency() {
         long time = TraceFlags.TIMING ? System.currentTimeMillis() : 0;
-        if( getFileContainer() == null ) {
+        if(getFileContainer() == FileContainer.empty()) {
             return false;
         }
-        if( getDeclarationsSorage() == null ) {
+        if(getDeclarationsSorage() == DeclarationContainer.empty()) {
             return false;
         }
-        if( getGraph() == null ) {
+        if(getGraph() == GraphContainer.empty()) {
             return false;
         }
-        if( getGlobalNamespace() == null ) {
+        if(getGlobalNamespace() == FAKE_GLOBAL_NAMESPACE) {
             return false;
         }
         if( TraceFlags.TIMING ) {
@@ -278,11 +279,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return nsp;
     }
 
-    public void registerNamespace(NamespaceImpl namespace) {
+    public final void registerNamespace(NamespaceImpl namespace) {
         _registerNamespace(namespace);
     }
 
-    public void unregisterNamesace(NamespaceImpl namespace) {
+    public final void unregisterNamesace(NamespaceImpl namespace) {
         _unregisterNamespace(namespace);
     }
 
@@ -961,19 +962,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public final APTPreprocHandler.State getPreprocState(FileImpl fileImpl) {
         APTPreprocHandler.State state = null;
         FileContainer fc = getFileContainer();
-        if (fc != null) {
-            File file = fileImpl.getBuffer().getFile();
-            state = fc.getPreprocState(file);
-        }
+        File file = fileImpl.getBuffer().getFile();
+        state = fc.getPreprocState(file);
         return state;
     }
 
     public final Collection<APTPreprocHandler.State> getPreprocStates(FileImpl fileImpl) {
         FileContainer fc = getFileContainer();
-        if (fc != null) {
-            return fc.getPreprocStates(fileImpl.getFile());
-        }
-        return Collections.emptyList();
+        return fc.getPreprocStates(fileImpl.getFile());
     }
 
     /**
@@ -1756,7 +1752,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (ns == null) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get global namespace by key " + globalNamespaceUID)); // NOI18N
         }
-        return ns;
+        return ns != null ? ns : FAKE_GLOBAL_NAMESPACE;
     }
 
     private NamespaceImpl _getNamespace( CharSequence key ) {
@@ -2123,7 +2119,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private APTPreprocHandler createDefaultPreprocHandler(File interestedFile) {
-        NativeProject nativeProject = findNativeProjectHolder(new HashSet(10));
+        NativeProject nativeProject = findNativeProjectHolder(new HashSet<ProjectBase>(10));
         APTPreprocHandler out = null;
         if( nativeProject != null ) {
             // we have own native project to get settings from
@@ -2300,7 +2296,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private CharSequence name;
 
     private final CsmUID<CsmNamespace> globalNamespaceUID;
-
+    private final NamespaceImpl         FAKE_GLOBAL_NAMESPACE;
     private Object platformProject;
 
     /**
@@ -2424,6 +2420,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.uniqueName = ProjectNameCache.getManager().getString(this.uniqueName);
 
         this.model = (ModelImpl) CsmModelAccessor.getModel();
+
+        this.FAKE_GLOBAL_NAMESPACE = new NamespaceImpl(this, true);
     }
 
     DeclarationContainer getDeclarationsSorage() {
@@ -2431,7 +2429,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (dc == null) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
         }
-        return dc;
+        return dc != null ? dc : DeclarationContainer.empty();
     }
 
     FileContainer getFileContainer() {
@@ -2439,7 +2437,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (fc == null) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get FileContainer by key " + fileContainerKey)); // NOI18N
         }
-        return fc;
+        return fc != null ? fc : FileContainer.empty();
     }
 
     public GraphContainer getGraphStorage() {
@@ -2447,6 +2445,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (gc == null) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get GraphContainer by key " + graphStorageKey)); // NOI18N
         }
-	return gc;
+	return gc != null ? gc : GraphContainer.empty();
     }
 }

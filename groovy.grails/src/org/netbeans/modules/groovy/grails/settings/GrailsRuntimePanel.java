@@ -9,6 +9,7 @@ import org.openide.DialogDisplayer;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.netbeans.modules.groovy.grails.RuntimeHelper;
 import org.netbeans.modules.groovy.support.spi.GroovyOptionsSubpanel;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -26,17 +27,7 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
         initComponents();
         // TODO listen to changes in form fields and call controller.changed()
     }
-    
-    private boolean checkForGrailsExecutable ( File pathToGrails ) {
-        String GRAILS_BINARY = "grails";
-        
-        if(Utilities.isWindows()){
-            GRAILS_BINARY = "grails.bat";
-        }
-        
-        return new File (new File (pathToGrails, "bin"), GRAILS_BINARY).isFile ();
-        }
-    
+
     private void displayGrailsHomeWarning() {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
             NbBundle.getMessage(GrailsRuntimePanel.class, "LBL_Not_grails_home"),
@@ -122,7 +113,7 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
                 SwingUtilities.getWindowAncestor (this), NbBundle.getMessage(GrailsRuntimePanel.class, "LBL_Select_Directory"));
             if (r == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile ();
-                if (!checkForGrailsExecutable(file)) {
+                if (!RuntimeHelper.isValidRuntime(file)) {
                     displayGrailsHomeWarning();
                     return;
                 }
@@ -162,7 +153,7 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
         if ("".equals(location.trim())) { // NOI18N
             return;
         }
-        if (!checkForGrailsExecutable(new File(location))) {
+        if (!RuntimeHelper.isValidRuntime(new File(location))) {
             displayGrailsHomeWarning();
             return;
         } else {

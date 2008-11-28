@@ -651,7 +651,7 @@ private Map<String,PreviewPreferences> clonePreferences(){
         }
     }
 
-    private class DummyNode extends AbstractNode {
+    private static class DummyNode extends AbstractNode {
         public DummyNode(Sheet sheet, String name) {
             super(Children.LEAF);
             if (sheet != null) {

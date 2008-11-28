@@ -79,6 +79,7 @@ public final class PatchedAnchor extends Anchor implements PatchedTransformableE
         return null;
     }
     
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedAnchor(doc);
     }    

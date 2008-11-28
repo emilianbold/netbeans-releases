@@ -756,8 +756,7 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             public void execute() throws Exception {
                 ServerState state = checkRunning(1000);
                 if (state == ServerState.CONNECTED) {
-                    throw new DatabaseException(NbBundle.getMessage(MySQLDatabaseServer.class,
-                            "MSG_CantStartServerIsAlreadyRunning", getHost(), getPort()));
+                    return;
                 }
                 
                 try {

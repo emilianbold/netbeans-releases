@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
-import java.util.Collection;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
@@ -50,7 +49,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
 import org.openide.util.SharedClassObject;
 
 /**
@@ -59,7 +57,7 @@ import org.openide.util.SharedClassObject;
  *  This data loader recognizes .h header data files, creates a data object for
  *  each file, and sets up an appropriate action menus for .h file objects.
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class, position=100)
 public final class HDataLoader extends CndAbstractDataLoaderExt {
     
     private static HDataLoader instance = null;

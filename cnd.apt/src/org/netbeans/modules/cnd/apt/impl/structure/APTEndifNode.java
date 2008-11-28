@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.Token;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTEndif;
@@ -57,7 +56,7 @@ public final class APTEndifNode extends APTTokenBasedNode
     private static final long serialVersionUID = 6797353042752788870L;
     
     private int endOffset = 0;
-    
+
     /** Copy constructor */
     /**package*/APTEndifNode(APTEndifNode orig) {
         super(orig);
@@ -68,7 +67,7 @@ public final class APTEndifNode extends APTTokenBasedNode
     }
     
     /** Creates a new instance of APTEndifNode */
-    public APTEndifNode(Token token) {
+    public APTEndifNode(APTToken token) {
         super(token);
     }    
     
@@ -81,13 +80,13 @@ public final class APTEndifNode extends APTTokenBasedNode
         return null;
     }
 
-    public boolean accept(Token token) {
+    public boolean accept(APTToken token) {
         assert (token != null);
         int ttype = token.getType();
         assert (!APTUtils.isEOF(ttype)) : "EOF must be handled in callers"; // NOI18N
         // eat all till END_PREPROC_DIRECTIVE        
         if (APTUtils.isEndDirectiveToken(ttype)) {
-            endOffset = ((APTToken)token).getOffset();
+            endOffset = token.getOffset();
             return false;
         } else {
             return true;

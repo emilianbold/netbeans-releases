@@ -41,8 +41,8 @@
 				<!--aDefinition name="Stereotypes" toolTip="PSK_TT_STEREOTYPE" required="false" visible="notEmpty" enabled="true" multiplicity="*" controlType="" get="getAppliedStereotypes" leadSeparator=" &lt;&lt; " trailSeparator=" &gt;&gt;" delete="RemoveStereotypes" delimitor=", " default="false">
 					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
 					<aDefinition pdref2="Stereotype"/>
-				</aDefinition-->
-				<aDefinition name="IsDerived" toolTip="PSK_TT_DERIVED" required="false" visible="notEmpty" enabled="false" multiplicity="1" controlType="list" get="isDerived" set="isDerived" values="|/" leadSeparator=" " default="false"/>
+				</aDefinition>
+				<aDefinition name="IsDerived" toolTip="PSK_TT_DERIVED" required="false" visible="notEmpty" enabled="false" multiplicity="1" controlType="list" get="isDerived" set="isDerived" values="|/" leadSeparator=" " default="false"/-->
 				<aDefinition name="NameWithAlias" toolTip="PSK_TT_NAME" required="false" visible="true" enabled="true" multiplicity="1" controlType="edit" get="getNameWithAlias" set="setNameWithAlias" leadSeparator=" " default="true"/>
 				<aDefinition name="Type" toolTip="PSK_TT_TYPE" required="true" visible="notEmpty" enabled="true" multiplicity="1" controlType="combo" get="getType" set="setType2" values="#DataTypeList" leadSeparator=" : " default="false">
 					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
@@ -121,105 +121,4 @@
 		
 		</PropertyDefinitions>
 	</FormatDefinitions>
-	<!--
-		
-		<PropertyDefinitions>
-			<PropertyDefinition id="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" name="Unknown">
-				<aDefinition pdref="NamedElement"/>
-			</PropertyDefinition>
-			<PropertyDefinition id="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" name="Class" toolTip="PSK_NAMEDELEMENT">
-				<aDefinition id="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" name="NameWithAlias" toolTip="PSK_TT_NAME" required="false" enabled="true" visible="true" multiplicity="1" controlType="combo" get="getNameWithAlias" set="setNameWithAlias" values="#DataTypeList(Class)"/>
-			</PropertyDefinition>
-			<PropertyDefinition id="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" name="NamedElement" toolTip="PSK_NAMEDELEMENT">
-				<aDefinition id="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" name="NameWithAlias" toolTip="PSK_TT_NAME" required="false" enabled="true" visible="true" multiplicity="1" controlType="edit" get="getNameWithAlias" set="setNameWithAlias"/>
-			</PropertyDefinition>
-			<PropertyDefinition id="{E46374E6-2105-4D89-80A0-58C386C3866E}" name="Attribute" toolTip="PSK_TT_ATTRIBUTE" required="false" enabled="true" multiplicity="1" create="CreateAttribute3" insert="AddAttribute" delete="Delete" values="FormatString">
-				<aDefinition name="Visibility" toolTip="PSK_TT_VISIBILITY" required="true" visible="true" enabled="true" multiplicity="1" controlType="list" get="getVisibility" set="setVisibility" values="+|#|-|~" default="false"/>
-				<aDefinition name="Stereotypes" toolTip="PSK_TT_STEREOTYPE" required="false" visible="notEmpty" enabled="true" multiplicity="*" controlType="" get="getAppliedStereotypes" leadSeparator=" &lt;&lt; " trailSeparator=" &gt;&gt;" delete="RemoveStereotypes" delimitor=", " default="false">
-					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
-					<aDefinition pdref2="Stereotype"/>
-				</aDefinition>
-				<aDefinition name="IsDerived" toolTip="PSK_TT_DERIVED" required="false" visible="notEmpty" enabled="false" multiplicity="1" controlType="list" get="isDerived" set="isDerived" values="|/" leadSeparator=" " default="false"/>
-				<aDefinition name="NameWithAlias" toolTip="PSK_TT_NAME" required="false" visible="true" enabled="true" multiplicity="1" controlType="edit" get="getNameWithAlias" set="setNameWithAlias" leadSeparator=" " default="true"/>
-				<aDefinition name="Type" toolTip="PSK_TT_TYPE" required="true" visible="notEmpty" enabled="true" multiplicity="1" controlType="combo" get="getType" set="setType2" values="#DataTypeList" leadSeparator=" : " default="false">
-					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
-				</aDefinition>
-				<aDefinition name="Multiplicity" toolTip="PSK_TT_MULTIPLICITY" required="false" visible="notEmpty" enabled="false" multiplicity="*" controlType="read-only" get="getMultiplicity" set="setMultiplicity" values="FormatString" leadSeparator="[ " trailSeparator="]" default="false">
-					<aDefinition pdref="Multiplicity"/>
-				</aDefinition>
-				<aDefinition name="Default" toolTip="PSK_TT_INITIALVALUE" required="false" visible="notEmpty" enabled="false" multiplicity="1" controlType="edit" get="getDefault2" set="setDefault2" leadSeparator=" = " default="false" inertSeparators=" :[]=(),}"/>
-				<aDefinition name="TaggedValues" toolTip="PSK_TT_TAGGEDVALUES" required="false" visible="notEmpty" enabled="false" multiplicity="*" get="getTaggedValues" leadSeparator=" {" trailSeparator="}" default="false" delete="RemoveTaggedValue" delimitor=", ">
-					<aDefinition pdref2="TaggedValue" onDemand="true"/>
-				</aDefinition>
-			</PropertyDefinition>
-			<PropertyDefinition id="{B2820E6E-BA9F-4DF6-958F-96E317525E9D}" name="Operation" toolTip="PSK_TT_OPERATION" required="false" enabled="true" multiplicity="1" create="CreateOperation3" insert="AddOperation" delete="Delete" values="FormatString">
-				<aDefinition name="Visibility" toolTip="PSK_TT_VISIBILITY" required="false" visible="true" enabled="true" multiplicity="1" controlType="list" get="getVisibility" set="setVisibility" values="+|#|-|~" default="false" dummyDefaultValue="+"/>
-				<aDefinition name="Stereotypes" toolTip="PSK_TT_STEREOTYPE" required="false" visible="notEmpty" enabled="true" multiplicity="*" controlType="" get="getAppliedStereotypes" leadSeparator=" &lt;&lt; " trailSeparator=" &gt;&gt;" delete="RemoveStereotypes" delimitor=", " default="false">
-					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
-					<aDefinition pdref2="Stereotype"/>
-				</aDefinition>
-				<aDefinition name="NameWithAlias" toolTip="PSK_TT_NAME" required="false" visible="true" enabled="true" multiplicity="1" controlType="edit" get="getNameWithAlias" set="setNameWithAlias" leadSeparator=" " default="true"/>
-				<aDefinition name="Parameters" toolTip="PSK_TT_PARAMETER" required="false" visible="true" enabled="true" multiplicity="*" get="getFormalParameters" set="setFormalParameters" leadSeparator="( " trailSeparator=" )" delete="RemoveParameter" delimitor=", " default="false">
-					<aDefinition pdref2="Parameter"/>
-				</aDefinition>
-				<aDefinition name="ReturnType" toolTip="PSK_TT_RETURNTYPE" required="false" visible="notEmpty" enabled="true" multiplicity="1" controlType="read-only" get="getReturnType" set="setReturnType" values="FormatString" leadSeparator=" : " default="false">
-					<aDefinition pdref2="ReturnTypeParameter"/>
-				</aDefinition>
-				<aDefinition name="TaggedValues" toolTip="PSK_TT_TAGGEDVALUES" required="false" visible="notEmpty" enabled="false" multiplicity="*" get="getTaggedValues" leadSeparator=" {" trailSeparator="}" delete="RemoveTaggedValue" delimitor=", " default="false">
-					<aDefinition pdref2="TaggedValue"/>
-				</aDefinition>
-			</PropertyDefinition>
-			<PropertyDefinition id="{108014F6-AE63-49FB-801A-D5264D574B78}" name="Stereotype" toolTip="PSK_TT_STEREOTYPE" required="false" multiplicity="1" create="ApplyStereotype2" identifier="Name">
-				<aDefinition name="Name" toolTip="PSK_TT_NAME" required="false" visible="notEmpty" enabled="true" multiplicity="1" controlType="combo" get="getName" set="setName" values="#DataTypeList(Stereotype)"/>
-			</PropertyDefinition>
-			<PropertyDefinition id="{D66251B6-2A36-4CA9-805E-63E7763B9A20}" name="Parameter" toolTip="PSK_TT_PARAMETER" required="false" enabled="false" multiplicity="1" create="CreateParameter3" insert="AddParameter" insertBefore="InsertParameter" values="FormatString">
-
-				<aDefinition id="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" name="NameWithAlias" toolTip="PSK_TT_NAME" required="false" visible="notEmpty" enabled="true" multiplicity="1" controlType="edit" get="getNameWithAlias" set="setNameWithAlias" default="true"/>
-				<aDefinition name="Type" toolTip="PSK_TT_TYPE" required="true" visible="notEmpty" enabled="true" multiplicity="1" controlType="combo" get="getType" set="setType2" values="#DataTypeList" leadSeparator=" : " default="false" dummyDefaultValue="int">
-					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
-				</aDefinition>
-				<aDefinition name="Multiplicity" toolTip="PSK_TT_MULTIPLICITY" required="false" visible="notEmpty" enabled="false" multiplicity="*" controlType="read-only" get="getMultiplicity" set="setMultiplicity" values="FormatString" leadSeparator="[ " default="false" trailSeparator="]">
-					<aDefinition pdref="Multiplicity"/>
-				</aDefinition>
-				<aDefinition name="Default" toolTip="PSK_TT_PARAMDEFAULT" required="false" visible="notEmpty" enabled="false" multiplicity="1" controlType="edit" get="getDefault2" set="setDefault2" leadSeparator=" = " default="false" dummyDefaultValue="0" inertSeparators=" :[]=({}"/>
-			</PropertyDefinition>
-			<PropertyDefinition id="{D66251B6-2A36-4CA9-805E-63E7763B9A20}" name="ReturnTypeParameter" toolTip="PSK_TT_RETURNTYPE" required="false" enabled="true" values="FormatString">
-				<aDefinition name="Type" toolTip="PSK_TT_TYPE" required="false" visible="notEmpty" enabled="true" multiplicity="1" controlType="combo" get="getType" set="setType2" values="#DataTypeList" default="true" dummyDefaultValue="int">
-					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
-				</aDefinition>
-				<aDefinition name="Multiplicity" toolTip="PSK_TT_MULTIPLICITY" required="false" visible="notEmpty" enabled="false" multiplicity="*" controlType="read-only" get="getMultiplicity" set="setMultiplicity" values="FormatString" leadSeparator="[ " trailSeparator="]" default="false">
-					<aDefinition pdref="Multiplicity"/>
-				</aDefinition>
-			</PropertyDefinition>
-			<PropertyDefinition id="{16C954A0-94E9-4643-8190-B2EB9E8C7908}" name="Multiplicity" toolTip="PSK_TT_MULTIPLICITY" required="false" enabled="false">
-				<aDefinition name="MultiplicityRanges" toolTip="PSK_TT_RANGES" required="false" visible="true" enabled="true" multiplicity="1" get="getRangeAsString" set="setRangeThroughString" default="true" inertSeparators=".,"/>
-				<aDefinition name="IsOrdered" toolTip="PSK_TT_ORDERED" required="false" visible="previousNotEmpty" enabled="true" multiplicity="1" controlType="list" get="IsOrdered" set="IsOrdered" values="unordered|" default="false" leadSeparator=" "/>
-			</PropertyDefinition>
-			<PropertyDefinition id="{77325907-63AA-48a7-8DE5-B9179595910D}" name="TaggedValue" toolTip="PSK_TT_TAGGEDVALUE" required="false" enabled="false" multiplicity="1" create="AddTaggedValue">
-				<aDefinition name="NameWithAlias" toolTip="PSK_TT_TVNAME" required="false" visible="true" enabled="true" multiplicity="1" controlType="edit" get="getNameWithAlias" set="setNameWithAlias" default="true"/>
-				<aDefinition name="Value" toolTip="PSK_TT_TVVALUE" required="false" visible="notEmpty" enabled="false" multiplicity="1" controlType="multiedit" get="getDataValue" set="setDataValue" leadSeparator=" = "/>
-			</PropertyDefinition>
-			<PropertyDefinition id="{FDE3E909-0E11-4D5D-BF14-CC0D7C2AB5BD}" name="Lifeline" toolTip="PSK_LIFELINE">
-				<aDefinition name="NameWithAlias" toolTip="PSK_TT_LIFENAME" required="false" visible="notEmpty" enabled="true" multiplicity="1" controlType="edit" get="getNameWithAlias" set="setNameWithAlias"/>
-				<aDefinition name="RepresentingClassifier" toolTip="PSK_TT_REPRESENTINGCLASSIFIER" required="true" visible="true" enabled="true" multiplicity="1" controlType="combo" get="getRepresentingClassifier" set="setRepresentingClassifierWithAlias" default="true" values="#DataTypeList" leadSeparator=" : " validate="ADDiagramSequenceEngine.LifelineValidator">
-					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
-				</aDefinition>
-			</PropertyDefinition>
-			<PropertyDefinition id="{ABD47029-D91D-4F13-8ECB-70AEE7D573E0}" name="Expression" toolTip="PSK_EXPRESSION">
-
-				<aDefinition name="Body" toolTip="PSK_TT_EXPRESSION" required="false" visible="true" enabled="true" multiplicity="1" leadSeparator="[" trailSeparator="]" controlType="edit" get="getBody" set="setBody"/>
-
-			</PropertyDefinition>
-			<PropertyDefinition id="{2EBDC071-DD31-4F87-8D3E-93B44D36DD34}" name="InteractionConstraint" toolTip="PSK_TT_INTERACTIONCONSTRAINT">
-				<aDefinition pdref2="Constraint"/>
-			</PropertyDefinition>
-			<PropertyDefinition id="{A1ED38B9-C2C4-4358-B6CE-ECFBC58067FB}" name="Constraint" toolTip="PSK_TT_CONSTRAINT" create="CreateConstraint" insert="AddOwnedConstraint">
-				<aDefinition name="Expression" toolTip="PSK_TT_EXPRESSION" required="false" visible="true" enabled="true" multiplicity="1" leadSeparator="[" trailSeparator="]" controlType="edit" get="getExpression" set="setExpression"/>
-			</PropertyDefinition>
-			<PropertyDefinition id="{7EC1AABB-98F2-41FE-A1FB-E8E61F3FAA84}" name="Comment" toolTip="PSK_TT_COMMENT">
-				<aDefinition name="Comment" required="false" visible="true" enabled="true" multiplicity="1" controlType="multiline" get="getBody" set="setBody"/>
-			</PropertyDefinition>
-		</PropertyDefinitions>
-	</FormatDefinitions>
-	-->
 </Language>

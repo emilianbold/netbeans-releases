@@ -220,20 +220,20 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
         while (tokenizer.hasMoreTokens()) {
             list.add(tokenizer.nextToken());
         }
-        AdditionalLibrariesListPanel panel = new AdditionalLibrariesListPanel(list.toArray());
+        AdditionalLibrariesListPanel panel = new AdditionalLibrariesListPanel(list);
         DialogDescriptor dialogDescriptor = new DialogDescriptor(AdditionalLibrariesListPanel.wrapPanel(panel),
-                getString("ADDITIONAL_LIBRARIES_TXT"));
+                getString("ADDITIONAL_LIBRARIES_TXT")); // NOI18N
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
             Vector newList = panel.getListData();
-            String includes = ""; // NOI18N
+            StringBuilder includes = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
                 if (i > 0) {
-                    includes += ";"; // NOI18N
+                    includes.append(';'); // NOI18N
                 }
-                includes += newList.elementAt(i);
+                includes.append(newList.elementAt(i));
             }
-            librariesTextField.setText(includes);
+            librariesTextField.setText(includes.toString());
         }
     }//GEN-LAST:event_additionalLibrariesButtonActionPerformed
     
