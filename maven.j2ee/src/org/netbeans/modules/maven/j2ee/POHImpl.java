@@ -84,10 +84,10 @@ public class POHImpl extends ProjectOpenedHook {
     }
     
     public void hackModuleServerChange() {
-        provider.hackModuleServerChange();
+        projectOpened();
     }
     
-    protected void projectOpened() {
+    protected synchronized void projectOpened() {
         provider.hackModuleServerChange();
 
         String instanceFound = null;
