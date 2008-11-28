@@ -352,9 +352,9 @@
             <public-packages>
                 <package>org.netbeans.modules.csl.api</package>
                 <package>org.netbeans.modules.csl.api.annotations</package>
+                <package>org.netbeans.modules.csl.core</package>
+                <package>org.netbeans.modules.csl.editor</package>
                 <package>org.netbeans.modules.csl.spi</package>
-                <package>org.netbeans.napi.gsfret.source</package>
-                <package>org.netbeans.napi.gsfret.source.support</package>
             </public-packages>
         </data>
     </configuration>
