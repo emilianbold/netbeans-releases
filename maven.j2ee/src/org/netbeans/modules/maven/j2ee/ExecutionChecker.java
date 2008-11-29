@@ -66,6 +66,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -87,7 +88,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY));
         if (depl && resultCode == 0) {
             String moduleUri = config.getProperties().getProperty(MODULEURI);
-            String clientUrl = config.getProperties().getProperty(CLIENTURLPART, "");
+            String clientUrl = config.getProperties().getProperty(CLIENTURLPART, ""); //NOI18N
             boolean redeploy = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY_REDEPLOY, "true")); //NOI18N
             boolean debugmode = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY_DEBUG_MODE)); //NOI18N
             performDeploy(res, debugmode, moduleUri, clientUrl, redeploy);
@@ -150,7 +151,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                 }
             }
         } catch (Exception ex) {
-            Logger.getLogger(ExecutionChecker.class.getName()).log(Level.FINE, "Exception occured wile deploying to Application Server.", ex);
+            Logger.getLogger(ExecutionChecker.class.getName()).log(Level.FINE, "Exception occured wile deploying to Application Server.", ex); //NOI18N
         }
     }
 
@@ -161,7 +162,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             if (provider != null) {
                 if (ExecutionChecker.DEV_NULL.equals(provider.getServerInstanceID())) {
                     SelectAppServerPanel panel = new SelectAppServerPanel();
-                    DialogDescriptor dd = new DialogDescriptor(panel, "Select deployment server");
+                    DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ExecutionChecker.class, "TIT_Select"));
                     Object obj = DialogDisplayer.getDefault().notify(dd);
                     if (obj == NotifyDescriptor.OK_OPTION) {
                         String instanceId = panel.getSelectedServerInstance();
@@ -182,7 +183,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                             return true;
                         }
                     }
-                    StatusDisplayer.getDefault().setStatusText("Cannot run action without a selected deployment server.");
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExecutionChecker.class, "ERR_Action_without_deployment_server"));
                     return false;
                 }
             }
