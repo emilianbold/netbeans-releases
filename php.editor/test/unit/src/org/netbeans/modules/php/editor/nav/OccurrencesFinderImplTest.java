@@ -56,10 +56,29 @@ public class OccurrencesFinderImplTest extends TestBase {
         super(testName);
     }            
 
-    //TODO; these 5 tests are temporary disabled not to fail, these 5 regression are mostly
-    //about global variables (plus GLOBALS array) - needs to be gradually fixed
+    //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
+    // and maybe fixed (NOT URGENT)
     //caused by got to declaration, mark occurences rewrite
-    /*public void testOccurrences3() throws Exception {
+    /*public void testOccurrences5() throws Exception {
+        performTestOccurrences("<?php\n" +
+                               "$^name^ = \"test\";\n" +
+                               "function foo() {\n" +
+                               "    echo $GLOBALS['^na|me^'];\n" +
+                               "}\n" +
+                               "?>");
+    }
+
+    public void test132230() throws Exception {
+        performTestOccurrences("<?php\n" +
+                               "function a() {\n" +
+                               "    global $^f^;\n" +
+                               "    $^|f^['s']();\n" +
+                               "}\n" +
+                               "?>",
+                               true);
+    }*/
+
+    public void testOccurrences3() throws Exception {
         performTestOccurrences("<?php\n" +
                                "$name = \"test\";\n" +
                                "function foo() {\n" +
@@ -80,25 +99,6 @@ public class OccurrencesFinderImplTest extends TestBase {
                                "?>",
                                true);
     }
-
-    public void testOccurrences5() throws Exception {
-        performTestOccurrences("<?php\n" +
-                               "$^name^ = \"test\";\n" +
-                               "function foo() {\n" +
-                               "    echo $GLOBALS['^na|me^'];\n" +
-                               "}\n" +
-                               "?>");
-    }
-
-    public void test132230() throws Exception {
-        performTestOccurrences("<?php\n" +
-                               "function a() {\n" +
-                               "    global $^f^;\n" +
-                               "    $^|f^['s']();\n" +
-                               "}\n" +
-                               "?>",
-                               true);
-    }*/
     public void testOccurrencesDefines() throws Exception {
         performTestOccurrences("<?php\n" +
                                "echo \"fff\".^test^.\"dddd\";\n" +

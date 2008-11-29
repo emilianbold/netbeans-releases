@@ -128,7 +128,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     @Override
     public String getNormalizedName() {
         String in = getIn();
-        return (in != null) ? in+getName() : getName();
+        return (in != null && !isGloballyVisible()) ? in+getName() : getName();
     }
 
     public List<? extends TypeScope> getTypes(int offset) {
