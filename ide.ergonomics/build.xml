@@ -96,19 +96,33 @@
             <resources refid="layers"/>
         </copy>
 
+        <xmlcatalog id="xml.fs.catalog">
+            <dtd
+                    publicid="-//NetBeans//DTD Filesystem 1.0//EN"
+                    location="${ergonomicsdir}/../openide.filesystems/src/org/openide/filesystems/filesystem.dtd"
+                />
+            <dtd
+                    publicid="-//NetBeans//DTD Filesystem 1.1//EN"
+                    location="${ergonomicsdir}/../openide.filesystems/src/org/openide/filesystems/filesystem1_1.dtd"
+                />
+            <dtd
+                    publicid="-//NetBeans//DTD Filesystem 1.2//EN"
+                    location="${ergonomicsdir}/../openide.filesystems/src/org/openide/filesystems/filesystem1_2.dtd"
+                />
+        </xmlcatalog>
 
         <xslt
             basedir="${proxytmp}/layers/"
             destdir="${proxytmp}/extracted/" style="${ergonomicsdir}/project-wizard.xsl"
             useimplicitfileset="true" extension=".fragment"
         >
+            <xmlcatalog refid="xml.fs.catalog"/>
             <param name="cluster.name" expression="${cluster.name}"/>
         </xslt>
 
         <concat destfile="${proxytmp}/${cluster.name}.xml">
             <header>
 &lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd"&gt;
 &lt;filesystem&gt;
             </header>
             <filterchain>
