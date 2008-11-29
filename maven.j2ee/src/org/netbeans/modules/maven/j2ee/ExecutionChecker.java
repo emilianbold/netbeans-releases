@@ -175,7 +175,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                                 SessionContent sc = project.getLookup().lookup(SessionContent.class);
                                 sc.setServerInstanceId(instanceId);
                                 POHImpl poh = project.getLookup().lookup(POHImpl.class);
-                                poh.projectOpened();
+                                poh.hackModuleServerChange();
                                 //provider instance not relevant from here
                                 provider = null;
                             }
@@ -227,7 +227,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
         //#109507 workaround
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
-        poh.projectOpened();
+        poh.hackModuleServerChange();
         
     }
 
