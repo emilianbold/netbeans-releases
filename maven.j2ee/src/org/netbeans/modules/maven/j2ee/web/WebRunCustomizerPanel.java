@@ -305,9 +305,9 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
         poh.hackModuleServerChange();
         moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
-        //---
-        moduleProvider.loadPersistedServerId();
-        moduleProvider.getWebModuleImplementation().setContextPath(txtContextPath.getText().trim());
+        if (moduleProvider != null) { //#150030 can be null sometimes?
+            moduleProvider.getWebModuleImplementation().setContextPath(txtContextPath.getText().trim());
+        }
         boolean bool = cbBrowser.isSelected();
         try {
             project.getProjectDirectory().setAttribute(PROP_SHOW_IN_BROWSER, bool ? null : Boolean.FALSE.toString());

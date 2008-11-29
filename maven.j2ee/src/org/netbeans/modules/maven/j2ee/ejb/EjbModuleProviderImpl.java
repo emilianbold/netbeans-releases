@@ -83,58 +83,6 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
     
     /**
      * 
-     */
-    public void loadPersistedServerId() {
-        loadPersistedServerId(true);
-    }
-    
-    /**
-     * 
-     * @param ensureReady 
-     */
-    private void loadPersistedServerId(boolean ensureReady) {
-        String oldId = getServerInstanceID();
-        String oldSer = getServerID();
-        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-        String val = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_ID, true);
-        String server = props.get(Constants.HINT_DEPLOY_J2EE_SERVER, true);
-        if (server == null) {
-            //try checking for old values..
-            server = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
-        }
-        String instanceFound = null;
-        if (server != null) {
-            String[] instances = Deployment.getDefault().getInstancesOfServer(server);
-            String inst = null;
-            if (instances != null && instances.length > 0) {
-                inst = instances[0];
-                for (int i = 0; i < instances.length; i++) {
-                    if (val != null && val.equals(instances[i])) {
-                        inst = instances[i];
-                        break;
-                    }
-                }
-                instanceFound = inst;
-            }
-        }
-//        if (instanceFound == null) {
-//            String[] ids = Deployment.getDefault().getServerInstanceIDs(new Object[] {J2eeModule.EJB});
-//            if (ids != null && ids.length > 0) {
-//                instanceFound = ids[0];
-//            }
-//        }
-        serverInstanceID = instanceFound;
-        if (oldId != null) {
-            fireServerChange(oldSer, getServerID());
-        }
-        if (oldSer != null && serverInstanceID != null && ensureReady) {
-            getConfigSupport().ensureConfigurationReady();
-        }
-    }
-    
-
-    /**
-     * 
      * @param file 
      * @return 
      */

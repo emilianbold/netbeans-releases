@@ -223,6 +223,10 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         return scope;
     }
 
+    void setSelectedScope(String type) {
+        comScope.setSelectedItem(type);
+    }
+
     private void checkValidState() {
         String gId = txtGroupId.getText().trim();
         String aId = txtArtifactId.getText().trim();
