@@ -153,6 +153,9 @@ public final class FindComponentModules {
                 return Collections.singleton(el);
             }
         }
+        if (res.size() > 1) {
+            FoDFileSystem.LOG.warning("No prefCNB found " + prefCNB + " using multiple " + res);
+        }
         return res;
     }
 
