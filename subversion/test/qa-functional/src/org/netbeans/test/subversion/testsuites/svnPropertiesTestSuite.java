@@ -67,7 +67,7 @@ public class svnPropertiesTestSuite extends JellyTestCase {
     public static Test suite() {
         if (svnExistsChecker.check(false)) {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                    .addTest(SvnPropertiesTest.class, "SvnPropertiesTest")
+                    .addTest(SvnPropertiesTest.class, "propTest")
                     .enableModules(".*").clusters(".*"));
         } else {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
