@@ -123,6 +123,18 @@ public final class FindComponentModules {
         assert forEnable != null : "candidates cannot be null if getModulesForInstall() is called.";
         return forEnable;
     }
+
+    private Set<String> clusterClosure(Collection<UpdateElement> all) {
+        HashSet<String> closure = new HashSet<String>();
+        for (UpdateElement ue : all) {
+            for (FeatureInfo featureInfo : Feature2LayerMapping.features()) {
+                if (featureInfo.getCodeNames().contains(ue.getCodeName())) {
+                    closure.addAll(featureInfo.getCodeNames());
+                }
+            }
+        }
+        return closure;
+    }
     
     private Collection<UpdateElement> readEnableLater () {
         Set<UpdateElement> res = new HashSet<UpdateElement> ();
@@ -182,7 +194,7 @@ public final class FindComponentModules {
         
         // install disabled modules
         Collection<UpdateElement> elementsForEnable = getDisabledModules (units);
-        forEnable = getAllForEnable (elementsForEnable);
+        forEnable = getAllForEnable (elementsForEnable, units);
     }
     
     private Collection<UpdateElement> getMissingModules (Collection<UpdateUnit> allUnits) {
@@ -228,21 +240,42 @@ public final class FindComponentModules {
         return res;
     }
     
-    private Collection<UpdateElement> getAllForEnable (Collection<UpdateElement> elements) {
+    private Collection<UpdateElement> getAllForEnable (Collection<UpdateElement> elements, Collection<UpdateUnit> units) {
+        Collection<UpdateElement> toAdd = elements;
         Collection<UpdateElement> all = new HashSet<UpdateElement> ();
-        for (UpdateElement el : elements) {
-            OperationContainer<OperationSupport> ocForEnable = OperationContainer.createForEnable ();
-            if (ocForEnable.canBeAdded (el.getUpdateUnit (), el)) {
-                OperationContainer.OperationInfo<OperationSupport> info = ocForEnable.add (el);
-                if (info == null) {
-                    continue;
+        Collection<String> ignore = new HashSet<String>();
+        OperationContainer<OperationSupport> ocForEnable = OperationContainer.createForEnable ();
+        for (;;) {
+            for (UpdateElement el : toAdd) {
+                if (ocForEnable.canBeAdded (el.getUpdateUnit (), el)) {
+                    OperationContainer.OperationInfo<OperationSupport> inf = ocForEnable.add (el);
+                    if (inf == null) {
+                        continue;
+                    }
+                    Set<UpdateElement> reqs = inf.getRequiredElements ();
+                    ocForEnable.add (reqs);
+                    Set<String> breaks = inf.getBrokenDependencies ();
+                    if (breaks.isEmpty ()) {
+                        all.add (el);
+                        all.addAll (reqs);
+                    }
+                } else {
+                    ignore.add(el.getCodeName());
                 }
-                Set<UpdateElement> reqs = info.getRequiredElements ();
-                ocForEnable.add (reqs);
-                Set<String> breaks = info.getBrokenDependencies ();
-                if (breaks.isEmpty ()) {
-                    all.add (el);
-                    all.addAll (reqs);
+            }
+
+            Set<String> clusterClosure = clusterClosure(all);
+            for (UpdateElement el : all) {
+                clusterClosure.remove(el.getCodeName());
+            }
+            clusterClosure.removeAll(ignore);
+            if (clusterClosure.isEmpty()) {
+                break;
+            }
+            toAdd = new HashSet<UpdateElement>();
+            for (UpdateUnit uu : units) {
+                if (clusterClosure.contains(uu.getCodeName())) {
+                    toAdd.add(uu.getInstalled());
                 }
             }
         }
