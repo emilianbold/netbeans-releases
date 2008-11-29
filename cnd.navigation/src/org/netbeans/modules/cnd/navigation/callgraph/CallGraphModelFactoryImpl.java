@@ -89,10 +89,18 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
         if (model instanceof CallModelImpl) {
             return new CallGraphUI(){
                 public boolean showGraph() {
-                    return Boolean.getBoolean("cnd.callgraph.showgraph");
+                    return getBoolean("cnd.callgraph.showgraph", true); // NOI18N
                 }
             };
         }
         return null;
+    }
+
+    private boolean getBoolean(String name, boolean result) {
+        String text = System.getProperty(name);
+        if( text != null ) {
+            result = Boolean.parseBoolean(text);
+        }
+        return result;
     }
 }

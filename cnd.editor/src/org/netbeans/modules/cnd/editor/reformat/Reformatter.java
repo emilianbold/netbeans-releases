@@ -232,7 +232,7 @@ public class Reformatter implements ReformatTask {
         }        
     }
 
-    private class Lock implements ExtraLock {
+    private static class Lock implements ExtraLock {
         public void lock() {}
         public void unlock() {}        
     }
@@ -242,7 +242,7 @@ public class Reformatter implements ReformatTask {
         private int end;
         private int newLines;
         private int spaces;
-	private boolean isIndent;
+        private boolean isIndent;
 
         Diff(int start, int end, int newLines, int spaces, boolean isIndent) {
             this.start = start;

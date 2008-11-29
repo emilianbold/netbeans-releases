@@ -50,7 +50,7 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
  *
  * @author Alexander Simon
  */
-class BracesStack {
+class BracesStack implements Cloneable {
     
     private static final boolean TRACE_STACK = false;
     private static final boolean TRACE_STATEMENT = false;

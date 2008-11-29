@@ -21,7 +21,7 @@
 # System.setProperty("gsf.preindexing", "true");
 # System.setProperty("netbeans.full.hack=true", "true");
 # System.setProperty("ruby.interpreter", "/Users/tor/dev/ruby/install/ruby-1.8.5/bin/ruby");
-# System.setProperty("gsf.preindexing.projectpath=", "/Users/tor/NetBeansProjects/RailsPreindexProject");
+# System.setProperty("gsf.preindexing.projectpath", "/Users/tor/NetBeansProjects/RailsPreindexProject");
 #
 
 
@@ -142,14 +142,14 @@ fi
 # Update binaries-list -- manual upload is still necessary!
 # Ruby
 rm -f $TMP_BINARIES
-cat $JR/ruby.platform/external/binaries-list | sed '/preindexed.zip/d' | sed '/preindexed-native.zip/d' > $TMP_BINARIES
+cat $NBHGHOME/ruby.platform/external/binaries-list | sed '/preindexed.zip/d' | sed '/preindexed-native.zip/d' > $TMP_BINARIES
 echo `openssl dgst -sha1 $NBHGHOME/ruby.platform/external/preindexed.zip | awk '{ print toupper($2) }'` preindexed.zip >> $TMP_BINARIES
 echo `openssl dgst -sha1 $NBHGHOME/ruby.platform/external/preindexed-native.zip | awk '{ print toupper($2) }'` preindexed-native.zip >> $TMP_BINARIES
-mv $TMP_BINARIES $JR/ruby.platform/external/binaries-list
+mv $TMP_BINARIES $NBHGHOME/ruby.platform/external/binaries-list
 
 # JavaScript
 rm -f $TMP_BINARIES
-cat $JR/javascript.editing/external/binaries-list | sed '/preindexed.zip/d' > $TMP_BINARIES
+cat $NBHGHOME/javascript.editing/external/binaries-list | sed '/preindexed.zip/d' > $TMP_BINARIES
 echo `openssl dgst -sha1 $NBHGHOME/javascript.editing/external/preindexed.zip | awk '{ print toupper($2) }'` preindexed.zip >> $TMP_BINARIES
-mv $TMP_BINARIES $JR/javascript.editing/external/binaries-list
+mv $TMP_BINARIES $NBHGHOME/javascript.editing/external/binaries-list
 

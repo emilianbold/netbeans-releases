@@ -61,6 +61,8 @@ import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
 import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -76,12 +78,9 @@ class SQLExecutionHelper {
     private static Logger mLogger = Logger.getLogger(SQLExecutionHelper.class.getName());
     // the RequestProcessor used for executing statements.
     private final RequestProcessor rp = new RequestProcessor("SQLStatementExecution", 1, true); // NOI18N
-
     private static final String LIMIT_CLAUSE = " LIMIT "; // NOI18N
-
     public static final String OFFSET_CLAUSE = " OFFSET "; // NOI18N
     private static Logger LOGGER = Logger.getLogger(SQLExecutionHelper.class.getName());
-
 
     SQLExecutionHelper(DataView dataView, DatabaseConnection dbConn) {
         this.dataView = dataView;
@@ -93,12 +92,12 @@ class SQLExecutionHelper {
         try {
             Connection conn = DBConnectionFactory.getInstance().getConnection(dbConn);
             String msg = "";
-            if(conn == null) {
+            if (conn == null) {
                 Throwable ex = DBConnectionFactory.getInstance().getLastException();
-                if(ex != null) {
+                if (ex != null) {
                     msg = ex.getMessage();
                 } else {
-                    msg = NbBundle.getMessage(SQLExecutionHelper.class,"MSG_connection_failure", dv.getDatabaseConnection());
+                    msg = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_connection_failure", dv.getDatabaseConnection());
                 }
                 dv.setErrorStatusText(new DBException(msg));
                 return;
@@ -416,6 +415,13 @@ class SQLExecutionHelper {
                     } else {
                         return;
                     }
+                } catch (SQLException sqlEx) {                    
+                    List<Object[]> rows = new ArrayList<Object[]>();
+                    dataView.getDataViewPageContext().setCurrentRows(rows);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(sqlEx.getMessage());
+                    DialogDisplayer.getDefault().notify(nd);
+                    throw sqlEx;
+
                 } finally {
                     DataViewUtils.closeResources(rs);
                 }
@@ -524,7 +530,7 @@ class SQLExecutionHelper {
             stmt = conn.createStatement();
         }
         int pageSize = dataView.getDataViewPageContext().getPageSize();
-        
+
         try {
             stmt.setFetchSize(pageSize);
         } catch (SQLException e) {
@@ -547,8 +553,8 @@ class SQLExecutionHelper {
     private void executeSQLStatement(Statement stmt, String sql) throws SQLException {
         if (dataView.isLimitSupported() && isSelectStatement(sql)) {
             if (!isLimitUsedInSelect(sql)) {
-                sql += LIMIT_CLAUSE + dataView.getDataViewPageContext().getPageSize(); 
-                sql += OFFSET_CLAUSE + (dataView.getDataViewPageContext().getCurrentPos() - 1); 
+                sql += LIMIT_CLAUSE + dataView.getDataViewPageContext().getPageSize();
+                sql += OFFSET_CLAUSE + (dataView.getDataViewPageContext().getCurrentPos() - 1);
             }
         }
 
@@ -609,14 +615,14 @@ class SQLExecutionHelper {
     private boolean isLimitUsedInSelect(String sql) {
         return sql.toUpperCase().indexOf(LIMIT_CLAUSE) != -1;
     }
-    
+
     private boolean isGroupByUsedInSelect(String sql) {
         return sql.toUpperCase().indexOf(" GROUP BY ") != -1; // NOI18N
     }
 
     private boolean isDistinctUsedInSelect(String sql) {
         return sql.toUpperCase().indexOf(" DISTINCT ") != -1; // NOI18N
-    }    
+    }
 
     static String millisecondsToSeconds(long ms) {
         NumberFormat fmt = NumberFormat.getInstance();

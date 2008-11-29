@@ -46,11 +46,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
-import org.apache.maven.settings.Settings;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
 import org.netbeans.modules.maven.embedder.writer.WriterUtils;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.settings.Settings;
+import org.netbeans.modules.maven.model.settings.SettingsModel;
+import org.netbeans.modules.maven.model.settings.SettingsModelFactory;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -59,8 +65,9 @@ import org.openide.util.Lookup;
  * @author Milos Kleint
  */
 class MavenOptionController extends OptionsPanelController {
+    public static final String TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<settings xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" + "  xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd\">" + "</settings>";
     private SettingsPanel panel;
-    private Settings setts;
+    private SettingsModel setts;
     private final List<PropertyChangeListener> listeners;
     /**
      * Creates a new instance of MavenOptionController
@@ -68,25 +75,45 @@ class MavenOptionController extends OptionsPanelController {
     MavenOptionController() {
         listeners = new ArrayList<PropertyChangeListener>();
     }
+
+    private SettingsModel createModel() {
+        ModelSource source = null;
+        File mavenFolder = MavenSettingsSingleton.getInstance().getM2UserDir();
+        FileObject mavenFO = FileUtil.toFileObject(mavenFolder);
+        if (mavenFO != null) {
+            FileObject settingsFO = mavenFO.getFileObject("settings.xml");
+            if (settingsFO != null) {
+                source = Utilities.createModelSource(settingsFO, true);
+            }
+        }
+        if (source == null) {
+            File file = new File(mavenFolder, "settings.xml"); //NOI18N
+            source = Utilities.createModelSourceForMissingFile(file, true, TEMPLATE, "text/xml"); //NOI18N
+        }
+        return SettingsModelFactory.getDefault().getModel(source);
+    }
     
     public void update() {
         if (setts == null) {
-            setts = MavenSettingsSingleton.getInstance().createUserSettingsModel();
+            setts = createModel();
         }
-        getPanel().setValues(setts);
+        getPanel().setValues(setts.getSettings());
     }
     
     public void applyChanges() {
         if (setts == null) {
-            setts = MavenSettingsSingleton.getInstance().createUserSettingsModel();
+            setts = createModel();
         }
-        getPanel().applyValues(setts);
+        setts.startTransaction();
         try {
-            File userDir = MavenSettingsSingleton.getInstance().getM2UserDir();
-            
-            WriterUtils.writeSettingsModel(FileUtil.createFolder(userDir), setts);
+            getPanel().applyValues(setts.getSettings());
+        } finally {
+            setts.endTransaction();
+        }
+        try {
+            Utilities.saveChanges(setts);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
     }
     

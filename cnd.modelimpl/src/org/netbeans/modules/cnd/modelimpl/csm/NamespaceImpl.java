@@ -100,7 +100,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private final boolean global;
     
     /** Constructor used for global namespace */
-    public NamespaceImpl(ProjectBase project) {
+    public NamespaceImpl(ProjectBase project, boolean fake) {
         this.name = GLOBAL;
         this.qualifiedName = CharSequenceKey.empty(); // NOI18N
         this.parentUID = null;
@@ -112,9 +112,10 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert this.projectUID != null;
             
         this.projectRef = new WeakReference<ProjectBase>(project);
-        declarationsSorageKey = new DeclarationContainer(this).getKey();
-
-        project.registerNamespace(this);
+        this.declarationsSorageKey = fake ? null : new DeclarationContainer(this).getKey();
+        if (!fake) {
+            project.registerNamespace(this);
+        }
     }
     
     private static final boolean CHECK_PARENT = false;
@@ -215,18 +216,18 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
 
     private DeclarationContainer getDeclarationsSorage() {
+        if (declarationsSorageKey == null) {
+            return DeclarationContainer.empty();
+        }
         DeclarationContainer dc = (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
         if (dc == null) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
         }
-        return dc;
+        return dc != null ? dc : DeclarationContainer.empty();
     }
     
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
         DeclarationContainer declStorage = getDeclarationsSorage();
-        if (declStorage == null) {
-            return Collections.<CsmOffsetableDeclaration>emptyList();
-        }
         // add all declarations
         Collection<CsmUID<CsmOffsetableDeclaration>> uids = declStorage.getDeclarationsUIDs();
         // add all unnamed declarations
@@ -240,9 +241,6 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
         DeclarationContainer declStorage = getDeclarationsSorage();
-        if (declStorage == null) {
-            return Collections.<CsmOffsetableDeclaration>emptyList().iterator();
-        }
         // add all declarations
         Collection<CsmUID<CsmOffsetableDeclaration>> uids = declStorage.getDeclarationsUIDs();
         // add all unnamed declarations
@@ -254,9 +252,6 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> findUidsByPrefix(String prefix) {
         DeclarationContainer declStorage = getDeclarationsSorage();
-        if (declStorage == null) {
-            return Collections.<CsmUID<CsmOffsetableDeclaration>>emptyList();
-        }
         // To improve performance use char(255) instead real Character.MAX_VALUE
         char maxChar = 255; //Character.MAX_VALUE;
         return declStorage.getUIDsRange(prefix, prefix+maxChar);

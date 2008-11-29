@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.utils;
 
+import java.util.List;
 import java.util.Vector;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -49,19 +50,19 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-public class DirectoryChooserInnerPanel extends ListEditorPanel {
+public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
 
     private String baseDir;
     private boolean addPathPanel;
 
-    public DirectoryChooserInnerPanel(String baseDir, Object[] list) {
+    public DirectoryChooserInnerPanel(String baseDir, List<String> list) {
         super(list);
         this.baseDir = baseDir;
         getDefaultButton().setVisible(false);
     }
 
     @Override
-    public Object addAction() {
+    public String addAction() {
         String seed = null;
         if (FileChooser.getCurrectChooserFile() != null) {
             seed = FileChooser.getCurrectChooserFile().getPath();
@@ -138,13 +139,13 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel {
     }
 
     @Override
-    public Object copyAction(Object o) {
-        return (String) o;
+    public String copyAction(String o) {
+        return o;
     }
 
     @Override
-    public void editAction(Object o) {
-        String s = (String) o;
+    public void editAction(String o) {
+        String s = o;
 
         NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
         notifyDescriptor.setInputText(s);
@@ -153,7 +154,7 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel {
             return;
         }
         String newS = notifyDescriptor.getInputText();
-        Vector vector = getListData();
+        Vector<String> vector = getListData();
         Object[] arr = getListData().toArray();
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] == o) {

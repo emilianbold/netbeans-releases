@@ -51,6 +51,7 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -66,13 +67,16 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.modules.java.source.parsing.JavacParserResult;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.openide.util.Parameters;
 import static org.netbeans.api.java.source.ModificationResult.*;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.java.source.save.CasualDiff.Diff;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.engine.SourceReader;
 import org.netbeans.modules.java.source.engine.SourceRewriter;
+import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.CasualDiff;
@@ -89,7 +93,8 @@ import org.openide.util.NbBundle;
  * @author Dusan Balek, Petr Hrebejk, Tomas Zezula
  */
 public class WorkingCopy extends CompilationController {
-    
+
+    static Reference<WorkingCopy> instance;
     private Map<Tree, Tree> changes;
     private Map<JavaFileObject, CompilationUnitTree> externalChanges;
     private Set<Diff> textualChanges;
@@ -119,6 +124,28 @@ public class WorkingCopy extends CompilationController {
     }
     
     // API of the class --------------------------------------------------------
+
+    /**
+     * Returns an instance of the {@link WorkingCopy} for
+     * given {@link Parser.Result} if it is a result
+     * of a java parser.
+     * @param result for which the {@link WorkingCopy} should be
+     * returned.
+     * @return a {@link WorkingCopy} or null when the given result
+     * is not a result of java parsing.
+     * @since 0.42
+     */
+    public static WorkingCopy get (final Parser.Result result) {
+        Parameters.notNull("result", result); //NOI18N
+        WorkingCopy copy = instance != null ? instance.get() : null;
+        if (copy != null && result instanceof JavacParserResult) {
+            final JavacParserResult javacResult = (JavacParserResult)result;
+            CompilationController controller = javacResult.get(CompilationController.class);
+            if (controller != null && controller.impl == copy.impl)
+                return copy;
+        }
+        return null;
+    }
 
     @Override
     public JavaSource.Phase toPhase(JavaSource.Phase phase) throws IOException {

@@ -219,6 +219,9 @@ public final class UiUtils {
  
                                 if (range != OffsetRange.NONE && range != null) {
                                     result[0] = new DeclarationLocation(fileObject, range.getStart());
+                                } else {
+                                    // Not found in file, just show the file
+                                    result[0] = new DeclarationLocation(fileObject, -1);
                                 }
                             } catch (IllegalArgumentException iae) {
                                 result[0] = new DeclarationLocation(fileObject, 0);

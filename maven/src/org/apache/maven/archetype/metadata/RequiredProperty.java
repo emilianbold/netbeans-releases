@@ -15,6 +15,7 @@ import java.util.Date;
  * 
  * @version $Revision$ $Date$
  */
+@SuppressWarnings({"unchecked", "deprecation"}) //generated class
 public class RequiredProperty implements java.io.Serializable {
 
 

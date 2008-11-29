@@ -357,7 +357,7 @@ public final class RubyDebuggerTest extends TestBase {
         // DialogDisplayerImpl.createDialog() assertion would fail if dialog is shown
         RubyDebuggerImplementation rdi = new RubyDebugger();
         rdi.describeProcess(descriptor);
-        assertFalse("Rubinius debuggin is not supported yet", rdi.canDebug());
+        assertFalse("Rubinius debuggin is not supported yet", rdi.prepare());
         assertFalse("Rubinius debuggin is not supported yet", RubyDebugger.checkAndTuneSettings(descriptor));
     }
 

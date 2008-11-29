@@ -47,7 +47,7 @@ import org.netbeans.modules.db.metadata.model.api.Tuple;
  *
  * @author Andrei Badea
  */
-public abstract class ColumnImplementation {
+public abstract class ColumnImplementation extends ValueImplementation {
 
     private Column column;
 
@@ -60,5 +60,5 @@ public abstract class ColumnImplementation {
 
     public abstract Tuple getParent();
 
-    public abstract String getName();
+    public abstract int getOrdinalPosition();
 }

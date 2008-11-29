@@ -289,6 +289,9 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
             APTPreprocHandler.State state = ((ProjectBase)impl.getProject()).getPreprocState(impl);
+            if (state == null) {
+                return Collections.<CsmInclude>emptyList();
+            }
             List<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
             StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
             ProjectBase startProject = ProjectBase.getStartProject(startEntry);

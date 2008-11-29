@@ -319,7 +319,7 @@ public final class ParserQueue {
         return new ParserQueue(true);
     }
 
-    private String traceState4File(FileImpl file, Set/*<FileImpl>*/ files) {
+    private String traceState4File(FileImpl file, Set<FileImpl> files) {
         StringBuilder builder = new StringBuilder(" "); // NOI18N
         builder.append(file);
         builder.append("\n of project ").append(file.getProjectImpl(true)); // NOI18N
@@ -715,7 +715,7 @@ public final class ParserQueue {
                 }
             }
         }
-        if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("Finished waiting on Empty Project " + project.getName());
+        if (TraceFlags.TRACE_CLOSE_PROJECT) { System.err.println("Finished waiting on Empty Project " + project.getName()); }
     }
 
     public long getStopWatchTime() {

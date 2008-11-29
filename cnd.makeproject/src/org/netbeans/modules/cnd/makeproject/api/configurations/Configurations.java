@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.beans.PropertyChangeListener;
@@ -54,7 +53,6 @@ public class Configurations {
 
     public static final String PROP_DEFAULT = "default"; // NOI18N
     public static final String PROP_ACTIVE_CONFIGURATION = "activeconfiguration"; // NOI18N
-
     private PropertyChangeSupport pcs;
     private List<Configuration> configurations = new ArrayList<Configuration>();
     private List<Runnable> tasks = new ArrayList<Runnable>();
@@ -62,7 +60,7 @@ public class Configurations {
     public Configurations() {
         pcs = new PropertyChangeSupport(this);
     }
-    
+
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pcs.addPropertyChangeListener(l);
     }
@@ -70,16 +68,16 @@ public class Configurations {
     public void removePropertyChangeListener(PropertyChangeListener l) {
         pcs.removePropertyChangeListener(l);
     }
-    
+
     /*
      * Initialize from a comma separated list of configurations ("Debug,Release").
      */
     /*
     public Confs init(String configurationNames) {
-	init(configurationNames, null);
-	return this;
+    init(configurationNames, null);
+    return this;
     }
-    */
+     */
 
     /*
      * Initialize from a comma separated list of configurations ("Debug,Release"). Also
@@ -88,19 +86,19 @@ public class Configurations {
      */
     /*
     public Confs init(String configurationNames, String defaultConf) {
-	configurations = new ArrayList();
-	StringTokenizer st = new StringTokenizer(configurationNames, ","); // NOI18N
-	while (st.hasMoreTokens()) {
-	    String displayName = st.nextToken();
-	    configurations.add(new Conf(displayName));
-	}
-	if (defaultConf != null)
-	     setDefault(defaultConf);
-	else
-	    setDefault(0);
-	return this;
+    configurations = new ArrayList();
+    StringTokenizer st = new StringTokenizer(configurationNames, ","); // NOI18N
+    while (st.hasMoreTokens()) {
+    String displayName = st.nextToken();
+    configurations.add(new Conf(displayName));
     }
-    */
+    if (defaultConf != null)
+    setDefault(defaultConf);
+    else
+    setDefault(0);
+    return this;
+    }
+     */
     public synchronized Configurations init(Configuration[] confs, int defaultConf) {
         configurations.clear();
         for (int i = 0; i < confs.length; i++) {
@@ -118,12 +116,12 @@ public class Configurations {
         return this;
     }
 
-    public void runOnCodeModelReadiness(Runnable task){
+    public void runOnCodeModelReadiness(Runnable task) {
         runOnCodeModelReadiness(task, true);
     }
 
-    private synchronized void runOnCodeModelReadiness(Runnable task, boolean postpone){
-        MakeConfiguration active = (MakeConfiguration)getActive();
+    private synchronized void runOnCodeModelReadiness(Runnable task, boolean postpone) {
+        MakeConfiguration active = (MakeConfiguration) getActive();
         if (active != null) {
             DevelopmentHostConfiguration host = active.getDevelopmentHost();
             CompilerSetManagerEvents.get(host.getName()).runOnCodeModelReadiness(task);
@@ -135,15 +133,19 @@ public class Configurations {
     }
 
     public int size() {
-	return configurations.size();
+        return configurations.size();
     }
 
 
     /*
      * Get all configurations
-    */
+     */
     public Configuration[] getConfs() {
         return configurations.toArray(new Configuration[size()]);
+    }
+
+    public List<Configuration> getConfigurtions() {
+        return new ArrayList<Configuration>(configurations);
     }
 
     public Collection<Configuration> getConfsAsCollection() {
@@ -151,7 +153,7 @@ public class Configurations {
         collection.addAll(configurations);
         return collection;
     }
-    
+
     public Configuration[] getClonedConfs() {
         Configuration[] cs = new Configuration[size()];
         for (int i = 0; i < size(); i++) {
@@ -179,7 +181,6 @@ public class Configurations {
         return names;
     }
 
-    
     /*
      * Get a specific configuration
      */
@@ -224,7 +225,7 @@ public class Configurations {
         if (def == old) {
             return; // Nothing has changed
         }
-        
+
         for (Iterator it = configurations.iterator(); it.hasNext();) {
             Configuration c = (Configuration) it.next();
             c.setDefault(false);
@@ -271,7 +272,7 @@ public class Configurations {
         }
         return defDisplayName;
     }
-    
+
     /**
      * @deprecated. Use getActive()
      */
@@ -280,25 +281,25 @@ public class Configurations {
     }
 
     public Configuration getActive() {
-	    for (Iterator it = configurations.iterator(); it.hasNext(); ) {
-		Configuration c = (Configuration)it.next();
-		if (c.isDefault()) {
-                    return c;
-		}
-	    }
-	    return null;
+        for (Iterator it = configurations.iterator(); it.hasNext();) {
+            Configuration c = (Configuration) it.next();
+            if (c.isDefault()) {
+                return c;
+            }
+        }
+        return null;
     }
 
     public int getActiveAsIndex() {
-	    int index = -1;
-	    for (Iterator it = configurations.iterator(); it.hasNext(); ) {
-		index++;
-		Configuration c = (Configuration)it.next();
-		if (c.isDefault()) {
-		    return index;
-		}
-	    }
-	    return -1;
+        int index = -1;
+        for (Iterator it = configurations.iterator(); it.hasNext();) {
+            index++;
+            Configuration c = (Configuration) it.next();
+            if (c.isDefault()) {
+                return index;
+            }
+        }
+        return -1;
     }
 
 
@@ -317,5 +318,4 @@ public class Configurations {
         clone.init(getClonedConfs(), getActiveAsIndex());
         return clone;
     }
-    
 }
