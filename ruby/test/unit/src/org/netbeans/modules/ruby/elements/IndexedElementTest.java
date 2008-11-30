@@ -164,6 +164,10 @@ public class IndexedElementTest extends RubyTestBase {
         checkCreate("testfiles/classvar.rb.indexed");
     }
 
+    public void testCreate24() throws Exception {
+        checkCreate("testfiles/constants.rb.indexed");
+    }
+
     public void checkCreate(String testFile) throws Exception {
         List<SearchResult> maps;
         if (testFile.endsWith(".indexed")) {
