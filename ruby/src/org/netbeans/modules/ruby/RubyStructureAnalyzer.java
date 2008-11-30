@@ -559,11 +559,12 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     ElementKind.CONSTANT);
 
             if (info != null) {
-                RubyIndex index = RubyIndex.get(info.getIndex(RubyUtils.RUBY_MIME_TYPE), info.getFileObject());
                 int astOffset = node.getPosition().getStartOffset();
                 BaseDocument doc = (BaseDocument) info.getDocument();
                 FileObject fileObject = info.getFileObject();
-                RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*request.info.getParserResult(),*/index, constNode, valueNode, astOffset, -1, doc, fileObject);
+                // pass RubyIndex cautiously to prevent dangerous mutual recursion between
+                // RubyIndexer, RubyTypeAnalyzer and few other. Be sure to run ruby.hints tests
+                RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(null, constNode, valueNode, astOffset, -1, doc, fileObject);
                 Set<? extends String> types = analyzer.getTypes(constNode.getName());
                 if (types != null) {
                     for (String type : types) {
