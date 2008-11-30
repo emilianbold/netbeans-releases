@@ -39,33 +39,49 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import java.util.Collection;
+import org.netbeans.modules.db.metadata.model.spi.PrimaryKeyImplementation;
 
 /**
- * Encapsulates a table column.
  *
- * @author Andrei Badea
+ * @author David
  */
-public class Column extends Value {
+public class PrimaryKey extends MetadataElement {
 
-    private final ColumnImplementation impl;
+    private final PrimaryKeyImplementation impl;
 
-    Column(ColumnImplementation impl) {
-        super(impl);
+    PrimaryKey(PrimaryKeyImplementation impl) {
         this.impl = impl;
     }
 
     @Override
-    public Tuple getParent() {
+    public Table getParent() {
         return impl.getParent();
     }
 
+    @Override
     /**
-     * Return the position of this column
-     * 
-     * @return the position of this column in the result list, starting at 1
+     * Get the name for this primary key.  May be null.
+     *
+     * @return the name for this primary key
      */
-    public int getPosition() {
-        return impl.getPosition();
+    public String getName() {
+        return impl.getName();
     }
+
+    @Override
+    public String toString() {
+        return impl.toString();
+    }
+
+    /**
+     * Get the list of columns for this primary key.  The collection is ordered
+     * based on the sequencing of the primary key
+     *
+     * @return the list of columns for this primary key.  
+     */
+    public Collection<Column> getColumns() {
+        return impl.getColumns();
+    }
+
 }

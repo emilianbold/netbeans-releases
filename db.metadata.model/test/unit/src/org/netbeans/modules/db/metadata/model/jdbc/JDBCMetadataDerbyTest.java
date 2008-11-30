@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
 import org.netbeans.modules.db.metadata.model.api.SQLType;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
@@ -74,14 +75,16 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         conn = DriverManager.getConnection("jdbc:derby:" + getWorkDirPath() + "/test;create=true");
         Statement stmt = conn.createStatement();
         stmt.executeUpdate("CREATE TABLE FOO (" +
-                "ID INT NOT NULL PRIMARY KEY, " +
-                "FOO_NAME VARCHAR(16))");
+                "ID INT NOT NULL, " +
+                "FOO_NAME VARCHAR(16), " +
+                "CONSTRAINT FOO_PK PRIMARY KEY (ID, FOO_NAME))");
         stmt.executeUpdate("CREATE TABLE BAR (" +
                 "\"i+d\" INT NOT NULL PRIMARY KEY, " +
                 "FOO_ID INT NOT NULL, " +
-                "BAR_NAME VARCHAR(16), " +
+                "FOO_NAME VARCHAR(16) NOT NULL, " +
+                "BAR_NAME VARCHAR(16) NOT NULL, " +
                 "DEC_COL DECIMAL(12,2), " +
-                "FOREIGN KEY (FOO_ID) REFERENCES FOO(ID))");
+                "FOREIGN KEY (FOO_ID, FOO_NAME) REFERENCES FOO(ID,FOO_NAME))");
         stmt.executeUpdate("CREATE VIEW BARVIEW AS SELECT * FROM BAR");
         stmt.close();
         metadata = new JDBCMetadata(conn, "APP");
@@ -113,6 +116,7 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         Collection<Column> columns = barTable.getColumns();
 
         checkColumns(barTable, columns);
+        checkPrimaryKey(fooTable);
     }
 
     public void testViews() throws Exception {
@@ -148,7 +152,7 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
     }
 
     private void checkColumns(Tuple parent, Collection<Column> columns) {
-        assertEquals(4, columns.size());
+        assertEquals(5, columns.size());
         Column[] colarray = columns.toArray(new Column[4]);
 
         Column col = colarray[0];
@@ -160,15 +164,30 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         assertEquals(10, col.getRadix());
         assertEquals(10, col.getPrecision());
         assertEquals(0, col.getScale());
-        assertEquals(1, col.getOrdinalPosition());
+        assertEquals(1, col.getPosition());
+
 
         col = colarray[1];
         assertEquals("JDBCColumn[name=FOO_ID, type=INTEGER, length=0, precision=10, radix=10, scale=0, nullable=NOT_NULLABLE, ordinal_position=2]", col.toString());
 
         col = colarray[2];
-        assertEquals("JDBCColumn[name=BAR_NAME, type=VARCHAR, length=16, precision=0, radix=0, scale=0, nullable=NULLABLE, ordinal_position=3]", col.toString());
+        assertEquals("JDBCColumn[name=FOO_NAME, type=VARCHAR, length=16, precision=0, radix=0, scale=0, nullable=NOT_NULLABLE, ordinal_position=3]", col.toString());
 
         col = colarray[3];
-        assertEquals("JDBCColumn[name=DEC_COL, type=DECIMAL, length=0, precision=12, radix=10, scale=2, nullable=NULLABLE, ordinal_position=4]", col.toString());
+        assertEquals("JDBCColumn[name=BAR_NAME, type=VARCHAR, length=16, precision=0, radix=0, scale=0, nullable=NOT_NULLABLE, ordinal_position=4]", col.toString());
+
+        col = colarray[4];
+        assertEquals("JDBCColumn[name=DEC_COL, type=DECIMAL, length=0, precision=12, radix=10, scale=2, nullable=NULLABLE, ordinal_position=5]", col.toString());
+    }
+
+    private void checkPrimaryKey(Table fooTable) {
+        PrimaryKey key = fooTable.getPrimaryKey();
+        assertEquals("FOO_PK", key.getName());
+        Column[] pkcols = key.getColumns().toArray(new Column[0]);
+        Column col1 = fooTable.getColumn("ID");
+        Column col2 = fooTable.getColumn("FOO_NAME");
+        assertEquals(pkcols.length, 2);
+        assertEquals(col1, pkcols[1]);
+        assertEquals(col2, pkcols[0]);
     }
 }

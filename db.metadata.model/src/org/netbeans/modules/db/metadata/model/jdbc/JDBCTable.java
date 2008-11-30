@@ -41,6 +41,7 @@ package org.netbeans.modules.db.metadata.model.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -50,6 +51,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
+import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
 
@@ -65,6 +67,11 @@ public class JDBCTable extends TableImplementation {
     private final String name;
 
     private Map<String, Column> columns;
+    private PrimaryKey primaryKey;
+
+    // Need a marker because there may be *no* primary key, and we don't want
+    // to hit the database over and over again when there is no primary key
+    private boolean primaryKeyInitialized = false;
 
     public JDBCTable(JDBCSchema jdbcSchema, String name) {
         this.jdbcSchema = jdbcSchema;
@@ -88,6 +95,18 @@ public class JDBCTable extends TableImplementation {
     }
 
     @Override
+    public PrimaryKey getPrimaryKey() {
+        return initPrimaryKey();
+    }
+
+    @Override
+    public final void refresh() {
+        columns = null;
+        primaryKey = null;
+        primaryKeyInitialized = false;
+    }
+
+    @Override
     public String toString() {
         return "JDBCTable[name='" + name + "']"; // NOI18N
     }
@@ -95,6 +114,10 @@ public class JDBCTable extends TableImplementation {
     protected JDBCColumn createJDBCColumn(ResultSet rs) throws SQLException {
         int position = rs.getInt("ORDINAL_POSITION");
         return new JDBCColumn(this.getTable(), position, JDBCValue.createTableColumnValue(rs));
+    }
+
+    protected JDBCPrimaryKey createJDBCPrimaryKey(String pkName, Collection<Column> pkcols) {
+        return new JDBCPrimaryKey(this.getTable(), pkName, pkcols);
     }
 
     protected void createColumns() {
@@ -116,6 +139,29 @@ public class JDBCTable extends TableImplementation {
         columns = Collections.unmodifiableMap(newColumns);
     }
 
+    protected void createPrimaryKey() {
+        String pkname = null;
+        Collection<Column> pkcols = new ArrayList<Column>();
+        try {
+            ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getPrimaryKeys(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name); // NOI18N
+            try {
+                while (rs.next()) {
+                    if (pkname == null) {
+                        pkname = rs.getString("PK_NAME");
+                    }
+                    String colName = rs.getString("COLUMN_NAME");
+                    pkcols.add(getColumn(colName));
+                }
+            } finally {
+                rs.close();
+            }
+        } catch (SQLException e) {
+            throw new MetadataException(e);
+        }
+
+        primaryKey = createJDBCPrimaryKey(pkname, Collections.unmodifiableCollection(pkcols)).getPrimaryKey();
+    }
+
     private Map<String, Column> initColumns() {
         if (columns != null) {
             return columns;
@@ -125,8 +171,16 @@ public class JDBCTable extends TableImplementation {
         return columns;
     }
 
-    @Override
-    public final void refresh() {
-        columns = null;
+    private PrimaryKey initPrimaryKey() {
+        if (primaryKeyInitialized) {
+            return primaryKey;
+        }
+        LOGGER.log(Level.FINE, "Initializing columns in {0}", this);
+        // These need to be initialized first.
+        getColumns();
+        createPrimaryKey();
+        primaryKeyInitialized = true;
+        return primaryKey;
     }
+
 }

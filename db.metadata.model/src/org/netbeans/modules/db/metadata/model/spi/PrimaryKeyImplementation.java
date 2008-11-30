@@ -37,35 +37,34 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.spi;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import java.util.Collection;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
+import org.netbeans.modules.db.metadata.model.api.Table;
 
 /**
- * Encapsulates a table column.
+ * Defines a primary key for a table
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Column extends Value {
+public abstract class PrimaryKeyImplementation {
+    private PrimaryKey primaryKey;
 
-    private final ColumnImplementation impl;
+    public abstract Collection<Column> getColumns();
 
-    Column(ColumnImplementation impl) {
-        super(impl);
-        this.impl = impl;
+    public abstract String getName();
+
+    public abstract Table getParent();
+
+    public final PrimaryKey getPrimaryKey() {
+        if (primaryKey == null) {
+            primaryKey = MetadataAccessor.getDefault().createPrimaryKey(this);
+        }
+
+        return primaryKey;
     }
 
-    @Override
-    public Tuple getParent() {
-        return impl.getParent();
-    }
-
-    /**
-     * Return the position of this column
-     * 
-     * @return the position of this column in the result list, starting at 1
-     */
-    public int getPosition() {
-        return impl.getPosition();
-    }
 }

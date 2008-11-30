@@ -37,35 +37,48 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.jdbc;
 
-import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.spi.PrimaryKeyImplementation;
 
 /**
- * Encapsulates a table column.
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Column extends Value {
+public class JDBCPrimaryKey extends PrimaryKeyImplementation {
 
-    private final ColumnImplementation impl;
-
-    Column(ColumnImplementation impl) {
-        super(impl);
-        this.impl = impl;
+    private final String name;
+    private final Collection<Column> columns;
+    private final Table parent;
+    
+    public JDBCPrimaryKey(Table parent, String name, Collection<Column> columns) {
+        this.parent = parent;
+        this.name = name;
+        this.columns = Collections.unmodifiableCollection(columns);
+    }
+    
+    @Override
+    public Collection<Column> getColumns() {
+        return columns;
     }
 
     @Override
-    public Tuple getParent() {
-        return impl.getParent();
+    public String getName() {
+        return name;
     }
 
-    /**
-     * Return the position of this column
-     * 
-     * @return the position of this column in the result list, starting at 1
-     */
-    public int getPosition() {
-        return impl.getPosition();
+    @Override
+    public Table getParent() {
+        return parent;
     }
+
+    @Override
+    public String toString() {
+        return "JDBCPrimaryKey[name='" + getName() + "']";
+    }
+
 }

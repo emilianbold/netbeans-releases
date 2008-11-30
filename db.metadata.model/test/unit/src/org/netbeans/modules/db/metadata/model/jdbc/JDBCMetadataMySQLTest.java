@@ -49,6 +49,7 @@ import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Parameter;
 import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
+import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.View;
@@ -85,6 +86,7 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         stmt.executeUpdate("DROP DATABASE test");
         stmt.executeUpdate("CREATE DATABASE test");
         stmt.executeUpdate("USE test");
+        stmt.executeUpdate("CREATE TABLE groucho (id INT NOT NULL, id2 INT NOT NULL, CONSTRAINT groucho_pk PRIMARY KEY (id2, id))");
         stmt.executeUpdate("CREATE TABLE foo (" +
                 "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, " +
                 "FOO_NAME VARCHAR(16))");
@@ -123,12 +125,33 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         assertSame(defaultCatalog, schema.getParent());
 
         Collection<Table> tables = schema.getTables();
-        assertNames(new HashSet<String>(Arrays.asList("foo", "bar")), tables);
+        assertNames(new HashSet<String>(Arrays.asList("foo", "bar", "groucho")), tables);
         Table barTable = schema.getTable("bar");
         assertTrue(tables.contains(barTable));
         assertSame(schema, barTable.getParent());
 
         checkColumns(barTable);
+
+    }
+
+    public void testPrimaryKey() {
+        Schema schema = metadata.getDefaultSchema();
+        Table grouchoTable = schema.getTable("groucho");
+        PrimaryKey key = grouchoTable.getPrimaryKey();
+
+        // In MySQL, it doesn't matter what identifier you use when you create
+        // the primary key, it is always named "PRIMARY"
+        assertEquals("PRIMARY", key.getName());
+        Column[] pkcols = key.getColumns().toArray(new Column[0]);
+        Column col1 = grouchoTable.getColumn("id");
+        Column col2 = grouchoTable.getColumn("id2");
+        assertEquals(pkcols.length, 2);
+
+        // In MySQL, it doesn't matter how you order the columns in your primary
+        // key definition, they are always ordered in the same order as the
+        // ordering in th table definition
+        assertEquals(col1, pkcols[0]);
+        assertEquals(col2, pkcols[1]);
     }
 
     public void testViews() throws Exception {
@@ -199,7 +222,7 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         assertEquals(10, col.getRadix());
         assertEquals(10, col.getPrecision());
         assertEquals(0, col.getScale());
-        assertEquals(1, col.getOrdinalPosition());
+        assertEquals(1, col.getPosition());
 
         col = colarray[1];
         assertEquals("JDBCColumn[name=foo_id, type=INTEGER, length=0, precision=10, radix=10, scale=0, nullable=NOT_NULLABLE, ordinal_position=2]", col.toString());

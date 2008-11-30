@@ -47,6 +47,7 @@ import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ParameterImplementation;
+import org.netbeans.modules.db.metadata.model.spi.PrimaryKeyImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ProcedureImplementation;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
@@ -174,6 +175,11 @@ public class Metadata {
         @Override
         public CatalogImplementation getCatalogImpl(Catalog catalog) {
             return catalog.impl;
+        }
+
+        @Override
+        public PrimaryKey createPrimaryKey(PrimaryKeyImplementation impl) {
+            return new PrimaryKey(impl);
         }
 
     }

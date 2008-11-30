@@ -82,6 +82,10 @@ public class Table extends Tuple {
         return impl.getColumn(name);
     }
 
+    public PrimaryKey getPrimaryKey() {
+        return impl.getPrimaryKey();
+    }
+
     /**
      * Refresh the table metadata from the database
      */
