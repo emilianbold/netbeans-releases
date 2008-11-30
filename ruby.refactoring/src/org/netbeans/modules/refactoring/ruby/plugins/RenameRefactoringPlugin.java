@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -329,7 +329,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         
         // TODO - get a better ruby name picker - and check for invalid Ruby symbol names etc.
         // TODO - call RubyUtils.isValidLocalVariableName if we're renaming a local symbol!
-        if (kind == ElementKind.CLASS && !RubyUtils.isValidRubyClassName(newName)) {
+        if (kind == ElementKind.CLASS && !RubyUtils.isValidConstantName(newName)) {
             String s = getString("ERR_InvalidClassName"); //NOI18N
             String msg = new MessageFormat(s).format(
                     new Object[] {newName}

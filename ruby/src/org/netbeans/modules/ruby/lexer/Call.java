@@ -350,7 +350,7 @@ public class Call {
                         if (lhs.endsWith(".new")) { // NOI18N
                             // See if it looks like a type prior to that
                             String type = lhs.substring(0, lhs.length() - 4); // 4=".new".length()
-                            if (RubyUtils.isValidRubyModuleName(type)) {
+                            if (RubyUtils.isValidConstantFQN(type)) {
                                 return new Call(type, lhs, false, methodExpected);
                             }
                         }
@@ -358,7 +358,7 @@ public class Call {
                         String type = RubyUtils.RUBY_PREDEF_VARS_CLASSES.get(lhs);
                         boolean isStatic = type == null; // predefined vars are instances
 
-                        boolean isLHSConstant = RubyUtils.isValidRubyModuleName(lhs);
+                        boolean isLHSConstant = RubyUtils.isValidConstantFQN(lhs);
                         if (type == null /* not predef. var */ && isLHSConstant) {
                             type = lhs;
                         }
