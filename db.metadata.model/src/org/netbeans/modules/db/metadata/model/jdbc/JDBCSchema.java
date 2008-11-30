@@ -51,7 +51,9 @@ import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
+import org.netbeans.modules.db.metadata.model.api.Procedure;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.View;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 
 /**
@@ -68,6 +70,8 @@ public class JDBCSchema extends SchemaImplementation {
     protected final boolean synthetic;
 
     protected Map<String, Table> tables;
+    protected Map<String, View> views;
+    protected Map<String, Procedure> procedures;
 
     public JDBCSchema(JDBCCatalog jdbcCatalog, String name, boolean _default, boolean synthetic) {
         this.jdbcCatalog = jdbcCatalog;
@@ -101,12 +105,40 @@ public class JDBCSchema extends SchemaImplementation {
     }
 
     @Override
+    public View getView(String name) {
+        return MetadataUtilities.find(name, initViews());
+    }
+
+    @Override
+    public Collection<View> getViews() {
+        return initViews().values();
+    }
+
+    @Override
+    public Procedure getProcedure(String name) {
+        return initProcedures().get(name);
+    }
+
+    @Override
+    public Collection<Procedure> getProcedures() {
+        return initProcedures().values();
+    }
+
+    @Override
     public String toString() {
         return "JDBCSchema[name='" + name + "',default=" + _default + ",synthetic=" + synthetic + "]"; // NOI18N
     }
 
     protected JDBCTable createJDBCTable(String name) {
         return new JDBCTable(this, name);
+    }
+
+    protected JDBCProcedure createJDBCProcedure(String procedureName) {
+        return new JDBCProcedure(this, procedureName);
+    }
+
+    protected JDBCView createJDBCView(String viewName) {
+        return new JDBCView(this, viewName);
     }
 
     protected void createTables() {
@@ -130,6 +162,48 @@ public class JDBCSchema extends SchemaImplementation {
         tables = Collections.unmodifiableMap(newTables);
     }
 
+    protected void createViews() {
+        LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
+        Map<String, View> newViews = new LinkedHashMap<String, View>();
+        try {
+            ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getTables(jdbcCatalog.getName(), name, "%", new String[] { "VIEW" }); // NOI18N
+            try {
+                while (rs.next()) {
+                    String viewName = rs.getString("TABLE_NAME"); // NOI18N
+                    View view = createJDBCView(viewName).getView();
+                    newViews.put(viewName, view);
+                    LOGGER.log(Level.FINE, "Created view {0}", view);
+                }
+            } finally {
+                rs.close();
+            }
+        } catch (SQLException e) {
+            throw new MetadataException(e);
+        }
+        views = Collections.unmodifiableMap(newViews);
+    }
+
+    protected void createProcedures() {
+        LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
+        Map<String, Procedure> newProcedures = new LinkedHashMap<String, Procedure>();
+        try {
+            ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getProcedures(jdbcCatalog.getName(), name, "%"); // NOI18N
+            try {
+                while (rs.next()) {
+                    String procedureName = rs.getString("PROCEDURE_NAME"); // NOI18N
+                    Procedure procedure = createJDBCProcedure(procedureName).getProcedure();
+                    newProcedures.put(procedureName, procedure);
+                    LOGGER.log(Level.FINE, "Created procedure {0}", procedure);
+                }
+            } finally {
+                rs.close();
+            }
+        } catch (SQLException e) {
+            throw new MetadataException(e);
+        }
+        procedures = Collections.unmodifiableMap(newProcedures);
+    }
+
     private Map<String, Table> initTables() {
         if (tables != null) {
             return tables;
@@ -142,14 +216,20 @@ public class JDBCSchema extends SchemaImplementation {
         return jdbcCatalog;
     }
 
-    public final void refreshTable(String tableName) {
-        if (tables == null) {
-            return;
+    private Map<String, View> initViews() {
+        if (views != null) {
+            return views;
         }
-        Table table = MetadataUtilities.find(tableName, tables);
-        if (table == null) {
-            return;
+        createViews();
+        return views;
+    }
+
+    private Map<String, Procedure> initProcedures() {
+        if (procedures != null) {
+            return procedures;
         }
-        ((JDBCTable) MetadataAccessor.getDefault().getTableImpl(table)).refresh();
+
+        createProcedures();
+        return procedures;
     }
 }

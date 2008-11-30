@@ -318,8 +318,7 @@ public class StructureAnalyzer implements StructureScanner {
                 if ((kind == ElementKind.METHOD && !((MethodNode) node).isSynthetic())
                         || (kind == ElementKind.CONSTRUCTOR && !((ConstructorNode) node).isSynthetic())
                         || (kind == ElementKind.FIELD
-                            && ((FieldNode) node).getInitialExpression() instanceof ClosureExpression
-                            && !((FieldNode) node).isSynthetic())
+                            && ((FieldNode) node).getInitialExpression() instanceof ClosureExpression)
                         // Only make nested classes/modules foldable, similar to what the java editor is doing
                         || (range.getStart() > Utilities.getRowStart(doc, range.getStart())) && kind != ElementKind.FIELD) {
 

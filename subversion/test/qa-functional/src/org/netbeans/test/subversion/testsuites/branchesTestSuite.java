@@ -71,8 +71,7 @@ public class branchesTestSuite extends JellyTestCase {
     public static Test suite() {
         if (svnExistsChecker.check(false)) {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                    .addTest(CopyTest.class, "testCreateNewCopySwitch", "testCreateNewCopy")
-                    .addTest(CopyUiTest.class, "testInvokeCloseCopy")
+                    .addTest(CopyTest.class, "testCreateNewCopySwitch")
                     .addTest(MergeUiTest.class, "testInvokeCloseMerge")
                     .addTest(RevertUiTest.class, "testInvokeCloseRevert")
                     .addTest(SwitchUiTest.class, "testInvokeCloseSwitch")

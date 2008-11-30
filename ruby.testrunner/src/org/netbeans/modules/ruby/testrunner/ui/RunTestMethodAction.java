@@ -45,7 +45,6 @@ import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.ruby.RubyDeclarationFinder;
 import org.netbeans.modules.ruby.platform.execution.ExecutionUtils.FileLocation;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
-import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -70,7 +69,7 @@ class RunTestMethodAction extends BaseTestMethodNodeAction {
         }
         DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), false);
         if (!(DeclarationLocation.NONE == location)) {
-            getTestRunner(testcase.getType()).runSingleTest(location.getFileObject(), testcase.name, debug);
+            getTestRunner(testcase.getType()).runSingleTest(location.getFileObject(),testcase.getName(), debug);
         }
     }
 

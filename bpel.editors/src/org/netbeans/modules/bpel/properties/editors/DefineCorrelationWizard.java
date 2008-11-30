@@ -182,7 +182,6 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * @author Alex Petrov (27.12.2007)

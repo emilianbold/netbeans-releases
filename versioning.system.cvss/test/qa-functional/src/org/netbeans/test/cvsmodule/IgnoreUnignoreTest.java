@@ -53,19 +53,20 @@ package org.netbeans.test.cvsmodule;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.TableModel;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.modules.javacvs.VersioningOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -79,7 +80,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  * @author novakm
  */
 public class IgnoreUnignoreTest extends JellyTestCase {
-    String os_name;
+    static String os_name;
     static String sessionCVSroot;
     final String projectName = "ForImport";
     final String pathToMain = "forimport|Main.java";
@@ -87,21 +88,30 @@ public class IgnoreUnignoreTest extends JellyTestCase {
     static File cacheFolder;
     Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
+    static Logger log;
     
     /** Creates a new instance of ignoreUnignoreFileTest */
     public IgnoreUnignoreTest(String name) {
         super(name);
-    }
-    
-    @Override
-    protected void setUp() throws Exception {
-        os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
-        System.out.println("### " + getName() + " ###");
+        if (os_name == null) {
+            os_name = System.getProperty("os.name");
+        }
         try {
             TestKit.extractProtocol(getDataDir());
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        System.out.println("### " + getName() + " ###");
+        if (log == null) {
+            log = Logger.getLogger("org.netbeans.modules.versioning.system.cvss.t9y");
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
         }
     }
     
@@ -119,9 +129,15 @@ public class IgnoreUnignoreTest extends JellyTestCase {
      }
     
     public void testCheckOutProject() throws Exception {
+        MessageHandler mh = new MessageHandler("Checking out");
+        log.addHandler(mh);
+
         TestKit.closeProject(projectName);
-        OutputOperator.invoke();
-        new ProjectsTabOperator().tree().clearSelection();
+        TestKit.showStatusLabels();
+//
+        if ((os_name !=null) && (os_name.indexOf("Mac") > -1))
+            NewProjectWizardOperator.invoke().close();
+
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -151,7 +167,7 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
         cvss.stop();
         try {
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             in.close();
         } catch (IOException e) {
             //
@@ -165,12 +181,10 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
-        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot);
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.waitText("Checking out finished");
+        TestKit.waitText(mh);
         cvss.stop();
         try {
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             in.close();
         } catch (IOException e) {
             //
@@ -188,8 +202,6 @@ public class IgnoreUnignoreTest extends JellyTestCase {
     public void testIgnoreUnignoreFile() throws Exception{
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         VersioningOperator vo;
-        //OutputOperator oo;
-        OutputTabOperator oto;
         InputStream in;
         PseudoCvsServer cvss;
         String CVSroot;
@@ -202,27 +214,25 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong color for new file", TestKit.NEW_COLOR, color);
         
-        oto = new OutputTabOperator(sessionCVSroot);
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();
+        MessageHandler mh = new MessageHandler("Refreshing");
+        log.addHandler(mh);
+
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_for_file");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         nodeClass.performPopupAction("CVS|Show Changes");
-        Thread.sleep(1000);
+        new EventTool().waitNoEvent(1000);
         vo = VersioningOperator.invoke();
         table = vo.tabFiles();
-        oto.waitText("Refreshing CVS Status finished");
-        Thread.sleep(1000);
+        TestKit.waitText(mh);
+        new EventTool().waitNoEvent(1000);
         assertEquals("Wrong row count of table.", 1, table.getRowCount());
         assertEquals("Wrong file listed in table.", "NewClass.java", table.getValueAt(0, 0).toString());
         cvss.stop();
         
         //ignore java file
-        oto = new OutputTabOperator(sessionCVSroot);
-        oto.clear();
         nodeClass.performPopupAction("CVS|Ignore");
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_for_file");
         cvss = new PseudoCvsServer(in);
@@ -230,7 +240,7 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         
-        Thread.sleep(1000);
+        new EventTool().waitNoEvent(1000);
         assertEquals("File should not be listed in table", 0, table.getRowCount());
         cvss.stop();
         
@@ -240,17 +250,19 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         assertEquals("Wrong color for new file", TestKit.IGNORED_COLOR, color);
         
         //unignore java file
-        oto.clear();
+        mh = new MessageHandler("Refreshing");
+        TestKit.removeHandlers(log);
+        log.addHandler(mh);
         nodeClass.performPopupAction("CVS|Unignore");
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_for_file");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
-        Thread.sleep(1000);
+        new EventTool().waitNoEvent(1000);
         nodeClass.performPopupAction("CVS|Show Changes");
-        oto.waitText("Refreshing CVS Status finished");
-        Thread.sleep(1000);
+        TestKit.waitText(mh);
+        new EventTool().waitNoEvent(1000);
         assertEquals("File should not be listed in table", 1, table.getRowCount());
         cvss.stop();
         
@@ -263,7 +275,6 @@ public class IgnoreUnignoreTest extends JellyTestCase {
     
     public void testIgnoreUnignoreGuiForm() throws Exception{
         VersioningOperator vo;
-        OutputTabOperator oto;
         InputStream in;
         PseudoCvsServer cvss;
         String CVSroot;
@@ -279,20 +290,20 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         assertEquals("Wrong color for new file", TestKit.NEW_COLOR, color);
         
         //show changes stream for pseudocvsserver
-        oto = new OutputTabOperator(sessionCVSroot);
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();
+        MessageHandler mh = new MessageHandler("Refreshing");
+        log.addHandler(mh);
+
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_for_jframe");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         nodeFrame.performPopupAction("CVS|Show Changes");
-        Thread.sleep(1000);
+        new EventTool().waitNoEvent(1000);
         vo = VersioningOperator.invoke();
         table = vo.tabFiles();
-        oto.waitText("Refreshing CVS Status finished");
-        Thread.sleep(1000);
+        TestKit.waitText(mh);
+        new EventTool().waitNoEvent(1000);
         cvss.stop();
         TableModel model = table.getModel();
         
@@ -305,8 +316,6 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         assertEquals("Wrong files in view", 2, result);
         
         //ignore
-        oto = new OutputTabOperator(sessionCVSroot);
-        oto.clear();
         nodeFrame.performPopupAction("CVS|Ignore");
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_for_jframe");
         cvss = new PseudoCvsServer(in);
@@ -314,7 +323,7 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         
-        Thread.sleep(3000);
+        new EventTool().waitNoEvent(3000);
         assertEquals("File should not be listed in table", 0, table.getRowCount());
         cvss.stop();
         
@@ -324,8 +333,9 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         assertEquals("Wrong color for new file", TestKit.IGNORED_COLOR, color);
         
         //unignore
-        oto = new OutputTabOperator(sessionCVSroot);
-        oto.clear();
+        mh = new MessageHandler("Refreshing");
+        TestKit.removeHandlers(log);
+        log.addHandler(mh);
         nodeFrame.performPopupAction("CVS|Unignore");
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_for_jframe");
         cvss = new PseudoCvsServer(in);
@@ -333,8 +343,8 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         nodeFrame.performPopupAction("CVS|Show Changes");
-        oto.waitText("Refreshing CVS Status finished");
-        Thread.sleep(3000);
+        TestKit.waitText(mh);
+        new EventTool().waitNoEvent(3000);
         assertEquals("File should not be listed in table", 2, table.getRowCount());
         cvss.stop();
         

@@ -30,6 +30,7 @@ package org.netbeans.modules.subversion.ui.update;
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -95,9 +96,10 @@ public class FileUpdateInfo {
 
         FileUpdateInfo[] fui = new FileUpdateInfo[2];
         int fileAction = parseAction(fileActionValue.charAt(0)) | (broken.equals("B") ? ACTION_LOCK_BROKEN : 0);
-        int propertyAction = parseAction(propertyActionValue.charAt(0));                       
-        fui[0] = fileAction != 0 ? new FileUpdateInfo(new File(filePath), fileAction | ACTION_TYPE_FILE) : null;
-        fui[1] = propertyAction != 0 ? new FileUpdateInfo(new File(filePath), propertyAction | ACTION_TYPE_PROPERTY) : null;
+        int propertyAction = parseAction(propertyActionValue.charAt(0));
+        final File file = FileUtil.normalizeFile(new File(filePath));
+        fui[0] = fileAction != 0 ? new FileUpdateInfo(file, fileAction | ACTION_TYPE_FILE) : null;
+        fui[1] = propertyAction != 0 ? new FileUpdateInfo(file, propertyAction | ACTION_TYPE_PROPERTY) : null;
         return fui;
     }
     

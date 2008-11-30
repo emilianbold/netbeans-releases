@@ -41,7 +41,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<!DOCTYPE Configuration PUBLIC "-//NetBeans IDE//DTD toolbar//EN" "http://www.netbeans.org/dtds/toolbar.dtd">
+<!DOCTYPE Configuration PUBLIC "-//NetBeans IDE//DTD toolbar 1.1//EN" "http://www.netbeans.org/dtds/toolbar1_1.dtd">
 
 <Configuration>
   <Row>
@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
     <Toolbar name="Build" />
     <Toolbar name="Debug" />
     <Toolbar name="Memory"/>
-    <Toolbar name="Versioning" visible="false" />
+    <Toolbar name="QuickSearch" align="right" />
   </Row>
 
 </Configuration>

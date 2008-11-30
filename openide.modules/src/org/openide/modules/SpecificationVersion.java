@@ -62,7 +62,7 @@ public final class SpecificationVersion implements Comparable {
     /** Parse from string. Must be Dewey-decimal. */
     public SpecificationVersion(String version) throws NumberFormatException {
         synchronized (parseCache) {
-            int[] d = (int[]) parseCache.get(version);
+            int[] d = parseCache.get(version);
 
             if (d == null) {
                 d = parse(version);

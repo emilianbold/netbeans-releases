@@ -48,6 +48,7 @@
                 <file name="x-c++" url="resources/cplusplus/CCExample"/>
                 <file name="x-c" url="resources/cplusplus/CExample"/>
                 <file name="x-fortran" url="resources/fortran/FExample"/>
+                <file name="x-make" url="resources/makefile/MakeExample"/>
             </folder>
         </folder>
     </folder>
@@ -316,11 +317,50 @@
                     </folder>
                 </folder>
 
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-cnd-editor-fortran-FortranBracesMatcher.instance">
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                </folder>
+
                 <file name="Reformatter.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter$Factory"/>
                 </file>
                 <file name="org-netbeans-modules-cnd-editor-fortran-indent-FortranIndentFactory.instance"/>
             </folder>
+
+            <folder name="x-make">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.makefile.Bundle"/>
+
+                <file name="language.nbs" url="resources/makefile/Makefile.nbs"/>
+                <file name="org-netbeans-modules-cnd-editor-makefile-MakefileIndentTaskFactory.instance"/>
+
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="codetemplates.xml" url="resources/makefile/Makefile-DefaultAbbrevs.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.makefile.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/makefile/Netbeans-Makefile-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.makefile.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+
+                <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-cnd-editor-makefile-preferences.xml" url="resources/makefile/Makefile-editor-preferences.xml"/>
+                    </folder>
+                </folder>
+
+            </folder>
         </folder>
     </folder>
+
 </filesystem>

@@ -211,7 +211,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         try {
             DiffController view = DiffController.create(new SidebarStreamSource(true), new SidebarStreamSource(false));
             DiffTopComponent tc = new DiffTopComponent(view);
-            tc.setName(fileObject.getNameExt() + " [Diff]"); // NOI18N
+            tc.setName(NbBundle.getMessage(DiffSidebar.class, "CTL_DiffPanel_Title", new Object[] {fileObject.getNameExt()})); // NOI18N
             tc.open();
             tc.requestActive();
             view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, getDiffIndex(diff));

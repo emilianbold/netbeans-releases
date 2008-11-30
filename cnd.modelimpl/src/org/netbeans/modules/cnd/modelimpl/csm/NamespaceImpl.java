@@ -100,7 +100,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private final boolean global;
     
     /** Constructor used for global namespace */
-    public NamespaceImpl(ProjectBase project) {
+    public NamespaceImpl(ProjectBase project, boolean fake) {
         this.name = GLOBAL;
         this.qualifiedName = CharSequenceKey.empty(); // NOI18N
         this.parentUID = null;
@@ -111,10 +111,11 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert this.projectUID != null;
             
-        this.projectRef = new WeakReference(project); 
-        declarationsSorageKey = new DeclarationContainer(this).getKey();
-
-        project.registerNamespace(this);
+        this.projectRef = new WeakReference<ProjectBase>(project);
+        this.declarationsSorageKey = fake ? null : new DeclarationContainer(this).getKey();
+        if (!fake) {
+            project.registerNamespace(this);
+        }
     }
     
     private static final boolean CHECK_PARENT = false;
@@ -127,7 +128,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert this.projectUID != null;
 
-        this.projectRef = new WeakReference(project); 
+        this.projectRef = new WeakReference<ProjectBase>(project);
         this.qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
         // TODO: rethink once more
         // now all classes do have namespaces
@@ -215,16 +216,20 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
 
     private DeclarationContainer getDeclarationsSorage() {
+        if (declarationsSorageKey == null) {
+            return DeclarationContainer.empty();
+        }
         DeclarationContainer dc = (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
         if (dc == null) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
         }
-        return dc;
+        return dc != null ? dc : DeclarationContainer.empty();
     }
     
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
+        DeclarationContainer declStorage = getDeclarationsSorage();
         // add all declarations
-        Collection<CsmUID<CsmOffsetableDeclaration>> uids = getDeclarationsSorage().getDeclarationsUIDs();
+        Collection<CsmUID<CsmOffsetableDeclaration>> uids = declStorage.getDeclarationsUIDs();
         // add all unnamed declarations
         synchronized (unnamedDeclarations) {
             uids.addAll(unnamedDeclarations);
@@ -235,8 +240,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
+        DeclarationContainer declStorage = getDeclarationsSorage();
         // add all declarations
-        Collection<CsmUID<CsmOffsetableDeclaration>> uids = getDeclarationsSorage().getDeclarationsUIDs();
+        Collection<CsmUID<CsmOffsetableDeclaration>> uids = declStorage.getDeclarationsUIDs();
         // add all unnamed declarations
         synchronized (unnamedDeclarations) {
             uids.addAll(unnamedDeclarations);
@@ -245,9 +251,10 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> findUidsByPrefix(String prefix) {
+        DeclarationContainer declStorage = getDeclarationsSorage();
         // To improve performance use char(255) instead real Character.MAX_VALUE
         char maxChar = 255; //Character.MAX_VALUE;
-        return getDeclarationsSorage().getUIDsRange(prefix, prefix+maxChar);
+        return declStorage.getUIDsRange(prefix, prefix+maxChar);
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getUnnamedUids() {
@@ -510,7 +517,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             if (projectRef instanceof ProjectBase) {
                 prj = (ProjectBase)projectRef;
             } else if (projectRef instanceof Reference) {
-                prj = ((Reference<ProjectBase>)projectRef).get();
+                @SuppressWarnings("unchecked")
+                Reference<ProjectBase> ref = (Reference<ProjectBase>) projectRef;
+                prj = ref.get();
             }
             if (prj == null) {
                 prj = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);

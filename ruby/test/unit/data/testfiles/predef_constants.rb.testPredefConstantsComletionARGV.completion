@@ -1,0 +1,6 @@
+Code completion result for source line:
+ARGV.del|
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     delete(obj)                                Array
+METHOD     delete_at(index)                           Array
+METHOD     delete_if { }                              Array

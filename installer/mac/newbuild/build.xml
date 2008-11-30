@@ -20,6 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="Mac Installer" basedir="." default="build-all-dmg">
+
     
     <import file="${basedir}/build.pro"/>
     <property file="${basedir}/Bundle.properties"/>
@@ -49,20 +50,26 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="clean">
         <delete dir="${basedir}/build"/>
-        <delete dir="${basedir}/dist"/>             
+        <delete dir="${basedir}/dist"/>
+        <ant dir="${basedir}/glassfish" target="clean"/>
+        <ant dir="${basedir}/glassfish-v3" target="clean"/>
+        <ant dir="${basedir}/tomcat" target="clean"/>
+        <ant dir="${basedir}/openesb" target="clean"/>
+        <ant dir="${basedir}/netBeans/baseide" target="clean"/>
         <delete dir="${basedir}/netBeans/soa/build"/>
         <delete dir="${basedir}/netBeans/ruby/build"/>
         <delete dir="${basedir}/netBeans/cpp/build"/>
         <delete dir="${basedir}/netBeans/javase/build"/>
-        <delete dir="${basedir}/netBeans/javaee/build"/>
-        <delete dir="${basedir}/netBeans/baseide/build"/>    
+        <delete dir="${basedir}/netBeans/javaee/build"/>     
         <delete dir="${basedir}/netBeans/php/build"/> 
-        <delete dir="${basedir}/netBeans/webcommon/build"/> 
+        <delete dir="${basedir}/netBeans/webcommon/build"/>
         <delete dir="${basedir}/tools/classes"/>           
     </target>
     
     <target name="init">    
-        <mkdir dir="${basedir}/tools/classes"/> 
+        <mkdir dir="${basedir}/tools/classes"/>
+        <mkdir dir="build"/>
+        <mkdir dir="dist"/>
         <javac 
             srcdir="${basedir}/tools/src" 
             destdir="${basedir}/tools/classes"          
@@ -76,11 +83,10 @@ Microsystems, Inc. All Rights Reserved.
            value="org.netbeans.installer.mac.ant.VerifyFile"/>
         <property
            name="VerifyFile.classpath" 
-           value="${basedir}/tools/classes"/>           
+           value="${basedir}/tools/classes"/>
     </target>        
 
     <target name="unzip-nb" description="Unzip clusters to modules" >                                                  
-        <mkdir dir="build"/> 
         <property name="clusters" value="cnd(cpp),
                                          apisupport(javase), profiler(javase), java(javase), harness(javase),
                                          soa(soa),
@@ -136,7 +142,11 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="build-module">
-        <copy file="commonfiles/Info.plist" filtering="true" tofile="netBeans/${module.name}/build/Info.plist">
+
+        <property name="module.builddir" value="${basedir}/netBeans/${module.name}/build"/>
+        <property name="scriptsdir" value="${module.builddir}/scripts"/>
+
+        <copy file="commonfiles/Info.plist" filtering="true" tofile="${module.builddir}/Info.plist">
             <filterset>
                 <filter token="INSTALLDIR" value="${app.name}/Contents/Resources/NetBeans"/>
                 <filter token="BUNDLE" value="netbeans.ide.${module.name}"/>
@@ -145,26 +155,29 @@ Microsystems, Inc. All Rights Reserved.
         
         <ant target="size-pack-module"/>
         
-        <copy file="commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${basedir}/netBeans/${module.name}/pkg/scripts/Description.plist">
+        <copy file="commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${module.builddir}/Description.plist">
             <filterset>
                 <filter token="TITLE" value="${module.title}"/>
             </filterset>
-        </copy>  
+        </copy>
+
+
+        <copy  todir="${scriptsdir}">
+            <fileset dir="${basedir}/netBeans/${module.name}/pkg/scripts"/>
+        </copy>
         
-        <copy file="${basedir}/netBeans/baseide/pkg/scripts/env.sh" 
-              todir="${basedir}/netBeans/${module.name}/pkg/scripts"/> 
-        <copy file="${basedir}/netBeans/baseide/pkg/scripts/addproduct_id.sh" 
-              todir="${basedir}/netBeans/${module.name}/pkg/scripts"/>        
+        <copy file="${basedir}/netBeans/baseide/build/scripts/env.sh" todir="${scriptsdir}"/>
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/addproduct_id.sh" todir="${scriptsdir}"/>
         
         <echo message="Building ${module.name} into ${basedir}/build/${module.name}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value=" /Developer/Tools/packagemaker -build -v -p ${basedir}/build/${module.name}.pkg -f ${basedir}/netBeans/${module.name}/build/netbeans -i ${basedir}/netBeans/${module.name}/build/Info.plist -r ${basedir}/netBeans/${module.name}/pkg/scripts -d ${basedir}/netBeans/${module.name}/pkg/scripts/Description.plist"/>
+            <arg value=" /Developer/Tools/packagemaker -build -v -p ${basedir}/build/${module.name}.pkg -f ${module.builddir}/netbeans -i ${module.builddir}/Info.plist -r ${scriptsdir} -d ${module.builddir}/Description.plist"/>
         </exec>                                         
     </target>          
     
     <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-glassfish-v3-pkg,build-tomcat-pkg,build-openesb-pkg">                                                        
-        <mkdir dir="dist"/>                  
+                  
         <property name="bundles" value="        (./build/*pkg),
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
                                              -java(./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/glassfish.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
@@ -264,8 +277,7 @@ Microsystems, Inc. All Rights Reserved.
                       reverse="true" includes="Localizable.strings"/>                        
     </target>     
   
-    <target name="build-all-mysql-dmg" depends="clean,init,build-pkg,build-glassfish-pkg">   
-        <mkdir dir="dist"/>         
+    <target name="build-all-mysql-dmg" depends="clean,init,build-pkg,build-glassfish-pkg">                    
         <get src="${mysql_connector.location}" 
              dest="${basedir}/build/${mysql_connector.name}.jar"
              usetimestamp="true"/>
@@ -347,7 +359,7 @@ Microsystems, Inc. All Rights Reserved.
               todir="${basedir}/build/mysql.pkg/Contents/Resources"/>
         <chmod file="${basedir}/build/mysql.pkg/Contents/Resources/add_mysql.sh" perm="ugo+x"/>          
 
-        <copy file="${basedir}/netBeans/baseide/pkg/scripts/env.sh" 
+        <copy file="${basedir}/netBeans/baseide/build/scripts/env.sh"
               todir="${basedir}/build/mysql.pkg/Contents/Resources"/> 
         <chmod file="${basedir}/build/mysql.pkg/Contents/Resources/env.sh"  perm="ugo+x"/>
      

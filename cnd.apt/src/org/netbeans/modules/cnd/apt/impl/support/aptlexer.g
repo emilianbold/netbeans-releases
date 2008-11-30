@@ -55,7 +55,7 @@ options {
 } 
 
 {
-@SuppressWarnings({"unchecked", "cast"})
+@SuppressWarnings({"unchecked", "cast", "fallthrough"})
 }
 class APTLexer extends Lexer;
 
@@ -301,7 +301,7 @@ tokens {
     }
 
     // Used instead of setTokenObjectClass method to avoid reflection usage
-    protected Token createToken(int type) {
+    protected APTToken createToken(int type) {
         return APTUtils.createAPTToken(type);
     }
 
@@ -458,7 +458,7 @@ tokens {
         setPreprocPending(false);
     }
 
-    protected Token makeToken(int t) {
+    protected APTToken makeToken(int t) {
         if (isOnlyPreproc() && isPreprocPossible()) {
            // do not create token if lexer builds light stream
             if (!(t==Token.EOF_TYPE || t==END_PREPROC_DIRECTIVE)){

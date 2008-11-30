@@ -104,7 +104,7 @@ class OpenedEditors implements PropertyChangeListener {
     }
 
     private void fireChangeEvent() {
-        if (SHOW_TIME) System.err.println("OpenedEditors.fireChangeEvent()");
+        if (SHOW_TIME) { System.err.println("OpenedEditors.fireChangeEvent()"); }
 
         ChangeEvent e = new ChangeEvent(this);
         List<ChangeListener> listenersCopy = null;
@@ -127,7 +127,7 @@ class OpenedEditors implements PropertyChangeListener {
     }
 
     public synchronized void stateChanged() {
-        if (SHOW_TIME || TRACE_FILES) System.err.println("OpenedEditors.stateChanged()");
+        if (SHOW_TIME || TRACE_FILES) { System.err.println("OpenedEditors.stateChanged()"); }
 
         for (JTextComponent c : visibleEditors) {
             c.removePropertyChangeListener(this);
@@ -142,7 +142,7 @@ class OpenedEditors implements PropertyChangeListener {
             if (editor instanceof JEditorPane && fo != null && isSupported(fo)) {
                 // FIXUP for #139980 EditorRegistry.componentList() returns editors that are already closed
                 boolean valid = isOpen((JEditorPane) editor, fo);
-                if (TRACE_FILES) System.err.printf("\tfile: %s valid: %b\n", fo == null ? "null" : fo.toString(), valid);
+                if (TRACE_FILES) { System.err.printf("\tfile: %s valid: %b\n", fo.toString(), valid); }
                 if (valid) {
                     visibleEditors.add(editor);
                 }
@@ -175,14 +175,14 @@ class OpenedEditors implements PropertyChangeListener {
     }
 
     public synchronized void propertyChange(PropertyChangeEvent evt) {
-        if (SHOW_TIME) System.err.println("OpenedEditors.propertyChange()");
+        if (SHOW_TIME) { System.err.println("OpenedEditors.propertyChange()"); }
 
         JTextComponent c = (JTextComponent) evt.getSource();
         FileObject originalFile = visibleEditors2Files.get(c);
         FileObject newFile = getFileObject(c);
 
         if (originalFile != newFile) {
-            if (SHOW_TIME) System.err.println("OpenedEditord: new files found: " + newFile.getNameExt());
+            if (SHOW_TIME) { System.err.println("OpenedEditord: new files found: " + newFile.getNameExt()); }
             visibleEditors2Files.put(c, newFile);
             fireChangeEvent();
         }
@@ -190,18 +190,10 @@ class OpenedEditors implements PropertyChangeListener {
 
     static FileObject getFileObject(JTextComponent pane) {
         Object source = pane.getDocument().getProperty(Document.StreamDescriptionProperty);
-
         if (!(source instanceof DataObject)) {
             return null;
         }
-
-        DataObject file = (DataObject) source;
-
-        if (file != null) {
-            return file.getPrimaryFile();
-        }
-
-        return null;
+        return ((DataObject) source).getPrimaryFile();
     }
 
     /**

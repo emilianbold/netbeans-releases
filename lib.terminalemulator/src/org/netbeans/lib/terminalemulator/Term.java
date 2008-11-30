@@ -3028,7 +3028,7 @@ public class Term extends JComponent implements Accessible {
             g.drawRect(rect_x, rect_y, rect_width, rect_height);
     }
     
-    private final boolean do_margins = true;
+    private static final boolean do_margins = true;
     
     private boolean possiblyScrollDown() {
         /*

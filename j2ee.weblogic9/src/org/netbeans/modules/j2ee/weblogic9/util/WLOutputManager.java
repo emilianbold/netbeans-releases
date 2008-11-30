@@ -36,9 +36,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.extexecution.api.input.InputProcessors;
-import org.netbeans.modules.extexecution.api.input.InputReaderTask;
-import org.netbeans.modules.extexecution.api.input.InputReaders;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.InputReaderTask;
+import org.netbeans.api.extexecution.input.InputReaders;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.openide.windows.InputOutput;
 

@@ -132,7 +132,7 @@ public class DiagnosticUnresolved {
     
     private static class UnresolvedInfoEx extends UnresolvedInfoBase {
 
-        private Map/*<CsmFile, IntArray>*/ files = new HashMap()/*<CsmFile, IntArray>*/;
+        private Map<CsmFile, IntArray> files = new HashMap<CsmFile, IntArray>();
         
         public UnresolvedInfoEx(String name) {
             super(name);
@@ -141,7 +141,7 @@ public class DiagnosticUnresolved {
         @Override
         public void registerOccurence(CsmFile file, int offset) {
             super.registerOccurence(file, offset);
-            IntArray ia = (IntArray) files.get(file);
+            IntArray ia = files.get(file);
             if( ia == null ) {
                 ia = new IntArray();
                 files.put(file, ia);
@@ -155,22 +155,22 @@ public class DiagnosticUnresolved {
             out.println(getName() + ' ' + getCount());
             out.println(" By files:"); // NOI18N
             
-            Comparator comp = new Comparator() {
-                public int compare(Object o1, Object o2) {
+            Comparator<CsmFile> comp = new Comparator<CsmFile>() {
+                public int compare(CsmFile o1, CsmFile o2) {
                     if( o1 == o2 ) {
                         return 0;
                     }
-                    IntArray ia1 = (IntArray) files.get(o1);
-                    IntArray ia2 = (IntArray) files.get(o2);
+                    IntArray ia1 = files.get(o1);
+                    IntArray ia2 = files.get(o2);
                     return (ia1.size() > ia2.size()) ? -1 : 1;
                 }
             };
             
-            List list = new ArrayList(files.keySet());
+            List<CsmFile> list = new ArrayList<CsmFile>(files.keySet());
             Collections.sort(list, comp);
             for (Iterator it = list.iterator(); it.hasNext();) {
                 CsmFile file = (CsmFile) it.next();
-                IntArray ia = (IntArray) files.get(file);
+                IntArray ia = files.get(file);
                 int cnt = (ia == null) ? -1 : ia.size();
                 out.println("    " +  file.getAbsolutePath() + ' ' + cnt); // NOI18N
             }
@@ -179,7 +179,7 @@ public class DiagnosticUnresolved {
         
     }
     
-    private Map/*<String, UnresolvedInfoBase>*/ map = new HashMap();
+    private Map<String, UnresolvedInfoBase> map = new HashMap<String, UnresolvedInfoBase>();
     private int level;
     
     public DiagnosticUnresolved(int level) {
@@ -202,7 +202,7 @@ public class DiagnosticUnresolved {
             return;
         }
         String name = glueName(nameTokens);
-        UnresolvedInfoBase u = (UnresolvedInfoBase) map.get(name);
+        UnresolvedInfoBase u = map.get(name);
         if( u == null ) {
             u = (level == 1) ? new UnresolvedInfoBase(name) : new UnresolvedInfoEx(name);
             map.put(name, u);
@@ -224,28 +224,16 @@ public class DiagnosticUnresolved {
             
         out.println("\n**** Unresolved names statistics\n"); // NOI18N
         
-        Comparator comp = new Comparator() {
-            public int compare(Object o1, Object o2) {
-                if( o1 == o2 ) {
+        Comparator<UnresolvedInfoBase> comp = new Comparator<UnresolvedInfoBase>() {
+            public int compare(UnresolvedInfoBase ui1, UnresolvedInfoBase ui2) {
+                if( ui1 == ui2 ) {
                     return 0;
                 }
-                UnresolvedInfoBase ui1 = (UnresolvedInfoBase) o1;
-                UnresolvedInfoBase ui2 = (UnresolvedInfoBase) o2;
                 return (ui1.getCount() > ui2.getCount()) ? -1 : 1;
             }
-
-            @Override
-            public boolean equals(Object obj) {
-                return obj == this;
-            }
-            
-            @Override
-            public int hashCode() {
-                return 3; // any dummy value
-            }               
         };
         
-        List infos = new ArrayList(map.values());
+        List<UnresolvedInfoBase> infos = new ArrayList<UnresolvedInfoBase>(map.values());
         int total = 0;
         Collections.sort(infos, comp);
         for (Iterator it = infos.iterator(); it.hasNext();) {

@@ -232,7 +232,7 @@ public class LanguagesEditorKit extends NbEditorKit {
     protected void initDocument (Document doc) {
         new AnnotationManager (doc);
         new SyntaxErrorHighlighter (doc);
-        new DatabaseManager (doc);
+        //new DatabaseManager (doc);
     }
     
 //    public Syntax createSyntax (Document doc) {

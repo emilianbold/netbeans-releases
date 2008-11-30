@@ -121,7 +121,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
                 } else {
                     result = PlatformTypes.PLATFORM_GENERIC;
                 }
-                platform = new Integer(result);
+                platform = Integer.valueOf(result);
             }
             return platform.intValue();
         }

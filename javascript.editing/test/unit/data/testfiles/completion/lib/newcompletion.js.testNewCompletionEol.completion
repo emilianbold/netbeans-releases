@@ -149,6 +149,9 @@ CONSTRUCTO Infinity()                                 Core JS
 CONSTRUCTO IsFinite                                   Core JS
 CONSTRUCTO IsNaN                                      Core JS
 CONSTRUCTO IsPlaying()                                FlashPlayer
+CONSTRUCTO Iterator                                   Core JS
+CONSTRUCTO Iterator(collection)                       Core JS
+CONSTRUCTO Iterator(collection, keysOnly)             Core JS
 CONSTRUCTO Java                                       Core JS
 CONSTRUCTO JavaArray                                  Core JS
 CONSTRUCTO JavaClass                                  Core JS

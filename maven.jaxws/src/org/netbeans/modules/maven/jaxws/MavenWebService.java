@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -63,12 +63,17 @@ public class MavenWebService implements WebServiceImplementation {
 
     private JaxWsService service;
     private Project prj;
-    
+
+    /** Constructor.
+     *
+     * @param service JaxWsService
+     * @param prj project
+     */
     public MavenWebService(JaxWsService service, Project prj) {
         this.service = service;
         this.prj = prj;
     }
-    
+
     public String getIdentifier() {
         if (service.isServiceProvider()) {
             return service.getImplementationClass();
@@ -78,7 +83,7 @@ public class MavenWebService implements WebServiceImplementation {
     }
 
     public boolean isServiceProvider() {
-        return service.isServiceProvider(); 
+        return service.isServiceProvider();
     }
 
     public Type getServiceType() {
@@ -89,15 +94,12 @@ public class MavenWebService implements WebServiceImplementation {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public Node getNode() {
-        return createNode();
-    }
-    
-    private Node createNode() {
+    public Node createNode() {
         if (service.isServiceProvider()) {
-            SourceGroup[] srcGroups = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            SourceGroup[] srcGroups = ProjectUtils.getSources(prj).getSourceGroups(
+                    JavaProjectConstants.SOURCES_TYPE_JAVA);
             String implClass = service.getImplementationClass();
-            for (SourceGroup srcGroup: srcGroups) {
+            for (SourceGroup srcGroup : srcGroups) {
                 FileObject srcRoot = srcGroup.getRootFolder();
                 FileObject implClassFo = getImplementationClass(implClass, srcRoot);
                 if (implClassFo != null) {
@@ -109,10 +111,10 @@ public class MavenWebService implements WebServiceImplementation {
         }
         return null;
     }
-    
+
     private FileObject getImplementationClass(String implClass, FileObject srcRoot) {
-        if(implClass != null && srcRoot!=null) {
-            return srcRoot.getFileObject(implClass.replace('.','/')+".java");
+        if (implClass != null && srcRoot != null) {
+            return srcRoot.getFileObject(implClass.replace('.', '/') + ".java"); //NOI18N
         }
         return null;
     }

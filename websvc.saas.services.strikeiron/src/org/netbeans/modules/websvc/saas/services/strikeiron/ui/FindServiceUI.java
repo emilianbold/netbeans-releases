@@ -1,7 +1,42 @@
 /*
- * FindServiceUI.java
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Created on October 31, 2007, 2:42 PM
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.websvc.saas.services.strikeiron.ui;
@@ -14,12 +49,12 @@ import java.awt.event.KeyEvent;
 import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.websvc.saas.spi.ServiceData;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceData;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.util.Cancellable;
@@ -30,7 +65,7 @@ import org.openide.util.NbBundle;
  * @author  nam
  */
 public class FindServiceUI extends javax.swing.JPanel {
-    
+    private static final long serialVersionUID = 1L;
     private ProgressHandle progressHandle;
     private JComponent progressComponent;
     private boolean jaxrpcWarned = false;
@@ -44,9 +79,17 @@ public class FindServiceUI extends javax.swing.JPanel {
         initComponents();
         cbAuthenticationMode.setSelectedItem(getModel().getAuthenticationStyle());
         cbSortBy.setSelectedItem(getModel().getSortBy());
-        serviceSelectionTable.getColumnModel().getColumn(ServiceTableModel.COLUMN_WS_NAME).setMinWidth(220);
-        serviceSelectionTable.getColumnModel().getColumn(ServiceTableModel.COLUMN_SELECT).setMinWidth(50);
-        serviceSelectionTable.getColumnModel().getColumn(ServiceTableModel.COLUMN_SELECT).setResizable(false);
+        // Make some kind of attempt to size the table columns sensibly.
+        int selectWidth = SwingUtilities.computeStringWidth(
+                serviceSelectionTable.getFontMetrics(serviceSelectionTable.getFont()),
+                serviceSelectionTable.getColumnName(ServiceTableModel.COLUMN_SELECT));
+        // Compensate for font size variations, avoids ellipsis.
+        selectWidth += (selectWidth / 2);
+        serviceSelectionTable.getColumnModel().getColumn(
+                ServiceTableModel.COLUMN_SELECT).setPreferredWidth(selectWidth);
+        int nameWidth = spTab.getDividerLocation() - selectWidth;
+        serviceSelectionTable.getColumnModel().getColumn(
+                ServiceTableModel.COLUMN_WS_NAME).setPreferredWidth(nameWidth);
         bSearch.setEnabled(false);
         addButton.setEnabled(false);
         clearMessage();
@@ -93,8 +136,10 @@ public class FindServiceUI extends javax.swing.JPanel {
             }
             
             public void serviceSelectionChanged(ChangeEvent e) {
-                if (getSelectedServices().size() > 0) {
+                if (getModel().getSelectedCount() > 0) {
                     addButton.setEnabled(true);
+                } else {
+                    addButton.setEnabled(false);
                 }
             }
         });
@@ -136,13 +181,15 @@ public class FindServiceUI extends javax.swing.JPanel {
         tpTabs = new javax.swing.JTabbedPane();
         searchPanel = new javax.swing.JPanel();
         spTab = new javax.swing.JSplitPane();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        selectionScrollPane = new javax.swing.JScrollPane();
         serviceSelectionTable = new javax.swing.JTable();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        detailScrollPane = new javax.swing.JScrollPane();
         serviceInfoPanel = new ServiceDetailPanel();
         tfSearch = new javax.swing.JTextField();
         bSearch = new javax.swing.JButton();
         progressContainerPanel = new javax.swing.JPanel();
+        tableLabel = new javax.swing.JLabel();
+        searchLabel = new javax.swing.JLabel();
         settingsPanel = new javax.swing.JPanel();
         jlAuthenticationMode = new javax.swing.JLabel();
         jlSortBy = new javax.swing.JLabel();
@@ -152,10 +199,11 @@ public class FindServiceUI extends javax.swing.JPanel {
         cancelButton = bCancel;
         addButton = bAdd;
 
+        labelDescription.setDisplayedMnemonic('W');
+        labelDescription.setLabelFor(tpTabs);
         labelDescription.setText(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.labelDescription.text")); // NOI18N
 
         tpTabs.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        tpTabs.setOpaque(true);
         tpTabs.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 tpTabsStateChanged(evt);
@@ -168,23 +216,31 @@ public class FindServiceUI extends javax.swing.JPanel {
         spTab.setOneTouchExpandable(true);
 
         serviceSelectionTable.setModel(new ServiceTableModel());
-        jScrollPane1.setViewportView(serviceSelectionTable);
+        selectionScrollPane.setViewportView(serviceSelectionTable);
+        serviceSelectionTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.serviceSelectionTable.AccessibleContext.accessibleName")); // NOI18N
+        serviceSelectionTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.serviceSelectionTable.AccessibleContext.accessibleDescription")); // NOI18N
 
-        spTab.setLeftComponent(jScrollPane1);
+        spTab.setLeftComponent(selectionScrollPane);
+        selectionScrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.jScrollPane1.AccessibleContext.accessibleName")); // NOI18N
+        selectionScrollPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.jScrollPane1.AccessibleContext.accessibleDescription")); // NOI18N
 
-        jScrollPane2.setViewportView(serviceInfoPanel);
+        detailScrollPane.setViewportView(serviceInfoPanel);
+        serviceInfoPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.serviceInfoPanel.AccessibleContext.accessibleName")); // NOI18N
 
-        spTab.setRightComponent(jScrollPane2);
+        spTab.setRightComponent(detailScrollPane);
+        detailScrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.jScrollPane2.AccessibleContext.accessibleName")); // NOI18N
+        detailScrollPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.jScrollPane2.AccessibleContext.accessibleDescription")); // NOI18N
 
         tfSearch.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                tfSearchKeyReleased(evt);
-            }
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 tfSearchonKeyTyped(evt);
             }
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                tfSearchKeyReleased(evt);
+            }
         });
 
+        bSearch.setMnemonic('S');
         bSearch.setText(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.bSearch.text")); // NOI18N
         bSearch.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -196,6 +252,14 @@ public class FindServiceUI extends javax.swing.JPanel {
         progressContainerPanel.setPreferredSize(new java.awt.Dimension(20, 20));
         progressContainerPanel.setLayout(new java.awt.BorderLayout());
 
+        tableLabel.setDisplayedMnemonic('r');
+        tableLabel.setLabelFor(serviceSelectionTable);
+        tableLabel.setText(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.tableLabel.text")); // NOI18N
+
+        searchLabel.setDisplayedMnemonic('Q');
+        searchLabel.setLabelFor(tfSearch);
+        searchLabel.setText(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.searchLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout searchPanelLayout = new org.jdesktop.layout.GroupLayout(searchPanel);
         searchPanel.setLayout(searchPanelLayout);
         searchPanelLayout.setHorizontalGroup(
@@ -204,12 +268,15 @@ public class FindServiceUI extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(searchPanelLayout.createSequentialGroup()
+                        .add(searchLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(tfSearch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 216, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(bSearch)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(progressContainerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE))
+                        .add(progressContainerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 744, Short.MAX_VALUE)
+                    .add(tableLabel))
                 .addContainerGap())
         );
         searchPanelLayout.setVerticalGroup(
@@ -218,23 +285,36 @@ public class FindServiceUI extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(tfSearch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(bSearch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(progressContainerPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(bSearch)
+                    .add(progressContainerPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(searchLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                .add(tableLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
+        spTab.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.spTab.AccessibleContext.accessibleName")); // NOI18N
+        spTab.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.spTab.AccessibleContext.accessibleDescription")); // NOI18N
+        tfSearch.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.tfSearch.AccessibleContext.accessibleName")); // NOI18N
+        tfSearch.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.tfSearch.AccessibleContext.accessibleDescription")); // NOI18N
+        bSearch.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.bSearch.AccessibleContext.accessibleDescription")); // NOI18N
+        progressContainerPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.progressContainerPanel.AccessibleContext.accessibleName")); // NOI18N
+        progressContainerPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.progressContainerPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        tableLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.tableLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        searchLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.searchLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         tpTabs.addTab(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.searchPanel.TabConstraints.tabTitle"), searchPanel); // NOI18N
+        searchPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.searchPanel.AccessibleContext.accessibleName")); // NOI18N
+        searchPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.searchPanel.AccessibleContext.accessibleDescription")); // NOI18N
 
-        settingsPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                settingsPanelMousePressed(evt);
-            }
-        });
-
+        jlAuthenticationMode.setDisplayedMnemonic('M');
+        jlAuthenticationMode.setLabelFor(cbAuthenticationMode);
         jlAuthenticationMode.setText(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.jlAuthenticationMode.text")); // NOI18N
 
+        jlSortBy.setDisplayedMnemonic('B');
+        jlSortBy.setLabelFor(cbSortBy);
         jlSortBy.setText(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.jlSortBy.text")); // NOI18N
 
         cbAuthenticationMode.setModel(new javax.swing.DefaultComboBoxModel(AUTHENTICATIONSTYLE.values()));
@@ -262,8 +342,8 @@ public class FindServiceUI extends javax.swing.JPanel {
                     .add(jlSortBy))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbSortBy, 0, 467, Short.MAX_VALUE)
-                    .add(cbAuthenticationMode, 0, 467, Short.MAX_VALUE))
+                    .add(cbSortBy, 0, 607, Short.MAX_VALUE)
+                    .add(cbAuthenticationMode, 0, 607, Short.MAX_VALUE))
                 .addContainerGap())
         );
         settingsPanelLayout.setVerticalGroup(
@@ -277,20 +357,30 @@ public class FindServiceUI extends javax.swing.JPanel {
                 .add(settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jlSortBy)
                     .add(cbSortBy, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(249, Short.MAX_VALUE))
+                .addContainerGap(262, Short.MAX_VALUE))
         );
 
+        jlAuthenticationMode.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.jlAuthenticationMode.AccessibleContext.accessibleDescription")); // NOI18N
+        jlSortBy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.jlSortBy.AccessibleContext.accessibleDescription")); // NOI18N
+        cbAuthenticationMode.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.cbAuthenticationMode.AccessibleContext.accessibleName")); // NOI18N
+        cbAuthenticationMode.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.cbAuthenticationMode.AccessibleContext.accessibleDescription")); // NOI18N
+        cbSortBy.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.cbSortBy.AccessibleContext.accessibleName")); // NOI18N
+        cbSortBy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.cbSortBy.AccessibleContext.accessibleDescription")); // NOI18N
+
         tpTabs.addTab(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.settingsPanel.TabConstraints.tabTitle"), settingsPanel); // NOI18N
+        settingsPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.settingsPanel.AccessibleContext.accessibleName")); // NOI18N
+        settingsPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.settingsPanel.AccessibleContext.accessibleDescription")); // NOI18N
 
         statusMessage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/websvc/saas/services/strikeiron/resources/warning.png"))); // NOI18N
+        statusMessage.setLabelFor(serviceInfoPanel);
         statusMessage.setText("");
 
+        cancelButton.setMnemonic('C');
         cancelButton.setText(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.cancelButton.text")); // NOI18N
         cancelButton.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
 
+        addButton.setMnemonic('A');
         addButton.setText(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.addButton.text")); // NOI18N
-        addButton.setActionCommand(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.addButton.actionCommand")); // NOI18N
-        addButton.setLabel(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.addButton.label")); // NOI18N
         addButton.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -300,12 +390,12 @@ public class FindServiceUI extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(labelDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 611, Short.MAX_VALUE)
-                    .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 611, Short.MAX_VALUE)
+                    .add(labelDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 807, Short.MAX_VALUE)
+                    .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 807, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(statusMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
-                        .add(16, 16, 16)
-                        .add(addButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(statusMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 638, Short.MAX_VALUE)
+                        .add(8, 8, 8)
+                        .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(cancelButton)))
                 .addContainerGap())
@@ -316,7 +406,7 @@ public class FindServiceUI extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(labelDescription)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
+                .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(statusMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 25, Short.MAX_VALUE)
@@ -324,6 +414,16 @@ public class FindServiceUI extends javax.swing.JPanel {
                     .add(addButton))
                 .addContainerGap())
         );
+
+        labelDescription.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.labelDescription.AccessibleContext.accessibleDescription")); // NOI18N
+        tpTabs.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.tpTabs.AccessibleContext.accessibleName")); // NOI18N
+        tpTabs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.tpTabs.AccessibleContext.accessibleDescription")); // NOI18N
+        statusMessage.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.statusMessage.AccessibleContext.accessibleDescription")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.cancelButton.AccessibleContext.accessibleDescription")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.addButton.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void tfSearchKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfSearchKeyReleased
@@ -350,16 +450,9 @@ public class FindServiceUI extends javax.swing.JPanel {
         getModel().setSortBy((SORTBY)cbSortBy.getSelectedItem());
     }//GEN-LAST:event_cbSortByActionPerformed
 
-    private void settingsPanelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_settingsPanelMousePressed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_settingsPanelMousePressed
-
     private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tpTabsStateChanged
         if (settingsPanel.isShowing()) {
-            addButton.setEnabled(false);
             clearMessage();
-        } else {
-            addButton.setEnabled(true);
         }
     }//GEN-LAST:event_tpTabsStateChanged
     
@@ -415,18 +508,20 @@ public class FindServiceUI extends javax.swing.JPanel {
     private javax.swing.JButton cancelButton;
     private javax.swing.JComboBox cbAuthenticationMode;
     private javax.swing.JComboBox cbSortBy;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane detailScrollPane;
     private javax.swing.JLabel jlAuthenticationMode;
     private javax.swing.JLabel jlSortBy;
     private javax.swing.JLabel labelDescription;
     private javax.swing.JPanel progressContainerPanel;
+    private javax.swing.JLabel searchLabel;
     private javax.swing.JPanel searchPanel;
+    private javax.swing.JScrollPane selectionScrollPane;
     private javax.swing.JTextPane serviceInfoPanel;
     private javax.swing.JTable serviceSelectionTable;
     private javax.swing.JPanel settingsPanel;
     private javax.swing.JSplitPane spTab;
     private javax.swing.JLabel statusMessage;
+    private javax.swing.JLabel tableLabel;
     private javax.swing.JTextField tfSearch;
     private javax.swing.JTabbedPane tpTabs;
     // End of variables declaration//GEN-END:variables

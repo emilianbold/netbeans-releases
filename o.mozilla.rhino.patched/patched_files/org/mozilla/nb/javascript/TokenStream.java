@@ -154,6 +154,7 @@ class TokenStream
             Id_function      = Token.FUNCTION,
             Id_if            = Token.IF,
             Id_in            = Token.IN,
+            Id_let           = Token.LET,
             Id_new           = Token.NEW,
             Id_null          = Token.NULL,
             Id_return        = Token.RETURN,
@@ -165,6 +166,7 @@ class TokenStream
             Id_void          = Token.VOID,
             Id_while         = Token.WHILE,
             Id_with          = Token.WITH,
+            Id_yield         = Token.YIELD,
 
             // the following are #ifdef RESERVE_JAVA_KEYWORDS in jsscan.c
             Id_abstract      = Token.RESERVED,
@@ -174,7 +176,7 @@ class TokenStream
             Id_char          = Token.RESERVED,
             Id_class         = Token.RESERVED,
             Id_const         = Token.CONST,
-            Id_debugger      = Token.RESERVED,
+            Id_debugger      = Token.DEBUGGER,
             Id_double        = Token.RESERVED,
             Id_enum          = Token.RESERVED,
             Id_extends       = Token.RESERVED,
@@ -205,7 +207,7 @@ class TokenStream
 
         int id;
         String s = name;
-// #generated# Last update: 2001-06-01 17:45:01 CEST
+// #generated# Last update: 2007-04-18 13:53:30 PDT
         L0: { id = 0; String X = null; int c;
             L: switch (s.length()) {
             case 2: c=s.charAt(1);
@@ -216,6 +218,7 @@ class TokenStream
             case 3: switch (s.charAt(0)) {
                 case 'f': if (s.charAt(2)=='r' && s.charAt(1)=='o') {id=Id_for; break L0;} break L;
                 case 'i': if (s.charAt(2)=='t' && s.charAt(1)=='n') {id=Id_int; break L0;} break L;
+                case 'l': if (s.charAt(2)=='t' && s.charAt(1)=='e') {id=Id_let; break L0;} break L;
                 case 'n': if (s.charAt(2)=='w' && s.charAt(1)=='e') {id=Id_new; break L0;} break L;
                 case 't': if (s.charAt(2)=='y' && s.charAt(1)=='r') {id=Id_try; break L0;} break L;
                 case 'v': if (s.charAt(2)=='r' && s.charAt(1)=='a') {id=Id_var; break L0;} break L;
@@ -242,7 +245,10 @@ class TokenStream
                 } break L;
             case 5: switch (s.charAt(2)) {
                 case 'a': X="class";id=Id_class; break L;
-                case 'e': X="break";id=Id_break; break L;
+                case 'e': c=s.charAt(0);
+                    if (c=='b') { X="break";id=Id_break; }
+                    else if (c=='y') { X="yield";id=Id_yield; }
+                    break L;
                 case 'i': X="while";id=Id_while; break L;
                 case 'l': X="false";id=Id_false; break L;
                 case 'n': c=s.charAt(0);
@@ -580,6 +586,14 @@ class TokenStream
                     // Return the corresponding token if it's a keyword
                     int result = stringToKeyword(str);
                     if (result != Token.EOF) {
+                        if ((result == Token.LET || result == Token.YIELD) && 
+                            parser.compilerEnv.getLanguageVersion() 
+                               < Context.VERSION_1_7)
+                        {
+                            // LET and YIELD are tokens only in 1.7 and later
+                            string = result == Token.LET ? "let" : "yield";
+                            result = Token.NAME;
+                        }
                         if (result != Token.RESERVED) {
                             return result;
                         } else if (!parser.compilerEnv.
@@ -715,7 +729,10 @@ class TokenStream
                     if (c == '\n' || c == EOF_CHAR) {
                         ungetChar(c);
                         parser.addError("msg.unterminated.string.lit");
+// <netbeans>
+//                        return Token.ERROR;
                         return Token.STRING_ERROR;
+// </netbeans>
                     }
 
                     if (c == '\\') {
@@ -889,9 +906,9 @@ class TokenStream
                             skipLine();
                             continue retry;
                         }
-                        ungetChar('-');
+                        ungetCharIgnoreLineEnd('-');
                     }
-                    ungetChar('!');
+                    ungetCharIgnoreLineEnd('!');
                 }
                 if (matchChar('<')) {
                     if (matchChar('=')) {
@@ -1093,8 +1110,9 @@ class TokenStream
             if (startToken != Token.DIV) Kit.codeBug();
         }
 
+        boolean inCharSet = false; // true if inside a '['..']' pair
         int c;
-        while ((c = getChar()) != '/') {
+        while ((c = getChar()) != '/' || inCharSet) {
             if (c == '\n' || c == EOF_CHAR) {
                 ungetChar(c);
                 throw parser.reportError("msg.unterminated.re.lit");
@@ -1102,8 +1120,11 @@ class TokenStream
             if (c == '\\') {
                 addToString(c);
                 c = getChar();
+            } else if (c == '[') {
+                inCharSet = true;
+            } else if (c == ']') {
+                inCharSet = false;
             }
-
             addToString(c);
         }
         int reEnd = stringBufferTop;
@@ -1465,11 +1486,11 @@ class TokenStream
 
     private boolean matchChar(int test) throws IOException
     {
-        int c = getChar();
+        int c = getCharIgnoreLineEnd();
         if (c == test) {
             return true;
         } else {
-            ungetChar(c);
+            ungetCharIgnoreLineEnd(c);
             return false;
         }
     }
@@ -1545,7 +1566,90 @@ class TokenStream
             return c;
         }
     }
+    
+    private int getCharIgnoreLineEnd() throws IOException
+    {
+// <netbeans>
+        if (lexerInput != null) {
+            for(;;) {
+                int c = lexerInput.read();
+                if (c == LexerInput.EOF) {
+                    hitEOF = true;
+                    return EOF_CHAR;
+                }
+                assert LexerInput.EOF == EOF_CHAR;
 
+                if (c <= 127) {
+                    if (c == '\n' || c == '\r') {
+                        lineEndChar = c;
+                        c = '\n';
+                    }
+                } else {
+                    if (isJSFormatChar(c)) {
+                        continue;
+                    }
+                    if (ScriptRuntime.isJSLineTerminator(c)) {
+                        lineEndChar = c;
+                        c = '\n';
+                    }
+                }
+                return c;
+            }
+        }
+// </netbeans>
+
+        if (ungetCursor != 0) {
+            return ungetBuffer[--ungetCursor];
+        }
+
+        for(;;) {
+            int c;
+            if (sourceString != null) {
+                if (sourceCursor == sourceEnd) {
+                    hitEOF = true;
+                    return EOF_CHAR;
+                }
+                c = sourceString.charAt(sourceCursor++);
+            } else {
+                if (sourceCursor == sourceEnd) {
+                    if (!fillSourceBuffer()) {
+                        hitEOF = true;
+                        return EOF_CHAR;
+                    }
+                }
+                c = sourceBuffer[sourceCursor++];
+            }
+
+            if (c <= 127) {
+                if (c == '\n' || c == '\r') {
+                    lineEndChar = c;
+                    c = '\n';
+                }
+            } else {
+                if (isJSFormatChar(c)) {
+                    continue;
+                }
+                if (ScriptRuntime.isJSLineTerminator(c)) {
+                    lineEndChar = c;
+                    c = '\n';
+                }
+            }
+            return c;
+        }
+    }
+    
+    private void ungetCharIgnoreLineEnd(int c)
+    {
+// <netbeans>
+        if (lexerInput != null) {
+            lexerInput.backup(1);
+            return;
+        }
+// </netbeans>
+        
+        ungetBuffer[ungetCursor++] = c;
+    }
+    
     private void skipLine() throws IOException
     {
         // skip to end of line
@@ -1849,13 +1953,14 @@ class TokenStream
 
     String regExpFlags;
 
-    // Set this to an inital non-null value so that the Parser has
-    // something to retrieve even if an error has occured and no
+    // Set this to an initial non-null value so that the Parser has
+    // something to retrieve even if an error has occurred and no
     // string is found.  Fosters one class of error, but saves lots of
     // code.
     private String string = "";
     private double number;
 
+// XXX <netbeans> I changed this from instance to static but that may be risky? Lexing same time as parsing?
     private static char[] stringBuffer = new char[128];
     private int stringBufferTop;
     private ObjToIntMap allStrings = new ObjToIntMap(50);

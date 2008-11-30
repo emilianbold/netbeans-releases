@@ -1,11 +1,11 @@
 <%@page contentType="text/html"%>
 <%@page pageEncoding="__ENCODING__"%>
 
-<%@ taglib uri="http://jakarta.apache.org/struts/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html" %>
-<%@ taglib uri="http://jakarta.apache.org/struts/tags-logic" prefix="logic" %>
+<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
+<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
+<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
 
-<html:html locale="true">
+<html:html lang="true">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=__ENCODING__">
         <title><bean:message key="welcome.title"/></title>

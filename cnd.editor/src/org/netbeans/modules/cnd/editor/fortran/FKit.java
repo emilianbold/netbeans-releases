@@ -62,9 +62,13 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.editor.*;
 
+import org.netbeans.modules.cnd.editor.fortran.indent.FortranHotCharIndent;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 import org.netbeans.modules.editor.*;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.Reformat;
+import org.openide.util.Exceptions;
 
 /**
 * Fortran editor kit with appropriate document
@@ -118,21 +122,6 @@ public class FKit extends NbEditorKit {
 
     protected Filter<FortranTokenId> getFilter() {
         return CndLexerUtilities.getFortranFilter();
-    }
-
-    /** Create new instance of syntax coloring scanner
-     * @param doc document to operate on. It can be null in the cases the syntax
-     *   creation is not related to the particular document
-     */
-    @Override
-    public Syntax createSyntax(Document doc) {
-        return new FSyntax(doc);
-    }
-
-    /** Create the formatter appropriate for this kit */
-    @Override
-    public Formatter createFormatter() {
-        return new FFormatter(this.getClass());
     }
 
     @Override
@@ -195,7 +184,7 @@ public class FKit extends NbEditorKit {
 	}
 
         
-       	public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+   	public void actionPerformed(ActionEvent evt, final JTextComponent target) {
 	    if (target != null) {
 
 		if (!target.isEditable() || !target.isEnabled()) {
@@ -224,16 +213,12 @@ public class FKit extends NbEditorKit {
                             }
 
                             int pos = startPos;
-                            Formatter formatter = doc.getFormatter();
-                            formatter.reformatLock();
+                            Reformat reformat = Reformat.get(doc);
+                            reformat.lock();
                             try {
-                                while (pos < endPosition.getOffset()) {
-                                    int stopPos = endPosition.getOffset();
-                                    int reformattedLen = formatter.reformat(doc, pos, stopPos);
-                                    pos = pos + reformattedLen;
-                                }
+                                reformat.reformat(pos, endPosition.getOffset());
                             } finally {
-                                formatter.reformatUnlock();
+                                reformat.unlock();
                             }
 
                             // Restore the line
@@ -248,17 +233,34 @@ public class FKit extends NbEditorKit {
                 });
                 target.setCursor(origCursor);
 
-	    }
-	}
+            }
+        }
     }    
 
     private static class CCDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
         @Override
         protected void checkIndentHotChars(JTextComponent target, String typedText) {
             BaseDocument doc = Utilities.getDocument(target);
-            if (doc != null) {
-                super.checkIndentHotChars(target, typedText);
+            int offset = target.getCaretPosition();
+            if (FortranHotCharIndent.INSTANCE.getKeywordBasedReformatBlock(doc, offset, typedText)) {
+                Indent indent = Indent.get(doc);
+                indent.lock();
+                try {
+                    indent.reindent(offset);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally{
+                    indent.unlock();
+                }
             }
        	}
-    }
+
+        @Override
+        protected void insertString(BaseDocument doc, int dotPos,
+                Caret caret, String str,
+                boolean overwrite) throws BadLocationException {
+            super.insertString(doc, dotPos, caret, str, overwrite);
+            FortranBracketCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
+        }
+   }
 }

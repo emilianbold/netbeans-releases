@@ -48,6 +48,8 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.Environment;
+import org.openide.loaders.InstanceDataObject;
+import org.openide.loaders.XMLDataObject;
 import org.openide.util.Lookup;
 
 /** A provider for .settings files of a certain DTD.
@@ -108,7 +110,16 @@ public final class Env implements Environment.Provider {
     }
     
     public Lookup getEnvironment(DataObject dobj) {
-        if (!(dobj instanceof org.openide.loaders.InstanceDataObject)) return Lookup.EMPTY;
+        boolean recognize = false;
+        if (dobj instanceof InstanceDataObject) {
+            recognize = true;
+        } else if (dobj instanceof XMLDataObject) {
+            recognize = Boolean.TRUE.equals(dobj.getPrimaryFile().getParent().getAttribute("recognizeXML"));
+        }
+
+        if (!recognize) {
+            return Lookup.EMPTY;
+        }
         InstanceProvider icp = new InstanceProvider(dobj, providerFO);
         return icp.getLookup();
     }

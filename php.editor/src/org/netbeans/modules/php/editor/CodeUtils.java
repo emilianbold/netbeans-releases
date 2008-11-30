@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
@@ -67,6 +68,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
+import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.util.Exceptions;
@@ -85,10 +88,19 @@ public class CodeUtils {
 
     public static String extractClassName(ClassName clsName) {
         Expression name = clsName.getName();
-
+        while (name instanceof Variable || name instanceof FieldAccess) {
+            if (name instanceof Variable) {
+                Variable var = (Variable) name;
+                name = var.getName();
+            } else if (name instanceof FieldAccess) {
+                FieldAccess fld = (FieldAccess) name;
+                name = fld.getField().getName();
+            }
+        }
+        
         assert name instanceof Identifier :
             "unsupported type of ClassName.getClassName().getName(): "
-            + name.getClass().getName();
+            + name.getClass().getName() + " : " + name.toString();
 
         return (name instanceof Identifier) ? ((Identifier) name).getName() : "";//NOI18N
     }
@@ -103,6 +115,15 @@ public class CodeUtils {
 
     @CheckForNull // null for RelectionVariable
     public static String extractVariableName(Variable var) {
+        if (var instanceof ReflectionVariable) {
+            Expression name = ((ReflectionVariable) var).getName();
+            if (name instanceof Scalar) {
+                Scalar scalar = (Scalar) name;
+                return scalar.getStringValue();
+            } else if (name instanceof Variable) {
+                var = (Variable)name;
+            }
+        }
         if (var.getName() instanceof Identifier) {
             Identifier id = (Identifier) var.getName();
             StringBuilder varName = new StringBuilder();

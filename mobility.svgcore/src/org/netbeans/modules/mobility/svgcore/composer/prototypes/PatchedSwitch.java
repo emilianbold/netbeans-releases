@@ -74,6 +74,7 @@ public final class PatchedSwitch extends Switch implements PatchedElement {
         }
     }
     
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedSwitch(doc);
     }    

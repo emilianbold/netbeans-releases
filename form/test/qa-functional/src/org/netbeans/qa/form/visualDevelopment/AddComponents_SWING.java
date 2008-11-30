@@ -93,7 +93,7 @@ public class AddComponents_SWING extends ExtJellyTestCase {
     /** Run test.
      */
     public void setUp() throws IOException {
-        openProject(_testProjectName);
+        openDataProjects(_testProjectName);
     }
 
     /** Run test.

@@ -41,15 +41,26 @@ package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
 import java.util.Arrays;
 import java.util.List;
+
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -58,6 +69,12 @@ import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 public class SVGCheckBoxCD extends ComponentDescriptor{
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGCheckBox"); // NOI18N
+    
+    private static final String DEFAULT_TEXT = "Online"; // NOI18N
+    
+    static {
+        SVGComponentCD.addPairType( TYPEID, SVGCheckBoxEventSourceCD.TYPEID );
+    }
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);
@@ -71,14 +88,56 @@ public class SVGCheckBoxCD extends ComponentDescriptor{
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList (
+                new PropertyDescriptor( SVGRadioButtonCD.PROP_SELECTED, 
+                        MidpTypes.TYPEID_BOOLEAN, 
+                        MidpTypes.createBooleanValue (Boolean.FALSE), false, false, 
+                        MidpVersionable.MIDP_2),
+                new PropertyDescriptor( SVGLabelCD.PROP_TEXT, 
+                                MidpTypes.TYPEID_JAVA_LANG_STRING, 
+                                MidpTypes.createStringValue( DEFAULT_TEXT ), true, true,
+                                MidpVersionable.MIDP_2)
+                
+                
                 );
+    }
+    
+    private Presenter createSetterPresenter () {
+        return new CodeSetterPresenter ().
+                addParameters(MidpParameter.create(SVGLabelCD.PROP_TEXT,
+                        SVGRadioButtonCD.PROP_SELECTED)).
+                addSetters(MidpSetter.createSetter("setText", 
+                        MidpVersionable.MIDP_2).addParameters(SVGLabelCD.
+                                PROP_TEXT)).
+                 addSetters(MidpSetter.createSetter("setSelected", 
+                       MidpVersionable.MIDP_2).addParameters( SVGRadioButtonCD.
+                                                PROP_SELECTED)) ;
+    }
+    
+    private static DefaultPropertiesPresenter createPropertiesPresenter() {
+        return new DefaultPropertiesPresenter()
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES).
+                addProperty(NbBundle.getMessage(SVGCheckBoxCD.class, 
+                        "DISP_Text"), 
+                        PropertyEditorString.createInstance(
+                                NbBundle.getMessage(SVGRadioButtonCD.class, 
+                                "LBL_SVGCheckBox_Text")), SVGLabelCD.PROP_TEXT).
+                 addProperty(NbBundle.getMessage(SVGCheckBoxCD.class, 
+                                "DISP_IsSelected"), 
+                         PropertyEditorBooleanUC.createInstance(), 
+                         SVGRadioButtonCD.PROP_SELECTED); // NOI18N
+                
     }
 
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList(
+                // properties
+                createPropertiesPresenter(),
+                createSetterPresenter(),
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
-                MidpCodePresenterSupport.createAddImportPresenter()
+                MidpCodePresenterSupport.createAddImportPresenter(),
+                new SVGCodeFooter( SVGCheckBoxEventSourceCD.TYPEID )  
         );
     }
 

@@ -54,17 +54,18 @@ import org.openide.nodes.Node;
 final class TestMethodNodeChildren extends Children.Array {
 
     /** */
-    private final Report.Testcase testcase;
+    private final Testcase testcase;
 
     /** Creates a new instance of TestMethodNodeChildren */
-    public TestMethodNodeChildren(final Report.Testcase testcase) {
+    public TestMethodNodeChildren(final Testcase testcase) {
         this.testcase = testcase;
     }
 
     /**
      */
+    @Override
     protected void addNotify() {
-        Report.Trouble trouble = testcase.trouble;
+        Trouble trouble = testcase.getTrouble();
 
         int nodesCount = trouble.exceptionClsName != null ? 1 : 0;                     //exception class name
         if (trouble.message != null) {
@@ -128,11 +129,4 @@ final class TestMethodNodeChildren extends Children.Array {
         
         add(children);
     }
-    
-    /**
-     */
-    protected void removeNotify() {
-        remove(getNodes());
-    }
-    
 }

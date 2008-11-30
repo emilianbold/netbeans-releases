@@ -65,4 +65,11 @@ made subject to such option by the copyright holder.
             <bits_64 flags="-m64"/>
         </architecture>
     </fortran>
+    <assembler>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags="-m32"/>
+            <bits_64 flags="-m64"/>
+        </architecture>
+    </assembler>
 </toolchaindefinition>

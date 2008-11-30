@@ -673,6 +673,17 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz148929.cc", 16, 9, "iz148929.cc", 13, 5);
     }
 
+    public void testTypenameInTemplateParameterDeclaration() throws Exception {
+        // IZ#151957: 9 parser's errors in boost 1.36
+        performTest("templateParameters.h", 116, 39, "templateParameters.h", 116, 1);
+        performTest("templateParameters.h", 120, 15, "templateParameters.h", 116, 1);
+    }
+
+    public void testIZ151955() throws Exception {
+        // IZ#151955: java.lang.StackOverflowError in boost 1.36
+        performTest("iz151955.cc", 13, 35, "iz151955.cc", 10, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

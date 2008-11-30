@@ -69,6 +69,7 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.openide.text.CloneableEditorSupport;
@@ -260,17 +261,19 @@ public class FmtOptions {
             jep.setIgnoreRepaint(true);
             jep.setText(previewText);
             
-            //CodeStyle codeStyle = CodeStyle.get(previewPrefs);
             BaseDocument bd = (BaseDocument)jep.getDocument();
+            Reformat reformat = Reformat.get(bd);
+            reformat.lock();
             try {
-        	bd.getFormatter().reformatLock();
-                bd.getFormatter().reformat(bd, 0, bd.getLength());
+                reformat.reformat(0, bd.getLength());
+                String x = bd.getText(0, bd.getLength());
+                jep.setText(x);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
-        	bd.getFormatter().reformatUnlock();
+                reformat.unlock();
             }
-            
+
             jep.setIgnoreRepaint(false);
             jep.scrollRectToVisible(new Rectangle(0,0,10,10) );
             jep.repaint(100);
@@ -353,11 +356,13 @@ public class FmtOptions {
                 if (c instanceof JComponent) {
                     JComponent jc = (JComponent)c;
                     Object o = jc.getClientProperty(OPTION_ID);
-                    if (o instanceof String || o instanceof String[])
+                    if (o instanceof String || o instanceof String[]) {
                         components.add(jc);
+                    }
                 }                    
-                if (c instanceof Container)
-                    scan((Container)c, components);
+                if (c instanceof Container) {
+                    scan((Container) c, components);
+                }
             }
         }
 
@@ -395,7 +400,7 @@ public class FmtOptions {
                 // XXX test for numbers
                 if ( isInteger(optionID) ) {
                     try {
-                        int i = Integer.parseInt(text);                        
+                        Integer.parseInt(text);                        
                     } catch (NumberFormatException e) {
                         return;
                     }
@@ -417,19 +422,21 @@ public class FmtOptions {
             }
             else if ( jc instanceof JCheckBox ) {
                 JCheckBox checkBox = (JCheckBox)jc;
-                if (!optionID.equals(expandTabToSpaces) && getDefaultAsBoolean(optionID) == checkBox.isSelected())
+                if (!optionID.equals(expandTabToSpaces) && getDefaultAsBoolean(optionID) == checkBox.isSelected()) {
                     node.remove(optionID);
-                else
+                } else {
                     node.putBoolean(optionID, checkBox.isSelected());
+                }
             } 
             else if ( jc instanceof JComboBox) {
                 JComboBox cb  = (JComboBox)jc;
                 // Logger.global.info( cb.getSelectedItem() + " " + optionID);
                 String value = ((ComboItem) cb.getSelectedItem()).value;
-                if (getDefaultAsString(optionID).equals(value))
+                if (getDefaultAsString(optionID).equals(value)) {
                     node.remove(optionID);
-                else
-                    node.put(optionID,value);
+                } else {
+                    node.put(optionID, value);
+                }
             }         
         }
         

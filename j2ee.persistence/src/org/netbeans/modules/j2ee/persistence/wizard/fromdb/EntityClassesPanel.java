@@ -79,7 +79,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -264,13 +263,17 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             warning = NbBundle.getMessage(EntityClassesPanel.class, "ERR_InvalidPersistenceUnit", ipx.getPath());
         }
 
-        Icon icon = null;
         if (warning.trim().length() > 0) {
-            icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/j2ee/persistence/ui/resources/warning.gif"));
+            Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/j2ee/persistence/ui/resources/warning.gif"));
+            createPUWarningLabel.setIcon(icon);
+            createPUWarningLabel.setText(warning);
+            createPUWarningLabel.setToolTipText(warning);
+        } else {
+            createPUWarningLabel.setIcon(null);
+            createPUWarningLabel.setText(null);
+            createPUWarningLabel.setToolTipText(null);
+            
         }
-        createPUWarningLabel.setIcon(icon);
-        createPUWarningLabel.setText(warning);
-        createPUWarningLabel.setToolTipText(warning);
     }
 
     private void updateSelectedTables() {

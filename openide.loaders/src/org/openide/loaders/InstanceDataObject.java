@@ -1250,12 +1250,17 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             if (saveTime < System.currentTimeMillis ()) {
                 saveTime = System.currentTimeMillis ();
             }
+            boolean useFallback = true;
             if (fo.hasExt (INSTANCE)) {
                 // try to ask for instance creation attribute
                 o = fo.getAttribute (EA_INSTANCE_CREATE);
+                if (o == null && fo.getAttribute ("class:" + EA_INSTANCE_CREATE) instanceof Class) { // NOI18N
+                    // the factory method is there, just it returned null
+                    useFallback = false;
+                }
             }
 
-            if (o == null) {
+            if (o == null && useFallback) {
                 // try super method
                 o = super.instanceCreate ();
             }

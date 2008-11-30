@@ -78,6 +78,7 @@ public final class PatchedRadialGradient extends RadialGradient implements Patch
         return null;
     }
     
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedRadialGradient(doc);
     }    

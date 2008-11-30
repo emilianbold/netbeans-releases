@@ -155,6 +155,11 @@ public interface CsmFunction<T> extends CsmOffsetableDeclaration<T>, CsmScope {
 
     CsmType getReturnType();
     
+    CsmFunctionParameterList  getParameterList();
+
+    /** shortcut for getParameterList().getParameters()
+     * @return
+     */
     Collection<CsmParameter>  getParameters();
 
     /** 

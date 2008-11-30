@@ -86,56 +86,49 @@ public class GeneralCompletionOptionsPanel extends JPanel {
 
         setForeground(new java.awt.Color(99, 130, 191));
 
-        cbAutoPopup.setText(org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "CTL_Auto_Popup_Completion_Window")); // NOI18N
-        cbAutoPopup.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(cbAutoPopup, org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "CTL_Auto_Popup_Completion_Window")); // NOI18N
         cbAutoPopup.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbAutoPopupActionPerformed(evt);
             }
         });
 
-        cbDocsAutoPopup.setText(org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "CTL_Auto_Popup_Documentation_Window")); // NOI18N
-        cbDocsAutoPopup.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(cbDocsAutoPopup, org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "CTL_Auto_Popup_Documentation_Window")); // NOI18N
         cbDocsAutoPopup.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbDocsAutoPopupActionPerformed(evt);
             }
         });
 
-        cbJavadocNextToCC.setText(org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "CTL_Javadoc_Next_To_CC")); // NOI18N
-        cbJavadocNextToCC.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(cbJavadocNextToCC, org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "CTL_Javadoc_Next_To_CC")); // NOI18N
         cbJavadocNextToCC.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbJavadocNextToCCActionPerformed(evt);
             }
         });
 
-        cbInsertSingleProposalsAutomatically.setText(org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "CTL_Insert_Single_Proposals_Automatically")); // NOI18N
-        cbInsertSingleProposalsAutomatically.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(cbInsertSingleProposalsAutomatically, org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "CTL_Insert_Single_Proposals_Automatically")); // NOI18N
         cbInsertSingleProposalsAutomatically.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbInsertSingleProposalsAutomaticallyActionPerformed(evt);
             }
         });
 
-        cbCaseSensitive.setText(org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "CTL_Case_Sensitive_Code_Completion")); // NOI18N
-        cbCaseSensitive.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(cbCaseSensitive, org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "CTL_Case_Sensitive_Code_Completion")); // NOI18N
         cbCaseSensitive.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbCaseSensitiveActionPerformed(evt);
             }
         });
 
-        cbShowDeprecated.setText(org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "CTL_Show_Deprecated_Members")); // NOI18N
-        cbShowDeprecated.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(cbShowDeprecated, org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "CTL_Show_Deprecated_Members")); // NOI18N
         cbShowDeprecated.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbShowDeprecatedActionPerformed(evt);
             }
         });
 
-        cbInsertClosingBracketsAutomatically.setText(org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "CTL_Pair_Character_Completion")); // NOI18N
-        cbInsertClosingBracketsAutomatically.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(cbInsertClosingBracketsAutomatically, org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "CTL_Pair_Character_Completion")); // NOI18N
         cbInsertClosingBracketsAutomatically.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbInsertClosingBracketsAutomaticallyActionPerformed(evt);
@@ -192,6 +185,9 @@ public class GeneralCompletionOptionsPanel extends JPanel {
         cbShowDeprecated.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "AD_Show_Deprecated_Members")); // NOI18N
         cbInsertClosingBracketsAutomatically.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "AN_Pair_Character_Completion")); // NOI18N
         cbInsertClosingBracketsAutomatically.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "AD_Pair_Character_Completion")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "GeneralCompletionOptionsPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneralCompletionOptionsPanel.class, "GeneralCompletionOptionsPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbAutoPopupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbAutoPopupActionPerformed

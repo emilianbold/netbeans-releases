@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,30 +23,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2006 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby.railsprojects;
 
 import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.railsprojects.database.RailsAdapterFactory;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
-import org.netbeans.spi.project.ui.support.NodeFactory;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
-import org.openide.util.Lookup.Result;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.test.MockLookup;
-import org.xml.sax.SAXException;
 
 public class RailsProjectTestBase extends RubyTestBase {
 
@@ -85,28 +72,4 @@ public class RailsProjectTestBase extends RubyTestBase {
         return project;
     }
 
-    protected void registerLayer() throws Exception {
-        MockLookup.setInstances(new Repo(this));
-        Result<NodeFactory> result = Lookups.forPath("Projects/org-netbeans-modules-ruby-railsprojects/Nodes").lookupResult(NodeFactory.class);
-        assertTrue("layer registered", result.allInstances().size() > 0);
-    }
-
-    private static final class Repo extends Repository {
-
-        public Repo(NbTestCase t) throws Exception {
-            super(mksystem(t));
-        }
-
-        private static FileSystem mksystem(NbTestCase t) throws Exception {
-            List<FileSystem> layers = new ArrayList<FileSystem>();
-            addLayer(layers, "org/netbeans/modules/ruby/railsprojects/ui/resources/layer.xml");
-            return new MultiFileSystem(layers.toArray(new FileSystem[layers.size()]));
-        }
-
-        private static void addLayer(List<FileSystem> layers, String layerRes) throws SAXException {
-            URL layerFile = Repo.class.getClassLoader().getResource(layerRes);
-            assert layerFile != null : layerRes + " found";
-            layers.add(new XMLFileSystem(layerFile));
-        }
-    }
 }

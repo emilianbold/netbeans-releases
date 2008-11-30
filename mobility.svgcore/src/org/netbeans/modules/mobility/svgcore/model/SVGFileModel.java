@@ -54,7 +54,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.JEditorPane;
@@ -1173,6 +1172,7 @@ public final class SVGFileModel {
 
     public void runTransaction(final FileModelTransaction transaction) {
         new Thread("TransactionWrapper") {  //NOI18N
+            @Override
             public void run() {
                 transaction.run();
                 //SwingUtilities.invokeLater(transaction);
@@ -1416,6 +1416,7 @@ public final class SVGFileModel {
             return ((ChangeDescriptor) o).m_startOffset - m_startOffset;
         }
         
+        @Override
         public boolean equals(Object o) {
             return ((ChangeDescriptor) o).m_startOffset == m_startOffset;
         }

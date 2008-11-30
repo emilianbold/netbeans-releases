@@ -48,8 +48,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -297,7 +295,7 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
         if (hasRakeFile() && getPlatform().hasValidRake(false)) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    RakeSupport.refreshTasks(RubyBaseProject.this);
+                    RakeSupport.refreshTasks(RubyBaseProject.this, false);
                 }
             });
         }

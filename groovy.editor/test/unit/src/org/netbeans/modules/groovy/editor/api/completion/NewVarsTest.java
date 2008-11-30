@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
-import org.netbeans.modules.groovy.editor.api.completion.GroovyCompletionHandler;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,7 +55,7 @@ public class NewVarsTest extends GroovyTestBase {
 
     public NewVarsTest(String testName) {
         super(testName);
-        Logger.getLogger(GroovyCompletionHandler.class.getName()).setLevel(Level.FINEST);
+        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
     // uncomment this to have logging from GroovyLexer

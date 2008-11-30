@@ -24,6 +24,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.asm</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.cnd</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -210,11 +219,11 @@
             </module-dependencies>
             <friend-packages>
                 <friend>com.sun.dlight</friend>
+                <friend>com.sun.dlight.model</friend>
                 <friend>com.sun.dlight.projectsupport</friend>
                 <friend>com.sun.dlight.remotesupport</friend>
-                <friend>com.sun.dlight.xyplot</friend>
-                <friend>com.sun.dlight.model</friend>
                 <friend>com.sun.dlight.target</friend>
+                <friend>com.sun.dlight.xyplot</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>com.sun.tools.debugger.dbxtool</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.performanceanalyzeractions</friend>
@@ -222,6 +231,7 @@
                 <friend>com.sun.tools.swdev.projectimport</friend>
                 <friend>com.sun.tools.swdev.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
+                <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>

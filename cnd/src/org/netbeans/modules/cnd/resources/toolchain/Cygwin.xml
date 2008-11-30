@@ -55,9 +55,13 @@ made subject to such option by the copyright holder.
         <system_include_paths flags="-x c++ -E -v" parser="GNU" remove_in_path="/bin" remove_in_output=""/>
     </cpp>
     <fortran>
-        <recognizer pattern=".*[\\/].*cygwin.*[\\/]bin[\\/]?$"/>
         <compiler name="gfortran,g95,g90,g77"/>
+        <recognizer pattern=".*[\\/].*cygwin.*[\\/]bin[\\/]?$"/>
     </fortran>
+    <assembler>
+        <compiler name="as"/>
+        <recognizer pattern=".*[\\/].*cygwin.*[\\/]bin[\\/]?$"/>
+    </assembler>
     <linker>
         <library_prefix stringvalue="cyg"/>
         <dynamic_library_basic flags="-mno-cygwin -shared "/>
