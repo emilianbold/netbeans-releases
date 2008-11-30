@@ -269,6 +269,12 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         //NOOP
     }
     
+    protected void fireDragToolbar (int dx, int dy, int type) {
+    }
+
+    protected void fireDropToolbar (int dx, int dy, int type) {
+    }
+
     /** @return Display name of this toolbar. Display name is localizable,
      * on the contrary to the programmatic name */
     public String getDisplayName () {
