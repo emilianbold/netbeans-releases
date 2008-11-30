@@ -39,12 +39,15 @@
 
 package org.netbeans.modules.php.editor.nav;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
@@ -66,14 +69,30 @@ import org.openide.loaders.DataObject;
  *
  * @author Jan Lahoda
  */
-public class TestBase extends NbTestCase {
+public class TestBase extends GsfTestBase {
     
     public TestBase(String testName) {
         super(testName);
     }            
 
     private static final String FOLDER = "GsfPlugins";
-    
+
+    protected String preaperTestFile(String filePath) throws IOException {
+        String retval = TestUtilities.copyFileToString(new File(getDataDir(), filePath));
+        return retval;
+    }
+
+    protected String prepareTestFile(String filePath, String... texts) throws IOException {
+        String retval = preaperTestFile(filePath);
+        assert texts != null && texts.length%2 == 0;
+        for (int i = 0; i+1 < texts.length; i++) {
+            String originalText = texts[i];
+            String replacement = texts[++i];
+            retval = retval.replace(originalText, replacement);
+        }
+        return retval;
+    }
+
     @Override
     public void setUp() throws Exception {
         FileObject f = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(FOLDER + "/text/html");

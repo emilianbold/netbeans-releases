@@ -38,32 +38,33 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.languages.actions;
 
-
-import javax.swing.JComponent;
-import junit.framework.Test;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
+
+import javax.swing.JComponent;
+
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class CreateRubyProjectTest  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Actions suite";
+public class CreateRubyProjectTest extends PerformanceTestCase {
+
     private NewProjectNameLocationStepOperator wizard_location;
     
-    public String category, project, project_name, project_type,  editor_name;
+    public String category, project, project_name, project_type;
     
     public CreateRubyProjectTest(String testName) {
         super(testName);        
@@ -87,8 +88,11 @@ public class CreateRubyProjectTest  extends org.netbeans.modules.performance.uti
 
     @Override
     public void initialize(){
-        log("::initialize::");
+       closeAllModal();
+    }
 
+    @Override
+    public void prepare(){
         repaintManager().addRegionFilter(new LoggingRepaintManager.RegionFilter() {
 
             public boolean accept(JComponent c) {
@@ -110,55 +114,30 @@ public class CreateRubyProjectTest  extends org.netbeans.modules.performance.uti
         });
 
         repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
-        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_EXPLORER_TREE_FILTER);
         repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_DIFF_SIDEBAR_FILTER);
 
-        closeAllModal();
-    }
-
-    @Override
-    public void prepare(){
-        log("::prepare");
-        createProject();
-    }
-    
-    private void createProject() {
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
-        
         String directory = CommonUtilities.getTempDir() + "createdProjects";
-       
         wizard_location.txtProjectLocation().setText("");
-        waitNoEvent(1000);
         wizard_location.txtProjectLocation().setText(directory);
-        
         project_name = project_type + "_" + System.currentTimeMillis();
         wizard_location.txtProjectName().setText("");
-        waitNoEvent(1000);
         wizard_location.txtProjectName().typeText(project_name);
     }
 
     public ComponentOperator open() {
-        log("::open");    
         wizard_location.finish();
-        long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
-        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",120000);
-        wizard_location.waitClosed();
-
-        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",oldTimeout);        
-
-        TopComponentOperator.findTopComponent(editor_name, 0);
         return null;
     }
     
     @Override
     public void close() {
-        log("::close");
-
-//        ProjectSupport.closeProject(project_name);
+        repaintManager().resetRegionFilters();
+        EditorOperator.closeDiscardAll();
     }    
     
     public void testCreateRubyProject() {
@@ -166,7 +145,6 @@ public class CreateRubyProjectTest  extends org.netbeans.modules.performance.uti
         project = Bundle.getString("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle",
                 "Templates/Project/Ruby/emptyRuby.xml");
         project_type = "RubyProject";
-        editor_name = "main.rb";
         doMeasurement();
     }
     
@@ -174,7 +152,6 @@ public class CreateRubyProjectTest  extends org.netbeans.modules.performance.uti
         category = "Ruby";
         project = "Ruby on Rails Application";
         project_type = "RailsProject";
-        editor_name = "database.yml";
         doMeasurement();
     }
 

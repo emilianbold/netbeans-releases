@@ -537,6 +537,20 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ153761.cc", 44, 14, "IZ153761.cc", 43, 9);
     }
 
+    public void testKRFuncParamDecl() throws Exception {
+        performTest("kr.c", 9, 10, "kr.c", 10, 1); // index in 'int foo(index)'
+        performTest("kr.c", 21, 13, "kr.c", 22, 8); // index in 'int foo(index)'
+        performTest("kr.c", 21, 17, "kr.c", 22, 12); // index in 'int foo(index)'
+    }
+
+    public void testKRFooDeclDefUsage() throws Exception {
+        // See IZ116715
+        performTest("kr.c", 2, 6, "kr.c", 9, 1); // int foo(); -> int foo(index)
+        performTest("kr.c", 9, 6, "kr.c", 2, 1); // int foo(index) -> int foo();
+        performTest("kr.c", 15, 6, "kr.c", 17, 1); // int boo(); -> int boo(int i)
+        performTest("kr.c", 17, 6, "kr.c", 15, 1); // int boo(int i) -> int boo();
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
@@ -546,18 +560,6 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
 
         public Failed(String testName) {
             super(testName, true);
-        }
-
-        public void testKRFuncParamDecl() throws Exception {
-            performTest("kr.c", 9, 10, "kr.c", 10, 1); // index in 'int foo(index)'
-        }
-
-        public void testKRFooDeclDefUsage() throws Exception {
-            // See IZ116715
-            performTest("kr.c", 2, 6, "kr.c", 9, 1); // int foo(); -> int foo(index)
-            performTest("kr.c", 9, 6, "kr.c", 2, 1); // int foo(index) -> int foo();
-            performTest("kr.c", 15, 6, "kr.c", 17, 1); // int boo(); -> int boo(int i)
-            performTest("kr.c", 17, 6, "kr.c", 15, 1); // int boo(int i) -> int boo();
         }
     }
 }

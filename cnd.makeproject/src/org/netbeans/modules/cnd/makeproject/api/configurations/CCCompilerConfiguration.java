@@ -144,14 +144,14 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         options += compiler.getWarningLevelOptions(getWarningLevel().getValue()) + " "; // NOI18N
         options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
         options += getPreprocessorOptions();
-        options += getIncludeDirectoriesOptions();
+        options += getIncludeDirectoriesOptions(compiler.getCompilerSet());
         return CppUtils.reformatWhitespaces(options);
     }
     public String getPreprocessorOptions() {
         CCCompilerConfiguration master = (CCCompilerConfiguration)getMaster();
-        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().getOption(getUserMacroFlag()) + " "); // NOI18N
+        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().getOption(null, getUserMacroFlag()) + " "); // NOI18N
         while (master != null && getInheritPreprocessor().getValue()) {
-            options.append(master.getPreprocessorConfiguration().getOption(getUserMacroFlag()) + " "); // NOI18N
+            options.append(master.getPreprocessorConfiguration().getOption(null, getUserMacroFlag()) + " "); // NOI18N
             if (master.getInheritPreprocessor().getValue())
                 master = (CCCompilerConfiguration)master.getMaster();
             else
@@ -160,11 +160,11 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         return options.toString();
     }
     
-    public String getIncludeDirectoriesOptions() {
+    public String getIncludeDirectoriesOptions(CompilerSet cs) {
         CCCompilerConfiguration master = (CCCompilerConfiguration)getMaster();
-        StringBuilder options = new StringBuilder(getIncludeDirectories().getOption(getUserIncludeFlag()) + " "); // NOI18N
+        StringBuilder options = new StringBuilder(getIncludeDirectories().getOption(cs, getUserIncludeFlag()) + " "); // NOI18N
         while (master != null && getInheritIncludes().getValue()) {
-            options.append(master.getIncludeDirectories().getOption(getUserIncludeFlag()) + " "); // NOI18N
+            options.append(master.getIncludeDirectories().getOption(cs, getUserIncludeFlag()) + " "); // NOI18N
             if (master.getInheritIncludes().getValue())
                 master = (CCCompilerConfiguration)master.getMaster();
             else

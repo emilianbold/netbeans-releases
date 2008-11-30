@@ -38,10 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.languages.actions;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.performance.languages.Projects;
+import org.netbeans.performance.languages.ScriptingUtilities;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+
 import java.awt.Rectangle;
-import junit.framework.Test;
+
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -52,20 +59,15 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
-import org.netbeans.performance.languages.Projects;
-import org.netbeans.performance.languages.ScriptingUtilities;
-import org.netbeans.performance.languages.setup.ScriptingSetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author mrkam@netbeans.org
  */
-public class GoToSourceTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class GoToSourceTest extends PerformanceTestCase {
 
-    public static final String suiteName = "Scripting UI Responsiveness Actions suite";
     protected Node fileToBeOpened;
     protected String testProject;
     protected String fileName;
@@ -76,14 +78,12 @@ public class GoToSourceTest extends org.netbeans.modules.performance.utilities.P
 
     public GoToSourceTest(String testName) {
         super(testName);
-        expectedTime = UI_RESPONSE;
-        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations             
+        WAIT_AFTER_OPEN=2000;
     }
 
     public GoToSourceTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = UI_RESPONSE;
-        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations             
+        WAIT_AFTER_OPEN=2000;
     }
 
     public static NbTestSuite suite() {
@@ -96,36 +96,24 @@ public class GoToSourceTest extends org.netbeans.modules.performance.utilities.P
 
     @Override
     public void initialize() {
-        log("::initialize");
         closeAllModal();
         String path = nodePath + "|" + fileName;
-        log("attempting to open: " + path);
-
         fileToBeOpened = new Node(getProjectNode(testProject), path);
     }
 
     @Override
-    public void tearDown() {
-        super.tearDown();
+    public void shutdown() {
         repaintManager().resetRegionFilters();
     }
 
     @Override
     public void prepare() {
-        log("::prepare");
         new OpenAction().performAPI(fileToBeOpened);
-
-        waitNoEvent(800);
-
         editorOperator = EditorWindowOperator.getEditor(fileName);
         editorOperator.waitComponentShowing(true);
-
         editorOperator.setCaretPosition(1, 1);
-
         new NavigatorOperator().getTree().waitRow("cancelReservation", 1);
-
         repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
-        waitNoEvent(2000);
     }
 
     @Override
@@ -162,7 +150,6 @@ public class GoToSourceTest extends org.netbeans.modules.performance.utilities.P
         if (projectsTab == null) {
             projectsTab = ScriptingUtilities.invokePTO();
         }
-
         return projectsTab.getProjectRootNode(projectName);
     }
 

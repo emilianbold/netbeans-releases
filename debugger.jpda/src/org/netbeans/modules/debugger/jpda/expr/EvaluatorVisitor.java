@@ -220,6 +220,15 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     }
 
     @Override
+    public Mirror scan(Iterable<? extends Tree> nodes, EvaluationContext evaluationContext) {
+        Mirror result = super.scan(nodes, evaluationContext);
+        if (result instanceof ArtificialMirror) {
+            return ((ArtificialMirror) result).getVMMirror();
+        }
+        return result;
+    }
+
+    @Override
     public Mirror visitAnnotation(AnnotationTree arg0, EvaluationContext evaluationContext) {
         return null;
     }

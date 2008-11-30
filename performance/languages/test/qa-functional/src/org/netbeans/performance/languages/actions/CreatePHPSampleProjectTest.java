@@ -38,39 +38,36 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.languages.actions;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
-import java.io.File;
-import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.performance.languages.setup.ScriptingSetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author mkhramov@netbeans.org, mrkam@netbeans.org
  */
-public class CreatePHPSampleProjectTest  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Actions suite";
+public class CreatePHPSampleProjectTest  extends PerformanceTestCase {
+
     private NewProjectNameLocationStepOperator wizard_location;
-    
     public String category, project, project_name, project_type;
     
-    public CreatePHPSampleProjectTest(String testName)
-    {
+    public CreatePHPSampleProjectTest(String testName) {
         super(testName);        
         expectedTime = 10000;
         WAIT_AFTER_OPEN=20000;        
     }
     
-    public CreatePHPSampleProjectTest(String testName, String performanceDataName)
-    {
+    public CreatePHPSampleProjectTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = 10000;
         WAIT_AFTER_OPEN=20000;        
@@ -86,78 +83,32 @@ public class CreatePHPSampleProjectTest  extends org.netbeans.modules.performanc
 
     @Override
     public void initialize(){
-        log("::initialize::");              
-
-        log("org.netbeans.modules.php.samples.donotopenreadmehtml = "
-                + System.getProperty("org.netbeans.modules.php.samples.donotopenreadmehtml"));
         closeAllModal();
     }
 
     @Override
     public void prepare(){
-        log("::prepare");
-        createProject();
-    }
-    
-    private void createProject() {
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
-        
         String directory = CommonUtilities.getTempDir() + "createdProjects";
-
-        // TODO Remove this workaround once issue 145104 is fixed
-        new File(directory).mkdirs();
-
         wizard_location.txtProjectLocation().setText("");
-        waitNoEvent(1000);
         wizard_location.txtProjectLocation().typeText(directory);
-        
         project_name = project_type + "_" + System.currentTimeMillis();
-        log("================= Project name="+project_name+"}");
         wizard_location.txtProjectName().setText("");
-        waitNoEvent(1000);
         wizard_location.txtProjectName().typeText(project_name);
     }
-
+    
     public ComponentOperator open(){
-        log("::open");    
         wizard_location.finish();
-        
-        //long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
-        //JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
-        //System.out.println("wait wizard closed...");
-        wizard_location.waitClosed();
-        //System.out.println("done1...");
-        //System.out.println("project creation dialog closed");
-        //waitProjectCreatingDialogClosed();
-        //System.out.println("done2....");
-
-        //JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", oldTimeout);
-        
         return null;
     }
     
     @Override
     public void close(){
-        log("::close");
-
-//        ProjectSupport.closeProject(project_name);
     }    
-    
-//    private void waitProjectCreatingDialogClosed()
-//    {
-//       String dlgName = Bundle.getString("org.netbeans.modules.visualweb.project.jsf.ui.Bundle", "CAP_Opening_Projects");
-//       try {
-//           NbDialogOperator dlg = new NbDialogOperator(dlgName);
-//           dlg.waitClosed();
-//       } catch(TimeoutExpiredException tex) {
-//           tex.printStackTrace(getLog());
-//       }
-//
-//    }
     
     public void testCreatePhpSampleProject() {
         category = "Samples|PHP";        

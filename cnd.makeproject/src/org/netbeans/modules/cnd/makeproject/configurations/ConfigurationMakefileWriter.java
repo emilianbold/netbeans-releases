@@ -344,11 +344,12 @@ public class ConfigurationMakefileWriter {
         for (int i = 0; i < additionalDependencies.length; i++) {
             bw.write(output + ": " + additionalDependencies[i] + "\n\n"); // NOI18N
         }
+        CompilerSet cs = conf.getCompilerSet().getCompilerSet();
         LibraryItem[] libs = linkerConfiguration.getLibrariesConfiguration().getLibraryItemsAsArray();
         for (LibraryItem lib : libs) {
             String libPath = lib.getPath();
             if (libPath != null && libPath.length() > 0) {
-                bw.write(output + ": " + IpeUtils.escapeOddCharacters(libPath) + "\n\n"); // NOI18N
+                bw.write(output + ": " + IpeUtils.escapeOddCharacters(cs.normalizeDriveLetter(libPath)) + "\n\n"); // NOI18N
             }
         }
         bw.write(output + ": ${OBJECTFILES}\n"); // NOI18N

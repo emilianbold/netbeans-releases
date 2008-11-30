@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 
-import com.sun.perseus.model.*;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
 import com.sun.perseus.model.Rect;
@@ -97,6 +96,7 @@ public final class PatchedRect extends Rect implements PatchedTransformableEleme
         return changedAttrs;            
     }        
     
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedRect(doc);
     }    

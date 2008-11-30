@@ -49,6 +49,7 @@ import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -178,16 +179,20 @@ public class CsmOffsetUtilities {
                 return false;
             }
             // check if offset is before parameters
-            @SuppressWarnings("unchecked")
-            Collection<CsmParameter> params = fun.getParameters();
-            if(!params.isEmpty()) 
-            {
-                CsmParameter firstParam = params.iterator().next();
-                if (CsmOffsetUtilities.isBeforeObject(firstParam, offset)) {
-                    return false;
+            CsmFunctionParameterList paramList = fun.getParameterList();
+//            if (paramList != null) {
+                if (CsmOffsetUtilities.isInObject(paramList, offset)) {
+                    return true;
                 }
-                return true;
-            }
+                Collection<CsmParameter> params = paramList.getParameters();
+                if (!params.isEmpty()) {
+                    CsmParameter firstParam = params.iterator().next();
+                    if (CsmOffsetUtilities.isBeforeObject(firstParam, offset)) {
+                        return false;
+                    }
+                    return true;
+                }
+//            }
             // check initializer list for constructors
             if (CsmKindUtilities.isConstructor(fun)) {
                 Collection<CsmExpression> izers = ((CsmInitializerListContainer) fun).getInitializerList();

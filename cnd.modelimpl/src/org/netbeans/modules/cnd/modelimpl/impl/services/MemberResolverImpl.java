@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
@@ -103,7 +104,16 @@ public final class MemberResolverImpl {
                 case PRIVATE:
                     break;
                 default:
-                    CsmClass base = CsmInheritanceUtilities.getCsmClass(inh);
+                    CsmClass base = null;
+                    if(inh instanceof Resolver.SafeClassifierProvider) {
+                        CsmClassifier classifier = ((Resolver.SafeClassifierProvider)inh).getClassifier(resolver);
+                        classifier = CsmBaseUtilities.getOriginalClassifier(classifier, inh.getContainingFile());
+                        if (CsmKindUtilities.isClass(classifier)) {
+                            base = (CsmClass) classifier;
+                        }
+                    } else {
+                        base = CsmInheritanceUtilities.getCsmClass(inh);
+                    }
                     if (base != null) {
                         getClassMembers(base, name, res);
                         getSuperClasses(base, name, res, antiLoop);
