@@ -849,10 +849,22 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     depPanel.txtGroupId.setText(vi.getGroupId());
                     depPanel.txtArtifactId.setText(vi.getArtifactId());
                     depPanel.txtVersion.setText(vi.getVersion());
+                    //reset completion.
+                    depPanel.artifactCompleter.setLoading(true);
+                    depPanel.versionCompleter.setLoading(true);
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            depPanel.populateArtifact();
+                            depPanel.populateVersion();
+                        }
+                    });
                 } else {
                     depPanel.txtGroupId.setText("");
                     depPanel.txtArtifactId.setText("");
                     depPanel.txtVersion.setText("");
+                    //reset completion.
+                    depPanel.artifactCompleter.setValueList(Collections.<String>emptyList());
+                    depPanel.versionCompleter.setValueList(Collections.<String>emptyList());
                 }
             }
         }
@@ -998,10 +1010,22 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 depPanel.txtGroupId.setText(vi.getGroupId());
                 depPanel.txtArtifactId.setText(vi.getArtifactId());
                 depPanel.txtVersion.setText("");
+                //reset completion.
+                depPanel.artifactCompleter.setLoading(true);
+                depPanel.versionCompleter.setLoading(true);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        depPanel.populateArtifact();
+                        depPanel.populateVersion();
+                    }
+                });
             } else {
                 depPanel.txtGroupId.setText("");
                 depPanel.txtArtifactId.setText("");
                 depPanel.txtVersion.setText("");
+                //reset completion.
+                depPanel.artifactCompleter.setValueList(Collections.<String>emptyList());
+                depPanel.versionCompleter.setValueList(Collections.<String>emptyList());
             }
         }
 
