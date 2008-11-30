@@ -342,6 +342,10 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         checkCompletion("testfiles/unknown_in_the_block.rb", "Huh.err^");
     }
 
+    public void testConstant() throws Exception {
+        checkCompletion("testfiles/constants.rb", "Colors::RED.byte^");
+    }
+
     // TODO - test more non-fc calls (e.g. x.foo)
     // TODO test with splat args (more args than are in def list)
     // TODO test with long arg lists

@@ -154,12 +154,13 @@ public class RubyTypeAnalyzer {
             case GLOBALASGNNODE:
             case CLASSVARASGNNODE:
             case CLASSVARDECLNODE:
+            case CONSTDECLNODE:
             case DASGNNODE: {
-                String symbol = ((INameNode) node).getName();
                 String type = expressionType(node, typesForSymbol);
 
                 // null element in types set means that we are not able to infer
                 // the expression
+                String symbol = ((INameNode) node).getName();
                 maybePutTypeForSymbol(typesForSymbol, symbol, type, override);
                 break;
             }
