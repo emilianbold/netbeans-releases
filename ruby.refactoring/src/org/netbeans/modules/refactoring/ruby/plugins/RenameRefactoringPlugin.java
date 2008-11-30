@@ -40,11 +40,6 @@
  */
 package org.netbeans.modules.refactoring.ruby.plugins;
 
-import java.io.IOException;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.jruby.nb.ast.ClassVarAsgnNode;
 import org.jruby.nb.ast.ClassVarDeclNode;
 import org.jruby.nb.ast.ClassVarNode;
@@ -57,32 +52,17 @@ import org.jruby.nb.ast.MethodDefNode;
 import org.jruby.nb.ast.Node;
 import org.jruby.nb.ast.SymbolNode;
 import org.jruby.nb.ast.types.INameNode;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.Severity;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.ModificationResult.Difference;
-import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
@@ -96,7 +76,6 @@ import org.jruby.nb.ast.DVarNode;
 import org.jruby.nb.ast.LocalAsgnNode;
 import org.jruby.nb.ast.LocalVarNode;
 import org.jruby.nb.ast.ModuleNode;
-import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.SClassNode;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -113,12 +92,10 @@ import org.netbeans.napi.gsfret.source.ModificationResult.Difference;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.WorkingCopy;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.refactoring.ruby.plugins.RetoucheCommit;
 import org.netbeans.modules.refactoring.ruby.DiffElement;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
 import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
-import org.netbeans.modules.refactoring.ruby.plugins.RubyRefactoringPlugin;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -154,7 +131,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
     private RubyElementCtx treePathHandle = null;
     private Collection overriddenByMethods = null; // methods that override the method to be renamed
     private Collection overridesMethods = null; // methods that are overridden by the method to be renamed
-    private boolean doCheckName = true;
+//    private boolean doCheckName = true;
     
     private RenameRefactoring refactoring;
     
@@ -221,7 +198,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
     
     protected Problem preCheck(CompilationController info) throws IOException {
         Problem preCheckProblem = null;
-        fireProgressListenerStart(refactoring.PRE_CHECK, 4);
+        fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 4);
         info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
 //        Element el = treePathHandle.resolveElement(info);
 //        preCheckProblem = isElementAvail(treePathHandle, info);
@@ -424,14 +401,14 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
             steps += overridesMethods.size();
         }
         
-        fireProgressListenerStart(refactoring.PARAMETERS_CHECK, 8 + 3*steps);
+        fireProgressListenerStart(RenameRefactoring.PARAMETERS_CHECK, 8 + 3*steps);
         
         info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
 //        Element element = treePathHandle.resolveElement(info);
         
         fireProgressListenerStep();
         fireProgressListenerStep();
-        String msg;
+//        String msg;
         
         // TODO - check more parameters
         //System.out.println("TODO - need to check parameters for hiding etc.");
