@@ -109,8 +109,11 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     private static final String DELIMITER = " : ";
 
     /** Creates new form AddDependencyPanel */
-    public AddDependencyPanel(MavenProject project) {
-        this.project = project;
+    public AddDependencyPanel(MavenProject mavenProject) {
+        this(mavenProject, true);
+    }
+    public AddDependencyPanel(MavenProject mavenProject, boolean showDepMan) {
+        this.project = mavenProject;
         initComponents();
         groupCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtGroupId);
         artifactCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtArtifactId);
@@ -192,9 +195,12 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         defaultProgressC = progressLabel.getForeground();
         defaultVersionC = txtVersion.getForeground();
         setSearchInProgressUI(false);
-
-        artifactList = new DMListPanel(this, project);
-        artifactPanel.add(artifactList, BorderLayout.CENTER);
+        if (showDepMan) {
+            artifactList = new DMListPanel(this, project);
+            artifactPanel.add(artifactList, BorderLayout.CENTER);
+        } else {
+            tabPane.setEnabledAt(1, false);
+        }
 
     }
 
@@ -590,14 +596,14 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         DependencyManagement curDM;
         List<Dependency> result = new ArrayList<Dependency>();
 
-        while (localProj.hasParent()) {
-            localProj = localProj.getParent();
+        while (localProj != null) {
             curDM = localProj.getDependencyManagement();
             if (curDM != null) {
                 @SuppressWarnings("unchecked")
                 List<Dependency> ds = curDM.getDependencies();
                 result.addAll(ds);
             }
+            localProj = localProj.getParent();
         }
 
         return result;
