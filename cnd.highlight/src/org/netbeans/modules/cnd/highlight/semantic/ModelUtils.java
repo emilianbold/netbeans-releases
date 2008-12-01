@@ -69,14 +69,14 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
  */
 public class ModelUtils {
 
-    public static final int HIGHLIGHT_DELAY = getInt("cnd.reparce.delay", 500);
-    public static final int RESEDULE_HIGHLIGHT_DELAY = getInt("cnd.reschedule.task.delay", 500);
+    public static final int HIGHLIGHT_DELAY = getInt("cnd.reparce.delay", 500); // NOI18N
+    public static final int RESCHEDULE_HIGHLIGHT_DELAY = getInt("cnd.reschedule.task.delay", 500); // NOI18N
 
-    public static final int OCCURRENCES_DELAY = getInt("cnd.reparce.delay", 300);
-    public static final int RESEDULE_OCCURRENCES_DELAY = getInt("cnd.reschedule.task.delay", 300);
+    public static final int OCCURRENCES_DELAY = getInt("cnd.reparce.delay", 300); // NOI18N
+    public static final int RESCHEDULE_OCCURRENCES_DELAY = getInt("cnd.reschedule.task.delay", 300); // NOI18N
 
-    public static final int SEMANTIC_DELAY = getInt("cnd.reparce.delay", 500);
-    public static final int RESEDULE_SEMANTIC_DELAY = getInt("cnd.reschedule.task.delay", 500);
+    public static final int SEMANTIC_DELAY = getInt("cnd.reparce.delay", 500); // NOI18N
+    public static final int RESCHEDULE_SEMANTIC_DELAY = getInt("cnd.reschedule.task.delay", 500); // NOI18N
 
     private ModelUtils() {
     }
