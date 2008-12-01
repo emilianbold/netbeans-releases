@@ -136,7 +136,10 @@ public class VerifyFullIDETest extends NbTestCase {
         Enumeration<? extends FileObject> allTemplates = orig.getChildren(true);
         while (allTemplates.hasMoreElements()) {
             FileObject fo = allTemplates.nextElement();
-            if (fo.isFolder()) {
+            if (fo.getPath().equals("Templates/Project/Import")) {
+                continue;
+            }
+            if (fo.getPath().equals("Templates/Project/Samples")) {
                 continue;
             }
 
@@ -153,7 +156,7 @@ public class VerifyFullIDETest extends NbTestCase {
 
                 Object attr = clone.getAttribute(name);
                 assertNotNull(
-                    "Attribute " + name + " present in clone", attr
+                    "Attribute " + name + " present in clone on " + fo, attr
                 );
 
                 if (attr instanceof URL) {
