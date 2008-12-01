@@ -886,6 +886,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             notificationLine.setToolTipText (msg);
         } else {
             prepareMessage(notificationLine, null, null);
+            notificationLine.setToolTipText (null);
         }
         notificationLine.setText(msg);
     }
