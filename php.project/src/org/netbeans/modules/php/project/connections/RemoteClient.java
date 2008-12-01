@@ -78,8 +78,10 @@ public class RemoteClient implements Cancellable {
     private static final String NB_METADATA_DIR = "nbproject"; // NOI18N
     private static final Set<String> IGNORED_REMOTE_DIRS = new HashSet<String>(Arrays.asList(".", "..")); // NOI18N
     private static final int TRIES_TO_TRANSFER = 3; // number of tries if file download/upload fails
-    private static final String TMP_NEW_SUFFIX = ".new~"; // NOI18N
-    private static final String TMP_OLD_SUFFIX = ".old~"; // NOI18N
+    private static final String LOCAL_TMP_NEW_SUFFIX = ".new~"; // NOI18N
+    private static final String LOCAL_TMP_OLD_SUFFIX = ".old~"; // NOI18N
+    private static final String REMOTE_TMP_NEW_SUFFIX = ".new"; // NOI18N
+    private static final String REMOTE_TMP_OLD_SUFFIX = ".old"; // NOI18N
 
     private final RemoteConfiguration configuration;
     private final InputOutput io;
@@ -287,7 +289,7 @@ public class RemoteClient implements Cancellable {
             }
 
             String fileName = file.getName();
-            String tmpFileName = fileName + TMP_NEW_SUFFIX;
+            String tmpFileName = fileName + REMOTE_TMP_NEW_SUFFIX;
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Uploading file " + fileName + " => " + remoteClient.printWorkingDirectory() + TransferFile.SEPARATOR + tmpFileName);
             }
@@ -299,11 +301,11 @@ public class RemoteClient implements Cancellable {
                     if (remoteClient.storeFile(tmpFileName, is)) {
                         success = true;
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("The %d. attempt to upload '%s' was successful", i, file.getRelativePath() + TMP_NEW_SUFFIX));
+                            LOGGER.fine(String.format("The %d. attempt to upload '%s' was successful", i, file.getRelativePath() + REMOTE_TMP_NEW_SUFFIX));
                         }
                         break;
                     } else if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("The %d. attempt to upload '%s' was NOT successful", i, file.getRelativePath() + TMP_NEW_SUFFIX));
+                        LOGGER.fine(String.format("The %d. attempt to upload '%s' was NOT successful", i, file.getRelativePath() + REMOTE_TMP_NEW_SUFFIX));
                     }
                 }
             } finally {
@@ -320,7 +322,7 @@ public class RemoteClient implements Cancellable {
                     transferFailed(transferInfo, file, getFailureMessage(fileName, true));
                     boolean deleted = remoteClient.deleteFile(tmpFileName);
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("Unsuccessfully uploaded file %s deleted: %s", file.getRelativePath() + TMP_NEW_SUFFIX, deleted));
+                        LOGGER.fine(String.format("Unsuccessfully uploaded file %s deleted: %s", file.getRelativePath() + REMOTE_TMP_NEW_SUFFIX, deleted));
                     }
                 }
             }
@@ -328,7 +330,7 @@ public class RemoteClient implements Cancellable {
     }
 
     private boolean moveRemoteFile(String fileName, String tmpFileName) throws RemoteException {
-        String oldPath = fileName + TMP_OLD_SUFFIX;
+        String oldPath = fileName + REMOTE_TMP_OLD_SUFFIX;
         boolean moved = remoteClient.rename(tmpFileName, fileName);
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(String.format("File %s directly renamed to %s: %s", tmpFileName, fileName, moved));
@@ -523,7 +525,7 @@ public class RemoteClient implements Cancellable {
             }
             assert parent.isDirectory() : "Parent file of " + localFile + " must be a directory";
 
-            File tmpLocalFile = new File(localFile.getAbsolutePath() + TMP_NEW_SUFFIX);
+            File tmpLocalFile = new File(localFile.getAbsolutePath() + LOCAL_TMP_NEW_SUFFIX);
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Downloading " + file.getRelativePath() + " => " + tmpLocalFile.getAbsolutePath());
             }
@@ -577,7 +579,7 @@ public class RemoteClient implements Cancellable {
         final boolean[] moved = new boolean[1];
         FileUtil.runAtomicAction(new Runnable() {
             public void run() {
-                File oldPath = new File(localFile.getAbsolutePath() + TMP_OLD_SUFFIX);
+                File oldPath = new File(localFile.getAbsolutePath() + LOCAL_TMP_OLD_SUFFIX);
                 String tmpLocalFileName = tmpLocalFile.getName();
                 String localFileName = localFile.getName();
                 String oldPathName = oldPath.getName();
