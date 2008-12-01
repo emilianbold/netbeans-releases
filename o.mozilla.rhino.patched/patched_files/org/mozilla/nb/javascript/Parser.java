@@ -3225,7 +3225,7 @@ Node pn = null;
                                  ? FunctionNode.FUNCTION_EXPRESSION
                                  : FunctionNode.FUNCTION_STATEMENT);
                     setSourceOffsets(n, startOffset);
-                    return (FunctionNode)n;
+                    return this.syntaxErrorCount == 0 ? (FunctionNode)n : null;
                 } catch (ParserException e) {
                     return null;
                 }

@@ -493,26 +493,28 @@ public class JsParser implements IncrementalParser {
                 };
 
 
-                // Perform some basic cleanup of trailing dots, commas, etc.
-                String oldSource = context.source;
-                int oldCaretOffset = context.caretOffset;
-                context.source = source;
-                if (context.caretOffset >= oldFunctionStart && context.caretOffset <= newFunctionEnd) {
-                    context.caretOffset -= oldFunctionStart;
-                    boolean ok = sanitizeSource(context, Sanitize.EDITED_DOT);
+                FunctionNode newFunction = parser.parseFunction(source, context.file.getNameExt(), lineno);
+                if (newFunction == null) {
+                    // Perform some basic cleanup of trailing dots, commas, etc.
+                    if (context.caretOffset >= oldFunctionStart && context.caretOffset <= newFunctionEnd) {
+                        String oldSource = context.source;
+                        int oldCaretOffset = context.caretOffset;
+                        context.source = source;
+                        context.caretOffset -= oldFunctionStart;
+                        boolean ok = sanitizeSource(context, Sanitize.EDITED_DOT);
+                        context.source = oldSource;
+                        context.caretOffset = oldCaretOffset;
 
-                    if (ok) {
-                        assert context.sanitizedSource != null;
-                        sanitizedSource = true;
-                        source = context.sanitizedSource;
-                        context.sanitized = Sanitize.EDITED_DOT;
+                        if (ok) {
+                            assert context.sanitizedSource != null;
+                            sanitizedSource = true;
+                            context.sanitized = Sanitize.EDITED_DOT;
+                            parser = createParser(context, source, sanitizedSource, sanitizing);
+                            newFunction = parser.parseFunction(context.sanitizedSource, context.file.getNameExt(), lineno);
+                        }
                     }
                 }
 
-                context.source = oldSource;
-                context.caretOffset = oldCaretOffset;
-
-                FunctionNode newFunction = parser.parseFunction(source, context.file.getNameExt(), lineno);
                 if (newFunction == null) {
                     return null;
                 }
