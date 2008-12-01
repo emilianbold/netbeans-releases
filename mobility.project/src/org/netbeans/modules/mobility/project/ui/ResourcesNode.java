@@ -243,6 +243,10 @@ final class ResourcesNode extends DecoratedNode implements ChangeListener, Prope
                     List<File> files;
                     try {
                         files = (List<File>) tr.getTransferData(flavor);
+                        if (files == null) {
+                            //Issue 153455 - external DND from outside IDE
+                            continue;
+                        }
                         for (File file : files) {
                             final String s = file.getName().toLowerCase();
                             if (file.isDirectory()) {
