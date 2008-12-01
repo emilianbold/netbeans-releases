@@ -661,16 +661,6 @@ public class DataEditorSupport extends CloneableEditorSupport {
             ERR.fine("changeFile: " + newFile + " for " + fileObject); // NOI18N
             fileObject.addFileChangeListener (new EnvListener (this));
 
-            //Update document TitleProperty
-            EditorCookie ec = getDataObject().getCookie(EditorCookie.class);
-            if (ec != null) {
-                StyledDocument doc = ec.getDocument();
-                if (doc != null) {
-                    doc.putProperty(Document.TitleProperty,
-                    FileUtil.getFileDisplayName(getDataObject().getPrimaryFile()));
-                }
-            }
-
             if (lockAgain) { // refresh lock
                 try {
                     fileLock = takeLock ();
@@ -816,9 +806,10 @@ public class DataEditorSupport extends CloneableEditorSupport {
              */
         }
 
-        /** Called from the <code>EnvListener</code>.
+        /**
+         * Called from the <code>EnvListener</code>.
          */
-        final void fileRenamed () {
+        final void updateDocumentProperty () {
             //Update document TitleProperty
             EditorCookie ec = getDataObject().getCookie(EditorCookie.class);
             if (ec != null) {
@@ -828,6 +819,11 @@ public class DataEditorSupport extends CloneableEditorSupport {
                     FileUtil.getFileDisplayName(getDataObject().getPrimaryFile()));
                 }
             }
+        }
+        
+        /** Called from the <code>EnvListener</code>.
+         */
+        final void fileRenamed () {
         }
         
         @Override
@@ -904,6 +900,9 @@ public class DataEditorSupport extends CloneableEditorSupport {
         public void fileDeleted(FileEvent fe) {
             Env myEnv = this.env.get();
             FileObject fo = fe.getFile();
+            if (myEnv != null) {
+                myEnv.updateDocumentProperty();
+            }
             if(myEnv == null || myEnv.getFileImpl() != fo) {
                 // the Env change its file and we are not used
                 // listener anymore => remove itself from the list of listeners
@@ -951,7 +950,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         public void fileRenamed(FileRenameEvent fe) {
             Env myEnv = this.env.get();
             if (myEnv != null) {
-                myEnv.fileRenamed();
+                myEnv.updateDocumentProperty();
             }
         }
         
