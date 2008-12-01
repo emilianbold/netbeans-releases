@@ -42,8 +42,10 @@ package org.netbeans.modules.ide.ergonomics.debugger;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Iterator;
+import java.util.concurrent.Callable;
 import javax.swing.JComponent;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.ide.ergonomics.fod.ConfigurationPanel;
 import org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.spi.debugger.ui.AttachType;
@@ -53,7 +55,7 @@ import org.netbeans.spi.debugger.ui.Controller;
  *
  * @author Pavel Flaska
  */
-public abstract class AttachTypeProxy extends AttachType implements Controller {
+public abstract class AttachTypeProxy extends AttachType implements Controller, Callable<JComponent> {
     private AttachType delegate;
     private boolean isVisible;
     private static Iterator<? extends FeatureInfo> it = Feature2LayerMapping.featureTypesLookup().lookupAll(FeatureInfo.class).iterator();
@@ -92,7 +94,7 @@ public abstract class AttachTypeProxy extends AttachType implements Controller {
     @Override
     public JComponent getCustomizer() {
         if (delegate == null) {
-            return new DebuggerConfigurationPanel(this);
+            return new ConfigurationPanel(this.getTypeDisplayName(), this);
         } else {
             return delegate.getCustomizer();
         }
@@ -107,7 +109,7 @@ public abstract class AttachTypeProxy extends AttachType implements Controller {
         }
     }
 
-    public void invalidate() {
+    private void invalidate() {
         isVisible = false;
         delegate = getAttachType();
         propertyChangeSupport.firePropertyChange(Controller.PROP_VALID, false, true);
@@ -142,6 +144,11 @@ public abstract class AttachTypeProxy extends AttachType implements Controller {
 
     public void removePropertyChangeListener(PropertyChangeListener l) {
         propertyChangeSupport.removePropertyChangeListener(l);
+    }
+
+    public JComponent call() throws Exception {
+        invalidate();
+        return getCustomizer();
     }
 
     private Controller getRealController() {
