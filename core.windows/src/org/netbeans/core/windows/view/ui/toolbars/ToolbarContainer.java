@@ -162,7 +162,7 @@ final class ToolbarContainer extends JPanel {
 
     @Override
     public String getName() {
-        return toolbar.getName();
+        return null == toolbar ? super.getName() : toolbar.getName();
     }
 
     /**
