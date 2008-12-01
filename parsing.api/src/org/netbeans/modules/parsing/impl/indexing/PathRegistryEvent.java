@@ -62,8 +62,6 @@ public class PathRegistryEvent extends EventObject {
                        final Set<? extends ClassPath> paths) {
 
             assert eventKind != null;
-            assert pathKind != null;
-            assert pathId != null;
             this.pahs = paths;
             this.eventKind = eventKind;
             this.pathKind = pathKind;

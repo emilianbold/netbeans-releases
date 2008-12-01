@@ -208,115 +208,105 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRoot1.getURL(), handler.getSources().get(0));
 
-        
+        handler.reset();
+        mcpi1.addResource(srcRoot2);
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRoot2.getURL(), handler.getSources().get(0));
 
-//        l = new PRListener();
-//        mcpi1.addResource(srcRoot2);
-//        assertTrue(l.await());
-//        result = collectResults ();
-//        assertEquals(2,result.size());
-//        assertEquals(new FileObject[] {srcRoot1, srcRoot2},result);
-//
-//        //Testing changes in registered classpath - remove cp root
-//        l = new PRListener();
-//        mcpi1.removeResource(srcRoot1);
-//        assertTrue(l.await());
-//        result = collectResults ();
-//        assertEquals(1,result.size());
-//        assertEquals(srcRoot2.getURL(),result.iterator().next());
-//
-//        //Testing adding new ClassPath
-//        l = new PRListener();
-//        MutableClassPathImplementation mcpi2 = new MutableClassPathImplementation ();
-//        mcpi2.addResource(srcRoot1);
-//        ClassPath cp2 = ClassPathFactory.createClassPath(mcpi2);
-//        regs.register (SOURCES, new ClassPath[] {cp2});
-//        assertTrue(l.await());
-//        result = collectResults ();
-//        assertEquals(2,result.size());
-//        assertEquals(new FileObject[] {srcRoot2, srcRoot1},result);
-//
-//        //Testing changes in newly registered classpath - add cp root
-//        l = new PRListener();
-//        mcpi2.addResource(srcRoot3);
-//        assertTrue(l.await());
-//        result = collectResults ();
-//        assertEquals(3,result.size());
-//        assertEquals(new FileObject[] {srcRoot2, srcRoot1, srcRoot3},result);
-//
-//        //Testing removing ClassPath
-//        l = new PRListener();
-//        regs.unregister(SOURCES,new ClassPath[] {cp2});
-//        assertTrue(l.await());
-//        result = collectResults ();
-//        assertEquals(1,result.size());
-//        assertEquals(new FileObject[] {srcRoot2},result);
-//
-//        //Testing registering classpath with SFBQ - register PLATFROM
-//        l = new PRListener();
-//        ClassPath cp3 = ClassPathSupport.createClassPath(new FileObject[] {bootRoot1,bootRoot2});
-//        regs.register(PLATFORM,new ClassPath[] {cp3});
-//        assertTrue(l.await());
-//        result = PathRegistry.getDefault().getSources();
-//        assertNotNull (result);
-//        assertEquals(2,result.size());
-//        assertEquals(new FileObject[] {srcRoot2, bootSrc1},result);
-//
-//        //Testing registering classpath with SFBQ - register LIBS
-//        l = new PRListener();
-//        MutableClassPathImplementation mcpi4 = new MutableClassPathImplementation ();
-//        mcpi4.addResource (compRoot1);
-//        ClassPath cp4 = ClassPathFactory.createClassPath(mcpi4);
-//        regs.register(LIBS,new ClassPath[] {cp4});
-//        assertTrue(l.await());
-//        result = PathRegistry.getDefault().getSources();
-//        assertNotNull (result);
-//        assertEquals(3,result.size());
-//        assertEquals(new FileObject[] {srcRoot2, bootSrc1, compSrc1},result);
-//
-//        //Testing registering classpath with SFBQ - add into LIBS
-//        l = new PRListener();
-//        mcpi4.addResource(compRoot2);
-//        assertTrue(l.await());
-//        result = PathRegistry.getDefault().getSources();
-//        assertNotNull (result);
-//        assertEquals(4,result.size());
-//        assertEquals(new FileObject[] {srcRoot2, bootSrc1, compSrc1, compSrc2},result);
-//
-//        //Testing registering classpath with SFBQ - remove from LIBS
-//        l = new PRListener();
-//        mcpi4.removeResource(compRoot1);
-//        assertTrue(l.await());
-//        result = PathRegistry.getDefault().getSources();
-//        assertNotNull (result);
-//        assertEquals(3,result.size());
-//        assertEquals(new FileObject[] {srcRoot2, bootSrc1, compSrc2},result);
-//
-//        //Testing registering classpath with SFBQ - unregister PLATFORM
-//        l = new PRListener();
-//        regs.unregister(PLATFORM,new ClassPath[] {cp3});
-//        result = PathRegistry.getDefault().getSources();
-//        assertNotNull (result);
-//        assertEquals(2,result.size());
-//        assertEquals(new FileObject[] {srcRoot2, compSrc2},result);
-//
-//        //Testing listening on SFBQ.Results - bind source
-//        l = new PRListener();
-//        SFBQImpl.register(compRoot2,compSrc1);
-//        assertTrue(l.await());
-//        result = PathRegistry.getDefault().getSources();
-//        assertNotNull (result);
-//        assertEquals(2,result.size());
-//        assertEquals(new FileObject[] {srcRoot2, compSrc1},result);
-//
-//        //Testing listening on SFBQ.Results - rebind (change) source
-//        l = new PRListener();
-//        SFBQImpl.register(compRoot2,compSrc2);
-//        assertTrue(l.await());
-//        result = PathRegistry.getDefault().getSources();
-//        assertNotNull (result);
-//        assertEquals(2,result.size());
-//        assertEquals(new FileObject[] {srcRoot2, compSrc2},result);
+        //Testing changes in registered classpath - remove cp root
+        handler.reset();
+        mcpi1.removeResource(srcRoot1);
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+
+        //Testing adding new ClassPath
+        handler.reset();
+        MutableClassPathImplementation mcpi2 = new MutableClassPathImplementation ();
+        mcpi2.addResource(srcRoot1);
+        ClassPath cp2 = ClassPathFactory.createClassPath(mcpi2);
+        GlobalPathRegistry.getDefault().register (SOURCES, new ClassPath[] {cp2});
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRoot1.getURL(), handler.getSources().get(0));
+
+        //Testing changes in newly registered classpath - add cp root
+        handler.reset();
+        mcpi2.addResource(srcRoot3);
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRoot3.getURL(), handler.getSources().get(0));
+
+        //Testing removing ClassPath
+        handler.reset();
+        GlobalPathRegistry.getDefault().unregister(SOURCES,new ClassPath[] {cp2});
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+
+        //Testing registering classpath with SFBQ - register PLATFROM
+        handler.reset();
+        ClassPath cp3 = ClassPathSupport.createClassPath(new FileObject[] {bootRoot1,bootRoot2});
+        GlobalPathRegistry.getDefault().register(PLATFORM,new ClassPath[] {cp3});
+        assertTrue(handler.await());
+        assertEquals(1, handler.getBinaries().size());
+        assertEquals(this.bootRoot2.getURL(), handler.getBinaries().iterator().next());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.bootSrc1.getURL(), handler.getSources().get(0));
+
+        //Testing registering classpath with SFBQ - register LIBS
+        handler.reset();
+        MutableClassPathImplementation mcpi4 = new MutableClassPathImplementation ();
+        mcpi4.addResource (compRoot1);
+        ClassPath cp4 = ClassPathFactory.createClassPath(mcpi4);
+        GlobalPathRegistry.getDefault().register(LIBS,new ClassPath[] {cp4});
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.compSrc1.getURL(), handler.getSources().get(0));
+
+        //Testing registering classpath with SFBQ - add into LIBS
+        handler.reset();
+        mcpi4.addResource(compRoot2);
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.compSrc2.getURL(), handler.getSources().get(0));
+
+
+        //Testing registering classpath with SFBQ - remove from LIBS
+        handler.reset();
+        mcpi4.removeResource(compRoot1);
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+
+        //Testing registering classpath with SFBQ - unregister PLATFORM
+        handler.reset();
+        GlobalPathRegistry.getDefault().unregister(PLATFORM,new ClassPath[] {cp3});
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+
+        //Testing listening on SFBQ.Results - bind source
+        handler.reset();
+        SFBQImpl.register(compRoot2,compSrc1);
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.compSrc1.getURL(), handler.getSources().get(0));
+
+        //Testing listening on SFBQ.Results - rebind (change) source
+        handler.reset();
+        SFBQImpl.register(compRoot2,compSrc2);
+        assertTrue(handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.compSrc2.getURL(), handler.getSources().get(0));
     }
 
     public static class TestHandler extends Handler {

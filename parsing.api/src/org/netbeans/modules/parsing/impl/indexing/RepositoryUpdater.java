@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -351,6 +352,11 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                 newRoots.addAll (regs.getSources());
                 newRoots.addAll (regs.getUnknownRoots());                
                 ctx.newBinaries.addAll(regs.getBinaries());
+                for (Iterator<URL> it = ctx.newBinaries.iterator(); it.hasNext();) {
+                    if (ctx.oldBinaries.remove(it.next())) {
+                        it.remove();
+                    }
+                }
                 ctx.newBinaries.removeAll(ctx.oldBinaries);
                 final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();
                 
@@ -360,6 +366,8 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                 ctx.newRoots.addAll(org.openide.util.Utilities.topologicalSort(depGraph.keySet(), depGraph));
                 scanBinaries(ctx);
                 scanSources(ctx);
+                ctx.scannedRoots.removeAll(ctx.oldRoots);
+                ctx.scannedBinaries.removeAll(ctx.oldBinaries);
             } catch (final TopologicalSortException tse) {
                 final IllegalStateException ise = new IllegalStateException ();
                 throw (IllegalStateException) ise.initCause(tse);
