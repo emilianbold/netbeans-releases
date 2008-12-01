@@ -67,6 +67,7 @@ made subject to such option by the copyright holder.
             addNotify() and removeNotify() methods to ChildFactory.  addNotify()
             is called immediately before the first call to createKeys() after
             creation or a call to removeNotify().
+            </p>
         </description>
         <class package="org.openide.nodes" name="ChildFactory"/>
         <issue number="153347"/>
