@@ -47,14 +47,11 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ui.ProjectRootNodeChildren.ChildKind;
 import org.netbeans.spi.java.project.support.ui.PackageView;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -110,9 +107,14 @@ public class ProjectRootNodeChildren extends ChildFactory<ChildKind> {
             int ix = 0;
             //in preparation for multiple source roots
             for (SourceGroup group : sg) {
-                result[ix++] = PackageView.createPackageView(sg[0]);
+                result[ix++] = PackageView.createPackageView(group);
             }
         }
-        return result.length == 0 ? new Node[] { Node.EMPTY } : result;
+        if (result.length == 0) {
+            result = new Node[] { new AbstractNode(Children.LEAF) };
+            result[0].setDisplayName(NbBundle.getMessage(ProjectRootNodeChildren.class,
+                    "LBL_MissingSources")); //NOI18N
+        }
+        return result;
     }
 }
