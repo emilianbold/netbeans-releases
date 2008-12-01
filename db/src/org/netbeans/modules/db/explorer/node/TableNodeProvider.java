@@ -46,10 +46,13 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -74,12 +77,26 @@ public class TableNodeProvider extends NodeProvider {
     }
 
     private final DatabaseConnection connection;
-    private final Schema schema;
+    private MetadataElementHandle<Schema> schemaHandle;
+    private Metadata metaData;
 
     private TableNodeProvider(Lookup lookup) {
         super(lookup, new TableComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
-        schema = getLookup().lookup(Schema.class);
+        schemaHandle = getLookup().lookup(MetadataElementHandle.class);
+        metaData = getLookup().lookup(Metadata.class);
+    }
+
+    @Override
+    public void refresh() {
+        RequestProcessor.getDefault().post(
+            new Runnable() {
+                public void run() {
+                    metaData.refresh();
+                    update();
+                }
+            }
+        );
     }
 
     private void setup() {
@@ -89,6 +106,7 @@ public class TableNodeProvider extends NodeProvider {
     private synchronized void update() {
         List<Node> newList = new ArrayList<Node>();
 
+        Schema schema = schemaHandle.resolve(metaData);
         Collection<Table> tables = schema.getTables();
         for (Table table : tables) {
             Collection<Node> matches = getNodes(table);
@@ -97,9 +115,12 @@ public class TableNodeProvider extends NodeProvider {
             } else {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(connection);
-                lookup.add(table);
-                
-                newList.add(TableNode.create(lookup));
+                lookup.add(metaData);
+
+                MetadataElementHandle<Table> handle = MetadataElementHandle.create(table);
+                lookup.add(handle);
+
+                newList.add(TableNode.create(lookup, this));
             }
         }
 

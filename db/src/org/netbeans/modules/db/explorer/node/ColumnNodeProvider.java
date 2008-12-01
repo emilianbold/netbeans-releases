@@ -47,10 +47,13 @@ import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.View;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -75,14 +78,33 @@ public class ColumnNodeProvider extends NodeProvider {
     }
 
     private final DatabaseConnection connection;
-    private final Table table;
-    private final View view;
+    private MetadataElementHandle handle = null;
+    private Metadata metaData;
 
     private ColumnNodeProvider(Lookup lookup) {
         super(lookup, new ColumnComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
-        table = getLookup().lookup(Table.class);
-        view = getLookup().lookup(View.class);
+        handle = getLookup().lookup(MetadataElementHandle.class);
+        metaData = getLookup().lookup(Metadata.class);
+    }
+
+    @Override
+    public void refresh() {
+        RequestProcessor.getDefault().post(
+            new Runnable() {
+                public void run() {
+                    try {
+                        Table table = (Table)handle.resolve(metaData);
+                        table.refresh();
+                    } catch (ClassCastException e) {
+                        View view = (View)handle.resolve(metaData);
+                        view.refresh();
+                    }
+
+                    update();
+                }
+            }
+        );
     }
 
     private void setup() {
@@ -93,9 +115,11 @@ public class ColumnNodeProvider extends NodeProvider {
         List<Node> newList = new ArrayList<Node>();
 
         Collection<Column> columns;
-        if (table != null) {
+        try {
+            Table table = (Table)handle.resolve(metaData);
             columns = table.getColumns();
-        } else {
+        } catch (ClassCastException e) {
+            View view = (View)handle.resolve(metaData);
             columns = view.getColumns();
         }
         
@@ -106,9 +130,12 @@ public class ColumnNodeProvider extends NodeProvider {
             } else {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(connection);
-                lookup.add(column);
+                lookup.add(metaData);
 
-                newList.add(ColumnNode.create(lookup));
+                MetadataElementHandle<Column> h = MetadataElementHandle.create(column);
+                lookup.add(h);
+
+                newList.add(ColumnNode.create(lookup, this));
             }
         }
 

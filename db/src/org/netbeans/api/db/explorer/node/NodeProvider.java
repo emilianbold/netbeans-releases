@@ -99,7 +99,11 @@ public abstract class NodeProvider implements Lookup.Provider {
     public Collection<Node> getNodes() {
         return Collections.unmodifiableCollection(nodeSet);
     }
-    
+
+    public void refresh() {
+
+    }
+
     /**
      * Get the list of nodes that contain a lookup that in turn contains 
      * a specified data object.
@@ -150,7 +154,15 @@ public abstract class NodeProvider implements Lookup.Provider {
         
         changeSupport.fireChange();
     }
-    
+
+    public void removeNode(Node node) {
+        synchronized (nodeSet) {
+            nodeSet.remove(node);
+        }
+        
+        changeSupport.fireChange();
+    }
+
     /**
      * Remove all nodes.
      */

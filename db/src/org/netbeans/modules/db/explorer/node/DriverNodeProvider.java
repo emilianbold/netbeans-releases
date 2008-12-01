@@ -96,7 +96,7 @@ public class DriverNodeProvider extends NodeProvider {
             } else {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(driver);
-                newList.add(DriverNode.create(lookup));
+                newList.add(DriverNode.create(lookup, this));
             }
         }
 

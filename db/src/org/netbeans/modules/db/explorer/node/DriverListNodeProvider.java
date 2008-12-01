@@ -65,7 +65,7 @@ public class DriverListNodeProvider extends NodeProvider {
 
     private DriverListNodeProvider(Lookup lookup) {
         super(lookup);
-        addNode(DriverListNode.create(new NodeDataLookup()));
+        addNode(DriverListNode.create(new NodeDataLookup(), this));
     }
     
 }

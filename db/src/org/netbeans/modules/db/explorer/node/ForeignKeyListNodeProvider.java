@@ -71,6 +71,6 @@ public class ForeignKeyListNodeProvider extends ConnectedNodeProvider {
 
     @Override
     protected BaseNode createNode(NodeDataLookup lookup) {
-        return ForeignKeyListNode.create(lookup);
+        return ForeignKeyListNode.create(lookup, this);
     }
 }

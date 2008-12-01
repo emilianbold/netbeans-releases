@@ -41,7 +41,10 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Procedure;
 
 /**
@@ -58,33 +61,44 @@ public class ProcedureNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ProcedureNode instance
      */
-    public static ProcedureNode create(NodeDataLookup dataLookup) {
-        ProcedureNode node = new ProcedureNode(dataLookup);
+    public static ProcedureNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ProcedureNode node = new ProcedureNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
     private DatabaseConnection connection;
-    private Procedure procedure;
+    private Metadata metaData;
+    private MetadataElementHandle<Procedure> procedureHandle;
 
-    private ProcedureNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private ProcedureNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {
         // get the connection from the lookup
         connection = getLookup().lookup(DatabaseConnection.class);
-        procedure = getLookup().lookup(Procedure.class);
-
+        metaData = getLookup().lookup(Metadata.class);
+        procedureHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     @Override
     public String getName() {
+        Procedure procedure = procedureHandle.resolve(metaData);
+        if (procedure == null) {
+            return "";
+        }
+
         return procedure.getName();
     }
 
     @Override
     public String getDisplayName() {
+        Procedure procedure = procedureHandle.resolve(metaData);
+        if (procedure == null) {
+            return "";
+        }
+
         return procedure.getName();
     }
 

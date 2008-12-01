@@ -41,6 +41,7 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 
 /**
  *
@@ -58,14 +59,14 @@ public class IndexListNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the TableListNode instance
      */
-    public static IndexListNode create(NodeDataLookup dataLookup) {
-        IndexListNode node = new IndexListNode(dataLookup);
+    public static IndexListNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        IndexListNode node = new IndexListNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private IndexListNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private IndexListNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {

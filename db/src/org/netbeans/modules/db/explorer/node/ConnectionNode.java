@@ -47,6 +47,7 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.openide.util.RequestProcessor;
 
@@ -66,8 +67,8 @@ public class ConnectionNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ConnectionNode instance
      */
-    public static ConnectionNode create(NodeDataLookup dataLookup) {
-        ConnectionNode node = new ConnectionNode(dataLookup);
+    public static ConnectionNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ConnectionNode node = new ConnectionNode(dataLookup, provider);
         node.setup();
         return node;
     }
@@ -80,8 +81,8 @@ public class ConnectionNode extends BaseNode {
      * 
      * @param lookup the associated lookup
      */
-    private ConnectionNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private ConnectionNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {
@@ -97,11 +98,6 @@ public class ConnectionNode extends BaseNode {
                 }
             }
         );
-    }
-
-    @Override
-    public boolean canRefresh() {
-        return true;
     }
 
     @Override

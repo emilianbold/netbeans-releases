@@ -50,15 +50,17 @@ import java.util.List;
 import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.api.db.explorer.node.NodeProviderFactory;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.metadata.MetadataModelManager;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.db.metadata.model.api.MetadataModels;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -96,8 +98,14 @@ public class SchemaNodeProvider extends NodeProvider {
         connection.addPropertyChangeListener(
             new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    // just ask the node to update itself
-                    update();
+                    RequestProcessor.getDefault().post(
+                        new Runnable() {
+                            public void run() {
+                                // just ask the node to update itself
+                                update();
+                            }
+                        }
+                    );
                 }
             }
         );
@@ -118,7 +126,8 @@ public class SchemaNodeProvider extends NodeProvider {
         }
 
         if (connected) {
-            MetadataModel model = MetadataModels.createModel(connection.getConnection(), null);
+            //MetadataModel model = MetadataModels.createModel(connection.getConnection(), null);
+            MetadataModel model = MetadataModelManager.get(connection.getDatabaseConnection());
 
             try {
                 model.runReadAction(
@@ -128,27 +137,32 @@ public class SchemaNodeProvider extends NodeProvider {
 
                             Catalog cat = parameter.getDefaultCatalog();
                             Schema syntheticSchema = cat.getSyntheticSchema();
+
                             if (syntheticSchema != null) {
-                                updateNode(newList, syntheticSchema);
+                                updateNode(newList, syntheticSchema, parameter);
                             } else {
                                 Collection<Schema> schemas = cat.getSchemas();
                                 for (Schema schema : schemas) {
-                                    updateNode(newList, schema);
+                                    updateNode(newList, schema, parameter);
                                 }
                             }
 
                             setNodes(newList);
                         }
 
-                        private void updateNode(List<Node> newList, Schema schema) {
+                        private void updateNode(List<Node> newList, Schema schema, Metadata metadata) {
                             Collection<Node> matches = SchemaNodeProvider.this.getNodes(schema);
                             if (matches.size() > 0) {
                                 newList.addAll(matches);
                             } else {
                                 NodeDataLookup lookup = new NodeDataLookup();
                                 lookup.add(connection);
-                                lookup.add(schema);
-                                newList.add(SchemaNode.create(lookup));
+
+                                MetadataElementHandle<Schema> schemaHandle = MetadataElementHandle.create(schema);
+                                lookup.add(schemaHandle);
+                                lookup.add(metadata);
+
+                                newList.add(SchemaNode.create(lookup, SchemaNodeProvider.this));
                             }
                         }
                     }

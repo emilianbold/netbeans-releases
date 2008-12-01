@@ -41,6 +41,7 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 
 /**
  *
@@ -58,14 +59,14 @@ public class ForeignKeyListNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ForeignKeyListNode instance
      */
-    public static ForeignKeyListNode create(NodeDataLookup dataLookup) {
-        ForeignKeyListNode node = new ForeignKeyListNode(dataLookup);
+    public static ForeignKeyListNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ForeignKeyListNode node = new ForeignKeyListNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private ForeignKeyListNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private ForeignKeyListNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {

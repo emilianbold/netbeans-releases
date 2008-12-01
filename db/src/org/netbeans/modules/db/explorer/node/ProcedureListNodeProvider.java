@@ -71,7 +71,7 @@ public class ProcedureListNodeProvider extends ConnectedNodeProvider {
 
     @Override
     protected BaseNode createNode(NodeDataLookup lookup) {
-        return ProcedureListNode.create(lookup);
+        return ProcedureListNode.create(lookup, this);
     }
     
 }
