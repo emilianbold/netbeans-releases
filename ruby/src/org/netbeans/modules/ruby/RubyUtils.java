@@ -402,23 +402,55 @@ public class RubyUtils {
         return sb.toString();
     }
 
-    /** Similar to isValidRubyClassName, but allows a number of ::'s to join class names */
-    public static boolean isValidRubyModuleName(String name) {
+    /**
+     * Whether this is valid fully qualified constant name, i.e. similar to
+     * {@link #isValidConstantName}, but allows a number of double-colons
+     * (<em>::</em>) to join scopes (module or class) names. E.g.:
+     *
+     * <pre>
+     *   module Colors
+     *   
+     *     module Converter
+     *       # module definition
+     *     end
+     *
+     *     RED   = "#FF0000"
+     *     GREEN = "#00FF00"
+     *     BLUE  = "#0000FF"
+     *
+     *   end
+     * </pre>
+     *
+     * Colors::Converter is a constant name for module, Color::Constant is
+     * an "common" constant.
+     * 
+     * @param name to check
+     * @return <code>true</code> or <code>false</code>
+     * @see #isValidConstantName
+     */
+    public static boolean isValidConstantFQN(final String name) {
         if (name.trim().length() == 0) {
             return false;
         }
         
         String[] mods = name.split("::"); // NOI18N
         for (String mod : mods) {
-            if (!isValidRubyClassName(mod)) {
+            if (!isValidConstantName(mod)) {
                 return false;
             }
         }
         
         return true;
     }
-    
-    public static boolean isValidRubyClassName(String name) {
+
+    /**
+     * Whether this is a valid constant name, i.e. also class or module name.
+     * 
+     * @param name to check
+     * @return <code>true</code> or <code>false</code>
+     * @see #isValidConstantFQN
+     */
+    public static boolean isValidConstantName(final String name) {
         if (isRubyKeyword(name)) {
             return false;
         }
