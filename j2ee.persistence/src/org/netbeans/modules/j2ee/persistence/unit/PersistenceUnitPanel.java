@@ -331,7 +331,9 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             setProvider();
             setDataSource();
             String curProvider = persistenceUnit.getProvider();
-            ProviderUtil.migrateProperties(prevProvider, curProvider, persistenceUnit);
+            if(prevProvider != null && curProvider != null) {
+                ProviderUtil.migrateProperties(prevProvider, curProvider, persistenceUnit);
+            }
         } else if (source == ddCreate || source == ddDropCreate || source == ddUnknown){
             ProviderUtil.setTableGeneration(persistenceUnit, getTableGeneration(), ProviderUtil.getProvider(persistenceUnit.getProvider(), project));
         } else if (source == includeAllEntities){
