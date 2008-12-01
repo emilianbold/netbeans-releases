@@ -148,8 +148,8 @@
             bundle="${proxydir}/Bundle.properties"
             destdir="${proxydir}"
         >
-           <modules dir=".">
-                <include name="modules/*.jar"/>
+           <modules dir="${netbeans.dest.dir}">
+                <include name="**/modules/*.jar"/>
             </modules>
             <bundlefilter>
                 <linecontains>

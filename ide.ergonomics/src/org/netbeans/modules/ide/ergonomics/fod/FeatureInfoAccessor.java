@@ -77,7 +77,7 @@ public abstract class FeatureInfoAccessor {
             this.info = info;
         }
     
-        synchronized XMLFileSystem getXMLFileSystem() {
+        public synchronized XMLFileSystem getXMLFileSystem() {
             if (fs == null) {
                 URL url = DEFAULT.getDelegateLayer(info);
                 fs = new XMLFileSystem();
