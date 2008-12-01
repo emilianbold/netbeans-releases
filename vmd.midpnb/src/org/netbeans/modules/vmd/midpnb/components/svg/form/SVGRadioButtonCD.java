@@ -103,7 +103,6 @@ public class SVGRadioButtonCD extends ComponentDescriptor{
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
                 .addProperty(NbBundle.getMessage(SVGRadioButtonCD.class, 
                         "DISP_Text"), 
                         PropertyEditorString.createInstance(
