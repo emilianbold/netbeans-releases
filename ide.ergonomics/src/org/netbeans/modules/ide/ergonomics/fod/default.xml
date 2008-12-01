@@ -6,7 +6,6 @@
         <file name="Refactoring_hidden"/>
         <file name="Edit_hidden"/>
         <file name="GoTo_hidden"/>
-        <file name="Profile_hidden"/>
 
         <folder name="File">
             <file name="Separator3.instance_hidden"/>
@@ -54,6 +53,17 @@
             <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow_hidden"/>
             <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow_hidden"/>
         </folder>
+        <folder name="Profile">
+            <attr name="position" intvalue="850"/>
+            <file name="org-netbeans-modules-prof-actions-AttachAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.ide.ergonomics.prof.AttachAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.ide.ergonomics.prof.Bundle#CTL_AttachAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" stringvalue="false"/>
+                <attr name="position" intvalue="0"/>
+            </file>
+        </folder>
+
         <file name="Source_hidden"/>
         <folder name="Tools">
             <file name="JavaPlatformsCustomizerAction.instance_hidden"/>
