@@ -94,4 +94,14 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFact
         return SemanticHighlightingOptions.instance().getEnableMarkOccurrences()
                 &&!HighlighterBase.MINIMAL;
     }
+
+    @Override
+    protected int taskDelay() {
+        return ModelUtils.OCCURRENCES_DELAY;
+    }
+
+    @Override
+    protected int rescheduleDelay() {
+        return ModelUtils.RESEDULE_OCCURRENCES_DELAY;
+    }
 }
