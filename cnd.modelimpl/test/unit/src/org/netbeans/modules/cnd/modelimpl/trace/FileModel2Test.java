@@ -68,6 +68,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ154196() throws Exception {
+        // IZ136887: Model do not support bit fields
+        performTest("iz154196.cc");
+    }
+
     public void testIZ136887() throws Exception {
         // IZ136887: Model do not support bit fields
         performTest("iz136887.cc");
