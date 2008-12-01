@@ -83,7 +83,7 @@ public final class ParserQueue {
 
     public static class Entry implements Comparable<Entry> {
 
-        private FileImpl file;
+        private final FileImpl file;
         /** either APTPreprocHandler.State or Collection<APTPreprocHandler.State> */
         private Object ppState;
         private final Position position;
