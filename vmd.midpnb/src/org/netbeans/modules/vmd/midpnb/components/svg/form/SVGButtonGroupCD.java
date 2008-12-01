@@ -46,10 +46,14 @@ import java.util.List;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 
 
 
@@ -61,14 +65,9 @@ public class SVGButtonGroupCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, 
             "org.netbeans.microedition.svg.SVGButtonGroup"); //NOI18N
+    
+    public static final String PROP_BUTTONS = "buttons";     // NOI18N
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.api.model.ComponentDescriptor#createPresenters()
-     */
-    @Override
-    protected List<? extends Presenter> createPresenters() {
-        return Arrays.asList();
-    }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.vmd.api.model.ComponentDescriptor#getDeclaredPropertyDescriptors()
@@ -76,7 +75,10 @@ public class SVGButtonGroupCD extends ComponentDescriptor {
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
         return Arrays.asList (
-            );
+                new PropertyDescriptor(PROP_BUTTONS, /* SBGAbtractButton */
+                        SVGComponentCD.TYPEID.getArrayType(), 
+                        PropertyValue.createEmptyArray(SVGComponentCD.TYPEID), 
+                        true, true, MidpVersionable.MIDP));
     }
 
     /* (non-Javadoc)
@@ -94,6 +96,14 @@ public class SVGButtonGroupCD extends ComponentDescriptor {
     public VersionDescriptor getVersionDescriptor() {
         //return MidpVersionDescriptor.FOREVER;
         return MidpVersionDescriptor.MIDP_2;
+    }
+    
+    protected List<? extends Presenter> createPresenters () {
+        return Arrays.asList(
+                //code
+                MidpCustomCodePresenterSupport.createSVGButtonGroupCodePresenter(),
+                MidpCodePresenterSupport.createAddImportPresenter()
+        );
     }
 
 }
