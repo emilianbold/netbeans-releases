@@ -637,7 +637,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler);
         return walker.getFilteredTokenStream(getLanguageFilter(ppState));
     }
-    private final String tokStreamLock = new String("TokenStream lock"); // NOI18N
+    private final Object tokStreamLock = new Object();
     private Reference<OffsetTokenStream> ref = new SoftReference<OffsetTokenStream>(null);
 
     public TokenStream getTokenStream(int startOffset, int endOffset) {
@@ -821,7 +821,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         // 2b otherwise if cache has APT full => use APT full to generate parser's
         //     token stream and save in cache
         AST ast = null;
-        APTFile aptLight = null;
         APTFile aptFull = null;
         try {
             aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
@@ -831,23 +830,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
         }
-        if (ast != null) {
-            if (TraceFlags.TRACE_CACHE) {
-                System.err.println("CACHE: parsing using AST and APTLight for " + getAbsolutePath());
-            }
-            // use light for visiting and return ast as result
-            assert (aptLight != null);
-            boolean skip = TraceFlags.CACHE_SKIP_APT_VISIT;
-            if (!skip) {
-                APTParseFileWalker walker = new APTParseFileWalker(ProjectBase.getStartProject(preprocHandler.getState()), aptLight, this, preprocHandler);
-                walker.addMacroAndIncludes(true);
-                walker.visit();
-            } else {
-                if (TraceFlags.TRACE_CACHE) {
-                    System.err.println("CACHE: skipped APTLight visiting");
-                }
-            }
-        } else if (aptFull != null) {
+        if (aptFull != null) {
             // use full APT for generating token stream
             if (TraceFlags.TRACE_CACHE) {
                 System.err.println("CACHE: parsing using full APT for " + getAbsolutePath());
@@ -1275,10 +1258,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return new OffsetSortedKey(declaration);
     }
 
-    private NameSortedKey getOffsetSortKey(CsmMacro macro) {
-        return new NameSortedKey(macro);
-    }
-
     public String getAbsolutePath() {
         return fileBuffer.getFile().getAbsolutePath();
     }
@@ -1563,6 +1542,23 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return res;
         }
 
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof OffsetSortedKey) {
+                OffsetSortedKey key = (OffsetSortedKey) obj;
+                return compareTo(key)==0;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 37 * hash + this.start;
+            hash = 37 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
+        }
+
         public void write(DataOutput output) throws IOException {
             output.writeInt(start);
             output.writeUTF(name.toString());
@@ -1594,6 +1590,23 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 res = start - o.start;
             }
             return res;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof NameSortedKey) {
+                NameSortedKey key = (NameSortedKey) obj;
+                return compareTo(key)==0;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 37 * hash + this.start;
+            hash = 37 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
         }
 
         public static NameSortedKey getStartKey(CharSequence name) {

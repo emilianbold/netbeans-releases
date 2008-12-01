@@ -114,8 +114,8 @@ Document 5
 Searchable Keys:
   class : Format
   class-ig : format
-  constant : ISO_DATE
-  constant : ISO_DATETIME
+  constant : ISO_DATE;Regexp
+  constant : ISO_DATETIME;Regexp
   fqn : ActiveRecord::ConnectionAdapters::Column::Format
 
 Not Searchable Keys:

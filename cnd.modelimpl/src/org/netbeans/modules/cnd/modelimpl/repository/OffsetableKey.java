@@ -131,7 +131,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 
     @Override
     public String toString() {
-        return name + "[" + getKind() + " " + startOffset + "-" + endOffset + "] {" + getFileNameSafe() + "; " + getProjectName() + "}"; // NOI18N
+        return name + "[" + getKind() + " " + getStartOffset() + "-" + getEndOffset() + "] {" + getFileNameSafe() + "; " + getProjectName() + "}"; // NOI18N
     }
 
     @Override

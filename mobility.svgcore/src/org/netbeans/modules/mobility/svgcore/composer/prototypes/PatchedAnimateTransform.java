@@ -83,6 +83,7 @@ public final class PatchedAnimateTransform extends AnimateTransform implements P
      *        should be created.
      * @return a new <code>TimedElementNode</code> for the requested document.
      */
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedAnimateTransform(doc);
     }

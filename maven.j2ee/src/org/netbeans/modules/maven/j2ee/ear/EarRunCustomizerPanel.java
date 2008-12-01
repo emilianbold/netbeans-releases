@@ -41,12 +41,7 @@ package org.netbeans.modules.maven.j2ee.ear;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
-import org.apache.maven.profiles.Profile;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.j2ee.POHImpl;
@@ -54,11 +49,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
-import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.Properties;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.maven.j2ee.SessionContent;
+import org.netbeans.modules.maven.j2ee.Wrapper;
 
 
 /**
@@ -88,146 +81,7 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
     }
 
     private void initValues() {
-        listener = new ComboBoxUpdater<Wrapper>(comServer, lblServer) {
-
-            public Wrapper getDefaultValue() {
-                Wrapper wr = null;
-                String id = handle.getProject().getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID);
-                if (id != null) {
-                    wr = findWrapperByInstance(id);
-                }
-                if (wr == null) {
-                    String str = handle.getProject().getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER);
-                    if (str == null) {
-                        str = handle.getProject().getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER_OLD);
-                    }
-
-                    if (str != null) {
-                        wr = findWrapperByType(str);
-                    }
-                }
-                return wr;
-            }
-
-            public Wrapper getValue() {
-                Wrapper wr = null;
-                org.netbeans.modules.maven.model.profile.Profile privprof = handle.getNetbeansPrivateProfile(false);
-                if (privprof != null) {
-                    org.netbeans.modules.maven.model.profile.Properties privprops = privprof.getProperties();
-                    if (privprops != null) {
-                        String id = privprops.getProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID);
-                        if (id != null) {
-                            wr = findWrapperByInstance(id);
-                        }
-                    }
-                }
-                if (wr == null) {
-                    POMModel model = handle.getPOMModel();
-                    Properties props = model.getProject().getProperties();
-                    String str = null;
-                    if (props != null) {
-                        str = props.getProperty(Constants.HINT_DEPLOY_J2EE_SERVER);
-                    }
-                    if (str == null) {
-                        org.netbeans.modules.maven.model.pom.Profile prof = handle.getNetbeansPublicProfile(false);
-                        if (prof != null) {
-                            props = prof.getProperties();
-                            if (props != null) {
-                                str = props.getProperty(Constants.HINT_DEPLOY_J2EE_SERVER_OLD);
-                            }
-                        }
-                    }
-                    if (str != null) {
-                        wr = findWrapperByType(str);
-                    }
-                }
-                return wr;
-            }
-
-            public void setValue(Wrapper wr) {
-                if (wr == null) {
-                    return;
-                }
-                String sID = wr.getServerID();
-                String iID = wr.getServerInstanceID();
-                org.netbeans.modules.maven.model.profile.Profile privateProf = handle.getNetbeansPrivateProfile(false);
-                //remove old deprecated data.
-                org.netbeans.modules.maven.model.pom.Profile pub = handle.getNetbeansPublicProfile(false);
-                if (pub != null) {
-                    Properties props = pub.getProperties();
-                    if (props != null) {
-                        pub.getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, null);
-                    }
-                }
-                POMModel model = handle.getPOMModel();
-                if (ExecutionChecker.DEV_NULL.equals(iID)) {
-                    //check if someone moved the property to netbeans-private profile, remove from there then.
-                    Properties props = model.getProject().getProperties();
-                    if (privateProf != null) {
-                        org.netbeans.modules.maven.model.profile.Properties privprops = privateProf.getProperties();
-                        if (privprops != null && privprops.getProperty(Constants.HINT_DEPLOY_J2EE_SERVER) != null) {
-                            privprops.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, null);
-                        } else {
-                            if (props != null) {
-                                props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, null);
-                                handle.markAsModified(handle.getPOMModel());
-                            }
-                        }
-                        if (privprops != null) {
-                            privprops.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, null);
-                        }
-                        handle.markAsModified(handle.getProfileModel());
-                    } else {
-                        if (props != null) {
-                            props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, null);
-                            handle.markAsModified(handle.getPOMModel());
-                        }
-                    }
-                } else {
-                    Properties props = model.getProject().getProperties();
-                    if (props == null) {
-                        props = model.getFactory().createProperties();
-                        model.getProject().setProperties(props);
-                    }
-
-                    //check if someone moved the property to netbeans-private profile, remove from there then.
-                    if (privateProf != null && privateProf.getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER) != null) {
-                        privateProf.getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
-                    } else {
-                        props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
-                        handle.markAsModified(handle.getPOMModel());
-                    }
-                    privateProf = handle.getNetbeansPrivateProfile();
-                    org.netbeans.modules.maven.model.profile.Properties privs = privateProf.getProperties();
-                    if (privs == null) {
-                        privs = handle.getProfileModel().getFactory().createProperties();
-                        privateProf.setProperties(privs);
-                    }
-                    privs.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, iID);
-                    handle.markAsModified(handle.getProfileModel());
-                }
-            }
-        };
-    }
-
-    private Wrapper findWrapperByInstance(String instanceId) {
-        for (int i = 0; i < comServer.getModel().getSize(); i++) {
-            Wrapper wr = (Wrapper) comServer.getModel().getElementAt(i);
-            if (instanceId.equals(wr.getServerInstanceID())) {
-                return wr;
-            }
-        }
-        return null;
-    }
-
-    private Wrapper findWrapperByType(String serverId) {
-        for (int i = 0; i < comServer.getModel().getSize(); i++) {
-            Wrapper wr = (Wrapper) comServer.getModel().getElementAt(i);
-            if (serverId.equals(wr.getServerID())) {
-                return wr;
-            }
-        }
-        return null;
+        listener = Wrapper.createComboBoxUpdater(handle, comServer, lblServer);
     }
 
     private void loadComboModel() {
@@ -250,11 +104,12 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
 
     void applyChanges() {
         //#109507 workaround
+        SessionContent sc = project.getLookup().lookup(SessionContent.class);
+        sc.setServerInstanceId(null);
+        //TODO - not sure this is necessary since the PoHImpl listens on project changes.
+        //any save of teh project shall effectively caus ethe module server change..
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
         poh.hackModuleServerChange();
-        EarModuleProviderImpl moduleProvider = project.getLookup().lookup(EarModuleProviderImpl.class);
-
-        moduleProvider.loadPersistedServerId();
     }
 
     /** This method is called from within the constructor to
@@ -315,39 +170,4 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
     private javax.swing.JTextField txtJ2EEVersion;
     // End of variables declaration//GEN-END:variables
 
-    private class Wrapper {
-
-        private String id;
-
-        public Wrapper(String serverid) {
-            id = serverid;
-        }
-
-        public String getServerInstanceID() {
-            return id;
-        }
-
-        public String getServerID() {
-            if (ExecutionChecker.DEV_NULL.equals(id)) {
-                return ExecutionChecker.DEV_NULL;
-            }
-            return POHImpl.privateGetServerId(id);
-        }
-
-        @Override
-        public String toString() {
-            if (ExecutionChecker.DEV_NULL.equals(id)) {
-                return org.openide.util.NbBundle.getMessage(EarRunCustomizerPanel.class, "MSG_No_Server");
-            }
-            ServerInstance si = Deployment.getDefault().getServerInstance(id);
-            if (si != null) {
-                try {
-                    return si.getServerDisplayName();
-                } catch (InstanceRemovedException ex) {
-                    Logger.getLogger(EarRunCustomizerPanel.class.getName()).log(Level.FINE, "", ex);
-                }
-            }
-            return "";
-        }
-    }
 }

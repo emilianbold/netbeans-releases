@@ -103,7 +103,7 @@ public class SVGCheckBoxCD extends ComponentDescriptor{
     
     private Presenter createSetterPresenter () {
         return new CodeSetterPresenter ().
-                addParameters(MidpParameter.create(//SVGLabelCD.PROP_TEXT,
+                addParameters(MidpParameter.create(SVGLabelCD.PROP_TEXT,
                         SVGRadioButtonCD.PROP_SELECTED)).
                 addSetters(MidpSetter.createSetter("setText", 
                         MidpVersionable.MIDP_2).addParameters(SVGLabelCD.

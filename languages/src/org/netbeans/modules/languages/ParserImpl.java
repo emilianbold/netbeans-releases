@@ -55,11 +55,9 @@ import org.netbeans.modules.languages.parser.StringInput;
 import org.netbeans.modules.languages.parser.SyntaxError;
 import org.netbeans.modules.languages.parser.TokenInputUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 
 
@@ -165,7 +163,16 @@ public class ParserImpl extends Parser {
 
     @Override
     public Result getResult (Task task) {
-        return parserResult;
+        if (parserResult != null) {
+            return ParserResult.create(
+                parserResult.getSnapshot(),
+                null,
+                parserResult.getRootNode(),
+                parserResult.getSyntaxErrors()
+            );
+        } else {
+            return null;
+        }
     }
 
     @Override

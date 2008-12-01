@@ -75,6 +75,7 @@ public final class PatchedSet extends Set implements PatchedAnimationElement {
         }
     }
             
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedSet(doc);
     }

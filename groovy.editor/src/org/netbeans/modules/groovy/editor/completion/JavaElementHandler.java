@@ -53,7 +53,6 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
@@ -165,15 +164,6 @@ public final class JavaElementHandler {
         return javaSource;
     }
 
-    public static enum ClassCompletionType {
-
-        CLASS,
-
-        SUPERCLASS,
-
-        SUPERINTERFACE
-    }
-
     private static class MethodCompletionHelper implements Task<CompilationController> {
 
         private final CountDownLatch cnt;
@@ -220,7 +210,7 @@ public final class JavaElementHandler {
                             return false;
                         }
                         for (AccessLevel level : levels) {
-                            if (level.getAcceptor().accept(e, type)) {
+                            if (level.getJavaAcceptor().accept(e, type)) {
                                 return true;
                             }
                         }
@@ -338,7 +328,7 @@ public final class JavaElementHandler {
                             return false;
                         }
                         for (AccessLevel level : levels) {
-                            if (level.getAcceptor().accept(e, type)) {
+                            if (level.getJavaAcceptor().accept(e, type)) {
                                 return true;
                             }
                         }

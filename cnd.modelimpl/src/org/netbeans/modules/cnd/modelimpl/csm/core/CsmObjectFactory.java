@@ -236,6 +236,9 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = PARAM_LIST_IMPL;
             if (object instanceof FunctionParameterListImpl) {
                 aHandler = FUNCTION_PARAM_LIST_IMPL;
+                if (object instanceof FunctionParameterListImpl.FunctionKnRParameterListImpl) {
+                    aHandler = FUNCTION_KR_PARAM_LIST_IMPL;
+                }
             }
         } else if (object instanceof MacroImpl) {
             aHandler = MACRO_IMPL;
@@ -413,6 +416,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new FunctionParameterListImpl(stream);
                 break;
 
+            case FUNCTION_KR_PARAM_LIST_IMPL:
+                obj = new FunctionParameterListImpl.FunctionKnRParameterListImpl(stream);
+                break;
+
             case MACRO_IMPL:
                 obj = new MacroImpl(stream);
                 break;
@@ -525,7 +532,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int INCLUDE_IMPL                   = ENUMERATOR_IMPL + 1;
     private static final int PARAM_LIST_IMPL                = INCLUDE_IMPL + 1;
     private static final int FUNCTION_PARAM_LIST_IMPL       = PARAM_LIST_IMPL + 1;
-    private static final int MACRO_IMPL                     = FUNCTION_PARAM_LIST_IMPL + 1;
+    private static final int FUNCTION_KR_PARAM_LIST_IMPL    = FUNCTION_PARAM_LIST_IMPL + 1;
+    private static final int MACRO_IMPL                     = FUNCTION_KR_PARAM_LIST_IMPL + 1;
     
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        

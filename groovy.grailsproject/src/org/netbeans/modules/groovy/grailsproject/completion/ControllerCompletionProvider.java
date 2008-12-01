@@ -41,12 +41,9 @@ package org.netbeans.modules.groovy.grailsproject.completion;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.editor.api.completion.CompletionType;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
@@ -115,9 +112,9 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
     }
 
     @Override
-    public Map<FieldSignature, String> getFields(FileObject source, String className, CompletionType completionType) {
+    public Map<FieldSignature, String> getFields(FileObject source, String sourceClassName, String className) {
         Project project = FileOwnerQuery.getOwner(source);
-        if (CompletionType.THIS.equals(completionType) && project != null
+        if (className.equals(sourceClassName) && project != null
                 && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
 
             if (isController(source, project)) {
@@ -128,9 +125,9 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
     }
 
     @Override
-    public Map<MethodSignature, String> getMethods(FileObject source, String className, CompletionType completionType) {
+    public Map<MethodSignature, String> getMethods(FileObject source, String sourceClassName, String className) {
         Project project = FileOwnerQuery.getOwner(source);
-        if (CompletionType.THIS.equals(completionType) && project != null
+        if (className.equals(sourceClassName) && project != null
                 && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
 
             if (isController(source, project)) {
