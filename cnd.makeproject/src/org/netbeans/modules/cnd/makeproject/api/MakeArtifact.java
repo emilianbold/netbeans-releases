@@ -95,7 +95,9 @@ public class MakeArtifact {
 		workingDirectory = projectLocation;
 		buildCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName; // NOI18N
 		cleanCommand = "${MAKE} " + MakeOptions.getInstance().getMakeOptions() + " -f " + pd.getProjectMakefileName() + " CONF=" + configurationName + " clean"; // NOI18N
-		if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+		if (makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE
+                || makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION
+                || makeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_LIBRARY) {
 		    configurationType = MakeArtifact.TYPE_UNKNOWN;
 		    output = makeConfiguration.getMakefileConfiguration().getOutput().getValue();
 		}

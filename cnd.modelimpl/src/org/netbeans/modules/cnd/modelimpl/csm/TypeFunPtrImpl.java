@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -106,17 +105,7 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
             }
         }
         sb.append(')');
-
-        sb.append('(');
-        for (Iterator iter = getParameters().iterator(); iter.hasNext();) {
-            CsmParameter param = (CsmParameter) iter.next();
-            sb.append(param.getDisplayText());
-            if (iter.hasNext()) {
-                sb.append(',');
-            }
-        }
-        sb.append(')');
-
+        sb.append(FunctionImpl.createParametersSignature(getParameters()));
         return sb;
     }
 
@@ -166,7 +155,8 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         }
 
         // check that it's followed by exprected token
-        if (next.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+        if (next.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
+                next.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION) {
             // fine. this could be variable of function type
         } else if (next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
             AST lookahead = next.getNextSibling();

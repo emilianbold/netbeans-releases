@@ -58,6 +58,10 @@ public final class Model {
         return new OccurencesSupport(getModelVisitor(offset), offset);
     }
 
+    public ParameterInfoSupport getParameterInfoSupport(final int offset) {
+        return new ParameterInfoSupport(getModelVisitor(-1), info.getDocument(), offset);
+    }
+
 
     /*private ModelVisitor getModelVisitor() {
         return getModelVisitor(-1);

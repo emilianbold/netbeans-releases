@@ -622,6 +622,8 @@ public class MakeActionProvider implements ActionProvider {
                             false);
                     actionEvents.add(projectActionEvent);
                     RunDialogPanel.addElementToExecutablePicklist(path);
+                } else if (conf.isQmakeConfiguration()) {
+                    RunDialogPanel.addElementToExecutablePicklist(conf.getQmakeConfiguration().getTarget().getValue());
                 } else {
                     assert false;
                 }

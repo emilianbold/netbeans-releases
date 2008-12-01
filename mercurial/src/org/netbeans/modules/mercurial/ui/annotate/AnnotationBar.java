@@ -446,8 +446,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private String getPreviousRevision(String revision) {
         for(int i = 0; i < logs.length; i++) {
             if (logs[i].getRevision().equals(revision)) {
-                if (i < logs.length - 1)
-                    return logs[i+1].getRevision();
+                if (i > 0) {
+                    return logs[i - 1].getRevision();
+                }
             }
         }
         return null;

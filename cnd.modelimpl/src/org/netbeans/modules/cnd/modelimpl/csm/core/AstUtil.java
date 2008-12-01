@@ -383,5 +383,22 @@ public class AstUtil {
         return astRead;
     }
 
+    public static String getOffsetString(AST ast) {
+        if (ast == null) {
+            return "<null>"; // NOI18N
+        }
+        CsmAST startAst = getFirstCsmAST(ast);
+        AST endAst = getLastChildRecursively(ast);
+        if (startAst != null && endAst != null) {
+            StringBuilder sb = new StringBuilder();// NOI18N
+            sb.append("[").append(startAst.getLine());// NOI18N
+            sb.append(":").append(startAst.getColumn());// NOI18N
+            sb.append("-").append(endAst.getLine());// NOI18N
+            sb.append(":").append(endAst.getColumn());// NOI18N
+            sb.append("]"); //NOI18N
+            return sb.toString();
+        }
+        return "<no csm nodes>"; // NOI18N
+    }
 }
 
