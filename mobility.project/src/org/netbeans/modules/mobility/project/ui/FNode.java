@@ -43,6 +43,7 @@ package org.netbeans.modules.mobility.project.ui;
 import java.awt.Image;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.mobility.project.ui.actions.RemoveResourceAction;
 import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
 import org.openide.actions.CopyAction;
 import org.openide.nodes.FilterNode;
@@ -74,7 +75,7 @@ class FNode extends FilterNode {
     public Action[] getActions(boolean context) {
         return actions == null ? 
             new Action[]{
-                NodeActions.RemoveResourceAction.getStaticInstance(),
+                RemoveResourceAction.getStaticInstance(),
                 SystemAction.get(CopyAction.class)
         }
             : actions;

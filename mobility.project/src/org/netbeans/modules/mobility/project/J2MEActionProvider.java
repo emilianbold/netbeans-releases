@@ -55,6 +55,7 @@ import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.ui.CfgSelectionPanel;
 import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.modules.mobility.project.ui.QuickRunPanel;
+import org.netbeans.modules.mobility.project.ui.actions.AddConfigurationAction;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
@@ -64,7 +65,6 @@ import org.openide.filesystems.*;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /** Action provider of the J2SE project. This is the place where to do
@@ -278,7 +278,7 @@ public class J2MEActionProvider implements ActionProvider {
         final EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         String selectedCfg = priv.getProperty(DefaultPropertiesDescriptor.SELECTED_CONFIGURATIONS);
         CfgSelectionPanel panel = new CfgSelectionPanel(allCfg, selectedCfg);
-        String title = NbBundle.getMessage(CfgSelectionPanel.class, "Title_CfgSelection_" + command); //NOI18N
+        String title = NbBundle.getMessage(AddConfigurationAction.class, "Title_CfgSelection_" + command); //NOI18N
         panel.getAccessibleContext().setAccessibleName(title);//NOI18N
         panel.getAccessibleContext().setAccessibleDescription(title);//NOI18N
         boolean result = DialogDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(
