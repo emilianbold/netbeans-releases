@@ -299,14 +299,11 @@ public abstract class InputDialog extends JDialog implements HelpCtx.Provider {
      */    
     public void showErrors() {
         boolean hasErrors = false;
-        boolean hasWarnings = false;
 
         // clear existing errors first.
         messagePanel.removeAll();
 
         if(warningList != null && warningList.size() > 0) {
-            hasWarnings = true;
-
             for(Iterator iter = warningList.iterator(); iter.hasNext();) {
                 String message = iter.next().toString();
 
