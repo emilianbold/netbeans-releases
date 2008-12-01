@@ -83,11 +83,11 @@ public final class ParserQueue {
 
     public static class Entry implements Comparable<Entry> {
 
-        private FileImpl file;
+        private final FileImpl file;
         /** either APTPreprocHandler.State or Collection<APTPreprocHandler.State> */
         private Object ppState;
-        private Position position;
-        private int serial;
+        private final Position position;
+        private final int serial;
 
         private Entry(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position, int serial) {
             if( TraceFlags.TRACE_PARSER_QUEUE ) {
@@ -122,14 +122,6 @@ public final class ParserQueue {
 
         public Position getPosition() {
             return position;
-        }
-
-        public void setPosition(Position position) {
-            this.position = position;
-        }
-
-        public void setSerial(int serial) {
-            this.serial = serial;
         }
 
         @Override
@@ -190,6 +182,22 @@ public final class ParserQueue {
             } else {
                 return cmp;
             }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Entry) {
+                return compareTo((Entry)obj) == 0;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 97 * hash + (this.position != null ? this.position.hashCode() : 0);
+            hash = 97 * hash + this.serial;
+            return hash;
         }
 
     }
@@ -294,12 +302,12 @@ public final class ParserQueue {
     private PriorityQueue<Entry> queue = new PriorityQueue<Entry>();
 
     private State state;
-    private final Object suspendLock = new String("suspendLock"); // NOI18N
+    private final Object suspendLock = new Object();
 
     // do not need UIDs for ProjectBase in parsing data collection
     private Map<ProjectBase, ProjectData> projectData = new HashMap<ProjectBase, ProjectData>();
     private final Map<CsmProject, Object> projectLocks = new HashMap<CsmProject, Object>();
-    private int serial = 0;
+    private transient int serial = 0;
 
     private final Object lock = new Object();
 
@@ -319,7 +327,7 @@ public final class ParserQueue {
         return new ParserQueue(true);
     }
 
-    private String traceState4File(FileImpl file, Set/*<FileImpl>*/ files) {
+    private String traceState4File(FileImpl file, Set<FileImpl> files) {
         StringBuilder builder = new StringBuilder(" "); // NOI18N
         builder.append(file);
         builder.append("\n of project ").append(file.getProjectImpl(true)); // NOI18N
@@ -389,8 +397,7 @@ public final class ParserQueue {
                     }
                     if (position.compareTo(entry.getPosition()) < 0) {
                         queue.remove(entry);
-                        entry.setPosition(position);
-                        entry.setSerial(++serial);
+                        entry = new Entry(entry.getFile(), entry.getPreprocStates(), entry.getPosition(), ++serial);
                         addEntry = true;
                     }
                 }
@@ -408,17 +415,17 @@ public final class ParserQueue {
             }
             lock.notifyAll();
         }
-	ProgressSupport.instance().fireFileInvalidated(file);
+	    ProgressSupport.instance().fireFileInvalidated(file);
     }
 
     public void waitReady() throws InterruptedException {
-	if( TraceFlags.TRACE_PARSER_QUEUE ) {System.err.println("ParserQueue: waitReady() ...");}
+	    if( TraceFlags.TRACE_PARSER_QUEUE ) {System.err.println("ParserQueue: waitReady() ...");}
         synchronized ( lock ) {
             while( queue.isEmpty() && state != State.OFF ) {
                 lock.wait();
             }
         }
-	if( TraceFlags.TRACE_PARSER_QUEUE ) {System.err.println("ParserQueue: waiting finished");}
+	    if( TraceFlags.TRACE_PARSER_QUEUE ) {System.err.println("ParserQueue: waiting finished");}
     }
 
     public void suspend() {
@@ -451,7 +458,7 @@ public final class ParserQueue {
         boolean lastFileInProject;
         boolean notifyListeners;
 
-	FileImpl file = null;
+	    FileImpl file = null;
 
         synchronized( lock ) {
             e = queue.poll();
@@ -703,7 +710,7 @@ public final class ParserQueue {
             synchronized (projectLocks) {
                 prjWaitEmptyLock = projectLocks.get(project);
                 if (prjWaitEmptyLock == null) {
-                    prjWaitEmptyLock = new String(project.getName().toString());
+                    prjWaitEmptyLock = new Object();
                     projectLocks.put(project, prjWaitEmptyLock);
                 }
             }
@@ -715,7 +722,7 @@ public final class ParserQueue {
                 }
             }
         }
-        if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("Finished waiting on Empty Project " + project.getName());
+        if (TraceFlags.TRACE_CLOSE_PROJECT) { System.err.println("Finished waiting on Empty Project " + project.getName()); }
     }
 
     public long getStopWatchTime() {

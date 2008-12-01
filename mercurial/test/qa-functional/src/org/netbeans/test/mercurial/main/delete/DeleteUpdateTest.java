@@ -82,7 +82,7 @@ public class DeleteUpdateTest extends JellyTestCase {
             
             btn1.push();
             
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             VersioningOperator vo = VersioningOperator.invoke();
             JTableOperator table;
             Exception e = null;
@@ -106,7 +106,7 @@ public class DeleteUpdateTest extends JellyTestCase {
             //update so the deleted file appears again
             String tabName=TestKit.getProjectAbsolutePath(PROJECT_NAME);
             new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp").select();
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(1000);
             System.out.println("DEBUG: testDeleteUpdate - 2");
             //node.performPopupActionNoBlock("Mercurial|Update..."); // the popup menu was removed...
 

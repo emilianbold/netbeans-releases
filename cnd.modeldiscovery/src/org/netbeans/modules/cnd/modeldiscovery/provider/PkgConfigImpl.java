@@ -95,6 +95,24 @@ public class PkgConfigImpl implements PkgConfig {
         initPackagesFromSet(set);
     }
 
+    private List<String> envPaths(String folder){
+        String additionalPaths = System.getenv("PKG_CONFIG_PATH"); // NOI18N
+        List<String> res = new ArrayList<String>();
+        res.add(folder);
+        if (additionalPaths != null && additionalPaths.length() > 0) {
+            StringTokenizer st;
+            if (pi.isWindows()){
+                st = new StringTokenizer(additionalPaths, ";"); // NOI18N
+            } else {
+                st = new StringTokenizer(additionalPaths, ":"); // NOI18N
+            }
+            while(st.hasMoreTokens()) {
+                res.add(st.nextToken());
+            }
+        }
+        return res;
+    }
+
     private void initPackagesFromSet(CompilerSet set) {
         if (pi.isWindows()){
             String baseDirectory = null;
@@ -113,23 +131,30 @@ public class PkgConfigImpl implements PkgConfig {
                 drivePrefix = "c:/cygwin"; // NOI18N
                 baseDirectory = "c:/cygwin/lib/pkgconfig/"; // NOI18N
             }
-            initPackages(baseDirectory); // NOI18N
+            initPackages(envPaths(baseDirectory)); // NOI18N
         } else {
             //initPackages("/net/elif/export1/sside/as204739/pkgconfig/"); // NOI18N
-            initPackages("/usr/lib/pkgconfig/"); // NOI18N
+            initPackages(envPaths("/usr/lib/pkgconfig/")); // NOI18N
         }
     }
 
-    private void initPackages(String folder) {
-        File file = RemoteFile.create(pi.getHkey(), folder);
-        if (file.exists() && file.isDirectory() && file.canRead()) {
-            for (File fpc : file.listFiles()) {
-                String name = fpc.getName();
-                if (name.endsWith(".pc") && fpc.canRead() && fpc.isFile()) { // NOI18N
-                    String pkgName = name.substring(0, name.length()-3);
-                    PackageConfigurationImpl pc = new PackageConfigurationImpl(pkgName);
-                    readConfig(fpc, pc);
-                    configurations.put(pkgName, pc);
+    private void initPackages(List<String> folders) {
+        Set<File> done = new HashSet<File>();
+        for(String folder:folders) {
+            File file = RemoteFile.create(pi.getHkey(), folder);
+            if (done.contains(file)) {
+                continue;
+            }
+            done.add(file);
+            if (file.exists() && file.isDirectory() && file.canRead()) {
+                for (File fpc : file.listFiles()) {
+                    String name = fpc.getName();
+                    if (name.endsWith(".pc") && fpc.canRead() && fpc.isFile()) { // NOI18N
+                        String pkgName = name.substring(0, name.length()-3);
+                        PackageConfigurationImpl pc = new PackageConfigurationImpl(pkgName);
+                        readConfig(fpc, pc);
+                        configurations.put(pkgName, pc);
+                    }
                 }
             }
         }
@@ -269,9 +294,9 @@ public class PkgConfigImpl implements PkgConfig {
             }
         }
         Map<String, Pair> res = new HashMap<String, Pair>();
-        for(String path : map.keySet()){
-            Pair pair = new Pair(path,map.get(path));
-            File dir = RemoteFile.create(pi.getHkey(), path); // NOI18N
+        for (Map.Entry<String, Set<PackageConfiguration>> entry : map.entrySet()) {
+            Pair pair = new Pair(entry.getKey(), entry.getValue());
+            File dir = RemoteFile.create(pi.getHkey(), entry.getKey());
             addLibraryItem(res, pair, "", dir, 0); // NOI18N
         }
         return res;

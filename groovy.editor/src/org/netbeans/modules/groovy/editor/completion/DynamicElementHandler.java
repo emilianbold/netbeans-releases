@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionType;
+import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.openide.util.Lookup;
@@ -69,17 +70,35 @@ public final class DynamicElementHandler {
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
     // FIXME SPI to plug here for Grails dynamic methods
-    public Map<MethodSignature, ? extends CompletionItem> getMethods(CompletionType completionType,
+    public Map<MethodSignature, ? extends CompletionItem> getMethods(String sourceClassName,
             String className, String prefix, int anchor) {
 
         Map<MethodSignature, CompletionItem.DynamicMethodItem> resultDynamic =
                 new HashMap<MethodSignature, CompletionItem.DynamicMethodItem>();
 
         for (DynamicCompletionProvider provider : Lookup.getDefault().lookupAll(DynamicCompletionProvider.class)) {
-            for (Map.Entry<MethodSignature, String> entry : provider.getMethods(info.getFileObject(), className, completionType).entrySet()) {
+            for (Map.Entry<MethodSignature, String> entry : provider.getMethods(info.getFileObject(), sourceClassName, className).entrySet()) {
                 if (entry.getKey().getName().startsWith(prefix)) {
                     resultDynamic.put(entry.getKey(), new CompletionItem.DynamicMethodItem(
                             anchor, entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue()));
+                }
+            }
+        }
+
+        return resultDynamic;
+    }
+
+    public Map<FieldSignature, ? extends CompletionItem> getFields(String sourceClassName,
+            String className, String prefix, int anchor) {
+
+        Map<FieldSignature, CompletionItem.DynamicFieldItem> resultDynamic =
+                new HashMap<FieldSignature, CompletionItem.DynamicFieldItem>();
+
+        for (DynamicCompletionProvider provider : Lookup.getDefault().lookupAll(DynamicCompletionProvider.class)) {
+            for (Map.Entry<FieldSignature, String> entry : provider.getFields(info.getFileObject(), sourceClassName, className).entrySet()) {
+                if (entry.getKey().getName().startsWith(prefix)) {
+                    resultDynamic.put(entry.getKey(), new CompletionItem.DynamicFieldItem(
+                            anchor, entry.getKey().getName(), entry.getValue()));
                 }
             }
         }

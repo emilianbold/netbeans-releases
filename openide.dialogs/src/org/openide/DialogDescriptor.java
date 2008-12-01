@@ -362,7 +362,7 @@ public class DialogDescriptor extends NotifyDescriptor implements HelpCtx.Provid
 
         boolean oldLeaf = this.leaf;
         this.leaf = leaf;
-        firePropertyChange(PROP_MODAL, Boolean.valueOf(oldLeaf), Boolean.valueOf(leaf));
+        firePropertyChange(PROP_LEAF, Boolean.valueOf(oldLeaf), Boolean.valueOf(leaf));
     }
 
     /** Setter for list of options that close the dialog.

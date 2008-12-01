@@ -281,9 +281,9 @@ public final class ExecutionService {
                 } catch (InterruptedException ex) {
                     LOGGER.log(Level.FINE, null, ex);
                     interrupted = true;
-                } catch (Exception ex) {
-                    LOGGER.log(Level.WARNING, null, ex);
-                    throw ex;
+                } catch (Throwable t) {
+                    LOGGER.log(Level.WARNING, null, t);
+                    throw new WrappedException(t);
                 } finally {
                     try {
                         // fully evaluated - we want to clear interrupted status in any case
@@ -310,9 +310,9 @@ public final class ExecutionService {
                                 LOGGER.log(Level.FINE, "Process not yet exited", ex);
                             }
                         }
-                    } catch (Exception ex) {
-                        LOGGER.log(Level.WARNING, null, ex);
-                        throw ex;
+                    } catch (Throwable t) {
+                        LOGGER.log(Level.WARNING, null, t);
+                        throw new WrappedException(t);
                     } finally {
                         try {
                             cleanup(tasks, executor, handle, ioData,
@@ -360,6 +360,16 @@ public final class ExecutionService {
                 }
                 return ret;
             }
+
+            @Override
+            protected void setException(Throwable t) {
+                if (t instanceof WrappedException) {
+                    super.setException(((WrappedException) t).getCause());
+                } else {
+                    super.setException(t);
+                }
+            }
+
         };
 
         // TODO cleanup
@@ -607,4 +617,11 @@ public final class ExecutionService {
         }
     }
 
+    private static class WrappedException extends Exception {
+
+        public WrappedException(Throwable cause) {
+            super(cause);
+        }
+
+    }
 }

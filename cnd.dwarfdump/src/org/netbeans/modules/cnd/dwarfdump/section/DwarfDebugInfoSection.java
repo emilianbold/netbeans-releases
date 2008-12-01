@@ -66,11 +66,11 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
  */
 public class DwarfDebugInfoSection extends ElfSection {
     List<CompilationUnit> compilationUnits = new ArrayList<CompilationUnit>();
-    DwarfRelaDebugInfoSection rela;
+    //DwarfRelaDebugInfoSection rela;
     
     public DwarfDebugInfoSection(DwarfReader reader, int sectionIdx) {
         super(reader, sectionIdx);
-        rela = (DwarfRelaDebugInfoSection) reader.getSection(SECTIONS.RELA_DEBUG_INFO);
+        /*rela = (DwarfRelaDebugInfoSection)*/ reader.getSection(SECTIONS.RELA_DEBUG_INFO);
     }
 
     public DwarfDebugInfoSection(ElfReader reader, int sectionIdx, SectionHeader header, String sectionName) {

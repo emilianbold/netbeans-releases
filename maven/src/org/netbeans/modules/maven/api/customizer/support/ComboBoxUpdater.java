@@ -78,6 +78,7 @@ public abstract class ComboBoxUpdater<T> implements ActionListener, AncestorList
             
             component.setToolTipText(""); //NOI18N
         }
+        @SuppressWarnings("unchecked")
         T val = (T)component.getSelectedItem();
         setValue(val == getDefaultValue() ? null : val);
         if (val == getDefaultValue()) {

@@ -38,11 +38,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.performance.languages.actions;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
-import java.io.File;
-import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewPHPProjectNameLocationStepOperator;
@@ -54,18 +56,15 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.performance.languages.setup.ScriptingSetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author mrkam@netbeans.org
  */
-public class SavingPHPProjectPropertiesTest  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Actions suite";
-    
+public class SavingPHPProjectPropertiesTest  extends PerformanceTestCase {
+
     public String category, project, projectName, projectType,  editorName;
     private Node testNode;
     private String title;
@@ -91,8 +90,6 @@ public class SavingPHPProjectPropertiesTest  extends org.netbeans.modules.perfor
 
     @Override
     public void initialize(){
-        log("::initialize::");
-        waitNoEvent(3000);
         closeAllModal();
         createProject();
         title = Bundle.getStringTrimmed("org.netbeans.modules.php.project.ui.customizer.Bundle", "LBL_Customizer_Title", new String[]{projectName});
@@ -106,53 +103,35 @@ public class SavingPHPProjectPropertiesTest  extends org.netbeans.modules.perfor
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
-        
         wizard_location = new NewPHPProjectNameLocationStepOperator();
-
         projectName = projectType + "_" + System.currentTimeMillis();
         wizard_location.typeProjectName(projectName);
-
         String directory = CommonUtilities.getTempDir() + "createdProjects" 
-                + File.separator + projectName;
+                + java.io.File.separator + projectName;
         wizard_location.typeSourcesFolder(directory);
-
         wizard.next();
-
         wizard_location.finish();
-
         wizard_location.waitClosed();
-
         TopComponentOperator.findTopComponent(editorName, 0);
     }
 
     @Override
     public void prepare(){
-        log("::prepare");
         new PropertiesAction().performPopup(testNode);
         NbDialogOperator propertiesDialog = new NbDialogOperator(title);
-        // Allow short tags (<?)
         new JCheckBoxOperator(propertiesDialog, Bundle.getStringTrimmed(
                 "org.netbeans.modules.php.project.ui.customizer.Bundle",
                 "CustomizerSources.shortTagsCheckBox.AccessibleContext.accessibleName"))
                 .clickMouse();
-        // OK
         okButton = new JButtonOperator(propertiesDialog, 
                 Bundle.getStringTrimmed("org.netbeans.modules.project.uiapi.Bundle",
                 "LBL_Customizer_Ok_Option"));
     }
 
     public ComponentOperator open(){
-        log("::open");
         okButton.push();
         return null;
     }
-    
-    @Override
-    public void tearDown() {
-        super.tearDown();
-//        ProjectSupport.closeProject(projectName);
-    }
-
 
     public void testSavingPhpProjectProperties() {
         category = "PHP";

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,29 +46,27 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.jruby.nb.ast.ConstDeclNode;
-import org.jruby.nb.ast.ConstNode;
 import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
 import org.jruby.nb.ast.SymbolNode;
 import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
 
-
 /**
- * A Ruby element coming from a JRuby parse tree
+ * A Ruby element coming from a JRuby parse tree.
  *
  * @author Tor Norbye
  */
 public abstract class AstElement extends RubyElement {
+
     protected Node node;
     protected CompilationInfo info;
     protected ArrayList<AstElement> children;
     protected String name;
     private String in;
     protected Set<Modifier> modifiers;
+    private String type;
 
     public AstElement(CompilationInfo info, Node node) {
         super();
@@ -187,5 +185,13 @@ public abstract class AstElement extends RubyElement {
 
     public CompilationInfo getInfo() {
         return info;
+    }
+
+    public void setType(final String type) {
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
     }
 }

@@ -62,7 +62,7 @@ public class ScriptingMeasureActionsTest1 {
                 .addTest(CreatePHPProjectTest.class)
                 .addTest(CreatePHPSampleProjectTest.class)
                 .addTest(SavingPHPProjectPropertiesTest.class)
-                .addTest(CreateScriptingPackFilesTest.class)
+                //needs to be fixed  .addTest(CreateScriptingPackFilesTest.class)
                 .addTest(ScriptingExpandFolderTest.class)
                 .addTest(PHPNavigatorTest.class)
                 .addTest(GoToSourceTest.class)

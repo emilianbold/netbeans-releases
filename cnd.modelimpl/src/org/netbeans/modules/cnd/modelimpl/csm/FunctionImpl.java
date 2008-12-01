@@ -79,8 +79,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private static final CharSequence NULL = CharSequenceKey.create("<null>"); // NOI18N
     private CharSequence name;
     private final CsmType returnType;
-    private final List<CsmUID<CsmParameter>>  parameters;
-//    private final CsmUID<ParameterListImpl<CsmParameterList, CsmKnRName>> params;
+//    private final Collection<CsmUID<CsmParameter>>  parameters;
+    private final FunctionParameterListImpl parameterList;
     private CharSequence signature;
     
     // only one of scopeRef/scopeAccessor must be used 
@@ -153,14 +153,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         returnType = initReturnType(ast);
 
         // set parameters, do it in constructor to have final fields
-        List<CsmParameter> params = initParameters(ast);
-//        params = createParameterList(ast);
-        if (params == null) {
-            this.parameters = null;
-        } else {
-            this.parameters = RepositoryUtils.put(params);
-        }
-        if (params == null || params.size() == 0) {
+        this.parameterList = createParameterList(ast);
+        if (this.parameterList == null || this.parameterList.isEmpty()) {
             setFlags(FLAGS_VOID_PARMLIST, isVoidParameter(ast));
         } else {
             setFlags(FLAGS_VOID_PARMLIST, false);
@@ -175,6 +169,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         if (register) {
             registerInProject();
+        }
+        if (this.parameterList == null) {
+            System.err.println("not created list for " + this.toString() + " at " + super.getOffsetString() + " in " + file.getAbsolutePath());
         }
     }
 
@@ -510,7 +507,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return FunctionParameterListImpl.create(getContainingFile(), funAST, this);
     }
     
-    private List<CsmParameter> initParameters(AST node) {
+    private Collection<CsmParameter> initParameters(AST node) {
         AST ast = findParameterNode(node);
         return AstRenderer.renderParameters(ast, getContainingFile(), this);
     }
@@ -520,8 +517,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return AstRenderer.isVoidParameter(ast);
     }
 
-    public CsmFunctionParameterList  getParameterList() {
-        return null; //paramList;
+    public FunctionParameterListImpl  getParameterList() {
+        return parameterList;
     }
 
     public Collection<CsmParameter>  getParameters() {
@@ -696,17 +693,16 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     private Collection<CsmParameter> _getParameters() {
-        if (this.parameters == null) {
+        if (this.parameterList == null) {
             return Collections.<CsmParameter>emptyList();
         } else {
-            Collection<CsmParameter> out = UIDCsmConverter.UIDsToDeclarations(parameters);
-            return out;
+            return parameterList.getParameters();
         }
     }
 
     private void _disposeParameters() {
-        if (parameters != null) {
-            RepositoryUtils.remove(parameters);
+        if (this.parameterList != null) {
+            parameterList.dispose();
         }
     }
     
@@ -720,18 +716,17 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         output.writeUTF(this.name.toString());
         PersistentUtils.writeType(this.returnType, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        factory.writeUIDCollection(this.parameters, output, false);
+        PersistentUtils.writeParameterList(this.parameterList, output);
         PersistentUtils.writeStrings(this.rawName, output);
         
         // not null UID
         assert !CHECK_SCOPE || this.scopeUID != null;
-        UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
+        factory.writeUID(this.scopeUID, output);
         
         PersistentUtils.writeUTF(this.signature, output);
         output.writeByte(flags);
         output.writeUTF(this.getScopeSuffix().toString());
         PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
-//        this.paramList.write(output);
     }
 
     @SuppressWarnings("unchecked")
@@ -741,10 +736,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         assert this.name != null;
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        this.parameters = factory.readUIDCollection(new ArrayList<CsmUID<CsmParameter>>(), input);
+        this.parameterList = (FunctionParameterListImpl) PersistentUtils.readParameterList(input);
         this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
         
-        this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        this.scopeUID = factory.readUID(input);
         // not null UID
         assert !CHECK_SCOPE || this.scopeUID != null;
         this.scopeRef = null;
@@ -756,6 +751,5 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         this.flags = input.readByte();
         this.classTemplateSuffix = NameCache.getManager().getString(input.readUTF());
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
-//        this.paramList = ParameterListImpl.create(input);
     }
 }

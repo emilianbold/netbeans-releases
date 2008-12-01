@@ -267,9 +267,9 @@ public class FortranIndentSupport {
                 TokenItem tokenAfterEnd = startToken.getNext();
                 while (tokenAfterEnd.getTokenID() == WHITESPACE) {
                     tokenAfterEnd = tokenAfterEnd.getNext();
-                }
-                if (tokenAfterEnd == null) {
-                    return null;
+                    if (tokenAfterEnd == null) {
+                        return null;
+                    }
                 }
 
                 if (tokenAfterEnd.getTokenID() == matchTokenID) {

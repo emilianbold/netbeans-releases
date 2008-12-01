@@ -55,7 +55,6 @@ import junit.framework.TestCase;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.ParserManager;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.*;
 import org.netbeans.modules.languages.Feature;
@@ -153,21 +152,21 @@ public class NavigatorTest extends TestCase {
         doc.putProperty ("mimeType", language.getMimeType ());
         doc.putProperty (org.netbeans.api.lexer.Language.class, new SLanguageHierarchy (language).language ());
 
-        ParserManager parserManager = ParserManager.get(doc);
-        pane.setText (text);
-        
-        int counter = 0;
-        try {
-            while (((parserManager.getState() == ParserManager.State.NOT_PARSED) ||
-                    (parserManager.getState() == ParserManager.State.PARSING))
-                    && counter < 200) {
-                Thread.sleep(100);
-                counter++;
-            }
-        } catch (InterruptedException e) {
-        }
-        
-        ASTNode root = parserManager.getAST();
+//        ParserManager parserManager = ParserManager.get(doc);
+//        pane.setText (text);
+//
+//        int counter = 0;
+//        try {
+//            while (((parserManager.getState() == ParserManager.State.NOT_PARSED) ||
+//                    (parserManager.getState() == ParserManager.State.PARSING))
+//                    && counter < 200) {
+//                Thread.sleep(100);
+//                counter++;
+//            }
+//        } catch (InterruptedException e) {
+//        }
+//
+//        ASTNode root = parserManager.getAST();
         LanguagesNavigatorModel model = new LanguagesNavigatorModel ();
         model.setContext (doc);
         

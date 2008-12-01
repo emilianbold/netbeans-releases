@@ -45,7 +45,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.apache.maven.model.Profile;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
@@ -56,11 +55,15 @@ import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Profile;
+import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.util.Exceptions;
@@ -82,32 +85,60 @@ public class POHImpl extends ProjectOpenedHook {
     }
     
     public void hackModuleServerChange() {
-        provider.hackModuleServerChange();
+        ProjectManager.mutex().postReadRequest(new Runnable() {
+            public void run() {
+                refreshAppServerAssignment();
+            }
+        });
     }
     
     protected void projectOpened() {
-        provider.hackModuleServerChange();
-        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-
-        String val = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_ID, true);
-        String server = props.get(Constants.HINT_DEPLOY_J2EE_SERVER, true);
-        if (server == null) {
-            //try checking for old values..
-            server = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
-        }
-        String instanceFound = null;
-        if (server != null) {
-            String[] instances = Deployment.getDefault().getInstancesOfServer(server);
-            String inst = null;
-            if (instances != null && instances.length > 0) {
-                inst = instances[0];
-                for (int i = 0; i < instances.length; i++) {
-                    if (val != null && val.equals(instances[i])) {
-                        inst = instances[i];
-                        break;
+        refreshAppServerAssignment();
+        if (refreshListener == null) {
+            //#121148 when the user edits the file we need to reset the server instance
+            NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
+            refreshListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                        hackModuleServerChange();
                     }
                 }
-                instanceFound = inst;
+            };
+            watcher.addPropertyChangeListener(refreshListener);
+        }
+    }
+
+    protected synchronized void refreshAppServerAssignment() {
+        provider.hackModuleServerChange();
+
+        String instanceFound = null;
+        String server = null;
+        SessionContent sc = project.getLookup().lookup(SessionContent.class);
+        if (sc.getServerInstanceId() != null) {
+            instanceFound = sc.getServerInstanceId();
+        }
+        if (instanceFound == null) {
+            AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
+
+            String val = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_ID, true);
+            server = props.get(Constants.HINT_DEPLOY_J2EE_SERVER, true);
+            if (server == null) {
+                //try checking for old values..
+                server = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
+            }
+            if (server != null) {
+                String[] instances = Deployment.getDefault().getInstancesOfServer(server);
+                String inst = null;
+                if (instances != null && instances.length > 0) {
+                    inst = instances[0];
+                    for (int i = 0; i < instances.length; i++) {
+                        if (val != null && val.equals(instances[i])) {
+                            inst = instances[i];
+                            break;
+                        }
+                    }
+                    instanceFound = inst;
+                }
             }
         }
 
@@ -140,18 +171,6 @@ public class POHImpl extends ProjectOpenedHook {
             report.addReport(rep);
             
         }
-        if (refreshListener == null) {
-            //#121148 when the user edits the file we need to reset the server instance
-            NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-            refreshListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
-                        projectOpened();
-                    }
-                }
-            };
-            watcher.addPropertyChangeListener(refreshListener);
-        }
     }
 
     protected void projectClosed() {
@@ -179,19 +198,37 @@ public class POHImpl extends ProjectOpenedHook {
             try {
                 ModelHandle handle = ModelHandleUtils.createModelHandle(prj);
                 //get rid of old settings.
+                POMModel model = handle.getPOMModel();
                 Profile prof = handle.getNetbeansPublicProfile(false);
                 if (prof != null) {
-                    prof.getProperties().remove(Constants.HINT_DEPLOY_J2EE_SERVER_OLD);
+                    Properties props = prof.getProperties();
+                    if (props != null) {
+                        props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, null);
+                    }
                 }
                 if (newOne != null) {
-                    handle.getPOMModel().getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, serverType);
-                    handle.getNetbeansPrivateProfile().getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, newOne);
+                    Properties props = model.getProject().getProperties();
+                    if (props == null) {
+                        props = model.getFactory().createProperties();
+                        model.getProject().setProperties(props);
+                    }
+                    props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, serverType);
+                    org.netbeans.modules.maven.model.profile.Profile privateProf = handle.getNetbeansPrivateProfile();
+                    org.netbeans.modules.maven.model.profile.Properties privs = privateProf.getProperties();
+                    if (privs == null) {
+                        privs = handle.getProfileModel().getFactory().createProperties();
+                        privateProf.setProperties(privs);
+                    }
+                    privs.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, newOne);
                     handle.markAsModified(handle.getProfileModel());
                 } else {
-                    handle.getPOMModel().getProperties().remove(Constants.HINT_DEPLOY_J2EE_SERVER);
-                    org.apache.maven.profiles.Profile privprof = handle.getNetbeansPrivateProfile(false);
-                    if (privprof != null) {
-                        privprof.getProperties().remove(Constants.HINT_DEPLOY_J2EE_SERVER_ID);
+                    Properties props = model.getProject().getProperties();
+                    if (props != null) {
+                        props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, null);
+                    }
+                    org.netbeans.modules.maven.model.profile.Profile privprof = handle.getNetbeansPrivateProfile(false);
+                    if (privprof != null && privprof.getProperties() != null) {
+                        privprof.getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, null);
                         handle.markAsModified(handle.getProfileModel());
                     }
                 }

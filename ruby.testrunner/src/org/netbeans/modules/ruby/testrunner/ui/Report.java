@@ -46,8 +46,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.openide.filesystems.FileObject;
 
 /**

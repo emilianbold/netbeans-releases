@@ -21,11 +21,18 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="glassfish" basedir="." default="build-pkg">
 
-    <property name="appdir" value="${basedir}/build/app"/>
+
+    <property name="builddir" value="${basedir}/build"/>
+    <property name="appdir" value="${builddir}/app"/>
+    <property name="scriptsdir" value="${builddir}/scripts"/>
     
     <target name="clean"  depends="clean-getport">
-        <delete dir="build"/>
-        <mkdir dir="build"/>            
+        <delete dir="${builddir}"/>
+    </target>
+
+    <target name="init">
+         <mkdir dir="${appdir}"/>
+         <mkdir dir="${scriptsdir}"/>
     </target>
     
     <target name="get-bits">
@@ -37,10 +44,9 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="unzip" depends="get-bits">
-        <mkdir dir="build/app"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir}/build ; unzip glassfish_image.zip -d ${appdir}; rm ${basedir}/build/glassfish_image.zip"/>
+            <arg value="cd ${builddir} ; unzip glassfish_image.zip -d ${appdir}; rm ${builddir}/glassfish_image.zip"/>
         </exec>
     </target>
     
@@ -50,10 +56,10 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="clean-getport">
         <ant dir="${basedir}/getport" target="clean"/>
-        <delete file="pkg/scripts/getport.jar"/>
+        <delete file="${scriptsdir}/getport.jar"/>
     </target>    
     
-    <target name="build-pkg" depends="clean, unzip, build-getport">
+    <target name="build-pkg" depends="clean, init, unzip, build-getport">
         <exec executable="sh" failonerror="yes" outputproperty="size">
             <arg value="-c"/>
             <arg value="du -sk build | sed 's/[\t]*build//' | xargs -I {}  expr {} + 22528"/>
@@ -66,31 +72,35 @@ Microsystems, Inc. All Rights Reserved.
         </exec>
 
         
-        <copy file="pkg/Info.plist" filtering="true" tofile="${basedir}/build/Info.plist">
+        <copy file="pkg/Info.plist" filtering="true" tofile="${builddir}/Info.plist">
             <filterset>
                 <filter token="INSTALLDIR" value="${glassfish.install.dir}"/>
                 <filter token="APPVERSION" value="${glassfish.version}"/>
             </filterset>
         </copy>
         
-        <copy file="../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="pkg/scripts/Description.plist">
+        <copy file="../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="${builddir}/Description.plist">
             <filterset>
                 <filter token="TITLE" value="${glassfish-title}"/>
             </filterset>
         </copy>
+
+        <copy  todir="${scriptsdir}">
+            <fileset dir="${basedir}/pkg/scripts/"/>
+        </copy>
         
-        <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
-        <copy file="${basedir}/../commonfiles/get_current_jdk.sh" tofile="${basedir}/pkg/scripts/get_current_jdk.sh"/>
-        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/env.sh" tofile="${basedir}/pkg/scripts/env.sh"/>
-        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/addproduct_id.sh" tofile="${basedir}/pkg/scripts/addproduct_id.sh"/>          
-        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/add_gf.sh" tofile="${basedir}/pkg/scripts/add_gf.sh"/>
-        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${basedir}/pkg/scripts/perm.sh"/>
-        <copy file="${basedir}/getport/dist/getport.jar" tofile="${basedir}/pkg/scripts/getport.jar"/>        
+        <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
+        <copy file="${basedir}/../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/build/scripts/env.sh" tofile="${scriptsdir}/env.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/addproduct_id.sh" tofile="${scriptsdir}/addproduct_id.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/add_gf.sh" tofile="${scriptsdir}/add_gf.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${scriptsdir}/perm.sh"/>
+        <copy file="${basedir}/getport/dist/getport.jar" tofile="${scriptsdir}/getport.jar"/>
         
         <echo message="Building glassfish.pkg into ${basedir}/../build/glassfish.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/glassfish.pkg -f ${appdir} -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
+            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/glassfish.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
         </exec>
     </target>
     

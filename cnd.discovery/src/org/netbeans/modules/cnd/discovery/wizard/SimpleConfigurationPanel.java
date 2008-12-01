@@ -220,7 +220,7 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
         while (tokenizer.hasMoreTokens()) {
             list.add(tokenizer.nextToken());
         }
-        AdditionalLibrariesListPanel panel = new AdditionalLibrariesListPanel(list.toArray());
+        AdditionalLibrariesListPanel panel = new AdditionalLibrariesListPanel(list);
         DialogDescriptor dialogDescriptor = new DialogDescriptor(AdditionalLibrariesListPanel.wrapPanel(panel),
                 getString("ADDITIONAL_LIBRARIES_TXT")); // NOI18N
         DialogDisplayer.getDefault().notify(dialogDescriptor);

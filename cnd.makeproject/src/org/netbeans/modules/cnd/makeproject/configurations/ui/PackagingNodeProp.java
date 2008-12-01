@@ -53,12 +53,12 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 
-public class PackagingNodeProp extends PropertySupport {
+public class PackagingNodeProp extends PropertySupport<PackagingConfiguration> {
     private PackagingConfiguration packagingConfiguration;
     MakeConfiguration conf;
     
     public PackagingNodeProp(PackagingConfiguration packagingConfiguration, MakeConfiguration conf, String[] txts) {
-        super(txts[0], List.class, txts[1], txts[2], true, true);
+        super(txts[0], PackagingConfiguration.class, txts[1], txts[2], true, true);
         this.packagingConfiguration = packagingConfiguration;
 	this.conf = conf;
     }
@@ -70,13 +70,13 @@ public class PackagingNodeProp extends PropertySupport {
 //            return null;
 //    }
     
-    public Object getValue() {
+    public PackagingConfiguration getValue() {
         return packagingConfiguration;
     }
     
-    public void setValue(Object v) {
+    public void setValue(PackagingConfiguration v) {
         if (v != null) {
-            packagingConfiguration = (PackagingConfiguration) v; // FIXUP
+            packagingConfiguration = v; // FIXUP
         }
     }
     

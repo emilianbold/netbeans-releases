@@ -55,14 +55,11 @@ import org.openide.util.RequestProcessor;
 
 public abstract class CaretAwareCsmFileTaskFactory extends CsmFileTaskFactory {
 
-    private static final int DEFAULT_RESCHEDULE_TIMEOUT = 300;
     private static final RequestProcessor WORKER = new RequestProcessor("CaretAwareCsmFileTaskFactory worker"); //NOI18N
-    private int timeout;
 
     public CaretAwareCsmFileTaskFactory() {
         super();
         OpenedEditors.getDefault().addChangeListener(new ChangeListenerImpl());
-        this.timeout = DEFAULT_RESCHEDULE_TIMEOUT;
     }
 
     public List<FileObject> getFileObjects() {
@@ -143,7 +140,7 @@ public abstract class CaretAwareCsmFileTaskFactory extends CsmFileTaskFactory {
 
             if (file != null) {
                 setLastPosition(file, component.getCaretPosition());
-                rescheduleTask.schedule(timeout);
+                rescheduleTask.schedule(rescheduleDelay());
             }
         }
     }

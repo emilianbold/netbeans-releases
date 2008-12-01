@@ -16,5 +16,5 @@ CLASS      NodePrinter                                null
 CLASS      NonEmptySequence                           null
 CLASS      NotActiveException                         null
 CLASS      NotSerializableException                   null
-METHOD     notify()                                   void
-METHOD     notifyAll()                                void
+METHOD     notify()                        [PUBLIC]   void
+METHOD     notifyAll()                     [PUBLIC]   void

@@ -40,9 +40,9 @@
  */
 package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 
-import com.sun.perseus.model.*;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
+import com.sun.perseus.model.Use;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 
 /**
@@ -74,6 +74,7 @@ public final class PatchedUse extends Use implements PatchedElement {
         }
     }
             
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedUse(doc);
     }    

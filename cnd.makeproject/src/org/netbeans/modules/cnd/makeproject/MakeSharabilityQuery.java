@@ -72,9 +72,9 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
      * @return one of {@link org.netbeans.api.queries.SharabilityQuery}'s constants
      */
     public int getSharability(final File file) {
-        Integer ret = (Integer) ProjectManager.mutex().readAccess(new Mutex.Action() {
+        Integer ret = ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
 
-            public Object run() {
+            public Integer run() {
                 synchronized (MakeSharabilityQuery.this) {
                     boolean sub = file.getPath().startsWith(baseDir);
                     if (!sub) {

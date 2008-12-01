@@ -40,8 +40,6 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 
 import org.netbeans.api.languages.ASTEvaluator;
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
@@ -81,10 +79,10 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
         }
         if (remove) {
             cache.remove (document);
-            ColorsASTEvaluator.unregister (document);
-            DeclarationASTEvaluator.unregister (document);
-            ContextASTEvaluator.unregister (document);
-            UsagesASTEvaluator.unregister (document);
+//            ColorsASTEvaluator.unregister (document);
+//            DeclarationASTEvaluator.unregister (document);
+//            ContextASTEvaluator.unregister (document);
+//            UsagesASTEvaluator.unregister (document);
         } else
             cache.put (document, newLayers);
     }
@@ -110,10 +108,10 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
         }
         if (remove) {
             cache.remove (document);
-            ColorsASTEvaluator.unregister (document);
-            DeclarationASTEvaluator.unregister (document);
-            ContextASTEvaluator.unregister (document);
-            UsagesASTEvaluator.unregister (document);
+//            ColorsASTEvaluator.unregister (document);
+//            DeclarationASTEvaluator.unregister (document);
+//            ContextASTEvaluator.unregister (document);
+//            UsagesASTEvaluator.unregister (document);
         }
     }
 
@@ -124,10 +122,10 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
     
     SemanticHighlightsLayer (Document document) {
         this.document = document;
-        ColorsASTEvaluator.register (document);
-        DeclarationASTEvaluator.register (document);
-        ContextASTEvaluator.register (document);
-        UsagesASTEvaluator.register (document);
+//        ColorsASTEvaluator.register (document);
+//        DeclarationASTEvaluator.register (document);
+//        ContextASTEvaluator.register (document);
+//        UsagesASTEvaluator.register (document);
         
         synchronized(SemanticHighlightsLayer.class) {
             List<WeakReference<SemanticHighlightsLayer>> layers = cache.get (document);
@@ -149,39 +147,37 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
     }
     
     private void refresh () {
-        ParserManagerImpl parserManager = ParserManagerImpl.getImpl (document);
-        ASTNode root = parserManager.getAST ();
-        if (root == null) return;
-        parserManager.fire (
-            parserManager.getState (), 
-            null, 
-            getEvaluators (), 
-            root
-        );
+//!!        ParserManagerImpl parserManager = ParserManagerImpl.getImpl (document);
+//        parserManager.fire (
+//            parserManager.getState (), 
+//            null, 
+//            getEvaluators (), 
+//            parserManager.getAST ()
+//        );
     }
     
-    private Map<String,Set<ASTEvaluator>> evaluators;
-    
-    private Map<String,Set<ASTEvaluator>> getEvaluators () {
-        if (evaluators == null) {
-            evaluators = new HashMap<String,Set<ASTEvaluator>> ();
-            ColorsASTEvaluator colorsASTEvaluator = ColorsASTEvaluator.get (document);
-            if (colorsASTEvaluator != null) {
-                evaluators.put (colorsASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (colorsASTEvaluator));
-            }
-            UsagesASTEvaluator usagesASTEvaluator = UsagesASTEvaluator.get (document);
-            if (usagesASTEvaluator != null) {
-                evaluators.put (usagesASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (usagesASTEvaluator));
-            }
-            DeclarationASTEvaluator declarationASTEvaluator = DeclarationASTEvaluator.get (document);
-            if (declarationASTEvaluator != null) {
-                evaluators.put (declarationASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (declarationASTEvaluator));
-            }    
-            ContextASTEvaluator contextASTEvaluator = ContextASTEvaluator.get (document);
-            if (contextASTEvaluator != null) {
-                evaluators.put (contextASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (contextASTEvaluator));
-            }
-        }
-        return evaluators;
-    }
+//    private Map<String,Set<ASTEvaluator>> evaluators;
+//    
+//    private Map<String,Set<ASTEvaluator>> getEvaluators () {
+//        if (evaluators == null) {
+//            evaluators = new HashMap<String,Set<ASTEvaluator>> ();
+//            ColorsASTEvaluator colorsASTEvaluator = ColorsASTEvaluator.get (document);
+//            if (colorsASTEvaluator != null) {
+//                evaluators.put (colorsASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (colorsASTEvaluator));
+//            }
+//            UsagesASTEvaluator usagesASTEvaluator = UsagesASTEvaluator.get (document);
+//            if (usagesASTEvaluator != null) {
+//                evaluators.put (usagesASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (usagesASTEvaluator));
+//            }
+//            DeclarationASTEvaluator declarationASTEvaluator = DeclarationASTEvaluator.get (document);
+//            if (declarationASTEvaluator != null) {
+//                evaluators.put (declarationASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (declarationASTEvaluator));
+//            }    
+//            ContextASTEvaluator contextASTEvaluator = ContextASTEvaluator.get (document);
+//            if (contextASTEvaluator != null) {
+//                evaluators.put (contextASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (contextASTEvaluator));
+//            }
+//        }
+//        return evaluators;
+//    }
 }
