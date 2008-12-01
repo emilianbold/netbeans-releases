@@ -120,7 +120,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         setLocalizedErrorMessage(null);
         
         if (type == Type.SPEC) {
-            if (gui.getClassName() == null || !RubyUtils.isValidRubyClassName(gui.getClassName())) {
+            if (gui.getClassName() == null || !RubyUtils.isValidConstantName(gui.getClassName())) {
                 setErrorMessage("ERR_RubyTargetChooser_InvalidClass"); // NOI18N
                 return false;
             }
@@ -131,7 +131,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         } else if (type == Type.CLASS || type == Type.MODULE ||
             type == Type.TEST) {
             if (type == Type.CLASS || type == Type.TEST) {
-                if (gui.getClassName() == null || !RubyUtils.isValidRubyClassName(gui.getClassName())) {
+                if (gui.getClassName() == null || !RubyUtils.isValidConstantName(gui.getClassName())) {
                     setErrorMessage("ERR_RubyTargetChooser_InvalidClass"); // NOI18N
                     return false;
                 }
@@ -143,7 +143,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
                 if (superclass != null && superclass.length() > 0) {
                     String[] mods = superclass.split("::"); // NOI18N
                     for (String mod : mods) {
-                        if (!RubyUtils.isValidRubyClassName(mod)) {
+                        if (!RubyUtils.isValidConstantName(mod)) {
                             setErrorMessage("ERR_RubyTargetChooser_InvalidSuperclass"); // NOI18N
                             return false;
                         }
@@ -155,7 +155,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
                 }
             }
             if (type == Type.MODULE) {
-                if (gui.getClassName() == null || !RubyUtils.isValidRubyClassName(gui.getClassName())) {
+                if (gui.getClassName() == null || !RubyUtils.isValidConstantName(gui.getClassName())) {
                     setErrorMessage("ERR_RubyTargetChooser_InvalidModule"); // NOI18N
                     return false;
                 }
@@ -168,7 +168,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
             if (in != null && in.length() > 0) {
                 String[] mods = in.split("::"); // NOI18N
                 for (String mod : mods) {
-                    if (!RubyUtils.isValidRubyClassName(mod)) {
+                    if (!RubyUtils.isValidConstantName(mod)) {
                         setErrorMessage("ERR_RubyTargetChooser_InvalidInModule"); // NOI18N
                         return false;
                     }

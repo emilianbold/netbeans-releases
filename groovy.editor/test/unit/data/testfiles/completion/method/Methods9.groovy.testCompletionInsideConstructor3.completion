@@ -4,19 +4,19 @@ if (new File(new Date().get|)) {}
 ------------------------------------
 METHOD     getAt(String)                              Object
 METHOD     getAt(int)                                 int
-METHOD     getClass()                                 Class<? extends Object>
-METHOD     getDate()                                  int
+METHOD     getClass()                      [PUBLIC]   Class<? extends Object>
+METHOD     getDate()                       [PUBLIC]   int
 METHOD     getDateString()                            String
 METHOD     getDateTimeString()                        String
-METHOD     getDay()                                   int
-METHOD     getHours()                                 int
+METHOD     getDay()                        [PUBLIC]   int
+METHOD     getHours()                      [PUBLIC]   int
 METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
-METHOD     getMinutes()                               int
-METHOD     getMonth()                                 int
+METHOD     getMinutes()                    [PUBLIC]   int
+METHOD     getMonth()                      [PUBLIC]   int
 METHOD     getProperties()                            Map
-METHOD     getSeconds()                               int
-METHOD     getTime()                                  long
+METHOD     getSeconds()                    [PUBLIC]   int
+METHOD     getTime()                       [PUBLIC]   long
 METHOD     getTimeString()                            String
-METHOD     getTimezoneOffset()                        int
-METHOD     getYear()                                  int
+METHOD     getTimezoneOffset()             [PUBLIC]   int
+METHOD     getYear()                       [PUBLIC]   int

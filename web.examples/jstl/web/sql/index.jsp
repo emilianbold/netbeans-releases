@@ -55,7 +55,7 @@
     <tr> 
       <td>URL:</td>
       <td> 
-        <input type="text" size="40" name="dbUrl" value="jdbc:derby://localhost:1527/sample;create=true">
+        <input type="text" size="40" name="dbUrl" value="jdbc:derby://localhost:1527/jstl-sample;create=true">
       </td>
     </tr>
     <tr> 

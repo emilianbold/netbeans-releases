@@ -40,38 +40,21 @@
  */
 package org.netbeans.modules.java.editor.semantic;
 
-import java.util.prefs.Preferences;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.JavaSource.Priority;
-import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
-import org.netbeans.modules.java.editor.options.MarkOccurencesSettings;
-import org.openide.filesystems.FileObject;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  *
  * @author Jan Lahoda
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
-public class MarkOccurrencesHighlighterFactory extends CaretAwareJavaSourceTaskFactory {
+public class MarkOccurrencesHighlighterFactory extends TaskFactory {
 
-    /** Creates a new instance of SemanticHighlighterFactory */
-    public MarkOccurrencesHighlighterFactory() {
-        super(Phase.RESOLVED, Priority.LOW, "*");
-    }
-
-    public CancellableTask<CompilationInfo> createTask(FileObject file) {
-        Preferences node = MarkOccurencesSettings.getCurrentNode();
-        
-        if (node.getBoolean(MarkOccurencesSettings.ON_OFF, true))
-            return new MarkOccurrencesHighlighter(file);
-        else
-            return new CancellableTask<CompilationInfo>() {
-                public void cancel() {}
-                
-                public void run(CompilationInfo parameter) throws Exception {}
-            };
+    @Override
+    public Collection<SchedulerTask> create(Snapshot snapshot) {
+        return Collections.<SchedulerTask>singletonList(new MarkOccurrencesHighlighter(snapshot.getSource().getFileObject()));
     }
 
 }

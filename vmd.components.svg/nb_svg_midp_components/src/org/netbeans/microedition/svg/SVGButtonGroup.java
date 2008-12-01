@@ -30,7 +30,7 @@ public class SVGButtonGroup implements SVGActionListener {
     public void add( SVGAbstractButton button) {
         myButtons.addElement(button);
         button.addActionListener(this);
-        if ( size() == 1){
+        if ( size() == 1) {
             button.setSelected( true );
         }
     }

@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import org.openide.nodes.PropertySupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 
-public class StringNodeProp extends PropertySupport {
+public class StringNodeProp extends PropertySupport<String> {
 
     private StringConfiguration stringConfiguration;
     private String def = null;
@@ -75,12 +75,12 @@ public class StringNodeProp extends PropertySupport {
         }
     }
 
-    public Object getValue() {
+    public String getValue() {
         return stringConfiguration.getValueDef(def);
     }
 
-    public void setValue(Object v) {
-        stringConfiguration.setValue((String) v);
+    public void setValue(String v) {
+        stringConfiguration.setValue(v);
     }
 
     @Override

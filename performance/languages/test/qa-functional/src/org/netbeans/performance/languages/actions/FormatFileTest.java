@@ -41,8 +41,12 @@
 
 package org.netbeans.performance.languages.actions;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.performance.languages.Projects;
+import org.netbeans.performance.languages.ScriptingUtilities;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
-import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -51,11 +55,6 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
-import org.netbeans.performance.languages.Projects;
-import org.netbeans.performance.languages.ScriptingUtilities;
-import org.netbeans.performance.languages.setup.ScriptingSetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -63,16 +62,14 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author mrkam@netbeans.org
  */
-public class FormatFileTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Actions suite";
+public class FormatFileTest extends PerformanceTestCase {
+
     protected Node fileToBeOpened;
     protected String testProject;
     protected String fileName; 
     protected String nodePath;
-    
     private EditorOperator editorOperator;
     protected static ProjectsTabOperator projectsTab = null;
-    
     private int caretBlinkRate;
     
     public FormatFileTest(String testName) {
@@ -93,34 +90,23 @@ public class FormatFileTest extends org.netbeans.modules.performance.utilities.P
 
     @Override
     public void initialize() {
-        log("::initialize");
         closeAllModal();
         String path = nodePath + "|" + fileName;
-        log("attempting to open: " + path);
-        
         fileToBeOpened = new Node(getProjectNode(testProject),path);
     }
     
     @Override
     public void prepare() {
-        log("::prepare");
         new OpenAction().performAPI(fileToBeOpened);
-        
-        waitNoEvent(800);
-
         editorOperator = EditorWindowOperator.getEditor(fileName);
-        
         caretBlinkRate =  editorOperator.txtEditorPane().getCaret().getBlinkRate();
-        
         editorOperator.txtEditorPane().getCaret().setBlinkRate(0);
         repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
-        waitNoEvent(2000);        
+        editorOperator.txtEditorPane().clickForPopup();
     }
 
     @Override
     public ComponentOperator open() {
-        editorOperator.txtEditorPane().clickForPopup();
-        // Format
         new JPopupMenuOperator().pushMenu(Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "format"));
         return null;
     }
@@ -135,7 +121,6 @@ public class FormatFileTest extends org.netbeans.modules.performance.utilities.P
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
             projectsTab = ScriptingUtilities.invokePTO();
-        
         return projectsTab.getProjectRootNode(projectName);
     }
     
@@ -144,6 +129,7 @@ public class FormatFileTest extends org.netbeans.modules.performance.utilities.P
         fileName = "php20kb.php";
         nodePath = "Source Files";
         expectedTime = 1000;
+        WAIT_AFTER_OPEN=2000;
         doMeasurement();
     }
    

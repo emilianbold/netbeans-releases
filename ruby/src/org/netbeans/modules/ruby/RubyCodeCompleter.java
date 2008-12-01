@@ -855,19 +855,19 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
      *
      * @todo Look for self or this or super; these should be limited to inherited.
      */
-    private boolean completeObjectMethod(List<CompletionProposal> proposals, CompletionRequest request, String fqn,
-        Call call) {
+    private boolean completeObjectMethod(final List<CompletionProposal> proposals,
+            final CompletionRequest request, String fqn, final Call call) {
 
-        RubyIndex index = request.index;
-        String prefix = request.prefix;
-        int astOffset = request.astOffset;
-        int lexOffset = request.lexOffset;
-        TokenHierarchy<Document> th = request.th;
-        BaseDocument doc = request.doc;
-        AstPath path = request.path;
-        NameKind kind = request.kind;
-        FileObject fileObject = request.fileObject;
-        Node node = request.node;
+        final RubyIndex index = request.index;
+        final String prefix = request.prefix;
+        final int astOffset = request.astOffset;
+        final int lexOffset = request.lexOffset;
+        final TokenHierarchy<Document> th = request.th;
+        final BaseDocument doc = request.doc;
+        final AstPath path = request.path;
+        final NameKind kind = request.kind;
+        final FileObject fileObject = request.fileObject;
+        final Node node = request.node;
 
         TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
@@ -894,18 +894,34 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
             Set<? extends String> types = Collections.emptySet();
             String callType = call.getType();
-            if (callType != null) {
+            if (callType != null && !call.isLHSConstant()) {
                 types = Collections.singleton(callType);
             }
 
-            if ((types.isEmpty()) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
+            if ((types.isEmpty()) && (lhs != null) && (node != null) &&
+                    (call.isSimpleIdentifier() || call.isLHSConstant())) {
                 Node method = AstUtilities.findLocalScope(node, path);
 
+                String _lhs = lhs;
+                if (call.isLHSConstant()) {
+                    // TODO: curently constants are class/module insensitive, cf. #154098
+                    int lastColon2 = lhs.lastIndexOf("::"); // NOI18N
+                    if (lastColon2 != -1) {
+                        _lhs = lhs.substring(lastColon2 + 2);
+                    }
+                }
                 if (method != null) {
                     // TODO - if the lhs is "foo.bar." I need to split this
                     // up and do it a bit more cleverly
-                    RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*request.info.getParserResult(),*/index, method, node, astOffset, lexOffset, doc, fileObject);
-                    types = analyzer.getTypes(lhs);
+                    types = createTypeAnalyzer(request, method).getTypes(_lhs);
+                    if (!types.isEmpty() && call.isLHSConstant()) {
+                        // lhs is not a class or module, is a constant for which we have
+                        // type-inference. Clumsy -> polish infrastructure..
+                        skipInstanceMethods = false;
+                    }
+                }
+                if (types.isEmpty() && call.isLHSConstant() && callType != null) {
+                    types = Collections.singleton(callType);
                 }
             }
 
@@ -4298,5 +4314,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
         
         return true;
+    }
+
+    private static RubyTypeAnalyzer createTypeAnalyzer(final CompletionRequest request, final Node root) {
+        return new RubyTypeAnalyzer(request.index, root, request.node, request.astOffset, request.lexOffset, request.doc, request.fileObject);
     }
 }

@@ -59,6 +59,7 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.maven.api.ModelUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -138,7 +139,7 @@ public class SourcesPanel extends JPanel {
     
     private void handleSourceLevelChange() {
         sourceLevel = (String)comSourceLevel.getSelectedItem();
-        PluginPropertyUtils.checkSourceLevel(handle, sourceLevel);
+        ModelUtils.checkSourceLevel(handle, sourceLevel);
         if (defaultSourceLevel.equals(sourceLevel)) {
             lblSourceLevel.setFont(lblSourceLevel.getFont().deriveFont(Font.PLAIN));
         } else {
@@ -156,7 +157,7 @@ public class SourcesPanel extends JPanel {
         } else {
             encName = encoding;
         }
-        PluginPropertyUtils.checkEncoding(handle, encName);
+        ModelUtils.checkEncoding(handle, encName);
         if (defaultEncoding.equals(encName)) {
             lblEncoding.setFont(lblEncoding.getFont().deriveFont(Font.PLAIN));
         } else {

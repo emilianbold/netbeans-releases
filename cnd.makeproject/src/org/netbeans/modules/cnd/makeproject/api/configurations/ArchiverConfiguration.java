@@ -267,8 +267,8 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         }
         
         @Override
-        public void setValue(Object v) {
-            if (IpeUtils.hasMakeSpecialCharacters((String)v)) {
+        public void setValue(String v) {
+            if (IpeUtils.hasMakeSpecialCharacters(v)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
                 return;
             }

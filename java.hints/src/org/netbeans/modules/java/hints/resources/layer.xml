@@ -70,6 +70,7 @@ made subject to such option by the copyright holder.
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-java-hints-infrastructure-JavaUpToDateStateProviderFactory.instance"/>
                 </folder>
+                <file name="org-netbeans-modules-java-hints-infrastructure-ErrorHintsFactory.instance" />
             </folder>
         </folder>
     </folder>

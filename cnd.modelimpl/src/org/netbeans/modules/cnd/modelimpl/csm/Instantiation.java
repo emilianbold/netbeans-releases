@@ -424,11 +424,12 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         }
 
         public CsmFunctionParameterList getParameterList() {
-            Collection<CsmParameter> res = new ArrayList<CsmParameter>();
+            ArrayList<CsmParameter> res = new ArrayList<CsmParameter>();
             Collection<CsmParameter> parameters = ((CsmFunction) declaration).getParameterList().getParameters();
             for (CsmParameter param : parameters) {
                 res.add(new Parameter(param, this));
             }
+            res.trimToSize();
             return FunctionParameterListImpl.create(((CsmFunction) declaration).getParameterList(), res);
         }
 

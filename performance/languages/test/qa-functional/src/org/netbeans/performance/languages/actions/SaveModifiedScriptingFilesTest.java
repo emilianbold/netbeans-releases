@@ -39,11 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.performance.languages.actions;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.languages.Projects;
+import org.netbeans.performance.languages.ScriptingUtilities;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
-import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -51,21 +53,17 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.SaveAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.languages.Projects;
-import org.netbeans.performance.languages.ScriptingUtilities;
-import org.netbeans.performance.languages.setup.ScriptingSetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class SaveModifiedScriptingFilesTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Actions suite";
+public class SaveModifiedScriptingFilesTest extends PerformanceTestCase {
+
     /** Editor with opened file */
     public static EditorOperator editorOperator;
-    
     protected Node fileToBeOpened;
     protected String testProject;
     protected String docName; 
@@ -77,6 +75,7 @@ public class SaveModifiedScriptingFilesTest extends org.netbeans.modules.perform
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_PREPARE=2000;        
     }
+
     public SaveModifiedScriptingFilesTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
@@ -107,46 +106,53 @@ public class SaveModifiedScriptingFilesTest extends org.netbeans.modules.perform
 
     public void test_SaveRHTML_File() {
         testProject = Projects.RAILS_PROJECT;
-        pathName = "Views"+"|";
+        pathName = "Unit Tests"+"|";
         docName = "rhtml20kb.rhtml";        
         doMeasurement();
     }
+
     public void test_SaveJS_File() {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "web"+"|";
         docName = "javascript20kb.js";        
         doMeasurement();
     }
+
     public void test_SaveJSON_File() {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "web"+"|";
         docName = "json20kb.json";        
         doMeasurement();
     }
+
     public void test_SaveCSS_File() {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "web"+"|";
         docName = "css20kb.css";        
         doMeasurement();
     }
+
     public void test_SaveYML_File() {
         testProject = Projects.RAILS_PROJECT;
-        pathName = "Configuration"+"|";
+        pathName = "Unit Tests"+"|";
         docName = "yaml20kb.yml";        
         doMeasurement();
     }
+
     public void test_SaveBAT_File() {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "web"+"|";
         docName = "bat20kb.bat";        
         doMeasurement();
     }
+
     public void test_SaveDIFF_File() {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "web"+"|";
         docName = "diff20kb.diff";        
         doMeasurement();
     }
+
     public void test_SaveMANIFEST_File() {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "web"+"|";

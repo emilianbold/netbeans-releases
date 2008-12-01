@@ -284,11 +284,28 @@ public final class GsfTestCompilationInfo extends CompilationInfo {
         for (ClassIndexImpl query : sourceIndeces) {
             query.setDirty(js);
         }
+
+        List<URL> extraUrls = test.getExtraCpUrls();
+        if (extraUrls != null) {
+            for (URL srcRoot : extraUrls) {
+                ClassIndexImpl ci;
+                try {
+                    ci = ClassIndexManager.get(language).createUsagesQuery(srcRoot, true);
+                    if (ci != null) {
+                        sourceIndeces.add(ci);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                    GsfTestBase.fail(ex.toString());
+                }
+            }
+        }
+
         classIndex.initForTest(sourceIndeces);
     }
 
     // Copied from createQueriesForRoot in ClassIndex, tweaked to create query unconditionally
-    private static void createQueriesForTest(final Language language, final ClassPath cp, final boolean sources, final Set<? super ClassIndexImpl> queries) {
+    private void createQueriesForTest(final Language language, final ClassPath cp, final boolean sources, final Set<? super ClassIndexImpl> queries) {
         final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
         List<ClassPath.Entry> entries = cp.entries();
         Indexer indexer = language.getIndexer();

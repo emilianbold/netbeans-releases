@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
     <linker>
         <library_search flags="-L"/>
         <dynamic_library_search flags="-R"/>
-        <library flags="-l"/>
+        <library_flag flags="-l"/>
         <dynamic_library_basic flags="-G "/>
     </linker>
 </toolchaindefinition>

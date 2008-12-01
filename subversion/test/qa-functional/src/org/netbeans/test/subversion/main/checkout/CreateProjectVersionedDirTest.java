@@ -75,7 +75,7 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
     
     public void testCreateNewProject() throws Exception {
         try {
-            MessageHandler mh = new MessageHandler("Committing");
+            MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
             TestKit.closeProject(PROJECT_NAME);
             if (TestKit.getOsName().indexOf("Mac") > -1)

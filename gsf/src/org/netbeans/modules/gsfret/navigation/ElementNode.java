@@ -65,6 +65,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /** 
@@ -465,9 +466,9 @@ public class ElementNode extends AbstractNode {
             return getIcon(type);
         }
 
-        @java.lang.Override
+        @Override
         public java.lang.String getDisplayName() {
-            return "Please Wait...";
+            return NbBundle.getMessage(ElementNode.class, "TXT_PleaseWait");
         }
     }
     

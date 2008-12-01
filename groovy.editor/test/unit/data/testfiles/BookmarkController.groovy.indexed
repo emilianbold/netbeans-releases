@@ -4,22 +4,22 @@ Document 0
 Searchable Keys:
   class : BookmarkController
   class-ig : bookmarkcontroller
-  field : create
-  field : delete
-  field : deliciousService
-  field : edit
-  field : list
-  field : params
-  field : preview
-  field : save
-  field : scaffold
-  field : search
-  field : suggestTag
-  field : update
-  field : updateNotes
+  field : create;java.lang.Object
+  field : delete;java.lang.Object
+  field : deliciousService;DeliciousService
+  field : edit;java.lang.Object
+  field : list;java.lang.Object
+  field : params;java.util.Map
+  field : preview;java.lang.Object
+  field : save;java.lang.Object
+  field : scaffold;java.lang.Object
+  field : search;java.lang.Object
+  field : suggestTag;java.lang.Object
+  field : update;java.lang.Object
+  field : updateNotes;java.lang.Object
   fqn : BookmarkController
-  method : addTags(Bookmark);02
-  method : getSuggestions(java.lang.Object,java.lang.Object);02
-  method : printParams(java.lang.Object,java.lang.Object);02
+  method : addTags(Bookmark);java.lang.Object;02
+  method : getSuggestions(java.lang.Object,java.lang.Object);java.lang.Object;02
+  method : printParams(java.lang.Object,java.lang.Object);java.lang.Object;02
 
 Not Searchable Keys:

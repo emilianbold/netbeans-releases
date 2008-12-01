@@ -117,7 +117,6 @@ import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
 import org.netbeans.modules.groovy.editor.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.completion.DynamicElementHandler;
-import org.netbeans.modules.groovy.editor.completion.JavaElementHandler.ClassType;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
@@ -1068,7 +1067,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         // FIXME just a dirty prototype
         Map<FieldSignature, ? extends CompletionItem> dynamic = DynamicElementHandler.forCompilationInfo(request.info).getFields(
-                CompletionType.THIS, declaringClass.getName(), request.prefix, anchor);
+                getSurroundingClassNode(request).getName(), declaringClass.getName(), request.prefix, anchor);
         proposals.addAll(dynamic.values());
 
         return true;
@@ -2145,7 +2144,6 @@ public class CompletionHandler implements CodeCompletionHandler {
         if (!request.isBehindDot() && request.ctx.before1 == null
                 && (request.location == CaretLocation.INSIDE_CLOSURE || request.location == CaretLocation.INSIDE_METHOD)) {
             request.declaringClass = getSurroundingClassNode(request);
-            request.completionType = CompletionType.THIS;
             return request.declaringClass;
         }
 
@@ -2178,12 +2176,14 @@ public class CompletionHandler implements CodeCompletionHandler {
             VariableExpression variable = (VariableExpression) dotCompletionContext.getAstPath().leaf();
             if ("this".equals(variable.getName())) { // NOI18N
                 request.declaringClass = getSurroundingClassNode(request);
-                request.completionType = CompletionType.THIS;
                 return request.declaringClass;
             }
             if ("super".equals(variable.getName())) { // NOI18N
-                request.declaringClass = getSurroundingClassNode(request);
-                request.completionType = CompletionType.SUPER;
+                ClassNode thisClass = getSurroundingClassNode(request);
+                request.declaringClass = thisClass.getSuperClass();
+                if (request.declaringClass == null) {
+                    return new ClassNode("java.lang.Object", ClassNode.ACC_PUBLIC, null);
+                }
                 return request.declaringClass;
             }
         }
@@ -2434,7 +2434,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         Map<MethodSignature, ? extends CompletionItem> result = CompleteElementHandler
                 .forCompilationInfo(request.info)
-                    .getMethods(request.getCompletionType(), declaringClass, ClassType.CLASS, request.prefix, anchor);
+                    .getMethods(getSurroundingClassNode(request), declaringClass, request.prefix, anchor);
         proposals.addAll(result.values());
 
         return true;
@@ -2963,14 +2963,8 @@ public class CompletionHandler implements CodeCompletionHandler {
         ClassNode declaringClass;
         DotCompletionContext dotContext;
 
-        CompletionType completionType = CompletionType.OBJECT;
-
         public boolean isBehindDot() {
             return dotContext != null;
-        }
-
-        public CompletionType getCompletionType() {
-            return completionType;
         }
 
     }

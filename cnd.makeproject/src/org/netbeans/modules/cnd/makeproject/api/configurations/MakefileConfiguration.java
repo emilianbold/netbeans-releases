@@ -45,6 +45,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
@@ -152,10 +155,23 @@ public class MakefileConfiguration {
     public String getAbsOutput() {
         if (getOutput().getValue().length() == 0)
             return ""; // NOI18N
-        else if (getOutput().getValue().length() > 0 && IpeUtils.isPathAbsolute(getOutput().getValue()))
+        else if (IpeUtils.isPathAbsolute(getOutput().getValue()))
             return getOutput().getValue();
-        else
+        else {
+            // FIXME
+//            List<String> paths = new ArrayList<String>();
+//            paths.add(makeConfiguration.getBaseDir());
+//            paths.addAll(mcd.getSourceRoots());
+//
+//            for (String dir : paths) {
+//                dir = dir.replace("\\", "/");  // NOI18N
+//                String path = dir.replace("\\", "/") + '/' + getOutput().getValue();
+//                File file = new File(path);
+//                if (file.exists()) {
+//                    return path;
+//                }
             return getMakeConfiguration().getBaseDir() + "/"  + getOutput().getValue(); // NOI18N
+        }
     }
     
     // Clone and assign
@@ -198,12 +214,14 @@ public class MakefileConfiguration {
             super(stringConfiguration, txt1, txt2, txt3);
         }
         
-        public void setValue(Object v) {
-            String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), (String)v); // FIXUP: not always relative path
+        @Override
+        public void setValue(String v) {
+            String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
             path = FilePathAdaptor.normalize(path);
             super.setValue(path);
         }
         
+        @Override
         public PropertyEditor getPropertyEditor() {
             return new DirEditor(getAbsBuildCommandWorkingDir());
         }
@@ -214,12 +232,14 @@ public class MakefileConfiguration {
             super(stringConfiguration, txt1, txt2, txt3);
         }
         
-        public void setValue(Object v) {
-            String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), (String)v); // FIXUP: not always relative path
+        @Override
+        public void setValue(String v) {
+            String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
             path = FilePathAdaptor.normalize(path);
             super.setValue(path);
         }
         
+        @Override
         public PropertyEditor getPropertyEditor() {
             String seed = getAbsOutput();
             if (seed.length() == 0)
@@ -236,26 +256,32 @@ public class MakefileConfiguration {
             this.seed = seed;
         }
         
+        @Override
         public void setAsText(String text) {
             getBuildCommandWorkingDir().setValue(text);
         }
         
+        @Override
         public String getAsText() {
             return getBuildCommandWorkingDir().getValue();
         }
         
+        @Override
         public Object getValue() {
             return getBuildCommandWorkingDir().getValue();
         }
         
+        @Override
         public void setValue(Object v) {
             getBuildCommandWorkingDir().setValue((String)v);
         }
         
+        @Override
         public boolean supportsCustomEditor() {
             return true;
         }
         
+        @Override
         public java.awt.Component getCustomEditor() {
             return new DirPanel(seed, this, propenv);
         }
@@ -302,26 +328,32 @@ public class MakefileConfiguration {
             this.seed = seed;
         }
         
+        @Override
         public void setAsText(String text) {
             getOutput().setValue(text);
         }
         
+        @Override
         public String getAsText() {
             return getOutput().getValue();
         }
         
+        @Override
         public Object getValue() {
             return getOutput().getValue();
         }
         
+        @Override
         public void setValue(Object v) {
             getOutput().setValue((String)v);
         }
         
+        @Override
         public boolean supportsCustomEditor() {
             return true;
         }
         
+        @Override
         public java.awt.Component getCustomEditor() {
             return new ElfPanel(seed, this, propenv);
         }

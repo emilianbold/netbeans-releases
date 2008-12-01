@@ -78,6 +78,7 @@ public final class PatchedStrictElement extends StrictElement implements Patched
         }
     }
             
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedStrictElement(doc, getLocalName(), 
                 getNamespaceURI(), getRequiredTraits(), getRequiredTraitsNS());

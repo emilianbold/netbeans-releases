@@ -39,21 +39,35 @@
 
 package org.netbeans.modules.db.metadata.model.jdbc;
 
+import java.sql.DatabaseMetaData;
 import java.sql.Types;
+import java.util.EnumSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.db.metadata.model.api.Nullable;
+import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
 import org.netbeans.modules.db.metadata.model.api.SQLType;
 
 /**
  *
  * @author David
  */
-public class JDBCUtils {
+public final class JDBCUtils {
+    private static final Logger LOGGER = Logger.getLogger(JDBCUtils.class.getName());
+
+    private static EnumSet<SQLType> charTypes = EnumSet.of(SQLType.CHAR, SQLType.VARCHAR, SQLType.LONGVARCHAR);
+    private static EnumSet<SQLType> dateTypes = EnumSet.of(SQLType.DATE, SQLType.TIME, SQLType.TIMESTAMP);
+    private static EnumSet<SQLType> numericTypes = EnumSet.of(SQLType.TINYINT, SQLType.INTEGER, SQLType.BIGINT, SQLType.SMALLINT,
+            SQLType.FLOAT, SQLType.DOUBLE, SQLType.REAL, SQLType.NUMERIC, SQLType.DECIMAL);
+
+
     /**
      * Get the SQLType for the given java.sql.Type type.
      *
      * @param type the java.sql.Type type specifier
      * @return SQLType.the SQLType for this java.sql.Type, or null if it's not recognized
      */
-    static SQLType getSQLType(int type) {
+    public static SQLType getSQLType(int type) {
         switch (type) {
             case Types.BIT: return SQLType.BIT;
             case Types.TINYINT: return SQLType.TINYINT;
@@ -87,6 +101,56 @@ public class JDBCUtils {
             case Types.BOOLEAN: return SQLType.BOOLEAN;
             default:
                 return null;
+        }
+    }
+
+    public static boolean isCharType(SQLType type) {
+        return charTypes.contains(type);
+    }
+
+    public static boolean isDateType(SQLType type) {
+        return dateTypes.contains(type);
+    }
+
+    public static boolean isNumericType(SQLType type) {
+        return numericTypes.contains(type);
+    }
+
+    public static Nullable getColumnNullable(int dbmdColumnNullable) {
+        switch (dbmdColumnNullable) {
+            case DatabaseMetaData.columnNoNulls:
+                return Nullable.NOT_NULLABLE;
+            case DatabaseMetaData.columnNullable:
+                return Nullable.NULLABLE;
+            case DatabaseMetaData.columnNullableUnknown:
+            default:
+                return Nullable.UNKNOWN;
+        }
+    }
+
+    public static Nullable getProcedureNullable(int dbmdProcedureNullable) {
+        switch (dbmdProcedureNullable) {
+            case DatabaseMetaData.procedureNoNulls:
+                return Nullable.NOT_NULLABLE;
+            case DatabaseMetaData.procedureNullable:
+                return Nullable.NULLABLE;
+            case DatabaseMetaData.procedureNullableUnknown:
+            default:
+                return Nullable.UNKNOWN;
+        }
+    }
+    
+    public static Direction getDirection(short sqlDirection) {
+        switch (sqlDirection) {
+            case DatabaseMetaData.procedureColumnOut:
+                return Direction.OUT;
+            case DatabaseMetaData.procedureColumnInOut:
+                return Direction.INOUT;
+            case DatabaseMetaData.procedureColumnIn:
+                return Direction.IN;
+            default:
+                LOGGER.log(Level.INFO, "Unknown direction value from DatabaseMetadat.getProcedureColumns(): " + sqlDirection);
+                return Direction.IN;
         }
     }
 

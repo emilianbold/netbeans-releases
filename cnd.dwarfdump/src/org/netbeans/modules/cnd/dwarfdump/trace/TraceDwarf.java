@@ -56,6 +56,9 @@ public class TraceDwarf {
     
     public static boolean TRACED = false;
 
+    private TraceDwarf() {
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -67,9 +70,9 @@ public class TraceDwarf {
             System.out.println("TraceDwarf.");  // NOI18N
             dump = new Dwarf(objFileName);
             List<CompilationUnit> units = dump.getCompilationUnits();
-            System.out.println("\n**** Done. " + units.size() + " compilation units were found:"); // NOI18N
             int idx = 0;
             if (units != null && units.size() > 0) {
+                System.out.println("\n**** Done. " + units.size() + " compilation units were found:"); // NOI18N
                 for (CompilationUnit compilationUnit : units) {
                     System.out.println(++idx + ": " + compilationUnit.getSourceFileName());// NOI18N
                 }

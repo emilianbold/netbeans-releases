@@ -124,7 +124,7 @@ public final class CompileAnnotation extends Annotation implements PropertyChang
                     try {
                         Line l = ed.getLineSet().getOriginal(lineNum - 1);
                         if (! l.isDeleted()) {
-                            l.show(Line.SHOW_GOTO);
+                            l.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FRONT);
                         }
                     } catch (IndexOutOfBoundsException ioobe) {
                         // Probably harmless. Bogus line number.

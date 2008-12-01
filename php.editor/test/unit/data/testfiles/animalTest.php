@@ -29,7 +29,7 @@ class Mammal extends Animal {
     public function isMammal() {
         return false;
     }
-    function __construct() {
+    function __construct() {//Mammal
         parent::__construct();
         Mammal::$count++;
         echo parent::$count;

@@ -1,0 +1,9 @@
+Code completion result for source line:
+arr.each { |_| Huh.err| }
+(QueryType=COMPLETION, NameKind=PREFIX)
+CALL       each { }                                   GDBM
+CALL       each(*args) { }                            Zlib::GzipReader
+CALL       each(sep_string) { }                       StringIO
+CALL       each(separator) { }                        String
+------------------------------------
+METHOD     errors                          [STATIC]   OpenSSL

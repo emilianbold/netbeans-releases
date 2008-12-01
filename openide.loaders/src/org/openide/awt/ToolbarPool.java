@@ -42,19 +42,37 @@
 package org.openide.awt;
 
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.*;
 import java.util.ArrayList;
-import javax.accessibility.*;
-import javax.swing.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
 import javax.swing.JComponent.AccessibleJComponent;
-import javax.swing.border.Border;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.util.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.FolderInstance;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
  * This class keeps track of the current toolbars and their names.
@@ -107,9 +125,10 @@ public final class ToolbarPool extends JComponent implements Accessible {
             try {
                 fo = FileUtil.createFolder(root, "Toolbars"); // NOI18N
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                Logger.getLogger(ToolbarPool.class.getName()).log(Level.CONFIG, "Cannot create Toolbars folder.", ex);
             }
-            if (fo == null) throw new IllegalStateException("No Toolbars/"); // NOI18N
+            if (fo == null)
+                throw new IllegalStateException("No Toolbars/"); // NOI18N
             DataFolder folder = DataFolder.findFolder(fo);
             defaultPool = new ToolbarPool(folder);
             // we mustn't do this in constructor to prevent from
@@ -142,24 +161,6 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
         getAccessibleContext().setAccessibleName(instance.instanceName());
         getAccessibleContext().setAccessibleDescription(instance.instanceName());
-
-        if ("Windows".equals(UIManager.getLookAndFeel().getID())) {
-            if( isXPTheme() ) {
-                //Set up custom borders for XP
-                setBorder(BorderFactory.createCompoundBorder(
-                    upperBorder, 
-                    BorderFactory.createCompoundBorder(
-                        BorderFactory.createMatteBorder(0, 0, 1, 0, 
-                        fetchColor("controlShadow", Color.DARK_GRAY)),
-                        BorderFactory.createMatteBorder(0, 0, 1, 0, mid))
-                )); //NOI18N
-            } else {
-                setBorder( BorderFactory.createEtchedBorder() );
-            }
-        } else if ("GTK".equals(UIManager.getLookAndFeel().getID())) {
-            //No border
-            setBorder (BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        }
     }
     
     /**
@@ -185,61 +186,6 @@ public final class ToolbarPool extends JComponent implements Accessible {
         this.preferredIconSize = preferredIconSize;
     }
 
-    public Border getBorder() {
-        //Issue 36867, hide border if there are no toolbars.  Not the most
-        //performant way to do it; if it has a measurable impact, can be 
-        //improved
-        if (center != null && center instanceof Container && 
-           ((Container)center).getComponentCount() > 0) {
-               
-            boolean show = false;
-            for (int i=0; i < ((Container)center).getComponentCount(); i++) {
-                Component c = ((Container)center).getComponent(i);
-                if (c.isVisible()) {
-                    show = true;
-                    break;
-                }
-            }
-            if (show) {
-                return super.getBorder();
-            }
-        }
-        return lowerBorder;
-    }
-
-    private static Color fetchColor (String key, Color fallback) {
-        //Fix ExceptionInInitializerError from MainWindow on GTK L&F - use
-        //fallback colors
-        Color result = (Color) UIManager.get(key);
-        if (result == null) {
-            result = fallback;
-        }
-        return result;
-    }
-    
-    private static Color mid;
-    static {
-        Color lo = fetchColor("controlShadow", Color.DARK_GRAY); //NOI18N
-        Color hi = fetchColor("control", Color.GRAY); //NOI18N
-        
-        int r = (lo.getRed() + hi.getRed()) / 2;
-        int g = (lo.getGreen() + hi.getGreen()) / 2;
-        int b = (lo.getBlue() + hi.getBlue()) / 2;
-        mid = new Color(r, g, b);
-    }
-    
-    private static final Border lowerBorder = BorderFactory.createCompoundBorder(
-        BorderFactory.createMatteBorder(0, 0, 1, 0, 
-        fetchColor("controlShadow", Color.DARK_GRAY)),
-        BorderFactory.createMatteBorder(0, 0, 1, 0, mid)); //NOI18N
-
-    private static final Border upperBorder = BorderFactory.createCompoundBorder(
-        BorderFactory.createMatteBorder(1, 0, 0, 0,
-        fetchColor("controlShadow", Color.DARK_GRAY)),
-        BorderFactory.createMatteBorder(1, 0, 0, 0,
-        fetchColor("controlLtHighlight", Color.WHITE))); //NOI18N
-     
-    
     /** Allows to wait till the content of the pool is initialized. */
     public final void waitFinished () {
         instance.instanceFinished ();
@@ -262,15 +208,15 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
     /** Updates the default configuration. */
     private synchronized void updateDefault () {
-        Toolbar[] toolbars = getToolbars ();
+        Toolbar[] bars = getToolbars ();
         name = ""; // NOI18N
         
-        if (toolbars.length == 1) {
-            revalidate(toolbars[0]);
+        if (bars.length == 1) {
+            revalidate(bars[0]);
         } else {
             JPanel tp = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-            for (int i = 0; i < toolbars.length; i++) {
-                tp.add(toolbars[i]);
+            for (int i = 0; i < bars.length; i++) {
+                tp.add(bars[i]);
             }
             revalidate(tp); 
         }
@@ -285,7 +231,10 @@ public final class ToolbarPool extends JComponent implements Accessible {
         revalidate (comp);
     }
 
-    /** Sets DnDListener to all Toolbars. */
+    /** Sets DnDListener to all Toolbars. 
+     * @deprecated
+     */
+    @Deprecated
     public void setToolbarsListener (Toolbar.DnDListener l) {
         for (Toolbar t: toolbars.values()) {
             t.setDnDListener (l);
@@ -302,11 +251,6 @@ public final class ToolbarPool extends JComponent implements Accessible {
             }
             add (center = c, BorderLayout.CENTER);
             center.addMouseListener (listener);
-
-//            java.awt.Window w = javax.swing.SwingUtilities.windowForComponent (this);
-//            if (w != null) {
-//                w.validate();
-//            }
         }
     }
 
@@ -366,7 +310,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
             activate (config);
         }
         
-        firePropertyChange("configuration", old, name);
+        firePropertyChange("configuration", old, name); //NOI18N
     }
 
     /**
@@ -402,9 +346,11 @@ public final class ToolbarPool extends JComponent implements Accessible {
         /** Read accessible context
      * @return - accessible context
      */
+    @Override
     public AccessibleContext getAccessibleContext () {
         if(toolbarAccessibleContext == null) {
             toolbarAccessibleContext = new AccessibleJComponent() {
+                @Override
                 public AccessibleRole getAccessibleRole() {
                     return AccessibleRole.TOOL_BAR;
                 }
@@ -412,28 +358,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
         }
         return toolbarAccessibleContext;
     }
-
-    /** Recognizes if XP theme is set.
-     *  (copy & paste from org.openide.awt.Toolbar to avoid API changes)
-     * @return true if XP theme is set, false otherwise
-     */
-    private static Boolean isXP = null;
-    private static boolean isXPTheme () {
-        if (isXP == null) {
-            Boolean xp = (Boolean)Toolkit.getDefaultToolkit().
-            getDesktopProperty("win.xpstyle.themeActive"); //NOI18N
-            isXP = Boolean.TRUE.equals(xp)? Boolean.TRUE : Boolean.FALSE;
-        }
-        return isXP.booleanValue();
-    }    
     
-    /**
-     * @return True if the Toolbar Customizer is visible and toolbar buttons can be dragged.
-     */
-    boolean isInEditMode() {
-        return null != getClientProperty( "editMode" );
-    }
-
     /**
      * This class is used for delayed setting of configuration after instance
      * creation is finished. It may happen during IDE start that 
@@ -473,6 +398,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
          * Full name of the data folder's primary file separated by dots.
          * @return the name
          */
+        @Override
         public String instanceName () {
             return instanceClass().getName();
         }
@@ -481,6 +407,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
          * Returns the root class of all objects.
          * @return Object.class
          */
+        @Override
         public Class instanceClass () {
             return ToolbarPool.class;
         }
@@ -490,8 +417,10 @@ public final class ToolbarPool extends JComponent implements Accessible {
          * @param cookie the instance cookie to test
          * @return true if the cookie can provide <code>Configuration</code>
          */
+        @Override
         protected InstanceCookie acceptCookie (InstanceCookie cookie)
-        throws java.io.IOException, ClassNotFoundException {
+            throws java.io.IOException, ClassNotFoundException {
+
             Class cls = cookie.instanceClass();
             if (ToolbarPool.Configuration.class.isAssignableFrom (cls)) {
                 return cookie;
@@ -508,10 +437,11 @@ public final class ToolbarPool extends JComponent implements Accessible {
          * @param df a <code>DataFolder</code> to create the cookie for
          * @return a <code>Toolbar.Folder</code> for the specified folder
          */
+        @Override
         protected InstanceCookie acceptFolder (DataFolder df) {
             InstanceCookie ic = foldersCache.get (df);
             if (ic == null) {
-                ic = (FolderInstance)new Toolbar (df, true).waitFinished ();
+                ic = (FolderInstance) new Toolbar(df).waitFinished ();
                 foldersCache.put (df, ic);
             }
             return ic;
@@ -533,10 +463,10 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
             for (int i = 0; i < length; i++) {
                 try {
-                    java.lang.Object obj = cookies[i].instanceCreate();
+                    Object obj = cookies[i].instanceCreate();
 
-                    if (obj instanceof org.openide.awt.Toolbar) {
-                        org.openide.awt.Toolbar toolbar = (org.openide.awt.Toolbar) obj;
+                    if (obj instanceof Toolbar) {
+                        Toolbar toolbar = (Toolbar) obj;
 
                         // should be done by ToolbarPanel in add method
                         toolbar.removeMouseListener(listener);
@@ -545,8 +475,8 @@ public final class ToolbarPool extends JComponent implements Accessible {
                         toolbarNames.add(toolbar.getName());
                         continue;
                     }
-                    if (obj instanceof org.openide.awt.ToolbarPool.Configuration) {
-                        org.openide.awt.ToolbarPool.Configuration config = (org.openide.awt.ToolbarPool.Configuration) obj;
+                    if (obj instanceof ToolbarPool.Configuration) {
+                        ToolbarPool.Configuration config = (ToolbarPool.Configuration) obj;
                         java.lang.String name = config.getName();
 
                         if (name == null) {
@@ -555,23 +485,20 @@ public final class ToolbarPool extends JComponent implements Accessible {
                         conf.put(name, config);
                         continue;
                     }
-                    if (obj instanceof java.awt.Component) {
-                        java.awt.Component comp = (java.awt.Component) obj;
-                        java.lang.String name = comp.getName();
+                    if (obj instanceof Component) {
+                        Component comp = (Component) obj;
+                        String name = comp.getName();
 
                         if (name == null) {
                             name = cookies[i].instanceName();
                         }
-                        conf.put(name,
-                                 new org.openide.awt.ToolbarPool.ComponentConfiguration(comp));
+                        conf.put(name, new ToolbarPool.ComponentConfiguration(comp));
                         continue;
                     }
-                }
-                catch (java.io.IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                catch (java.lang.ClassNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(ToolbarPool.class.getName()).log(Level.INFO, "Error while creating toolbars.", ex);
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(ToolbarPool.class.getName()).log(Level.INFO, "Error while creating toolbars.", ex);
                 }
             }
             update (toolbars, conf, toolbarNames);
@@ -581,6 +508,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
         /** Recreate the instance in AWT thread.
         */
+        @Override
         protected Task postCreationTask (Runnable run) {
             return new AWTTask (run);
         }
@@ -635,9 +563,11 @@ public final class ToolbarPool extends JComponent implements Accessible {
     * component */
     private static final class ComponentConfiguration extends JPopupMenu
         implements Configuration, ActionListener {
+
         private Component comp;
 
-	ComponentConfiguration() {}
+        ComponentConfiguration() {
+        }
 
         static final long serialVersionUID =-409474484612485719L;
         /** @param comp component that represents this configuration */
@@ -652,6 +582,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
         /** @return name of the component
         */
+        @Override
         public String getName () {
             return comp.getName ();
         }
@@ -662,11 +593,9 @@ public final class ToolbarPool extends JComponent implements Accessible {
             removeAll ();
 
             // generate list of available toolbar panels
-            Iterator it = Arrays.asList (ToolbarPool.getDefault ().getConfigurations ()).iterator ();
             ButtonGroup bg = new ButtonGroup ();
             String current = ToolbarPool.getDefault ().getConfiguration ();
-            while (it.hasNext()) {
-                final String name = (String)it.next ();
+            for( String name : ToolbarPool.getDefault().getConfigurations() ) {
                 JRadioButtonMenuItem mi = new JRadioButtonMenuItem (name, (name.compareTo (current) == 0));
                 mi.addActionListener (this);
                 bg.add (mi);
@@ -681,8 +610,6 @@ public final class ToolbarPool extends JComponent implements Accessible {
         public void actionPerformed (ActionEvent evt) {
             ToolbarPool.getDefault().setConfiguration (evt.getActionCommand ());
         }
-
     }
-
 } // end of ToolbarPool
 

@@ -1,5 +1,3 @@
-Missing position for node SCRIPT[0:0]:EXPR_RESULT[22:39]:SETPROP_OP[22:39]:ADD[0:0]
-Missing position for node SCRIPT[0:0]:EXPR_RESULT[22:39]:SETPROP_OP[22:39]:ADD[0:0]:USE_STACK[0:0]
 Missing position for node SCRIPT[0:0]:EXPR_RESULT[33:0]:CALL[33:0]:GET_REF[33:15]:REF_MEMBER[0:0]
 Missing position for node SCRIPT[0:0]:EXPR_RESULT[33:0]:CALL[33:0]:GET_REF[33:15]:REF_MEMBER[0:0]:STRING[0:0]
 
@@ -25,15 +23,15 @@ Missing position for node SCRIPT[0:0]:EXPR_RESULT[33:0]:CALL[33:0]:GET_REF[33:15
 //Display the customers full name:
 <EXPR_RESULT><CALL><NAME>document</NAME>.<GETPROP><STRING>write</STRING></GETPROP>(<GETPROP><NAME>order</NAME>.<GETPROP><STRING>customer</STRING></GETPROP>.<STRING>lastname</STRING></GETPROP>)</CALL></EXPR_RESULT>
 <EXPR_RESULT><CALL><NAME>document</NAME>.<GETPROP><STRING>write</STRING></GETPROP>(<STRING>","</STRING>)</CALL></EXPR_RESULT>
-<EXPR_RESULT><CALL><NAME>document</NAME>.<GETPROP><STRING>write</STRING></GETPROP>(<GETPROP><NAME>order</NAME>.<GETPROP><STRING>customer</STRING></GETPROP>.<STRING>firstname</STRING></GETPROP><EXPR_RESULT><SETPROP_OP>)</CALL></EXPR_RESULT>
+<EXPR_RESULT><CALL><NAME>document</NAME>.<GETPROP><STRING>write</STRING></GETPROP>(<GETPROP><NAME>order</NAME>.<GETPROP><STRING>customer</STRING></GETPROP>.<STRING>firstname</STRING></GETPROP>)</CALL></EXPR_RESULT>
 
 //Add a new item:
-<NAME>order</NAME>.<STRING>item</STRING>+=
+<EXPR_RESULT><SETPROP_OP><NAME><ADD><USE_STACK/>order</NAME>.<STRING>item</STRING>+=
 <E4X><STRING>&lt;item&gt;
   &lt;name&gt;Pavlova&lt;/name&gt;
   &lt;qty&gt;10&lt;/qty&gt;
   &lt;price&gt;128.00&lt;/price&gt;
-&lt;/item&gt;</STRING></E4X></SETPROP_OP></EXPR_RESULT>
+&lt;/item&gt;</STRING></E4X></ADD></SETPROP_OP></EXPR_RESULT>
 
 //Display the order id:
 <EXPR_RESULT><CALL><NAME>document</NAME>.<GETPROP><STRING>write</STRING></GETPROP>(<GET_REF><NAME>order</NAME>.@id</GET_REF>)</CALL></EXPR_RESULT></SCRIPT>

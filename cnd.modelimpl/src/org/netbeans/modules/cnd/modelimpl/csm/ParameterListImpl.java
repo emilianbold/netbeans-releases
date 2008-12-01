@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -61,15 +62,19 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
  * implementation of offsetable object to represent functions' parameters
  * @author Vladimir Voskresensky
  */
-public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableIdentifiableBase<T> implements CsmParameterList<T, K> {
+public class ParameterListImpl<T, K> extends OffsetableIdentifiableBase<T> implements CsmParameterList<T, K> {
 
-    private final Collection<CsmUID<K>> parameters;
+    private final Collection/*<K>or<CsmUID<K>>*/ parameters;
 
-    protected ParameterListImpl(CsmFile file, int start, int end, Collection<CsmUID<K>> parameters) {
+    protected ParameterListImpl(CsmFile file, int start, int end, Collection/*<K>or<CsmUID<K>>*/ parameters) {
         super(file, start, end);
-        this.parameters = parameters;
+        if (parameters == null || parameters.isEmpty()) {
+            this.parameters = null;
+        } else {
+            this.parameters = parameters;
+        }
     }
-
+    
     public Collection<K> getParameters() {
         return _getParameters();
     }
@@ -78,13 +83,45 @@ public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableI
         return parameters == null || parameters.isEmpty();
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        RepositoryUtils.remove(_getUIDs());
+    }
+
+    @SuppressWarnings("unchecked")
     private Collection<K> _getParameters() {
         if (this.parameters == null) {
             return Collections.<K>emptyList();
         } else {
-            Collection<K> out = UIDCsmConverter.UIDsToCsmObjects(parameters);
+            Object first = parameters.iterator().next();
+            Collection<K> out;
+            if (first instanceof CsmUID) {
+                out = UIDCsmConverter.UIDsToCsmObjects(parameters);
+            } else {
+                out = new ArrayList<K>(parameters);
+            }
             return out;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Collection<CsmUID<K>> _getUIDs() {
+        if (this.parameters == null) {
+            return null;
+        } else {
+            Object first = parameters.iterator().next();
+            Collection<CsmUID<K>> out = null;
+            if (first instanceof CsmUID) {
+                out = parameters;
+            }
+            return out;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "ParamList " + super.toString(); // NOI18N
     }
 
     @Override
@@ -122,7 +159,7 @@ public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableI
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
-        UIDObjectFactory.getDefaultFactory().writeUIDCollection(this.parameters, output, false);
+        UIDObjectFactory.getDefaultFactory().writeUIDCollection(_getUIDs(), output, false);
     }
 
     public ParameterListImpl(DataInput input) throws IOException {
@@ -133,9 +170,7 @@ public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableI
     ////////////////////////////////////////////////////////////////////////////
     // help factory methods
     public static <T, K extends CsmNamedElement> ParameterListImpl<T, K> create(CsmFile file, int start, int end, Collection<K> parameters) {
-        Collection<CsmUID<K>> uids = UIDCsmConverter.CsmObjectsToUIDs(parameters);
-        // convert objects to UIDs
-        return new ParameterListImpl<T, K>(file, start, end, uids);
+        return new ParameterListImpl<T, K>(file, start, end, parameters);
     }
 
     public static ParameterListImpl<CsmParameterList, CsmMacroParameter> create(CsmFile file, APTMacro macro) {

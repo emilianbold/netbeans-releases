@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -167,7 +168,7 @@ public final class Utilities {
 
     public static Set<Modifier> modelModifiersToGsf(Set<javax.lang.model.element.Modifier> modifiers) {
 
-        Set<Modifier> ret = new HashSet<Modifier>();
+        Set<Modifier> ret = new LinkedHashSet<Modifier>();
 
         if (modifiers.contains(javax.lang.model.element.Modifier.STATIC)) {
             ret.add(Modifier.STATIC);

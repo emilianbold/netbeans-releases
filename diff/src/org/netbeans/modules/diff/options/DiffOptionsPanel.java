@@ -72,6 +72,8 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, Doc
 
     private void refreshComponents() {
         ignoreWhitespace.setEnabled(internalDiff.isSelected());
+        ignoreAllWhitespace.setEnabled(internalDiff.isSelected());
+        ignoreCase.setEnabled(internalDiff.isSelected());
         jLabel1.setEnabled(externalDiff.isSelected());
         externalCommand.setEnabled(externalDiff.isSelected());
         browseCommand.setEnabled(externalDiff.isSelected());
