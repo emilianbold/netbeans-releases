@@ -246,6 +246,9 @@ public final class FindComponentModules {
         Collection<String> ignore = new HashSet<String>();
         OperationContainer<OperationSupport> ocForEnable = OperationContainer.createForEnable ();
         for (;;) {
+            if (toAdd.isEmpty()) {
+                break;
+            }
             for (UpdateElement el : toAdd) {
                 if (ocForEnable.canBeAdded (el.getUpdateUnit (), el)) {
                     OperationContainer.OperationInfo<OperationSupport> inf = ocForEnable.add (el);
@@ -258,6 +261,9 @@ public final class FindComponentModules {
                     if (breaks.isEmpty ()) {
                         all.add (el);
                         all.addAll (reqs);
+                    } else {
+                        FoDFileSystem.LOG.fine("Cannot enable " + el.getCodeName() + " broken deps: " + breaks); // NOI18N
+                        ignore.add(el.getCodeName());
                     }
                 } else {
                     ignore.add(el.getCodeName());
