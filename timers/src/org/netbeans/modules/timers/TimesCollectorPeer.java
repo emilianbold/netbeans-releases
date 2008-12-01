@@ -146,7 +146,7 @@ public final class TimesCollectorPeer {
         return getKey2Desc(fo).keySet();
     }
     
-    public Collection<Object> getFiles() {
+    public synchronized Collection<Object> getFiles() {
         List<Object> result = new ArrayList<Object>();
         
         for (Reference<Object> r : files) {
