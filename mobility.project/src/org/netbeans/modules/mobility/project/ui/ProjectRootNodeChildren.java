@@ -39,7 +39,12 @@
 package org.netbeans.modules.mobility.project.ui;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -47,30 +52,62 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ui.ProjectRootNodeChildren.ChildKind;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.netbeans.spi.project.ui.support.NodeFactory;
+import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Tim Boudreau
  */
-public class ProjectRootNodeChildren extends ChildFactory<ChildKind> {
+final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> implements LookupListener, ChangeListener {
 
     private final J2MEProject project;
+    private Lookup.Result<NodeFactory> res;
+    private static final String FOREIGN_NODES_PATH =
+            "Projects/org-netbeans-modules-mobility-project/Nodes"; //NOI18N
+    private Set<NodeList> lists = new HashSet<NodeList>();
+    private final Object lock = new Object();
 
     public static enum ChildKind {
         Sources, 
         Resources,
-        Configurations
+        Configurations,
+        Foreign,
     }
 
     ProjectRootNodeChildren(J2MEProject project) {
         this.project = project;
     }
 
+    @Override
+    protected void addNotify() {
+        res = Lookups.forPath(FOREIGN_NODES_PATH).lookupResult(NodeFactory.class);
+        res.addLookupListener(this);
+    }
+
+    @Override
+    protected void removeNotify() {
+        res = null;
+        Set<NodeList> s;
+        synchronized (lock) {
+            s = new HashSet<NodeList>(lists);
+            lists.clear();
+        }
+        for (NodeList l : s) {
+            l.removeChangeListener(this);
+            l.removeNotify();
+        }
+      }
+    
     protected boolean createKeys(List<ChildKind> toPopulate) {
         toPopulate.addAll(Arrays.asList(ChildKind.values()));
         return true;
@@ -85,9 +122,30 @@ public class ProjectRootNodeChildren extends ChildFactory<ChildKind> {
                 return new Node[]{createResourcesNode()};
             case Sources:
                 return createSourcesNodes();
+            case Foreign :
+                return createForeignNodes();
             default:
                 throw new AssertionError();
         }
+    }
+
+    private Node[] createForeignNodes() {
+        List<Node> nodes = new LinkedList<Node>();
+        Set<NodeList> found = new HashSet<NodeList>();
+        for (NodeFactory f : res.allInstances()) {
+            NodeList list = f.createNodes(project);
+            list.addNotify();
+            list.addChangeListener(this);
+            for (Object key : list.keys()) {
+                nodes.add(list.node(key));
+            }
+        }
+        synchronized (lock) {
+            lists.clear();
+            lists.addAll (found);
+        }
+        Node[] result = nodes.toArray(new Node[nodes.size()]);
+        return result;
     }
 
     private Node createConfigurationsNode() {
@@ -116,5 +174,13 @@ public class ProjectRootNodeChildren extends ChildFactory<ChildKind> {
                     "LBL_MissingSources")); //NOI18N
         }
         return result;
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        refresh(false);
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        refresh (true);
     }
 }
