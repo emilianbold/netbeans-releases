@@ -122,7 +122,7 @@ public class Catalog extends MetadataElement {
      *
      */
     public void refresh() {
-        return impl.refresh();
+        impl.refresh();
     }
 
     @Override
