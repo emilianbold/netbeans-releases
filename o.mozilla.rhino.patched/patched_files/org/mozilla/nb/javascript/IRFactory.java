@@ -1548,6 +1548,9 @@ final class IRFactory
                        : Token.SETELEM_OP;
 
             Node opLeft = new Node(Token.USE_STACK);
+            // <netbeans>
+            opLeft.setSourceBounds(left.getSourceStart(), left.getSourceStart());
+            // </netbeans>
             Node op = new Node(assignOp, opLeft, right);
             return new Node(type, obj, id, op);
           }
@@ -1555,6 +1558,9 @@ final class IRFactory
             ref = left.getFirstChild();
             checkMutableReference(ref);
             Node opLeft = new Node(Token.USE_STACK);
+            // <netbeans>
+            opLeft.setSourceBounds(left.getSourceStart(), left.getSourceStart());
+            // </netbeans>
             Node op = new Node(assignOp, opLeft, right);
             return new Node(Token.SET_REF_OP, ref, op);
           }

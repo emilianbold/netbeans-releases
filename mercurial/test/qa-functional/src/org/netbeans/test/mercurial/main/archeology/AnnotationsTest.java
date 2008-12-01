@@ -9,15 +9,18 @@
 
 package org.netbeans.test.mercurial.main.archeology;
 
+import java.awt.event.InputEvent;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.mercurial.utils.MessageHandler;
 import org.netbeans.test.mercurial.utils.TestKit;
@@ -79,6 +82,16 @@ public class AnnotationsTest extends JellyTestCase {
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             node.performPopupAction("Mercurial|Show Annotations");
             TestKit.waitText(mh);
+
+            EditorOperator.closeDiscardAll();
+            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
+            node.performPopupAction("Mercurial|Show Annotations");
+            TestKit.waitText(mh);
+            EditorOperator eo = new EditorOperator("Main.java");
+            eo.clickMouse(40, 50, 1, InputEvent.BUTTON3_MASK);
+            JPopupMenuOperator pmo = new JPopupMenuOperator();
+            pmo.pushMenu("Close Annotations");
+
             stream.flush();
             stream.close();
             TestKit.closeProject(PROJECT_NAME);

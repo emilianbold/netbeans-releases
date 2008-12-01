@@ -42,8 +42,8 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.io.File;
 import java.util.logging.Logger;
+import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.ExecutionUtils;
-import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

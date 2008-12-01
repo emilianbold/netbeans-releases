@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.ruby;
 
 import java.util.Collections;
@@ -57,7 +56,7 @@ import org.netbeans.modules.ruby.elements.AstClassElement;
  * @author Tor Norbye
  */
 public class RubyStructureAnalyzerTest extends RubyTestBase {
-    
+
     public RubyStructureAnalyzerTest(String testName) {
         super(testName);
     }
@@ -67,11 +66,12 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
         RubyParseResult rpr = AstUtilities.getParseResult(info);
         RubyStructureAnalyzer.AnalysisResult ar = rpr.getStructure();
         Map<AstClassElement, Set<AstAttributeElement>> attributes = ar.getAttributes();
-        
+
         StringBuilder sb = new StringBuilder();
         // Gotta sort the results
         List<AstClassElement> clzList = new ArrayList<AstClassElement>(attributes.keySet());
         Collections.sort(clzList, new Comparator<AstClassElement>() {
+
             public int compare(AstClassElement arg0, AstClassElement arg1) {
                 return arg0.getFqn().compareTo(arg1.getFqn());
             }
@@ -83,6 +83,7 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
                 sb.append("\n");
                 List<AstAttributeElement> attributeList = new ArrayList<AstAttributeElement>(aes);
                 Collections.sort(attributeList, new Comparator<AstAttributeElement>() {
+
                     public int compare(AstAttributeElement arg0, AstAttributeElement arg1) {
                         return arg0.getName().compareTo(arg1.getName());
                     }
@@ -122,12 +123,11 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
     public void testProtectionLevels() throws Exception {
         checkStructure("testfiles/protection_levels.rb");
     }
-    
+
     public void testAttributes1() throws Exception {
         checkAttributes("testfiles/resolv.rb");
     }
-    
-    
+
     public void testFolds1() throws Exception {
         checkFolds("testfiles/resolv.rb");
     }
@@ -163,7 +163,7 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
         assertFalse("not equals", oneParamA.equals(oneParamB));
         assertEquals("same hashCode - we consider just arity", oneParamA.hashCode(), oneParamB.hashCode());
     }
-    
+
     public void testRubyStructureItemEqualsAndHashCodeForOptionalParams() throws Exception { // #131134
         CompilationInfo info = getInfo("testfiles/testRubyStructureItemEqualsAndHashCodeForOptionalParams.rb");
         RubyStructureAnalyzer analyzer = new RubyStructureAnalyzer();
@@ -185,7 +185,7 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
         assertEquals("one class", 1, structures.size());
         StructureItem clazz = structures.get(0);
         assertEquals("Foo class", ElementKind.CLASS, clazz.getKind());
-        List<?extends StructureItem> clazzChildrens = clazz.getNestedItems();
+        List<? extends StructureItem> clazzChildrens = clazz.getNestedItems();
         assertEquals("two methods", 2, clazzChildrens.size());
         StructureItem first = clazzChildrens.get(0);
         StructureItem second = clazzChildrens.get(1);
@@ -255,5 +255,9 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
 
     public void testGlobals() throws Exception {
         checkStructure("testfiles/globals.rb");
+    }
+
+    public void testConstants() throws Exception {
+        checkStructure("testfiles/constants.rb");
     }
 }

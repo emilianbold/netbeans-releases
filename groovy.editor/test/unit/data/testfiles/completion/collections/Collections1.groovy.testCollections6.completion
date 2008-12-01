@@ -2,4 +2,4 @@ Code completion result for source line:
 ["one","two"].it|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
-METHOD     iterator()                                 Iterator<E>
+METHOD     iterator()                      [PUBLIC]   Iterator<E>

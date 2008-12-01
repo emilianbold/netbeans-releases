@@ -61,18 +61,32 @@ public class DoxygenLexer implements Lexer<DoxygenTokenId> {
 
     private static final int EOF = LexerInput.EOF;
 
+    // states
+    private static final int INIT = 0;
+    private static final int OTHER = 1;
+
     private LexerInput input;
-    
+    private int state = INIT;
+
     private TokenFactory<DoxygenTokenId> tokenFactory;
     
     public DoxygenLexer(LexerRestartInfo<DoxygenTokenId> info) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
-        assert (info.state() == null); // passed argument always null
+        fromState((Integer)info.state());
     }
     
+    @Override
     public Object state() {
-        return null;
+        return state == INIT ? null : Integer.valueOf(state);
+    }
+
+    private void fromState(Integer state) {
+        if (state == null) {
+            this.state = INIT;
+        } else {
+            this.state = state.intValue();
+        }
     }
     
     private final static String DOXYGEN_CONTROL_SYMBOLS = "@<.#"; // NOI18N
@@ -84,6 +98,12 @@ public class DoxygenLexer implements Lexer<DoxygenTokenId> {
             return null;
         }
         
+        int oldState = state;
+        state = OTHER;
+        if (oldState == INIT && ch == '<') {
+            return token(DoxygenTokenId.POINTER_MARK);
+        }
+
         if (CndLexerUtilities.isCppIdentifierStart(ch)) {
             //TODO: EOF
             while (CndLexerUtilities.isCppIdentifierPart(input.read())) {}

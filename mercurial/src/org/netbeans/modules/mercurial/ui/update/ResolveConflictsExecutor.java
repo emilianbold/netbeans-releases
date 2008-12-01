@@ -55,6 +55,7 @@ import org.openide.filesystems.*;
 import org.netbeans.api.diff.*;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.versioning.util.Utils;
 
 /**
@@ -93,6 +94,10 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         
         try {
             FileObject fo = FileUtil.toFileObject(file);
+            if(fo == null) {
+                Mercurial.LOG.warning("can't resolve conflicts for null fileobject : " + file + ", exists: " + file.exists());
+                return;
+            }
             handleMergeFor(file, fo, fo.lock(), merge);
         } catch (FileAlreadyLockedException e) {
             SwingUtilities.invokeLater(new Runnable() {

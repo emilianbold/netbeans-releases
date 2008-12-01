@@ -79,6 +79,7 @@ public final class PatchedShapeNode extends ShapeNode implements PatchedTransfor
         return null;
     }
     
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedShapeNode(doc, getLocalName());
     }    

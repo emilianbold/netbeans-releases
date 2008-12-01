@@ -174,21 +174,20 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 	return findNamespaceDefinition(getContainingFile().getDeclarations());
     }
     
-    private CsmNamespaceDefinition findNamespaceDefinition(Collection/*<CsmOffsetableDeclaration>*/ declarations) {
-	for (Iterator it = declarations.iterator(); it.hasNext();) {
-	    CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) it.next();
-	    if( decl.getStartOffset() > this.getStartOffset() ) {
-		break;
-	    }
-	    if( decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
-		if( this.getEndOffset() < decl.getEndOffset() ) {
-		    CsmNamespaceDefinition nsdef = (CsmNamespaceDefinition) decl;
-		    CsmNamespaceDefinition inner = findNamespaceDefinition(nsdef.getDeclarations());
-		    return (inner == null) ? nsdef : inner;
-		}
-	    }
-	}
-	return null;
+    private CsmNamespaceDefinition findNamespaceDefinition(Collection<CsmOffsetableDeclaration> declarations) {
+        for (CsmOffsetableDeclaration decl : declarations) {
+            if (decl.getStartOffset() > this.getStartOffset()) {
+                break;
+            }
+            if (decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION) {
+                if (this.getEndOffset() < decl.getEndOffset()) {
+                    CsmNamespaceDefinition nsdef = (CsmNamespaceDefinition) decl;
+                    CsmNamespaceDefinition inner = findNamespaceDefinition(nsdef.getDeclarations());
+                    return (inner == null) ? nsdef : inner;
+                }
+            }
+        }
+        return null;
     }
 
     private CsmVariable findDeclaration() {

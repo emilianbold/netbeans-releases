@@ -74,6 +74,7 @@ public final class PatchedStop extends Stop implements PatchedElement {
         }
     }
             
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedStop(doc);
     }    

@@ -54,12 +54,12 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 public class AddRemoveListModel extends DefaultListModel {
     
     private ArrayList<String> addList;
-    private ArrayList removeList;
+    private ArrayList<Object> removeList;
     
     /** Creates a new instance of AddRemoveListModel */
     public AddRemoveListModel() {
-        addList = new ArrayList();
-        removeList = new ArrayList();
+        addList = new ArrayList<String>();
+        removeList = new ArrayList<Object>();
     }
     
     public void addAddElement(String s) {
@@ -78,6 +78,7 @@ public class AddRemoveListModel extends DefaultListModel {
         }
     }
     
+    @Override
     public Object remove(int idx) {
         Object o = super.remove(idx);
         if (addList.contains(o)) {
