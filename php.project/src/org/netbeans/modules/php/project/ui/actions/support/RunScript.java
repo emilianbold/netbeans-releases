@@ -194,7 +194,7 @@ public class RunScript extends Command implements Displayable {
             try {
                 PhpOptions options = PhpOptions.getInstance();
                 if (options.isOpenResultInBrowser()) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(tmpFile.toURL());
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(tmpFile.toURI().toURL());
                 }
                 if (options.isOpenResultInEditor()) {
                     FileObject fo = FileUtil.toFileObject(tmpFile);
