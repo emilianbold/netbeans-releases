@@ -187,6 +187,10 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
                     }
                     setRealWebFrameworkProvider();
                     setRealWebFrameworkConfigurationPanel();
+
+                    // update & fire events
+                    fakeExtender.update();
+                    fakeExtender.stateChanged(null);
                 } else {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -236,7 +240,6 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
         }
         revalidate();
         repaint();
-        fakeExtender.stateChanged(null);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
