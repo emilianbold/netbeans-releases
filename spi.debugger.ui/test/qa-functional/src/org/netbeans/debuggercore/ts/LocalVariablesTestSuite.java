@@ -67,12 +67,13 @@ public class LocalVariablesTestSuite extends JellyTestCase {
 //        } else {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                 .addTest(LocalVariablesTest.class, 
-                    //"testLocalVariablesThisNode",
-                    //"testLocalVariablesStaticNode",
+                    "testLocalVariablesThisNode",
+                    "testLocalVariablesStaticNode",
                     "testLocalVariablesStaticInherited",
                     "testLocalVariablesInheritedNode",
                     "testLocalVariablesExtended",
-                    "testLocalVariablesValues").enableModules(".*").clusters(".*"));
+                    "testLocalVariablesValues"
+                    ).enableModules(".*").clusters(".*"));
 //        }
     }
 }

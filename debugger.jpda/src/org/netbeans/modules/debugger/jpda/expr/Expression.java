@@ -58,6 +58,9 @@ public class Expression {
     private static final String REPLACE_return = "return01234";
     private static final String REPLACE_class = "class01234";
 
+    static final String RETURN_MACRO = "{return}";
+    static final String CLASS_MACRO = "{class}";
+
     private String       strExpression;
     private String       language;
     private SimpleNode   root;
@@ -87,8 +90,8 @@ public class Expression {
         while (expr.indexOf(replace_class) >= 0) {
             replace_class = "class" + new Random().nextLong(); // NOI18N
         }
-        String replacedExpr = replaceSpecialVar(expr, "return", replace_return); // NOI18N
-        replacedExpr = replaceSpecialVar(replacedExpr, "class", replace_class); // NOI18N
+        String replacedExpr = replaceSpecialVar(expr, RETURN_MACRO, replace_return); // NOI18N
+        replacedExpr = replaceSpecialVar(replacedExpr, CLASS_MACRO, replace_class); // NOI18N
         StringReader reader = new StringReader(replacedExpr);
         try {
             JavaParser parser = new JavaParser(reader);
