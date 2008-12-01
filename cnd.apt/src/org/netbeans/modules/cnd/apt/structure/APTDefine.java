@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.cnd.apt.structure;
 
-import antlr.Token;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * #define directive
@@ -53,7 +53,7 @@ public interface APTDefine extends APT {
     /** 
      * returns token of macro name
      */
-    public Token getName();
+    public APTToken getName();
     
     /** 
      * returns array of macro params
@@ -61,7 +61,7 @@ public interface APTDefine extends APT {
      * if function-like macro => return is non null
      * otherwise it is null
      */
-    public Collection<Token> getParams();
+    public Collection<APTToken> getParams();
     
     /** 
      * returns true if macro was defined as function
@@ -74,7 +74,7 @@ public interface APTDefine extends APT {
     /** 
      * returns List of tokens of macro body
      */      
-    public List<Token> getBody();
+    public List<APTToken> getBody();
     
     /**
      * returns true if #define directive is valid

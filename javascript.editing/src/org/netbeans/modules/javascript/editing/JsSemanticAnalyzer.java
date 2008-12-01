@@ -166,7 +166,8 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer {
         for (Node node : globalVars) {
             String s = node.getString();
             //filter out generated code
-            if (JsEmbeddingProvider.isGeneratedIdentifier(s)) {
+            // and zero-length nodes (they may have names but these are generated)
+            if (JsEmbeddingProvider.isGeneratedIdentifier(s) || node.getSourceStart() == node.getSourceEnd()) {
                 continue;
             }
             OffsetRange range = AstUtilities.getNameRange(node);
@@ -181,9 +182,14 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer {
             }
         }
         
-        List<Node> regexps = new ArrayList<Node>();
-        AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME }, regexps);
-        for (Node node : regexps) {
+        List<Node> nodes = new ArrayList<Node>();
+        if (JsUtils.isEjsFile(rpr.getSnapshot().getSource().getFileObject())) {
+            // No E4X highlights in EJS files
+            AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME }, nodes);
+        } else {
+            AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME, Token.E4X }, nodes);
+        }
+        for (Node node : nodes) {
             OffsetRange range = AstUtilities.getNameRange(node);
             if (node.isStringNode() && JsEmbeddingProvider.isGeneratedIdentifier(node.getString())) {
                 continue;
@@ -195,9 +201,47 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer {
                  if (AstUtilities.isLabelledFunction(node)) {
                     highlights.put(range, ColoringAttributes.METHOD_SET);
                  }
-            } else {
-                assert type == Token.FUNCNAME;
+            } else if (type == Token.FUNCNAME) {
                 highlights.put(range, ColoringAttributes.METHOD_SET);
+            } else {
+                assert type == Token.E4X;
+                // TODO - highlight the whole thing even if it contains JsCode? Also,
+                // xml scan the string portions that are directly reachable under an ADD?
+
+                highlights.put(range, ColoringAttributes.CUSTOM1_SET);
+
+                Node child = node.getFirstChild();
+                if (child != null && child.getType() == Token.STRING) {
+                    // It's an E4X string without embedded code (those would have
+                    // a Token.ADD child instead of Token.STRING) which means we
+                    // should be able to parse these guys and show some XML colors
+                    // and other info.
+
+                    String xml = child.getString();
+                    // Simple "parsing" of the String to identify element regions
+                    parseXml(highlights, xml, child.getSourceStart());
+                } else {
+                    // Highlight all nodes reachable through ADD parents; these will
+                    // be XML string fragments
+                    List<Node> stringNodes = new ArrayList<Node>();
+                    AstUtilities.addNodesByType(node, new int[] { Token.STRING }, stringNodes);
+                    for (Node n : stringNodes) {
+                        boolean isXmlString = true;
+                        Node curr = n.getParentNode();
+                        while (curr != null && curr != node) {
+                            if (curr.getType() != Token.ADD) {
+                                isXmlString = false;
+                            }
+                            curr = curr.getParentNode();
+                        }
+                        if (isXmlString) {
+                            String xml = n.getString();
+                            // Simple "parsing" of the String to identify element regions
+                            parseXml(highlights, xml, n.getSourceStart());
+                        }
+                    }
+
+                }
             }
         }
         
@@ -219,6 +263,61 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer {
             return highlights;
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Process XML in E4X. Not a full parse - just scan for elements and attributes; ignore
+     * entities etc. Provides offsets for elements and attributes so we can highlight them.
+     */
+    private void parseXml(Map<OffsetRange, Set<ColoringAttributes>> highlights, String xml, int sourceStart) {
+        int start = 0;
+
+        final int IN_TEXT = 1;
+        final int LOOKING_FOR_ELEM_START = 2;
+        final int LOOKING_FOR_ELEM_END = 3;
+        final int LOOKING_FOR_TEXT = 4;
+
+        int state = IN_TEXT;
+
+        for (int i = 0, n = xml.length(); i < n; i++) {
+            char c = xml.charAt(i);
+            if (state == IN_TEXT) {
+                if (c == '<') {
+                    // Finish text region
+                    if (i > start) {
+                        OffsetRange range = new OffsetRange(sourceStart + start, sourceStart + i);
+                        highlights.put(range, ColoringAttributes.CUSTOM3_SET);
+                    }
+
+                    // Beginning of start or ending element
+                    state = LOOKING_FOR_ELEM_START;
+                }
+            } else if (state == LOOKING_FOR_ELEM_START) {
+                if (c != '/') {
+                    start = i;
+                    state = LOOKING_FOR_ELEM_END;
+                }
+            } else if (state == LOOKING_FOR_ELEM_END) {
+                if (!Character.isLetterOrDigit(c) && c != '_' && c != ':') {
+                    OffsetRange range = new OffsetRange(sourceStart + start, sourceStart + i);
+                    highlights.put(range, ColoringAttributes.CUSTOM2_SET);
+
+                    if (c == '>') {
+                        state = IN_TEXT;
+                        start = i+1;
+                    } else {
+                        state = LOOKING_FOR_TEXT;
+                    }
+                }
+            } else if (state == LOOKING_FOR_TEXT) {
+                if (c == '>') {
+                    state = IN_TEXT;
+                    start = i+1;
+                }
+            } else {
+                assert false : state;
+            }
         }
     }
 

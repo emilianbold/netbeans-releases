@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.languages.features;
 
 import java.awt.event.InputEvent;
@@ -54,11 +53,15 @@ import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.prefs.Preferences;
 import javax.swing.text.StyledDocument;
 import javax.swing.JEditorPane;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.languages.ASTItem;
 
 import org.netbeans.api.languages.Highlighting.Highlight;
@@ -76,6 +79,8 @@ import org.netbeans.api.languages.database.DatabaseContext;
 import org.netbeans.api.languages.database.DatabaseUsage;
 import org.netbeans.api.languages.database.DatabaseDefinition;
 import org.netbeans.api.languages.database.DatabaseItem;
+import org.netbeans.editor.JumpList;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.languages.Feature;
@@ -92,35 +97,49 @@ import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 
-
 /**
  *
  * @author Administrator
  */
 public class HyperlinkListener implements MouseMotionListener, MouseListener,
-    KeyListener {
+        KeyListener {
 
-    private Highlight   highlight;
-    private Runnable    runnable = null;
+    private JTextComponent component;
+    private int position;
+    private Highlight highlight;
+    private Runnable runnable = null;
+    private int actionKeyMask = -1;
 
-    public void mouseMoved (MouseEvent e) {
-        JEditorPane c = (JEditorPane) e.getComponent ();
-        final NbEditorDocument doc = (NbEditorDocument) c.getDocument ();
-        if (highlight != null) highlight.remove ();
+    public void mouseMoved(MouseEvent e) {
+        component = (JEditorPane) e.getComponent();
+        final NbEditorDocument doc = (NbEditorDocument) component.getDocument();
+        if (highlight != null) {
+            highlight.remove();
+        }
         highlight = null;
         runnable = null;
-        if (((e.getModifiers() | e.getModifiersEx()) & InputEvent.CTRL_DOWN_MASK) != InputEvent.CTRL_DOWN_MASK) {
+
+        if (actionKeyMask == -1) {
+            Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(doc)).lookup(Preferences.class);
+            this.actionKeyMask = prefs.getInt(SimpleValueNames.HYPERLINK_ACTIVATION_MODIFIERS, InputEvent.CTRL_DOWN_MASK);
+        }
+
+        if (((e.getModifiers() | e.getModifiersEx()) & actionKeyMask) != actionKeyMask) {
             return;
         }
 
-        int offset = c.viewToModel (e.getPoint ());
-        highlight (doc, offset);
-        c.repaint ();
+        position = component.viewToModel(e.getPoint());
+        highlight(doc, position);
+        component.repaint();
     }
-    
-    public void mouseReleased (MouseEvent e) {
+
+    public void mouseReleased(MouseEvent e) {
         if (runnable != null) {
-            runnable.run ();
+            //make sure the position is correct and the JumpList works:
+            component.getCaret().setDot(position);
+            JumpList.addEntry(component, position);
+
+            runnable.run();
             runnable = null;
         }
     }
@@ -301,26 +320,24 @@ public class HyperlinkListener implements MouseMotionListener, MouseListener,
 //        }
 //        return;
     }
-    
     private static AttributeSet hyperlinkAS = null;
-    
-    private static AttributeSet getHyperlinkAS () {
+
+    private static AttributeSet getHyperlinkAS() {
         if (hyperlinkAS == null) {
-            SimpleAttributeSet as = new SimpleAttributeSet ();
-            as.addAttribute (StyleConstants.Foreground, Color.blue);
-            as.addAttribute (StyleConstants.Underline, Color.blue);
+            SimpleAttributeSet as = new SimpleAttributeSet();
+            as.addAttribute(StyleConstants.Foreground, Color.blue);
+            as.addAttribute(StyleConstants.Underline, Color.blue);
             hyperlinkAS = as;
         }
         return hyperlinkAS;
     }
-    
     private static AttributeSet hyperlinkPressedAS = null;
-    
-    private static AttributeSet getHyperlinkPressedAS () {
+
+    private static AttributeSet getHyperlinkPressedAS() {
         if (hyperlinkPressedAS == null) {
-            SimpleAttributeSet as = new SimpleAttributeSet ();
-            as.addAttribute (StyleConstants.Foreground, Color.red);
-            as.addAttribute (StyleConstants.Underline, Color.red);
+            SimpleAttributeSet as = new SimpleAttributeSet();
+            as.addAttribute(StyleConstants.Foreground, Color.red);
+            as.addAttribute(StyleConstants.Underline, Color.red);
             hyperlinkPressedAS = as;
         }
         return hyperlinkPressedAS;

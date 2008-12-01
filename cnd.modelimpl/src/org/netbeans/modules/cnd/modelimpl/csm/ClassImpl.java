@@ -711,15 +711,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
-//    private final CsmDeclaration.Kind kind;
-//
-//    private final List/*<CsmMember>*/ membersOLD = new ArrayList/*<CsmMember>*/();
-//    private final List<CsmUID<CsmMember>> members = new ArrayList<CsmUID<CsmMember>>();
-//
-//    private final List/*<CsmInheritance>*/ inheritances = new ArrayList/*<CsmInheritance>*/();
-//    private boolean template;
-//
-//    private final int leftBracketPos;
         assert this.kind != null;
         writeKind(this.kind, output);
         PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);

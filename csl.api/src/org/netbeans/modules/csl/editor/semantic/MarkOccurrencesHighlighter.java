@@ -51,17 +51,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.ColoringAttributes.Coloring;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.annotations.NonNull;
-import org.netbeans.modules.csl.hints.infrastructure.Pair;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
@@ -84,11 +81,13 @@ import org.openide.util.NbBundle;
 public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
     
     //private FileObject file;
+    private final Language language;
     private final Snapshot snapshot;
     static Coloring MO = ColoringAttributes.add(ColoringAttributes.empty(), ColoringAttributes.MARK_OCCURRENCES);
     
     /** Creates a new instance of SemanticHighlighter */
-    MarkOccurrencesHighlighter(Snapshot snapshot) {
+    MarkOccurrencesHighlighter(Language language, Snapshot snapshot) {
+        this.language = language;
         this.snapshot = snapshot;
     }
     
@@ -116,16 +115,15 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
 
         int caretPosition = ((CursorMovedSchedulerEvent) event).getCaretOffset();
         
-        if (isCancelled())
+        if (isCancelled()) {
             return;
+        }
 
-        Pair<List<OffsetRange>,Language> pair = processImpl(info,/* node,*/ doc, caretPosition);
+        List<OffsetRange> bag = processImpl(info, doc, caretPosition);
 
-        if (isCancelled())
+        if (isCancelled()) {
             return;
-        
-        List<OffsetRange> bag = pair.getA();
-        Language language = pair.getB();
+        }
         
         //Logger.getLogger("TIMER").log(Level.FINE, "Occurrences",
         //    new Object[] {((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), (System.currentTimeMillis() - start)});
@@ -161,44 +159,31 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
     }
     
     @NonNull
-    Pair<List<OffsetRange>, Language> processImpl(ParserResult info,/* node,*/ Document doc, int caretPosition) {
-        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages((BaseDocument)doc, caretPosition);
-        Language language = null;
-        for (Language l : list) {
-            if (l.getOccurrencesFinder() != null) {
-                language = l;
-                break;
+    List<OffsetRange> processImpl(ParserResult info, Document doc, int caretPosition) {
+        OccurrencesFinder finder = language.getOccurrencesFinder();
+        assert finder != null;
+        
+        finder.setCaretPosition(caretPosition);
+        OccurrencesFinder task = finder;
+        if (task != null) {
+            try {
+                task.run(info, null);
+            } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ex);
             }
-        }
 
-        if (language != null) {
-            OccurrencesFinder finder = language.getOccurrencesFinder();
-            assert finder != null;
-        
-            finder.setCaretPosition(caretPosition);
-            OccurrencesFinder task = finder;
-            if (task != null) {
-                try {
-                    task.run(info, null);
-                } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ex);
-                }
-                
-                if (isCancelled()) {
-                    task.cancel();
-                }
-                
-                
-                Map<OffsetRange,ColoringAttributes> highlights = task.getOccurrences();
-                if (highlights != null) {
-                    return new Pair(new ArrayList<OffsetRange>(highlights.keySet()), language);
-                }
+            if (isCancelled()) {
+                task.cancel();
+            }
+
+
+            Map<OffsetRange,ColoringAttributes> highlights = task.getOccurrences();
+            if (highlights != null) {
+                return new ArrayList<OffsetRange>(highlights.keySet());
             }
         }
         
-        return new Pair<List<OffsetRange>, Language>(
-            Collections.<OffsetRange>emptyList(),
-            LanguageRegistry.getInstance().getLanguageByMimeType(info.getSnapshot().getMimeType()));
+        return Collections.<OffsetRange>emptyList();
     }
 
     @Override

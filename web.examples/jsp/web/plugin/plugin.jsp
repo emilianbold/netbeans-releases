@@ -17,7 +17,7 @@
 <title> Plugin example </title>
 <body bgcolor="white">
 <h3> Current time is : </h3>
-<jsp:plugin type="applet" code="Clock2.class" codebase="applet" jreversion="1.2" width="160" height="150" >
+<jsp:plugin type="applet" code="plugin.applet.Clock2.class" codebase=".." jreversion="1.2" width="160" height="150" >
     <jsp:fallback>
         Plugin tag OBJECT or EMBED not supported by browser.
     </jsp:fallback>

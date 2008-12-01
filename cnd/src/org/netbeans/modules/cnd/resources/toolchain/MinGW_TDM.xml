@@ -55,17 +55,22 @@ made subject to such option by the copyright holder.
         <system_include_paths flags="-x c++ -E -v" parser="GNU" remove_in_path="/bin" remove_in_output="/mingw"/>
     </cpp>
     <fortran>
-        <recognizer pattern=".*[\\/]mingw[\\/]bin[\\/]?$"/>
         <compiler name="gfortran,g95,g90,g77"/>
+        <recognizer pattern=".*[\\/]mingw[\\/]bin[\\/]?$"/>
     </fortran>
     <assembler>
-        <recognizer pattern=".*[\\/]mingw[\\/]bin[\\/]?$"/>
         <compiler name="as"/>
+        <recognizer pattern=".*[\\/]mingw[\\/]bin[\\/]?$"/>
     </assembler>
     <linker>
         <library_prefix stringvalue=""/>
     </linker>
     <make>
-        <tool name=""/>
+        <tool name="gmake,make" skip="true"/>
+        <alternative_path>
+            <path directory="$MSYS"/>
+            <path toolchain_name="*"/>
+            <path directory="$PATH"/>
+        </alternative_path>
     </make>
 </toolchaindefinition>

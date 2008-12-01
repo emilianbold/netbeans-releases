@@ -69,7 +69,7 @@ public class CursorMovedSchedulerEvent extends SchedulerEvent {
 
     @Override
     public String toString () {
-        return "CursorMovedSchedulerEvent " + hashCode () + "(source: " + source + ", cursor: " + caretOffset + ")";
+        return "CursorMovedSchedulerEvent " + hashCode () + "(source: " + source + ", cursor: " + caretOffset + ", mark: " + markOffset + ")";
     }
 }
 

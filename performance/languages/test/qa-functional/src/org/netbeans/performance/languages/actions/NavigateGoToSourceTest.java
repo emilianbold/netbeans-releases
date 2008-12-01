@@ -41,11 +41,16 @@
 
 package org.netbeans.performance.languages.actions;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.performance.languages.Projects;
+import org.netbeans.performance.languages.ScriptingUtilities;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
 import java.awt.Rectangle;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import junit.framework.Test;
+
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -53,20 +58,16 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
-import org.netbeans.performance.languages.Projects;
-import org.netbeans.performance.languages.ScriptingUtilities;
-import org.netbeans.performance.languages.setup.ScriptingSetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author mrkam@netbeans.org
  */
 
-public class NavigateGoToSourceTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Actions suite";
+public class NavigateGoToSourceTest extends PerformanceTestCase {
+
     protected Node fileToBeOpened;
     protected String testProject;
     protected String docName, openedDocName;
@@ -79,10 +80,12 @@ public class NavigateGoToSourceTest extends org.netbeans.modules.performance.uti
 
     public NavigateGoToSourceTest(String testName) {
         super(testName);
+        WAIT_AFTER_OPEN=2000;
     }
 
     public NavigateGoToSourceTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
+        WAIT_AFTER_OPEN=2000;
     }
 
     public static NbTestSuite suite() {
@@ -96,30 +99,24 @@ public class NavigateGoToSourceTest extends org.netbeans.modules.performance.uti
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
             projectsTab = ScriptingUtilities.invokePTO();
-        
         return projectsTab.getProjectRootNode(projectName);
     }
     
     @Override
     public void initialize() {
-        super.initialize();
         closeAllModal();
-        log("::initialize");
         String path = pathName+docName;
         fileToBeOpened = new Node(getProjectNode(testProject),path);        
         new OpenAction().performAPI(fileToBeOpened);
         editorOperator = EditorWindowOperator.getEditor(docName);
         caretBlinkRate =  editorOperator.txtEditorPane().getCaret().getBlinkRate();
-
         editorOperator.txtEditorPane().getCaret().setBlinkRate(0);
         repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
-        waitNoEvent(2000);
     }
     
     @Override
     public void prepare() {
         try {
-            log("::prepare");
             editorOperator = EditorWindowOperator.getEditor(docName);
             editorOperator.setCaretPosition(textToFind, false);
             Rectangle r = editorOperator.txtEditorPane().getUI().modelToView((JTextComponent) editorOperator.txtEditorPane().getSource(), editorOperator.txtEditorPane().getCaretPosition());
@@ -131,10 +128,8 @@ public class NavigateGoToSourceTest extends org.netbeans.modules.performance.uti
 
     @Override
     public ComponentOperator open() {
-        log("::open");
         new JPopupMenuOperator().pushMenu("Navigate|Go To Declaration");
         EditorOperator op = new EditorOperator(openedDocName);
-        assertEquals(true, op.getText(op.getLineNumber()).contains(openedText));
         return null;
     }
     
@@ -161,8 +156,7 @@ public class NavigateGoToSourceTest extends org.netbeans.modules.performance.uti
     }
 
     @Override
-    public void tearDown() {
-        super.tearDown();
+    public void shutdown() {
         editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);
         repaintManager().resetRegionFilters();
     }

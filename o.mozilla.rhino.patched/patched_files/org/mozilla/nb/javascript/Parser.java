@@ -30,6 +30,7 @@
  *   Terry Lucas
  *   Mike McCabe
  *   Milen Nankov
+ *   Norris Boyd
  *
  * Alternatively, the contents of this file may be used under the terms of
  * the GNU General Public License Version 2 or later (the "GPL"), in which
@@ -47,10 +48,14 @@ package org.mozilla.nb.javascript;
 
 import java.io.Reader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.Map;
+
+// <netbeans>
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
+// </netbeans>
 
 /**
  * This class implements the JavaScript parser.
@@ -115,13 +120,17 @@ public
 // during function parsing.
 // XXX Move to separated class?
     ScriptOrFnNode currentScriptOrFn;
+    Node.Scope currentScope;
     private int nestingOfWith;
-    private Hashtable labelSet; // map of label names into nodes
+    private Map<String,Node> labelSet; // map of label names into nodes
     private ObjArray loopSet;
     private ObjArray loopAndSwitchSet;
-    private boolean hasReturnValue;
-    private int functionEndFlags;
+    private int endFlags;
 // end of per function variables
+    
+    public int getCurrentLineNumber() {
+        return ts.getLineno();
+    }
 
     // Exception to unwind
     private static class ParserException extends RuntimeException
@@ -403,8 +412,19 @@ public
     {
         return nestingOfFunction != 0;
     }
+    
+    void pushScope(Node node) {
+        Node.Scope scopeNode = (Node.Scope) node;
+        if (scopeNode.getParentScope() != null) throw Kit.codeBug();
+        scopeNode.setParent(currentScope);
+        currentScope = scopeNode;
+    }
+    
+    void popScope() {
+        currentScope = currentScope.getParentScope();
+    }
 
-    private Node enterLoop(Node loopLabel)
+    private Node enterLoop(Node loopLabel, boolean doPushScope)
     {
         Node loop = nf.createLoopNode(loopLabel, ts.getLineno());
         // <netbeans>
@@ -420,13 +440,19 @@ public
         }
         loopSet.push(loop);
         loopAndSwitchSet.push(loop);
+        if (doPushScope) {
+            pushScope(loop);
+        }
         return loop;
     }
 
-    private void exitLoop()
+    private void exitLoop(boolean doPopScope)
     {
         loopSet.pop();
         loopAndSwitchSet.pop();
+        if (doPopScope) {
+            popScope();
+        }
     }
 
     private Node enterSwitch(Node switchSelector, int lineno)
@@ -495,6 +521,7 @@ public
         this.decompiler = createDecompiler(compilerEnv);
         this.nf = new IRFactory(this);
         currentScriptOrFn = nf.createScript();
+        currentScope = currentScriptOrFn;
         int sourceStartOffset = decompiler.getCurrentOffset();
 // <netbeans>
         int realSourceStartOffset = ts.getBufferOffset();
@@ -697,6 +724,17 @@ return null;
 
         if (memberExprNode != null) {
             syntheticType = FunctionNode.FUNCTION_EXPRESSION;
+        } 
+        
+        if (syntheticType != FunctionNode.FUNCTION_EXPRESSION && 
+            name.length() > 0)
+        {
+            // Function statements define a symbol in the enclosing scope
+            defineSymbol(Token.FUNCTION, false, name
+                    // <netbeans>
+                    , funcNameNode
+                    // </netbeans>
+                    );
         }
 
         boolean nested = insideFunction();
@@ -718,24 +756,26 @@ return null;
             // of with object.
             fnNode.itsIgnoreDynamicScope = true;
         }
-
         int functionIndex = currentScriptOrFn.addFunction(fnNode);
 
         int functionSourceEnd;
 
         ScriptOrFnNode savedScriptOrFn = currentScriptOrFn;
         currentScriptOrFn = fnNode;
+        Node.Scope savedCurrentScope = currentScope;
+        currentScope = fnNode;
         int savedNestingOfWith = nestingOfWith;
         nestingOfWith = 0;
-        Hashtable savedLabelSet = labelSet;
+        Map<String,Node> savedLabelSet = labelSet;
         labelSet = null;
         ObjArray savedLoopSet = loopSet;
         loopSet = null;
         ObjArray savedLoopAndSwitchSet = loopAndSwitchSet;
         loopAndSwitchSet = null;
-        boolean savedHasReturnValue = hasReturnValue;
-        int savedFunctionEndFlags = functionEndFlags;
+        int savedFunctionEndFlags = endFlags;
+        endFlags = 0;
 
+        Node destructuring = null;
         Node body;
         try {
             decompiler.addToken(Token.LP);
@@ -745,29 +785,46 @@ return null;
                     if (!first)
                         decompiler.addToken(Token.COMMA);
                     first = false;
-                    mustMatchToken(Token.NAME, "msg.no.parm");
-                    String s = ts.getString();
-                    // <netbeans>
-                    Node paramNode = Node.newString(Token.PARAMETER, s);
-                    setSourceOffsets(paramNode, getStartOffset());
-                    fnNode.addChildToBack(paramNode);
-                    // </netbeans>
-                    if (fnNode.hasParamOrVar(s)) {
-                        addWarning("msg.dup.parms", s
-                            // <netbeans> - pass in additional parameters for the error
+                    int tt = peekToken();
+                    if (tt == Token.LB || tt == Token.LC) {
+                        // Destructuring assignment for parameters: add a 
+                        // dummy parameter name, and add a statement to the
+                        // body to initialize variables from the destructuring
+                        // assignment
+                        if (destructuring == null) {
+                            destructuring = new Node(Token.COMMA);
+                        }
+                        String parmName = currentScriptOrFn.getNextTempName();
+                        defineSymbol(Token.LP, false, parmName
+                                // <netbeans>
+                                , null
+                                // </netbeans>
+                                );
+                        destructuring.addChildToBack(
+                            nf.createDestructuringAssignment(Token.VAR,
+                                primaryExpr(), nf.createName(parmName)));
+// XXX <netbeans> TODO - something about positions here?
+                    } else {
+                        mustMatchToken(Token.NAME, "msg.no.parm");
+                        String s = ts.getString();
+                        // <netbeans>
+                        Node paramNode = Node.newString(Token.PARAMETER, s);
+                        setSourceOffsets(paramNode, getStartOffset());
+                        fnNode.addChildToBack(paramNode);
+                        // </netbeans>
+                        defineSymbol(Token.LP, false, s
+                            // <netbeans>
                             , paramNode
                             // </netbeans>
                                 );
+                        decompiler.addName(s);
+                        // <netbeans>
+                        // Skip extra __UNKNOWN__ tokens
+                        while (peekToken() == Token.NAME && GENERATED_IDENTIFIER.equals(ts.getString())) {
+                            consumeToken();
+                        }
+                        // </netbeans>
                     }
-                    fnNode.addParam(s);
-                    decompiler.addName(s);
-
-                    // <netbeans>
-                    // Skip extra __UNKNOWN__ tokens
-                    while (peekToken() == Token.NAME && GENERATED_IDENTIFIER.equals(ts.getString())) {
-                        consumeToken();
-                    }
-                    // </netbeans>
                 } while (matchToken(Token.COMMA));
 
                 mustMatchToken(Token.RP, "msg.no.paren.after.parms");
@@ -777,6 +834,10 @@ return null;
             mustMatchToken(Token.LC, "msg.no.brace.body");
             decompiler.addEOL(Token.LC);
             body = parseFunctionBody();
+            if (destructuring != null) {
+                body.addChildToFront(
+                    new Node(Token.EXPR_VOID, destructuring, ts.getLineno()));
+            }
             mustMatchToken(Token.RC, "msg.no.brace.after.body");
 
             if (compilerEnv.isStrictMode() && !body.hasConsistentReturnUsage())
@@ -789,7 +850,19 @@ return null;
                             // </netbeans>
                       );
             }
-
+            
+            if (syntheticType == FunctionNode.FUNCTION_EXPRESSION &&
+                name.length() > 0 && currentScope.getSymbol(name) == null) 
+            {
+                // Function expressions define a name only in the body of the 
+                // function, and only if not hidden by a parameter name
+                defineSymbol(Token.FUNCTION, false, name
+                            // <netbeans>
+                            , funcNameNode
+                            // </netbeans>
+                        );
+            }
+            
             decompiler.addToken(Token.RC);
             functionSourceEnd = decompiler.markFunctionEnd(functionSourceStart);
 // <netbeans>
@@ -803,13 +876,13 @@ return null;
             }
         }
         finally {
-            hasReturnValue = savedHasReturnValue;
-            functionEndFlags = savedFunctionEndFlags;
+            endFlags = savedFunctionEndFlags;
             loopAndSwitchSet = savedLoopAndSwitchSet;
             loopSet = savedLoopSet;
             labelSet = savedLabelSet;
             nestingOfWith = savedNestingOfWith;
             currentScriptOrFn = savedScriptOrFn;
+            currentScope = savedCurrentScope;
         }
 
         fnNode.setEncodedSourceBounds(functionSourceStart, functionSourceEnd);
@@ -819,28 +892,6 @@ return null;
 // <netbeans>
         fnNode.setSourceBounds(realSourceStartOffset, realSourceEndOffset);
 // </netbeans>
-
-        if (name != null) {
-          int index = currentScriptOrFn.getParamOrVarIndex(name);
-          if (index >= 0 && index < currentScriptOrFn.getParamCount()) {
-            // Find the parameter node of the given index
-            Node n = fnNode.getFirstChild();
-            for (int i = 0; i < index && n != null; ) {
-                if (n.getType() == Token.PARAMETER) {
-                    i++;
-                    if (i == index) {
-                        break;
-                    }
-                }
-                n = n.getParentNode();
-            }
-            addStrictWarning("msg.var.hides.arg", name
-                        // <netbeans> - pass in additional parameters for the error
-                        , n
-                        // </netbeans>
-                    );
-          }
-        }
 
         Node pn = nf.initFunction(fnNode, functionIndex, body, syntheticType);
         if (memberExprNode != null) {
@@ -861,21 +912,22 @@ return null;
         return pn;
     }
 
-    private Node statements()
+    private Node statements(Node scope)
         throws IOException
     {
         // <netbeans>
         int startOffset = getStartOffset();
         // </netbeans>
-        Node pn = nf.createBlock(ts.getLineno());
+        Node pn = scope != null ? scope : nf.createBlock(ts.getLineno());
 
         int tt;
-        while((tt = peekToken()) > Token.EOF && tt != Token.RC) {
+        while ((tt = peekToken()) > Token.EOF && tt != Token.RC) {
             nf.addChildToBack(pn, statement());
         }
 
         // <netbeans>
-        setSourceOffsets(pn, startOffset);
+        //setSourceOffsets(pn, startOffset);
+        pn.setSourceBounds(startOffset, peekedTokenEnd);
         // </netbeans>
 
         return pn;
@@ -885,7 +937,6 @@ return null;
         throws IOException, ParserException
     {
         mustMatchToken(Token.LP, "msg.no.paren.cond");
-
         decompiler.addToken(Token.LP);
         // <netbeans>
         // NOTE - the END offset is AFTER the left parenthesis! We don't
@@ -914,7 +965,6 @@ return null;
                             // </netbeans>
                     );
         }
-
         return pn;
     }
 
@@ -931,7 +981,7 @@ return null;
             String name = ts.getString();
             decompiler.addName(name);
             if (labelSet != null) {
-                label = (Node)labelSet.get(name);
+                label = labelSet.get(name);
             }
             if (label == null) {
                 reportError("msg.undef.label");
@@ -979,25 +1029,16 @@ return null;
         // </netbeans>
     }
 
-    /**
-     * Whether the "catch (e: e instanceof Exception) { ... }" syntax
-     * is implemented.
-     */
-
     private Node statementHelper(Node statementLabel)
         throws IOException, ParserException
     {
         Node pn = null;
-
-        int tt;
-
-        tt = peekToken();
-
+        int tt = peekToken();
         // <netbeans>
         int startOffset = peekedTokenStart;
         // </netbeans>
 
-        switch(tt) {
+        switch (tt) {
           case Token.IF: {
             consumeToken();
 
@@ -1084,7 +1125,7 @@ return null;
                         nf.addChildToBack(block, statement());
                     }
 
-                    // caseExpression == null => add default lable
+                    // caseExpression == null => add default label
                     // <netbeans>
                     //nf.addSwitchCase(pn, caseExpression, block);
                     nf.addSwitchCase(pn, caseExpression, block, caseStart);
@@ -1106,7 +1147,7 @@ return null;
             consumeToken();
             decompiler.addToken(Token.WHILE);
 
-            Node loop = enterLoop(statementLabel);
+            Node loop = enterLoop(statementLabel, true);
             try {
                 Node cond = condition();
                 decompiler.addEOL(Token.LC);
@@ -1117,7 +1158,7 @@ return null;
                 setSourceOffsets(pn, startOffset);
                 // </netbeans>
             } finally {
-                exitLoop();
+                exitLoop(true);
             }
             return pn;
           }
@@ -1127,7 +1168,7 @@ return null;
             decompiler.addToken(Token.DO);
             decompiler.addEOL(Token.LC);
 
-            Node loop = enterLoop(statementLabel);
+            Node loop = enterLoop(statementLabel, true);
             try {
                 Node body = statement();
                 decompiler.addToken(Token.RC);
@@ -1136,10 +1177,10 @@ return null;
                 Node cond = condition();
                 pn = nf.createDoWhile(loop, body, cond);
             } finally {
-                exitLoop();
+                exitLoop(true);
             }
-            // Always auto-insert semicon to follow SpiderMonkey:
-            // It is required by EMAScript but is ignored by the rest of
+            // Always auto-insert semicolon to follow SpiderMonkey:
+            // It is required by ECMAScript but is ignored by the rest of
             // world, see bug 238945
             matchToken(Token.SEMI);
             decompiler.addEOL(Token.SEMI);
@@ -1154,13 +1195,13 @@ return null;
             boolean isForEach = false;
             decompiler.addToken(Token.FOR);
 
-            Node loop = enterLoop(statementLabel);
+            Node loop = enterLoop(statementLabel, true);
             try {
-
-                Node init;  // Node init is also foo in 'foo in Object'
-                Node cond;  // Node cond is also object in 'foo in Object'
-                Node incr = null; // to kill warning
+                Node init;  // Node init is also foo in 'foo in object'
+                Node cond;  // Node cond is also object in 'foo in object'
+                Node incr = null;
                 Node body;
+                int declType = -1;
 
                 // See if this is a for each () instead of just a for ()
                 if (matchToken(Token.NAME)) {
@@ -1185,17 +1226,19 @@ return null;
                     init.setSourceBounds(pos, pos);
                     // </netbeans>
                 } else {
-                    if (tt == Token.VAR) {
+                    if (tt == Token.VAR || tt == Token.LET) {
                         // set init to a var list or initial
-                        consumeToken();    // consume the 'var' token
-                        init = variables(Token.FOR);
+                        consumeToken();    // consume the token
+                        decompiler.addToken(tt);
+                        init = variables(true, tt);
 // <netbeans>
                         // TODO - This isn't right, there could be MULTIPLE variables... they should
                         // all be marked somehow
                         int realSourceEndOffset = getEndOffset();
                         init.setSourceBounds(realSourceStartOffset, realSourceEndOffset);
 // </netbeans>
-                }
+                        declType = tt;
+                    }
                     else {
                         init = expr(true);
                     }
@@ -1241,12 +1284,13 @@ return null;
                 if (incr == null) {
                     // cond could be null if 'in obj' got eaten
                     // by the init node.
-                    pn = nf.createForIn(loop, init, cond, body, isForEach);
+                    pn = nf.createForIn(declType, loop, init, cond, body,
+                                        isForEach);
                 } else {
                     pn = nf.createFor(loop, init, cond, incr, body);
                 }
             } finally {
-                exitLoop();
+                exitLoop(true);
             }
             // <netbeans>
             setSourceOffsets(pn, startOffset);
@@ -1266,6 +1310,9 @@ return null;
             Node finallyblock = null;
 
             decompiler.addToken(Token.TRY);
+            if (peekToken() != Token.LC) {
+                reportError("msg.no.brace.try");
+            }
             decompiler.addEOL(Token.LC);
             tryblock = statement();
             decompiler.addEOL(Token.RC);
@@ -1320,9 +1367,14 @@ return null;
                         catchCond.setSourceBounds(varEnd, varEnd);
                     }
                     Node catchNode = nf.createCatch(varName, catchCond,
-                                       statements(),
+                                       statements(null),
                                        ts.getLineno());
                     setSourceOffsets(catchNode, catchStart);
+                    // <netbeans>
+                    peekToken();
+                    catchNode.setSourceBounds(catchStart, peekedTokenEnd);
+                    catchblocks.setSourceBounds(startOffset, peekedTokenEnd);
+                    // </netbeans>
                     nf.addChildToBack(catchblocks, catchNode);
                     // </netbeans>
                     Node varNode = catchblocks.getLastChild().getFirstChild();
@@ -1462,79 +1514,59 @@ return null;
           case Token.CONST:
           case Token.VAR: {
             consumeToken();
-            pn = variables(tt);
-            // <netbeans>
+            decompiler.addToken(tt);
+            pn = variables(false, tt);
+           // <netbeans>
             setSourceOffsets(pn, startOffset);
             // </netbeans>
             break;
           }
-
-          case Token.RETURN: {
-            if (!insideFunction()) {
-                reportError("msg.bad.return");
-            }
+          
+          case Token.LET: {
             consumeToken();
-            decompiler.addToken(Token.RETURN);
-            int lineno = ts.getLineno();
-
-            Node retExpr;
-            /* This is ugly, but we don't want to require a semicolon. */
-            tt = peekTokenOrEOL();
-            switch (tt) {
-              case Token.SEMI:
-              case Token.RC:
-              case Token.EOF:
-              case Token.EOL:
-              case Token.ERROR:
-                retExpr = null;
-                break;
-              default:
-                retExpr = expr(false);
-                hasReturnValue = true;
-            }
-            pn = nf.createReturn(retExpr, lineno);
-            // <netbeans>
-            pn.setSourceBounds(startOffset, getEndOffset());
-            // </netbeans>
-
-            // see if we need a strict mode warning
-            if (retExpr == null) {
-                if (functionEndFlags == Node.END_RETURNS_VALUE)
-                    addStrictWarning("msg.return.inconsistent", ""
-                            // <netbeans> - pass in additional parameters for the error
-                            , pn
-                            // </netbeans>
-                            );
-
-                functionEndFlags |= Node.END_RETURNS;
+            decompiler.addToken(Token.LET);
+            if (peekToken() == Token.LP) {
+                return let(true);
             } else {
-                if (functionEndFlags == Node.END_RETURNS)
-                    addStrictWarning("msg.return.inconsistent", ""
-                            // <netbeans> - pass in additional parameters for the error
-                            , pn
-                            // </netbeans>
-                            );
-
-                functionEndFlags |= Node.END_RETURNS_VALUE;
+                pn = variables(false, tt);
+                if (peekToken() == Token.SEMI)
+                    break;
+                return pn;
             }
+          }
 
+          case Token.RETURN: 
+          case Token.YIELD: {
+            pn = returnOrYield(tt, false);
             break;
           }
+
+          case Token.DEBUGGER:
+            consumeToken();
+            decompiler.addToken(Token.DEBUGGER);
+            pn = nf.createDebugger(ts.getLineno());
+            break;
 
           case Token.LC:
             consumeToken();
             if (statementLabel != null) {
                 decompiler.addToken(Token.LC);
             }
-            pn = statements();
-            mustMatchToken(Token.RC, "msg.no.brace.block");
-            if (statementLabel != null) {
-                decompiler.addEOL(Token.RC);
+            Node scope = nf.createScopeNode(Token.BLOCK, ts.getLineno());
+            pushScope(scope);
+            try {
+                statements(scope);
+// XXX <netbeans> -- shouldn't I store the statements() call into pn= and set like this:
+//            pn.setSourceBounds(startOffset, getEndOffset());
+
+                mustMatchToken(Token.RC, "msg.no.brace.block");
+                if (statementLabel != null) {
+                    decompiler.addEOL(Token.RC);
+                }
+                return scope;
+            } finally {
+                popScope();
             }
-            // <netbeans>
-            pn.setSourceBounds(startOffset, getEndOffset());
-            // </netbeans>
-            return pn;
 
           case Token.ERROR:
             // Fall thru, to have a node for error recovery to work on
@@ -1607,7 +1639,7 @@ return null;
                 decompiler.addEOL(Token.COLON);
 
                 if (labelSet == null) {
-                    labelSet = new Hashtable();
+                    labelSet = new HashMap<String,Node>();
                 } else if (labelSet.containsKey(name)) {
                     reportError("msg.dup.label");
                 }
@@ -1680,116 +1712,319 @@ return null;
     }
 
     /**
+     * Returns whether or not the bits in the mask have changed to all set.
+     * @param before bits before change
+     * @param after bits after change
+     * @param mask mask for bits
+     * @return true if all the bits in the mask are set in "after" but not 
+     *              "before"
+     */
+    private static final boolean nowAllSet(int before, int after, int mask)
+    {
+        return ((before & mask) != mask) && ((after & mask) == mask);
+    }
+    
+    private Node returnOrYield(int tt, boolean exprContext)
+        throws IOException, ParserException
+    {
+        if (!insideFunction()) {
+            reportError(tt == Token.RETURN ? "msg.bad.return"
+                                           : "msg.bad.yield");
+        }
+        consumeToken();
+
+        // <netbeans>
+        int startOffset = getStartOffset();
+        // </netbeans>
+
+        decompiler.addToken(tt);
+        int lineno = ts.getLineno();
+
+        Node e;
+        /* This is ugly, but we don't want to require a semicolon. */
+        switch (peekTokenOrEOL()) {
+          case Token.SEMI:
+          case Token.RC:
+          case Token.EOF:
+          case Token.EOL:
+          case Token.ERROR:
+          case Token.RB:
+          case Token.RP:
+          case Token.YIELD:
+            e = null;
+            break;
+          default:
+            e = expr(false);
+            break;
+        }
+
+        int before = endFlags;
+        Node ret;
+
+        if (tt == Token.RETURN) {
+            if (e == null ) {
+                endFlags |= Node.END_RETURNS;
+            } else {
+                endFlags |= Node.END_RETURNS_VALUE;
+            }
+            ret = nf.createReturn(e, lineno);
+            
+            // see if we need a strict mode warning
+            if (nowAllSet(before, endFlags, 
+                          Node.END_RETURNS|Node.END_RETURNS_VALUE))
+            {
+                addStrictWarning("msg.return.inconsistent", ""
+                    // <netbeans>
+                        , ret
+                    // </netbeans>
+                        );
+            }
+        } else {
+            endFlags |= Node.END_YIELDS;
+            ret = nf.createYield(e, lineno);
+            // <netbeans>
+            int endOffset = matchedTokenEnd;
+            ret.setSourceBounds(startOffset, endOffset);
+            // </netbeans>
+            if (!exprContext)
+                ret = new Node(Token.EXPR_VOID, ret, lineno);
+        }
+
+        // see if we are mixing yields and value returns.
+        if (nowAllSet(before, endFlags, 
+                      Node.END_YIELDS|Node.END_RETURNS_VALUE))
+        {
+            String name = ((FunctionNode)currentScriptOrFn).getFunctionName();
+            if (name.length() == 0)
+                addError("msg.anon.generator.returns", ""
+                    // <netbeans>
+                        , ret
+                    // </netbeans>
+                        );
+            else
+                addError("msg.generator.returns", name
+                    // <netbeans>
+                        , ret
+                    // </netbeans>
+                        );
+        }
+
+        // <netbeans>
+        //setSourceOffsets(ret, startOffset);
+        int endOffset = matchedTokenEnd;
+        ret.setSourceBounds(startOffset, endOffset);
+        // </netbeans>
+
+        return ret;
+    }
+
+    /**
      * Parse a 'var' or 'const' statement, or a 'var' init list in a for
      * statement.
-     * @param context A token value: either VAR, CONST or FOR depending on
+     * @param inFor true if we are currently in the midst of the init
+     * clause of a for.
+     * @param declType A token value: either VAR, CONST, or LET depending on
      * context.
      * @return The parsed statement
      * @throws IOException
      * @throws ParserException
      */
-    private Node variables(int context)
+    private Node variables(boolean inFor, int declType)
         throws IOException, ParserException
     {
         // <netbeans>
         int startOffset = getStartOffset();
         // </netbeans>
-
-        Node pn;
+        Node result = nf.createVariables(declType, ts.getLineno());
         boolean first = true;
-
-        if (context == Token.CONST){
-            pn = nf.createVariables(Token.CONST, ts.getLineno());
-            decompiler.addToken(Token.CONST);
-        } else {
-            pn = nf.createVariables(Token.VAR, ts.getLineno());
-            decompiler.addToken(Token.VAR);
-        }
-
         for (;;) {
-            Node name;
-            Node init;
-            mustMatchToken(Token.NAME, "msg.bad.var");
+            Node destructuring = null;
+            String s = null;
+            int tt = peekToken();
             // <netbeans>
-            int nameStartOffset = getStartOffset();
+            int nameStart = peekedTokenStart;
+            int nameEnd = peekedTokenEnd;
+            Node name = null;
+
             // </netbeans>
-            String s = ts.getString();
-
-            if (!first)
-                decompiler.addToken(Token.COMMA);
-            first = false;
-
-            decompiler.addName(s);
-
-            // <netbeans>
-            name = nf.createName(s);
-            // </netbeans>
-            if (context == Token.CONST) {
-                if (!currentScriptOrFn.addConst(s)) {
-                    // We know it's already defined, since addConst passes if
-                    // it's not defined at all.  The addVar call just confirms
-                    // what it is.
-                    if (currentScriptOrFn.addVar(s) != ScriptOrFnNode.DUPLICATE_CONST)
-                        addError("msg.var.redecl", s
-                                // <netbeans>
-                                , name
-                                // </netbeans>
-                                );
-                    else
-                        addError("msg.const.redecl", s
-                                // <netbeans>
-                                , name
-                                // </netbeans>
-                                );
-                }
+            if (tt == Token.LB || tt == Token.LC) {
+                // Destructuring assignment, e.g., var [a,b] = ...
+                destructuring = primaryExpr();
             } else {
-                int dupState = currentScriptOrFn.addVar(s);
-                if (dupState == ScriptOrFnNode.DUPLICATE_CONST)
-                    addError("msg.const.redecl", s
-                                // <netbeans>
-                                , name
-                                // </netbeans>
-                            );
-                else if (dupState == ScriptOrFnNode.DUPLICATE_PARAMETER)
-                    addStrictWarning("msg.var.hides.arg", s
-                            // <netbeans> - pass in additional parameters for the error
-                            , name
-                            // </netbeans>
-                            );
-                else if (dupState == ScriptOrFnNode.DUPLICATE_VAR)
-                    addStrictWarning("msg.var.redecl", s
-                            // <netbeans> - pass in additional parameters for the error
-                            , name
-                            // </netbeans>
-                            );
+                // Simple variable name
+                mustMatchToken(Token.NAME, "msg.bad.var");
+                s = ts.getString();
+    
+                if (!first)
+                    decompiler.addToken(Token.COMMA);
+                first = false;
+    
+                decompiler.addName(s);
+
+                // <netbeans>
+                //defineSymbol(declType, inFor, s);
+                name = nf.createName(s);
+                defineSymbol(declType, inFor, s, name);
+                // </netbeans>
             }
-            // <netbeans>
-            // Moved up before the if so we can pass it to the error handler
-            //name = nf.createName(s);
-            // </netbeans>
-
-            // <netbeans>
-            setSourceOffsets(name, nameStartOffset);
-            // </netbeans>
-
-            // omitted check for argument hiding
-
+    
+            Node init = null;
             if (matchToken(Token.ASSIGN)) {
                 decompiler.addToken(Token.ASSIGN);
-
-                init = assignExpr(context == Token.FOR);
-                nf.addChildToBack(name, init);
+                init = assignExpr(inFor);
             }
-            nf.addChildToBack(pn, name);
+    
+            if (destructuring != null) {
+                if (init == null) {
+                    if (!inFor)
+                        reportError("msg.destruct.assign.no.init");
+                    nf.addChildToBack(result, destructuring);
+                } else {
+                    nf.addChildToBack(result,
+                        nf.createDestructuringAssignment(declType,
+                            destructuring, init));
+                }
+            } else {
+                // <netbeans>
+                // Already added above in the non-destructuring branch
+                // such that I could pass the node to the defineSymbol call
+                //Node name = nf.createName(s);
+                name.setSourceBounds(nameStart, nameEnd);
+                // </netbeans>
+                if (init != null)
+                    nf.addChildToBack(name, init);
+                nf.addChildToBack(result, name);
+            }
+    
             if (!matchToken(Token.COMMA))
                 break;
         }
 
         // <netbeans>
-        pn.setSourceBounds(startOffset, Math.max(getEndOffset(), pn.getSourceEnd()));
+        result.setSourceBounds(startOffset, getEndOffset());
         // </netbeans>
 
-        return pn;
+        return result;
+    }
+
+    
+    private Node let(boolean isStatement)
+        throws IOException, ParserException
+    {
+        mustMatchToken(Token.LP, "msg.no.paren.after.let");
+        decompiler.addToken(Token.LP);
+        Node result = nf.createScopeNode(Token.LET, ts.getLineno());
+        pushScope(result);
+        try {
+              Node vars = variables(false, Token.LET);
+              nf.addChildToBack(result, vars);
+              mustMatchToken(Token.RP, "msg.no.paren.let");
+              decompiler.addToken(Token.RP);
+              if (isStatement && peekToken() == Token.LC) {
+                  // let statement
+                  consumeToken();
+                  decompiler.addEOL(Token.LC);
+                  nf.addChildToBack(result, statements(null));
+                  mustMatchToken(Token.RC, "msg.no.curly.let");
+                  decompiler.addToken(Token.RC);
+              } else {
+                  // let expression
+                  result.setType(Token.LETEXPR);
+                  nf.addChildToBack(result, expr(false));
+                  if (isStatement) {
+                      // let expression in statement context
+                      result = nf.createExprStatement(result, ts.getLineno());
+                  }
+              }
+        } finally {
+            popScope();
+        }
+        return result;
+    }
+    
+    void defineSymbol(int declType, boolean ignoreNotInBlock, String name
+                    // <netbeans>
+                    , Node associatedNode
+                    // </netbeans>
+            ) {
+        Node.Scope definingScope = currentScope.getDefiningScope(name);
+        Node.Scope.Symbol symbol = definingScope != null 
+                                  ? definingScope.getSymbol(name)
+                                  : null;
+        boolean error = false;
+        if (symbol != null && (symbol.declType == Token.CONST ||
+            declType == Token.CONST))
+        {
+            error = true;
+        } else {
+            switch (declType) {
+              case Token.LET:
+                if (symbol != null && definingScope == currentScope) {
+                    error = symbol.declType == Token.LET;
+                }
+                int currentScopeType = currentScope.getType();
+                if (!ignoreNotInBlock && 
+                    ((currentScopeType == Token.LOOP) ||
+                     (currentScopeType == Token.IF)))
+                {
+                    addError("msg.let.decl.not.in.block");
+                }
+                currentScope.putSymbol(name, 
+                    new Node.Scope.Symbol(declType, name));
+                break;
+                
+              case Token.VAR:
+              case Token.CONST:
+              case Token.FUNCTION:
+                if (symbol != null) {
+                    if (symbol.declType == Token.VAR)
+                        addStrictWarning("msg.var.redecl", name
+                    // <netbeans>
+                        , associatedNode
+                    // </netbeans>
+                                );
+                    else if (symbol.declType == Token.LP) {
+                        addStrictWarning("msg.var.hides.arg", name
+                    // <netbeans>
+                        , associatedNode
+                    // </netbeans>
+                                );
+                    }
+                } else {
+                    currentScriptOrFn.putSymbol(name, 
+                        new Node.Scope.Symbol(declType, name));
+                }
+                break;
+                
+              case Token.LP:
+                if (symbol != null) {
+                    // must be duplicate parameter. Second parameter hides the 
+                    // first, so go ahead and add the second pararameter
+                    addWarning("msg.dup.parms", name
+                    // <netbeans>
+                        , associatedNode
+                    // </netbeans>
+                            );
+                }
+                currentScriptOrFn.putSymbol(name, 
+                    new Node.Scope.Symbol(declType, name));
+                break;
+                
+              default:
+                throw Kit.codeBug();
+            }
+        }
+        if (error) {
+            addError(symbol.declType == Token.CONST ? "msg.const.redecl" :
+                     symbol.declType == Token.LET ? "msg.let.redecl" :
+                     symbol.declType == Token.VAR ? "msg.var.redecl" :
+                     symbol.declType == Token.FUNCTION ? "msg.fn.redecl" :
+                     "msg.parm.redecl", name
+                    // <netbeans>
+                        , associatedNode
+                    // </netbeans>
+                     );
+        }
     }
 
     private Node expr(boolean inForInit)
@@ -1808,6 +2043,9 @@ return null;
                         , pn
                     // </netbeans>
                         );
+            if (peekToken() == Token.YIELD) {
+              reportError("msg.yield.parenthesized");
+            }
             pn = nf.createBinary(Token.COMMA, pn, assignExpr(inForInit));
         }
 
@@ -1825,9 +2063,15 @@ return null;
         int startOffset = getStartOffset();
         // </netbeans>
 
+        int tt = peekToken();
+        if (tt == Token.YIELD) {
+            consumeToken();
+            return returnOrYield(tt, true);
+        }
+
         Node pn = condExpr(inForInit);
 
-        int tt = peekToken();
+        tt = peekToken();
         // <netbeans>
         if (tt == Token.NAME && GENERATED_IDENTIFIER.equals(ts.getString())) {
             // One or more extra __UNKNOWN__ tokens in there
@@ -2270,6 +2514,18 @@ return null;
         return n;
     }
 
+    static Node setSourceOffsets(Node n, int startOffset, int endOffset) {
+//        if (n.getSourceEnd() != 0) {
+//            return n;
+//        }
+        n.setSourceBounds(startOffset, endOffset);
+        // Return n such that expressions can be chained, e.g
+        // return factory.createNumber(42)
+        //   can be written as
+        // return factory.createNumber(42).setSourceOffsets(n, startOffset)
+        return n;
+    }
+
     int getStartOffset() {
         return matchedTokenStart;
     }
@@ -2427,7 +2683,9 @@ Node pn = null;
                 if (!first)
                     decompiler.addToken(Token.COMMA);
                 first = false;
-
+                if (peekToken() == Token.YIELD) {
+                    reportError("msg.yield.parenthesized");
+                }
                 // <netbeans>
                 if (seenGenerated) {
                     int peekToken = peekToken();
@@ -2572,6 +2830,16 @@ Node pn = null;
 
                     tt = nextToken();
                     switch (tt) {
+                    
+                      // needed for generator.throw();
+                      case Token.THROW:
+                        decompiler.addName("throw");
+                        pn = propertyName(pn, "throw", memberTypeFlags);
+                       // <netbeans>
+                        setSourceOffsets(pn.getLastChild(), getStartOffset());
+                        // </netbeans>
+                        break;
+
                       // handles: name, ns::name, ns::*, ns::[expr]
                       case Token.NAME:
                         s = ts.getString();
@@ -2774,6 +3042,125 @@ Node pn = null;
         return pn;
     }
 
+    private Node arrayComprehension(String arrayName, Node expr)
+        throws IOException, ParserException
+    {
+        // <netbeans>
+        //int startOffset = getStartOffset();
+        int startOffset = matchedTokenStart;
+        // </netbeans>
+
+        if (nextToken() != Token.FOR)
+            throw Kit.codeBug(); // shouldn't be here if next token isn't 'for'
+        decompiler.addName(" "); // space after array literal expr
+        decompiler.addToken(Token.FOR);
+        boolean isForEach = false;
+        if (matchToken(Token.NAME)) {
+            decompiler.addName(ts.getString());
+            if (ts.getString().equals("each")) {
+                isForEach = true;
+            } else {
+                reportError("msg.no.paren.for");
+            }
+        }
+        mustMatchToken(Token.LP, "msg.no.paren.for");
+        decompiler.addToken(Token.LP);
+        String name;
+        int tt = peekToken();
+        if (tt == Token.LB || tt == Token.LC) {
+            // handle destructuring assignment
+            name = currentScriptOrFn.getNextTempName();
+            defineSymbol(Token.LP, false, name
+                        // <netbeans>
+                        , null
+                        // </netbeans>
+                    );
+            // <netbeans>
+            //expr = nf.createBinary(Token.COMMA,
+            //    nf.createAssignment(Token.ASSIGN, primaryExpr(),
+            //                        nf.createName(name)),
+            //    expr);
+            Node nameNode = nf.createName(name);
+            nameNode.setSourceBounds(startOffset, startOffset);
+            expr = nf.createBinary(Token.COMMA,
+                nf.createAssignment(Token.ASSIGN, primaryExpr(),
+                                    nameNode),
+                expr);
+            // </netbeans>
+        } else if (tt == Token.NAME) {
+            consumeToken();
+            name = ts.getString();
+            decompiler.addName(name);
+        } else {
+            reportError("msg.bad.var");
+            return nf.createNumber(0);
+        }
+
+        Node init = nf.createName(name);
+        // <netbeans>
+        if (tt == Token.NAME) {
+            init.setSourceBounds(getStartOffset(), getEndOffset());
+        } else {
+            init.setSourceBounds(startOffset, startOffset); // tempname, not in source
+        }
+        // </netbeans>
+
+        // Define as a let since we want the scope of the variable to
+        // be restricted to the array comprehension
+        defineSymbol(Token.LET, false, name
+                        // <netbeans>
+                        , init
+                        // </netbeans>
+                );
+        
+        mustMatchToken(Token.IN, "msg.in.after.for.name");
+        decompiler.addToken(Token.IN);
+        Node iterator = expr(false);
+        mustMatchToken(Token.RP, "msg.no.paren.for.ctrl");
+        decompiler.addToken(Token.RP);
+        
+        Node body;
+        tt = peekToken();
+        if (tt == Token.FOR) {
+            body = arrayComprehension(arrayName, expr);
+        } else {
+            Node call = nf.createCallOrNew(Token.CALL,
+                nf.createPropertyGet(nf.createName(arrayName), null,
+                                     "push", 0));
+            call.addChildToBack(expr);
+            body = new Node(Token.EXPR_VOID, call, ts.getLineno());
+            // <netbeans>
+            // All these nodes are synthetic
+            call.setSourceBounds(startOffset, startOffset);
+            body.setSourceBounds(startOffset, startOffset);
+            // </netbeans>
+            if (tt == Token.IF) {
+                consumeToken();
+                decompiler.addToken(Token.IF);
+                int lineno = ts.getLineno();
+                Node cond = condition();
+                body = nf.createIf(cond, body, null, lineno);
+            }
+            mustMatchToken(Token.RB, "msg.no.bracket.arg");
+            decompiler.addToken(Token.RB);
+        }
+
+        Node loop = enterLoop(null, true);
+        try {
+            // <netbeans>
+            //return nf.createForIn(Token.LET, loop, init, iterator, body,
+            //                      isForEach);
+            Node pn = nf.createForIn(Token.LET, loop, init, iterator, body,
+                                  isForEach);
+            setSourceOffsets(pn, startOffset);
+            return pn;
+            // </netbeans>
+
+        } finally {
+            exitLoop(false);
+        }
+    }
+    
     private Node primaryExpr()
         throws IOException, ParserException
     {
@@ -2801,6 +3188,7 @@ Node pn = null;
           case Token.LB: {
             ObjArray elems = new ObjArray();
             int skipCount = 0;
+            int destructuringLen = 0;
             decompiler.addToken(Token.LB);
             boolean after_lb_or_comma = true;
             // <netbeans>
@@ -2821,10 +3209,60 @@ Node pn = null;
                 } else if (tt == Token.RB) {
                     consumeToken();
                     decompiler.addToken(Token.RB);
+                    // for ([a,] in obj) is legal, but for ([a] in obj) is 
+                    // not since we have both key and value supplied. The
+                    // trick is that [a,] and [a] are equivalent in other
+                    // array literal contexts. So we calculate a special
+                    // length value just for destructuring assignment.
+                    destructuringLen = elems.size() + 
+                                       (after_lb_or_comma ? 1 : 0);
                     break;
+                } else if (skipCount == 0 && elems.size() == 1 &&
+                           tt == Token.FOR)
+                {
+                    Node scopeNode = nf.createScopeNode(Token.ARRAYCOMP, 
+                                                        ts.getLineno());
+                    String tempName = currentScriptOrFn.getNextTempName();
+                    pushScope(scopeNode);
+                    try {
+                        defineSymbol(Token.LET, false, tempName
+                                // <netbeans>
+                                , null // tempName shouldn't have duplicates
+                                // </netbeans>
+                                );
+                        Node expr = (Node) elems.get(0);
+                        Node block = nf.createBlock(ts.getLineno());
+                        // <netbeans>
+                        //Node init = new Node(Token.EXPR_VOID,
+                        //    nf.createAssignment(Token.ASSIGN,
+                        //        nf.createName(tempName),
+                        //        nf.createCallOrNew(Token.NEW,
+                        //            nf.createName("Array"))), ts.getLineno());
+                        // These nodes are all synthetic
+                        int offset = peekedTokenStart;
+                        Node init = new Node(Token.EXPR_VOID,
+                            nf.createAssignment(Token.ASSIGN,
+                                setSourceOffsets(nf.createName(tempName), offset, offset),
+                                nf.createCallOrNew(Token.NEW,
+                                    setSourceOffsets(nf.createName("Array"), offset, offset))), ts.getLineno());
+                        init.setSourceBounds(offset, offset);
+                        block.setSourceBounds(offset, offset);
+                        // </netbeans>
+                        block.addChildToBack(init);
+                        block.addChildToBack(arrayComprehension(tempName, 
+                            expr));
+                        scopeNode.addChildToBack(block);
+                        // <netbeans>
+                        //scopeNode.addChildToBack(nf.createName(tempName));
+                        scopeNode.addChildToBack(setSourceOffsets(nf.createName(tempName), offset, offset));
+                        // </netbeans>
+                        return scopeNode;
+                    } finally {
+                        popScope();
+                    }
                 } else {
                     if (!after_lb_or_comma) {
-                          reportError("msg.no.bracket.arg");
+                        reportError("msg.no.bracket.arg");
                     }
                     // <netbeans>
                     //elems.add(assignExpr(false));
@@ -2835,8 +3273,8 @@ Node pn = null;
                 }
             }
             // <netbeans>
-            //return nf.createArrayLiteral(elems, skipCount);
-            return setSourceOffsets(nf.createArrayLiteral(elems, skipCount), startOffset);
+            //return nf.createArrayLiteral(elems, skipCount, destructuringLen);
+            return setSourceOffsets(nf.createArrayLiteral(elems, skipCount, destructuringLen), startOffset);
             // </netbeans>
           }
 
@@ -2990,6 +3428,10 @@ Node pn = null;
             return literal;
             // </netbeans>
           }
+          
+          case Token.LET:
+            decompiler.addToken(Token.LET);
+            return let(false);
 
           case Token.LP:
             // <netbeans>
@@ -3204,6 +3646,7 @@ Node pn = null;
         this.decompiler = createDecompiler(compilerEnv);
         this.nf = new IRFactory(this);
         currentScriptOrFn = nf.createScript();
+        currentScope = currentScriptOrFn;
         this.encodedSource = null;
         this.currentFlaggedToken = Token.EOF;
 

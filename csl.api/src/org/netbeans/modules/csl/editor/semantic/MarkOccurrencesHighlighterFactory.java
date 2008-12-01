@@ -42,11 +42,11 @@ package org.netbeans.modules.csl.editor.semantic;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.core.AbstractTaskFactory;
 import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -57,19 +57,18 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  *
  * @author Jan Lahoda
  */
-public class MarkOccurrencesHighlighterFactory extends TaskFactory {
+public class MarkOccurrencesHighlighterFactory extends AbstractTaskFactory {
 
     /** Creates a new instance of SemanticHighlighterFactory */
     public MarkOccurrencesHighlighterFactory() {
-        super();
+        super(false);
     }
 
     @Override
-    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        String mimeType = snapshot.getMimeType();
-        Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
-        if (l != null) {
-            return Collections.singleton(new MarkOccurrencesHighlighter(snapshot));
+    public Collection<? extends SchedulerTask> createTasks(Language l, Snapshot snapshot) {
+        OccurrencesFinder finder = l.getOccurrencesFinder();
+        if (finder != null) {
+            return Collections.singleton(new MarkOccurrencesHighlighter(l, snapshot));
         } else {
             return null;
         }

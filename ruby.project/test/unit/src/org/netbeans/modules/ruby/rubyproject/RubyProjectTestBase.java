@@ -44,9 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.PrintWriter;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.api.project.Project;
@@ -56,14 +54,7 @@ import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
-import org.openide.util.test.MockLookup;
-import org.xml.sax.SAXException;
 
 /**
  * @author Tor Norbye
@@ -122,12 +113,6 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
         return createTestProject(false);
     }
 
-    protected void registerLayer() throws Exception {
-        MockLookup.setInstances(new Repo(getWorkDir()));
-        FileObject template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Ruby/main.rb");
-        assertNotNull("layer registered", template);
-    }
-
     /**
      * <strong>Note:</strong> Copy-pasted from APISupport
      * <p>
@@ -175,31 +160,14 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
         }
     }
 
-    private static final class Repo extends Repository {
-
-        public Repo(final File root) throws Exception {
-            super(mksystem(root));
-        }
-        
-        private static FileSystem mksystem(final File root) throws Exception {
-            List<FileSystem> fss = new ArrayList<FileSystem>();
-            
-            // self layer
-            addLayer(fss, "org/netbeans/modules/ruby/rubyproject/ui/resources/layer.xml");
-            
-            // local filesystem preventing tons of FreeMarker warnings about missing license-default.txt
-            LocalFileSystem fs = new LocalFileSystem();
-            fs.setRootDirectory(root);
-            FileUtil.createData(fs.getRoot(), "Templates/Licenses/license-default.txt");
-            fss.add(fs);
-            
-            return new MultiFileSystem(fss.toArray(new FileSystem[fss.size()]));
-        }
-
-        private static void addLayer(List<FileSystem> fss, String layerRes) throws SAXException {
-            URL layerFile = Repo.class.getClassLoader().getResource(layerRes);
-            assert layerFile != null : layerRes + " found";
-            fss.add(new XMLFileSystem(layerFile));
+    protected void dumpRakefile(final String rakefileContent, final RubyProject project) throws IOException {
+        FileObject script = FileUtil.createData(project.getProjectDirectory(), "Rakefile");
+        PrintWriter pw = new PrintWriter(script.getOutputStream());
+        try {
+            pw.print(rakefileContent);
+        } finally {
+            pw.close();
         }
     }
+
 }

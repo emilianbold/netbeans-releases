@@ -171,6 +171,10 @@ public class StrictWarning extends JsErrorRule {
         } else if (error.getParameters() != null) {
             Node node = (Node) error.getParameters()[0];
 
+            if (node == null) {
+                return;
+            }
+
             final boolean isInconsistentReturn = RETURN_INCONSISTENT.equals(key); // NOI18N
 
             if (isInconsistentReturn) {

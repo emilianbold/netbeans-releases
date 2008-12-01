@@ -41,7 +41,6 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
-import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
@@ -57,7 +56,6 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
     }
 
     public void testCreateProject() throws Exception {
-        registerLayer();
         String appName = "RubyApp";
         String name = "script.rb";
         String expectedName = "script.rb";
@@ -103,7 +101,6 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
     }
 
     public void testGeneratedRakeFile() throws Exception {
-        registerLayer();
         RubyProject project = createTestProject();
         Set<RakeTask> tasks = RakeSupport.getRakeTaskTree(project);
         assertSame("correct Rakefile", 11, tasks.size());

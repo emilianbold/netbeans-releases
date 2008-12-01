@@ -23,4 +23,12 @@
     <fontcolor name="mod-deprecated" strikeThrough="404040" />
     <fontcolor name="mod-regexp" foreColor="9933CC" default="regexp" />
     <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
+    <!-- E4X -->
+    <fontcolor name="mod-custom1" bgColor="ffffe4ff" />
+    <!-- E4X: element -->
+    <fontcolor name="mod-custom2" foreColor="blue" />
+    <!-- E4X: text -->
+    <fontcolor name="mod-custom3">
+        <font style="bold" />
+    </fontcolor>
 </fontscolors>

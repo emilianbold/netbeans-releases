@@ -109,6 +109,7 @@ class DataViewTableUI extends ExtendedJTable {
     private final DataViewTablePanel tablePanel;
     private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE."; // NOI18N
     private static Logger mLogger = Logger.getLogger(DataViewTableUI.class.getName());
+    private DataView dView;
 
     public DataViewTableUI(final DataViewTablePanel tablePanel, final DataViewActionHandler handler, final DataView dataView) {
         this.tablePanel = tablePanel;
@@ -132,6 +133,7 @@ class DataViewTableUI extends ExtendedJTable {
         multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 3;
         setRowHeight(getFontMetrics(getFont()).getHeight() + 5);
 
+        dView = dataView;
         createPopupMenu(handler, dataView);
     }
 
@@ -474,7 +476,7 @@ class DataViewTableUI extends ExtendedJTable {
         if (dbCol.isGenerated()) {
             return new GeneratedResultSetCellRenderer();
         } else if (getResultSetRowContext().getValueList((row + 1) + ";" + (column + 1)) != null) { // NOI18N
-            return new UpdatedResultSetCellRenderer();
+            return new UpdatedResultSetCellRenderer(dView);
         }
         return super.getCellRenderer(row, column);
     }
@@ -608,9 +610,8 @@ class DataViewTableUI extends ExtendedJTable {
             } else {
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 if (c instanceof JComponent) {
-                    String tooltip = "<html><table border=0 cellspacing=0 cellpadding=0 width=40><tr><td>"+ 
-                    DataViewUtils.escapeHTML(value.toString()).replaceAll("\\n", "<br>")
-                            .replaceAll(" ", "&nbsp;") + "</td></tr></table></html>";
+                    String tooltip = "<html><table border=0 cellspacing=0 cellpadding=0 width=40><tr><td>" +
+                            DataViewUtils.escapeHTML(value.toString()).replaceAll("\\n", "<br>").replaceAll(" ", "&nbsp;") + "</td></tr></table></html>";
                     ((JComponent) c).setToolTipText(tooltip);
                 }
                 return c;
@@ -621,15 +622,29 @@ class DataViewTableUI extends ExtendedJTable {
     private static class UpdatedResultSetCellRenderer extends ResultSetCellRenderer {
 
         static Color green = new Color(0, 128, 0);
+        static Color gray = new Color(245, 245, 245);
+        DataView dataView;
+
+        public UpdatedResultSetCellRenderer(DataView dView) {
+            dataView = dView;
+        }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
+            Object obj = dataView.getDataViewPageContext().getColumnData(row, column);
             if (isSelected) {
-                c.setForeground(Color.ORANGE);
+                if (obj.equals(value)) {
+                    c.setForeground(gray);
+                } else {
+                    c.setForeground(Color.ORANGE);
+                }
             } else {
-                c.setForeground(green);
+                if (obj.equals(value)) {
+                    c.setForeground(table.getForeground());
+                } else {
+                    c.setForeground(green);
+                }
             }
             return c;
         }
@@ -663,13 +678,13 @@ class DataViewTableUI extends ExtendedJTable {
                 }
 
                 @Override
-                public boolean isCellEditable(EventObject evt) {                    
+                public boolean isCellEditable(EventObject evt) {
                     int clickcount;
                     if (evt instanceof MouseEvent) {
                         if (System.getProperty("os.name").contains("Mac")) {
                             clickcount = 1;
                             return ((MouseEvent) evt).getClickCount() >= clickcount;
-                        }else{
+                        } else {
                             clickcount = 2;
                             return ((MouseEvent) evt).getClickCount() >= clickcount;
                         }
@@ -771,7 +786,7 @@ class DataViewTableUI extends ExtendedJTable {
         private JButton customEditorButton = new JButton("...");
         private JPanel panel = new JPanel(new BorderLayout());
         private JTable table;
-        private int row,  column;
+        private int row, column;
         private boolean editable = true;
 
         public StringTableCellEditor(final JTextField textField) {

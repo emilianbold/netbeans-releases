@@ -42,6 +42,8 @@ package org.netbeans.modules.parsing.impl.event;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -180,7 +182,6 @@ public final class EventSupport {
         
         private EditorCookie.Observable ec;
         private TokenHierarchyListener lexListener;
-        private volatile Document document;
         
         public DocListener (final EditorCookie.Observable ec) {
             assert ec != null;
@@ -190,7 +191,6 @@ public final class EventSupport {
             if (doc != null) {
                 TokenHierarchy th = TokenHierarchy.get(doc);
                 th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
-                document = doc;
             }
         }
 
@@ -206,13 +206,8 @@ public final class EventSupport {
                 if (doc != null) {
                     TokenHierarchy th = TokenHierarchy.get(doc);
                     th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
-                    this.document = doc;    //set before rescheduling task to avoid race condition
                     resetState(true, -1, -1);
-                }
-                else {
-                    //reset document
-                    this.document = doc;
-                }
+                }                
             }
         }
         
@@ -302,7 +297,7 @@ public final class EventSupport {
     private static class EditorRegistryListener implements CaretListener, PropertyChangeListener {
                         
         private TaskProcessor.Request request;
-        private JTextComponent lastEditor;
+        private Reference<JTextComponent> lastEditorRef;
         
         public EditorRegistryListener () {
             EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
@@ -315,6 +310,7 @@ public final class EventSupport {
                 
         public void editorRegistryChanged() {
             final JTextComponent editor = EditorRegistry.lastFocusedComponent();
+            final JTextComponent lastEditor = lastEditorRef == null ? null : lastEditorRef.get();
             if (lastEditor != editor) {
                 if (lastEditor != null) {
                     lastEditor.removeCaretListener(this);
@@ -328,7 +324,7 @@ public final class EventSupport {
                         SourceAccessor.getINSTANCE().getEventSupport(source).k24 = false;
                     }                   
                 }
-                lastEditor = editor;
+                lastEditorRef = new WeakReference<JTextComponent>(editor);
                 if (lastEditor != null) {                    
                     lastEditor.addCaretListener(this);
                     lastEditor.addPropertyChangeListener(this);
@@ -337,6 +333,7 @@ public final class EventSupport {
         }
         
         public void caretUpdate(final CaretEvent event) {
+            final JTextComponent lastEditor = lastEditorRef == null ? null : lastEditorRef.get();
             if (lastEditor != null) {
                 Document doc = lastEditor.getDocument();
                 if (doc != null) {
@@ -352,7 +349,8 @@ public final class EventSupport {
             String propName = evt.getPropertyName();
             if ("completion-active".equals(propName)) { //NOI18N
                 Source source = null;
-                final Document doc = lastEditor.getDocument();
+                final JTextComponent lastEditor = lastEditorRef == null ? null : lastEditorRef.get();
+                final Document doc = lastEditor == null ? null : lastEditor.getDocument();
                 if (doc != null) {
                     source = Source.create(doc);
                 }

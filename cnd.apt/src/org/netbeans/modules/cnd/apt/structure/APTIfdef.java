@@ -41,12 +41,12 @@
 
 package org.netbeans.modules.cnd.apt.structure;
 
-import antlr.Token;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * #ifdef directive
  * @author Vladimir Voskresensky
  */
 public interface APTIfdef extends APT {
-    public Token getMacroName();
+    public APTToken getMacroName();
 }

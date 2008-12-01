@@ -356,11 +356,13 @@ public class FmtOptions {
                 if (c instanceof JComponent) {
                     JComponent jc = (JComponent)c;
                     Object o = jc.getClientProperty(OPTION_ID);
-                    if (o instanceof String || o instanceof String[])
+                    if (o instanceof String || o instanceof String[]) {
                         components.add(jc);
+                    }
                 }                    
-                if (c instanceof Container)
-                    scan((Container)c, components);
+                if (c instanceof Container) {
+                    scan((Container) c, components);
+                }
             }
         }
 
@@ -398,7 +400,7 @@ public class FmtOptions {
                 // XXX test for numbers
                 if ( isInteger(optionID) ) {
                     try {
-                        int i = Integer.parseInt(text);                        
+                        Integer.parseInt(text);                        
                     } catch (NumberFormatException e) {
                         return;
                     }
@@ -420,19 +422,21 @@ public class FmtOptions {
             }
             else if ( jc instanceof JCheckBox ) {
                 JCheckBox checkBox = (JCheckBox)jc;
-                if (!optionID.equals(expandTabToSpaces) && getDefaultAsBoolean(optionID) == checkBox.isSelected())
+                if (!optionID.equals(expandTabToSpaces) && getDefaultAsBoolean(optionID) == checkBox.isSelected()) {
                     node.remove(optionID);
-                else
+                } else {
                     node.putBoolean(optionID, checkBox.isSelected());
+                }
             } 
             else if ( jc instanceof JComboBox) {
                 JComboBox cb  = (JComboBox)jc;
                 // Logger.global.info( cb.getSelectedItem() + " " + optionID);
                 String value = ((ComboItem) cb.getSelectedItem()).value;
-                if (getDefaultAsString(optionID).equals(value))
+                if (getDefaultAsString(optionID).equals(value)) {
                     node.remove(optionID);
-                else
-                    node.put(optionID,value);
+                } else {
+                    node.put(optionID, value);
+                }
             }         
         }
         

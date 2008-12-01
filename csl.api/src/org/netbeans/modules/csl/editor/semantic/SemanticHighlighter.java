@@ -41,7 +41,6 @@
 package org.netbeans.modules.csl.editor.semantic;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -50,12 +49,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
-import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.ColoringAttributes.Coloring;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -64,10 +63,10 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.openide.ErrorManager;
 
 
 /**
@@ -124,21 +123,62 @@ public class SemanticHighlighter extends ParserResultTask<ParserResult> {
         Document doc = getDocument();
 
         if (doc == null) {
-            Logger.global.log(Level.INFO, "SemanticHighlighter: Cannot get document!");
             return;
         }
 
-        process(info, doc/*, ERROR_DESCRIPTION_SETTER*/);
+        long startTime = System.currentTimeMillis();
+
+        Source source = info.getSnapshot().getSource();
+        final SortedSet<SequenceElement> newColoring = new TreeSet<SequenceElement>();
+        try {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                public @Override void run(ResultIterator resultIterator) throws Exception {
+                    String mimeType = resultIterator.getSnapshot().getMimeType();
+                    Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+                    if (language != null) {
+                        ColoringManager manager = language.getColoringManager();
+                        SemanticAnalyzer task = language.getSemanticAnalyzer();
+                        if (manager != null && task != null) {
+                            Parser.Result r = resultIterator.getParserResult();
+                            if (r instanceof ParserResult) {
+                                process(language, (ParserResult) r, newColoring);
+                            }
+                        }
+                    }
+
+                    for(Embedding e : resultIterator.getEmbeddings()) {
+                        if (isCancelled()) {
+                            return;
+                        } else {
+                            run(resultIterator.getResultIterator(e));
+                        }
+                    }
+                }
+            });
+        } catch (ParseException e) {
+            LOG.log(Level.WARNING, null, e);
+            return;
+        }
+
+        long endTime = System.currentTimeMillis();
+        Logger.getLogger("TIMER").log(Level.FINE, "Semantic (" + source.getMimeType() + ")", //NOI18N
+                new Object[] { source.getFileObject(), endTime - startTime});
+
+        if (isCancelled()) {
+            return;
+        }
+
+        final GsfSemanticLayer layer = GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc);
+        SwingUtilities.invokeLater(new Runnable () {
+            public void run() {
+// XXX: parsingapi
+                layer.setColorings(newColoring, -1); //version
+            }
+        });
     }
     
 
-    boolean process(ParserResult info, final Document doc/*, ErrorDescriptionSetter setter*/) {
-        final SortedSet<SequenceElement> newColoring = new TreeSet<SequenceElement>();
-
-// XXX: parsingapi
-        if (isCancelled()) { //  || info.hasInvalidResults()
-            return true;
-        }
+    private void process(Language language, ParserResult result, Set<SequenceElement> newColoring) throws ParseException {
 
         //final Map<OffsetRange, Coloring> oldColors = GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc).getColorings();
         //final Set<OffsetRange> removedTokens = new HashSet<OffsetRange>(oldColors.keySet());
@@ -147,10 +187,6 @@ public class SemanticHighlighter extends ParserResultTask<ParserResult> {
         //    return true;
         //}
 
-
-        long start = System.currentTimeMillis();        
-        Set<String> mimeTypes = getEmbeddedMimeTypes(info.getSnapshot().getSource());
-        final GsfSemanticLayer layer = GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc);
 
 // XXX: parsingapi
 //        EditHistory currentHistory = info.getHistory();
@@ -261,86 +297,47 @@ public class SemanticHighlighter extends ParserResultTask<ParserResult> {
 //            return true;
 //            }
 //        }
-        
-        for (String mimeType : mimeTypes) {
-            if (isCancelled()) {
-                return true;
-            }
 
-            long startTime = System.currentTimeMillis();
-            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
-            if (language == null) {
-                continue;
-            }
-            ColoringManager manager = language.getColoringManager();
-            SemanticAnalyzer task = language.getSemanticAnalyzer();
-            if (task != null) {
-                // Allow language plugins to do their own analysis too
-                try {
-                    task.run(info, null);
-                } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ex);
+
+        if (isCancelled()) {
+            return;
+        }
+
+        ColoringManager manager = language.getColoringManager();
+        SemanticAnalyzer task = language.getSemanticAnalyzer();
+        
+        // Allow language plugins to do their own analysis too
+        try {
+            task.run(result, null);
+        } catch (Exception ex) {
+            LOG.log(Level.WARNING, null, ex);
+        }
+
+        if (isCancelled()) {
+            task.cancel();
+            return;
+        }
+
+        Map<OffsetRange,Set<ColoringAttributes>> highlights = task.getHighlights();
+        if (highlights != null) {
+            for (OffsetRange range : highlights.keySet()) {
+
+                Set<ColoringAttributes> colors = highlights.get(range);
+                if (colors == null) {
+                    continue;
                 }
+
+                Coloring c = manager.getColoring(colors);
+
+                newColoring.add(new SequenceElement(language, range, c));
 
                 if (isCancelled()) {
-                    task.cancel();
-                    return true;
-                }
-
-                Map<OffsetRange,Set<ColoringAttributes>> highlights = task.getHighlights();
-                if (highlights != null) {
-                    for (OffsetRange range : highlights.keySet()) {
-
-                        Set<ColoringAttributes> colors = highlights.get(range);
-                        if (colors == null) {
-                            continue;
-                        }
-                        
-                        Coloring c = manager.getColoring(colors);
-
-                        //newColoring.put(range, c);
-                        newColoring.add(new SequenceElement(language, range, c));
-
-                        //if (!removedTokens.remove(range)) {
-                        //    addedTokens.add(range);
-                        //}
-                    }
+                    return;
                 }
             }
-            long endTime = System.currentTimeMillis();
-            Logger.getLogger("TIMER").log(Level.FINE, "Semantic (" + mimeType + ")",
-                    new Object[] {info.getSnapshot().getSource().getFileObject(), endTime - startTime});
         }
 
-        SwingUtilities.invokeLater(new Runnable () {
-            public void run() {
-// XXX: parsingapi
-                layer.setColorings(newColoring, -1); //version
-            }                
-        });            
-        
-//        Logger.getLogger("TIMER").log(Level.FINE, "Semantic",
-//            new Object[] {((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), System.currentTimeMillis() - start});
-
-        return false;
+        return;
     }
 
-    private static Set<String> getEmbeddedMimeTypes(Source source) {
-        final Set<String> mimeTypes = new HashSet<String>();
-
-        try {
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
-                public @Override void run(ResultIterator resultIterator) {
-                    mimeTypes.add(resultIterator.getSnapshot().getMimeType());
-                    for(Embedding e : resultIterator.getEmbeddings()) {
-                        run(resultIterator.getResultIterator(e));
-                    }
-                }
-            });
-        } catch (ParseException e) {
-            LOG.log(Level.WARNING, null, e);
-        }
-
-        return mimeTypes;
-    }
 }

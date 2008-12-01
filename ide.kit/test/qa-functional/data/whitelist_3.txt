@@ -1942,6 +1942,7 @@ org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinderFactory
 org.netbeans.modules.j2ee.sun.ide.Installer
 org.netbeans.modules.j2ee.sun.ide.Installer$PrepareEnvironment
 org.netbeans.modules.j2ee.sun.ide.j2ee.ui.DomainCreator
+org.netbeans.modules.j2me.cdc.platform.platformdefinition.CDCPlatformSourceLevelQueryImpl
 org.netbeans.modules.java.IndentFileEntry
 org.netbeans.modules.java.JavaDataLoader
 org.netbeans.modules.java.JavaDataLoader$JavaFileEntry

@@ -151,6 +151,14 @@ public abstract class JavaSourceAccessor {
     public boolean isJavaCompilerLocked () {
         return Utilities.holdsParserLock();
     }
+
+    public void lockJavaCompiler () {
+        Utilities.acquireParserLock();
+    }
+
+    public void unlockJavaCompiler () {
+        Utilities.releaseParserLock();
+    }
     
     public void addPhaseCompletionTask (final JavaSource js,
             final CancellableTask<CompilationInfo> task,

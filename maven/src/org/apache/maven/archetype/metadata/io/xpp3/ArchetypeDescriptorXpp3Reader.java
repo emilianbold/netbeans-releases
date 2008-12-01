@@ -28,6 +28,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
  * 
  * @version $Revision$ $Date$
  */
+@SuppressWarnings({"unchecked","deprecation"})
 public class ArchetypeDescriptorXpp3Reader {
 
 

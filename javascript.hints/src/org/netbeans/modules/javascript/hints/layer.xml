@@ -47,6 +47,7 @@ made subject to such option by the copyright holder.
             <folder name="javascript">
                 <folder name="errors">
                     <file name="org-netbeans-modules-javascript-hints-AccidentalAssignment.instance"/>
+                    <file name="org-netbeans-modules-javascript-hints-OldLanguageRule.instance"/>
                 </folder>
                 <folder name="hints">
                     <folder name="general">

@@ -131,8 +131,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
     /** Count of repeats */
     //protected static int repeat = Integer.getInteger("org.netbeans.performance.repeat", 1).intValue();
-protected static int repeat = 4
-        ;
+protected static int repeat = 4;
+
     /** Count of repeats for measure memory usage */
     protected static int repeat_memory = Integer.getInteger("org.netbeans.performance.memory.repeat", -1).intValue();
 

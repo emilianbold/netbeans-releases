@@ -93,15 +93,11 @@ public abstract class BaseElementDescriptor implements ElementDescriptor {
     }
     
     private static boolean equals(CsmOffsetable element1, CsmOffsetable element2) {
-        if( element1 == element2 ) {
+        if (element1 == element2) {
             return true;
-        }
-        else if( element1 == null ) {
-            return element2 == null;
-        } else if( element2 == null ) {
-            return element1 == null;
-        }
-        else {
+        } else if (element1 == null || element2 == null) {
+            return false;
+        } else {
             CsmFile file1 = element1.getContainingFile();
             CsmFile file2 = element2.getContainingFile();
             if( file1 == null || file2 == null ) {

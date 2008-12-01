@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.uid;
 
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -49,25 +48,23 @@ import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
  * @author Vladimir Voskresensky
  */
 public class UIDManager {
-    private final UIDStorage storage;
-    private static final int UID_MANAGER_DEFAULT_CAPACITY=1024;
-    private static final int UID_MANAGER_DEFAULT_SLICED_NUMBER = 29;
 
-    
+    private final UIDStorage storage;
+    private static final int UID_MANAGER_DEFAULT_CAPACITY = 1024;
+    private static final int UID_MANAGER_DEFAULT_SLICED_NUMBER = 29;
     private static final UIDManager instance = new UIDManager();
-    
+
     /** Creates a new instance of UIDManager */
     private UIDManager() {
         storage = new UIDStorage(UID_MANAGER_DEFAULT_SLICED_NUMBER, UID_MANAGER_DEFAULT_CAPACITY);
     }
-    
+
     public static UIDManager instance() {
         return instance;
     }
-    
     // we need exclusive copy of string => use "new String(String)" constructor
     private final String lock = new String("lock in UIDManager"); // NOI18N
-    
+
     /**
      * returns shared uid instance equal to input one.
      *
@@ -88,24 +85,28 @@ public class UIDManager {
         assert (outUID.equals(uid));
         return outUID;
     }
-    
+
     public final void dispose() {
         storage.dispose();
     }
-    
+
     private static final class UIDStorage {
+
         private final WeakSharedSet<CsmUID>[] instances;
         private final int sliceNumber; // primary number for better distribution
         private final int initialCapacity;
+
         private UIDStorage(int sliceNumber, int initialCapacity) {
             this.sliceNumber = sliceNumber;
             this.initialCapacity = initialCapacity;
-            instances = new WeakSharedSet[sliceNumber];
-            for (int i = 0; i < instances.length; i++) {
-                instances[i] = new WeakSharedSet<CsmUID>(initialCapacity);
+            @SuppressWarnings("unchecked")
+            WeakSharedSet<CsmUID>[] ar = new WeakSharedSet[sliceNumber];
+            for (int i = 0; i < ar.length; i++) {
+                ar[i] = new WeakSharedSet<CsmUID>(initialCapacity);
             }
+            instances = ar;
         }
-        
+
         private WeakSharedSet<CsmUID> getDelegate(CsmUID uid) {
             int index = uid.hashCode() % sliceNumber;
             if (index < 0) {
@@ -113,18 +114,18 @@ public class UIDManager {
             }
             return instances[index];
         }
-        
+
         public final CsmUID getSharedUID(CsmUID uid) {
             return getDelegate(uid).addOrGet(uid);
         }
 
         public final void dispose() {
             for (int i = 0; i < instances.length; i++) {
-                if (instances[i].size()>0) {
+                if (instances[i].size() > 0) {
                     instances[i].clear();
                     instances[i].resize(initialCapacity);
                 }
-            }            
-        }        
-    }    
+            }
+        }
+    }
 }

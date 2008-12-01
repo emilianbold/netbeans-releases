@@ -1,5 +1,5 @@
 options {
-    TRACK_TOKENS = true; 
+    TRACK_TOKENS = true;
 	IGNORE_CASE = true;
 	STATIC = false;
 //    UNICODE_INPUT = false;
@@ -18,6 +18,8 @@ public class CSSParser {
 
     public CSSParser() {
        this((CharStream) null);
+       // change manager to our patched one:
+       token_source = new PatchedCSSParserTokenManager(null);
     }
 
     public List<ParseException> errors() {
@@ -178,7 +180,11 @@ void styleSheetRuleList() :{} {
   ( charsetRule() )?
   ( <S> | <CDO> | <CDC> )*
   ( importRule() ( <S> | <CDO> | <CDC> )* )*
-  ( ( styleRule() | mediaRule() | pageRule() | fontFaceRule() | unknownRule() ) ( <S> | <CDO> | <CDC> )* )*
+  ( ( <EOF> { return; } | rule() ) ( <S> | <CDO> | <CDC> )* )*
+}
+
+void rule() :{} {
+    styleRule() | mediaRule() | pageRule() | fontFaceRule() | unknownRule() | error_skip_to_whitespace()
 }
 
 //
@@ -717,3 +723,13 @@ void error_skipdecl() {
       t = getToken(1);
   }
 }
+
+
+JAVACODE
+void error_skip_to_whitespace() {
+  Token t;
+  do {
+    t = getNextToken();
+  } while (t != null && t.kind != S &&  t.kind != EOF );
+}
+

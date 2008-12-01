@@ -53,8 +53,10 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.AlternativePath;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -70,6 +72,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.TaskListener;
+import org.openide.util.Utilities;
 
 /**
  * Manage a set of CompilerSets. The CompilerSets are dynamically created based on which compilers
@@ -274,10 +277,14 @@ public class CompilerSetManager {
     public static String getMSysBase() {
         if (msysBase == null) {
             ToolchainManager tcm = ToolchainManager.getInstance();
-            ToolchainDescriptor td = tcm.getToolchain("MinGW", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
-            if (td != null) {
-                String msysBin = tcm.getCommandFolder(td, PlatformTypes.PLATFORM_WINDOWS);
-                msysBase = msysBin.substring(0, msysBin.length() - 4).replace("\\", "/"); // NOI18N
+            for(ToolchainDescriptor td : tcm.getToolchains(PlatformTypes.PLATFORM_WINDOWS)){
+                if (td != null) {
+                    String msysBin = tcm.getCommandFolder(td, PlatformTypes.PLATFORM_WINDOWS);
+                    if (msysBin != null) {
+                        msysBase = msysBin.substring(0, msysBin.length() - 4).replace("\\", "/"); // NOI18N
+                        break;
+                    }
+                }
             }
             if (msysBase == null) {
                 for (String dir : Path.getPath()) {
@@ -544,6 +551,10 @@ public class CompilerSetManager {
                     kind = Tool.CCCompiler;
                 } else if (name.equals("f95") || name.equals("f90")) { // NOI18N
                     kind = Tool.FortranCompiler;
+                } else if (name.startsWith("as=")) { // NOI18N
+                    kind = Tool.Assembler;
+                    i1 = name.indexOf('=');
+                    p = name.substring(i1 + 1);
                 } else if (name.equals("dmake")) { // NOI18N
                     kind = Tool.MakeTool;
                 } else if (name.startsWith("gdb=")) { // NOI18N
@@ -558,6 +569,8 @@ public class CompilerSetManager {
                     kind = Tool.CCCompiler;
                 } else if (name.equals("g77") || name.equals("gfortran")) { // NOI18N
                     kind = Tool.FortranCompiler;
+                } else if (name.equals("as") || name.equals("gas")) { // NOI18N
+                    kind = Tool.Assembler;
                 } else if (name.equals("make") || // NOI18N
                         ((platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC) &&
                         name.equals("gmake"))) { // NOI18N
@@ -651,23 +664,27 @@ public class CompilerSetManager {
         ToolchainDescriptor d = flavor.getToolchainDescriptor();
         if (d != null && ToolchainManager.getInstance().isMyFolder(path, d, getPlatform(), known)) {
             CompilerDescriptor compiler = d.getC();
-            if (compiler != null) {
+            if (compiler != null && !compiler.skipSearch()) {
                 initCompiler(Tool.CCompiler, path, cs, compiler.getNames());
             }
             compiler = d.getCpp();
-            if (compiler != null) {
+            if (compiler != null && !compiler.skipSearch()) {
                 initCompiler(Tool.CCCompiler, path, cs, compiler.getNames());
             }
             compiler = d.getFortran();
-            if (compiler != null) {
+            if (compiler != null && !compiler.skipSearch()) {
                 initCompiler(Tool.FortranCompiler, path, cs, compiler.getNames());
             }
             compiler = d.getAssembler();
-            if (compiler != null) {
+            if (compiler != null && !compiler.skipSearch()) {
                 initCompiler(Tool.Assembler, path, cs, compiler.getNames());
             }
-            initCompiler(Tool.MakeTool, path, cs, d.getMake().getNames());
-            initCompiler(Tool.DebuggerTool, path, cs, d.getDebugger().getNames());
+            if (d.getMake() != null && !d.getMake().skipSearch()){
+                initCompiler(Tool.MakeTool, path, cs, d.getMake().getNames());
+            }
+            if (d.getDebugger() != null && !d.getDebugger().skipSearch()){
+                initCompiler(Tool.DebuggerTool, path, cs, d.getDebugger().getNames());
+            }
         }
     }
 
@@ -742,40 +759,176 @@ public class CompilerSetManager {
         }
     }
 
-    private static void completeCompilerSet(String hkey, CompilerSet cs, List<CompilerSet> sets) {
-        if (cs.getTool(Tool.CCompiler) == null) {
-            cs.addTool(hkey, "", "", Tool.CCompiler); // NOI18N
-        }
-        if (cs.getTool(Tool.CCCompiler) == null) {
-            cs.addTool(hkey, "", "", Tool.CCCompiler); // NOI18N
-        }
-        if (cs.getTool(Tool.FortranCompiler) == null) {
-            cs.addTool(hkey, "", "", Tool.FortranCompiler); // NOI18N
-        }
-        if (cs.findTool(Tool.MakeTool) == null) {
-            Tool other = null;
-            for (CompilerSet set : sets) {
-                other = set.findTool(Tool.MakeTool);
-                if (other != null) {
-                    break;
-                }
-            }
-            if (other != null) {
-                cs.addNewTool(hkey, other.getName(), other.getPath(), Tool.MakeTool);
-            } else {
-                String path = Path.findCommand("make"); // NOI18N
-                if (path != null) {
-                    cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.MakeTool);
-                } else {
-                    path = Path.findCommand("gmake"); // NOI18N
-                    if (path != null) {
-                        cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.MakeTool);
+    private static Tool autoComplete(String hkey, CompilerSet cs, List<CompilerSet> sets, ToolDescriptor descriptor, int tool){
+        if (descriptor != null) {
+            AlternativePath[] paths = descriptor.getAlternativePath();
+            if (paths != null && paths.length > 0) {
+                for(AlternativePath p : paths){
+                    switch(p.getKind()){
+                        case PATH:
+                        {
+                            StringTokenizer st = new StringTokenizer(p.getPath(),";,"); // NOI18N
+                            while(st.hasMoreTokens()){
+                                String method = st.nextToken();
+                                if ("$PATH".equals(method)){ // NOI18N
+                                    for(String name : descriptor.getNames()){
+                                        String path = findCommand(name);
+                                        if (path != null) {
+                                            if (notSkipedName(cs, descriptor, path, name)) {
+                                                return cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, tool);
+                                            }
+                                        }
+                                    }
+                                } else if ("$MSYS".equals(method)){ // NOI18N
+                                    for(String name : descriptor.getNames()){
+                                        String dir = getMSysBase();
+                                        if (dir != null) {
+                                            String path = findCommand(name, dir+"/bin"); // NOI18N
+                                            if (path != null) {
+                                                if (notSkipedName(cs, descriptor, path, name)) {
+                                                    return cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, tool);
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    for(String name : descriptor.getNames()){
+                                        String path = findCommand(name, method);
+                                        if (path != null) {
+                                            return cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, tool);
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                        case TOOL_FAMILY:
+                        {
+                            StringTokenizer st = new StringTokenizer(p.getPath(),";,"); // NOI18N
+                            while(st.hasMoreTokens()){
+                                String method = st.nextToken();
+                                for(CompilerSet s : sets){
+                                    if (s != cs) {
+                                        for(String family : s.getCompilerFlavor().getToolchainDescriptor().getFamily()){
+                                            if (family.equals(method)){
+                                                Tool other = s.findTool(tool);
+                                                if (other != null){
+                                                    return cs.addNewTool(hkey, other.getName(), other.getPath(), tool);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                        case TOOL_NAME:
+                        {
+                            StringTokenizer st = new StringTokenizer(p.getPath(),";,"); // NOI18N
+                            while(st.hasMoreTokens()){
+                                String method = st.nextToken();
+                                for(CompilerSet s : sets){
+                                    if (s != cs) {
+                                        String name = s.getCompilerFlavor().getToolchainDescriptor().getName();
+                                        if (name.equals(method) || "*".equals(method)){ // NOI18N
+                                            Tool other = s.findTool(tool);
+                                            if (other != null){
+                                                return cs.addNewTool(hkey, other.getName(), other.getPath(), tool);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        }
                     }
                 }
             }
         }
-        if (cs.getTool(Tool.MakeTool) == null) {
-            cs.addTool(hkey, "", "", Tool.MakeTool); // NOI18N
+        return cs.addTool(hkey, "", "", tool); // NOI18N
+    }
+
+    private static boolean notSkipedName(CompilerSet cs, ToolDescriptor descriptor, String path, String name){
+        if (!descriptor.skipSearch()) {
+            return true;
+        }
+        String s = cs.getDirectory()+"/"+name; // NOI18N
+        s = s.replaceAll("\\\\", "/"); // NOI18N
+        path = path.replaceAll("\\\\", "/"); // NOI18N
+        return !path.startsWith(s);
+    }
+
+    private static String findCommand(String name) {
+        String path = Path.findCommand(name);
+        if (path == null) {
+            String dir = getMSysBase();
+            if (dir != null) {
+                path = findCommand(name, dir+"/bin"); // NOI18N
+            }
+        }
+        return path;
+    }
+
+    private static String findCommand(String cmd, String dir) {
+        File file;
+        String cmd2 = null;
+        if (cmd.length() > 0) {
+            if (Utilities.isWindows() && !cmd.endsWith(".exe")) { // NOI18N
+                cmd2 = cmd + ".exe"; // NOI18N
+            }
+
+            file = new File(dir, cmd);
+            if (file.exists()) {
+                return file.getAbsolutePath();
+            }
+            if (cmd2 != null) {
+                file = new File(dir, cmd2);
+                if (file.exists()) {
+                    return file.getAbsolutePath();
+                }
+            }
+        }
+        return null;
+    }
+
+    private static void completeCompilerSet(String hkey, CompilerSet cs, List<CompilerSet> sets) {
+        if (cs.findTool(Tool.CCompiler) == null) {
+            autoComplete(hkey, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getC(), Tool.CCompiler);
+        }
+        if (cs.findTool(Tool.CCCompiler) == null) {
+            autoComplete(hkey, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getCpp(), Tool.CCCompiler);
+        }
+        if (cs.findTool(Tool.FortranCompiler) == null) {
+            autoComplete(hkey, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getFortran(), Tool.FortranCompiler);
+        }
+        if (cs.findTool(Tool.Assembler) == null) {
+            autoComplete(hkey, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getAssembler(), Tool.Assembler);
+        }
+        if (cs.findTool(Tool.MakeTool) == null) {
+            autoComplete(hkey, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getMake(), Tool.MakeTool);
+//            Tool other = null;
+//            for (CompilerSet set : sets) {
+//                other = set.findTool(Tool.MakeTool);
+//                if (other != null) {
+//                    break;
+//                }
+//            }
+//            if (other != null) {
+//                cs.addNewTool(hkey, other.getName(), other.getPath(), Tool.MakeTool);
+//            } else {
+//                String path = Path.findCommand("make"); // NOI18N
+//                if (path != null) {
+//                    cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.MakeTool);
+//                } else {
+//                    path = Path.findCommand("gmake"); // NOI18N
+//                    if (path != null) {
+//                        cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.MakeTool);
+//                    }
+//                }
+//            }
+//        }
+//        if (cs.getTool(Tool.MakeTool) == null) {
+//            cs.addTool(hkey, "", "", Tool.MakeTool); // NOI18N
         }
         if (cs.findTool(Tool.DebuggerTool) == null) {
             String path;
@@ -788,8 +941,8 @@ public class CompilerSetManager {
                 cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.DebuggerTool);
             }
         }
-        if (cs.getTool(Tool.DebuggerTool) == null) {
-            cs.addTool(hkey, "", "", Tool.DebuggerTool); // NOI18N
+        if (cs.findTool(Tool.DebuggerTool) == null) {
+            autoComplete(hkey, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getDebugger(), Tool.DebuggerTool);
         }
 
     }

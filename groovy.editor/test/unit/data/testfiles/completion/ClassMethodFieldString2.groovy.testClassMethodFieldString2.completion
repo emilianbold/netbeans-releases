@@ -3,6 +3,6 @@ stringField.spli|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 METHOD     split()                                    String[]
-METHOD     split(String)                              String[]
-METHOD     split(String, int)                         String[]
+METHOD     split(String)                   [PUBLIC]   String[]
+METHOD     split(String, int)              [PUBLIC]   String[]
 METHOD     splitEachLine(String, Closure)             Object

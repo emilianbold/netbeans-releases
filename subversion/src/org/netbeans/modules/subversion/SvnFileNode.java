@@ -58,7 +58,7 @@ public class SvnFileNode {
     private final File file;
 
     public SvnFileNode(File file) {
-        this.file = file;
+        this.file = FileUtil.normalizeFile(file);
     }
 
     public String getName() {

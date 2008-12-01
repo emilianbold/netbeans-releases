@@ -11,6 +11,7 @@ package org.netbeans.test.subversion.main.checkout;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
@@ -18,6 +19,7 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.ProxyConfigurationOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
+import org.netbeans.test.subversion.utils.TestKit;
 
 /**
  *
@@ -25,7 +27,6 @@ import org.netbeans.test.subversion.operators.RepositoryStepOperator;
  */
 public class ProxySettingsUITest extends JellyTestCase {
     
-    String os_name;
     Operator.DefaultStringComparator comOperator; 
     Operator.DefaultStringComparator oldOperator;
     
@@ -40,14 +41,6 @@ public class ProxySettingsUITest extends JellyTestCase {
         
     }
     
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
-    }
-    
     public static Test suite() {
          return NbModuleSuite.create(
                  NbModuleSuite.createConfiguration(ProxySettingsUITest.class).addTest(
@@ -60,6 +53,8 @@ public class ProxySettingsUITest extends JellyTestCase {
      }
     
     public void testProxySettings() {
+        if (TestKit.getOsName().indexOf("Mac") > -1)
+                new NewProjectWizardOperator().invoke().close();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);

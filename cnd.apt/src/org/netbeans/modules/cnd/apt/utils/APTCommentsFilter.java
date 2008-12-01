@@ -41,15 +41,18 @@
 
 package org.netbeans.modules.cnd.apt.utils;
 
-import antlr.Token;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 
 /**
  * filter to remove comments from token stream
  * @author Vladimir Voskresensky
  */
-public class APTCommentsFilter implements TokenStream {
+public class APTCommentsFilter implements TokenStream, APTTokenStream {
     private final TokenStream orig;
     
     /** Creates a new instance of APTCommentsFilter */
@@ -57,12 +60,17 @@ public class APTCommentsFilter implements TokenStream {
         this.orig = orig;
     }
 
-    public Token nextToken() throws TokenStreamException {
-        Token next = orig.nextToken();
-        while (APTUtils.isCommentToken(next)) {
-            next = orig.nextToken();
+    public APTToken nextToken() {
+        try {
+            APTToken next = (APTToken) orig.nextToken();
+            while (APTUtils.isCommentToken(next)) {
+                next = (APTToken) orig.nextToken();
+            }
+            return next;
+        } catch (TokenStreamException ex) {
+            APTUtils.LOG.log(Level.SEVERE, null, ex);
+            return APTUtils.EOF_TOKEN;
         }
-        return next;
     }    
 
     @Override

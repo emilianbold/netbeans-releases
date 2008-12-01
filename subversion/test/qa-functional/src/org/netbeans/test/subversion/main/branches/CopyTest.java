@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -46,7 +47,6 @@ public class CopyTest extends JellyTestCase {
     public PrintStream stream;
     Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
-    String os_name;
     static Logger log;
     
     /** Creates a new instance of CopyTest */
@@ -67,14 +67,6 @@ public class CopyTest extends JellyTestCase {
         
     }
     
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
-    }
-    
     public static Test suite() {
          return NbModuleSuite.create(
                  NbModuleSuite.createConfiguration(CopyTest.class).addTest(
@@ -90,6 +82,10 @@ public class CopyTest extends JellyTestCase {
         try {
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
+            
+            TestKit.closeProject(PROJECT_NAME);
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                NewProjectWizardOperator.invoke().close();
 
             TestKit.showStatusLabels();
             

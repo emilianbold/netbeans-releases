@@ -45,12 +45,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -59,7 +58,7 @@ import org.openide.util.Lookup;
 /**
  * @author Tor Norbye
  */
-public class RubyFileLocator implements FileLocator {
+public class RubyFileLocator implements LineConvertors.FileLocator {
     
     protected Lookup context;
     protected Project project;

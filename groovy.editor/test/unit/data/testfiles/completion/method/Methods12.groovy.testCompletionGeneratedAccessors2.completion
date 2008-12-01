@@ -2,7 +2,7 @@ Code completion result for source line:
 new Test().set|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
-METHOD     setAge(Object)                             
-METHOD     setMetaClass(MetaClass)                    void
-METHOD     setName(String)                            
-METHOD     setProperty(String, Object)                void
+METHOD     setAge(Object)                  [PUBLIC]   void
+METHOD     setMetaClass(MetaClass)         [PUBLIC]   void
+METHOD     setName(String)                 [PUBLIC]   void
+METHOD     setProperty(String, Object)     [PUBLIC]   void

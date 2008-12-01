@@ -130,6 +130,20 @@ public abstract class ToolchainManager {
         String getVersionFlags();
 
         String getVersionPattern();
+
+        boolean skipSearch();
+
+        AlternativePath[] getAlternativePath();
+    }
+
+    public interface AlternativePath {
+        public enum PathKind {
+            PATH,
+            TOOL_FAMILY,
+            TOOL_NAME
+        }
+        String getPath();
+        PathKind getKind();
     }
 
     public interface CompilerDescriptor extends ToolDescriptor {
@@ -150,9 +164,11 @@ public abstract class ToolchainManager {
 
         String getMacroFlags();
 
-        String getUserMacroFlag();
-
         String getMacroParser();
+
+        List<PredefinedMacro> getPredefinedMacros();
+
+        String getUserMacroFlag();
 
         String[] getDevelopmentModeFlags();
 
@@ -179,6 +195,12 @@ public abstract class ToolchainManager {
         String getPrecompiledHeaderSuffix();
 
         boolean getPrecompiledHeaderSuffixAppend();
+    }
+
+    public interface PredefinedMacro {
+        String getMacro();
+
+        String getFlags();
     }
 
     public interface MakeDescriptor extends ToolDescriptor {
