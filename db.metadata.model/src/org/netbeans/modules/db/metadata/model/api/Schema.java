@@ -154,6 +154,13 @@ public class Schema extends MetadataElement {
         return impl.getProcedure(name);
     }
 
+    /**
+     * Refresh the metadata for this schema
+     */
+    public void refresh() {
+        impl.refresh();
+    }
+
     @Override
     public String toString() {
         return "Schema[name='" + impl.getName() + "',default=" + isDefault() + ",synthetic=" + isSynthetic() + "]"; // NOI18N

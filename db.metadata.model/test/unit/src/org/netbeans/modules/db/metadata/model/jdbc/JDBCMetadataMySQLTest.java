@@ -67,6 +67,8 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
 
     private JDBCMetadata metadata;
     private String defaultCatalogName;
+    private Connection conn;
+    private Statement stmt;
 
     public JDBCMetadataMySQLTest(String name) {
         super(name);
@@ -81,8 +83,8 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         String mysqlPassword = System.getProperty("mysql.password", "test");
         clearWorkDir();
         Class.forName("com.mysql.jdbc.Driver");
-        Connection conn = DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort + "/" + mysqlDatabase, mysqlUser, mysqlPassword);
-        Statement stmt = conn.createStatement();
+        conn = DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort + "/" + mysqlDatabase, mysqlUser, mysqlPassword);
+        stmt = conn.createStatement();
         stmt.executeUpdate("DROP DATABASE test");
         stmt.executeUpdate("CREATE DATABASE test");
         stmt.executeUpdate("USE test");
@@ -131,6 +133,22 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         assertSame(schema, barTable.getParent());
 
         checkColumns(barTable);
+
+    }
+
+    public void testSchemaRefresh() throws Exception {
+        Schema schema = metadata.getDefaultSchema();
+        Collection<Table> tables = schema.getTables();
+        assertNames(new HashSet<String>(Arrays.asList("foo", "bar", "groucho")), tables);
+
+        stmt.executeUpdate("CREATE TABLE testSchemaRefresh (" +
+        "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, " +
+        "FOO_NAME VARCHAR(16))");
+
+        schema.refresh();
+
+        tables = schema.getTables();
+        assertNames(new HashSet<String>(Arrays.asList("foo", "bar", "groucho", "testSchemaRefresh")), tables);
 
     }
 
