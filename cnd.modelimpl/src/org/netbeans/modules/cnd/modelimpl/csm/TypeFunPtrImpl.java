@@ -155,7 +155,8 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         }
 
         // check that it's followed by exprected token
-        if (next.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+        if (next.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
+                next.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION) {
             // fine. this could be variable of function type
         } else if (next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
             AST lookahead = next.getNextSibling();
