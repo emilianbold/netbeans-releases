@@ -39,8 +39,14 @@
 
 package org.netbeans.core.windows.view.ui.toolbars;
 
+import java.awt.AlphaComposite;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
@@ -65,6 +71,7 @@ import java.awt.dnd.DropTargetListener;
 import java.awt.dnd.InvalidDnDOperationException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,8 +80,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.openide.awt.Toolbar;
@@ -122,6 +131,7 @@ final class DnDSupport implements DragSourceListener, DragGestureListener, DropT
     private ToolbarRow sourceRow;
     private Point startingPoint;
     private Window dragWindow;
+    private Image dragImage;
 
     private boolean isToolbarDrag;
     private boolean isButtonDrag;
@@ -254,8 +264,9 @@ final class DnDSupport implements DragSourceListener, DragGestureListener, DropT
                 startingPoint = new Point(e.getDragOrigin());
                 Rectangle bounds = new Rectangle(sourceContainer.getPreferredSize());
                 bounds.setLocation(sourceContainer.getLocationOnScreen());
+                dragImage = createContentImage(sourceContainer, bounds.getSize());
                 sourceRow.dragStarted( sourceContainer );
-                dragWindow = createDragWindow( sourceContainer, bounds );
+                dragWindow = createDragWindow( dragImage, bounds );
             }
             if( c instanceof JButton ) {
                 ((JButton) c).getModel().setArmed(false);
@@ -357,7 +368,7 @@ final class DnDSupport implements DragSourceListener, DragGestureListener, DropT
                 config.repaint();
             }
             if( null != currentRow )
-                currentRow.showDropFeedback( sourceContainer, e.getLocation() );
+                currentRow.showDropFeedback( sourceContainer, e.getLocation(), dragImage );
             if( !config.isLastRow(currentRow) )
                 config.maybeRemoveLastRow();
         }
@@ -367,9 +378,9 @@ final class DnDSupport implements DragSourceListener, DragGestureListener, DropT
         this.buttonDndAllowed = buttonDndAllowed;
     }
 
-    private Window createDragWindow( ToolbarContainer dragContainer, Rectangle bounds ) {
+    private Window createDragWindow( Image dragImage, Rectangle bounds ) {
         Window w = new Window( SwingUtilities.windowForComponent(sourceRow) );
-        w.add(dragContainer);
+        w.add(new JLabel(new ImageIcon(dragImage)));
         w.setBounds(bounds);
         w.setVisible(true);
         NativeWindowSystem nws = NativeWindowSystem.getDefault();
@@ -377,6 +388,22 @@ final class DnDSupport implements DragSourceListener, DragGestureListener, DropT
             nws.setWindowAlpha(w, 0.7f);
         }
         return w;
+    }
+
+    private BufferedImage createContentImage( JComponent c, Dimension contentSize ) {
+        GraphicsConfiguration cfg = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                    .getDefaultScreenDevice().getDefaultConfiguration();
+
+        boolean opaque = c.isOpaque();
+        c.setOpaque(true);
+        BufferedImage res = cfg.createCompatibleImage(contentSize.width, contentSize.height);
+        Graphics2D g = res.createGraphics();
+        g.setColor( c.getBackground() );
+        g.fillRect(0, 0, contentSize.width, contentSize.height);
+        g.setComposite( AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f ));
+        c.paint(g);
+        c.setOpaque(opaque);
+        return res;
     }
 
     private static final int SLIDE_INTERVAL = 1000/30;
