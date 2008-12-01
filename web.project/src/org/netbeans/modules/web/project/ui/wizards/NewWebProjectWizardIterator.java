@@ -114,7 +114,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         return null;
     }
 
-    public boolean isIstantiating = false;
+    boolean isIstantiating = false;
 
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         isIstantiating = true;
