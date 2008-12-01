@@ -42,12 +42,14 @@ package org.netbeans.modules.groovy.editor.completion;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
+import groovy.lang.MetaProperty;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.groovy.reflection.CachedClass;
+import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -95,7 +97,40 @@ public final class MetaElementHandler {
             LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
             for (Object method : metaClz.getMetaMethods()) {
                 LOG.log(Level.FINEST, method.toString());
+                //System.out.println("Method " + method.toString());
                 populateProposal(clz, method, prefix, anchor, result);
+            }
+
+            return result;
+        }
+        return Collections.emptyMap();
+    }
+
+    public Map<FieldSignature, ? extends CompletionItem> getFields(String className,
+            String prefix, int anchor) {
+
+        Class clz;
+
+        try {
+            clz = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
+            return Collections.emptyMap();
+        }
+
+        MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
+
+        if (metaClz != null) {
+
+            Map<FieldSignature, CompletionItem.FieldItem> result = new HashMap<FieldSignature, CompletionItem.FieldItem>();
+
+            LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
+            for (Object field : metaClz.getProperties()) {
+                LOG.log(Level.FINEST, field.toString());
+                MetaProperty prop = (MetaProperty) field;
+                //System.out.println("META: " + prop.getName() + " " + prop.getType().getSimpleName() + " " + Utilities.reflectionModifiersToModel(prop.getModifiers()));
+                result.put(new FieldSignature(prop.getName()), new CompletionItem.FieldItem(
+                        prop.getName(), prop.getModifiers(), anchor, info, prop.getType().getSimpleName()));
             }
 
             return result;

@@ -40,8 +40,8 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.ruby.platform.execution.FileLocator;
 
 /**
  * Represents a test session, i.e. a single run of a test suite.

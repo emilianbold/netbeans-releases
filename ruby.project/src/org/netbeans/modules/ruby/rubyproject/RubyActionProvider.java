@@ -204,12 +204,11 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
         desc.additionalArgs(getApplicationArguments());
         desc.fileLocator(new RubyFileLocator(context, project));
         desc.addStandardRecognizers();
-        LineConvertors.FileLocator locator = RubyProcessCreator.wrap(desc.getFileLocator());
-        desc.addOutConvertor(LineConvertors.filePattern(locator,
+        desc.addOutConvertor(LineConvertors.filePattern(desc.getFileLocator(),
                 RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
                 RubyLineConvertorFactory.EXT_RE
                 ,1,2));
-        desc.addErrConvertor(LineConvertors.filePattern(locator,
+        desc.addErrConvertor(LineConvertors.filePattern(desc.getFileLocator(),
                 RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
                 RubyLineConvertorFactory.EXT_RE
                 ,1,2));
@@ -382,10 +381,10 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
                     classPath(classPath).
                     appendJdkToPath(platform.isJRuby()).
                     addStandardRecognizers().
-                    addErrConvertor(LineConvertors.filePattern(RubyProcessCreator.wrap(fileLocator),
+                    addErrConvertor(LineConvertors.filePattern(fileLocator,
                         RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
                         RubyLineConvertorFactory.EXT_RE, 1, 2)).
-                    addOutConvertor(LineConvertors.filePattern(RubyProcessCreator.wrap(fileLocator),
+                    addOutConvertor(LineConvertors.filePattern(fileLocator,
                         RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
                         RubyLineConvertorFactory.EXT_RE, 1, 2));
             RubyProcessCreator rpc = new RubyProcessCreator(desc, getSourceEncoding());

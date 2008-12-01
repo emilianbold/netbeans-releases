@@ -4,14 +4,14 @@ Document 0
 Searchable Keys:
   class : Date
   class-ig : date
-  constant : ABBR_DAYNAMES
-  constant : ABBR_MONTHNAMES
-  constant : DAYNAMES
-  constant : ENGLAND
-  constant : GREGORIAN
-  constant : ITALY
-  constant : JULIAN
-  constant : MONTHNAMES
+  constant : ABBR_DAYNAMES;Array
+  constant : ABBR_MONTHNAMES;
+  constant : DAYNAMES;Array
+  constant : ENGLAND;Fixnum
+  constant : GREGORIAN;TrueClass
+  constant : ITALY;Fixnum
+  constant : JULIAN;FalseClass
+  constant : MONTHNAMES;
   field : ajd
   field : of
   field : sg

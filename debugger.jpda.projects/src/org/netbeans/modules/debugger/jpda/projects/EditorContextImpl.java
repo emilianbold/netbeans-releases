@@ -1154,53 +1154,55 @@ public class EditorContextImpl extends EditorContext {
             if (ci == null) {
                 return new Operation[] {};
             }
-            //t2 = System.nanoTime();
-            if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
-                        "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                        "\nDiagnostics = "+ci.getDiagnostics()+
-                        "\nFree memory = "+Runtime.getRuntime().freeMemory());
-                return new Operation[] {};
-            }
-            Scope scope = ci.getTreeUtilities().scopeFor(offset);
-            Element method = scope.getEnclosingMethod();
-            if (method == null) {
-                return new Operation[] {};
-            }
-            Tree methodTree = ci.getTrees().getTree(method);
-            CompilationUnitTree cu = ci.getCompilationUnit();
-            ExpressionScanner scanner = new ExpressionScanner(lineNumber, cu, ci.getTrees().getSourcePositions());
-            ExpressionScanner.ExpressionsInfo info = new ExpressionScanner.ExpressionsInfo();
-            List<Tree> expTrees = methodTree.accept(scanner, info);
+            synchronized (ci) {
+                //t2 = System.nanoTime();
+                if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
+                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                            "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                            "\nDiagnostics = "+ci.getDiagnostics()+
+                            "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                    return new Operation[] {};
+                }
+                Scope scope = ci.getTreeUtilities().scopeFor(offset);
+                Element method = scope.getEnclosingMethod();
+                if (method == null) {
+                    return new Operation[] {};
+                }
+                Tree methodTree = ci.getTrees().getTree(method);
+                CompilationUnitTree cu = ci.getCompilationUnit();
+                ExpressionScanner scanner = new ExpressionScanner(lineNumber, cu, ci.getTrees().getSourcePositions());
+                ExpressionScanner.ExpressionsInfo info = new ExpressionScanner.ExpressionsInfo();
+                List<Tree> expTrees = methodTree.accept(scanner, info);
 
-            //com.sun.source.tree.ExpressionTree expTree = scanner.getExpressionTree();
-            if (expTrees == null || expTrees.size() == 0) {
-                return new Operation[] {};
-            }
-            SourcePositions sp = ci.getTrees().getSourcePositions();
-            int treeStartLine =
-                    (int) cu.getLineMap().getLineNumber(
-                        sp.getStartPosition(cu, expTrees.get(0)));
-            int treeEndLine =
-                    (int) cu.getLineMap().getLineNumber(
-                        sp.getEndPosition(cu, expTrees.get(expTrees.size() - 1)));
+                //com.sun.source.tree.ExpressionTree expTree = scanner.getExpressionTree();
+                if (expTrees == null || expTrees.size() == 0) {
+                    return new Operation[] {};
+                }
+                SourcePositions sp = ci.getTrees().getSourcePositions();
+                int treeStartLine =
+                        (int) cu.getLineMap().getLineNumber(
+                            sp.getStartPosition(cu, expTrees.get(0)));
+                int treeEndLine =
+                        (int) cu.getLineMap().getLineNumber(
+                            sp.getEndPosition(cu, expTrees.get(expTrees.size() - 1)));
 
-            //t3 = System.nanoTime();
-            int[] indexes = bytecodeProvider.indexAtLines(treeStartLine, treeEndLine);
-            if (indexes == null) {
-                return null;
-            }
-            Map<Tree, Operation> nodeOperations = new HashMap<Tree, Operation>();
-            ops = AST2Bytecode.matchSourceTree2Bytecode(
-                    cu,
-                    ci,
-                    expTrees, info, bytecodeProvider.byteCodes(),
-                    indexes,
-                    bytecodeProvider.constantPool(),
-                    new OperationCreationDelegateImpl(),
-                    nodeOperations);
-            if (ops != null) {
-                assignNextOperations(methodTree, cu, ci, bytecodeProvider, expTrees, info, nodeOperations);
+                //t3 = System.nanoTime();
+                int[] indexes = bytecodeProvider.indexAtLines(treeStartLine, treeEndLine);
+                if (indexes == null) {
+                    return null;
+                }
+                Map<Tree, Operation> nodeOperations = new HashMap<Tree, Operation>();
+                ops = AST2Bytecode.matchSourceTree2Bytecode(
+                        cu,
+                        ci,
+                        expTrees, info, bytecodeProvider.byteCodes(),
+                        indexes,
+                        bytecodeProvider.constantPool(),
+                        new OperationCreationDelegateImpl(),
+                        nodeOperations);
+                if (ops != null) {
+                    assignNextOperations(methodTree, cu, ci, bytecodeProvider, expTrees, info, nodeOperations);
+                }
             }
             //t4 = System.nanoTime();
             //System.err.println("PARSE TIMES 2: "+(t2-t1)/1000000+", "+(t3-t2)/1000000+", "+(t4-t3)/1000000+" TOTAL: "+(t4-t1)/1000000+" ms.");
@@ -1496,7 +1498,9 @@ public class EditorContextImpl extends EditorContext {
                  js.runUserActionTask(task, false);
             } else {
                 try {
-                    task.run(ci);
+                    synchronized (ci) {
+                        task.run(ci);
+                    }
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                     return null;

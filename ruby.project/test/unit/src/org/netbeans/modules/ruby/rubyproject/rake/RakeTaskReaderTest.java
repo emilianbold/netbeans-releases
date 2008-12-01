@@ -49,7 +49,6 @@ public class RakeTaskReaderTest extends RubyProjectTestBase {
     }
 
     public void testGetRakeTaskTree() throws Exception {
-        registerLayer();
         RubyProject project = createTestProject();
         RakeTaskReader rakeTaskReader = new RakeTaskReader(project);
         Set<RakeTask> tasks = rakeTaskReader.getRakeTaskTree();
@@ -58,14 +57,12 @@ public class RakeTaskReaderTest extends RubyProjectTestBase {
     }
 
     public void testRawRead() throws Exception {
-        registerLayer();
         RubyProject project = createTestProject();
         RakeTaskReader rakeTaskReader = new RakeTaskReader(project);
         assertNotNull("rake file output dumped", rakeTaskReader.rawRead());
     }
 
     public void testMultilineDescriptions() throws Exception {
-        registerLayer();
         RubyProject project = createTestProject();
         String rakeContent =
                 "desc 'Dummy task'\n" +
@@ -85,7 +82,6 @@ public class RakeTaskReaderTest extends RubyProjectTestBase {
     }
 
     public void testTaskWithNamespace() throws Exception {
-        registerLayer();
         RubyProject project = createTestProject();
         String rakeContent =
                 "namespace 'test' do\n" +
@@ -104,7 +100,6 @@ public class RakeTaskReaderTest extends RubyProjectTestBase {
     }
 
     public void testTaskWithTaskAndNamespaceHavingSameName() throws Exception {
-        registerLayer();
         RubyProject project = createTestProject();
         String rakeContent =
                 "desc 'runs tests'\n" +
@@ -125,7 +120,6 @@ public class RakeTaskReaderTest extends RubyProjectTestBase {
     }
 
     public void testTaskWithoutComment() throws Exception {
-        registerLayer();
         RubyProject project = createTestProject();
         String rakeContent =
                 "task :no_comment\n" +

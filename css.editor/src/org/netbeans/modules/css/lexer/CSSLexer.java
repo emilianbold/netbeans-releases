@@ -43,6 +43,7 @@ package org.netbeans.modules.css.lexer;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
 import org.netbeans.modules.css.parser.CSSParserTokenManager;
+import org.netbeans.modules.css.parser.PatchedCSSParserTokenManager;
 import org.netbeans.modules.css.parser.TokenMgrError;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -68,9 +69,9 @@ public final class CSSLexer implements Lexer<CSSTokenId> {
     public CSSLexer(LexerRestartInfo<CSSTokenId> info) {
         this.lexerRestartInfo = info;
         if (info.state() != null) {
-            tokenManager = new CSSParserTokenManager(new LexerCharStream(info), ((Integer) info.state()).intValue());
+            tokenManager = new PatchedCSSParserTokenManager(new LexerCharStream(info), ((Integer) info.state()).intValue());
         } else {
-            tokenManager = new CSSParserTokenManager(new LexerCharStream(info));
+            tokenManager = new PatchedCSSParserTokenManager(new LexerCharStream(info));
         }
         this.tokenFactory = info.tokenFactory();
     }

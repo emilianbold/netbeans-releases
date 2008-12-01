@@ -41,37 +41,39 @@
 
 package org.netbeans.performance.languages.actions;
 
-import junit.framework.Test;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
+
+import java.io.IOException;
+import org.openide.util.Exceptions;
+
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.performance.languages.setup.ScriptingSetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class OpenRubyProjectTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Actions suite";
+public class OpenRubyProjectTest extends PerformanceTestCase {
+
     private static String projectName; 
     private JButtonOperator openButton;
-    private String workdir;    
+    private String workdir=getDataDir().toString();
     
     public OpenRubyProjectTest(String testName) {
         super(testName);
         WAIT_AFTER_OPEN = 20000;
-        workdir = CommonUtilities.getProjectsDir();
     }
 
     public OpenRubyProjectTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         WAIT_AFTER_OPEN = 20000;
-        workdir = CommonUtilities.getProjectsDir();
     }
 
     public static NbTestSuite suite() {
@@ -84,19 +86,19 @@ public class OpenRubyProjectTest extends org.netbeans.modules.performance.utilit
 
     @Override
     public void initialize() {
-        log("::initialize::");
         closeAllModal();
+        CommonUtilities.actionOnProject("RubyPerfTest", "Close");
+        CommonUtilities.actionOnProject("RailsPerfTest", "Close");
+        CommonUtilities.actionOnProject("PHPPerfTest", "Close");
     }
     
     @Override
     public void prepare() {
-        // closeProject should be here so the project is available after the test finished
-//        ProjectSupport.closeProject(projectName);
         new ActionNoBlock("File|Open Project...", null).perform(); //NOI18N
         WizardOperator opd = new WizardOperator("Open Project"); //NOI18N
         JTextComponentOperator path = new JTextComponentOperator(opd,1);
         openButton = new JButtonOperator(opd, "Open Project"); //NOI18N
-        String paths = workdir + projectName;
+        String paths = workdir + java.io.File.separator+ projectName;
         path.setText(paths);        
     }
 
@@ -108,19 +110,28 @@ public class OpenRubyProjectTest extends org.netbeans.modules.performance.utilit
     
     @Override
     public void close() {
-        log("::close");
         closeAllModal();
+        CommonUtilities.actionOnProject(projectName, "Close");
+    }
+
+    @Override
+    public void shutdown() {
+        try {
+            this.openDataProjects("RubyPerfTest", "RailsPerfTest", "PHPPerfTest");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public void testOpenRubyProject() {
         projectName = "RubyPerfTest"; //NO18N
-        expectedTime = 18000;
+        expectedTime = 10000;
         doMeasurement();
     }
 
     public void testOpenRailsProject() {
         projectName = "RailsPerfTest";
-        expectedTime = 18000;
+        expectedTime = 10000;
         doMeasurement();
     }
 

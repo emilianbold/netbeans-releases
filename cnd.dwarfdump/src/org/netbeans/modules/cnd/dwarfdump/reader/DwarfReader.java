@@ -87,7 +87,7 @@ public class DwarfReader extends ElfReader {
 //                byte[] val = (byte[])value;
 //                return new Integer((0xFF & val[0]) | ((0xFF & val[1]) << 8));
 //            }
-            return new Integer(((Number)value).intValue());
+            return Integer.valueOf(((Number)value).intValue());
         }
         
         return value;

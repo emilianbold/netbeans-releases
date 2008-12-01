@@ -19,7 +19,7 @@ if [ -z ${UPLOAD_JDK} ]; then
     export UPLOAD_JDK=0
 fi
 
-export ANT_OPTS="-Xmx512m"
+export ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m"
 export JAVA_HOME=$JDK_HOME
 
 if [ -z ${DATESTAMP} ]; then

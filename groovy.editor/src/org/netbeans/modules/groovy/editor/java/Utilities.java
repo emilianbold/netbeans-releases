@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -144,7 +145,7 @@ public final class Utilities {
         return ret;
     }
 
-    public static Collection<javax.lang.model.element.Modifier> gsfModifiersToModel(Set<Modifier> modifiers,
+    public static Set<javax.lang.model.element.Modifier> gsfModifiersToModel(Set<Modifier> modifiers,
             javax.lang.model.element.Modifier defaultModifier) {
 
         Set<javax.lang.model.element.Modifier> ret = new HashSet<javax.lang.model.element.Modifier>();
@@ -160,6 +161,24 @@ public final class Utilities {
             ret.add(javax.lang.model.element.Modifier.PUBLIC);
         } else if (defaultModifier != null) {
             ret.add(defaultModifier);
+        }
+
+        return ret;
+    }
+
+    public static Set<Modifier> modelModifiersToGsf(Set<javax.lang.model.element.Modifier> modifiers) {
+
+        Set<Modifier> ret = new LinkedHashSet<Modifier>();
+
+        if (modifiers.contains(javax.lang.model.element.Modifier.STATIC)) {
+            ret.add(Modifier.STATIC);
+        }
+        if (modifiers.contains(javax.lang.model.element.Modifier.PRIVATE)) {
+            ret.add(Modifier.PRIVATE);
+        } else if (modifiers.contains(javax.lang.model.element.Modifier.PROTECTED)) {
+            ret.add(Modifier.PROTECTED);
+        } else if (modifiers.contains(javax.lang.model.element.Modifier.PUBLIC)) {
+            ret.add(Modifier.PUBLIC);
         }
 
         return ret;

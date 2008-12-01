@@ -56,12 +56,14 @@ public interface RubyDebuggerImplementation {
     void describeProcess(final RubyExecutionDescriptor descriptor);
 
     /**
-     * Returns whether the implementation is able to debug described process.
-     * e.g. if there is or not a support for currently used platform.
+     * Checks whether the implementation is able to debug the {@link
+     * #describeProcess described process}. If not it might try to interact with
+     * the user to make the implementation ready for the process (i.e.
+     * installing additional gems). If still not ready, returns false.
      * 
      * @return whether the implementation is able to debug described process.
      */
-    boolean canDebug();
+    boolean prepare();
 
     /**
      * Starts debugging of the given script.
@@ -72,6 +74,13 @@ public interface RubyDebuggerImplementation {
      */
     Process debug();
 
+    /**
+     * Attaches to the running debugger backend on the specified host and port.
+     * 
+     * @param host host to connect to
+     * @param port port to connect to
+     * @param timeout timeout until the attaching gives up
+     */
     void attach(String host, int port, int timeout);
 
     /**

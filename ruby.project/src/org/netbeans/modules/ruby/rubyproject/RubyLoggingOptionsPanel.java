@@ -38,8 +38,6 @@
  */
 package org.netbeans.modules.ruby.rubyproject;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JPanel;
 
 /**

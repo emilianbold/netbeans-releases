@@ -203,14 +203,14 @@ public class ModelSource implements SourceFileProperties {
         String name = include.getIncludeName().toString();
         String found = name.replace('\\','/');
         String prefix = null;
-        String back = null;
+        //String back = null;
         int i = found.lastIndexOf('/');
         if(i >= 0){
             prefix = found.substring(0,i+1);
             found = found.substring(i+1);
             i = prefix.lastIndexOf("./"); // NOI18N
             if (i >= 0) {
-                back = prefix.substring(0,i+2);
+                //back = prefix.substring(0,i+2);
                 prefix = prefix.substring(i+2);
                 if (prefix.length()==0) {
                     prefix = null;

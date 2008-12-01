@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.folding;
 
 import antlr.TokenStream;
@@ -60,59 +59,58 @@ import org.netbeans.modules.cnd.apt.support.*;
  * @author Vladimir Voskresensky
  */
 /*package*/ class APTFoldingWalker extends APTWalker {
-    
+
     private static final int IFDEF_FOLD = CppFoldRecord.IFDEF_FOLD;
     private static final int INCLUDES_FOLD = CppFoldRecord.INCLUDES_FOLD;
-
     private APTFoldingCommentFilter filter = null;
     private List<CppFoldRecord> includeFolds = new ArrayList<CppFoldRecord>();
     private List<CppFoldRecord> ifdefFolds = new ArrayList<CppFoldRecord>();
-    
+
     public APTFoldingWalker(APTFile apt) {
         super(apt, null);
     }
-    
+
     public TokenStream getFilteredTokenStream(APTLanguageFilter lang) {
         return lang.getFilteredStream(getTokenStream());
     }
-    
+
     @Override
     public TokenStream getTokenStream() {
         // get original
         // remove comments and hanlde includes
         filter = new APTFoldingCommentFilter(super.getTokenStream());
         return filter;
-    }        
+    }
 
     public List<CppFoldRecord> getFolders() {
         List<CppFoldRecord> filterFolds = filter.getFolders();
-        List<CppFoldRecord> out = new ArrayList<CppFoldRecord>(filterFolds.size() + includeFolds.size() + ifdefFolds.size());   
+        List<CppFoldRecord> out = new ArrayList<CppFoldRecord>(filterFolds.size() + includeFolds.size() + ifdefFolds.size());
         out.addAll(filterFolds);
         out.addAll(includeFolds);
         out.addAll(ifdefFolds);
         return out;
     }
-    
+
     protected void onInclude(APT apt) {
         include(apt);
     }
-    
+
     protected void onIncludeNext(APT apt) {
         include(apt);
     }
-    
+
     protected boolean onIf(APT apt) {
         return onStartPreprocNode(apt);
     }
-    
+
     protected boolean onIfdef(APT apt) {
         return onStartPreprocNode(apt);
     }
-    
+
     protected boolean onIfndef(APT apt) {
         return onStartPreprocNode(apt);
     }
-    
+
     protected void onDefine(APT apt) {
         onOtherPreprocNode(apt);
     }
@@ -130,11 +128,11 @@ import org.netbeans.modules.cnd.apt.support.*;
         onOtherPreprocNode(apt);
         return true;
     }
-    
+
     protected void onEndif(APT apt, boolean wasInBranch) {
         createEndifFold(apt);
     }
-    
+
     @Override
     protected void onErrorNode(APT apt) {
         onOtherPreprocNode(apt);
@@ -144,28 +142,27 @@ import org.netbeans.modules.cnd.apt.support.*;
     protected void onOtherNode(APT apt) {
         onOtherPreprocNode(apt);
     }
-    
+
     @Override
     protected void onStreamNode(APT apt) {
         addIncludesIfNeeded();
     }
-    
+
     @Override
     protected void onEOF() {
         addIncludesIfNeeded();
-    }    
+    }
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
-    
     private Stack<APT> ppStartDirectives = new Stack<APT>();
-        
+
     private boolean onStartPreprocNode(APT apt) {
         filter.onPreprocNode(apt);
         addIncludesIfNeeded();
-        ppStartDirectives.push(apt);        
+        ppStartDirectives.push(apt);
         return true;
     }
-    
+
     private void createEndifFold(APT end) {
         filter.onPreprocNode(end);
         addIncludesIfNeeded();
@@ -176,11 +173,11 @@ import org.netbeans.modules.cnd.apt.support.*;
             int startFold = start.getEndOffset();
             int endFold = end.getEndOffset();
             if (APTFoldingUtils.isStandalone()) {
-                ifdefFolds.add(new CppFoldRecord(IFDEF_FOLD, start.getToken().getLine(), startFold, ((APTToken)end.getToken()).getEndLine(), endFold));
+                ifdefFolds.add(new CppFoldRecord(IFDEF_FOLD, start.getToken().getLine(), startFold, (end.getToken()).getEndLine(), endFold));
             } else {
                 ifdefFolds.add(new CppFoldRecord(IFDEF_FOLD, startFold, endFold));
             }
-        }        
+        }
     }
 
     private void include(APT apt) {
@@ -196,34 +193,33 @@ import org.netbeans.modules.cnd.apt.support.*;
             assert (lastInclude != null);
             assert (firstInclude != null);
             // we want fold after #include string
-            int start = ((APTToken)firstInclude.getToken()).getEndOffset();
+            int start = (firstInclude.getToken()).getEndOffset();
             int end = lastInclude.getEndOffset();
             if (start < end) {
                 if (APTFoldingUtils.isStandalone()) {
-                    includeFolds.add(new CppFoldRecord(INCLUDES_FOLD, ((APTToken)firstInclude.getToken()).getLine(), start, ((APTToken)lastInclude.getToken()).getEndLine(), end));
-                } else {                
+                    includeFolds.add(new CppFoldRecord(INCLUDES_FOLD, (firstInclude.getToken()).getLine(), start, (lastInclude.getToken()).getEndLine(), end));
+                } else {
                     includeFolds.add(new CppFoldRecord(INCLUDES_FOLD, start, end));
                 }
             }
         }
         lastInclude = null;
         firstInclude = null;
-    }    
-    
-    private  void onOtherPreprocNode(APT apt) {
+    }
+
+    private void onOtherPreprocNode(APT apt) {
         filter.onPreprocNode(apt);
         addIncludesIfNeeded();
-    }    
-    
+    }
+
     /** 
      * overrides APTWalker.stopOnErrorDirective 
      * We should be able to make folds after #error as well
      */
     @Override
     protected boolean stopOnErrorDirective() {
-	return false;
+        return false;
     }
-    
     private APT firstInclude = null;
     private APT lastInclude = null;
 }

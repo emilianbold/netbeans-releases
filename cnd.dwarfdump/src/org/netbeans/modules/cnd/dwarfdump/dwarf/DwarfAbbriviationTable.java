@@ -52,10 +52,10 @@ import java.util.ArrayList;
 public class DwarfAbbriviationTable {
     private ArrayList<DwarfAbbriviationTableEntry> entries = null;
     private int numOfEntries = 0;
-    private long offset;
+    //private long offset;
 
     public DwarfAbbriviationTable(long offset) {
-        this.offset = offset;
+        //this.offset = offset;
     }
     
     public void setEntries(ArrayList<DwarfAbbriviationTableEntry> entries) {

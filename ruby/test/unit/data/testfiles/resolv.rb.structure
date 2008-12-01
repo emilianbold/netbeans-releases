@@ -1,8 +1,8 @@
 Resolv:CLASS:[]:ESCAPED{Resolv}:
-  AddressRegex:CONSTANT:[]:ESCAPED{AddressRegex}:
+  AddressRegex:CONSTANT:[]:ESCAPED{AddressRegex} : ESCAPED{Regexp}:
   DNS:CLASS:[]:ESCAPED{DNS}:
     Config:CLASS:[]:ESCAPED{Config}:
-      InitialTimeout:CONSTANT:[]:ESCAPED{InitialTimeout}:
+      InitialTimeout:CONSTANT:[]:ESCAPED{InitialTimeout} : ESCAPED{Fixnum}:
       NXDomain:CLASS:[]:ESCAPED{NXDomain}:
       OtherResolvError:CLASS:[]:ESCAPED{OtherResolvError}:
       config_info:FIELD:[]:ESCAPED{config_info}:
@@ -19,7 +19,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       resolv:METHOD:[PUBLIC]:ESCAPED{resolv}(PARAMETERS{ESCAPED{name}}):
       search:FIELD:[]:ESCAPED{search}:
       single?:METHOD:[PUBLIC]:ESCAPED{single?}:
-    DNSThreadGroup:CONSTANT:[]:ESCAPED{DNSThreadGroup}:
+    DNSThreadGroup:CONSTANT:[]:ESCAPED{DNSThreadGroup} : ESCAPED{ThreadGroup}:
     DecodeError:CLASS:[]:ESCAPED{DecodeError}:
     EncodeError:CLASS:[]:ESCAPED{EncodeError}:
     Label:MODULE:[]:ESCAPED{Label}:
@@ -103,34 +103,34 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       to_a:METHOD:[PUBLIC]:ESCAPED{to_a}:
       to_s:METHOD:[PUBLIC]:ESCAPED{to_s}:
     OpCode:MODULE:[]:ESCAPED{OpCode}:
-      IQuery:CONSTANT:[]:ESCAPED{IQuery}:
-      Notify:CONSTANT:[]:ESCAPED{Notify}:
-      Query:CONSTANT:[]:ESCAPED{Query}:
-      Status:CONSTANT:[]:ESCAPED{Status}:
-      Update:CONSTANT:[]:ESCAPED{Update}:
-    Port:CONSTANT:[]:ESCAPED{Port}:
+      IQuery:CONSTANT:[]:ESCAPED{IQuery} : ESCAPED{Fixnum}:
+      Notify:CONSTANT:[]:ESCAPED{Notify} : ESCAPED{Fixnum}:
+      Query:CONSTANT:[]:ESCAPED{Query} : ESCAPED{Fixnum}:
+      Status:CONSTANT:[]:ESCAPED{Status} : ESCAPED{Fixnum}:
+      Update:CONSTANT:[]:ESCAPED{Update} : ESCAPED{Fixnum}:
+    Port:CONSTANT:[]:ESCAPED{Port} : ESCAPED{Fixnum}:
     Query:CLASS:[]:ESCAPED{Query}:
       decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
       encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
     RCode:MODULE:[]:ESCAPED{RCode}:
-      BADALG:CONSTANT:[]:ESCAPED{BADALG}:
-      BADKEY:CONSTANT:[]:ESCAPED{BADKEY}:
-      BADMODE:CONSTANT:[]:ESCAPED{BADMODE}:
-      BADNAME:CONSTANT:[]:ESCAPED{BADNAME}:
-      BADSIG:CONSTANT:[]:ESCAPED{BADSIG}:
-      BADTIME:CONSTANT:[]:ESCAPED{BADTIME}:
-      BADVERS:CONSTANT:[]:ESCAPED{BADVERS}:
-      FormErr:CONSTANT:[]:ESCAPED{FormErr}:
-      NXDomain:CONSTANT:[]:ESCAPED{NXDomain}:
-      NXRRSet:CONSTANT:[]:ESCAPED{NXRRSet}:
-      NoError:CONSTANT:[]:ESCAPED{NoError}:
-      NotAuth:CONSTANT:[]:ESCAPED{NotAuth}:
-      NotImp:CONSTANT:[]:ESCAPED{NotImp}:
-      NotZone:CONSTANT:[]:ESCAPED{NotZone}:
-      Refused:CONSTANT:[]:ESCAPED{Refused}:
-      ServFail:CONSTANT:[]:ESCAPED{ServFail}:
-      YXDomain:CONSTANT:[]:ESCAPED{YXDomain}:
-      YXRRSet:CONSTANT:[]:ESCAPED{YXRRSet}:
+      BADALG:CONSTANT:[]:ESCAPED{BADALG} : ESCAPED{Fixnum}:
+      BADKEY:CONSTANT:[]:ESCAPED{BADKEY} : ESCAPED{Fixnum}:
+      BADMODE:CONSTANT:[]:ESCAPED{BADMODE} : ESCAPED{Fixnum}:
+      BADNAME:CONSTANT:[]:ESCAPED{BADNAME} : ESCAPED{Fixnum}:
+      BADSIG:CONSTANT:[]:ESCAPED{BADSIG} : ESCAPED{Fixnum}:
+      BADTIME:CONSTANT:[]:ESCAPED{BADTIME} : ESCAPED{Fixnum}:
+      BADVERS:CONSTANT:[]:ESCAPED{BADVERS} : ESCAPED{Fixnum}:
+      FormErr:CONSTANT:[]:ESCAPED{FormErr} : ESCAPED{Fixnum}:
+      NXDomain:CONSTANT:[]:ESCAPED{NXDomain} : ESCAPED{Fixnum}:
+      NXRRSet:CONSTANT:[]:ESCAPED{NXRRSet} : ESCAPED{Fixnum}:
+      NoError:CONSTANT:[]:ESCAPED{NoError} : ESCAPED{Fixnum}:
+      NotAuth:CONSTANT:[]:ESCAPED{NotAuth} : ESCAPED{Fixnum}:
+      NotImp:CONSTANT:[]:ESCAPED{NotImp} : ESCAPED{Fixnum}:
+      NotZone:CONSTANT:[]:ESCAPED{NotZone} : ESCAPED{Fixnum}:
+      Refused:CONSTANT:[]:ESCAPED{Refused} : ESCAPED{Fixnum}:
+      ServFail:CONSTANT:[]:ESCAPED{ServFail} : ESCAPED{Fixnum}:
+      YXDomain:CONSTANT:[]:ESCAPED{YXDomain} : ESCAPED{Fixnum}:
+      YXRRSet:CONSTANT:[]:ESCAPED{YXRRSet} : ESCAPED{Fixnum}:
     Requester:CLASS:[]:ESCAPED{Requester}:
       ConnectedUDP:CLASS:[]:ESCAPED{ConnectedUDP}:
         Sender:CLASS:[]:ESCAPED{Sender}:
@@ -181,12 +181,12 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     Resource:CLASS:[]:ESCAPED{Resource}:
       ==:METHOD:[PUBLIC]:ESCAPED{==}(PARAMETERS{ESCAPED{other}}):
       ANY:CLASS:[]:ESCAPED{ANY}:
-        TypeValue:CONSTANT:[]:ESCAPED{TypeValue}:
+        TypeValue:CONSTANT:[]:ESCAPED{TypeValue} : ESCAPED{Fixnum}:
       CNAME:CLASS:[]:ESCAPED{CNAME}:
-        TypeValue:CONSTANT:[]:ESCAPED{TypeValue}:
-      ClassHash:CONSTANT:[]:ESCAPED{ClassHash}:
-      ClassInsensitiveTypes:CONSTANT:[]:ESCAPED{ClassInsensitiveTypes}:
-      ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
+        TypeValue:CONSTANT:[]:ESCAPED{TypeValue} : ESCAPED{Fixnum}:
+      ClassHash:CONSTANT:[]:ESCAPED{ClassHash} : ESCAPED{Hash}:
+      ClassInsensitiveTypes:CONSTANT:[]:ESCAPED{ClassInsensitiveTypes} : ESCAPED{Array}:
+      ClassValue:CONSTANT:[]:ESCAPED{ClassValue} : ESCAPED{NilClass}:
       DomainName:CLASS:[]:ESCAPED{DomainName}:
         decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
         encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
@@ -199,7 +199,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
         encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{data}}):
       HINFO:CLASS:[]:ESCAPED{HINFO}:
-        TypeValue:CONSTANT:[]:ESCAPED{TypeValue}:
+        TypeValue:CONSTANT:[]:ESCAPED{TypeValue} : ESCAPED{Fixnum}:
         cpu:ATTRIBUTE:[]:ESCAPED{cpu}:
         decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
         encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
@@ -208,22 +208,22 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       IN:MODULE:[]:ESCAPED{IN}:
         A:CLASS:[]:ESCAPED{A}:
           ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
-          TypeValue:CONSTANT:[]:ESCAPED{TypeValue}:
+          TypeValue:CONSTANT:[]:ESCAPED{TypeValue} : ESCAPED{Fixnum}:
           address:ATTRIBUTE:[]:ESCAPED{address}:
           decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
           encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
           initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{address}}):
         AAAA:CLASS:[]:ESCAPED{AAAA}:
           ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
-          TypeValue:CONSTANT:[]:ESCAPED{TypeValue}:
+          TypeValue:CONSTANT:[]:ESCAPED{TypeValue} : ESCAPED{Fixnum}:
           address:ATTRIBUTE:[]:ESCAPED{address}:
           decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
           encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
           initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{address}}):
-        ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
+        ClassValue:CONSTANT:[]:ESCAPED{ClassValue} : ESCAPED{Fixnum}:
         SRV:CLASS:[]:ESCAPED{SRV}:
           ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
-          TypeValue:CONSTANT:[]:ESCAPED{TypeValue}:
+          TypeValue:CONSTANT:[]:ESCAPED{TypeValue} : ESCAPED{Fixnum}:
           decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
           encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
           initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{priority}, ESCAPED{weight}, ESCAPED{port}, ESCAPED{target}}):
@@ -233,7 +233,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
           weight:ATTRIBUTE:[]:ESCAPED{weight}:
         WKS:CLASS:[]:ESCAPED{WKS}:
           ClassValue:CONSTANT:[]:ESCAPED{ClassValue}:
-          TypeValue:CONSTANT:[]:ESCAPED{TypeValue}:
+          TypeValue:CONSTANT:[]:ESCAPED{TypeValue} : ESCAPED{Fixnum}:
           address:ATTRIBUTE:[]:ESCAPED{address}:
           bitmap:ATTRIBUTE:[]:ESCAPED{bitmap}:
           decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
@@ -241,25 +241,25 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
           initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{address}, ESCAPED{protocol}, ESCAPED{bitmap}}):
           protocol:ATTRIBUTE:[]:ESCAPED{protocol}:
       MINFO:CLASS:[]:ESCAPED{MINFO}:
-        TypeValue:CONSTANT:[]:ESCAPED{TypeValue}:
+        TypeValue:CONSTANT:[]:ESCAPED{TypeValue} : ESCAPED{Fixnum}:
         decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
         emailbx:ATTRIBUTE:[]:ESCAPED{emailbx}:
         encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{rmailbx}, ESCAPED{emailbx}}):
         rmailbx:ATTRIBUTE:[]:ESCAPED{rmailbx}:
       MX:CLASS:[]:ESCAPED{MX}:
-        TypeValue:CONSTANT:[]:ESCAPED{TypeValue}:
+        TypeValue:CONSTANT:[]:ESCAPED{TypeValue} : ESCAPED{Fixnum}:
         decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
         encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
         exchange:ATTRIBUTE:[]:ESCAPED{exchange}:
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{preference}, ESCAPED{exchange}}):
         preference:ATTRIBUTE:[]:ESCAPED{preference}:
       NS:CLASS:[]:ESCAPED{NS}:
-        TypeValue:CONSTANT:[]:ESCAPED{TypeValue}:
+        TypeValue:CONSTANT:[]:ESCAPED{TypeValue} : ESCAPED{Fixnum}:
       PTR:CLASS:[]:ESCAPED{PTR}:
-        TypeValue:CONSTANT:[]:ESCAPED{TypeValue}:
+        TypeValue:CONSTANT:[]:ESCAPED{TypeValue} : ESCAPED{Fixnum}:
       SOA:CLASS:[]:ESCAPED{SOA}:
-        TypeValue:CONSTANT:[]:ESCAPED{TypeValue}:
+        TypeValue:CONSTANT:[]:ESCAPED{TypeValue} : ESCAPED{Fixnum}:
         decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
         encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
         expire:ATTRIBUTE:[]:ESCAPED{expire}:
@@ -271,7 +271,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
         rname:ATTRIBUTE:[]:ESCAPED{rname}:
         serial:ATTRIBUTE:[]:ESCAPED{serial}:
       TXT:CLASS:[]:ESCAPED{TXT}:
-        TypeValue:CONSTANT:[]:ESCAPED{TypeValue}:
+        TypeValue:CONSTANT:[]:ESCAPED{TypeValue} : ESCAPED{Fixnum}:
         data:METHOD:[PUBLIC]:ESCAPED{data}:
         decode_rdata:METHOD:[PUBLIC, STATIC]:ESCAPED{decode_rdata}(PARAMETERS{ESCAPED{msg}}):
         encode_rdata:METHOD:[PUBLIC]:ESCAPED{encode_rdata}(PARAMETERS{ESCAPED{msg}}):
@@ -282,7 +282,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}}):
       get_class:METHOD:[PUBLIC, STATIC]:ESCAPED{get_class}(PARAMETERS{ESCAPED{type_value}, ESCAPED{class_value}}):
       hash:METHOD:[PUBLIC]:ESCAPED{hash}:
-    UDPSize:CONSTANT:[]:ESCAPED{UDPSize}:
+    UDPSize:CONSTANT:[]:ESCAPED{UDPSize} : ESCAPED{Fixnum}:
     close:METHOD:[PUBLIC]:ESCAPED{close}:
     config:FIELD:[]:ESCAPED{config}:
     each_address:METHOD:[PUBLIC]:ESCAPED{each_address}(PARAMETERS{ESCAPED{name}}):
@@ -301,10 +301,10 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     mutex:FIELD:[]:ESCAPED{mutex}:
     open:METHOD:[PUBLIC, STATIC]:ESCAPED{open}(PARAMETERS{ESCAPED{*args}}):
     requester:FIELD:[]:ESCAPED{requester}:
-  DefaultResolver:CONSTANT:[]:ESCAPED{DefaultResolver}:
+  DefaultResolver:CONSTANT:[]:ESCAPED{DefaultResolver} : ESCAPED{self}:
   Hosts:CLASS:[]:ESCAPED{Hosts}:
     DefaultFileName:CONSTANT:[]:ESCAPED{DefaultFileName}:
-    DefaultFileName:CONSTANT:[]:ESCAPED{DefaultFileName}:
+    DefaultFileName:CONSTANT:[]:ESCAPED{DefaultFileName} : ESCAPED{String}:
     addr2name:FIELD:[]:ESCAPED{addr2name}:
     each_address:METHOD:[PUBLIC]:ESCAPED{each_address}(PARAMETERS{ESCAPED{name}, ESCAPED{&proc}}):
     each_name:METHOD:[PUBLIC]:ESCAPED{each_name}(PARAMETERS{ESCAPED{address}, ESCAPED{&proc}}):
@@ -320,7 +320,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     name2addr:FIELD:[]:ESCAPED{name2addr}:
   IPv4:CLASS:[]:ESCAPED{IPv4}:
     ==:METHOD:[PUBLIC]:ESCAPED{==}(PARAMETERS{ESCAPED{other}}):
-    Regex:CONSTANT:[]:ESCAPED{Regex}:
+    Regex:CONSTANT:[]:ESCAPED{Regex} : ESCAPED{Regexp}:
     address:ATTRIBUTE:[]:ESCAPED{address}:
     create:METHOD:[PUBLIC, STATIC]:ESCAPED{create}(PARAMETERS{ESCAPED{arg}}):
     eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}}):
@@ -331,11 +331,11 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     to_s:METHOD:[PUBLIC]:ESCAPED{to_s}:
   IPv6:CLASS:[]:ESCAPED{IPv6}:
     ==:METHOD:[PUBLIC]:ESCAPED{==}(PARAMETERS{ESCAPED{other}}):
-    Regex:CONSTANT:[]:ESCAPED{Regex}:
-    Regex_6Hex4Dec:CONSTANT:[]:ESCAPED{Regex_6Hex4Dec}:
-    Regex_8Hex:CONSTANT:[]:ESCAPED{Regex_8Hex}:
-    Regex_CompressedHex:CONSTANT:[]:ESCAPED{Regex_CompressedHex}:
-    Regex_CompressedHex4Dec:CONSTANT:[]:ESCAPED{Regex_CompressedHex4Dec}:
+    Regex:CONSTANT:[]:ESCAPED{Regex} : ESCAPED{Regexp}:
+    Regex_6Hex4Dec:CONSTANT:[]:ESCAPED{Regex_6Hex4Dec} : ESCAPED{Regexp}:
+    Regex_8Hex:CONSTANT:[]:ESCAPED{Regex_8Hex} : ESCAPED{Regexp}:
+    Regex_CompressedHex:CONSTANT:[]:ESCAPED{Regex_CompressedHex} : ESCAPED{Regexp}:
+    Regex_CompressedHex4Dec:CONSTANT:[]:ESCAPED{Regex_CompressedHex4Dec} : ESCAPED{Regexp}:
     address:ATTRIBUTE:[]:ESCAPED{address}:
     create:METHOD:[PUBLIC, STATIC]:ESCAPED{create}(PARAMETERS{ESCAPED{arg}}):
     eql?:METHOD:[PUBLIC]:ESCAPED{eql?}(PARAMETERS{ESCAPED{other}}):

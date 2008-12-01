@@ -1010,6 +1010,9 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                 
                 if (methods.size() == 0) {
                     for (String type : types) {
+                        if (type == null) { // unknown type
+                            continue;
+                        }
                         if (type.indexOf("::") == -1) {
                             // Perhaps we specified a class without its FQN, such as "TableDefinition"
                             // -- go and look for the full FQN and add in all the matches from there

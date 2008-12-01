@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
 import org.netbeans.modules.cnd.dwarfdump.elf.ElfHeader;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
-import org.netbeans.modules.cnd.dwarfdump.elf.ProgramHeaderTable;
 import org.netbeans.modules.cnd.dwarfdump.elf.SectionHeader;
 import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
 import java.io.IOException;
@@ -65,7 +64,6 @@ public class ElfReader extends ByteStreamReader {
     private boolean isCoffFormat;
     private boolean isMachoFormat;
     private ElfHeader elfHeader = null;
-    private ProgramHeaderTable programHeaderTable;
     private SectionHeader[] sectionHeadersTable;
     private ElfSection[] sections = null;
     private HashMap<String, Integer> sectionsMap = new HashMap<String, Integer>();
@@ -206,7 +204,7 @@ public class ElfReader extends ByteStreamReader {
         //
         int optionalHeaderSize = readShort();
         // flags
-        int flags = readShort();
+        /*int flags =*/ readShort();
         if (optionalHeaderSize > 0) {
             skipBytes(optionalHeaderSize);
         }
@@ -223,8 +221,8 @@ public class ElfReader extends ByteStreamReader {
         boolean is64 = readByte() == (byte)0xcf;
         seek(shiftIvArchive+16);
         int ncmds = readInt();
-        int sizeOfCmds = readInt();
-        int flags = readInt();
+        /*int sizeOfCmds =*/ readInt();
+        /*int flags =*/ readInt();
         if (is64){
             skipBytes(4);
         }
@@ -238,20 +236,20 @@ public class ElfReader extends ByteStreamReader {
             if (LoadCommand.LC_SEGMENT.is(cmd) || LoadCommand.LC_SEGMENT_64.is(cmd) ) { //LC_SEGMENT LC_SEGMENT64
                 skipBytes(16);
                 if (is64) {
-                    long vmAddr = readLong();
-                    long vmSize = readLong();
-                    long fileOff = readLong();
-                    long fileSize = readLong();
+                    /*long vmAddr =*/ readLong();
+                    /*long vmSize =*/ readLong();
+                    /*long fileOff =*/ readLong();
+                    /*long fileSize =*/ readLong();
                 } else {
-                    int vmAddr = readInt();
-                    int vmSize = readInt();
-                    int fileOff = readInt();
-                    int fileSize = readInt();
+                    /*int vmAddr =*/ readInt();
+                    /*int vmSize =*/ readInt();
+                    /*int fileOff =*/ readInt();
+                    /*int fileSize =*/ readInt();
                 }
-                int vmMaxPort = readInt();
-                int vmInitPort = readInt();
+                /*int vmMaxPort =*/ readInt();
+                /*int vmInitPort =*/ readInt();
                 int nSects = readInt();
-                int cmdFlags = readInt();
+                /*int cmdFlags =*/ readInt();
                 for (int i = 0; i < nSects; i++){
                     SectionHeader h = readMachoSection(is64);
                     if (h != null){
@@ -259,8 +257,8 @@ public class ElfReader extends ByteStreamReader {
                     }
                 }
             } else if (LoadCommand.LC_SYMTAB.is(cmd)){ //LC_SYMTAB
-                int symOffset = readInt();
-                int nsyms = readInt();
+                /*int symOffset =*/ readInt();
+                /*int nsyms =*/ readInt();
                 long strOffset = readInt()+shiftIvArchive;
                 int strSize = readInt();
                 // read string table
@@ -324,19 +322,18 @@ public class ElfReader extends ByteStreamReader {
         byte[] segName = new byte[16];
         read(segName);
         String segment = getName(segName, 0);
-        long addr;
         long size;
         if (is64) {
-            addr = readLong();
+            /*long addr =*/ readLong();
             size = readLong();
         } else {
-            addr = readInt();
+            /*long addr =*/ readInt();
             size = readInt();
         }
         long offset = readInt()+shiftIvArchive;
-        int align = readInt();
-        int reloff = readInt();
-        int nreloc = readInt();
+        /*int align =*/ readInt();
+        /*int reloff =*/ readInt();
+        /*int nreloc =*/ readInt();
         int segFlags = readInt();
         readInt();
         readInt();
@@ -434,14 +431,14 @@ public class ElfReader extends ByteStreamReader {
         }
         h.name = name;
         //System.out.println("Section: "+name);
-        int phisicalAddres = readInt();
-        int virtualAddres = readInt();
+        /*int phisicalAddres =*/ readInt();
+        /*int virtualAddres =*/ readInt();
         h.sh_size = readInt();
         h.sh_offset = shiftIvArchive + readInt();
-        int relocationOffset = readInt();
-        int lineNumberOffset = readInt();
-        int mumberRelocations = readShort();
-        int mumberLineNumbers = readShort();
+        /*int relocationOffset =*/ readInt();
+        /*int lineNumberOffset =*/ readInt();
+        /*int mumberRelocations =*/ readShort();
+        /*int mumberLineNumbers =*/ readShort();
         h.sh_flags = readInt();
         return h;
     }

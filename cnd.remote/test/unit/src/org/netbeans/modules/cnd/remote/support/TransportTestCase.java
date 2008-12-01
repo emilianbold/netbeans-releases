@@ -67,6 +67,8 @@ public class TransportTestCase extends RemoteTestBase {
             rcs.disconnect();
             assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getHKey() + "' returned " + rcs.getExitStatus();
             assert randomString.equals( rcs.getOutput().trim()) : "echo command on remote server '" + getHKey() + "' produced unexpected output: " + rcs.getOutput();
+        } else {
+            System.err.println("Remote tests are not configured."); // to test remote runs
         }
     }
 

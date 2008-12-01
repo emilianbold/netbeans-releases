@@ -55,47 +55,20 @@ public class Parameter extends Value {
     private final ParameterImplementation impl;
 
     Parameter(ParameterImplementation impl) {
+        super(impl);
         this.impl = impl;
     }
 
+    @Override
     public Procedure getParent() {
         return impl.getParent();
-    }
-
-    public String getName() {
-        return impl.getName();
-    }
-
-    public SQLType getType() {
-        return impl.getType();
     }
 
     public Direction getDirection() {
         return impl.getDirection();
     }
 
-    public int getPrecision() {
-        return impl.getPrecision();
-    }
-
-    public int getLength() {
-        return impl.getLength();
-    }
-
-    public short getScale() {
-        return impl.getScale();
-    }
-
-    public short getRadix() {
-        return impl.getRadix();
-    }
-
-    public Nullable getNullable() {
-        return impl.getNullable();
-    }
-
-    @Override
-    public String toString() {
-        return "Column[name='" + impl.getName() + "']"; // NOI18N
+    public int getOrdinalPosition() {
+        return impl.getOrdinalPosition();
     }
 }

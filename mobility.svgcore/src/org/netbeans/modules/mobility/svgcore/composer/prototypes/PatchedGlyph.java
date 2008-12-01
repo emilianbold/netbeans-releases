@@ -40,9 +40,9 @@
  */
 package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 
-import com.sun.perseus.model.*;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
+import com.sun.perseus.model.Glyph;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 
 /**
@@ -78,6 +78,7 @@ public final class PatchedGlyph extends Glyph implements PatchedElement {
         }
     }
     
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedGlyph(doc, getLocalName());
     }    

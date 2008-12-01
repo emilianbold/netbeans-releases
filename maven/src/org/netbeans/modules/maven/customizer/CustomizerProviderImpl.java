@@ -55,18 +55,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.maven.model.Model;
-import org.apache.maven.profiles.ProfilesRoot;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.configurations.ConfigurationProviderEnabler;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
-import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
-import org.netbeans.modules.maven.embedder.writer.WriterUtils;
 import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import hidden.org.codehaus.plexus.util.IOUtil;
+import java.io.File;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.jdom.DefaultJDOMFactory;
 import org.jdom.Document;
@@ -80,6 +77,12 @@ import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.jdom.NetbeansBuildActionJDOMWriter;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMModelFactory;
+import org.netbeans.modules.maven.model.profile.ProfilesModel;
+import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileLock;
@@ -100,6 +103,11 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     private final NbMavenProjectImpl project;
     private ModelHandle handle;
     
+    public static final String PROFILES_SKELETON =
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //NO18N
+"<profilesXml xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +//NO18N
+"  xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/profiles-1.0.0.xsd\">\n" +//NO18N
+"</profilesXml>";//NO18N
     
     public CustomizerProviderImpl(NbMavenProjectImpl project) {
         this.project = project;
@@ -143,9 +151,20 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     }
     
     private void init() throws XmlPullParserException, FileNotFoundException, IOException {
-        Model model = project.getEmbedder().readModel(project.getPOMFile());
-        ProfilesRoot prof = MavenSettingsSingleton.createProfilesModel(project.getProjectDirectory());
-        UserActionGoalProvider usr = project.getLookup().lookup(org.netbeans.modules.maven.execute.UserActionGoalProvider.class);
+        FileObject pom = FileUtil.toFileObject(project.getPOMFile());
+        ModelSource source = Utilities.createModelSource(pom, true);
+        POMModel model = POMModelFactory.getDefault().getModel(source);
+        FileObject profilesFO = project.getProjectDirectory().getFileObject("profiles.xml");
+        if (profilesFO != null) {
+            source = Utilities.createModelSource(profilesFO, true);
+        } else {
+            //the file doesn't exist. what now?
+            File file = FileUtil.toFile(project.getProjectDirectory());
+            file = new File(file, "profiles.xml"); //NOI18N
+            source = Utilities.createModelSourceForMissingFile(file, true, PROFILES_SKELETON, "text/x-maven-profile+xml"); //NOI18N
+        }
+        ProfilesModel profilesModel = ProfilesModelFactory.getDefault().getModel(source);
+        UserActionGoalProvider usr = project.getLookup().lookup(UserActionGoalProvider.class);
         Map<String, ActionToGoalMapping> mapps = new HashMap<String, ActionToGoalMapping>();
         NetbeansBuildActionXpp3Reader reader = new NetbeansBuildActionXpp3Reader();
         ActionToGoalMapping mapping = reader.read(new StringReader(usr.getRawMappingsAsString()));
@@ -204,7 +223,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             }
         }
 
-        handle = ACCESSOR.createHandle(model, prof, project.getOriginalMavenProject(), mapps, configs, active);
+        handle = ACCESSOR.createHandle(model, profilesModel, project.getOriginalMavenProject(), mapps, configs, active);
         handle.setConfigurationsEnabled(configEnabled);
     }
     
@@ -224,7 +243,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     public static abstract class ModelAccessor {
         
-        public abstract ModelHandle createHandle(Model model, ProfilesRoot prof, MavenProject proj, Map<String, ActionToGoalMapping> mapp, 
+        public abstract ModelHandle createHandle(POMModel model, ProfilesModel prof, MavenProject proj, Map<String, ActionToGoalMapping> mapp,
                 List<ModelHandle.Configuration> configs, ModelHandle.Configuration active);
         
     }
@@ -265,6 +284,14 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         public void windowClosed( WindowEvent e) {
             //TODO where to put elsewhere?
             project.getLookup().lookup(MavenProjectPropsImpl.class).cancelTransaction();
+            if (handle.getPOMModel().isIntransaction()) {
+                handle.getPOMModel().rollbackTransaction();
+            }
+            assert !handle.getPOMModel().isIntransaction();
+            if (handle.getProfileModel().isIntransaction()) {
+                handle.getProfileModel().rollbackTransaction();
+            }
+            assert !handle.getProfileModel().isIntransaction();
         }
         
         @Override
@@ -282,11 +309,9 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     }
 
    public static void writeAll(ModelHandle handle, NbMavenProjectImpl project) throws IOException {
-        if (handle.isModified(handle.getPOMModel())) {
-            WriterUtils.writePomModel(FileUtil.toFileObject(project.getPOMFile()), handle.getPOMModel());
-        }
+        Utilities.saveChanges(handle.getPOMModel());
         if (handle.isModified(handle.getProfileModel())) {
-            WriterUtils.writeProfilesModel(project.getProjectDirectory(), handle.getProfileModel());
+            Utilities.saveChanges(handle.getProfileModel());
         }
         if (handle.isModified(handle.getActionMappings())) {
             writeNbActionsModel(project.getProjectDirectory(), handle.getActionMappings(), M2Configuration.getFileNameExt(M2Configuration.DEFAULT));

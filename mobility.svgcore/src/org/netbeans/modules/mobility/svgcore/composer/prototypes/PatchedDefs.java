@@ -74,6 +74,7 @@ public final class PatchedDefs extends Defs implements PatchedElement {
         }
     }
     
+    @Override
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedDefs(doc);
     }    

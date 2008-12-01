@@ -75,6 +75,8 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -91,7 +93,7 @@ import org.openide.windows.TopComponent;
 public class FixActionProvider extends ActionsProviderSupport {
 
     private JPDADebugger debugger;
-    private SourcePathProviderImpl sp;
+    private SourcePathProvider sp;
     private Listener listener;
     private boolean isFixCommandSupported;
     private static final RequestProcessor hotFixRP = new RequestProcessor("Java Debugger HotFix", 1);
@@ -99,7 +101,7 @@ public class FixActionProvider extends ActionsProviderSupport {
     
     public FixActionProvider (ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
-        sp = (SourcePathProviderImpl) lookupProvider.lookupFirst(null, SourcePathProvider.class);
+        sp = lookupProvider.lookupFirst(null, SourcePathProvider.class);
         
         listener = new Listener ();
         MainProjectManager.getDefault ().addPropertyChangeListener (listener);
@@ -128,7 +130,8 @@ public class FixActionProvider extends ActionsProviderSupport {
     
     public void doAction (Object action) {
         if (!isFixCommandSupported) {
-            Map<String, FileObject> classes = ClassesToReload.getInstance().popClassesToReload(debugger, sp.getSourceRootsFO());
+            Set<FileObject> sourceRootsFO = getSourceRootsFO(sp);
+            Map<String, FileObject> classes = ClassesToReload.getInstance().popClassesToReload(debugger, sourceRootsFO);
             reloadClasses(debugger, classes);
             //applyClassesToReload(getCurrentProject());
             return ;
@@ -147,6 +150,29 @@ public class FixActionProvider extends ActionsProviderSupport {
             }
         } else {
             invokeAction();
+        }
+    }
+
+    private Set<FileObject> getSourceRootsFO(SourcePathProvider sp) {
+        if (sp instanceof SourcePathProviderImpl) {
+            return ((SourcePathProviderImpl) sp).getSourceRootsFO();
+        } else {
+            String[] sourceRoots = sp.getSourceRoots();
+            Set<FileObject> fos = new HashSet();
+            for (String root : sourceRoots) {
+                FileObject fo;
+                int jarIndex = root.indexOf("!/");
+                if (jarIndex > 0) {
+                    fo = FileUtil.toFileObject(new java.io.File(root.substring(0, jarIndex)));
+                    fo = fo.getFileObject(root.substring(jarIndex + 2));
+                } else {
+                    fo = FileUtil.toFileObject(new java.io.File(root));
+                }
+                if (fo != null) {
+                    fos.add(fo);
+                }
+            }
+            return fos;
         }
     }
 
@@ -198,7 +224,7 @@ public class FixActionProvider extends ActionsProviderSupport {
         }
         if (!isFixCommandSupported) {
             // No fix command, let's see whether we have some changed classes to reload:
-            return ClassesToReload.getInstance().hasClassesToReload(debugger, sp.getSourceRootsFO());
+            return ClassesToReload.getInstance().hasClassesToReload(debugger, getSourceRootsFO(sp));
             /*Sources sources = ProjectUtils.getSources(p);
             SourceGroup[] srcGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             for (SourceGroup srcGroup : srcGroups) {

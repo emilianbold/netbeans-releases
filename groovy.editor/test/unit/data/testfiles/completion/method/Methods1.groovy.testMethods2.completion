@@ -2,7 +2,7 @@ Code completion result for source line:
 new URL("http://google.com").getP|r
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
-METHOD     getPath()                                  String
-METHOD     getPort()                                  int
+METHOD     getPath()                       [PUBLIC]   String
+METHOD     getPort()                       [PUBLIC]   int
 METHOD     getProperties()                            Map
-METHOD     getProtocol()                              String
+METHOD     getProtocol()                   [PUBLIC]   String

@@ -46,6 +46,7 @@ import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.gsfret.editor.semantic.ScanningCancellableTask;
 import org.netbeans.napi.gsfret.source.support.SelectionAwareSourceTaskFactory;
@@ -66,6 +67,10 @@ public class SelectionHintsTask extends ScanningCancellableTask<CompilationInfo>
         
         Document doc = info.getDocument();
         if (doc == null) {
+            return;
+        }
+
+        if (GsfUtilities.isCodeTemplateEditing(doc)) {
             return;
         }
 

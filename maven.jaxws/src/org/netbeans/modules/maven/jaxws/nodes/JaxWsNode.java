@@ -286,7 +286,7 @@ public class JaxWsNode extends AbstractNode {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         Deployment.getDefault().getServerInstance(provider.getServerInstanceID());
         String serverInstanceID = provider.getServerInstanceID();
-        if (serverInstanceID == null) {
+        if (serverInstanceID == null || WSStackUtils.DEVNULL.equals(serverInstanceID)) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class, "MSG_MissingServer"), NotifyDescriptor.ERROR_MESSAGE));
             return "";
         }

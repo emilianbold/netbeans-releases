@@ -1174,7 +1174,7 @@ public class TraceModel extends TraceModelBase {
 	}
 
 	if (testCache) {
-	    cacheTimes.put(item.getFile().getName(), new Long(time));
+	    cacheTimes.put(item.getFile().getName(), Long.valueOf(time));
 	}
 	if (dumpAst) {
 	    System.out.println("AST DUMP for file " + item.getFile().getName()); // NOI18N

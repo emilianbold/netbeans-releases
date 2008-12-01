@@ -17,3 +17,9 @@ int boo();
 int boo(int i) {
     
 }
+
+double sum(xx, yy)
+double xx, yy;
+{
+    return xx + yy;
+}

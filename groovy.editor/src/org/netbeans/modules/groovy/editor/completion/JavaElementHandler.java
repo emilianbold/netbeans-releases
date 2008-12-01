@@ -53,7 +53,6 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
@@ -68,6 +67,7 @@ import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
+import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.openide.filesystems.FileObject;
 
@@ -92,7 +92,7 @@ public final class JavaElementHandler {
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
-            String prefix, int anchor, String[] typeParameters, boolean emphasise) {
+            String prefix, int anchor, String[] typeParameters, boolean emphasise, Set<AccessLevel> levels) {
         JavaSource javaSource = createJavaSource();
 
         if (javaSource == null) {
@@ -104,6 +104,34 @@ public final class JavaElementHandler {
         Map<MethodSignature, CompletionItem> result = Collections.synchronizedMap(new HashMap<MethodSignature, CompletionItem>());
         try {
             javaSource.runUserActionTask(new MethodCompletionHelper(cnt, javaSource, className, typeParameters,
+                    levels, prefix, anchor, result, emphasise), true);
+        } catch (IOException ex) {
+            LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
+            return Collections.emptyMap();
+        }
+
+        try {
+            cnt.await();
+        } catch (InterruptedException ex) {
+            LOG.log(Level.FINEST, "InterruptedException while waiting on latch :  {0}", ex.getMessage());
+            return Collections.emptyMap();
+        }
+        return result;
+    }
+
+    public Map<FieldSignature, ? extends CompletionItem> getFields(String className,
+            String prefix, int anchor, boolean emphasise) {
+        JavaSource javaSource = createJavaSource();
+
+        if (javaSource == null) {
+            return Collections.emptyMap();
+        }
+
+        CountDownLatch cnt = new CountDownLatch(1);
+
+        Map<FieldSignature, CompletionItem> result = Collections.synchronizedMap(new HashMap<FieldSignature, CompletionItem>());
+        try {
+            javaSource.runUserActionTask(new FieldCompletionHelper(cnt, javaSource, className,
                     Collections.singleton(AccessLevel.PUBLIC), prefix, anchor, result, emphasise), true);
         } catch (IOException ex) {
             LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
@@ -134,67 +162,6 @@ public final class JavaElementHandler {
         }
 
         return javaSource;
-    }
-
-    public static enum ClassType {
-
-        CLASS,
-
-        SUPERCLASS,
-
-        SUPERINTERFACE
-    }
-
-    private static enum AccessLevel {
-
-        PUBLIC {
-            @Override
-            public ElementAcceptor getAcceptor() {
-                return new ElementAcceptor() {
-                    public boolean accept(Element e, TypeMirror type) {
-                        return e.getModifiers().contains(Modifier.PUBLIC);
-                    }
-                };
-            }
-        },
-
-        PACKAGE {
-            @Override
-            public ElementAcceptor getAcceptor() {
-                return new ElementAcceptor() {
-                    public boolean accept(Element e, TypeMirror type) {
-                        Set<Modifier> modifiers = e.getModifiers();
-                        return !modifiers.contains(Modifier.PUBLIC)
-                                && !modifiers.contains(Modifier.PROTECTED)
-                                && !modifiers.contains(Modifier.PRIVATE);
-                    }
-                };
-            }
-        },
-
-        PROTECTED {
-            @Override
-            public ElementAcceptor getAcceptor() {
-                return new ElementAcceptor() {
-                    public boolean accept(Element e, TypeMirror type) {
-                        return e.getModifiers().contains(Modifier.PROTECTED);
-                    }
-                };
-            }
-        },
-
-        PRIVATE {
-            @Override
-            public ElementAcceptor getAcceptor() {
-                return new ElementAcceptor() {
-                    public boolean accept(Element e, TypeMirror type) {
-                        return e.getModifiers().contains(Modifier.PRIVATE);
-                    }
-                };
-            }
-        };
-
-        public abstract ElementAcceptor getAcceptor();
     }
 
     private static class MethodCompletionHelper implements Task<CompilationController> {
@@ -243,7 +210,7 @@ public final class JavaElementHandler {
                             return false;
                         }
                         for (AccessLevel level : levels) {
-                            if (level.getAcceptor().accept(e, type)) {
+                            if (level.getJavaAcceptor().accept(e, type)) {
                                 return true;
                             }
                         }
@@ -259,17 +226,17 @@ public final class JavaElementHandler {
                         }
 
                         String simpleName = element.getSimpleName().toString();
-                        String parameterString = CompletionHandler.getParameterListForMethod((ExecutableElement) element);
+                        String parameterString = CompletionHandler.getParameterListForMethod(element);
                         // FIXME this should be more accurate
-                        TypeMirror returnType = ((ExecutableElement) element).getReturnType();
+                        TypeMirror returnType = element.getReturnType();
 
                         if (simpleName.toUpperCase(Locale.ENGLISH).startsWith(prefix.toUpperCase(Locale.ENGLISH))) {
                             if (LOG.isLoggable(Level.FINEST)) {
                                 LOG.log(Level.FINEST, simpleName + " " + parameterString + " " + returnType.toString());
                             }
 
-                            proposals.put(getSignature(te, element, typeParameters, info.getTypes()), new CompletionItem.JavaMethodItem(simpleName, parameterString,
-                                    returnType, element.getModifiers(), anchor, emphasise));
+                            proposals.put(getSignature(te, element, typeParameters, info.getTypes()), new CompletionItem.JavaMethodItem(
+                                    className, simpleName, parameterString, returnType, element.getModifiers(), anchor, emphasise));
                         }
                     }
                 }
@@ -315,6 +282,88 @@ public final class JavaElementHandler {
                 parameters[i] = typeString;
             }
             return new MethodSignature(name, parameters);
+        }
+    }
+
+    private static class FieldCompletionHelper implements Task<CompilationController> {
+
+        private final CountDownLatch cnt;
+
+        private final JavaSource javaSource;
+
+        private final String className;
+
+        private final Set<AccessLevel> levels;
+
+        private final String prefix;
+
+        private final int anchor;
+
+        private final boolean emphasise;
+
+        private final Map<FieldSignature, CompletionItem> proposals;
+
+        public FieldCompletionHelper(CountDownLatch cnt, JavaSource javaSource, String className,
+                Set<AccessLevel> levels, String prefix, int anchor,
+                Map<FieldSignature, CompletionItem> proposals, boolean emphasise) {
+
+            this.cnt = cnt;
+            this.javaSource = javaSource;
+            this.className = className;
+            this.levels = levels;
+            this.prefix = prefix;
+            this.anchor = anchor;
+            this.proposals = proposals;
+            this.emphasise = emphasise;
+        }
+
+        public void run(CompilationController info) throws Exception {
+
+            Elements elements = info.getElements();
+            if (elements != null) {
+                ElementAcceptor acceptor = new ElementAcceptor() {
+
+                    public boolean accept(Element e, TypeMirror type) {
+                        if (e.getKind() != ElementKind.FIELD) {
+                            return false;
+                        }
+                        for (AccessLevel level : levels) {
+                            if (level.getJavaAcceptor().accept(e, type)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                };
+
+                TypeElement te = elements.getTypeElement(className);
+                if (te != null) {
+                    for (VariableElement element : ElementFilter.fieldsIn(te.getEnclosedElements())) {
+                        if (!acceptor.accept(element, te.asType())) {
+                            continue;
+                        }
+
+                        String simpleName = element.getSimpleName().toString();
+                        TypeMirror type = element.asType();
+
+                        if (simpleName.toUpperCase(Locale.ENGLISH).startsWith(prefix.toUpperCase(Locale.ENGLISH))) {
+                            if (LOG.isLoggable(Level.FINEST)) {
+                                LOG.log(Level.FINEST, simpleName + " " + type.toString());
+                            }
+
+                            proposals.put(getSignature(te, element), new CompletionItem.JavaFieldItem(
+                                    className, simpleName, type, element.getModifiers(), anchor, emphasise));
+                        }
+                    }
+                }
+            }
+
+            cnt.countDown();
+        }
+
+        private FieldSignature getSignature(TypeElement classElement, VariableElement element) {
+            String name = element.getSimpleName().toString();
+            return new FieldSignature(name);
         }
     }
 }

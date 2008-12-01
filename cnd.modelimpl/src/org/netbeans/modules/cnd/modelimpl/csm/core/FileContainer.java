@@ -85,7 +85,26 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     private final Object lock = new Object();
     private Map<CharSequence, MyFile> myFiles = new ConcurrentHashMap<CharSequence, MyFile>();
     private Map<CharSequence, Object/*String or String[]*/> canonicFiles = new ConcurrentHashMap<CharSequence, Object/*String or String[]*/>();
-   
+
+    // empty stub
+    private static final FileContainer EMPTY = new FileContainer() {
+
+        @Override
+        public void put() {
+            // do nothing
+        }
+
+        @Override
+        public void putFile(File file, FileImpl impl, State state) {
+            // do nothing
+        }
+
+        @Override
+        public void putPreprocState(File file, State state) {
+            // do nothing
+        }
+    };
+
     /** Creates a new instance of FileContainer */
     public FileContainer(ProjectBase project) {
 	super(new FileContainerKey(project.getUniqueName().toString()));
@@ -98,7 +117,16 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         readStringToStringsArrMap(input, canonicFiles);
 	//trace(canonicFiles, "Read in ctor:");
     }
-    
+
+    // only for creating EMPTY stub
+    private FileContainer() {
+        super((org.netbeans.modules.cnd.repository.spi.Key) null);
+    }
+
+    /*package*/ static FileContainer empty() {
+        return EMPTY;
+    }
+
     private void trace(Map<String, Object/*String or String[]*/> map, String title) {
 	System.err.printf("%s\n", title);
 	for( Map.Entry<String, Object> entry : map.entrySet() ) {
@@ -190,7 +218,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     public Collection<APTPreprocHandler.State> getPreprocStates(File file) {
         MyFile f = getMyFile(file, false);
         if (f == null){
-            return null;
+            return Collections.<APTPreprocHandler.State>emptyList();
         }
         return f.getPrerocStates();
     }

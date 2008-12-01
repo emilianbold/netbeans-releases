@@ -39,40 +39,32 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.performance.languages.actions;
 
-import java.awt.Component;
-import java.awt.Container;
-import javax.swing.JEditorPane;
-import javax.swing.text.Document;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
+import org.netbeans.performance.languages.Projects;
+import org.netbeans.performance.languages.ScriptingUtilities;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
-import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
-import org.netbeans.performance.languages.Projects;
-import org.netbeans.performance.languages.ScriptingUtilities;
 
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
-import org.netbeans.performance.languages.setup.ScriptingSetup;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class OpenScriptingFilesTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    public static final String suiteName="Scripting UI Responsiveness Actions suite";
-    private static final Object EDITOR_REFS = new Object();
+public class OpenScriptingFilesTest extends PerformanceTestCase {
     
     /** Node to be opened/edited */
     public static Node fileToBeOpened ;
@@ -91,11 +83,12 @@ public class OpenScriptingFilesTest extends org.netbeans.modules.performance.uti
     
     public OpenScriptingFilesTest(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;        
+        expectedTime = WINDOW_OPEN;
     }
+
     public OpenScriptingFilesTest(String testName, String performanceDataName) {
-        super(testName, performanceDataName);        
-        expectedTime = WINDOW_OPEN;        
+        super(testName, performanceDataName);
+        expectedTime = WINDOW_OPEN;
     }
 
     public static NbTestSuite suite() {
@@ -111,10 +104,8 @@ public class OpenScriptingFilesTest extends org.netbeans.modules.performance.uti
             public boolean published = false;
 
             public void publish(LogRecord record) {
-
-            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]"))
-               ActionTracker.getInstance().stopRecording();
-
+                if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]"))
+                     ActionTracker.getInstance().stopRecording();
             }
 
             public void flush() {
@@ -122,118 +113,71 @@ public class OpenScriptingFilesTest extends org.netbeans.modules.performance.uti
 
             public void close() throws SecurityException {
             }
-
         }
 
     PhaseHandler phaseHandler=new PhaseHandler();
 
     @Override
     protected void initialize(){
-        log("::initialize");
         EditorOperator.closeDiscardAll();        
-
-        closeAllModal();
-        
-        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         
     }
+
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
             projectsTab = ScriptingUtilities.invokePTO();
-        
         return projectsTab.getProjectRootNode(projectName);
     }
     
     @Override
     public void prepare() {
-        log("::prepare");
         Logger.getLogger("TIMER").setLevel(Level.FINE);
         Logger.getLogger("TIMER").addHandler(phaseHandler);
         String path = nodePath+"|"+fileName;    
         fileToBeOpened = new Node(getProjectNode(testProject),path);
-        log("========== Open file path ="+fileToBeOpened.getPath());        
     }
 
     @Override
     public ComponentOperator open() {
         JPopupMenuOperator popup =  fileToBeOpened.callPopup();
-        if (popup == null) {
-            throw new Error("Cannot get context menu for node ["+ fileToBeOpened.getPath() + "] in project [" + testProject + "]");
-        }
-        log("------------------------- after popup invocation ------------");
-        
-        try {
-            popup.pushMenu(menuItem);
-        } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            tee.printStackTrace(getLog());
-            throw new Error("Cannot push menu item ["+menuItem+"] of node [" + fileToBeOpened.getPath() + "] in project [" + testProject + "]");
-        }
-        log("------------------------- after open ------------");
-        return new EditorOperator(this.fileName);
+        popup.pushMenu(menuItem);
+        return null;
     }
-    
-    private void hookEditorDocument(Component comp) {
-        if (comp instanceof Container) {
-            Container cont = (Container)comp;
-            for (Component c: cont.getComponents()) {
-                hookEditorDocument(c);
-            }
-            if ("org.openide.text.QuietEditorPane".equals(comp.getClass().getName())) {
-                JEditorPane pane = (JEditorPane)comp;
-                Document doc = pane.getDocument();
-                if (doc != null)
-                    reportReference("Editor document from test "+getName(), doc, EDITOR_REFS);
-            }
-        }
-    }
-    
+  
     @Override
     public void close(){
-        if (testedComponentOperator != null) {
-            hookEditorDocument(testedComponentOperator.getSource());
-            ((EditorOperator)testedComponentOperator).closeDiscard();
-        } else {
-            throw new Error("no component to close");
-        }
+         new EditorOperator(fileName).closeDiscard();
     }
     
     @Override
     protected void shutdown(){
         Logger.getLogger("TIMER").removeHandler(phaseHandler);
-        testedComponentOperator = null; // allow GC of editor and documents
         EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();
     }
     
     public void testOpening20kbRubyFile() {
         testProject = Projects.RUBY_PROJECT;
-        setRubyEditorCaretFilteringOn();
-        WAIT_AFTER_OPEN = 1500;
+        WAIT_AFTER_OPEN = 2000;
         menuItem = OPEN;
         fileName = "ruby20kb.rb";
         nodePath = "Source Files";        
         doMeasurement();        
     }
-    protected void setRubyEditorCaretFilteringOn() {
-        //setEditorCaretFilteringOn(org.netbeans.modules.editor.plain.PlainKit.class);        
-    }
+
     public void testOpening20kbRHTMLFile() {
         testProject = Projects.RAILS_PROJECT;
-        setRHTMLEditorCaretFilteringOn();
-        WAIT_AFTER_OPEN = 1500;
+        WAIT_AFTER_OPEN = 2000;
         menuItem = OPEN;
         fileName = "rhtml20kb.rhtml";
-        nodePath = "Views";        
+        nodePath = "Unit Tests";
         doMeasurement();          
     }
-    protected void setRHTMLEditorCaretFilteringOn() {
-        //setEditorCaretFilteringOn(org.netbeans.modules.editor.plain.PlainKit.class);        
-    }
-    
+
     public void testOpening20kbJSFile() {
         testProject = Projects.SCRIPTING_PROJECT;
-        setRubyEditorCaretFilteringOn();
-        WAIT_AFTER_OPEN = 1500;
+        WAIT_AFTER_OPEN = 2000;
         menuItem = OPEN;
         fileName = "javascript20kb.js";
         nodePath = "Web Pages";        
@@ -242,59 +186,74 @@ public class OpenScriptingFilesTest extends org.netbeans.modules.performance.uti
 
     public void testOpening20kbPHPFile() {
         testProject = Projects.PHP_PROJECT;
-        setRubyEditorCaretFilteringOn();
-        WAIT_AFTER_OPEN = 1500;
+        WAIT_AFTER_OPEN = 2000;
         menuItem = OPEN;
         fileName = "php20kb.php";
         nodePath = "Source Files";
         doMeasurement();
     }
 
-    protected void setJSEditorCaretFilteringOn() {
-        //setEditorCaretFilteringOn(org.netbeans.modules.editor.plain.PlainKit.class);        
-    }    
-    /*
     public void testOpening20kbJSONFile() {
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
+        testProject = Projects.SCRIPTING_PROJECT;
+        WAIT_AFTER_OPEN = 2000;
+        menuItem = OPEN;
+        nodePath = "Web Pages";
+        fileName = "json20kb.json";
         doMeasurement();          
-    }    
+    }
+
     public void testOpening20kbCSSFile() {
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
+        testProject = Projects.SCRIPTING_PROJECT;
+        WAIT_AFTER_OPEN = 2000;
+        menuItem = OPEN;
+        nodePath = "Web Pages";
+        fileName = "css20kb.css";
         doMeasurement();          
     }
+
     public void testOpening20kbYMLFile() {
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
+        testProject = Projects.RAILS_PROJECT;
+        WAIT_AFTER_OPEN = 2000;
+        menuItem = OPEN;
+        fileName = "yaml20kb.yml";
+        nodePath = "Unit Tests";
         doMeasurement();          
     }
+
     public void testOpening20kbBATFile() {
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
+        testProject = Projects.SCRIPTING_PROJECT;
+        WAIT_AFTER_OPEN = 2000;
+        menuItem = OPEN;
+        nodePath = "Web Pages";
+        fileName = "bat20kb.bat";
         doMeasurement();          
-    }    
+    }
+
     public void testOpening20kbDIFFFile() {
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
+        testProject = Projects.SCRIPTING_PROJECT;
+        WAIT_AFTER_OPEN = 2000;
+        menuItem = OPEN;
+        nodePath = "Web Pages";
+        fileName = "diff20kb.diff";
         doMeasurement();          
     }
+
     public void testOpening20kbManifestFile() {
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
+        testProject = Projects.SCRIPTING_PROJECT;
+        WAIT_AFTER_OPEN = 2000;
+        menuItem = OPEN;
+        nodePath = "Web Pages";
+        fileName = "manifest20kb.mf";
         doMeasurement();          
     }
+
     public void testOpening20kbShFile() {
-        WAIT_AFTER_OPEN = 1500;
-        menuItem = EDIT;
+        testProject = Projects.SCRIPTING_PROJECT;
+        WAIT_AFTER_OPEN = 2000;
+        menuItem = OPEN;
+        nodePath = "Web Pages";
+        fileName = "sh20kb.sh";
         doMeasurement();          
-    }
-    */
-    /** Tests if created and later dclosed projects can be GCed from memory.
-     */
-    public void testGC() throws Exception {
-        Thread.sleep(60*1000);
-        runTestGC(EDITOR_REFS);
     }
 
 }

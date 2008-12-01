@@ -49,7 +49,7 @@ import static org.netbeans.cnd.api.lexer.FortranTokenId.*;
  *
  * @author Alexander Simon
  */
-class FortranBracesStack {
+class FortranBracesStack implements Cloneable {
     private static final boolean TRACE_STACK = false;
     private static final int FIXED_FORMAT_SHIFT = 6;
     
@@ -103,8 +103,8 @@ class FortranBracesStack {
             case KW_ELSEIF:
             case KW_ELSE:
                 if (prevEntry != null && 
-                   (prevEntry.getKind() == KW_IF || prevEntry.getKind() == KW_ELSE || prevEntry.getKind() == KW_ELSEIF) ||
-                    prevEntry.getKind() == KW_WHERE || prevEntry.getKind() == KW_ELSE || prevEntry.getKind() == KW_ELSEWHERE) {
+                   (prevEntry.getKind() == KW_IF || prevEntry.getKind() == KW_ELSE || prevEntry.getKind() == KW_ELSEIF ||
+                    prevEntry.getKind() == KW_WHERE || prevEntry.getKind() == KW_ELSE || prevEntry.getKind() == KW_ELSEWHERE)) {
                     newEntry.setIndent(prevIndent);
                     newEntry.setSelfIndent(prevSelfIndent);
                     break;

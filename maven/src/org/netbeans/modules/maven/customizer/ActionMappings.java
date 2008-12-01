@@ -71,7 +71,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.apache.maven.profiles.Profile;
 import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -82,6 +81,7 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.spi.project.ActionProvider;
@@ -204,13 +204,20 @@ public class ActionMappings extends javax.swing.JPanel {
         });
         commandLineUpdater = new CheckBoxUpdater(cbCommandLine) {
             public Boolean getValue() {
-                Profile prof = handle.getNetbeansPrivateProfile(false);
-                if (prof != null && prof.getProperties().getProperty(Constants.HINT_USE_EXTERNAL) != null) {
-                    return Boolean.valueOf(prof.getProperties().getProperty(Constants.HINT_USE_EXTERNAL));
+                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
+                if (prof != null) {
+                    org.netbeans.modules.maven.model.profile.Properties profprops = prof.getProperties();
+                    if (profprops != null && profprops.getProperty(Constants.HINT_USE_EXTERNAL) != null) {
+                        return Boolean.valueOf(prof.getProperties().getProperty(Constants.HINT_USE_EXTERNAL));
+                    }
                 }
-                String val = handle.getPOMModel().getProperties().getProperty(Constants.HINT_USE_EXTERNAL);
-                if (val != null) {
-                    return Boolean.valueOf(val);
+                org.netbeans.modules.maven.model.pom.Properties mdlprops = handle.getPOMModel().getProject().getProperties();
+                String val;
+                if (mdlprops != null) {
+                    val = mdlprops.getProperty(Constants.HINT_USE_EXTERNAL);
+                    if (val != null) {
+                        return Boolean.valueOf(val);
+                    }
                 }
                 MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
                 val = props.get(Constants.HINT_USE_EXTERNAL, true, false);
@@ -225,19 +232,27 @@ public class ActionMappings extends javax.swing.JPanel {
                 boolean hasConfig = props.get(Constants.HINT_USE_EXTERNAL, true, false) != null;
                 //TODO also try to take the value in pom vs inherited pom value into account.
 
-                Profile prof = handle.getNetbeansPrivateProfile(false);
-                if (prof != null && prof.getProperties().getProperty(Constants.HINT_USE_EXTERNAL) != null) {
-                    prof.getProperties().setProperty(Constants.HINT_USE_EXTERNAL, value == null ? "true" : value.toString());
-                    if (hasConfig) {
+                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
+                if (prof != null) {
+                    org.netbeans.modules.maven.model.profile.Properties profprops = prof.getProperties();
+                    if (profprops != null && profprops.getProperty(Constants.HINT_USE_EXTERNAL) != null) {
+                        prof.getProperties().setProperty(Constants.HINT_USE_EXTERNAL, value == null ? "true" : value.toString());
+                        if (hasConfig) {
                         // in this case clean up the auxiliary config
-                        props.put(Constants.HINT_USE_EXTERNAL, null, true);
+                            props.put(Constants.HINT_USE_EXTERNAL, null, true);
+                        }
                     }
                     handle.markAsModified(handle.getProfileModel());
                     return;
                 }
 
                 if (handle.getProject().getProperties().containsKey(Constants.HINT_USE_EXTERNAL)) {
-                    handle.getPOMModel().addProperty(Constants.HINT_USE_EXTERNAL, value == null ? "true" : value.toString()); //NOI18N
+                    org.netbeans.modules.maven.model.pom.Properties mdlprops = handle.getPOMModel().getProject().getProperties();
+                    if (mdlprops == null) {
+                        mdlprops = handle.getPOMModel().getFactory().createProperties();
+                        handle.getPOMModel().getProject().setProperties(mdlprops);
+                    }
+                    mdlprops.setProperty(Constants.HINT_USE_EXTERNAL, value == null ? "true" : value.toString()); //NOI18N
                     handle.markAsModified(handle.getPOMModel());
                     if (hasConfig) {
                         // in this case clean up the auxiliary config
@@ -576,6 +591,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         JPopupMenu menu = new JPopupMenu();
         menu.add(new SkipTestsAction(taProperties));
         menu.add(new DebugMavenAction(taProperties));
+        menu.add(new EnvVarAction(taProperties));
         menu.show(btnAddProps, btnAddProps.getSize().width, 0);
 
     }//GEN-LAST:event_btnAddPropsActionPerformed
@@ -583,8 +599,8 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     private void loadMappings() {
         DefaultListModel model = new DefaultListModel();
 
-        boolean isWar = "war".equalsIgnoreCase(handle.getProject().getPackaging());
         if (handle != null) {
+            boolean isWar = NbMavenProject.TYPE_WAR.equalsIgnoreCase(handle.getProject().getPackaging());
             addSingleAction(ActionProvider.COMMAND_BUILD, model);
             addSingleAction(ActionProvider.COMMAND_CLEAN, model);
             addSingleAction(ActionProvider.COMMAND_REBUILD, model);
@@ -996,6 +1012,27 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             String replace = Constants.ACTION_PROPERTY_JPDALISTEN + "=maven"; //NOI18N
             String pattern = ".*" + Constants.ACTION_PROPERTY_JPDALISTEN + "([\\s]*=[\\s]*[\\S]+).*"; //NOI18N
             replacePattern(pattern, area, replace, true);
+        }
+    }
+
+    static class EnvVarAction extends AbstractAction {
+        private JTextArea area;
+
+        EnvVarAction(JTextArea area) {
+            putValue(Action.NAME, NbBundle.getMessage(ActionMappings.class, "ActionMappings.envVar"));
+            this.area = area;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String props = area.getText();
+            String sep = "\n";//NOI18N
+            if (props.endsWith("\n") || props.trim().length() == 0) {//NOI18N
+                sep = "";//NOI18N
+            }
+            props = props + sep + "Env.FOO=bar"; //NOI18N
+            area.setText(props);
+            area.setSelectionStart(props.length() - "Env.FOO=bar".length()); //NOI18N
+            area.setSelectionEnd(props.length());
         }
     }
 
