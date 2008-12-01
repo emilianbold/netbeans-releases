@@ -148,9 +148,12 @@
             bundle="${proxydir}/Bundle.properties"
             destdir="${proxydir}"
         >
-           <modules dir="${netbeans.dest.dir}">
-                <include name="**/modules/*.jar"/>
+           <modules dir=".">
+                <include name="modules/*.jar"/>
             </modules>
+           <entries dir="${netbeans.dest.dir}">
+                <include name="**/modules/*.jar"/>
+            </entries>
             <bundlefilter>
                 <linecontains>
                     <contains value="Templates"/>

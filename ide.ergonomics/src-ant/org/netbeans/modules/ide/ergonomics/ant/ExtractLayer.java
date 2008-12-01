@@ -80,9 +80,13 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class ExtractLayer extends Task {
-    private List<FileSet> filesets = new ArrayList<FileSet>();
+    private List<FileSet> moduleSet = new ArrayList<FileSet>();
     public void addConfiguredModules(FileSet fs) {
-        filesets.add(fs);
+        moduleSet.add(fs);
+    }
+    private List<FileSet> entries = new ArrayList<FileSet>();
+    public void addConfiguredEntries(FileSet fs) {
+        entries.add(fs);
     }
 
     private File layer;
@@ -109,7 +113,7 @@ public final class ExtractLayer extends Task {
 
     @Override
     public void execute() throws BuildException {
-        if (filesets.isEmpty()) {
+        if (moduleSet.isEmpty()) {
             throw new BuildException();
         }
         if (layer == null) {
@@ -157,7 +161,7 @@ public final class ExtractLayer extends Task {
         StringBuilder modules = new StringBuilder();
         String sep = "\n    ";
 
-        for (FileSet fs : filesets) {
+        for (FileSet fs : moduleSet) {
             DirectoryScanner ds = fs.getDirectoryScanner(getProject());
             File basedir = ds.getBasedir();
             for (String path : ds.getIncludedFiles()) {
@@ -175,6 +179,22 @@ public final class ExtractLayer extends Task {
                         }
                         modules.append(sep).append(modname.replaceFirst("/[0-9]+$", ""));
                         sep = ",\\\n    ";
+                    } finally {
+                        jf.close();
+                    }
+                } catch (Exception x) {
+                    throw new BuildException("Reading " + jar + ": " + x, x, getLocation());
+                }
+            }
+        }
+        for (FileSet fs : entries == null ? moduleSet : entries) {
+            DirectoryScanner ds = fs.getDirectoryScanner(getProject());
+            File basedir = ds.getBasedir();
+            for (String path : ds.getIncludedFiles()) {
+                File jar = new File(basedir, path);
+                try {
+                    JarFile jf = new JarFile(jar);
+                    try {
                         Enumeration<JarEntry> en = jf.entries();
                         while (en.hasMoreElements()) {
                             JarEntry je = en.nextElement();
