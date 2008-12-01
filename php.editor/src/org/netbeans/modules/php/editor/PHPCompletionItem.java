@@ -538,6 +538,22 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
+    static class NewClassItem extends FunctionItem {
+        public NewClassItem(IndexedFunction function, CompletionRequest request, int optionalArgCount) {
+            super(function, request, optionalArgCount);
+        }
+
+        @Override
+        public String getName() {
+            String in = getElement().getIn();
+            return (in != null) ? in : super.getName();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.CONSTRUCTOR;
+        }
+    }
     static class FunctionItem extends PHPCompletionItem {
         private int optionalArgCount = 0;
 
