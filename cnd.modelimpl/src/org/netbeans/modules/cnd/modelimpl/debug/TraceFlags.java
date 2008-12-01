@@ -144,7 +144,9 @@ public class TraceFlags {
     public static final boolean TRACE_ERROR_PROVIDER = DebugUtils.getBoolean("cnd.modelimpl.trace.error.provider", false);
     public static final boolean PARSE_STATISTICS = DebugUtils.getBoolean("cnd.parse.statistics", false);
     public static final boolean TRACE_PC_STATE = DebugUtils.getBoolean("cnd.pp.condition.state.trace", false);
-    
+
+    public static final int REPARSE_DELAY = DebugUtils.getInt("cnd.reparce.delay", 1001);
+
     public static final List<String> logMacros;
     static {
          String text = System.getProperty("parser.log.macro"); //NOI18N
