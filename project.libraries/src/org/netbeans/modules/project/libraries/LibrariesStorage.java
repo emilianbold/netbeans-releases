@@ -72,12 +72,15 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.libraries.LibraryProvider.class)
-public class LibrariesStorage extends FileChangeAdapter implements WritableLibraryProvider<LibraryImplementation> {
+public class LibrariesStorage extends FileChangeAdapter
+implements WritableLibraryProvider<LibraryImplementation>, TaskListener {
 
     private static final String NB_HOME_PROPERTY = "netbeans.home";  //NOI18N
     private static final String LIBRARIES_REPOSITORY = "org-netbeans-api-project-libraries/Libraries";  //NOI18N
@@ -206,6 +209,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
             }            
             this.loadFromStorage();            
             this.storage.addFileChangeListener (this);
+            LibraryTypeRegistry.getDefault().addTaskListener(this);
             initialized = true;
         }
     }
@@ -562,6 +566,17 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
             }
         }
         return sb.toString();
+    }
+
+    public void taskFinished(Task task) {
+        if (initialized) {
+            HashMap<String, LibraryImplementation> clone;
+            clone = new HashMap<String,LibraryImplementation>(libraries);
+            loadFromStorage();
+            if (!clone.equals(libraries)) {
+                fireLibrariesChanged();
+            }
+        }
     }
 
 }
