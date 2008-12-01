@@ -46,6 +46,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -493,6 +494,11 @@ class ToolbarRow extends JPanel {
                     continue;
                 d.width += c.getPreferredSize().width;
             }
+            Insets borderInsets = parent.getInsets();
+            if( null != borderInsets ) {
+                d.height += borderInsets.top;
+                d.height += borderInsets.bottom;
+            }
             return d;
         }
 
@@ -504,12 +510,23 @@ class ToolbarRow extends JPanel {
                     continue;
                 d.width += c.getMinimumSize().width;
             }
+            Insets borderInsets = parent.getInsets();
+            if( null != borderInsets ) {
+                d.height += borderInsets.top;
+                d.height += borderInsets.bottom;
+            }
             return d;
         }
 
         public void layoutContainer(Container parent) {
             int w = parent.getWidth();
             int h = parent.getHeight();
+            int top = 0;
+            Insets borderInsets = parent.getInsets();
+            if( null != borderInsets ) {
+                h -= borderInsets.top + borderInsets.bottom;
+                top = borderInsets.top;
+            }
             Dimension prefSize = preferredLayoutSize(parent);
 
             List<Component> leftBars = getContainers( ToolbarConstraints.Align.left );
@@ -562,9 +579,7 @@ class ToolbarRow extends JPanel {
             int x = 0;
             for( Component c : leftBars ) {
                 int barWidth = bar2width.get(c);
-                Dimension barPrefSize = c.getPreferredSize();
-                int y = (h - barPrefSize.height) / 2;
-                c.setBounds(x, y, barWidth, barPrefSize.height);
+                c.setBounds(x, top, barWidth, h);
                 x += barWidth;
             }
 
@@ -573,9 +588,7 @@ class ToolbarRow extends JPanel {
             for( Component c : rightBars ) {
                 int barWidth = bar2width.get(c);
                 x -= barWidth;
-                Dimension barPrefSize = c.getPreferredSize();
-                int y = (h - barPrefSize.height) / 2;
-                c.setBounds(x, y, barWidth, barPrefSize.height);
+                c.setBounds(x, top, barWidth, h);
             }
         }
 

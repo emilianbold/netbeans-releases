@@ -47,6 +47,9 @@ import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.RenderingHints;
@@ -102,6 +105,7 @@ final class ToolbarContainer extends JPanel {
         this.toolbar = toolbar;
         this.dnd = dnd;
         this.dragable = dragable;
+//        add( toolbar, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
         add( toolbar, BorderLayout.CENTER );
         toolbar.addContainerListener( new ContainerListener() {
 
@@ -122,6 +126,7 @@ final class ToolbarContainer extends JPanel {
         if( null == dragger && isDragable() ) {
             dragger = createDragger();
             dragger.setToolTipText(Actions.cutAmpersand(toolbar.getDisplayName()));
+//            add( dragger, new GridBagConstraints(0, 0, 1, 1, 0.0, 1.0, GridBagConstraints.WEST, GridBagConstraints.VERTICAL, new Insets(0,0,0,0), 0, 0));
             add( dragger, BorderLayout.WEST );
         }
         registerDnd();
