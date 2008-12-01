@@ -883,6 +883,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                         // while dereference and address-of expression
                         // try to handle it the same ways as UNARY_OPERATOR
                         switch (topID) {
+                            case GENERIC_TYPE_OPEN:
                             case MEMBER_POINTER_OPEN: // next is operator as well
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
@@ -1050,6 +1051,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 case ARRAY: // check for "List<String[]" plus ">" case
                                 case PARENTHESIS: // check for "T<(1+1)" plus ">" case
                                 case METHOD: // check for "T<func(param)" plus ">" case
+                                case UNARY_OPERATOR:
                                     int cnt = expStack.size();
                                     CsmCompletionExpression gen = null;
                                     for (int i = 0; i < cnt; i++) {
@@ -1287,6 +1289,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                     case PLUSPLUS: // Prefix or postfix
                     case MINUSMINUS:
                         switch (topID) {
+                            case GENERIC_TYPE_OPEN:
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
@@ -1333,6 +1336,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 pushExp(opExp);
                                 break;
 
+                            case GENERIC_TYPE_OPEN:
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
@@ -1355,6 +1359,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                     case TILDE: // Always unary
                     case NOT:
                         switch (topID) {
+                            case GENERIC_TYPE_OPEN:
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
@@ -1430,6 +1435,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 top.setExpID(tokenID2OpenExpID(tokenID));
                                 break;
 
+                            case GENERIC_TYPE_OPEN:
                             case METHOD_OPEN:
                             case PARENTHESIS_OPEN:
                             case SPECIAL_PARENTHESIS_OPEN:
