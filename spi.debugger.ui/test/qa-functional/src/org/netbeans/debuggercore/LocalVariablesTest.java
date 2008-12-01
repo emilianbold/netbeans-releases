@@ -235,9 +235,10 @@ public class LocalVariablesTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
             EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
-            new EventTool().waitNoEvent(500);
+            new EventTool().waitNoEvent(500
+                    );
             Utilities.toggleBreakpoint(eo, 52);
-            new EventTool().waitNoEvent(500);
+            new EventTool().waitNoEvent(1000);
             Utilities.startDebugger();
             try {
                 Utilities.waitStatusText("Thread main stopped at MemoryView.java:52.");
