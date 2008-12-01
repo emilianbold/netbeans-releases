@@ -581,40 +581,26 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
     private Node createRootNodeProject(Project project, ConfigurationDescriptor projectDescriptor) {
         boolean includeMakefileDescription = true;
-        boolean includeNewDescription = true;
         int compilerSet = -1;
         boolean isCompileConfiguration = ((MakeConfiguration) selectedConfigurations[0]).isCompileConfiguration();
-        boolean includeLinkerDescription = true;
-        boolean includeArchiveDescription = true;
         boolean includeRunDebugDescriptions = true;
 
         for (int i = 0; i < selectedConfigurations.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) selectedConfigurations[i];
 
-            if (compilerSet >= 0 && makeConfiguration.getCompilerSet().getValue() != compilerSet) {
-                includeNewDescription = false;
-            }
             compilerSet = makeConfiguration.getCompilerSet().getValue();
 
-            if ((isCompileConfiguration && !makeConfiguration.isCompileConfiguration()) || (!isCompileConfiguration && makeConfiguration.isCompileConfiguration())) {
-                includeNewDescription = false;
-            }
-
-            if (makeConfiguration.isMakefileConfiguration()) {
-                //includeNewDescription = false;
-                includeLinkerDescription = false;
-                includeArchiveDescription = false;
-            }
             if (makeConfiguration.isLinkerConfiguration()) {
                 includeMakefileDescription = false;
-                includeArchiveDescription = false;
             }
             if (makeConfiguration.isArchiverConfiguration()) {
                 includeMakefileDescription = false;
-                includeLinkerDescription = false;
             }
             if (makeConfiguration.isLibraryConfiguration()) {
                 includeRunDebugDescriptions = false;
+            }
+            if (makeConfiguration.isQmakeConfiguration()) {
+                includeMakefileDescription = false;
             }
         }
 
@@ -654,7 +640,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         descriptions.add(createRequiredProjectsDescription(project));
         if (includeMakefileDescription) {
-            //descriptions.add(createMakefileDescription(project));
             descriptions.add(createCodeAssistantDescription(project, compilerSet, null, null, isCompileConfiguration));
         }
         CustomizerNode rootDescription = new CustomizerNode(
@@ -829,49 +814,55 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     private CustomizerNode createBuildDescription(Project project) {
 
         boolean includeMakefileDescription = true;
-        boolean includeNewDescription = true;
+        boolean includeCompilerDescription = true;
         int compilerSet = -1;
         boolean isCompileConfiguration = ((MakeConfiguration) selectedConfigurations[0]).isCompileConfiguration();
         boolean includeLinkerDescription = true;
         boolean includeArchiveDescription = true;
-        boolean includeRunDebugDescriptions = true;
+        boolean includeQtDescription = true;
 
         for (int i = 0; i < selectedConfigurations.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) selectedConfigurations[i];
 
             if (compilerSet >= 0 && makeConfiguration.getCompilerSet().getValue() != compilerSet) {
-                includeNewDescription = false;
+                includeCompilerDescription = false;
+                includeQtDescription = false;
             }
             compilerSet = makeConfiguration.getCompilerSet().getValue();
 
             if ((isCompileConfiguration && !makeConfiguration.isCompileConfiguration()) || (!isCompileConfiguration && makeConfiguration.isCompileConfiguration())) {
-                includeNewDescription = false;
+                includeCompilerDescription = false;
+                includeQtDescription = false;
             }
 
             if (makeConfiguration.isMakefileConfiguration()) {
-                includeNewDescription = false;
+                includeCompilerDescription = false;
                 includeLinkerDescription = false;
                 includeArchiveDescription = false;
+                includeQtDescription = false;
             }
             if (makeConfiguration.isLinkerConfiguration()) {
                 includeMakefileDescription = false;
                 includeArchiveDescription = false;
+                includeQtDescription = false;
             }
             if (makeConfiguration.isArchiverConfiguration()) {
                 includeMakefileDescription = false;
                 includeLinkerDescription = false;
             }
-            if (makeConfiguration.isLibraryConfiguration()) {
-                includeRunDebugDescriptions = false;
+            if (makeConfiguration.isQmakeConfiguration()) {
+                includeMakefileDescription = false;
+                includeCompilerDescription = false;
+                includeArchiveDescription = false;
+                includeLinkerDescription = false;
             }
         }
 
         ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
         if (includeMakefileDescription) {
             descriptions.add(createMakefileDescription(project));
-        //descriptions.add(createRequiredProjectsDescription(project));
         }
-        if (includeNewDescription) {
+        if (includeCompilerDescription) {
             descriptions.addAll(createCompilerNodes(project, compilerSet, -1, null, null, isCompileConfiguration, null));
         }
         if (includeLinkerDescription) {
@@ -879,6 +870,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         if (includeArchiveDescription) {
             descriptions.add(createArchiverDescription());
+        }
+        if (includeQtDescription) {
+            descriptions.add(createQtDescription());
         }
 
         descriptions.add(createPackagingDescription());
@@ -1115,6 +1109,24 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         public HelpCtx getHelpCtx() {
             return new HelpCtx("ProjectPropsArchiverGeneral"); // NOI18N
         }
+    }
+
+    private CustomizerNode createQtDescription() {
+        CustomizerNode node = new QtCustomizerNode("Qmake", getString("LBL_QMAKE_NODE"), null); // NOI18N
+        return node;
+    }
+
+    private static class QtCustomizerNode extends CustomizerNode {
+
+        public QtCustomizerNode(String name, String displayName, CustomizerNode[] children) {
+            super(name, displayName, children);
+        }
+
+        @Override
+        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
+            return ((MakeConfiguration) configuration).getQmakeConfiguration().getGeneralSheet();
+        }
+
     }
 
     // Packaging

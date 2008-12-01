@@ -39,8 +39,9 @@
 
 package org.netbeans.modules.cnd.modelui.trace;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
@@ -72,7 +73,7 @@ public abstract class TestProjectActionBase extends NodeAction {
     public TestProjectActionBase() {
     }
 
-    protected abstract void performAction(Collection<NativeProject> projects);
+    protected abstract void performAction(Collection<CsmProject> projects);
     
     @Override
     public JMenuItem getMenuPresenter() {
@@ -90,7 +91,7 @@ public abstract class TestProjectActionBase extends NodeAction {
             org.openide.awt.Actions.connect(this.presenter, (Action) this, true);
             this.inited = true;
         }
-        final Collection<NativeProject> projects = getNativeProjects(getActivatedNodes());
+        final Collection<CsmProject> projects = getCsmProjects(getActivatedNodes());
         if (TEST_XREF) {
             if (projects == null) {
                 this.setEnabled(!running);
@@ -124,7 +125,7 @@ public abstract class TestProjectActionBase extends NodeAction {
         if (running) {
             return false;
         }
-        Collection<NativeProject> projects = getNativeProjects(getActivatedNodes());
+        Collection<CsmProject> projects = getCsmProjects(getActivatedNodes());
         if (projects == null) {
             return false;
         }
@@ -136,7 +137,7 @@ public abstract class TestProjectActionBase extends NodeAction {
 
             public void run() {
                 try {
-                    performAction(getNativeProjects(getActivatedNodes()));
+                    performAction(getCsmProjects(getActivatedNodes()));
                 } finally {
                     running = false;
                 }
@@ -154,29 +155,36 @@ public abstract class TestProjectActionBase extends NodeAction {
      * @return in the case all nodes correspond to native projects -
      * collection of native projects; otherwise null
      */
-    protected Collection<NativeProject> getNativeProjects(Node[] nodes) {
-        Collection<NativeProject> projects = new ArrayList<NativeProject>();
+    protected Collection<CsmProject> getCsmProjects(Node[] nodes) {
+        Set<CsmProject> csmProjects = new HashSet<CsmProject>();
         for (int i = 0; i < nodes.length; i++) {
-            Object o = nodes[i].getValue("Project"); // NOI18N 
-            if (!(o instanceof Project)) {
-                return null;
+            CsmProject csm = nodes[i].getLookup().lookup(CsmProject.class);
+            if (csm == null) {
+                NativeProject nativeProject = nodes[i].getLookup().lookup(NativeProject.class);
+                if (nativeProject == null) {
+                    Object o = nodes[i].getValue("Project"); // NOI18N 
+                    if (o instanceof Project) {
+                        nativeProject = ((Project) o).getLookup().lookup(NativeProject.class);
+                    }
+                }
+                if (nativeProject != null) {
+                    csm = CsmModelAccessor.getModel().getProject(nativeProject);
+                }
             }
-            NativeProject nativeProject = ((Project) o).getLookup().lookup(NativeProject.class);
-            if (nativeProject == null) {
-                return null;
+            if (csm != null) {
+                csmProjects.add(csm);
             }
-            projects.add(nativeProject);
         }
-        return projects;
+        return csmProjects;
     }
 
-    protected State getState(Collection<NativeProject> projects) {
+    protected State getState(Collection<CsmProject> projects) {
         CsmModel model = CsmModelAccessor.getModel();
         if (model == null || model.getState() != CsmModelState.ON) {
             return State.Indeterminate;
         }
         State state = State.Indeterminate;
-        for (NativeProject p : projects) {
+        for (CsmProject p : projects) {
             State curr = getState(p);
             if (state == State.Indeterminate) {
                 state = curr;
@@ -189,8 +197,7 @@ public abstract class TestProjectActionBase extends NodeAction {
         return state;
     }
 
-    private State getState(NativeProject p) {
-        CsmProject csmPrj = CsmModelAccessor.getModel().getProject(p);
+    private State getState(CsmProject csmPrj) {
         return csmPrj != null && csmPrj.isStable(null) ? State.Enabled : State.Disabled;
     }
     

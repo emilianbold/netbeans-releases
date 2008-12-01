@@ -307,6 +307,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     case CPPTokenTypes.RCURLY:
                         break;
                     case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
+                    case CPPTokenTypes.CSM_ARRAY_DECLARATION:
                         //new VariableImpl(
                         break;
                 }
