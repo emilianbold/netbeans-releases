@@ -308,8 +308,8 @@ public class LinkerConfiguration implements AllOptionsProvider {
             dynSearchPrefix = ""; // NOI18N
         }
         String options = ""; // NOI18N
-        options += getAdditionalLibs().getOption(libPrefix) + " "; // NOI18N
-        options += getDynamicSearch().getOption(dynSearchPrefix) + " "; // NOI18N
+        options += getAdditionalLibs().getOption(cs, libPrefix) + " "; // NOI18N
+        options += getDynamicSearch().getOption(cs, dynSearchPrefix) + " "; // NOI18N
         options += getLibrariesConfiguration().getOptions(getMakeConfiguration()) + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
