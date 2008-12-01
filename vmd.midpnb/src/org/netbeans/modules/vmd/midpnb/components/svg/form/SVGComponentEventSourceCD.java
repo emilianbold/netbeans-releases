@@ -136,7 +136,7 @@ public abstract class SVGComponentEventSourceCD extends ComponentDescriptor {
                 new ImportCodePresenterSupport("org.netbeans.microedition.svg.SVGComponent"), //NOI18N
                 GoToSourcePresenter.createForwarder(PROP_SVGCOMPONENT),
                 // flow
-                new SVGComponentSourcePinPresenter(),
+                //new SVGComponentSourcePinPresenter(),
                 // delete
                 DeleteDependencyPresenter.createDependentOnParentComponentPresenter(),
                 //inspector
@@ -188,45 +188,7 @@ public abstract class SVGComponentEventSourceCD extends ComponentDescriptor {
         }
     }
 
-    private class SVGComponentSourcePinPresenter extends FlowEventSourcePinPresenter {
-
-        protected DesignComponent getComponentForAttachingPin() {
-            return getComponent().getParentComponent();
-        }
-
-        protected String getDisplayName() {
-            return getInstanceName(getComponent());
-        }
-
-        protected String getOrder() {
-            return SVGComponentEventSourceOrder.CATEGORY_ID;
-        }
-
-        @Override
-        protected boolean canRename() {
-            return true;
-        }
-
-        @Override
-        protected String getRenameName() {
-            return getDisplayName();
-        }
-
-        @Override
-        protected void setRenameName(String name) {
-            DesignComponent button = getComponent().readProperty(PROP_SVGCOMPONENT).getComponent();
-            button.writeProperty(ClassCD.PROP_INSTANCE_NAME, MidpTypes.createStringValue(name));
-        }
-
-
-
-        @Override
-        protected DesignEventFilter getEventFilter() {
-            return new DesignEventFilter().setGlobal(true);
-        }
-    };
-
-    private static String getInstanceName(DesignComponent component) {
+    static String getInstanceName(DesignComponent component) {
         DesignComponent svgComponent = component.readProperty(PROP_SVGCOMPONENT).getComponent();
         if (svgComponent == null) {
             throw new IllegalStateException("Design SVG Component is null"); //NOI18N
