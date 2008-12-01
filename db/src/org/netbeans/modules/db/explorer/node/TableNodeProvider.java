@@ -52,6 +52,7 @@ import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -86,6 +87,18 @@ public class TableNodeProvider extends NodeProvider {
         metaData = getLookup().lookup(Metadata.class);
     }
 
+    @Override
+    public void refresh() {
+        RequestProcessor.getDefault().post(
+            new Runnable() {
+                public void run() {
+                    metaData.refresh();
+                    update();
+                }
+            }
+        );
+    }
+
     private void setup() {
         update();
     }
@@ -107,7 +120,7 @@ public class TableNodeProvider extends NodeProvider {
                 MetadataElementHandle<Table> handle = MetadataElementHandle.create(table);
                 lookup.add(handle);
 
-                newList.add(TableNode.create(lookup));
+                newList.add(TableNode.create(lookup, this));
             }
         }
 

@@ -107,7 +107,7 @@ public class ViewNodeProvider extends NodeProvider {
                 MetadataElementHandle<View> handle = MetadataElementHandle.create(view);
                 lookup.add(handle);
 
-                newList.add(ViewNode.create(lookup));
+                newList.add(ViewNode.create(lookup, this));
             }
         }
 

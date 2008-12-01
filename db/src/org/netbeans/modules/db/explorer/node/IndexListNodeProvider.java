@@ -71,6 +71,6 @@ public class IndexListNodeProvider extends ConnectedNodeProvider {
 
     @Override
     protected BaseNode createNode(NodeDataLookup lookup) {
-        return IndexListNode.create(lookup);
+        return IndexListNode.create(lookup, this);
     }
 }

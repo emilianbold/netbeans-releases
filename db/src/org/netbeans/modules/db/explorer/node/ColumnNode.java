@@ -40,6 +40,7 @@
 package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
@@ -59,8 +60,8 @@ public class ColumnNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ColumnNode instance
      */
-    public static ColumnNode create(NodeDataLookup dataLookup) {
-        ColumnNode node = new ColumnNode(dataLookup);
+    public static ColumnNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ColumnNode node = new ColumnNode(dataLookup, provider);
         node.setup();
         return node;
     }
@@ -69,8 +70,8 @@ public class ColumnNode extends BaseNode {
     private Metadata metaData;
     private MetadataElementHandle<Column> columnHandle;
 
-    private ColumnNode(NodeDataLookup lookup) {
-        super(lookup, FOLDER);
+    private ColumnNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(lookup, FOLDER, provider);
     }
 
     protected void initialize() {
@@ -83,12 +84,20 @@ public class ColumnNode extends BaseNode {
     @Override
     public String getName() {
         Column column = columnHandle.resolve(metaData);
+        if (column == null) {
+            return "";
+        }
+
         return column.getName();
     }
 
     @Override
     public String getDisplayName() {
         Column column = columnHandle.resolve(metaData);
+        if (column == null) {
+            return "";
+        }
+
         return column.getName();
     }
 

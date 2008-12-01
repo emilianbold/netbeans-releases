@@ -220,6 +220,9 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="Actions">
+                    <file name="org-netbeans-modules-db-explorer-action-RefreshAction.instance">
+                        <attr name="position" intvalue="350"/>
+                    </file>
                 </folder>
             </folder>
             <folder name="ViewList">

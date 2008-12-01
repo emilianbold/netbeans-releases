@@ -55,15 +55,8 @@ public class RefreshAction extends BaseAction {
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
 
-        if (activatedNodes.length > 0) {
-            enabled = true;
-            for (Node node : activatedNodes) {
-                BaseNode baseNode = node.getLookup().lookup(BaseNode.class);
-                if (baseNode == null || !baseNode.canRefresh()) {
-                    enabled = false;
-                    break;
-                }
-            }
+        if (activatedNodes.length == 1) {
+            enabled = null != activatedNodes[0].getLookup().lookup(BaseNode.class);
         }
 
         return enabled;
@@ -71,6 +64,8 @@ public class RefreshAction extends BaseAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
+        BaseNode baseNode = activatedNodes[0].getLookup().lookup(BaseNode.class);
+        baseNode.refresh();
     }
 
 }

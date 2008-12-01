@@ -71,6 +71,6 @@ public class ViewListNodeProvider extends ConnectedNodeProvider {
 
     @Override
     protected BaseNode createNode(NodeDataLookup lookup) {
-        return ViewListNode.create(lookup);
+        return ViewListNode.create(lookup, this);
     }
 }

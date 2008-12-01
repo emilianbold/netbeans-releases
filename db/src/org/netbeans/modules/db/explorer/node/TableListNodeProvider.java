@@ -71,6 +71,6 @@ public class TableListNodeProvider extends ConnectedNodeProvider {
 
     @Override
     protected BaseNode createNode(NodeDataLookup lookup) {
-        return TableListNode.create(lookup);
+        return TableListNode.create(lookup, this);
     }
 }

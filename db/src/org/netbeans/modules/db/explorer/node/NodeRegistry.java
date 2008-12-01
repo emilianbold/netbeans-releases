@@ -130,7 +130,7 @@ public class NodeRegistry implements ChangeListener {
             providers.add(provider);
         }
     }
-    
+
     /**
      * Get the nodes from all of the registered providers.
      * 

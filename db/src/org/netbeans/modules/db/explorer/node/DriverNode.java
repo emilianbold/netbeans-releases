@@ -45,6 +45,7 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.db.explorer.node.BaseNode;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
 import org.openide.util.RequestProcessor;
@@ -66,14 +67,14 @@ public class DriverNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the DriverNode instance
      */
-    public static DriverNode create(NodeDataLookup dataLookup) {
-        DriverNode node = new DriverNode(dataLookup);
+    public static DriverNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        DriverNode node = new DriverNode(dataLookup, provider);
         node.setup();
         return node;
     }
 
-    private DriverNode(NodeDataLookup lookup) {
-        super(lookup, FOLDER);
+    private DriverNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(lookup, FOLDER, provider);
     }
 
     @Override

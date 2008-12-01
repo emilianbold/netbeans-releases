@@ -41,6 +41,7 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
@@ -60,8 +61,8 @@ public class ViewNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ViewNode instance
      */
-    public static ViewNode create(NodeDataLookup dataLookup) {
-        ViewNode node = new ViewNode(dataLookup);
+    public static ViewNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        ViewNode node = new ViewNode(dataLookup, provider);
         node.setup();
         return node;
     }
@@ -70,8 +71,8 @@ public class ViewNode extends BaseNode {
     private Metadata metaData;
     private MetadataElementHandle<View> viewHandle;
 
-    private ViewNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private ViewNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {
@@ -84,12 +85,20 @@ public class ViewNode extends BaseNode {
     @Override
     public String getName() {
         View view = viewHandle.resolve(metaData);
+        if (view == null) {
+            return "";
+        }
+
         return view.getName();
     }
 
     @Override
     public String getDisplayName() {
         View view = viewHandle.resolve(metaData);
+        if (view == null) {
+            return "";
+        }
+
         return view.getName();
     }
 

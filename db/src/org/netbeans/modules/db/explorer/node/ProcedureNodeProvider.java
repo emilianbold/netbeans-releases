@@ -108,7 +108,7 @@ public class ProcedureNodeProvider extends NodeProvider {
 
                 lookup.add(handle);
 
-                newList.add(ProcedureNode.create(lookup));
+                newList.add(ProcedureNode.create(lookup, this));
             }
         }
 

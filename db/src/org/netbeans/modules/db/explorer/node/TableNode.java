@@ -41,6 +41,7 @@ package org.netbeans.modules.db.explorer.node;
 
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
+import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
@@ -60,8 +61,8 @@ public class TableNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the TableNode instance
      */
-    public static TableNode create(NodeDataLookup dataLookup) {
-        TableNode node = new TableNode(dataLookup);
+    public static TableNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+        TableNode node = new TableNode(dataLookup, provider);
         node.setup();
         return node;
     }
@@ -70,8 +71,8 @@ public class TableNode extends BaseNode {
     private Metadata metaData;
     private MetadataElementHandle<Table> tableHandle;
 
-    private TableNode(NodeDataLookup lookup) {
-        super(new ChildNodeFactory(lookup), lookup, FOLDER);
+    private TableNode(NodeDataLookup lookup, NodeProvider provider) {
+        super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
     }
 
     protected void initialize() {
@@ -83,14 +84,35 @@ public class TableNode extends BaseNode {
     }
 
     @Override
+    public void refresh() {
+        metaData.refresh();
+        Table table = tableHandle.resolve(metaData);
+        
+        if (table == null) {
+            remove();
+        } else {
+            table.refresh();
+            super.refresh();
+        }
+    }
+
+    @Override
     public String getName() {
         Table table = tableHandle.resolve(metaData);
+        if (table == null) {
+            return "";
+        }
+
         return table.getName();
     }
 
     @Override
     public String getDisplayName() {
         Table table = tableHandle.resolve(metaData);
+        if (table == null) {
+            return "";
+        }
+
         return table.getName();
     }
 

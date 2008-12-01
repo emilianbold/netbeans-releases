@@ -103,7 +103,7 @@ public class ConnectionNodeProvider extends NodeProvider {
             } else {
                 NodeDataLookup lookup = new NodeDataLookup();
                 lookup.add(connection);
-                newList.add(ConnectionNode.create(lookup));
+                newList.add(ConnectionNode.create(lookup, this));
             }
         }
 
