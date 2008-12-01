@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,61 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.vmd.midpnb.components.svg.form;
+package org.netbeans.modules.mobility.project.ui.actions;
 
-import java.awt.Image;
-import java.util.ArrayList;
+import java.io.File;
 import java.util.List;
+import javax.swing.Action;
+import javax.swing.JFileChooser;
+import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
+import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.openide.util.ImageUtilities;
+public class AddFolderAction extends NodeAction<File> {
 
-/**
- *
- * @author Karol Harezlak
- * @author ads
- */
-public class SVGButtonEventSourceCD extends SVGComponentEventSourceCD {
+    private static File lastFile = null;
 
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, 
-            "#SVGButtonEventEventSource"); // NOI18
-    
-    private static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/button_16.png"; // NOI18N                                                
-    private static final Image ICON_SVG_BUTTON = ImageUtilities.loadImage(ICON_PATH);
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentEventSourceCD#getIcon()
-     */
-    @Override
-    protected Image getIcon() {
-        return ICON_SVG_BUTTON;
-    }
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentEventSourceCD#getPairTypeId()
-     */
-    @Override
-    protected TypeID getPairTypeId() {
-        return SVGButtonCD.TYPEID;
-    }
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentEventSourceCD#getTypeId()
-     */
-    @Override
-    protected TypeID getTypeId() {
-        return TYPEID;
+    private AddFolderAction() {
+        super(NbBundle.getMessage(AddFolderAction.class, "LBL_CustLibs_Add_Folder")); //NO18N
     }
 
-    protected List<? extends Presenter> createPresenters() {
-        List<? extends Presenter> presenters = super.createPresenters();
-        List<Presenter> result = new ArrayList<Presenter>( presenters  );
-        result.add( new SVGComponentSourcePinPresenter() );
-        return result;
+    public static Action getStaticInstance() {
+        return new AddFolderAction();
     }
 
+    protected File[] getItems() {
+        File[] files = null;
+        // Let user search for the Jar file
+        final JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setMultiSelectionEnabled(true);
+        chooser.setDialogTitle(NbBundle.getMessage(AddFolderAction.class, "LBL_Classpath_AddFolder")); //NO18N
+        // NOI18N
+        if (defaultDir != null) {
+            chooser.setSelectedFile(FileUtil.toFile(defaultDir.getChildren()[0]));
+        } else if (lastFile != null) {
+            chooser.setSelectedFile(lastFile);
+        }
+        final int option = chooser.showOpenDialog(null);
+        // Sow the chooser
+        if (option == JFileChooser.APPROVE_OPTION) {
+            files = chooser.getSelectedFiles();
+            if (files.length > 0) {
+                lastFile = files[0];
+            }
+        }
+        return files;
+    }
+
+    protected List<VisualClassPathItem> addItems(File[] files, final List<VisualClassPathItem> set, final Node node) {
+        for (File file : files) {
+            file = FileUtil.normalizeFile(file);
+            set.add(new VisualClassPathItem(file, VisualClassPathItem.TYPE_FOLDER, null, file.getPath()));
+        }
+        return set;
+    }
 }

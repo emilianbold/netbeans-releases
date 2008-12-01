@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,61 +31,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.vmd.midpnb.components.svg.form;
+package org.netbeans.modules.mobility.project.ui.actions;
 
-import java.awt.Image;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import javax.swing.Action;
+import org.netbeans.modules.mobility.project.J2MEProject;
+import org.netbeans.spi.actions.Single;
+import org.netbeans.spi.project.ProjectConfiguration;
+import org.openide.ErrorManager;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.openide.util.ImageUtilities;
+public class SetConfigurationAction extends Single<Node> {
 
-/**
- *
- * @author Karol Harezlak
- * @author ads
- */
-public class SVGButtonEventSourceCD extends SVGComponentEventSourceCD {
+    private SetConfigurationAction() {
+        super(Node.class);
+        putValue(NAME, NbBundle.getMessage(SetConfigurationAction.class, "LBL_SACAction_SetConfiguration")); //NO18N
+    }
 
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, 
-            "#SVGButtonEventEventSource"); // NOI18
-    
-    private static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/button_16.png"; // NOI18N                                                
-    private static final Image ICON_SVG_BUTTON = ImageUtilities.loadImage(ICON_PATH);
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentEventSourceCD#getIcon()
-     */
+    public static Action getStaticInstance() {
+        return new SetConfigurationAction();
+    }
+
     @Override
-    protected Image getIcon() {
-        return ICON_SVG_BUTTON;
-    }
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentEventSourceCD#getPairTypeId()
-     */
-    @Override
-    protected TypeID getPairTypeId() {
-        return SVGButtonCD.TYPEID;
-    }
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentEventSourceCD#getTypeId()
-     */
-    @Override
-    protected TypeID getTypeId() {
-        return TYPEID;
+    protected boolean isEnabled(Node target) {
+        J2MEProject project = target.getLookup().lookup(J2MEProject.class);
+        ProjectConfiguration conf = target.getLookup().lookup(ProjectConfiguration.class);
+        return project != null && !project.getConfigurationHelper().getActiveConfiguration().equals(conf);
     }
 
-    protected List<? extends Presenter> createPresenters() {
-        List<? extends Presenter> presenters = super.createPresenters();
-        List<Presenter> result = new ArrayList<Presenter>( presenters  );
-        result.add( new SVGComponentSourcePinPresenter() );
-        return result;
+    @Override
+    protected void actionPerformed(Node target) {
+        final J2MEProject project = target.getLookup().lookup(J2MEProject.class);
+        final ProjectConfiguration conf = target.getLookup().lookup(ProjectConfiguration.class);
+        try {
+            project.getConfigurationHelper().setActiveConfiguration(conf);
+        } catch (IllegalArgumentException ex) {
+            ErrorManager.getDefault().notify(ex);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
     }
-
 }
