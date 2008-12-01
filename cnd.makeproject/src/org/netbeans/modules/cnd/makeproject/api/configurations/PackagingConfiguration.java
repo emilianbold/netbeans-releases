@@ -99,7 +99,7 @@ public class PackagingConfiguration {
         if (makeConfiguration.isMakefileConfiguration()) {
             perm = MakeOptions.getInstance().getDefExePerm();
             packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
-        } else if (makeConfiguration.isApplicationConfiguration()) {
+        } else if (makeConfiguration.isApplicationConfiguration() || makeConfiguration.isQmakeConfiguration()) {
             perm = MakeOptions.getInstance().getDefExePerm();
             packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
             if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {

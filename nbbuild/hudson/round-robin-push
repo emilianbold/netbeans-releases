@@ -83,6 +83,7 @@ if grep "Location:.*blue[_anime]*.gif.*" "$STATUS"; then
 else
     echo Build is not stable, exiting
     testresult "$TESTDIR" "check.build.stable" "`cat $STATUS`" "1"
+    echo >"nbbuild/no-outgoing-changes-no-build.zip"
     exit 0
 fi
 
