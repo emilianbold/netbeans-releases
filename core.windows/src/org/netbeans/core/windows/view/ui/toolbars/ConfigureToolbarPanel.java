@@ -358,7 +358,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         ToolbarPool pool = ToolbarPool.getDefault();
         final ToolbarConfiguration tc = ToolbarConfiguration.findConfiguration( pool.getConfiguration() );
         if( null != tc ) {
-            tc.setToolbarButtonDragAndDropAllowed( true );
+            tc.setToolbarButtonDragAndDropAllowed( false );
         }
         //remove empty toolbars
         DataFolder folder = pool.getFolder();

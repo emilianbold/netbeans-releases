@@ -2551,6 +2551,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 m_lblMessage.setToolTipText (msg);
             } else {
                 prepareMessage(m_lblMessage, null, null);
+                m_lblMessage.setToolTipText (null);
             }
             m_lblMessage.setText(msg);
         }
