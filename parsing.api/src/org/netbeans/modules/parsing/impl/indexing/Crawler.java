@@ -39,13 +39,39 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.util.Collection;
+import java.util.Map;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
+
 /**
  *
  * @author Tomas Zezula
  */
 public abstract class Crawler {
 
+    private String digest;
 
-    public abstract void collectResources();
+    private Map<String, Collection<Indexable>> cache;
+
+
+    public synchronized final String getDigest () {
+        if (this.cache == null) {
+            this.cache = collectResources();
+        }
+        return this.digest;
+    }
+
+    public final synchronized Map<String, Collection<Indexable>> getResources() {
+        if (this.cache == null) {
+            this.cache = collectResources();
+        }
+        return cache;
+    }
+
+    protected final void addToDigest () {
+        
+    }
+
+    protected abstract Map<String, Collection<Indexable>> collectResources();
 
 }

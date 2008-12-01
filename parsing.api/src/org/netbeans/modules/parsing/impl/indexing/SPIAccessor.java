@@ -39,47 +39,34 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
-
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class FileCrawler extends Crawler {
+public abstract class SPIAccessor {
     
-    private final File root;
+    private static volatile SPIAccessor instance;
 
-    public FileCrawler (final File root) {
-        assert root != null;
-        this.root = root;
+    public static void setInstance (final SPIAccessor _instance) {
+        assert _instance != null;
+        instance = _instance;
     }
 
-    @Override
-    protected  Map<String, Collection<Indexable>> collectResources() {
-        final Map<String, Collection<Indexable>> result = new HashMap<String, Collection<Indexable>>();
-        collect (root, result);
-        return result;
-    }
-
-    private static void collect (final File dir, final Map<String,Collection<Indexable>> result) {
-        final File[] ch = dir.listFiles();
-        if (ch != null) {
-            for (File c : ch) {
-                if (c.isDirectory()) {
-                    collect (c, result);
-                }
-                else {
-                    
-                }
+    public static synchronized SPIAccessor getInstance () {
+        if (instance == null) {
+            try {
+                Class.forName(Indexable.class.getName(), true, Indexable.class.getClassLoader());
+                assert instance != null;
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
+        return instance;
     }
 
-    
+    public abstract Indexable create (final IndexableImpl delegate);
 
 }

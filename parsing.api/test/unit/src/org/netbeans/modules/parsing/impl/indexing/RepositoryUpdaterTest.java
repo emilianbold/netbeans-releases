@@ -200,12 +200,16 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, handler.getSources().size());        
         
 
-//        assertTrue(l.await());
-//        result = collectResults ();
-//        assertEquals(1,result.size());
-//        assertEquals(srcRoot1.getURL(),result.iterator().next());
-//
-//        //Testing changes in registered classpath - add cp root
+        //Testing changes in registered classpath - add cp root
+        handler.reset();
+        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRoot1.getURL(), handler.getSources().get(0));
+
+        
+
 //        l = new PRListener();
 //        mcpi1.addResource(srcRoot2);
 //        assertTrue(l.await());
@@ -332,7 +336,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             }
 
             public boolean await () throws InterruptedException {
-                return latch.await(5000, TimeUnit.MILLISECONDS);
+                return latch.await(500000, TimeUnit.MILLISECONDS);
             }
 
             public Set<URL> getBinaries () {

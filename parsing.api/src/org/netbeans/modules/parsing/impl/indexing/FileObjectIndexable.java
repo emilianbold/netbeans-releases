@@ -37,85 +37,54 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.spi.indexing;
+package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
-import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
-
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Represens a file to be procesed by an indexer.
+ *
  * @author Tomas Zezula
  */
-//@NotThreadSafe
-public final class Indexable {
+public class FileObjectIndexable implements IndexableImpl {
 
-    static {
-        SPIAccessor.setInstance(new MyAccessor());
+    private final FileObject root;
+    private final FileObject file;
+
+    public FileObjectIndexable (final FileObject root, final FileObject file) {
+        assert root != null;
+        assert file != null;
+        this.root = root;
+        this.file = file;
     }
 
-    private IndexableImpl delegate;
-
-    Indexable(final IndexableImpl delegate) {
-        assert delegate != null;
-        this.delegate = delegate;
+    public long getLastModified() {
+        return this.file.lastModified().getTime();
     }
 
-    /**
-     * Returns a relative path from root to the
-     * represented file.
-     * @return the relative path from root
-     */
-    public String getRelativePath () {
-        return delegate.getRelativePath();
+    public String getName() {
+        return this.file.getName();
     }
 
-    /**
-     * Returns a name of represented file.
-     * @return a name
-     */
-    public String getName () {
-        return this.delegate.getName();
+    public String getRelativePath() {
+        return FileUtil.getRelativePath(root, file);
     }
 
-    /**
-     * Returns absolute URL of the represented file
-     * @return uri
-     */
-    public URL getURL () {
-        return delegate.getURL();
-    }
-
-    /**
-     * Returns a time when the file was last modified
-     * @return A long value representing the time the file was last modified,
-     * measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970),
-     * or 0L if the file does not exist or if an I/O error occurs
-     */
-    public long getLastModified () {
-        return this.delegate.getLastModified();
-    }
-
-    /**
-     * Returns {@link InputStream} of represented file.
-     * The caller is responsible to correctly close the stream.
-     * @return the {@link InputStream} to read the content
-     * @throws java.io.IOException
-     */
-    public InputStream openInputStream () throws IOException {
-        return this.delegate.openInputStream();
-    }
-
-    private static class MyAccessor extends SPIAccessor {
-
-        @Override
-        public Indexable create(IndexableImpl delegate) {
-            return new Indexable(delegate);
+    public URL getURL() {
+        try {
+            return this.file.getURL();
+        } catch (FileStateInvalidException ex) {
+            //deleted
+            return null;
         }
+    }
 
+    public InputStream openInputStream() throws IOException {
+        return this.file.getInputStream();
     }
 
 }

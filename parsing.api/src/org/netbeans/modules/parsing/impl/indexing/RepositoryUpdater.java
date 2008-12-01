@@ -59,6 +59,8 @@ import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -311,7 +313,7 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
         }
 
         @Override
-        public void run(Result nil) {
+        public void run(Result nil, final SchedulerEvent nothing) {
             do {
                 final Work work = getWork();
                 final WorkType type = work.getType();
@@ -386,6 +388,12 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
         }
 
         private void scanSource (URL root) {
+            //todo: optimize for java.io.Files
+            final FileObject rootFo = URLMapper.findFileObject(root);
+            if (rootFo != null) {
+                final Crawler crawler = new FileObjectCrawler(rootFo);
+                final Map<String,Collection<Indexable>> resources = crawler.getResources();                
+            }
         }
 
         private void findDependencies(final URL rootURL, final Map<URL, List<URL>> depGraph, DependenciesContext ctx, final Set<String> binaryClassPathIds) {

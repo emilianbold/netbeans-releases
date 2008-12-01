@@ -39,47 +39,53 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
-
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class FileCrawler extends Crawler {
+public class FileObjectCrawler extends Crawler {
     
-    private final File root;
+    private final FileObject root;
 
-    public FileCrawler (final File root) {
+    public FileObjectCrawler (final FileObject root) {
         assert root != null;
         this.root = root;
     }
 
     @Override
-    protected  Map<String, Collection<Indexable>> collectResources() {
-        final Map<String, Collection<Indexable>> result = new HashMap<String, Collection<Indexable>>();
-        collect (root, result);
+    protected Map<String, Collection<Indexable>> collectResources() {
+        Map<String, Collection<Indexable>> result = new HashMap<String, Collection<Indexable>>();
+        collect (root, root, result);
         return result;
     }
 
-    private static void collect (final File dir, final Map<String,Collection<Indexable>> result) {
-        final File[] ch = dir.listFiles();
-        if (ch != null) {
-            for (File c : ch) {
-                if (c.isDirectory()) {
-                    collect (c, result);
-                }
-                else {
-                    
+    private static void collect(final FileObject dir, final FileObject root, final Map<String, Collection<Indexable>> cache) {
+        final FileObject[] fos = dir.getChildren();
+        for (FileObject fo : fos) {
+            if (fo.isFolder()) {
+                collect(fo, root, cache);
+            }
+            else {
+                final String mime = fo.getMIMEType();
+                if (mime != null) {
+                    Collection<Indexable> indexable = cache.get(mime);
+                    if (indexable == null) {
+                        indexable = new LinkedList<Indexable>();
+                        cache.put(mime, indexable);
+                    }
+                    indexable.add(SPIAccessor.getInstance().create(new FileObjectIndexable(root, fo)));
                 }
             }
         }
     }
 
-    
+
 
 }

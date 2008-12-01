@@ -82,7 +82,7 @@ public class SourceIndexer extends CustomIndexer {
         //todo: Replace with multi source when done
         for (final Indexable dirty : dirtyFiles) {
             try {
-                final FileObject fileObject = URLMapper.findFileObject(dirty.getURI().toURL());
+                final FileObject fileObject = URLMapper.findFileObject(dirty.getURL());
                 if (fileObject != null) {
                     final Source src = Source.create(fileObject);
                     ParserManager.parse(Collections.singleton(src), new UserTask() {
@@ -107,8 +107,6 @@ public class SourceIndexer extends CustomIndexer {
                         }
                     });
                 }
-            } catch (final MalformedURLException e) {
-                Exceptions.printStackTrace(e);
             }
             catch (final ParseException e) {
                 Exceptions.printStackTrace(e);
