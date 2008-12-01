@@ -123,7 +123,7 @@ public class Schema extends MetadataElement {
     }
 
     /**
-     * Returns the table with the given name.
+     * Returns the view with the given name.
      *
      * @param name a view name.
      * @return a view named {@code view} or {@code null} if there is no such view.
@@ -133,10 +133,23 @@ public class Schema extends MetadataElement {
         return impl.getView(name);
     }
 
+    /**
+     * Get the list of procedures for thi shema
+     *
+     * @return the procedures
+     * @throws MetadataException if an error occurs while retrieving the metadata
+     */
     public Collection<Procedure> getProcedures() {
         return impl.getProcedures();
     }
 
+    /**
+     * Return a procedure with the given name
+     *
+     * @param name a procedure name
+     * @return a procedure named {@code name} or {@code null} if there is no such procedure.
+     * @throws MetadataException if an error occurs while retrieving the metadata
+     */
     public Procedure getProcedure(String name) {
         return impl.getProcedure(name);
     }
