@@ -125,7 +125,7 @@ public abstract class TestProjectActionBase extends NodeAction {
         if (running) {
             return false;
         }
-        Collection<CsmProject> projects = getCsmProjects(getActivatedNodes());
+        Collection<CsmProject> projects = getCsmProjects(activatedNodes);
         if (projects == null) {
             return false;
         }
@@ -137,7 +137,7 @@ public abstract class TestProjectActionBase extends NodeAction {
 
             public void run() {
                 try {
-                    performAction(getCsmProjects(getActivatedNodes()));
+                    performAction(getCsmProjects(activatedNodes));
                 } finally {
                     running = false;
                 }
