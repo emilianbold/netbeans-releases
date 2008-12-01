@@ -93,8 +93,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -279,10 +277,6 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
     @Override
     public void destroy() throws java.io.IOException {
         String clientName = client.getName();
-//        NotifyDescriptor.Confirmation notifyDesc =
-//                new NotifyDescriptor.Confirmation(NbBundle.getMessage(JaxWsClientNode.class, "MSG_CONFIRM_DELETE", clientName));
-//        DialogDisplayer.getDefault().notify(notifyDesc);
-//        if(notifyDesc.getValue() == NotifyDescriptor.YES_OPTION){
             
             JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
             // removing local wsdl and xml artifacts
@@ -336,7 +330,6 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
             // removing entry from jax-ws.xml
             support.removeServiceClient(clientName);
             super.destroy();
-//        }
     }
     
     /**

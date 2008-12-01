@@ -43,9 +43,6 @@ package org.netbeans.modules.mobility.project.ui;
 import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -83,6 +80,8 @@ import org.netbeans.modules.mobility.project.ui.customizer.VisualClasspathSuppor
 import org.netbeans.modules.project.support.customizer.AntArtifactChooser;
 import org.netbeans.modules.project.support.customizer.AntArtifactChooser.ArtifactItem;
 import org.netbeans.modules.project.support.customizer.LibrariesChooser;
+import org.netbeans.spi.actions.ContextAction;
+import org.netbeans.spi.actions.Single;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -108,96 +107,14 @@ import org.openide.util.actions.Presenter;
  */
 class NodeActions {
 
-    static abstract class ContextAction extends AbstractAction implements ContextAwareAction {
-        protected ContextAction(String n) {
-            putValue(NAME, n);
-        }
-
-        @Override
-        public boolean isEnabled() {
-            Collection <? extends Node> nodes = Utilities.actionsGlobalContext().lookupAll(Node.class);
-            Node[] nds = (Node[]) nodes.toArray(new Node[nodes.size()]);
-            return enable (nds);
-        }
-
-        @Override
-        public void setEnabled(boolean newValue) {
-            throw new UnsupportedOperationException();
-        }
-
-        protected boolean enable(Node[] activatedNodes) {
-            return activatedNodes.length > 0;
-        }
-
-        public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
-        }
-
-        protected abstract void performAction(final Node[] activatedNodes);
-
-        public final void actionPerformed(ActionEvent e) {
-            new ActionStub (Utilities.actionsGlobalContext()).actionPerformed(e);
-        }
-
-        public final Action createContextAwareInstance(Lookup actionContext) {
-            return new ActionStub (actionContext);
-        }
-
-        private final class ActionStub implements Action, PropertyChangeListener {
-            private final Lookup context;
-            private PropertyChangeSupport supp = new PropertyChangeSupport(this);
-            ActionStub (Lookup context) {
-                this.context = context;
-
-            }
-
-            public Object getValue(String key) {
-                return ContextAction.this.getValue(key);
-            }
-
-            public void putValue(String key, Object value) {
-                throw new UnsupportedOperationException();
-            }
-
-            public void setEnabled(boolean b) {
-                ContextAction.this.setEnabled (b);
-            }
-
-            public boolean isEnabled() {
-                Collection <? extends Node> nodes = context.lookupAll(Node.class);
-                Node[] nds = (Node[]) nodes.toArray(new Node[nodes.size()]);
-                return enable (nds);
-            }
-
-            public void addPropertyChangeListener(PropertyChangeListener listener) {
-                supp.addPropertyChangeListener(listener);
-            }
-
-            public void removePropertyChangeListener(PropertyChangeListener listener) {
-                supp.removePropertyChangeListener(listener);
-            }
-
-            public void actionPerformed(ActionEvent e) {
-                Collection <? extends Node> nodes = context.lookupAll(Node.class);
-                Node[] nds = (Node[]) nodes.toArray(new Node[nodes.size()]);
-                performAction (nds);
-            }
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                supp.firePropertyChange(evt.getPropertyName(),
-                        evt.getOldValue(), evt.getNewValue());
-            }
-
-        }
-    }
-
-static abstract class NodeAction<T> extends ContextAction
+static abstract class NodeAction<T> extends ContextAction<Node>
 {   
     protected FileObject defaultDir = null;
     
     protected NodeAction(String name)
     {
-        super(name);
+        super (Node.class);
+        putValue (NAME, name);
     }
     
     private void perform(final T obj[], final Node node, final J2MEProjectProperties j2meProperties)
@@ -334,7 +251,12 @@ static abstract class NodeAction<T> extends ContextAction
             save(map);
         }
     }
-    
+
+    public final void actionPerformed (Collection<? extends Node> nodes) {
+        Node[] n = nodes.toArray(new Node[nodes.size()]);
+        performAction (n);
+    }
+
     abstract protected List<VisualClassPathItem> addItems(T obj[], List<VisualClassPathItem> list, Node node);
     
     abstract protected T[] getItems();
@@ -673,11 +595,12 @@ static class AddJarAction extends NodeAction<File>
         }
     }
 
-static class SetConfigurationAction extends ContextAction
+static class SetConfigurationAction extends Single<Node>
 {
     private SetConfigurationAction()
     {
-        super(NbBundle.getMessage(SetConfigurationAction.class,
+        super (Node.class);
+        putValue(NAME, NbBundle.getMessage(SetConfigurationAction.class,
                 "LBL_SACAction_SetConfiguration")); //NOI18N
     }
     
@@ -685,26 +608,18 @@ static class SetConfigurationAction extends ContextAction
     {
         return new SetConfigurationAction();
     }
-    
-    protected boolean enable(final Node[] activatedNodes)
-    {
-        if (activatedNodes.length == 1)
-        {
-            final J2MEProject project=activatedNodes[0].getLookup().lookup(J2MEProject.class);
-            final ProjectConfiguration conf=activatedNodes[0].getLookup().lookup(ProjectConfiguration.class);
-            if (project != null)
-            {
-                if (!project.getConfigurationHelper().getActiveConfiguration().equals(conf))
-                    return true;
-            }         
-        }
-        return false;
-    }
 
-    protected void performAction(final Node[] activatedNodes)
-    {
-        final J2MEProject project=activatedNodes[0].getLookup().lookup(J2MEProject.class);
-        final ProjectConfiguration conf=activatedNodes[0].getLookup().lookup(ProjectConfiguration.class);
+    @Override
+    protected boolean isEnabled(Node target) {
+        J2MEProject project=target.getLookup().lookup(J2MEProject.class);
+        ProjectConfiguration conf=target.getLookup().lookup(ProjectConfiguration.class);
+        return project != null && !project.getConfigurationHelper().getActiveConfiguration().equals(conf);
+    }
+    
+    @Override
+    protected void actionPerformed(Node target) {
+        final J2MEProject project = target.getLookup().lookup(J2MEProject.class);
+        final ProjectConfiguration conf = target.getLookup().lookup(ProjectConfiguration.class);
         try {
             project.getConfigurationHelper().setActiveConfiguration(conf);
         } catch (IllegalArgumentException ex) {
@@ -713,13 +628,14 @@ static class SetConfigurationAction extends ContextAction
             ErrorManager.getDefault().notify(ex);
         }
     }
-}
+    }
 
-static class AddConfigurationAction extends ContextAction
+static class AddConfigurationAction extends Single<Node>
 {
     private AddConfigurationAction()
     {
-        super(NbBundle.getMessage(CustomizerLibraries.class,
+        super (Node.class);
+        putValue(NAME, NbBundle.getMessage(CustomizerLibraries.class,
                 "LBL_VCS_AddConfiguration")); //NOI18N
     }
     
@@ -729,14 +645,13 @@ static class AddConfigurationAction extends ContextAction
     }
 
     @Override
-    protected boolean enable(final Node[] activatedNodes)
-    {
-        return activatedNodes.length == 1;
+    protected boolean isEnabled(Node target) {
+        return target.getLookup().lookup(J2MEProject.class) != null;
     }
-    
-    protected void performAction(final Node[] activatedNodes) 
-    {
-        final J2MEProject project=activatedNodes[0].getLookup().lookup(J2MEProject.class);
+
+    @Override
+    protected void actionPerformed(Node target) {
+        final J2MEProject project=target.getLookup().lookup(J2MEProject.class);
         final J2MEProjectProperties j2meProperties = new J2MEProjectProperties( project,
                 project.getLookup().lookup(AntProjectHelper.class),
                 project.getLookup().lookup(ReferenceHelper.class),
@@ -774,7 +689,6 @@ static class AddConfigurationAction extends ContextAction
         }
     }
 
-
     private boolean addNewConfig( J2MEProject project, final String newName, J2MEProjectProperties j2meProperties, NewConfigurationPanel ncp, List <ProjectConfiguration> allNames )
     {
         if (newName != null) 
@@ -802,16 +716,22 @@ static class AddConfigurationAction extends ContextAction
         }
         return false;
     }
-}
+    }
 
-static abstract class AntAction extends ContextAction
+static abstract class AntAction extends ContextAction<Node>
 {
     final String command;
     
     AntAction(String aName, String comm)
     {
-        super(aName);
+        super (Node.class);
+        putValue(NAME, aName);
         command=comm;
+    }
+
+    public void actionPerformed (Collection<? extends Node> nodes) {
+        Node[] n = nodes.toArray(new Node[nodes.size()]);
+        performAction (n);
     }
     
     protected void performAction(final Node[] activatedNodes)
@@ -922,37 +842,32 @@ static class DeployConfigurationAction extends AntAction
     
 }
 
-static abstract class AntSingleAction extends ContextAction
+static abstract class AntSingleAction extends Single<Node>
 {
     final String command;
     
     AntSingleAction(String aName, String comm)
     {
-        super(aName);
+        super (Node.class);
+        putValue(NAME, aName);
         command=comm;
     }
-    
-    protected void performAction(Node[] activatedNodes)
-    {
-        String conf=activatedNodes[0].getLookup().lookup(ProjectConfiguration.class).getDisplayName();
-        J2MEProject project=activatedNodes[0].getLookup().lookup(J2MEProject.class);
-        
+
+    public void actionPerformed (Node node) {
+        String conf=node.getLookup().lookup(ProjectConfiguration.class).getDisplayName();
+        J2MEProject project=node.getLookup().lookup(J2MEProject.class);
+
         final String[] targetNames=new String[] {command};
         final Properties props=new Properties();
         props.put(DefaultPropertiesDescriptor.CONFIG_ACTIVE,conf);
 
-        try 
+        try
         {
-            ActionUtils.runTarget(project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH), 
+            ActionUtils.runTarget(project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH),
                                   targetNames, props);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
-    }
-    
-    protected boolean enable(final Node[] activatedNodes)
-    {
-        return activatedNodes.length == 1;
     }
 }
 
@@ -987,11 +902,12 @@ static class DebugConfigurationAction extends AntSingleAction
 
 
 
-static class RemoveConfigurationAction extends ContextAction
+static class RemoveConfigurationAction extends ContextAction<Node>
 {
     private RemoveConfigurationAction()
     {
-        super(NbBundle.getMessage(CustomizerLibraries.class,
+        super (Node.class);
+        putValue(NAME,NbBundle.getMessage(CustomizerLibraries.class,
                 "ACSN_RemovePanel")); //NOI18N
     }
     
@@ -1068,6 +984,12 @@ static class RemoveConfigurationAction extends ContextAction
 
         // Store the properties 
         j2meProperties.store();
+    }
+
+    @Override
+    public void actionPerformed (Collection<? extends Node> nodes) {
+        Node[] n = nodes.toArray(new Node[nodes.size()]);
+        performAction (n);
     }
 }
 

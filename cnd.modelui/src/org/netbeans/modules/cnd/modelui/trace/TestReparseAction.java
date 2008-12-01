@@ -40,15 +40,12 @@
 package org.netbeans.modules.cnd.modelui.trace;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -77,18 +74,9 @@ public class TestReparseAction extends TestProjectActionBase {
 
     
     @Override
-    protected void performAction(Collection<NativeProject> projects) {
-        if (projects != null) {
-            Collection<CsmProject> csmProjects = new ArrayList<CsmProject>();
-            for (NativeProject nativeProject : projects) {
-                CsmProject project = CsmModelAccessor.getModel().getProject(nativeProject);
-                if (project != null) {
-                    csmProjects.add(project);
-                }
-            }
-            if (!csmProjects.isEmpty()) {
-                testReparse(csmProjects);
-            }
+    protected void performAction(Collection<CsmProject> csmProjects) {
+        if (csmProjects != null && !csmProjects.isEmpty()) {
+            testReparse(csmProjects);
         }
     }
 

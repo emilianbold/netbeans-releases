@@ -61,6 +61,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.*;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -269,35 +270,41 @@ public class J2MEActionProvider implements ActionProvider {
     }
     
     private boolean showCfgSelectionDialog(final String command) {
-        return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
-            public Boolean run() {
-                String allCfg = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(DefaultPropertiesDescriptor.ALL_CONFIGURATIONS);
-                if (allCfg == null) return false;
-                //Just default configuration
-                if (allCfg.trim().length() == 0) return true;
-                //Ok we have more configs, so which one do we want to build
-                EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                String selectedCfg = priv.getProperty(DefaultPropertiesDescriptor.SELECTED_CONFIGURATIONS);
-                CfgSelectionPanel panel = new CfgSelectionPanel(allCfg, selectedCfg);
-                panel.getAccessibleContext().setAccessibleName(
-                        NbBundle.getMessage(CfgSelectionPanel.class, "Title_CfgSelection_" + command) );//NOI18N
-                panel.getAccessibleContext().setAccessibleDescription(
-                        NbBundle.getMessage(CfgSelectionPanel.class, "Title_CfgSelection_" + command));//NOI18N
-                if (DialogDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(new DialogDescriptor(panel, NbBundle.getMessage(CfgSelectionPanel.class, "Title_CfgSelection_" + command), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(CfgSelectionPanel.class), null)))) { //NOI18N
-                    String newSel = panel.getSelectedConfigurations();
-                    if (selectedCfg != null && selectedCfg.equals(newSel)) return true;
+        String allCfg = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(DefaultPropertiesDescriptor.ALL_CONFIGURATIONS);
+        if (allCfg == null) return false;
+        //Just default configuration
+        if (allCfg.trim().length() == 0) return true;
+        //Ok we have more configs, so which one do we want to build
+        final EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        String selectedCfg = priv.getProperty(DefaultPropertiesDescriptor.SELECTED_CONFIGURATIONS);
+        CfgSelectionPanel panel = new CfgSelectionPanel(allCfg, selectedCfg);
+        String title = NbBundle.getMessage(CfgSelectionPanel.class, "Title_CfgSelection_" + command); //NOI18N
+        panel.getAccessibleContext().setAccessibleName(title);//NOI18N
+        panel.getAccessibleContext().setAccessibleDescription(title);//NOI18N
+        boolean result = DialogDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(
+                new DialogDescriptor(panel,
+                title, true,
+                DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.OK_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx(CfgSelectionPanel.class), null)));
+
+        final String newSel = panel.getSelectedConfigurations();
+        boolean configurationChanged = ((selectedCfg == null) != (newSel == null)) || (selectedCfg != null && !selectedCfg.equals(newSel));
+        if (result && configurationChanged) { //NOI18N
+            ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run() {
                     priv.put(DefaultPropertiesDescriptor.SELECTED_CONFIGURATIONS, newSel);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
                     try {
                         ProjectManager.getDefault().saveProject(project);
-                        return true;
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
-                    }                    
+                        Exceptions.printStackTrace(ioe);
+                    }
                 }
-                return false;
-            }
-        }).booleanValue();
+            });
+        }
+        return result;
     }
     
     protected String evaluateProperty(final EditableProperties ep, final String propertyName, final String configuration) {
