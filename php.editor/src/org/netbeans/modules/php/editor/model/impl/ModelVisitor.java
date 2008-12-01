@@ -104,9 +104,10 @@ public final class ModelVisitor extends DefaultVisitor {
     private OccurenceBuilder occurencesBuilder;
     private CodeMarkerBuilder markerBuilder;
     private ModelBuilder modelBuilder;
+    private CompilationInfo info;
 
     public ModelVisitor(CompilationInfo info) {
-        this(info, -1);
+        this(info, -1);        
     }
 
     public ModelVisitor(CompilationInfo info, int offset) {
@@ -114,6 +115,11 @@ public final class ModelVisitor extends DefaultVisitor {
         occurencesBuilder = new OccurenceBuilder(offset);
         markerBuilder = new CodeMarkerBuilder(offset);
         this.modelBuilder = new ModelBuilder(this.fileScope, occurencesBuilder.getOffset());
+        this.info = info;
+    }
+
+    public CompilationInfo getCompilationInfo() {
+        return this.info;
     }
 
     @Override
@@ -618,24 +624,29 @@ public final class ModelVisitor extends DefaultVisitor {
         return atOffset;
     }
 
-    private VariableScope findNearestVarScope(FileScope scope, int offset, VariableScope atOffset) {
+    private VariableScope findNearestVarScope(Scope scope, int offset, VariableScope atOffset) {
         buildOccurences();
-        List<Occurence<? extends ModelElement>> occurences = scope.getOccurences();
-        for (Occurence<? extends ModelElement> occ : occurences) {
-            ModelElement modelElement = occ.getDeclaration();
-            if (modelElement.getNameRange().getStart() <= offset) {
-                if (atOffset == null || atOffset.getOffset() < modelElement.getOffset()) {
-                    if (modelElement instanceof VariableScope) {
-                        FileObject fileObject = modelElement.getFileObject();
-                        if (fileObject == scope.getFileObject()) {
-                            atOffset = (VariableScope) modelElement;
+        List<? extends ModelElementImpl> elements = ((ScopeImpl)scope).getElements();
+        for (ModelElementImpl varScope : elements) {
+            if (varScope instanceof ClassScope) {
+                atOffset = findNearestVarScope((ClassScope)varScope, offset, atOffset);
+            }
+            if (varScope instanceof VariableScope) {
+                if (varScope.getNameRange().getStart() <= offset) {
+                    if (atOffset == null || atOffset.getOffset() < varScope.getOffset()) {
+                        if (varScope instanceof VariableScope) {
+                            FileObject fileObject = varScope.getFileObject();
+                            if (fileObject == scope.getFileObject()) {
+                                atOffset = (VariableScope) varScope;
+                            }
                         }
                     }
                 }
             }
+
         }
         if (atOffset == null) {
-            atOffset = scope;
+            atOffset = (VariableScope) scope;
         }
         return atOffset;
     }

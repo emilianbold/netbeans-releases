@@ -81,6 +81,8 @@ import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -248,6 +250,28 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 case HTML:
                     proposals.add(new PHPCompletionItem.KeywordItem("<?php", request)); //NOI18N
                     proposals.add(new PHPCompletionItem.KeywordItem("<?=", request)); //NOI18N
+                    break;
+                case NEW_CLASS:
+                    /*Collection<IndexedClass> classes = request.index.getClasses(result, prefix, NameKind.PREFIX);
+                    for (IndexedClass clz : classes) {
+                        Collection<IndexedFunction> methods = request.index.getMethods(result, clz.getName(), "__construct", NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
+                        methods = !methods.isEmpty() ? methods : request.index.getMethods(result, clz.getName(), clz.getName(), NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
+                        if (!methods.isEmpty()) {
+                            for (IndexedFunction method : methods) {
+                                int[] optionalArgs = method.getOptionalArgs();
+                                for (int i = 0; i <= optionalArgs.length; i++) {
+                                    proposals.add(new PHPCompletionItem.NewClassItem(method, request, i));
+                                }
+                            }
+                        } else {
+                            IndexedFunction indexedFunction = new IndexedFunction(clz.getName(), clz.getName(),
+                                    request.index, null, null, caretOffset, Modifier.PUBLIC, ElementKind.CONSTRUCTOR);
+                            indexedFunction.setOptionalArgs(new int[0]);
+                            proposals.add(new PHPCompletionItem.NewClassItem(indexedFunction,request, 0) {
+                            });
+                        }
+                    }*/
+                    autoCompleteClassNames(proposals, request, false);
                     break;
                 case CLASS_NAME:
                     autoCompleteClassNames(proposals, request,false);
@@ -1423,9 +1447,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return null;
     }
 
-    public ParameterInfo parameters(CompilationInfo info, int caretOffset, CompletionProposal proposal) {
-        //TODO: return the info for functions and methods
-        return ParameterInfo.NONE;
+    public ParameterInfo parameters(final CompilationInfo info, final int caretOffset, CompletionProposal proposal) {
+        final org.netbeans.modules.php.editor.model.Model model = ModelFactory.getModel(info);
+        ParameterInfoSupport infoSupport = model.getParameterInfoSupport(caretOffset);
+        return infoSupport.getParameterInfo();
     }
 
     private boolean startsWith(String theString, String prefix) {
