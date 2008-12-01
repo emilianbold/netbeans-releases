@@ -198,6 +198,10 @@ public class Hk2PluginProperties {
             // add webservices.jar if exists
             jars.add("webservices"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
             jars.add("jaxb"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            //
+            // this isn't caught by the filterByManifest method, so we add it 'by hand'
+            //
+            jars.add("web/jstl-impl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
 
             for (String jarStr : jars) {
                 File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), jarStr);
