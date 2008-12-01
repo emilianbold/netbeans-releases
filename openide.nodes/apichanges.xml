@@ -46,6 +46,31 @@ made subject to such option by the copyright holder.
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
+    <change id="ChildFactory.Detachable">
+        <api name="nodes"/>
+        <summary>Adding ChildFactory.Detachable to allow ChildFactory implementations to
+        attach and detach listeners more easily
+        </summary>
+        <version major="7" minor="7"/>
+        <date day="25" month="11" year="2008"/>
+        <author login="tboudreau"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+        <description>
+            <a href="@TOP@/org/openide/nodes/ChildFactory.html">ChildFactory</a>
+            is useful for creating node children lazily on a background thread,
+            and for simplifying working with Children.Keys.  One oversight in
+            the original API was providing for notification that the ChildFactory
+            is no longer in use and should clean up any resources and detach
+            any listeners it can.
+            <p>
+            ChildFactory.Detachable is an abstract class which adds
+            addNotify() and removeNotify() methods to ChildFactory.  addNotify()
+            is called immediately before the first call to createKeys() after
+            creation or a call to removeNotify().
+        </description>
+        <class package="org.openide.nodes" name="ChildFactory"/>
+        <issue number="153347"/>
+    </change>
     <change id="Children.Keys.lazy">
         <api name="nodes"/>
         <summary>Adding public int Children.getNodesCount(boolean optimalResult), protected Children.Keys(boolean lazy),

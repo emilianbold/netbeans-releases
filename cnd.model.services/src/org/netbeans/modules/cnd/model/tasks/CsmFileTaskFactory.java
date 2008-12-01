@@ -70,6 +70,7 @@ import org.openide.util.RequestProcessor.Task;
  * @author Sergey Grinev
  */
 public abstract class CsmFileTaskFactory {
+
     private final Map<FileObject, CsmFile> fobj2csm = new HashMap<FileObject, CsmFile>();
     private final Map<CsmFile, Pair> csm2task = new HashMap<CsmFile, Pair>();
     private final ProgressListener progressListener = new ProgressListener();
@@ -83,19 +84,23 @@ public abstract class CsmFileTaskFactory {
     protected abstract PhaseRunner createTask(FileObject fo);
     
     protected abstract Collection<FileObject> getFileObjects();
+
+    protected abstract int taskDelay();
+
+    protected abstract int rescheduleDelay();
     
     protected final void fileObjectsChanged() {
         final Set<FileObject> currentFiles = new HashSet<FileObject>(getFileObjects());
         final long id = Math.round(100.0*Math.random());
         final String name = this.getClass().getName();
-        if (OpenedEditors.SHOW_TIME) System.err.println("CsmFileTaskFactory: POST worker " + id);
+        if (OpenedEditors.SHOW_TIME) {System.err.println("CsmFileTaskFactory: POST worker " + id);}
         DECISION_WORKER.post(new Runnable() {
 
             public void run() {
                 long start = System.currentTimeMillis();
-                if (OpenedEditors.SHOW_TIME) System.err.println("CsmFileTaskFactory: RUN worker " + id + " [" + name + "]" );
+                if (OpenedEditors.SHOW_TIME) {System.err.println("CsmFileTaskFactory: RUN worker " + id + " [" + name + "]" );}
                 stateChangedImpl(currentFiles);
-                if (OpenedEditors.SHOW_TIME) System.err.println("CsmFileTaskFactory: DONE worker " + id + " after " + (System.currentTimeMillis() - start) + "ms.");
+                if (OpenedEditors.SHOW_TIME) {System.err.println("CsmFileTaskFactory: DONE worker " + id + " after " + (System.currentTimeMillis() - start) + "ms.");}
             }
         });
     }
@@ -196,7 +201,7 @@ public abstract class CsmFileTaskFactory {
 
 
         for (Entry<CsmFile, Pair> e : toRemove.entrySet()) {
-            if (OpenedEditors.SHOW_TIME) System.err.println("CFTF: removing " + e.getKey().getAbsolutePath());
+            if (OpenedEditors.SHOW_TIME) {System.err.println("CFTF: removing " + e.getKey().getAbsolutePath());}
             if (e!=null && e.getValue()!=null ) {
                 PhaseRunner runner = e.getValue().runner;
                 Task task = e.getValue().task;
@@ -212,14 +217,13 @@ public abstract class CsmFileTaskFactory {
         }
 
         for (Entry<CsmFile, Pair> e : toAdd.entrySet()) {
-            if (OpenedEditors.SHOW_TIME) System.err.println("CFTF: adding "+ //NOI18N
+            if (OpenedEditors.SHOW_TIME) {System.err.println("CFTF: adding "+ //NOI18N
                     (e.getKey().isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT)+
-                    " "+e.getValue().runner.toString()+" " + e.getKey().getAbsolutePath()); //NOI18N
-            post(e.getValue(), e.getKey(), e.getKey().isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT, DELAY);
+                    " "+e.getValue().runner.toString()+" " + e.getKey().getAbsolutePath());} //NOI18N
+            post(e.getValue(), e.getKey(), e.getKey().isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT, taskDelay());
         }
     }
 
-    private static final int DELAY = 500;
     private static final int IMMEDIATELY = 0;
     
     public final synchronized void reschedule(FileObject file) throws IllegalArgumentException {
@@ -229,7 +233,7 @@ public abstract class CsmFileTaskFactory {
             return;
         }
         
-        runTask(source, PhaseRunner.Phase.PARSED, DELAY);
+        runTask(source, PhaseRunner.Phase.PARSED, rescheduleDelay());
     }
     
     private final void runTask(CsmFile file, PhaseRunner.Phase phase, int delay) {

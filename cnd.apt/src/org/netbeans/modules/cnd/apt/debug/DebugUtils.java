@@ -57,7 +57,19 @@ public class DebugUtils {
         }
         return result;
     } 
-    
+
+    public static int getInt(String name, int result){
+        String text = System.getProperty(name);
+        if( text != null ) {
+            try {
+                result = Integer.parseInt(text);
+            } catch(NumberFormatException e){
+                // default value
+            }
+        }
+        return result;
+    }
+
     public static final boolean STANDALONE;
     static {
         STANDALONE = initStandalone();
