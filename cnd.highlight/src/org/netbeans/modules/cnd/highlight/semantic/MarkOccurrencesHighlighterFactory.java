@@ -102,6 +102,6 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFact
 
     @Override
     protected int rescheduleDelay() {
-        return ModelUtils.RESEDULE_OCCURRENCES_DELAY;
+        return ModelUtils.RESCHEDULE_OCCURRENCES_DELAY;
     }
 }

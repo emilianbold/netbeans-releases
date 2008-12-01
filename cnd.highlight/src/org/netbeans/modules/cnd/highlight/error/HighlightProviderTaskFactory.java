@@ -85,7 +85,7 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
 
     @Override
     protected int rescheduleDelay() {
-        return ModelUtils.RESEDULE_HIGHLIGHT_DELAY;
+        return ModelUtils.RESCHEDULE_HIGHLIGHT_DELAY;
     }
 
     private static class PhaseRunnerImpl implements PhaseRunner {
