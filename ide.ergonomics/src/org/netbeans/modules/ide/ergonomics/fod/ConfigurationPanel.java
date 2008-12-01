@@ -77,23 +77,17 @@ public class ConfigurationPanel extends JPanel {
     private FeatureInfo featureInfo;
     private Callable<JComponent> callable;
 
-    public ConfigurationPanel(String attachTypeName, final Callable<JComponent> callable) {
+    public ConfigurationPanel(String displayName, final Callable<JComponent> callable, FeatureInfo info) {
         initComponents();
         this.callable = callable;
         String lblMsg = null;
         String btnMsg = null;
-        featureInfo = null;
-        for (FeatureInfo info : Feature2LayerMapping.featureTypesLookup().lookupAll(FeatureInfo.class)) {
-            if (attachTypeName.equals(info.getAttachTypeName())) {
-                featureInfo = info;
-                break;
-            }
-        }
-        if (featureInfo != null && featureInfo.isPresent()) { // TODO: do the proper checking
-            lblMsg = NbBundle.getMessage(ConfigurationPanel.class, "LBL_EnableInfo", attachTypeName);
+        featureInfo = info;
+        if (featureInfo != null && featureInfo.isPresent()) {
+            lblMsg = NbBundle.getMessage(ConfigurationPanel.class, "LBL_EnableInfo", displayName);
             btnMsg = NbBundle.getMessage(ConfigurationPanel.class, "LBL_Enable");
         } else {
-            lblMsg = NbBundle.getMessage(ConfigurationPanel.class, "LBL_DownloadInfo", attachTypeName);
+            lblMsg = NbBundle.getMessage(ConfigurationPanel.class, "LBL_DownloadInfo", displayName);
             btnMsg = NbBundle.getMessage(ConfigurationPanel.class, "LBL_Download");
         }
 

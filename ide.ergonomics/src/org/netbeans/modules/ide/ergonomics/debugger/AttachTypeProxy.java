@@ -94,7 +94,14 @@ public abstract class AttachTypeProxy extends AttachType implements Controller, 
     @Override
     public JComponent getCustomizer() {
         if (delegate == null) {
-            return new ConfigurationPanel(this.getTypeDisplayName(), this);
+            FeatureInfo featureInfo = null;
+            for (FeatureInfo info : Feature2LayerMapping.featureTypesLookup().lookupAll(FeatureInfo.class)) {
+                if (attachTypeName.equals(info.getAttachTypeName())) {
+                    featureInfo = info;
+                    break;
+                }
+            }
+            return new ConfigurationPanel(attachTypeName, this, featureInfo);
         } else {
             return delegate.getCustomizer();
         }
