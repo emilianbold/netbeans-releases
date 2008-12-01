@@ -68,8 +68,13 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ154276() throws Exception {
+        // IZ154276: functions are creted instead of fields
+        performTest("iz154276.cc");
+    }
+
     public void testIZ154196() throws Exception {
-        // IZ136887: Model do not support bit fields
+        // IZ154196: Regression in LiteSQL (Error Highlighting)
         performTest("iz154196.cc");
     }
 
