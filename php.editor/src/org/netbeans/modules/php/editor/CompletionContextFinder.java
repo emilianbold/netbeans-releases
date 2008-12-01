@@ -174,7 +174,7 @@ class CompletionContextFinder {
 
     static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, EXTENDS, IMPLEMENTS, METHOD_NAME,
-        CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE};
+        CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS};
 
     static enum KeywordCompletionType {SIMPLE, CURSOR_INSIDE_BRACKETS, ENDS_WITH_CURLY_BRACKETS,
     ENDS_WITH_SPACE, ENDS_WITH_SEMICOLON, ENDS_WITH_COLON};
@@ -206,7 +206,7 @@ class CompletionContextFinder {
         }
 
         if (acceptTokenChains(tokenSequence, CLASS_NAME_TOKENCHAINS)){
-            return CompletionContext.CLASS_NAME;
+            return CompletionContext.NEW_CLASS;
         } else if (acceptTokenChains(tokenSequence, CLASS_MEMBER_TOKENCHAINS)){
             return CompletionContext.CLASS_MEMBER;
         } else if (acceptTokenChains(tokenSequence, STATIC_CLASS_MEMBER_TOKENCHAINS)){
