@@ -110,9 +110,6 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
         //any save of teh project shall effectively caus ethe module server change..
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
         poh.hackModuleServerChange();
-        EarModuleProviderImpl moduleProvider = project.getLookup().lookup(EarModuleProviderImpl.class);
-
-        moduleProvider.loadPersistedServerId();
     }
 
     /** This method is called from within the constructor to

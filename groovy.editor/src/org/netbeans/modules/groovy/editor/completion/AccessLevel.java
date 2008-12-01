@@ -40,6 +40,7 @@
 package org.netbeans.modules.groovy.editor.completion;
 
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
@@ -62,6 +63,11 @@ public enum AccessLevel {
                 }
             };
         }
+
+        @Override
+        public boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers) {
+            return modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PUBLIC);
+        }
     },
 
     PACKAGE {
@@ -76,6 +82,13 @@ public enum AccessLevel {
                 }
             };
         }
+
+        @Override
+        public boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers) {
+            return !modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PRIVATE)
+                    && !modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PROTECTED)
+                    && !modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PUBLIC);
+        }
     },
 
     PROTECTED {
@@ -86,6 +99,11 @@ public enum AccessLevel {
                     return e.getModifiers().contains(Modifier.PROTECTED);
                 }
             };
+        }
+
+        @Override
+        public boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers) {
+            return modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PROTECTED);
         }
     },
 
@@ -98,19 +116,54 @@ public enum AccessLevel {
                 }
             };
         }
+
+        @Override
+        public boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers) {
+            return modifiers.contains(org.netbeans.modules.gsf.api.Modifier.PRIVATE);
+        }
     };
 
     public abstract ElementAcceptor getJavaAcceptor();
 
-    public static Set<AccessLevel> forThis() {
-        return EnumSet.allOf(AccessLevel.class);
+    public abstract boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers);
+
+    public static Set<AccessLevel> create(ClassNode source, ClassNode type) {
+        Set<AccessLevel> levels;
+
+        if (type.equals(source)) {
+            levels = EnumSet.allOf(AccessLevel.class);
+        } else if (getPackageName(source).equals(getPackageName(type))) {
+            levels = EnumSet.of(AccessLevel.PUBLIC, AccessLevel.PACKAGE);
+        } else if (source.getSuperClass() == null && type.getName().equals("java.lang.Object") // NOI18N
+                || source.getSuperClass() != null && source.getSuperClass().getName().equals(type.getName())) {
+            levels = EnumSet.complementOf(EnumSet.of(AccessLevel.PRIVATE));
+        } else {
+            levels = EnumSet.of(AccessLevel.PUBLIC);
+        }
+
+        return levels;
     }
 
-    public static Set<AccessLevel> forSuper() {
-        return EnumSet.complementOf(EnumSet.of(AccessLevel.PRIVATE));
+    public static Set<AccessLevel> update(Set<AccessLevel> levels, ClassNode source, ClassNode type) {
+        HashSet<AccessLevel> modifiedAccess = new HashSet<AccessLevel>(levels);
+        // leav flag
+        if (!type.equals(source)) {
+            modifiedAccess.remove(AccessLevel.PRIVATE);
+        }
+
+        if (!getPackageName(source).equals(getPackageName(type))) {
+            modifiedAccess.remove(AccessLevel.PACKAGE);
+        } else {
+            modifiedAccess.add(AccessLevel.PACKAGE);
+        }
+
+        return modifiedAccess;
     }
 
-    public static Set<AccessLevel> forPackage() {
-        return EnumSet.of(AccessLevel.PUBLIC, AccessLevel.PACKAGE);
+    private static String getPackageName(ClassNode node) {
+        if (node.getPackageName() != null) {
+            return node.getPackageName();
+        }
+        return ""; // NOI18N
     }
 }

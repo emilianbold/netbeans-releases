@@ -46,8 +46,8 @@ Searchable Keys:
   attribute : protocol
   class : WKS
   class-ig : wks
-  constant : ClassValue
-  constant : TypeValue
+  constant : ClassValue;
+  constant : TypeValue;Fixnum
   extends : Resource
   fqn : Resolv::DNS::Resource::IN::WKS
   method : decode_rdata(msg)|STATIC|
@@ -66,8 +66,8 @@ Searchable Keys:
   attribute : address
   class : A
   class-ig : a
-  constant : ClassValue
-  constant : TypeValue
+  constant : ClassValue;
+  constant : TypeValue;Fixnum
   extends : Resource
   fqn : Resolv::DNS::Resource::IN::A
   method : decode_rdata(msg)|STATIC|
@@ -86,8 +86,8 @@ Searchable Keys:
   attribute : address
   class : AAAA
   class-ig : aaaa
-  constant : ClassValue
-  constant : TypeValue
+  constant : ClassValue;
+  constant : TypeValue;Fixnum
   extends : Resource
   fqn : Resolv::DNS::Resource::IN::AAAA
   method : decode_rdata(msg)|STATIC|
@@ -106,7 +106,7 @@ Searchable Keys:
   attribute : address
   class : IPv4
   class-ig : ipv4
-  constant : Regex
+  constant : Regex;Regexp
   fqn : Resolv::IPv4
   method : ==(other)
   method : create(arg)|STATIC|
@@ -129,11 +129,11 @@ Searchable Keys:
   attribute : address
   class : IPv6
   class-ig : ipv6
-  constant : Regex
-  constant : Regex_6Hex4Dec
-  constant : Regex_8Hex
-  constant : Regex_CompressedHex
-  constant : Regex_CompressedHex4Dec
+  constant : Regex;Regexp
+  constant : Regex_6Hex4Dec;Regexp
+  constant : Regex_8Hex;Regexp
+  constant : Regex_CompressedHex4Dec;Regexp
+  constant : Regex_CompressedHex;Regexp
   fqn : Resolv::IPv6
   method : ==(other)
   method : create(arg)|STATIC|
@@ -157,7 +157,7 @@ Searchable Keys:
   attribute : os
   class : HINFO
   class-ig : hinfo
-  constant : TypeValue
+  constant : TypeValue;Fixnum
   extends : Resource
   fqn : Resolv::DNS::Resource::HINFO
   method : decode_rdata(msg)|STATIC|
@@ -217,7 +217,7 @@ Searchable Keys:
   attribute : rmailbx
   class : MINFO
   class-ig : minfo
-  constant : TypeValue
+  constant : TypeValue;Fixnum
   extends : Resource
   fqn : Resolv::DNS::Resource::MINFO
   method : decode_rdata(msg)|STATIC|
@@ -237,7 +237,7 @@ Searchable Keys:
   attribute : preference
   class : MX
   class-ig : mx
-  constant : TypeValue
+  constant : TypeValue;Fixnum
   extends : Resource
   fqn : Resolv::DNS::Resource::MX
   method : decode_rdata(msg)|STATIC|
@@ -262,7 +262,7 @@ Searchable Keys:
   attribute : serial
   class : SOA
   class-ig : soa
-  constant : TypeValue
+  constant : TypeValue;Fixnum
   extends : Resource
   fqn : Resolv::DNS::Resource::SOA
   method : decode_rdata(msg)|STATIC|
@@ -302,8 +302,8 @@ Searchable Keys:
   attribute : weight
   class : SRV
   class-ig : srv
-  constant : ClassValue
-  constant : TypeValue
+  constant : ClassValue;
+  constant : TypeValue;Fixnum
   extends : Resource
   fqn : Resolv::DNS::Resource::IN::SRV
   method : decode_rdata(msg)|STATIC|
@@ -341,7 +341,7 @@ Searchable Keys:
   attribute : strings
   class : TXT
   class-ig : txt
-  constant : TypeValue
+  constant : TypeValue;Fixnum
   extends : Resource
   fqn : Resolv::DNS::Resource::TXT
   method : data
@@ -360,7 +360,7 @@ Document 16
 Searchable Keys:
   class : ANY
   class-ig : any
-  constant : TypeValue
+  constant : TypeValue;Fixnum
   extends : Query
   fqn : Resolv::DNS::Resource::ANY
 
@@ -374,7 +374,7 @@ Document 17
 Searchable Keys:
   class : CNAME
   class-ig : cname
-  constant : TypeValue
+  constant : TypeValue;Fixnum
   extends : DomainName
   fqn : Resolv::DNS::Resource::CNAME
 
@@ -388,7 +388,7 @@ Document 18
 Searchable Keys:
   class : Config
   class-ig : config
-  constant : InitialTimeout
+  constant : InitialTimeout;Fixnum
   field : config_info
   field : initialized
   field : mutex
@@ -437,9 +437,9 @@ Document 20
 Searchable Keys:
   class : DNS
   class-ig : dns
-  constant : DNSThreadGroup
-  constant : Port
-  constant : UDPSize
+  constant : DNSThreadGroup;ThreadGroup
+  constant : Port;Fixnum
+  constant : UDPSize;Fixnum
   field : config
   field : initialized
   field : mutex
@@ -497,8 +497,8 @@ Document 23
 Searchable Keys:
   class : Hosts
   class-ig : hosts
-  constant : DefaultFileName
-  constant : DefaultFileName
+  constant : DefaultFileName;
+  constant : DefaultFileName;String
   field : addr2name
   field : filename
   field : initialized
@@ -525,7 +525,7 @@ Document 24
 Searchable Keys:
   class : IN
   class-ig : in
-  constant : ClassValue
+  constant : ClassValue;Fixnum
   fqn : Resolv::DNS::Resource::IN
 
 Not Searchable Keys:
@@ -603,7 +603,7 @@ Document 28
 Searchable Keys:
   class : NS
   class-ig : ns
-  constant : TypeValue
+  constant : TypeValue;Fixnum
   extends : DomainName
   fqn : Resolv::DNS::Resource::NS
 
@@ -656,11 +656,11 @@ Document 31
 Searchable Keys:
   class : OpCode
   class-ig : opcode
-  constant : IQuery
-  constant : Notify
-  constant : Query
-  constant : Status
-  constant : Update
+  constant : IQuery;Fixnum
+  constant : Notify;Fixnum
+  constant : Query;Fixnum
+  constant : Status;Fixnum
+  constant : Update;Fixnum
   fqn : Resolv::DNS::OpCode
 
 Not Searchable Keys:
@@ -686,7 +686,7 @@ Document 33
 Searchable Keys:
   class : PTR
   class-ig : ptr
-  constant : TypeValue
+  constant : TypeValue;Fixnum
   extends : DomainName
   fqn : Resolv::DNS::Resource::PTR
 
@@ -714,24 +714,24 @@ Document 35
 Searchable Keys:
   class : RCode
   class-ig : rcode
-  constant : BADALG
-  constant : BADKEY
-  constant : BADMODE
-  constant : BADNAME
-  constant : BADSIG
-  constant : BADTIME
-  constant : BADVERS
-  constant : FormErr
-  constant : NXDomain
-  constant : NXRRSet
-  constant : NoError
-  constant : NotAuth
-  constant : NotImp
-  constant : NotZone
-  constant : Refused
-  constant : ServFail
-  constant : YXDomain
-  constant : YXRRSet
+  constant : BADALG;Fixnum
+  constant : BADKEY;Fixnum
+  constant : BADMODE;Fixnum
+  constant : BADNAME;Fixnum
+  constant : BADSIG;Fixnum
+  constant : BADTIME;Fixnum
+  constant : BADVERS;Fixnum
+  constant : FormErr;Fixnum
+  constant : NXDomain;Fixnum
+  constant : NXRRSet;Fixnum
+  constant : NoError;Fixnum
+  constant : NotAuth;Fixnum
+  constant : NotImp;Fixnum
+  constant : NotZone;Fixnum
+  constant : Refused;Fixnum
+  constant : ServFail;Fixnum
+  constant : YXDomain;Fixnum
+  constant : YXRRSet;Fixnum
   fqn : Resolv::DNS::RCode
 
 Not Searchable Keys:
@@ -776,8 +776,8 @@ Document 38
 Searchable Keys:
   class : Resolv
   class-ig : resolv
-  constant : AddressRegex
-  constant : DefaultResolver
+  constant : AddressRegex;Regexp
+  constant : DefaultResolver;self
   field : resolvers
   fqn : Resolv
   method : each_address(name)
@@ -830,9 +830,9 @@ Document 41
 Searchable Keys:
   class : Resource
   class-ig : resource
-  constant : ClassHash
-  constant : ClassInsensitiveTypes
-  constant : ClassValue
+  constant : ClassHash;Hash
+  constant : ClassInsensitiveTypes;Array
+  constant : ClassValue;NilClass
   extends : Query
   fqn : Resolv::DNS::Resource
   method : ==(other)
