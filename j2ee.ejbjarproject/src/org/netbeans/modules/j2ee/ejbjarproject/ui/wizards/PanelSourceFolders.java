@@ -186,6 +186,11 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             return false;
         }
         File[] sourceRoots = ((FolderList)this.sourcePanel).getFiles();
+        if (sourceRoots.length == 0) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
+                    NbBundle.getMessage(PanelSourceFolders.class, "MSG_BlankSourceFilesFolder"));
+            return false;
+        }
         File[] testRoots = ((FolderList)this.testsPanel).getFiles();
         String result = checkValidity (projectLocation, confFolder, getLibraries(), sourceRoots, testRoots);
         if (result == null) {
