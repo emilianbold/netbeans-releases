@@ -224,6 +224,7 @@ public class LogReader {
     private static final String INVOKE_GNU_C = "gcc "; //NOI18N
     //private static final String INVOKE_GNU_XC = "xgcc "; //NOI18N
     private static final String INVOKE_GNU_CC = "g++ "; //NOI18N
+    private static final String INVOKE_MSVC = "cl "; //NOI18N
     private static final String MAKE_DELIMITER = ";"; //NOI18N
     
     /*package-local*/ static LineInfo testCompilerInvocation(String line) {
@@ -263,6 +264,13 @@ public class LogReader {
             if (start>=0) {
                 li.compilerType = CompilerType.CPP;
                 end = start + INVOKE_SUN_CC.length();
+            }
+        }
+        if (li.compilerType == CompilerType.UNKNOWN) {
+            start = line.indexOf(INVOKE_MSVC);
+            if (start>=0) {
+                li.compilerType = CompilerType.CPP;
+                end = start + INVOKE_MSVC.length();
             }
         }
        
@@ -325,7 +333,8 @@ public class LogReader {
     }
 
     private static final String PKG_CONFIG_PATTERN = "pkg-config "; //NOI18N
-    private static String trimBackApostropheCalls(String line, PkgConfig pkgConfig) {
+    private static final String ECHO_PATTERN = "echo "; //NOI18N
+    /*package-local*/ static String trimBackApostropheCalls(String line, PkgConfig pkgConfig) {
         int i = line.indexOf('`'); //NOI18N
         if (line.lastIndexOf('`') == i) {  //NOI18N // do not trim unclosed `quotes`
             return line;
@@ -354,7 +363,7 @@ public class LogReader {
                         readFlags = false;
                         continue;
                     }
-                    if (readFlags) {
+                    if (readFlags && pkgConfig != null) {
                         PackageConfiguration pc = pkgConfig.getPkgConfig(aPkg);
                         if (pc != null) {
                             for(String p : pc.getIncludePaths()){
@@ -366,6 +375,14 @@ public class LogReader {
                             out.append(" "); //NOI18N
                         }
                     }
+                }
+            } else if (pkg.startsWith(ECHO_PATTERN)){
+                pkg = pkg.substring(ECHO_PATTERN.length());
+                StringTokenizer st = new StringTokenizer(pkg);
+                if (st.hasMoreTokens()) {
+                    out.append(" "); //NOI18N
+                    out.append(st.nextToken()); //NOI18N
+                    out.append(" "); //NOI18N
                 }
             }
             out.append(line.substring(j+1));

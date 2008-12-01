@@ -78,6 +78,6 @@ public final class SemanticHighlighterFactory extends EditorAwareCsmFileTaskFact
 
     @Override
     protected int rescheduleDelay() {
-        return ModelUtils.RESEDULE_SEMANTIC_DELAY;
+        return ModelUtils.RESCHEDULE_SEMANTIC_DELAY;
     }
 }
