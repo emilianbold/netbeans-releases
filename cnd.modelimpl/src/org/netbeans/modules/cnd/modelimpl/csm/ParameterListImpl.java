@@ -121,7 +121,7 @@ public class ParameterListImpl<T, K> extends OffsetableIdentifiableBase<T> imple
 
     @Override
     public String toString() {
-        return "ParamList " + super.toString();
+        return "ParamList " + super.toString(); // NOI18N
     }
 
     @Override

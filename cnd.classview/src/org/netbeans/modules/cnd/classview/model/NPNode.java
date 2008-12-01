@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.classview.model;
 
 import  org.netbeans.modules.cnd.api.model.*;
 import org.openide.nodes.Children;
+import org.openide.util.Lookup;
 
 /**
  * Common functinality for ProjectNode and NamespaceNode
@@ -52,6 +53,10 @@ import org.openide.nodes.Children;
 public abstract class NPNode extends BaseNode  {
     protected NPNode(Children.Array key) {
         super(key);
+    }
+
+    protected NPNode(Children.Array key, Lookup lookup) {
+        super(key, lookup);
     }
 
     protected abstract CsmNamespace getNamespace();

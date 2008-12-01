@@ -86,8 +86,8 @@ public class Expression2 {
         while (expr.indexOf(replace_class) >= 0) {
             replace_class = "class" + new Random().nextLong(); // NOI18N
         }
-        String replacedExpr = replaceSpecialVar(expr, "return", replace_return); // NOI18N
-        replacedExpr = replaceSpecialVar(replacedExpr, "class", replace_class); // NOI18N
+        String replacedExpr = replaceSpecialVar(expr, Expression.RETURN_MACRO, replace_return); // NOI18N
+        replacedExpr = replaceSpecialVar(replacedExpr, Expression.CLASS_MACRO, replace_class); // NOI18N
         return new Expression2(replacedExpr, language, replace_return, replace_class);
     }
     
