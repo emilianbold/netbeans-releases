@@ -56,6 +56,11 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.mobility.project.J2MEProject;
+import org.netbeans.modules.mobility.project.ui.actions.AddFolderAction;
+import org.netbeans.modules.mobility.project.ui.actions.AddJarAction;
+import org.netbeans.modules.mobility.project.ui.actions.AddLibraryAction;
+import org.netbeans.modules.mobility.project.ui.actions.AddProjectAction;
+import org.netbeans.modules.mobility.project.ui.actions.NodeAction;
 import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -190,10 +195,10 @@ final class ResourcesNode extends DecoratedNode implements ChangeListener, Prope
     public Action[] getActions(boolean ignored) {
         boolean gray = Boolean.TRUE.equals(getValue(DecoratedNode.GRAY));
         return gray ? new Action[0] : new Action[]{
-                    NodeActions.AddProjectAction.getStaticInstance(),
-                    NodeActions.AddJarAction.getStaticInstance(),
-                    NodeActions.AddFolderAction.getStaticInstance(),
-                    NodeActions.AddLibraryAction.getStaticInstance(),
+                    AddProjectAction.getStaticInstance(),
+                    AddJarAction.getStaticInstance(),
+                    AddFolderAction.getStaticInstance(),
+                    AddLibraryAction.getStaticInstance(),
                     null,
                     SystemAction.get(PasteAction.class),};
     }
@@ -225,7 +230,7 @@ final class ResourcesNode extends DecoratedNode implements ChangeListener, Prope
 
             public Transferable paste() throws IOException {
                 if (set.size() != 0) {
-                    NodeActions.NodeAction.pasteAction(set, ResourcesNode.this);
+                    NodeAction.pasteAction(set, ResourcesNode.this);
                     set.clear();
                 }
                 return tr;
