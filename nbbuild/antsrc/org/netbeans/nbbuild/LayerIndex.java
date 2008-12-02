@@ -158,7 +158,7 @@ public class LayerIndex extends Task {
         }
 
         if (resources != null) {
-            getProject().getReferences().put(resourceId, resources);
+            assignReferences();
             return;
         }
 
@@ -251,6 +251,11 @@ public class LayerIndex extends Task {
         if (output != null) {
             log(output + ": layer index written");
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void assignReferences() {
+        getProject().getReferences().put(resourceId, resources);
     }
 
     private String shortenCNB(String cnb) {
