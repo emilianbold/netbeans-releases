@@ -98,6 +98,8 @@ public class SVGFormImageParser extends SVGComponentImageParser {
     
     private static final Pattern LABEL_TEXT_PROP = Pattern.compile(PREFIX + 
             SVGComponentsSupport.ID_PREFIX_LABEL + DIGITS +"_text$"); // NOI18N
+    private static final Pattern RADIO_TEXT_PROP = Pattern.compile(PREFIX + 
+            SVGComponentsSupport.ID_PREFIX_RADIOBUTTON + DIGITS +"_text$"); // NOI18N
 
     public synchronized static void parseSVGForm(final InputStream svgInputStream, final DesignComponent svgForm) {
         final SVGFormComponent[] srcComponents = getFormComponents(svgInputStream);
@@ -305,7 +307,9 @@ public class SVGFormImageParser extends SVGComponentImageParser {
             final String id = atts.getValue("id"); // NOI18N
             final String transform = atts.getValue("transform");
             
-            if (id != null && LABEL_TEXT_PROP.matcher( id ).find()) {
+            if (id != null && ( LABEL_TEXT_PROP.matcher( id ).find() 
+                    || RADIO_TEXT_PROP.matcher( id ).find())) 
+            {
                 myPropName = SVGLabelCD.PROP_TEXT;    // NOI18N
                 return;
             }
