@@ -103,7 +103,11 @@ made subject to such option by the copyright holder.
 
         <folder name="text">
             <folder name="html">
-               
+
+                <file name="org-netbeans-modules-html-editor-HtmlCaretAwareSourceTask$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
+
                 <folder name="Preferences">
                     <file name="org-netbeans-modules-html-editor-preferences.xml" url="Preferences.xml" />
                 </folder>
