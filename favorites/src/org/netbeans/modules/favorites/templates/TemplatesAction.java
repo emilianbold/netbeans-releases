@@ -115,6 +115,7 @@ public class TemplatesAction extends CallableSystemAction {
         
     }
     
+    @Override
     protected boolean asynchronous() {
         return true;
     }
@@ -123,6 +124,7 @@ public class TemplatesAction extends CallableSystemAction {
         return NbBundle.getMessage (TemplatesAction.class, "LBL_TemplatesAction_Name"); // NOI18N
     }
 
+    @Override
     protected String iconResource () {
         return null;
     }
@@ -134,6 +136,7 @@ public class TemplatesAction extends CallableSystemAction {
     /**
      * Adding hint.
      */
+    @Override
     protected void initialize () {
 	super.initialize ();
         putProperty (TemplatesAction.SHORT_DESCRIPTION, NbBundle.getMessage (TemplatesAction.class, "HINT_TemplatesAction")); // NOI18N
@@ -150,18 +153,18 @@ public class TemplatesAction extends CallableSystemAction {
         
         // ActionListener
         public void actionPerformed (ActionEvent ev) {
-            Node [] nodes = (Node []) tp.getExplorerManager ().getSelectedNodes ();
+            Node [] nodes = tp.getExplorerManager ().getSelectedNodes ();
             assert nodes != null && nodes.length > 0 : "Selected templates cannot be null or empty.";
             Set nodes2open = getNodes2Open (nodes);
             assert ! nodes2open.isEmpty () : "Selected templates to open cannot by empty for nodes " + Arrays.asList (nodes);
             Iterator/*<Node>*/ it = nodes2open.iterator ();
             while (it.hasNext ()) {
                 Node n = (Node) it.next ();
-                EditCookie ec = (EditCookie) n.getLookup ().lookup (EditCookie.class);
+                EditCookie ec = n.getLookup ().lookup (EditCookie.class);
                 if (ec != null) {
                     ec.edit ();
                 } else {
-                    OpenCookie oc = (OpenCookie) n.getLookup ().lookup (OpenCookie.class);
+                    OpenCookie oc = n.getLookup ().lookup (OpenCookie.class);
                     if (oc != null) {
                         oc.open ();
                     } else {
