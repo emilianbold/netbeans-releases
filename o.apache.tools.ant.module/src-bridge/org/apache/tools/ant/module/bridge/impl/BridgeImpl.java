@@ -92,7 +92,7 @@ import org.openide.windows.OutputWriter;
 public class BridgeImpl implements BridgeInterface {
     
     /** Number of milliseconds to wait before forcibly halting a runaway process. */
-    private static final int STOP_TIMEOUT = 3000;
+    private static final int STOP_TIMEOUT = 10000;
     
     private static boolean classpathInitialized = false;
     
@@ -268,6 +268,10 @@ public class BridgeImpl implements BridgeInterface {
             loggersByThread.put(currentThread, logger);
         }
         try {
+            if (Thread.interrupted()) {
+                logger.shutdown();
+                return false;
+            }
             // Execute the configured project
             //writer.println("#4"); // NOI18N
             project.executeTargets(targs);
@@ -347,18 +351,15 @@ public class BridgeImpl implements BridgeInterface {
             // Try stopping at a safe point.
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "MSG_stopping", logger.getDisplayNameNoLock()));
             logger.stop();
-            process.interrupt();
-            // But if that doesn't do it, double-check later...
-            // Yes Thread.stop() is deprecated; that is why we try to avoid using it.
-            RequestProcessor.getDefault().create(new Runnable() {
-                public void run () {
-                    forciblyStop(process);
-                }
-            }).schedule(STOP_TIMEOUT);
-        } else {
-            // Try killing it now!
-            forciblyStop(process);
         }
+        process.interrupt();
+        // But if that doesn't do it, double-check later...
+        // Yes Thread.stop() is deprecated; that is why we try to avoid using it.
+        RequestProcessor.getDefault().create(new Runnable() {
+            public void run () {
+                forciblyStop(process);
+            }
+        }).schedule(STOP_TIMEOUT);
     }
     
     private void forciblyStop(Thread process) {
