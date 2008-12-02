@@ -88,6 +88,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     public static final String DYNAMICLIBRARY_PROJECT_NAME = "DynamicLibrary";  // NOI18N
     public static final String STATICLIBRARY_PROJECT_NAME = "StaticLibrary"; // NOI18N
     public static final String MAKEFILEPROJECT_PROJECT_NAME = "MakefileProject"; // NOI18N
+    public static final String QMAKEAPPLICATION_PROJECT_NAME = "QmakeApplicationProject"; // NOI18N
     
     static final String PROP_NAME_INDEX = "nameIndex"; // NOI18N
     
@@ -96,6 +97,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     public static final int TYPE_APPLICATION = 1;
     public static final int TYPE_DYNAMIC_LIB = 2;
     public static final int TYPE_STATIC_LIB = 3;
+    public static final int TYPE_QMAKE_APP = 4;
     
     private int wizardtype;
     private String name;
@@ -130,6 +132,13 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         return new NewMakeProjectWizardIterator(TYPE_STATIC_LIB, name, wizardTitle, wizardACSD);
     }
     
+    public static NewMakeProjectWizardIterator newQmakeApplication() {
+        String name = QMAKEAPPLICATION_PROJECT_NAME;
+        String wizardTitle = getString("Templates/Project/Native/newQmakeApplication.xml");
+        String wizardACSD = getString("NativeNewQmakeApplicationACSD");
+        return new NewMakeProjectWizardIterator(TYPE_QMAKE_APP, name, wizardTitle, wizardACSD);
+    }
+
     public static NewMakeProjectWizardIterator makefile() {
         String name = MAKEFILEPROJECT_PROJECT_NAME; //getString("NativeMakefileName"); // NOI18N
         String wizardTitle = getString("Templates/Project/Native/makefile.xml"); // NOI18N
@@ -138,19 +147,18 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     }
     
     private WizardDescriptor.Panel[] createPanels(String name) {
-        if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB) {
+        if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QMAKE_APP) {
             return new WizardDescriptor.Panel[] {
                 new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, true)
             };
         } else if (wizardtype == TYPE_MAKEFILE) {
-            WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {
+            return new WizardDescriptor.Panel[] {
                 new MakefileOrConfigureDescriptorPanel(),
                 new BuildActionsDescriptorPanel(),
                 new SourceFoldersDescriptorPanel(),
                 new ParserConfigurationDescriptorPanel(),
                 new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false),
             };
-            return panels;
         }
         return null; // FIXUP
     }
@@ -174,7 +182,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         if (dirF != null) {
             dirF = FileUtil.normalizeFile(dirF);
         }
-        String name = (String)wiz.getProperty("name"); // NOI18N
+        String projectName = (String)wiz.getProperty("name"); // NOI18N
         String makefileName = (String)wiz.getProperty("makefilename"); // NOI18N
         if (wizardtype == TYPE_MAKEFILE) { // thp
             MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
@@ -290,7 +298,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                 importantItemsIterator = null;
             }
             
-            MakeProjectGenerator.createProject(dirF, name, makefileName, new MakeConfiguration[] {extConf}, (Iterator)wiz.getProperty("sourceFolders"), importantItemsIterator); // NOI18N
+            MakeProjectGenerator.createProject(dirF, projectName, makefileName, new MakeConfiguration[] {extConf}, (Iterator)wiz.getProperty("sourceFolders"), importantItemsIterator); // NOI18N
             FileObject dir = FileUtil.toFileObject(dirF);
             resultSet.add(dir);
             final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
@@ -325,7 +333,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                     extension.uninitialize(wiz);
                 }
             }
-        } else if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB) {
+        } else if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QMAKE_APP) {
             int conftype = -1;
             if (wizardtype == TYPE_APPLICATION) {
                 conftype = MakeConfiguration.TYPE_APPLICATION;
@@ -333,6 +341,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                 conftype = MakeConfiguration.TYPE_DYNAMIC_LIB;
             } else if (wizardtype == TYPE_STATIC_LIB) {
                 conftype = MakeConfiguration.TYPE_STATIC_LIB;
+            } else if (wizardtype == TYPE_QMAKE_APP) {
+                conftype = MakeConfiguration.TYPE_QT_APPLICATION;
             }
             MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype); // NOI18N
             debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
@@ -343,7 +353,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             release.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             MakeConfiguration[] confs = new MakeConfiguration[] {debug, release};
-            MakeProjectGenerator.createProject(dirF, name, makefileName, confs, null, null);
+            MakeProjectGenerator.createProject(dirF, projectName, makefileName, confs, null, null);
             FileObject dir = FileUtil.toFileObject(dirF);
             resultSet.add(dir);
         }

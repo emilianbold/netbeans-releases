@@ -149,9 +149,7 @@ public class SVGRadioButtonCD extends ComponentDescriptor{
                          PropertyEditorBooleanUC.createInstance(), PROP_SELECTED).
                  addProperty(NbBundle.getMessage(SVGRadioButtonCD.class, 
                          "DISP_ButtonGroup"), 
-                  PropertyEditorButtonGroup.createInstance(
-                          NbBundle.getMessage(SVGRadioButtonCD.class, 
-                          "LBL_ButtonGroup")), PROP_BUTTON_GROUP); // NOI18N
+                  PropertyEditorButtonGroup.createInstance(), PROP_BUTTON_GROUP); // NOI18N
                 
     }
     

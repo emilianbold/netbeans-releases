@@ -46,7 +46,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Alexey Vladykin
  */
-public class QmakeConfiguration {
+public class QmakeConfiguration implements Cloneable {
 
     private StringConfiguration template;
     private StringConfiguration target;
@@ -77,12 +77,45 @@ public class QmakeConfiguration {
         return template;
     }
 
+    public void setTemplate(StringConfiguration template) {
+        this.template = template;
+    }
+
     public StringConfiguration getTarget() {
         return target;
     }
 
+    public void setTarget(StringConfiguration target) {
+        this.target = target;
+    }
+
     public StringConfiguration getConfig() {
         return config;
+    }
+
+    public void setConfig(StringConfiguration config) {
+        this.config = config;
+    }
+
+    public void assign(QmakeConfiguration other) {
+        getTemplate().setValue(other.getTemplate().getValue());
+        getTarget().setValue(other.getTarget().getValue());
+        getConfig().setValue(other.getConfig().getValue());
+    }
+
+    @Override
+    public QmakeConfiguration clone() {
+        try {
+            QmakeConfiguration clone = (QmakeConfiguration) super.clone();
+            clone.setTemplate(getTemplate().clone());
+            clone.setTarget(getTarget().clone());
+            clone.setConfig(getConfig().clone());
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            // should not happen while this class implements Cloneable
+            ex.printStackTrace();
+            return null;
+        }
     }
 
     private static String getString(String s) {

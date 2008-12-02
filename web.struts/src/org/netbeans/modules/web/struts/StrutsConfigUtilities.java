@@ -271,7 +271,12 @@ public class StrutsConfigUtilities {
                     TypeElement servletElement;
                     if (strutsServletElement != null){
                         for (int i = 0; i < servlets.length; i++) {
-                            servletElement = elements.getTypeElement(servlets[i].getServletClass()); 
+                            String servletClass = servlets[i].getServletClass(); 
+                            if (servletClass == null) {
+                                continue;
+                            }
+                            
+                            servletElement = elements.getTypeElement(servletClass); 
                             if (servletElement != null 
                                     && cc.getTypes().isSubtype(servletElement.asType(),strutsServletElement.asType())){
                                 index[0] = i;

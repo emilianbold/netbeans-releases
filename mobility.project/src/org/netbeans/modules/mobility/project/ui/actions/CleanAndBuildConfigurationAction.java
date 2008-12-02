@@ -41,7 +41,7 @@ package org.netbeans.modules.mobility.project.ui.actions;
 import javax.swing.Action;
 import org.openide.util.NbBundle;
 
-public class CleanAndBuildConfigurationAction extends AntAction {
+public final class CleanAndBuildConfigurationAction extends AntAction {
 
     private CleanAndBuildConfigurationAction() {
         super(NbBundle.getMessage(CleanAndBuildConfigurationAction.class, "Title_CfgSelection_rebuild-all"), "rebuild-all"); //NO18N
