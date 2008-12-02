@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,45 +31,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby;
 
-package  org.netbeans.modules.cnd.makewizard;
+import java.util.List;
+import org.netbeans.modules.gsf.api.CompletionProposal;
 
-import javax.swing.JButton;
-import org.openide.WizardDescriptor;
+abstract class RubyBaseCompleter {
 
-public class MakefileWizardDescriptor extends WizardDescriptor {
+    private final List<? super CompletionProposal> proposals;
+    final CompletionRequest request;
+    final boolean caseSensitive;
+    final int anchor;
 
-    private JButton finishButton;
-    private boolean finishEnabled;
-
-    public MakefileWizardDescriptor(Iterator<WizardDescriptor> it) {
-        super(it);
-        finishButton = null;
-        finishEnabled = false;
+    protected RubyBaseCompleter(
+            final List<? super CompletionProposal> proposals,
+            final CompletionRequest request,
+            final int anchor,
+            final boolean caseSensitive) {
+        this.proposals = proposals;
+        this.request = request;
+        this.caseSensitive = caseSensitive;
+        this.anchor = anchor;
     }
 
-    @Override
-    protected void updateState() {
-        super.updateState();
-
-        if (finishButton == null) {
-            finishButton = MakefileWizard.getMakefileWizard().getFinishButton();
-        }
-        if (finishButton != null) {
-            finishButton.setEnabled(finishEnabled);
-        }
+    RubyIndex getIndex() {
+        return request.index;
     }
 
-    /**
-     *  We need to reenable often because each button press disables the
-     *  Finish button.
-     */
-    public void setFinishEnabled(boolean tf) {
-        finishEnabled = tf;
-        if (finishButton == null) {
-            finishButton = MakefileWizard.getMakefileWizard().getFinishButton();
-        }
-        finishButton.setEnabled(tf);
+    void propose(final CompletionProposal proposal) {
+        proposals.add(proposal);
     }
+
 }

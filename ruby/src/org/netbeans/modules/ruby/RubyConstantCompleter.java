@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,45 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby;
 
-package  org.netbeans.modules.cnd.makewizard;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.CompletionProposal;
+import org.netbeans.modules.ruby.elements.IndexedConstant;
+import org.netbeans.modules.ruby.lexer.Call;
 
-import javax.swing.JButton;
-import org.openide.WizardDescriptor;
+final class RubyConstantCompleter extends RubyBaseCompleter {
 
-public class MakefileWizardDescriptor extends WizardDescriptor {
+    private final Call call;
 
-    private JButton finishButton;
-    private boolean finishEnabled;
-
-    public MakefileWizardDescriptor(Iterator<WizardDescriptor> it) {
-        super(it);
-        finishButton = null;
-        finishEnabled = false;
+    static boolean complete(
+            final List<? super CompletionProposal> proposals,
+            final CompletionRequest request,
+            final int anchor,
+            final boolean caseSensitive,
+            final Call call) {
+        RubyConstantCompleter rsc = new RubyConstantCompleter(proposals, request, anchor, caseSensitive, call);
+        return rsc.complete();
     }
 
-    @Override
-    protected void updateState() {
-        super.updateState();
-
-        if (finishButton == null) {
-            finishButton = MakefileWizard.getMakefileWizard().getFinishButton();
-        }
-        if (finishButton != null) {
-            finishButton.setEnabled(finishEnabled);
-        }
+    private RubyConstantCompleter(
+            final List<? super CompletionProposal> proposals,
+            final CompletionRequest request,
+            final int anchor,
+            final boolean caseSensitive,
+            final Call call) {
+        super(proposals, request, anchor, caseSensitive);
+        this.call = call;
     }
 
-    /**
-     *  We need to reenable often because each button press disables the
-     *  Finish button.
-     */
-    public void setFinishEnabled(boolean tf) {
-        finishEnabled = tf;
-        if (finishButton == null) {
-            finishButton = MakefileWizard.getMakefileWizard().getFinishButton();
+    private boolean complete() {
+        if (getIndex() == null) {
+            return false;
         }
-        finishButton.setEnabled(tf);
+
+        if ((call == Call.LOCAL) || (call == Call.NONE)) {
+            return false;
+        }
+
+        Set<IndexedConstant> constants = getIndex().getConstants(call.getType(), request.prefix);
+        for (IndexedConstant constant : constants) {
+            RubyCompletionItem item = new RubyCompletionItem(constant, anchor, request);
+            item.setSmart(true);
+            propose(item);
+        }
+        return true;
     }
 }

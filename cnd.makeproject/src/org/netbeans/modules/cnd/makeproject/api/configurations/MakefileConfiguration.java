@@ -45,9 +45,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
@@ -99,10 +96,11 @@ public class MakefileConfiguration {
     
     // Working Dir
     public String getBuildCommandWorkingDirValue() {
-        if (buildCommandWorkingDir.getValue().length() == 0)
+        if (buildCommandWorkingDir.getValue().length() == 0) {
             return "."; // NOI18N
-        else
+        } else {
             return buildCommandWorkingDir.getValue();
+        }
     }
     
     public void setBuildCommandWorkingDir(StringConfiguration buildCommandWorkingDir) {
@@ -142,10 +140,11 @@ public class MakefileConfiguration {
     }
     
     public String getAbsBuildCommandWorkingDir() {
-        if (getBuildCommandWorkingDirValue().length() > 0 && IpeUtils.isPathAbsolute(getBuildCommandWorkingDirValue()))
+        if (getBuildCommandWorkingDirValue().length() > 0 && IpeUtils.isPathAbsolute(getBuildCommandWorkingDirValue())) {
             return getBuildCommandWorkingDirValue();
-        else
+        } else {
             return getMakeConfiguration().getBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
+        }
     }
     
     public boolean canClean() {
@@ -153,11 +152,11 @@ public class MakefileConfiguration {
     }
     
     public String getAbsOutput() {
-        if (getOutput().getValue().length() == 0)
+        if (getOutput().getValue().length() == 0) {
             return ""; // NOI18N
-        else if (IpeUtils.isPathAbsolute(getOutput().getValue()))
+        } else if (IpeUtils.isPathAbsolute(getOutput().getValue())) {
             return getOutput().getValue();
-        else {
+        } else {
             // FIXME
 //            List<String> paths = new ArrayList<String>();
 //            paths.add(makeConfiguration.getBaseDir());
@@ -170,7 +169,7 @@ public class MakefileConfiguration {
 //                if (file.exists()) {
 //                    return path;
 //                }
-            return getMakeConfiguration().getBaseDir() + "/"  + getOutput().getValue(); // NOI18N
+            return getMakeConfiguration().getBaseDir() + "/" + getOutput().getValue(); // NOI18N
         }
     }
     
@@ -183,16 +182,17 @@ public class MakefileConfiguration {
         getCleanCommand().assign(conf.getCleanCommand());
         getOutput().assign(conf.getOutput());
     }
-    
-    public Object clone() {
+
+    @Override
+    public MakefileConfiguration clone() {
         MakefileConfiguration clone = new MakefileConfiguration(getMakeConfiguration());
-        clone.setBuildCommandWorkingDir((StringConfiguration)getBuildCommandWorkingDir().clone());
-        clone.setBuildCommand((StringConfiguration)getBuildCommand().clone());
-        clone.setCleanCommand((StringConfiguration)getCleanCommand().clone());
-        clone.setOutput((StringConfiguration)getOutput().clone());
+        clone.setBuildCommandWorkingDir(getBuildCommandWorkingDir().clone());
+        clone.setBuildCommand(getBuildCommand().clone());
+        clone.setCleanCommand(getCleanCommand().clone());
+        clone.setOutput(getOutput().clone());
         return clone;
     }
-    
+
     public Sheet getSheet() {
         Sheet sheet = new Sheet();
         
@@ -242,8 +242,9 @@ public class MakefileConfiguration {
         @Override
         public PropertyEditor getPropertyEditor() {
             String seed = getAbsOutput();
-            if (seed.length() == 0)
+            if (seed.length() == 0) {
                 seed = getMakeConfiguration().getBaseDir();
+            }
             return new ElfEditor(seed);
         }
     }
