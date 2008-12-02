@@ -150,6 +150,10 @@
     <target name="prepare-web-page-locale" depends="init-web-page-locale,web-page-replace-tokens,web-page-add-language,generate-components-js-locale"/>	
 
     <target name="web-page-replace-tokens" if="webpage.locale.present">
+        <condition property="webpage.build.number.suffix" value=" Build ${build.number}" else="">
+            <equals arg1="${web.page.daily.branding}" arg2="1"/>
+        </condition>
+
 	<property file="${web.page.dir}/replace.properties"/>
 	
 	<for-each from="1" to="${sources.params.length}" property="i">
