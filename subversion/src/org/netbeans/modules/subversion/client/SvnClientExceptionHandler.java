@@ -502,21 +502,9 @@ public class SvnClientExceptionHandler {
     }
     
     private String getFingerprint(X509Certificate cert, String alg) {
-        String str;
         try {
             byte[] encoded = cert.getEncoded();            
-            MessageDigest md5 = MessageDigest.getInstance(alg);            
-            md5.update(encoded);
-            byte[] md5digest = md5.digest();            
-            String ret = ""; // NOI18N
-            for (int i = 0; i < md5digest.length; i++) {
-                String hex = Integer.toHexString(md5digest[i] & 0x000000FF);
-                if(hex.length()==1) {
-                    hex = "0" + hex; // NOI18N
-                }
-                ret += hex + (i < md5digest.length - 1 ? ":"  : ""); // NOI18N
-            }
-            return ret;
+            return SvnUtils.getHash(alg, encoded);
         } catch (CertificateEncodingException ex) {
             Subversion.LOG.log(Level.INFO, ex.getMessage(), ex); // should not happen
         } catch (NoSuchAlgorithmException ex) {
