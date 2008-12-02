@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,56 +31,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.ui.wizards;
+package org.netbeans.modules.cnd.makeproject.api;
 
-import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import java.io.File;
 import javax.swing.filechooser.FileFilter;
 
-public class FolderEntry implements SourceFolderInfo {
-    private File file;
-    private String folderName;
-    private boolean addSubfolders;
-    private FileFilter fileFilter;
+/**
+ *
+ * @author Alexander Simon
+ */
+public interface SourceFolderInfo {
 
-    public FolderEntry(File file, String folderName) {
-        this.file = file;
-        this.folderName = folderName;
-        addSubfolders = true;
-    }
+    File getFile();
 
-    public String getFolderName() {
-        return folderName;
-    }
+    String getFolderName();
 
-    public void setFolderName(String file) {
-        this.folderName = file;
-    }
-    
-    public boolean isAddSubfoldersSelected() {
-        return addSubfolders;
-    }
-    
-    public void setAddSubfoldersSelected(boolean selected) {
-        this.addSubfolders = selected;
-    }
-    
-    public File getFile() {
-        return file;
-    }
-    
-    public void setFile(File file) {
-        this.file = file;
-    }
-    
-    public FileFilter getFileFilter() {
-        return fileFilter;
-    }
-    
-    public void setFileFilter(FileFilter ff) {
-        fileFilter = ff;
-    }
+    boolean isAddSubfoldersSelected();
+
+    FileFilter getFileFilter();
 
 }
