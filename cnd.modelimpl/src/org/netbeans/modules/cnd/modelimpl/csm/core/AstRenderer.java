@@ -890,9 +890,10 @@ public class AstRenderer {
         switch (child.getType()) {
             case CPPTokenTypes.CSM_TYPE_COMPOUND:
             case CPPTokenTypes.CSM_TYPE_BUILTIN:
-                child = child.getNextSibling();
+                child = getFirstSiblingSkipQualifiers(child.getNextSibling());
                 if (child != null) {
-                    if (child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+                    if (child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
+                            child.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION) {
                         //static variable definition
                         return renderVariable(ast, null, container, false);
                     } else {

@@ -115,8 +115,7 @@ public class SVGCheckBoxCD extends ComponentDescriptor{
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
-            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES).
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES).
                 addProperty(NbBundle.getMessage(SVGCheckBoxCD.class, 
                         "DISP_Text"), 
                         PropertyEditorString.createInstance(

@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.highlight.error.BadgeProvider;
@@ -57,12 +58,19 @@ public class FailedIncludesAction extends NodeAction {
 
     protected void performAction(Node[] activatedNodes) {
         List<NativeProject> projects = getNativeProjects(activatedNodes);
+        Set<CsmUID<CsmFile>> set;
         if( projects == null || projects.size() != 1) {
-            return;
+            List<CsmProject> csmProjects = getCsmProjects(activatedNodes);
+            if( csmProjects == null || csmProjects.size() != 1) {
+                return;
+            }
+            CsmProject csmProject = csmProjects.get(0);
+            set = BadgeProvider.getInstance().getFailedFiles(csmProject);
+        } else {
+            NativeProject nativeProject = projects.get(0);
+            set = BadgeProvider.getInstance().getFailedFiles(nativeProject);
         }
-        NativeProject nativeProject = projects.get(0);
         Set<CsmFile> list = new HashSet<CsmFile>();
-        Set<CsmUID<CsmFile>> set = BadgeProvider.getInstance().getFailedFiles(nativeProject);
         if (set != null) {
             for (CsmUID<CsmFile> fileUID : set) {
                 CsmFile csmFile = fileUID.getObject();
@@ -78,7 +86,11 @@ public class FailedIncludesAction extends NodeAction {
     protected boolean enable(Node[] activatedNodes) {
         List<NativeProject> projects = getNativeProjects(activatedNodes);
         if( projects == null || projects.size() != 1) {
-            return false;
+            List<CsmProject> csmProjects = getCsmProjects(activatedNodes);
+            if( csmProjects == null || csmProjects.size() != 1) {
+                return false;
+            }
+            return BadgeProvider.getInstance().hasFailedFiles(csmProjects.get(0));
         }
         return BadgeProvider.getInstance().hasFailedFiles(projects.get(0));
     }
@@ -95,6 +107,18 @@ public class FailedIncludesAction extends NodeAction {
                 return null;
             }
             projects.add(nativeProject);
+        }
+        return projects;
+    }
+
+    private List<CsmProject> getCsmProjects(Node[] nodes) {
+        List<CsmProject> projects = new ArrayList<CsmProject>();
+        for (int i = 0; i < nodes.length; i++) {
+            CsmProject project = nodes[i].getLookup().lookup(CsmProject.class);
+            if(project == null) {
+                return null;
+            }
+            projects.add(project);
         }
         return projects;
     }

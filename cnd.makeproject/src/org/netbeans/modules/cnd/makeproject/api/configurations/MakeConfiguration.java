@@ -77,11 +77,18 @@ public class MakeConfiguration extends Configuration {
         getString("MakefileName"),
         getString("ApplicationName"),
         getString("DynamicLibraryName"),
-        getString("StaticLibraryName"),};
+        getString("StaticLibraryName"),
+        getString("QtAppName"),
+        getString("QtLibName")
+    };
+
     public static final int TYPE_MAKEFILE = 0;
     public static final int TYPE_APPLICATION = 1;
     public static final int TYPE_DYNAMIC_LIB = 2;
     public static final int TYPE_STATIC_LIB = 3;
+    public static final int TYPE_QT_APPLICATION = 4;
+    public static final int TYPE_QT_LIBRARY = 5;
+
     // Configurations
     private IntConfiguration configurationType;
     private MakefileConfiguration makefileConfiguration;
@@ -102,6 +109,7 @@ public class MakeConfiguration extends Configuration {
     private PackagingConfiguration packagingConfiguration;
     private RequiredProjectsConfiguration<LibraryItem> requiredProjectsConfiguration;
     private DebuggerChooserConfiguration debuggerChooserConfiguration;
+    private QmakeConfiguration qmakeConfiguration;
     private boolean languagesDirty = true;
 
     // Constructors
@@ -134,6 +142,7 @@ public class MakeConfiguration extends Configuration {
         packagingConfiguration = new PackagingConfiguration(this);
         requiredProjectsConfiguration = new RequiredProjectsConfiguration<LibraryItem>();
         debuggerChooserConfiguration = new DebuggerChooserConfiguration();
+        qmakeConfiguration = new QmakeConfiguration();
 
         developmentHost.addPropertyChangeListener(compilerSet);
         developmentHost.addPropertyChangeListener(platform);
@@ -255,6 +264,10 @@ public class MakeConfiguration extends Configuration {
 
     public boolean isArchiverConfiguration() {
         return getConfigurationType().getValue() == TYPE_STATIC_LIB;
+    }
+
+    public boolean isQmakeConfiguration() {
+        return getConfigurationType().getValue() == TYPE_QT_APPLICATION || getConfigurationType().getValue() == TYPE_QT_LIBRARY;
     }
 
     public void setCCompilerConfiguration(CCompilerConfiguration cCompilerConfiguration) {
@@ -492,6 +505,10 @@ public class MakeConfiguration extends Configuration {
         return sheet;
     }
 
+    public QmakeConfiguration getQmakeConfiguration() {
+        return qmakeConfiguration;
+    }
+
     public void setRequiredLanguagesDirty(boolean b) {
         languagesDirty = b;
     }
@@ -703,6 +720,8 @@ public class MakeConfiguration extends Configuration {
             output = getArchiverConfiguration().getOutputValue();
         } else if (isMakefileConfiguration()) {
             output = getMakefileConfiguration().getOutput().getValue();
+        } else if (isQmakeConfiguration()) {
+            output = getQmakeConfiguration().getTarget().getValue();
         } else {
             assert false;
         }
