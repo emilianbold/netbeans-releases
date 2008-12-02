@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -279,33 +280,16 @@ public final class GrailsRuntime {
 
         private final File directory;
 
-        private final GrailsEnvironment environment;
+        private final GrailsProjectConfig config;
 
         private final String[] arguments;
 
         private final Properties props;
 
-        /**
-         * Creates the minimal descriptor.
-         *
-         * @param name command name
-         * @param directory working directory
-         * @param env grails environment
-         */
-        public CommandDescriptor(String name, File directory, GrailsEnvironment env) {
-            this(name, directory, env, new String[] {}, new Properties());
-        }
+        public static CommandDescriptor forProject(String name, File directory,
+                GrailsProjectConfig config, String[] arguments, Properties props) {
 
-        /**
-         * Creates the descriptor including arguments.
-         *
-         * @param name command name
-         * @param directory working directory
-         * @param env grails environment
-         * @param arguments command arguments
-         */
-        public CommandDescriptor(String name, File directory, GrailsEnvironment env, String[] arguments) {
-            this(name, directory, env, arguments, new Properties());
+            return new CommandDescriptor(name, directory, config, arguments, props);
         }
 
         /**
@@ -317,12 +301,12 @@ public final class GrailsRuntime {
          * @param arguments command arguments
          * @param props environment properties
          */
-        public CommandDescriptor(String name, File directory, GrailsEnvironment env, String[] arguments, Properties props) {
+        private CommandDescriptor(String name, File directory, GrailsProjectConfig config, String[] arguments, Properties props) {
             this.name = name;
             this.directory = directory;
-            this.environment = env;
+            this.config = config;
             this.arguments = arguments.clone();
-            this.props = new Properties(props);
+            this.props = props != null ? new Properties(props) : new Properties();
         }
 
         /**
@@ -343,13 +327,8 @@ public final class GrailsRuntime {
             return directory;
         }
 
-        /**
-         * Returns the grails environment.
-         *
-         * @return the grails environment
-         */
-        public GrailsEnvironment getEnvironment() {
-            return environment;
+        public GrailsProjectConfig getProjectConfig() {
+            return config;
         }
 
         /**
@@ -399,14 +378,25 @@ public final class GrailsRuntime {
             LOGGER.log(Level.FINEST, "About to run: {0}", descriptor.getName());
 
             Properties props = new Properties(descriptor.getProps());
-            if (descriptor.getEnvironment() != null && descriptor.getEnvironment().isCustom()) {
-                props.setProperty("grails.env", descriptor.getEnvironment().toString()); // NOI18N
+            GrailsEnvironment env = descriptor.getProjectConfig() != null
+                    ? descriptor.getProjectConfig().getEnvironment()
+                    : null;
+
+            if (env != null && env.isCustom()) {
+                props.setProperty("grails.env", env.toString()); // NOI18N
+            }
+
+            if (descriptor.getProjectConfig() != null) {
+                String port = descriptor.getProjectConfig().getPort();
+                if (port != null) {
+                    props.setProperty("server.port", port); // NOI18N
+                }
             }
 
             StringBuilder command = new StringBuilder();
             command.append(createJvmArguments(props));
-            if (descriptor.getEnvironment() != null && !descriptor.getEnvironment().isCustom()) {
-                command.append(" ").append(descriptor.getEnvironment().toString());
+            if (env != null && !env.isCustom()) {
+                command.append(" ").append(env.toString());
             }
             command.append(" ").append(descriptor.getName());
             command.append(" ").append(createCommandArguments(descriptor.getArguments()));
@@ -423,17 +413,20 @@ public final class GrailsRuntime {
             NbProcessDescriptor grailsProcessDesc = new NbProcessDescriptor(
                     grailsExecutable.getAbsolutePath(), command.toString());
 
-
             String javaHome = null;
-            Collection<FileObject> dirs = JavaPlatformManager.getDefault().getDefaultPlatform().getInstallFolders();
+            JavaPlatform javaPlatform;
+            if (descriptor.getProjectConfig() != null) {
+                javaPlatform = descriptor.getProjectConfig().getJavaPlatform();
+            } else {
+                javaPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+            }
+
+            Collection<FileObject> dirs = javaPlatform.getInstallFolders();
             if (dirs.size() == 1) {
                 File file = FileUtil.toFile(dirs.iterator().next());
                 if (file != null) {
                     javaHome = file.getAbsolutePath();
                 }
-            }
-            if (javaHome == null) {
-                javaHome = System.getProperty("java.home");
             }
 
             String[] envp = new String[] {
