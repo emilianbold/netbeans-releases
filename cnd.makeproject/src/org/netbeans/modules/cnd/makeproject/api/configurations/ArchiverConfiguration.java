@@ -163,17 +163,17 @@ public class ArchiverConfiguration implements AllOptionsProvider {
     }
     
     @Override
-    public Object clone() {
+    public ArchiverConfiguration clone() {
         ArchiverConfiguration clone = new ArchiverConfiguration(getMakeConfiguration());
         // ArchiverConfiguration
-        clone.setOutput((StringConfiguration)getOutput().clone());
-        clone.setRunRanlib((BooleanConfiguration)getRunRanlib().clone());
-        clone.setReplaceOption((BooleanConfiguration)getReplaceOption().clone());
-        clone.setVerboseOption((BooleanConfiguration)getVerboseOption().clone());
-        clone.setSupressOption((BooleanConfiguration)getSupressOption().clone());
-        clone.setAdditionalDependencies((OptionsConfiguration)getAdditionalDependencies().clone());
-        clone.setCommandLineConfiguration((OptionsConfiguration)getCommandLineConfiguration().clone());
-        clone.setTool((StringConfiguration)getTool().clone());
+        clone.setOutput(getOutput().clone());
+        clone.setRunRanlib(getRunRanlib().clone());
+        clone.setReplaceOption(getReplaceOption().clone());
+        clone.setVerboseOption(getVerboseOption().clone());
+        clone.setSupressOption(getSupressOption().clone());
+        clone.setAdditionalDependencies(getAdditionalDependencies().clone());
+        clone.setCommandLineConfiguration(getCommandLineConfiguration().clone());
+        clone.setTool(getTool().clone());
         return clone;
     }
     
@@ -194,8 +194,9 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         options += getReplaceOption().getOption();
         options += getVerboseOption().getOption();
         options += getSupressOption().getOption() + " "; // NOI18N
-        if (includeOutput)
+        if (includeOutput) {
             options += getOutputValue() + " ";  // NOI18N
+        }
         return CppUtils.reformatWhitespaces(options);
     }
     
@@ -255,10 +256,11 @@ public class ArchiverConfiguration implements AllOptionsProvider {
     }
     
     public String getOutputValue() {
-        if (getOutput().getModified())
+        if (getOutput().getModified()) {
             return getOutput().getValue();
-        else
+        } else {
             return getOutputDefault();
+        }
     }
     
     private static class OutputNodeProp extends StringNodeProp {
@@ -267,8 +269,8 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         }
         
         @Override
-        public void setValue(Object v) {
-            if (IpeUtils.hasMakeSpecialCharacters((String)v)) {
+        public void setValue(String v) {
+            if (IpeUtils.hasMakeSpecialCharacters(v)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
                 return;
             }

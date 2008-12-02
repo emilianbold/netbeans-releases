@@ -77,11 +77,18 @@ public class MakeConfiguration extends Configuration {
         getString("MakefileName"),
         getString("ApplicationName"),
         getString("DynamicLibraryName"),
-        getString("StaticLibraryName"),};
+        getString("StaticLibraryName"),
+        getString("QtAppName"),
+        getString("QtLibName")
+    };
+
     public static final int TYPE_MAKEFILE = 0;
     public static final int TYPE_APPLICATION = 1;
     public static final int TYPE_DYNAMIC_LIB = 2;
     public static final int TYPE_STATIC_LIB = 3;
+    public static final int TYPE_QT_APPLICATION = 4;
+    public static final int TYPE_QT_LIBRARY = 5;
+
     // Configurations
     private IntConfiguration configurationType;
     private MakefileConfiguration makefileConfiguration;
@@ -102,6 +109,7 @@ public class MakeConfiguration extends Configuration {
     private PackagingConfiguration packagingConfiguration;
     private RequiredProjectsConfiguration<LibraryItem> requiredProjectsConfiguration;
     private DebuggerChooserConfiguration debuggerChooserConfiguration;
+    private QmakeConfiguration qmakeConfiguration;
     private boolean languagesDirty = true;
 
     // Constructors
@@ -134,6 +142,7 @@ public class MakeConfiguration extends Configuration {
         packagingConfiguration = new PackagingConfiguration(this);
         requiredProjectsConfiguration = new RequiredProjectsConfiguration<LibraryItem>();
         debuggerChooserConfiguration = new DebuggerChooserConfiguration();
+        qmakeConfiguration = new QmakeConfiguration();
 
         developmentHost.addPropertyChangeListener(compilerSet);
         developmentHost.addPropertyChangeListener(platform);
@@ -257,6 +266,10 @@ public class MakeConfiguration extends Configuration {
         return getConfigurationType().getValue() == TYPE_STATIC_LIB;
     }
 
+    public boolean isQmakeConfiguration() {
+        return getConfigurationType().getValue() == TYPE_QT_APPLICATION || getConfigurationType().getValue() == TYPE_QT_LIBRARY;
+    }
+
     public void setCCompilerConfiguration(CCompilerConfiguration cCompilerConfiguration) {
         this.cCompilerConfiguration = cCompilerConfiguration;
     }
@@ -330,6 +343,14 @@ public class MakeConfiguration extends Configuration {
         this.debuggerChooserConfiguration = debuggerChooserConfiguration;
     }
 
+    public QmakeConfiguration getQmakeConfiguration() {
+        return qmakeConfiguration;
+    }
+
+    public void setQmakeConfiguration(QmakeConfiguration qmakeConfiguration) {
+        this.qmakeConfiguration = qmakeConfiguration;
+    }
+
     public void assign(Configuration conf) {
         MakeConfiguration makeConf = (MakeConfiguration) conf;
         setName(makeConf.getName());
@@ -354,6 +375,7 @@ public class MakeConfiguration extends Configuration {
         getPackagingConfiguration().assign(makeConf.getPackagingConfiguration());
         getRequiredProjectsConfiguration().assign(makeConf.getRequiredProjectsConfiguration());
         getDebuggerChooserConfiguration().assign(makeConf.getDebuggerChooserConfiguration());
+        getQmakeConfiguration().assign(makeConf.getQmakeConfiguration());
 
         // do assign on all aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects(); // from this profile
@@ -406,28 +428,29 @@ public class MakeConfiguration extends Configuration {
         super.cloneConf(clone);
         clone.setCloneOf(this);
 
-        DevelopmentHostConfiguration dhconf = (DevelopmentHostConfiguration) getDevelopmentHost().clone();
+        DevelopmentHostConfiguration dhconf = getDevelopmentHost().clone();
         clone.setDevelopmentHost(dhconf);
-        CompilerSet2Configuration csconf = (CompilerSet2Configuration) getCompilerSet().clone();
+        CompilerSet2Configuration csconf = getCompilerSet().clone();
         csconf.setDevelopmentHostConfiguration(dhconf);
         clone.setCompilerSet(csconf);
-        clone.setCRequired((LanguageBooleanConfiguration) getCRequired().clone());
-        clone.setCppRequired((LanguageBooleanConfiguration) getCppRequired().clone());
-        clone.setFortranRequired((LanguageBooleanConfiguration) getFortranRequired().clone());
-        clone.setAssemblerRequired((LanguageBooleanConfiguration) getAssemblerRequired().clone());
-        PlatformConfiguration pconf = (PlatformConfiguration) getPlatform().clone();
+        clone.setCRequired(getCRequired().clone());
+        clone.setCppRequired(getCppRequired().clone());
+        clone.setFortranRequired(getFortranRequired().clone());
+        clone.setAssemblerRequired(getAssemblerRequired().clone());
+        PlatformConfiguration pconf = getPlatform().clone();
         clone.setPlatform(pconf);
-        clone.setMakefileConfiguration((MakefileConfiguration) getMakefileConfiguration().clone());
-        clone.setDependencyChecking((BooleanConfiguration) getDependencyChecking().clone());
-        clone.setCCompilerConfiguration((CCompilerConfiguration) getCCompilerConfiguration().clone());
-        clone.setCCCompilerConfiguration((CCCompilerConfiguration) getCCCompilerConfiguration().clone());
-        clone.setFortranCompilerConfiguration((FortranCompilerConfiguration) getFortranCompilerConfiguration().clone());
-        clone.setAssemblerConfiguration((AssemblerConfiguration) getAssemblerConfiguration().clone());
-        clone.setLinkerConfiguration((LinkerConfiguration) getLinkerConfiguration().clone());
-        clone.setArchiverConfiguration((ArchiverConfiguration) getArchiverConfiguration().clone());
-        clone.setPackagingConfiguration((PackagingConfiguration) getPackagingConfiguration().clone());
+        clone.setMakefileConfiguration(getMakefileConfiguration().clone());
+        clone.setDependencyChecking(getDependencyChecking().clone());
+        clone.setCCompilerConfiguration(getCCompilerConfiguration().clone());
+        clone.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
+        clone.setFortranCompilerConfiguration(getFortranCompilerConfiguration().clone());
+        clone.setAssemblerConfiguration(getAssemblerConfiguration().clone());
+        clone.setLinkerConfiguration(getLinkerConfiguration().clone());
+        clone.setArchiverConfiguration(getArchiverConfiguration().clone());
+        clone.setPackagingConfiguration(getPackagingConfiguration().clone());
         clone.setRequiredProjectsConfiguration(getRequiredProjectsConfiguration().cloneConf());
-        clone.setDebuggerChooserConfiguration((DebuggerChooserConfiguration) getDebuggerChooserConfiguration().clone());
+        clone.setDebuggerChooserConfiguration(getDebuggerChooserConfiguration().clone());
+        clone.setQmakeConfiguration(getQmakeConfiguration().clone());
 
         dhconf.addPropertyChangeListener(csconf);
         dhconf.addPropertyChangeListener(pconf);
@@ -486,7 +509,7 @@ public class MakeConfiguration extends Configuration {
         set2.setName("Projects"); // NOI18N
         set2.setDisplayName(getString("ProjectsTxt1"));
         set2.setShortDescription(getString("ProjectsHint"));
-        set2.put(new RequiredProjectsNodeProp<LibraryItem>(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
+        set2.put(new RequiredProjectsNodeProp(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
         sheet.put(set2);
 
         return sheet;
@@ -612,7 +635,7 @@ public class MakeConfiguration extends Configuration {
         }
 
         @Override
-        public Object clone() {
+        public LanguageBooleanConfiguration clone() {
             LanguageBooleanConfiguration clone = new LanguageBooleanConfiguration();
             clone.setValue(getValue(), getDefault());
             clone.setModified(getModified());
@@ -640,7 +663,7 @@ public class MakeConfiguration extends Configuration {
         return compilerSet.getName() + "-" + Platforms.getPlatform(platform).getName(); // NOI18N
     }
 
-    public Set/*<Project>*/ getSubProjects() {
+    public Set<Project> getSubProjects() {
         Set<Project> subProjects = new HashSet<Project>();
         LibrariesConfiguration librariesConfiguration = getLinkerConfiguration().getLibrariesConfiguration();
         LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
@@ -703,6 +726,8 @@ public class MakeConfiguration extends Configuration {
             output = getArchiverConfiguration().getOutputValue();
         } else if (isMakefileConfiguration()) {
             output = getMakefileConfiguration().getOutput().getValue();
+        } else if (isQmakeConfiguration()) {
+            output = getQmakeConfiguration().getTarget().getValue();
         } else {
             assert false;
         }

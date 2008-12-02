@@ -42,6 +42,7 @@ package org.netbeans.modules.groovy.grails.api;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -59,9 +60,12 @@ import org.netbeans.modules.groovy.grails.RuntimeHelper;
 import org.netbeans.modules.groovy.grails.server.GrailsInstance;
 import org.netbeans.modules.groovy.grails.server.GrailsInstanceProvider;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -437,9 +441,19 @@ public final class GrailsRuntime {
                 "JAVA_HOME=" + javaHome // NOI18N
             };
 
-            Process process = new KillableProcess(
-                    grailsProcessDesc.exec(null, envp, true, descriptor.getDirectory()),
-                    descriptor.getDirectory(), descriptor.getName());
+            // no executable check before java6
+            Process process = null;
+            try {
+                process = new KillableProcess(
+                        grailsProcessDesc.exec(null, envp, true, descriptor.getDirectory()),
+                        descriptor.getDirectory(), descriptor.getName());
+            } catch (IOException ex) {
+                NotifyDescriptor desc = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(GrailsRuntime.class, "MSG_StartFailedIOE",
+                                grailsExecutable.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(desc);
+                throw ex;
+            }
 
             checkForServer(descriptor, process);
             return process;

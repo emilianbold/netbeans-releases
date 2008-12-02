@@ -465,6 +465,8 @@ public class WizardDescriptor extends DialogDescriptor {
         super.setOptions(new Object[] { previousButton, nextButton, finishButton, cancelButton });
         super.setClosingOptions(new Object[] { finishOption, cancelButton });
 
+        createNotificationLineSupport ();
+
         // attach the change listener to iterator
         weakChangeListener = WeakListeners.change(baseListener, data.getIterator(this));
         data.getIterator(this).addChangeListener(weakChangeListener);
@@ -534,10 +536,12 @@ public class WizardDescriptor extends DialogDescriptor {
             data.getIterator(this).removeChangeListener(weakChangeListener);
         }
 
+        callUninitialize ();
         data = data.clone(panels);
         weakChangeListener = WeakListeners.change(baseListener, data.getIterator(this));
         data.getIterator(this).addChangeListener(weakChangeListener);
         init = false;
+        callInitialize ();
 
         updateState();
     }
@@ -553,10 +557,12 @@ public class WizardDescriptor extends DialogDescriptor {
             data.getIterator(this).removeChangeListener(weakChangeListener);
         }
 
+        callUninitialize ();
         data = new SettingsAndIterator<Data>(panels, settings);
         weakChangeListener = WeakListeners.change(baseListener, data.getIterator(this));
         data.getIterator(this).addChangeListener(weakChangeListener);
         init = false;
+        callInitialize ();
 
         updateState();
     }
@@ -788,6 +794,28 @@ public class WizardDescriptor extends DialogDescriptor {
 
         return newObjects;
     }
+
+    @Override
+    void clearMessages () {
+        putProperty (PROP_ERROR_MESSAGE, null);
+    }
+
+    @Override
+    void setErrorMessage (String msg) {
+        putProperty (PROP_ERROR_MESSAGE, msg);
+    }
+
+    @Override
+    void setInformationMessage (String msg) {
+        putProperty (PROP_INFO_MESSAGE, msg);
+    }
+
+    @Override
+    void setWarningMessage (String msg) {
+        putProperty (PROP_WARNING_MESSAGE, msg);
+    }
+
+
 
     /** Updates buttons to reflect the current state of the panels.
     * Can be overridden by subclasses
@@ -2527,6 +2555,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 m_lblMessage.setToolTipText (msg);
             } else {
                 prepareMessage(m_lblMessage, null, null);
+                m_lblMessage.setToolTipText (null);
             }
             m_lblMessage.setText(msg);
         }

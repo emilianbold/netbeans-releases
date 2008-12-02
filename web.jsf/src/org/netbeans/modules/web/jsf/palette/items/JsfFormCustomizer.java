@@ -45,9 +45,9 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ResourceBundle;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
@@ -62,16 +62,21 @@ import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  * @author  Pavel Buzek
+ * @author  Petr Slechta
  */
 public final class JsfFormCustomizer extends javax.swing.JPanel implements DocumentListener {
-    
+
+    private static final ResourceBundle bundle = NbBundle.getBundle(JsfFormCustomizer.class);
+
     private Dialog dialog = null;
     private DialogDescriptor descriptor = null;
+    private NotificationLineSupport statusLine;
     private boolean dialogOK = false;
 
     private final boolean hasModuleJsf;
@@ -85,19 +90,14 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
         this.targetFileObject = JsfForm.getFO(target);
         initComponents();
         hasModuleJsf = JsfForm.hasModuleJsf(target);
-        errorField.setForeground(UIManager.getColor("nb.errorForeground")); //NOI18N
-        
         classTextField.getDocument().addDocumentListener(this);
     }
     
     public boolean showDialog() {
-        
         dialogOK = false;
-        
-        String displayName = NbBundle.getMessage(JsfFormCustomizer.class, "NAME_jsp-JsfForm");
-        
+        String displayName = bundle.getString("NAME_jsp-JsfForm");
         descriptor = new DialogDescriptor
-                (this, NbBundle.getMessage(JsfFormCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
+                (this, bundle.getString("LBL_Customizer_InsertPrefix") + " " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent actionEvent) {
@@ -106,9 +106,10 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
                             dialogOK = true;
                         }
                         dialog.dispose();
-		     }
-		 } 
-                );
+                     }
+                }
+        );
+        statusLine = descriptor.createNotificationLineSupport();
         checkStatus();
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
@@ -118,7 +119,6 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
     }
     
     private void evaluateInput() {
-        
         String entityClass = classTextField.getText();
         jsfTable.setBean(entityClass);
         
@@ -148,7 +148,6 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
         detail = new javax.swing.JRadioButton();
         edit = new javax.swing.JRadioButton();
         jLabel2 = new javax.swing.JLabel();
-        errorField = new javax.swing.JLabel();
 
         jFileChooser1.setCurrentDirectory(null);
 
@@ -235,8 +234,6 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
         edit.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSN_Editable")); // NOI18N
         edit.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSD_Editable")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(errorField, bundle.getString("MSG_No_Managed_Beans")); // NOI18N
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -248,15 +245,11 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(fromBean)
-                .addContainerGap(445, Short.MAX_VALUE))
+                .addContainerGap(455, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(27, 27, 27)
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(errorField)
-                .addContainerGap(58, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -267,9 +260,7 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
                 .add(fromBean)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(errorField)
-                .addContainerGap())
+                .add(31, 31, 31))
         );
 
         empty.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSN_EmtryForm")); // NOI18N
@@ -286,7 +277,6 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
             public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {                                            
                 return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
             }
-
             public boolean accept(ElementHandle<TypeElement> typeHandle) {
                 return true;
             }
@@ -320,9 +310,16 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
             Exceptions.printStackTrace(ioe);
         }
         descriptor.setValid(hasModuleJsf && validClassName);
-        errorField.setText(hasModuleJsf ? 
-                (validClassName ? "" : java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_InvalidClassName")) :
-                java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_NoJSF"));
+        statusLine.clearMessages();
+        if (!validClassName) {
+            if (classTextField.getText().length() < 1)
+                statusLine.setInformationMessage(bundle.getString("MSG_EmptyClassName"));  //NOI18N
+            else
+                statusLine.setErrorMessage(bundle.getString("MSG_InvalidClassName"));  //NOI18N
+        }
+        if (!hasModuleJsf) {
+            statusLine.setErrorMessage(bundle.getString("MSG_NoJSF")); //NOI18N
+        }
     }
 
     public void insertUpdate(DocumentEvent documentEvent) {
@@ -342,7 +339,6 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
     private javax.swing.JRadioButton detail;
     private javax.swing.JRadioButton edit;
     private javax.swing.JRadioButton empty;
-    private javax.swing.JLabel errorField;
     private javax.swing.JRadioButton fromBean;
     private javax.swing.JButton jButton1;
     private javax.swing.JFileChooser jFileChooser1;

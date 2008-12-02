@@ -201,9 +201,21 @@ public class BadgeProvider {
         }
     }
     
+    public Set<CsmUID<CsmFile>> getFailedFiles(CsmProject csmProject) {
+        synchronized (listLock) {
+            return new HashSet<CsmUID<CsmFile>>(storage.getFiles(csmProject));
+        }
+    }
+
     public boolean hasFailedFiles(NativeProject nativeProject) {
         synchronized (listLock){
             return storage.contains(nativeProject);
+        }
+    }
+
+    public boolean hasFailedFiles(CsmProject csmProject) {
+        synchronized (listLock){
+            return storage.contains(csmProject);
         }
     }
     
@@ -256,10 +268,10 @@ public class BadgeProvider {
                 if (set == null){
                     Object id = project.getPlatformProject();
                     if (id instanceof NativeProject) {
-                        set = new HashSet<CsmUID<CsmFile>>();
-                        wrongFiles.put(project,set);
                         nativeProjects.put(project, (NativeProject) id);
                     }
+                    set = new HashSet<CsmUID<CsmFile>>();
+                    wrongFiles.put(project,set);
                 }
                 if (set != null) {
                     set.add(file.getUID());

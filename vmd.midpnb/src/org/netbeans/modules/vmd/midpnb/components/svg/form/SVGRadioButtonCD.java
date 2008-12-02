@@ -41,23 +41,41 @@ package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
 import java.util.Arrays;
 import java.util.List;
+
+import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
+import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
+import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorButtonGroup;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author avk
+ * @author ads
  */
 public class SVGRadioButtonCD extends ComponentDescriptor{
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGRadioButton"); // NOI18N
+    
+    public static final String PROP_SELECTED = "selected";       // NOI18N
+    
+    public static final String PROP_BUTTON_GROUP = "buttonGroup";// NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);
@@ -71,15 +89,83 @@ public class SVGRadioButtonCD extends ComponentDescriptor{
     public VersionDescriptor getVersionDescriptor() {
         return MidpVersionDescriptor.MIDP_2;
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.vmd.api.model.ComponentDescriptor#postInitialize(org.netbeans.modules.vmd.api.model.DesignComponent)
+     */
+    @Override
+    public void postInitialize( DesignComponent component ) {
+        /*Collection<DesignComponent> components = 
+            component.getParentComponent().getComponents();
+        for (DesignComponent designComponent : components) {
+            if ( !designComponent.getType().equals( SVGButtonGroupCD.TYPEID ) ){
+                continue;
+            }
+            PropertyValue propValue =  designComponent.readProperty( 
+                    SVGButtonGroupCD.PROP_BUTTONS );
+            if ( propValue == null ){
+                continue;
+            }
+            for (PropertyValue propertyValue : propValue.getArray()) {
+                if ( propertyValue.getComponent() == component ){
+                    component.writeProperty( PROP_BUTTON_GROUP, 
+                            MidpTypes.createJavaCodeValue(
+                                    CodeReferencePresenter.generateAccessCode( 
+                                            designComponent)));
+                }
+            }
+        }*/
+    }
 
+    
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList (
+                new PropertyDescriptor( SVGLabelCD.PROP_TEXT, 
+                        MidpTypes.TYPEID_JAVA_LANG_STRING, 
+                        MidpTypes.createStringValue( "" ), true, true,
+                        MidpVersionable.MIDP_2),
+                new PropertyDescriptor(PROP_SELECTED, 
+                        MidpTypes.TYPEID_BOOLEAN, 
+                        MidpTypes.createBooleanValue (Boolean.FALSE), false, false, 
+                        MidpVersionable.MIDP_2),
+                new PropertyDescriptor(PROP_BUTTON_GROUP, 
+                                MidpTypes.TYPEID_JAVA_CODE, 
+                                MidpTypes.createJavaCodeValue(""), true, true, 
+                                MidpVersionable.MIDP_2)
                 );
+    }
+    
+    private static DefaultPropertiesPresenter createPropertiesPresenter() {
+        return new DefaultPropertiesPresenter()
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                .addProperty(NbBundle.getMessage(SVGRadioButtonCD.class, 
+                        "DISP_Text"), 
+                        PropertyEditorString.createInstance(
+                                NbBundle.getMessage(SVGRadioButtonCD.class, 
+                                "LBL_SVGRadioButton_Text")), SVGLabelCD.PROP_TEXT).
+                 addProperty(NbBundle.getMessage(SVGRadioButtonCD.class, 
+                                "DISP_IsSelected"), 
+                         PropertyEditorBooleanUC.createInstance(), PROP_SELECTED).
+                 addProperty(NbBundle.getMessage(SVGRadioButtonCD.class, 
+                         "DISP_ButtonGroup"), 
+                  PropertyEditorButtonGroup.createInstance(), PROP_BUTTON_GROUP); // NOI18N
+                
+    }
+    
+    private Presenter createSetterPresenter () {
+        return new CodeSetterPresenter ().
+                addParameters(MidpParameter.create(SVGLabelCD.PROP_TEXT)).
+                addSetters(MidpSetter.createSetter("setText", 
+                        MidpVersionable.MIDP_2).addParameters(SVGLabelCD.
+                                PROP_TEXT));
     }
 
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList(
+                // properties
+                createPropertiesPresenter(),
+                createSetterPresenter(),
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),

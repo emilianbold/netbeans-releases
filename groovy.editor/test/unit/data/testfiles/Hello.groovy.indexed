@@ -22,21 +22,21 @@ Document 2
 Searchable Keys:
   class : Hello1
   class-ig : hello1
-  field : field1
-  field : greeting
-  field : name
-  field : privateField
-  field : protectedField;04
-  field : publicField;01
+  field : field1;int
+  field : greeting;java.lang.Object
+  field : name;java.lang.Object
+  field : privateField;java.lang.Object
+  field : protectedField;java.lang.Object;04
+  field : publicField;java.lang.Object;01
   fqn : foo.Hello1
-  method : dynamicmethod
-  method : getField1
-  method : getGreeting
-  method : getName
-  method : main(java.lang.String[]);08
-  method : setField1(int)
-  method : setGreeting(java.lang.Object)
-  method : setName(java.lang.Object)
+  method : dynamicmethod;void
+  method : getField1;int
+  method : getGreeting;java.lang.Object
+  method : getName;java.lang.Object
+  method : main(java.lang.String[]);void;08
+  method : setField1(int);void
+  method : setGreeting(java.lang.Object);void
+  method : setName(java.lang.Object);void
 
 Not Searchable Keys:
 

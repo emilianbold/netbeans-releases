@@ -366,9 +366,6 @@ public class AstRenderer {
         }
 
         CsmAST csmAST = AstUtil.getFirstCsmAST(name);
-        if (name == null) {
-            return false;
-        }
 
         StringBuilder varName = new StringBuilder(name.getText());
         while (name.getNextSibling() != null) {
@@ -893,9 +890,10 @@ public class AstRenderer {
         switch (child.getType()) {
             case CPPTokenTypes.CSM_TYPE_COMPOUND:
             case CPPTokenTypes.CSM_TYPE_BUILTIN:
-                child = child.getNextSibling();
+                child = getFirstSiblingSkipQualifiers(child.getNextSibling());
                 if (child != null) {
-                    if (child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+                    if (child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
+                            child.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION) {
                         //static variable definition
                         return renderVariable(ast, null, container, false);
                     } else {
@@ -1299,7 +1297,7 @@ public class AstRenderer {
     }
 
     public static List<CsmParameter> renderParameters(AST ast, final CsmFile file, CsmScope scope) {
-        List<CsmParameter> parameters = new ArrayList<CsmParameter>();
+        ArrayList<CsmParameter> parameters = new ArrayList<CsmParameter>();
         if (ast != null && (ast.getType() == CPPTokenTypes.CSM_PARMLIST ||
                 ast.getType() == CPPTokenTypes.CSM_KR_PARMLIST)) {
             for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
@@ -1311,6 +1309,7 @@ public class AstRenderer {
                 }
             }
         }
+        parameters.trimToSize();
         return parameters;
     }
 

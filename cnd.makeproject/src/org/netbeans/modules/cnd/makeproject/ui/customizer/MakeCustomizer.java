@@ -79,7 +79,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DebuggerChooserNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -279,7 +278,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     }// </editor-fold>//GEN-END:initComponents
 
     private void configurationsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configurationsButtonActionPerformed
-        MyListEditorPanel configurationsEditor = new MyListEditorPanel(projectDescriptor.getConfs().getConfs());
+        MyListEditorPanel configurationsEditor = new MyListEditorPanel(projectDescriptor.getConfs().getConfigurtions());
         JPanel outerPanel = new JPanel();
         outerPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -300,7 +299,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         dl.setSize(new java.awt.Dimension(400, (int) dl.getPreferredSize().getHeight()));
         dl.setVisible(true);
         // Update data structure
-        Configuration[] editedConfs = (Configuration[]) configurationsEditor.getListData().toArray(new Configuration[configurationsEditor.getListData().size()]);
+        Configuration[] editedConfs = configurationsEditor.getListData().toArray(new Configuration[configurationsEditor.getListData().size()]);
         projectDescriptor.getConfs().init(editedConfs, -1);
         // Update gui with changes
         ActionListener[] actionListeners = configurationComboBox.getActionListeners();
@@ -582,40 +581,26 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
     private Node createRootNodeProject(Project project, ConfigurationDescriptor projectDescriptor) {
         boolean includeMakefileDescription = true;
-        boolean includeNewDescription = true;
         int compilerSet = -1;
         boolean isCompileConfiguration = ((MakeConfiguration) selectedConfigurations[0]).isCompileConfiguration();
-        boolean includeLinkerDescription = true;
-        boolean includeArchiveDescription = true;
         boolean includeRunDebugDescriptions = true;
 
         for (int i = 0; i < selectedConfigurations.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) selectedConfigurations[i];
 
-            if (compilerSet >= 0 && makeConfiguration.getCompilerSet().getValue() != compilerSet) {
-                includeNewDescription = false;
-            }
             compilerSet = makeConfiguration.getCompilerSet().getValue();
 
-            if ((isCompileConfiguration && !makeConfiguration.isCompileConfiguration()) || (!isCompileConfiguration && makeConfiguration.isCompileConfiguration())) {
-                includeNewDescription = false;
-            }
-
-            if (makeConfiguration.isMakefileConfiguration()) {
-                //includeNewDescription = false;
-                includeLinkerDescription = false;
-                includeArchiveDescription = false;
-            }
             if (makeConfiguration.isLinkerConfiguration()) {
                 includeMakefileDescription = false;
-                includeArchiveDescription = false;
             }
             if (makeConfiguration.isArchiverConfiguration()) {
                 includeMakefileDescription = false;
-                includeLinkerDescription = false;
             }
             if (makeConfiguration.isLibraryConfiguration()) {
                 includeRunDebugDescriptions = false;
+            }
+            if (makeConfiguration.isQmakeConfiguration()) {
+                includeMakefileDescription = false;
             }
         }
 
@@ -636,7 +621,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             List<CustomizerNode> l = CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug"); // NOI18N
             boolean debugNode = false;
             if (l.size() > 1) {
-                CustomizerNode[] cn = { l.get(0) };
+                CustomizerNode[] cn = {l.get(0)};
                 descriptions.add(new DebugCustomizerNode("Debuggers", getString("LBL_Config_Debugger"), l.toArray(cn))); // NOI18N
                 debugNode = true;
             } else if (l.size() == 1) {
@@ -655,7 +640,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         descriptions.add(createRequiredProjectsDescription(project));
         if (includeMakefileDescription) {
-            //descriptions.add(createMakefileDescription(project));
             descriptions.add(createCodeAssistantDescription(project, compilerSet, null, null, isCompileConfiguration));
         }
         CustomizerNode rootDescription = new CustomizerNode(
@@ -830,49 +814,55 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     private CustomizerNode createBuildDescription(Project project) {
 
         boolean includeMakefileDescription = true;
-        boolean includeNewDescription = true;
+        boolean includeCompilerDescription = true;
         int compilerSet = -1;
         boolean isCompileConfiguration = ((MakeConfiguration) selectedConfigurations[0]).isCompileConfiguration();
         boolean includeLinkerDescription = true;
         boolean includeArchiveDescription = true;
-        boolean includeRunDebugDescriptions = true;
+        boolean includeQtDescription = true;
 
         for (int i = 0; i < selectedConfigurations.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) selectedConfigurations[i];
 
             if (compilerSet >= 0 && makeConfiguration.getCompilerSet().getValue() != compilerSet) {
-                includeNewDescription = false;
+                includeCompilerDescription = false;
+                includeQtDescription = false;
             }
             compilerSet = makeConfiguration.getCompilerSet().getValue();
 
             if ((isCompileConfiguration && !makeConfiguration.isCompileConfiguration()) || (!isCompileConfiguration && makeConfiguration.isCompileConfiguration())) {
-                includeNewDescription = false;
+                includeCompilerDescription = false;
+                includeQtDescription = false;
             }
 
             if (makeConfiguration.isMakefileConfiguration()) {
-                includeNewDescription = false;
+                includeCompilerDescription = false;
                 includeLinkerDescription = false;
                 includeArchiveDescription = false;
+                includeQtDescription = false;
             }
             if (makeConfiguration.isLinkerConfiguration()) {
                 includeMakefileDescription = false;
                 includeArchiveDescription = false;
+                includeQtDescription = false;
             }
             if (makeConfiguration.isArchiverConfiguration()) {
                 includeMakefileDescription = false;
                 includeLinkerDescription = false;
             }
-            if (makeConfiguration.isLibraryConfiguration()) {
-                includeRunDebugDescriptions = false;
+            if (makeConfiguration.isQmakeConfiguration()) {
+                includeMakefileDescription = false;
+                includeCompilerDescription = false;
+                includeArchiveDescription = false;
+                includeLinkerDescription = false;
             }
         }
 
         ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
         if (includeMakefileDescription) {
             descriptions.add(createMakefileDescription(project));
-        //descriptions.add(createRequiredProjectsDescription(project));
         }
-        if (includeNewDescription) {
+        if (includeCompilerDescription) {
             descriptions.addAll(createCompilerNodes(project, compilerSet, -1, null, null, isCompileConfiguration, null));
         }
         if (includeLinkerDescription) {
@@ -880,6 +870,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         if (includeArchiveDescription) {
             descriptions.add(createArchiverDescription());
+        }
+        if (includeQtDescription) {
+            descriptions.add(createQtDescription());
         }
 
         descriptions.add(createPackagingDescription());
@@ -993,7 +986,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             set.setDisplayName(getString("LBL_DebuggerChooser")); // NOI18N
             set.setShortDescription(getString("HINT_DebuggerChooser")); // NOI18N
             set.put(new DebuggerChooserNodeProp(((MakeConfiguration) configuration).getDebuggerChooserConfiguration(),
-            getString("LBL_DebuggerChooser"), getString("HINT_DebuggerChooser"))); // NOI18N
+                    getString("LBL_DebuggerChooser"), getString("HINT_DebuggerChooser"))); // NOI18N
             sheet.put(set);
             return sheet;
         }
@@ -1116,6 +1109,24 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         public HelpCtx getHelpCtx() {
             return new HelpCtx("ProjectPropsArchiverGeneral"); // NOI18N
         }
+    }
+
+    private CustomizerNode createQtDescription() {
+        CustomizerNode node = new QtCustomizerNode("Qmake", getString("LBL_QMAKE_NODE"), null); // NOI18N
+        return node;
+    }
+
+    private static class QtCustomizerNode extends CustomizerNode {
+
+        public QtCustomizerNode(String name, String displayName, CustomizerNode[] children) {
+            super(name, displayName, children);
+        }
+
+        @Override
+        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
+            return ((MakeConfiguration) configuration).getQmakeConfiguration().getGeneralSheet();
+        }
+
     }
 
     // Packaging
@@ -1402,7 +1413,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
     /** Children used for configuration
      */
-    private class PropertyNodeChildren extends Children.Keys {
+    private class PropertyNodeChildren extends Children.Keys<CustomizerNode> {
 
         private Collection<CustomizerNode> descriptions;
 
@@ -1417,24 +1428,25 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public void removeNotify() {
             setKeys(Collections.EMPTY_LIST);
         }
 
-        protected Node[] createNodes(Object key) {
-            return new Node[]{new PropertyNode((CustomizerNode) key)};
+        protected Node[] createNodes(CustomizerNode key) {
+            return new Node[]{new PropertyNode(key)};
         }
     }
 
-    private class MyListEditorPanel extends ListEditorPanel {
+    private class MyListEditorPanel extends ListEditorPanel<Configuration> {
 
-        public MyListEditorPanel(Object[] objects) {
+        public MyListEditorPanel(List<Configuration> objects) {
             super(objects);
             setAllowedToRemoveAll(false);
         }
 
         @Override
-        public Object addAction() {
+        public Configuration addAction() {
             String newName = ConfigurationSupport.getUniqueNewName(getConfs());
             int type = MakeConfiguration.TYPE_MAKEFILE;
             if (getActive() != null) {
@@ -1446,8 +1458,8 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
 
         @Override
-        public Object copyAction(Object o) {
-            Configuration c = (Configuration) o;
+        public Configuration copyAction(Configuration o) {
+            Configuration c = o;
             Configuration copyConf = c.copy();
             copyConf.setDefault(false);
             copyConf.setName(ConfigurationSupport.getUniqueCopyName(getConfs(), c));
@@ -1456,29 +1468,29 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
 
         @Override
-        public void removeAction(Object o) {
-            Configuration c = (Configuration) o;
+        public void removeAction(Configuration o) {
+            Configuration c = o;
             if (c.isDefault()) {
                 if (getListData().elementAt(0) == o) {
-                    ((Configuration) getListData().elementAt(1)).setDefault(true);
+                    (getListData().elementAt(1)).setDefault(true);
                 } else {
-                    ((Configuration) getListData().elementAt(0)).setDefault(true);
+                    (getListData().elementAt(0)).setDefault(true);
                 }
             }
         }
 
         @Override
-        public void defaultAction(Object o) {
+        public void defaultAction(Configuration o) {
             Vector confs = getListData();
             for (Enumeration e = confs.elements(); e.hasMoreElements();) {
                 ((Configuration) e.nextElement()).setDefault(false);
             }
-            ((Configuration) o).setDefault(true);
+            o.setDefault(true);
         }
 
         @Override
-        public void editAction(Object o) {
-            Configuration c = (Configuration) o;
+        public void editAction(Configuration o) {
+            Configuration c = o;
 
             NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("CONFIGURATION_RENAME_DIALOG_LABEL"), getString("CONFIGURATION_RENAME_DIALOG_TITLE")); // NOI18N
             notifyDescriptor.setInputText(c.getName());
@@ -1506,7 +1518,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
 
         public Configuration[] getConfs() {
-            return (Configuration[]) getListData().toArray(new Configuration[getListData().size()]);
+            return getListData().toArray(new Configuration[getListData().size()]);
         }
 
         public Configuration getActive() {
@@ -1528,7 +1540,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             if (i < 0) {
                 return;
             }
-            Configuration conf = (Configuration) getListData().get(i);
+            Configuration conf = getListData().get(i);
             getDefaultButton().setEnabled(!conf.isDefault());
         }
     }

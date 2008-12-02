@@ -39,6 +39,7 @@
 
 package org.openide.util.io;
 
+import java.io.IOException;
 import java.io.StringReader;
 import org.netbeans.junit.NbTestCase;
 
@@ -52,4 +53,19 @@ public class ReaderInputStreamTest extends NbTestCase {
         assertEquals(0, new ReaderInputStream(new StringReader(("abc"))).read(new byte[256], 0, 0));
     }
 
+    public void testTextDataRead() throws IOException {
+        ReaderInputStream ris = new ReaderInputStream(new StringReader("0123456789"), "UTF-8");
+        assertEquals("Wrong number of bytes read.", 10, ris.read(new byte[10], 0, 10));
+    }
+
+    /** Tests stream doesn't hang with invalid input data (see #153987). */
+    public void testBinaryDataRead() throws IOException {
+        ReaderInputStream ris = new ReaderInputStream(new StringReader(""+((char)0xD8FF)), "UTF-8");
+        try {
+            ris.read(new byte[10], 0, 10);
+            fail("ReaderInputStream should refuse input characteres between \\uD800 and \\uDBFF (see OutputStreamWriter javadoc).");
+        } catch (IOException e) {
+            // OK
+        }
+    }
 }

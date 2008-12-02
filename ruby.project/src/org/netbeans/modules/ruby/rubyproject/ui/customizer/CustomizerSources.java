@@ -57,7 +57,6 @@ import java.io.File;
 import java.nio.charset.Charset;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

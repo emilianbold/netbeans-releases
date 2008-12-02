@@ -86,7 +86,7 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         int[] anchorOffsetHolder = new int[1];
         int lexOffset = caretOffset;
         int astOffset = caretOffset;
-        boolean ok = RubyCodeCompleter.computeMethodCall(info, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null, NameKind.PREFIX);
+        boolean ok = RubyMethodCompleter.computeMethodCall(info, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null, NameKind.PREFIX);
 
         if (expectSuccess) {
             assertTrue(ok);
@@ -335,6 +335,29 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         checkCompletion("testfiles/predef_constants.rb", "__FILE__.cho^");
     }
 
+    // #threw NPE from RubyDeclarationFinder
+    public void testUnkownInTheBlock() throws Exception {
+        // TODO: it actually tries to infer wrongly upon the 'arr', but should
+        // upon the 'Huh'. Cf. unknown_in_the_block.rb
+        checkCompletion("testfiles/unknown_in_the_block.rb", "Huh.err^");
+    }
+
+    public void testConstantMethods() throws Exception {
+        checkCompletion("testfiles/constants.rb", "Colors::RED.byte^");
+    }
+
+    public void testConstants() throws Exception {
+        checkCompletion("testfiles/constants1.rb", "Fcntl::O_A^");
+    }
+
+    public void testConstantsNonPrefixed() throws Exception {
+        checkCompletion("testfiles/constants1.rb", "Fcntl::^O_A");
+    }
+
+    public void testConstantsFromParentsAreNotOffered() throws Exception {
+        // must not offer FALSE from Object
+        checkCompletion("testfiles/constants1.rb", "Fcntl::F^");
+    }
     // TODO - test more non-fc calls (e.g. x.foo)
     // TODO test with splat args (more args than are in def list)
     // TODO test with long arg lists

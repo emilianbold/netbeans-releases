@@ -96,10 +96,11 @@ public class MakefileConfiguration {
     
     // Working Dir
     public String getBuildCommandWorkingDirValue() {
-        if (buildCommandWorkingDir.getValue().length() == 0)
+        if (buildCommandWorkingDir.getValue().length() == 0) {
             return "."; // NOI18N
-        else
+        } else {
             return buildCommandWorkingDir.getValue();
+        }
     }
     
     public void setBuildCommandWorkingDir(StringConfiguration buildCommandWorkingDir) {
@@ -139,10 +140,11 @@ public class MakefileConfiguration {
     }
     
     public String getAbsBuildCommandWorkingDir() {
-        if (getBuildCommandWorkingDirValue().length() > 0 && IpeUtils.isPathAbsolute(getBuildCommandWorkingDirValue()))
+        if (getBuildCommandWorkingDirValue().length() > 0 && IpeUtils.isPathAbsolute(getBuildCommandWorkingDirValue())) {
             return getBuildCommandWorkingDirValue();
-        else
+        } else {
             return getMakeConfiguration().getBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
+        }
     }
     
     public boolean canClean() {
@@ -150,12 +152,25 @@ public class MakefileConfiguration {
     }
     
     public String getAbsOutput() {
-        if (getOutput().getValue().length() == 0)
+        if (getOutput().getValue().length() == 0) {
             return ""; // NOI18N
-        else if (getOutput().getValue().length() > 0 && IpeUtils.isPathAbsolute(getOutput().getValue()))
+        } else if (IpeUtils.isPathAbsolute(getOutput().getValue())) {
             return getOutput().getValue();
-        else
-            return getMakeConfiguration().getBaseDir() + "/"  + getOutput().getValue(); // NOI18N
+        } else {
+            // FIXME
+//            List<String> paths = new ArrayList<String>();
+//            paths.add(makeConfiguration.getBaseDir());
+//            paths.addAll(mcd.getSourceRoots());
+//
+//            for (String dir : paths) {
+//                dir = dir.replace("\\", "/");  // NOI18N
+//                String path = dir.replace("\\", "/") + '/' + getOutput().getValue();
+//                File file = new File(path);
+//                if (file.exists()) {
+//                    return path;
+//                }
+            return getMakeConfiguration().getBaseDir() + "/" + getOutput().getValue(); // NOI18N
+        }
     }
     
     // Clone and assign
@@ -167,16 +182,17 @@ public class MakefileConfiguration {
         getCleanCommand().assign(conf.getCleanCommand());
         getOutput().assign(conf.getOutput());
     }
-    
-    public Object clone() {
+
+    @Override
+    public MakefileConfiguration clone() {
         MakefileConfiguration clone = new MakefileConfiguration(getMakeConfiguration());
-        clone.setBuildCommandWorkingDir((StringConfiguration)getBuildCommandWorkingDir().clone());
-        clone.setBuildCommand((StringConfiguration)getBuildCommand().clone());
-        clone.setCleanCommand((StringConfiguration)getCleanCommand().clone());
-        clone.setOutput((StringConfiguration)getOutput().clone());
+        clone.setBuildCommandWorkingDir(getBuildCommandWorkingDir().clone());
+        clone.setBuildCommand(getBuildCommand().clone());
+        clone.setCleanCommand(getCleanCommand().clone());
+        clone.setOutput(getOutput().clone());
         return clone;
     }
-    
+
     public Sheet getSheet() {
         Sheet sheet = new Sheet();
         
@@ -198,12 +214,14 @@ public class MakefileConfiguration {
             super(stringConfiguration, txt1, txt2, txt3);
         }
         
-        public void setValue(Object v) {
-            String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), (String)v); // FIXUP: not always relative path
+        @Override
+        public void setValue(String v) {
+            String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
             path = FilePathAdaptor.normalize(path);
             super.setValue(path);
         }
         
+        @Override
         public PropertyEditor getPropertyEditor() {
             return new DirEditor(getAbsBuildCommandWorkingDir());
         }
@@ -214,16 +232,19 @@ public class MakefileConfiguration {
             super(stringConfiguration, txt1, txt2, txt3);
         }
         
-        public void setValue(Object v) {
-            String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), (String)v); // FIXUP: not always relative path
+        @Override
+        public void setValue(String v) {
+            String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
             path = FilePathAdaptor.normalize(path);
             super.setValue(path);
         }
         
+        @Override
         public PropertyEditor getPropertyEditor() {
             String seed = getAbsOutput();
-            if (seed.length() == 0)
+            if (seed.length() == 0) {
                 seed = getMakeConfiguration().getBaseDir();
+            }
             return new ElfEditor(seed);
         }
     }
@@ -236,26 +257,32 @@ public class MakefileConfiguration {
             this.seed = seed;
         }
         
+        @Override
         public void setAsText(String text) {
             getBuildCommandWorkingDir().setValue(text);
         }
         
+        @Override
         public String getAsText() {
             return getBuildCommandWorkingDir().getValue();
         }
         
+        @Override
         public Object getValue() {
             return getBuildCommandWorkingDir().getValue();
         }
         
+        @Override
         public void setValue(Object v) {
             getBuildCommandWorkingDir().setValue((String)v);
         }
         
+        @Override
         public boolean supportsCustomEditor() {
             return true;
         }
         
+        @Override
         public java.awt.Component getCustomEditor() {
             return new DirPanel(seed, this, propenv);
         }
@@ -302,26 +329,32 @@ public class MakefileConfiguration {
             this.seed = seed;
         }
         
+        @Override
         public void setAsText(String text) {
             getOutput().setValue(text);
         }
         
+        @Override
         public String getAsText() {
             return getOutput().getValue();
         }
         
+        @Override
         public Object getValue() {
             return getOutput().getValue();
         }
         
+        @Override
         public void setValue(Object v) {
             getOutput().setValue((String)v);
         }
         
+        @Override
         public boolean supportsCustomEditor() {
             return true;
         }
         
+        @Override
         public java.awt.Component getCustomEditor() {
             return new ElfPanel(seed, this, propenv);
         }

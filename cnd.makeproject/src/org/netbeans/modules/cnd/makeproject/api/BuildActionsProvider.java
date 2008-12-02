@@ -36,13 +36,11 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.makeproject.api;
 
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.openide.util.Lookup;
 
@@ -52,13 +50,14 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 public abstract class BuildActionsProvider {
+
     private static BuildActionsProvider DEFAULT = new Default();
 
     public abstract List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events);
-    
+
     protected BuildActionsProvider() {
     }
-    
+
     /**
      * Static method to obtain the BuildActionsProvider implementation.
      * @return the BuildActionsProvider
@@ -66,17 +65,19 @@ public abstract class BuildActionsProvider {
     public static synchronized BuildActionsProvider getDefault() {
         return DEFAULT;
     }
-    
+
     public interface BuildAction extends Action, ExecutionListener {
+
         void setStep(int step);
     }
-    
+
     /**
      * Implementation of the default BuildActionsProvider
-     */  
+     */
     private static final class Default extends BuildActionsProvider {
+
         private final Lookup.Result<BuildActionsProvider> res;
-        
+
         Default() {
             res = Lookup.getDefault().lookupResult(BuildActionsProvider.class);
         }

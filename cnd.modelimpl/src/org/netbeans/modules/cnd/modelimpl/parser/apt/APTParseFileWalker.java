@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
 import antlr.Token;
@@ -69,15 +68,15 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
  * @author Vladimir Voskresensky
  */
 public class APTParseFileWalker extends APTProjectFileBasedWalker {
-    
+
     /** 
      * A callback that should be invoked
      * when each conditional is evaluated
      */
     public interface EvalCallback {
+
         void onEval(APT apt, boolean result);
     }
-
     private boolean createMacroAndIncludes;
     private final EvalCallback evalCallback;
 
@@ -94,15 +93,15 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     public void addMacroAndIncludes(boolean create) {
         this.createMacroAndIncludes = create;
     }
-    
+
     protected boolean needMacroAndIncludes() {
         return this.createMacroAndIncludes;
     }
-    
+
     public TokenStream getFilteredTokenStream(APTLanguageFilter lang) {
         return lang.getFilteredStream(getTokenStream());
     }
-    
+
     @Override
     public TokenStream getTokenStream() {
         setMode(ProjectBase.GATHERING_TOKENS);
@@ -114,59 +113,57 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         ts = new APTMacroExpandedStream(ts, getMacroMap());
         return ts;
     }
-    
+
     @Override
     protected void onDefine(APT apt) {
         super.onDefine(apt);
         if (needMacroAndIncludes()) {
-            getFile().addMacro(createMacro((APTDefine)apt));
+            getFile().addMacro(createMacro((APTDefine) apt));
         }
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of abstract methods
-    
     @Override
     protected void postInclude(APTInclude apt, FileImpl included) {
         if (needMacroAndIncludes()) {
             getFile().addInclude(createInclude(apt, included));
         }
     }
-    
+
     protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, int mode, APTInclude apt) throws IOException {
         try {
             return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), mode);
         } catch (NullPointerException ex) {
             APTUtils.LOG.log(Level.SEVERE, "NPE when processing file", ex);// NOI18N
-	    DiagnosticExceptoins.register(ex);
+            DiagnosticExceptoins.register(ex);
         } finally {
             getIncludeHandler().popInclude();
         }
         return null;
     }
-        
+
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
-
     private MacroImpl createMacro(APTDefine define) {
-        
+
         List<String> params = null;
         Collection<APTToken> paramTokens = define.getParams();
-        if( paramTokens != null ) {
+        if (paramTokens != null) {
             params = new ArrayList<String>();
             for (APTToken elem : paramTokens) {
-                if( APTUtils.isID(elem) ) {
+                if (APTUtils.isID(elem)) {
                     params.add(elem.getText());
                 }
             }
         }
-        
-        SimpleOffsetableImpl pos = getOffsetable((APTToken)define.getToken());
+
+        SimpleOffsetableImpl pos = getOffsetable(define.getToken());
         List bodyTokens = define.getBody();
         APTToken last;
         String body = "";
         if (bodyTokens.isEmpty()) {
-            last = (APTToken) define.getName();
+            last = define.getName();
         } else {
             last = (APTToken) bodyTokens.get(bodyTokens.size() - 1);
             APTToken start = (APTToken) bodyTokens.get(0);
@@ -176,39 +173,39 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             // so we temporarily switch this off
             body = ""; //file.getText( start.getOffset(), last.getEndOffset());
         }
-        setEndPosition(pos,last);
-        
+        setEndPosition(pos, last);
+
         return new MacroImpl(define.getName().getText(), params, body/*sb.toString()*/, getFile(), pos);
     }
-    
+
     private IncludeImpl createInclude(final APTInclude apt, final FileImpl included) {
-        SimpleOffsetableImpl inclPos = getOffsetable((APTToken)apt.getToken());
-        setEndPosition(inclPos,getLastToken(apt.getInclude()));
+        SimpleOffsetableImpl inclPos = getOffsetable(apt.getToken());
+        setEndPosition(inclPos, getLastToken(apt.getInclude()));
         IncludeImpl incImpl = new IncludeImpl(apt.getFileName(getMacroMap()), apt.isSystem(getMacroMap()), included, getFile(), inclPos);
         return incImpl;
     }
-    
+
     private SimpleOffsetableImpl getOffsetable(APTToken token) {
         return new SimpleOffsetableImpl(token.getLine(), token.getColumn(), token.getOffset());
     }
-    
+
     private void setEndPosition(SimpleOffsetableImpl offsetable, APTToken token) {
-        if( token != null && !APTUtils.isEOF(token)) {
+        if (token != null && !APTUtils.isEOF(token)) {
             offsetable.setEndPosition(token.getEndLine(), token.getEndColumn(), token.getEndOffset());
         } else {
             assert offsetable.getStartPosition() != null;
             offsetable.setEndPosition(offsetable.getStartPosition());
         }
     }
-    
+
     private APTToken getLastToken(TokenStream ts) {
         try {
             Token last = ts.nextToken();
-            for( Token curr = null; ! APTUtils.isEOF(curr = ts.nextToken()); ) {
+            for (Token curr = null; !APTUtils.isEOF(curr = ts.nextToken());) {
                 last = curr;
             }
-            return (APTToken)last;
-        } catch( TokenStreamException e ) {
+            return (APTToken) last;
+        } catch (TokenStreamException e) {
             DiagnosticExceptoins.register(e);
             return null;
         }

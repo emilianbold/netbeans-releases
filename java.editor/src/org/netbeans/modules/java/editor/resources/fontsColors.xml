@@ -66,7 +66,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="mod-local-variable-declaration" default="identifier"/>    
     <fontcolor name="mod-parameter-declaration" default="identifier"/>
     
-    <fontcolor name="mod-method-declaration" default="identifier">
+    <fontcolor name="mod-method-declaration" default="method">
         <font style="bold" />
     </fontcolor>
     <fontcolor name="mod-constructor-declaration" default="identifier">
@@ -88,7 +88,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="mod-field" default="field"/>        
     <fontcolor name="mod-local-variable" default="identifier"/>
     <fontcolor name="mod-parameter" default="identifier"/>
-    <fontcolor name="mod-method" default="identifier"/>
+    <fontcolor name="mod-method" default="method"/>
     <fontcolor name="mod-constructor" default="identifier"/>
     <fontcolor name="mod-class" default="identifier"/>
     <fontcolor name="mod-interface" default="identifier"/>

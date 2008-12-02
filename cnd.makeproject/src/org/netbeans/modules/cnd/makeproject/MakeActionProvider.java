@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
@@ -478,7 +479,10 @@ public class MakeActionProvider implements ActionProvider {
                         }
                     } else {
                         // Always absolute
-                        path = conf.getMakefileConfiguration().getAbsOutput();
+                        // FIXME - GRP: This call fails for a Makefile project where the sources aren't in the
+                        // project baseDir and the buildOutput isn't absolute.
+                        path = getExePath(pd, conf);
+//                        path = conf.getMakefileConfiguration().getAbsOutput().replace("\\", "/"); // NOI18N
                     }
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
@@ -498,7 +502,7 @@ public class MakeActionProvider implements ActionProvider {
                     RunProfile runProfile = null;
                     if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
                         // On Windows we need to add paths to dynamic libraries from subprojects to PATH
-                        runProfile = conf.getProfile().cloneProfile();
+                        runProfile = conf.getProfile().clone();
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
                         String path = ""; // NOI18N
                         // Add paths from subprojetcs
@@ -544,7 +548,7 @@ public class MakeActionProvider implements ActionProvider {
                             path.append(location);
                         }
                         if (path.length() > 0) {
-                            runProfile = conf.getProfile().cloneProfile();
+                            runProfile = conf.getProfile().clone();
                             String extPath = runProfile.getEnvironment().getenv("DYLD_LIBRARY_PATH"); // NOI18N
                             if (extPath == null) {
                                 extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DYLD_LIBRARY_PATH"); // NOI18N
@@ -569,7 +573,7 @@ public class MakeActionProvider implements ActionProvider {
                             path.append(location);
                         }
                         if (path.length() > 0) {
-                            runProfile = conf.getProfile().cloneProfile();
+                            runProfile = conf.getProfile().clone();
                             String extPath = runProfile.getEnvironment().getenv("LD_LIBRARY_PATH"); // NOI18N
                             if (extPath == null) {
                                 extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("LD_LIBRARY_PATH"); // NOI18N
@@ -583,7 +587,7 @@ public class MakeActionProvider implements ActionProvider {
                         if (HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getName()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
                             if (runProfile == null) {
-                                runProfile = conf.getProfile().cloneProfile();
+                                runProfile = conf.getProfile().clone();
                             }
                             runProfile.getEnvironment().putenv("DISPLAY", ":0.0"); // NOI18N
                         }
@@ -618,6 +622,8 @@ public class MakeActionProvider implements ActionProvider {
                             false);
                     actionEvents.add(projectActionEvent);
                     RunDialogPanel.addElementToExecutablePicklist(path);
+                } else if (conf.isQmakeConfiguration()) {
+                    RunDialogPanel.addElementToExecutablePicklist(conf.getQmakeConfiguration().getTarget().getValue());
                 } else {
                     assert false;
                 }
@@ -1194,6 +1200,39 @@ public class MakeActionProvider implements ActionProvider {
 
     private static boolean exists(String path, PlatformInfo pi) {
         return pi.fileExists(path) || pi.findCommand(path) != null;
+    }
+
+    private static String getExePath(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {
+        String buildResult = conf.getMakefileConfiguration().getOutput().getValue();
+
+        if (buildResult == null || buildResult.length() == 0) {
+            return buildResult;
+        }
+
+        List<String> paths = new ArrayList<String>();
+        if (isAbsolutePath(conf, buildResult)) {
+            paths.add(buildResult);
+        }
+        paths.add(conf.getBaseDir());
+        paths.addAll(mcd.getSourceRoots());
+
+        for (String dir : paths) {
+            dir = dir.replace("\\", "/");  // NOI18N
+            String path = dir + '/' + buildResult; // gdb *requires* forward slashes!
+            File file = new File(path);
+            if (file.exists()) {
+                return path;
+            }
+        }
+        return "";
+    }
+
+    private static boolean isAbsolutePath(MakeConfiguration conf, String path) {
+        if (conf.getPlatform().getValue() == PlatformTypes.PLATFORM_WINDOWS) {
+            return path.length() > 3 && path.charAt(1) == ':' && path.charAt(2) == '/';
+        } else {
+            return path.length() > 0 && path.charAt(0) == '/';
+        }
     }
 
     // Private methods -----------------------------------------------------

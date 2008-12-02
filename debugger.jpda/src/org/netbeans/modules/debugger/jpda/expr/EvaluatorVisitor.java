@@ -162,7 +162,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
-import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.ScriptVariable;
@@ -213,6 +212,15 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     @Override
     public Mirror scan(TreePath path, EvaluationContext evaluationContext) {
         Mirror result = super.scan(path, evaluationContext);
+        if (result instanceof ArtificialMirror) {
+            return ((ArtificialMirror) result).getVMMirror();
+        }
+        return result;
+    }
+
+    @Override
+    public Mirror scan(Iterable<? extends Tree> nodes, EvaluationContext evaluationContext) {
+        Mirror result = super.scan(nodes, evaluationContext);
         if (result instanceof ArtificialMirror) {
             return ((ArtificialMirror) result).getVMMirror();
         }
@@ -3200,7 +3208,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
 
         public Mirror getVMMirror() {
-            return value;
+            return (value instanceof ArtificialMirror) ?
+                ((ArtificialMirror)value).getVMMirror() : value;
         }
 
         @Override

@@ -65,6 +65,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.codehaus.groovy.ast.FieldNode;
 
 /**
  *
@@ -89,7 +90,7 @@ public class GroovyIndexer implements Indexer {
     static final String FIELD_NAME = "field"; //NOI18N
 
     /** Attributes: "i" -> private, "o" -> protected, ", "s" - static/notinstance, "d" - documented */
-    static final String ATTRIBUTE_NAME = "attribute"; //NOI18N
+    //static final String ATTRIBUTE_NAME = "attribute"; //NOI18N
 
     private static FileObject preindexedDb;
 
@@ -163,7 +164,7 @@ public class GroovyIndexer implements Indexer {
     }
 
     public String getIndexVersion() {
-        return "0.7"; // NOI18N
+        return "0.8"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -277,39 +278,42 @@ public class GroovyIndexer implements Indexer {
 
         private void indexField(AstElement child, IndexDocument document) {
 
-            String signature = child.getName();
-            int flags = getFieldModifiersFlag(child.getModifiers());
+            StringBuilder sb = new StringBuilder(child.getName());
+            FieldNode node = (FieldNode) child.getNode();
 
+            sb.append(';').append(org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
+                    node.getType().getName()));
+
+            int flags = getFieldModifiersFlag(child.getModifiers());
             if (flags != 0) {
-                StringBuilder sb = new StringBuilder(signature);
                 sb.append(';');
                 sb.append(IndexedElement.flagToFirstChar(flags));
                 sb.append(IndexedElement.flagToSecondChar(flags));
-                signature = sb.toString();
             }
 
             // TODO - gather documentation on fields? naeh
-            document.addPair(FIELD_NAME, signature, true);
+            document.addPair(FIELD_NAME, sb.toString(), true);
         }
 
         private void indexMethod(AstElement child, IndexDocument document) {
 
             MethodNode childNode = (MethodNode) child.getNode();
-            String signature = AstUtilities.getDefSignature(childNode);
+            StringBuilder sb = new StringBuilder(AstUtilities.getDefSignature(childNode));
+
+            sb.append(';').append(org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
+                    childNode.getReturnType().getName()));
 
             Set<Modifier> modifiers = child.getModifiers();
 
             int flags = getMethodModifiersFlag(modifiers);
 
             if (flags != 0) {
-                StringBuilder sb = new StringBuilder(signature);
                 sb.append(';');
                 sb.append(IndexedElement.flagToFirstChar(flags));
                 sb.append(IndexedElement.flagToSecondChar(flags));
-                signature = sb.toString();
             }
 
-            document.addPair(METHOD_NAME, signature, true);
+            document.addPair(METHOD_NAME, sb.toString(), true);
         }
 
     }

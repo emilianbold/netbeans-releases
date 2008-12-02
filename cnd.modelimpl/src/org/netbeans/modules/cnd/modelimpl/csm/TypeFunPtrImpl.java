@@ -48,8 +48,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -63,7 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  */
 public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
 
-    private List<CsmUID<CsmParameter>> functionParameters;
+    private Collection<CsmUID<CsmParameter>> functionParameters;
     private short functionPointerDepth;
 
     TypeFunPtrImpl(CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
@@ -107,17 +105,7 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
             }
         }
         sb.append(')');
-
-        sb.append('(');
-        for (Iterator iter = getParameters().iterator(); iter.hasNext();) {
-            CsmParameter param = (CsmParameter) iter.next();
-            sb.append(param.getDisplayText());
-            if (iter.hasNext()) {
-                sb.append(',');
-            }
-        }
-        sb.append(')');
-
+        sb.append(FunctionImpl.createParametersSignature(getParameters()));
         return sb;
     }
 
@@ -138,17 +126,24 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         if (brace != null) {
             // check whether it's followed by asterisk
             next = brace.getNextSibling();
-            if (next == null || next.getType() != CPPTokenTypes.CSM_PTR_OPERATOR) {
+            if (next == null) {
                 return false;
             }
-
-            // skip adjacent asterisks
-            do {
-                next = next.getNextSibling();
-                if (instance != null) {
-                    ++instance.functionPointerDepth;
+            if (inFunctionParams && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
+                // this is start of function params
+                next = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+            } else {
+                if (next.getType() != CPPTokenTypes.CSM_PTR_OPERATOR) {
+                    return false;
                 }
-            } while (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR);
+                // skip adjacent asterisks
+                do {
+                    next = next.getNextSibling();
+                    if (instance != null) {
+                        ++instance.functionPointerDepth;
+                    }
+                } while (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR);
+            }
         }
 
         if (inFunctionParams && next == null) {
@@ -160,15 +155,19 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         }
 
         // check that it's followed by exprected token
-        if (next.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+        if (next.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
+                next.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION) {
             // fine. this could be variable of function type
         } else if (next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
             AST lookahead = next.getNextSibling();
+            AST lookahead2 = lookahead == null ? null : lookahead.getNextSibling();
             if (lookahead != null && lookahead.getType() == CPPTokenTypes.RPAREN) {
                 // OK. This could be function type in typedef - in this case we get
                 // CSM_QUALIFIED_ID instead of CSM_VARIABLE_DECLARATION.
-            } else if (inFunctionParams && lookahead != null && lookahead.getType() == CPPTokenTypes.CSM_PARMLIST) {
+            } else if (inFunctionParams && lookahead != null && lookahead.getType() == CPPTokenTypes.LPAREN
+                    && lookahead2 != null && lookahead2.getType() == CPPTokenTypes.CSM_PARMLIST) {
                 // OK. This could be function as a parameter
+                next = lookahead;
             } else {
                 next = lookahead;
                 // check function returns function

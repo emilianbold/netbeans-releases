@@ -93,7 +93,7 @@ public final class XRefResultSet<T> {
         unresolved = new HashMap<CharSequence, T>(100);
         for (ContextScope scopeContext : ContextScope.values()) {
             scopeEntries.put(scopeContext, new ArrayList<ContextEntry>(1024));
-            scopes.put(scopeContext, new Integer(0));
+            scopes.put(scopeContext, 0);
         }
     }
 

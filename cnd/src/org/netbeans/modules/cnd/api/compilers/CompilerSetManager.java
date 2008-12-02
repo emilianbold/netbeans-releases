@@ -551,6 +551,10 @@ public class CompilerSetManager {
                     kind = Tool.CCCompiler;
                 } else if (name.equals("f95") || name.equals("f90")) { // NOI18N
                     kind = Tool.FortranCompiler;
+                } else if (name.startsWith("as=")) { // NOI18N
+                    kind = Tool.Assembler;
+                    i1 = name.indexOf('=');
+                    p = name.substring(i1 + 1);
                 } else if (name.equals("dmake")) { // NOI18N
                     kind = Tool.MakeTool;
                 } else if (name.startsWith("gdb=")) { // NOI18N
@@ -565,6 +569,8 @@ public class CompilerSetManager {
                     kind = Tool.CCCompiler;
                 } else if (name.equals("g77") || name.equals("gfortran")) { // NOI18N
                     kind = Tool.FortranCompiler;
+                } else if (name.equals("as") || name.equals("gas")) { // NOI18N
+                    kind = Tool.Assembler;
                 } else if (name.equals("make") || // NOI18N
                         ((platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC) &&
                         name.equals("gmake"))) { // NOI18N

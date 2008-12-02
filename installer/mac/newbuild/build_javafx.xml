@@ -126,7 +126,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="build-module">
-        <copy file="commonfiles/Info.plist" filtering="true" tofile="netBeans/${module.name}/build/Info.plist">
+        <property name="module.builddir" value="${basedir}/netBeans/${module.name}/build"/>
+        <property name="scriptsdir" value="${module.builddir}/scripts"/>
+
+        <copy file="commonfiles/Info.plist" filtering="true" tofile="${module.builddir}/Info.plist">
             <filterset>
                 <filter token="INSTALLDIR" value="${app.name}/Contents/Resources/NetBeans"/>
                 <filter token="BUNDLE" value="netbeans.ide.${module.name}"/>
@@ -135,23 +138,28 @@ Microsystems, Inc. All Rights Reserved.
         
         <antcall target="size-pack-module"/>
         
-        <copy file="commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${basedir}/netBeans/${module.name}/pkg/scripts/Description.plist">
+        <copy file="commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${module.builddir}/Description.plist">
             <filterset>
                 <filter token="TITLE" value="${module.title}"/>
             </filterset>
-        </copy>  
+        </copy>
+
+       <copy  todir="${scriptsdir}">
+            <fileset dir="${basedir}/netBeans/${module.name}/pkg/scripts"/>
+        </copy>
+
         
-        <copy file="${basedir}/netBeans/baseide/pkg/scripts/env.sh" 
-              todir="${basedir}/netBeans/${module.name}/pkg/scripts"/> 
+        <copy file="${basedir}/netBeans/baseide/build/scripts/env.sh"
+              todir="${scriptsdir}"/>
         <copy file="${basedir}/netBeans/baseide/pkg/scripts/addproduct_id.sh" 
-              todir="${basedir}/netBeans/${module.name}/pkg/scripts"/>        
+              todir="${scriptsdir}"/>
         <copy file="${basedir}/netBeans/baseide/pkg/scripts/add_cluster.sh" 
-              todir="${basedir}/netBeans/${module.name}/pkg/scripts"/>        
+              todir="${scriptsdir}"/>
         
         <echo message="Building ${module.name} into ${basedir}/build/${module.name}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value=" /Developer/Tools/packagemaker -build -v -p ${basedir}/build/${module.name}.pkg -f ${basedir}/netBeans/${module.name}/build/netbeans -i ${basedir}/netBeans/${module.name}/build/Info.plist -r ${basedir}/netBeans/${module.name}/pkg/scripts -d ${basedir}/netBeans/${module.name}/pkg/scripts/Description.plist"/>
+            <arg value=" /Developer/Tools/packagemaker -build -v -p ${basedir}/build/${module.name}.pkg -f ${module.builddir}/netbeans -i ${module.builddir}/Info.plist -r ${scriptsdir} -d ${module.builddir}/Description.plist"/>
         </exec>                                         
     </target>          
     

@@ -70,16 +70,20 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     private boolean smart;
     private boolean inherited; 
     private MethodType methodType = MethodType.METHOD;
+    private final String returnType;
     
-    private IndexedMethod(String signature, GroovyIndex index, String fileUrl, String clz, String attributes, int flags) {
+    private IndexedMethod(String signature, String returnType, GroovyIndex index,
+            String fileUrl, String clz, String attributes, int flags) {
+
         super(index, fileUrl, clz, attributes, flags);
         this.signature = signature;
+        this.returnType = returnType;
     }
 
-    public static IndexedMethod create(GroovyIndex index, String signature, String fqn, String clz,
-        String fileUrl, String attributes, int flags) {
+    public static IndexedMethod create(GroovyIndex index, String signature, String returnType,
+            String fqn, String clz, String fileUrl, String attributes, int flags) {
         IndexedMethod m =
-            new IndexedMethod(signature, index, fileUrl, clz, attributes, flags);
+            new IndexedMethod(signature, returnType, index, fileUrl, clz, attributes, flags);
 
         return m;
     }
@@ -111,12 +115,16 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
         return name;
     }
 
+    public String getReturnType() {
+        return returnType;
+    }
+
     @Override
     public String getSignature() {
         return classFqn + "#" + signature;
     }
 
-    public String[] getArgs() {
+    private String[] getArgs() {
         if (args == null) {
             // Parse signature
             int parenIndex = signature.indexOf('(');

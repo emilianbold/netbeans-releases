@@ -9,36 +9,17 @@ fi
 [ -n "$push_url" ] || exit 113
 [ -n "$push_username" ] || exit 114
 
-if [ -z "$TMP" ]; then
-  TMP="/tmp"
-fi
-
-t
-
-ANT_OPTS="-Xmx512m -XX:MaxPermSize=128m"
-export ANT_OPTS
-HGMERGE=merge
-export HGMERGE
-
-hg up -C tip
-hg --config extensions.purge= clean --all
-
-mkdir -p "nbbuild/build"
-STATUS="nbbuild/build/build-info"
-curl $pop_job/buildStatus -D "$STATUS"
-cat "$STATUS"
-
-if grep "Location:.*blue[_anime]*.gif.*" "$STATUS"; then
-    echo Build seems to be stable
-else
-    echo Build is not stable, exiting
-    exit 1
-fi
 
 testresult() {
+    if [ -z "$4" ]; then
+        FAILURES="0"
+    else
+        FAILURES="$4"
+    fi
+
     FILE="$1/TEST-hg.$2.xml"
     echo '<?xml version="1.0" encoding="UTF-8" ?>' >$FILE
-    echo '<testsuite errors="0" failures="0" name="hg.'$2'" tests="1" time="1">' >>$FILE
+    echo '<testsuite errors="0" failures="'$FAILURES'" name="hg.'$2'" tests="1" time="1">' >>$FILE
     echo '  <properties>' >>$FILE
     echo '  </properties>' >>$FILE
     echo '  <testcase classname="hg.'$2'" name="hg.'$2'" time="1" />' >>$FILE
@@ -49,13 +30,68 @@ testresult() {
     echo '</testsuite>' >>$FILE
 }
 
+testmodule() {
+    if ant $ANT_PARAM -f $1/build.xml test-unit -Dtest-unit-sys-prop.ignore.random.failures=true; then
+        echo Test OK: $1
+    else
+        echo $1 >>$RESULT
+        exit 5
+    fi
+}
+dobuild() {
+    RESULT=`pwd`/nbbuild/build/test-results.txt
+    export RESULT
+    rm -f $RESULT
+
+    ant build $ANT_PARAM || exit 2
+    ant commit-validation $ANT_PARAM || exit 3
+    ant build-test-dist $ANT_PARAM || exit 4
+
+    testmodule openide.awt || exit 5
+
+    FAILED=`cat $RESULT | wc -l`
+    if [ "$FAILED" -gt 0 ]; then
+        echo "No push. Failed tests in following modules:"
+        cat $RESULT
+        exit 5
+    fi
+}
+
+if [ -z "$TMP" ]; then
+  TMP="/tmp"
+fi
+
+ANT_OPTS="-Xmx512m -XX:MaxPermSize=128m"
+export ANT_OPTS
+HGMERGE=merge
+export HGMERGE
+
+hg up -C tip
+hg --config extensions.purge= clean --all
+
 TESTDIR="nbbuild/build/test/results/"
 mkdir -p $TESTDIR
+
+mkdir -p "nbbuild/build"
+STATUS="nbbuild/build/build-info"
+curl $pop_job/buildStatus -D "$STATUS"
+cat "$STATUS"
+
+if grep "Location:.*blue[_anime]*.gif.*" "$STATUS"; then
+    echo Build seems to be stable
+    testresult "$TESTDIR" "check.build.stable" "`cat $STATUS`"
+else
+    echo Build is not stable, exiting
+    testresult "$TESTDIR" "check.build.stable" "`cat $STATUS`" "1"
+    echo >"nbbuild/no-outgoing-changes-no-build.zip"
+    exit 0
+fi
+
 
 echo Getting Build Info
 HGINFO=`curl $pop_job/lastStableBuild/artifact/$pop_build_info`
 echo Build info: $HGINFO
-testresult "$TESTDIR" "check.build.stable" "$HGINFO"
+testresult "$TESTDIR" "build.info" "$HGINFO"
 [ -n "$HGINFO" ] || exit 1
 
 HGID=`echo "$HGINFO" | grep "Hg ID"`
@@ -89,30 +125,12 @@ else
     exit 0
 fi
 
-RESULT=`pwd`/nbbuild/build/test-results.txt
-export RESULT
-rm $RESULT
 
-testmodule() {
-    if ant $ANT_PARAM -f $1/build.xml test-unit -Dtest-unit-sys-prop.ignore.random.failures=true; then
-        echo Test OK: $1
-    else
-        echo $1 >>$RESULT
-        exit 5
-    fi
-}
-
-ant build $ANT_PARAM || exit 2
-ant commit-validation $ANT_PARAM || exit 3
-ant build-test-dist $ANT_PARAM || exit 4
-
-testmodule openide.awt || exit 5
-
-FAILED=`cat $RESULT | wc -l`
-if [ "$FAILED" -gt 0 ]; then
-    echo "No push. Failed tests in following modules:"
-    cat $RESULT
-    exit 5
+if dobuild && hg push "$push_url"; then
+    echo "Build and push successful"
+    exit 0
+else
+    echo "Failure, rolling back own commits"
+    hg rollback
+    exit 1
 fi
-
-hg push "$push_url"

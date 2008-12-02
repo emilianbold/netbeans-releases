@@ -68,11 +68,11 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.ExecutionUtils.FileLocation;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputProcessor;
 import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
@@ -449,7 +449,7 @@ public final class GenerateAction extends NodeAction {
                 }
 
                 return Collections.<ConvertedLine>singletonList(
-                        ConvertedLine.forText(line, new FindFileListener(file, lineno, RubyProcessCreator.wrap(locator))));
+                        ConvertedLine.forText(line, new FindFileListener(file, lineno, locator)));
             }
 
             return null;

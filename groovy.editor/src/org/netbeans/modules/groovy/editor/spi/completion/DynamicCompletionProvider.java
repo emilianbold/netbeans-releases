@@ -40,7 +40,6 @@
 package org.netbeans.modules.groovy.editor.spi.completion;
 
 import java.util.Map;
-import org.netbeans.modules.groovy.editor.api.completion.CompletionType;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.openide.filesystems.FileObject;
@@ -52,10 +51,10 @@ import org.openide.filesystems.FileObject;
 public abstract class DynamicCompletionProvider {
 
     // FIXME access levels, context
-    public abstract Map<MethodSignature, String> getMethods(FileObject source, String className, CompletionType completionType);
+    public abstract Map<MethodSignature, String> getMethods(FileObject source, String sourceName, String className);
 
     // FIXME access levels, context
-    public abstract Map<FieldSignature, String> getFields(FileObject source, String className, CompletionType completionType);
+    public abstract Map<FieldSignature, String> getFields(FileObject source, String sourceName, String className);
 
     // FIXME type analyzer method
 }

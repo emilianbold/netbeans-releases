@@ -41,395 +41,580 @@
 
 package org.netbeans.core.windows.view.ui.toolbars;
 
-import org.openide.awt.Toolbar;
-import org.openide.awt.ToolbarPool;
 
-import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Iterator;
-import java.util.Vector;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.LayoutManager;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 /**
- * This class represents one row of toolbars.
+ * Panel which holds one row of toolbars. The order of toolbars is defined
+ * by the order in they are being added to this row and their left/right align attribute.
  *
- * Toolbar row is part of toolbar configuration and contains list of toolbars,
- * it is possible to add, remove and switch constraints.
- * There is cached row's neighbournhood, so when there is some row motion
- * those cached values are recomputed.
- *
- * @author Libor Kramolis
+ * @author S. Aubrecht
  */
-public class ToolbarRow {
-    /** ToolbarConfiguration */
-    ToolbarConfiguration toolbarConfig;
-    /** Previous row of toolbars. */
-    ToolbarRow prevRow;
-    /** Next row of toolbars. */
-    ToolbarRow nextRow;
-
-    /** List of toolbars in row. */
-    private Vector<ToolbarConstraints> toolbars;
-    /** listener for changes of constraints of contained toolbars */
-    private PropertyChangeListener constraintsL;
-    /** cached preferred height of this row */
-    private int prefHeight;
+class ToolbarRow extends JPanel {
     
-    /** Create new ToolbarRow.
-     * @param own ToolbarConfiguration
+    /**
+     * Maps toolbar name to its constraints.
      */
-    ToolbarRow (ToolbarConfiguration config) {
-        toolbarConfig = config;
-        toolbars = new Vector<ToolbarConstraints>();
-        prevRow = nextRow = null;
-        // invoke revalidation of toolbar rows below if height changes
-        constraintsL = new PropertyChangeListener () {
-            public void propertyChange (PropertyChangeEvent evt) {
-                if (ToolbarConstraints.PREFERRED_SIZE.equals(evt.getPropertyName())) {
-                    Dimension oldTCSize = (Dimension)evt.getOldValue();
-                    Dimension newTCSize = (Dimension)evt.getNewValue();
-                    if (oldTCSize.height != newTCSize.height) {
-                        updateRowsBelow();
-                    }
-                }
+    private final Map<String, ToolbarConstraints> name2constraint = new HashMap<String, ToolbarConstraints>(20);
+    /**
+     * List of toolbar constraints in the order they are shown, includes constraints for drop feedback.
+     */
+    private final List<ToolbarConstraints> constraints = new ArrayList<ToolbarConstraints>( 20 );
+
+
+    //drag context
+    private ToolbarConstraints dragConstraints;
+    private Component dragContainer;
+    private Point dragOriginalLocation;
+
+    //drop context
+    private JLabel dropReplacement;
+    private ToolbarConstraints dropConstraints;
+    private ToolbarContainer dropContainter;
+
+    public ToolbarRow() {
+        setLayout( new ToolbarLayout() );
+        setOpaque(false);
+        addDropConstraints();
+    }
+
+    public void addConstraint( ToolbarConstraints tc ) {
+        ToolbarConstraints current = name2constraint.get(tc.getName());
+        if( null != current ) {
+            constraints.remove(current);
+            Logger.getLogger(ToolbarRow.class.getName()).log(Level.FINE,
+                    "Duplicate toolbar defintion " + tc.getName()); //NOI18N
+        }
+        List<ToolbarConstraints> left = getConstraints( ToolbarConstraints.Align.left );
+        List<ToolbarConstraints> right = getConstraints( ToolbarConstraints.Align.right );
+        constraints.clear();
+        constraints.addAll(left);
+        if( tc.getAlign() == ToolbarConstraints.Align.left )
+            constraints.add(tc);
+        constraints.addAll(right);
+        if( tc.getAlign() == ToolbarConstraints.Align.right )
+            constraints.add(tc);
+        name2constraint.put(tc.getName(), tc);
+    }
+
+    boolean removeConstraint(ToolbarConstraints tc) {
+        if( null != name2constraint.get( tc.getName() ) ) {
+            name2constraint.remove(tc.getName());
+            constraints.remove(tc);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void removeAll() {
+        super.removeAll();
+        if( null != dropReplacement )
+            add( dropReplacement );
+    }
+
+    @Override
+    public boolean isVisible() {
+        for( ToolbarConstraints tc : constraints ) {
+            if( tc.isVisible() )
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return True if the row doesn't contain any toolbar.
+     */
+    public boolean isEmpty() {
+        return name2constraint.isEmpty()
+                || (null != dragContainer && name2constraint.size() == 1);
+    }
+
+    /**
+     * Adds a fake component and appropriate constraints that will be used to
+     * visualize toolbar drop feedback.
+     */
+    private void addDropConstraints() {
+        dropConstraints = new ToolbarConstraints("__fake_drag_container__",  //NOI18N
+                ToolbarConstraints.Align.left, false, true);
+        dropReplacement = new JLabel();
+        dropReplacement.setName(dropConstraints.getName());
+        add( dropReplacement );
+        constraints.add( dropConstraints );
+    }
+
+    /**
+     * D'n'd has just started.
+     * @param container Toolbar container that is being dragged.
+     */
+    void dragStarted(ToolbarContainer container) {
+        dragConstraints = findConstraints( container.getName() );
+        if( null != dragConstraints ) {
+            dragContainer = findComponent(dragConstraints.getName());
+            dragConstraints.setVisible(false);
+            dragOriginalLocation = new Point( dragContainer.getLocationOnScreen() );
+            container.setVisible(false);
+            invalidate();
+            revalidate();
+            repaint();
+        }
+    }
+
+    /**
+     * Visualize drop feedback for the given toolbar.
+     * @param container Toolbar container being dragged over this row.
+     * @param screenLocation Screen coords of mouse cursor.
+     */
+    void showDropFeedback(ToolbarContainer container, Point screenLocation, Image dragImage) {
+        Component targetComp = null;
+        Rectangle bounds = null;
+        //find component under the cursor
+        for( Component c : getComponents() ) {
+            if( !c.isVisible() )
+                continue;
+            bounds = c.getBounds();
+            bounds.setLocation(c.getLocationOnScreen());
+            if( bounds.contains(screenLocation) ) {
+                targetComp = c;
+                break;
             }
-        };
-    }
-
-    /** Add toolbar to end of row.
-     * @param tc ToolbarConstraints
-     */
-    void addToolbar (ToolbarConstraints tc) {
-        addToolbar2 (tc, toolbars.size());
-    }
-
-    /** Add toolbar to specific position
-     * @param newTC ToolbarConstraints
-     * @param pos specified position of new toolbar
-     */
-    void addToolbar (ToolbarConstraints newTC, int pos) {
-        int index = newTC.checkInitialIndexInRow();
-        if( newTC.isAlwaysRight() )
-            index = toolbars.size();
-        if( index >= 0 ) {
-            //the toolbar is being added for the first time so get its index
-            //from the order of declarations in layers xml
-            index = Math.min( index, toolbars.size() );
-        } else {
-            index = 0;
-            Iterator it = toolbars.iterator();
-            ToolbarConstraints tc;
-            while (it.hasNext()) {
-                tc = (ToolbarConstraints)it.next();
-                if (pos <= tc.getPosition())
-                    break;
-                index++;
-            }
-        }
-        addToolbar2 (newTC, index);
-    }
-
-    /** Add toolbar to specific index int row
-     * @param tc ToolbarConstraints
-     * @param index specified index of new toolbar
-     */
-    private void addToolbar2 (ToolbarConstraints tc, int index) {
-        //make sure alwaysRigt toolbar stays always the last element
-        if( index == toolbars.size()
-                && !tc.isAlwaysRight()
-                && toolbars.size() > 0
-                && toolbars.lastElement().isAlwaysRight() ) {
-            index--;
         }
 
-        if (toolbars.contains (tc))
-            return;
-        ToolbarConstraints prev = null;
-        ToolbarConstraints next = null;
-        if (index != 0) {
-            prev = (ToolbarConstraints)toolbars.elementAt (index - 1);
-            prev.addNextBar (tc);
-            tc.addPrevBar (prev);
-        }
-        if (index < toolbars.size()) {
-            next = (ToolbarConstraints)toolbars.elementAt (index);
-            tc.addNextBar (next);
-            next.addPrevBar (tc);
-        }
-        if ((prev != null) && (next != null)) {
-            prev.removeNextBar (next);
-            next.removePrevBar (prev);
+        dropReplacement.setPreferredSize( container.getPreferredSize() );
+        dropReplacement.setMinimumSize( container.getMinimumSize() );
+        if( dropContainter != container ) {
+            //create image of dragged toolbar and show it in the area where toolbar will be dropped
+            dropContainter = container;
+            dropReplacement.setIcon(new ImageIcon(dragImage));
         }
         
-        int oldHeight = getPreferredHeight();
+        if( null != targetComp ) {
+            //mouse is above some other toolbar in this row, calculate drop index & coords
 
-        tc.addOwnRow (this);
-        toolbars.insertElementAt (tc, index);
+            if( targetComp == dropReplacement ) {
+                //mouse cursor is still above the same component as during the last call
+                return;
+            }
 
-        tc.updatePosition();
+            boolean dropAfter = bounds.x + bounds.width/2 < screenLocation.x;
+            ToolbarConstraints targetTc = findConstraints( targetComp.getName());
+            dropConstraints.setAlign(targetTc.getAlign());
+            int dropIndex = constraints.indexOf( targetTc );
+            if( dropAfter )
+                dropIndex++;
 
-        tc.addPropertyChangeListener(constraintsL);
-    }
-
-    /** Remove toolbar from row.
-     * @param tc toolbar for remove
-     */
-    void removeToolbar (ToolbarConstraints tc) {
-        int index = toolbars.indexOf (tc);
-
-        ToolbarConstraints prev = null;
-        ToolbarConstraints next = null;
-        try {
-            prev = (ToolbarConstraints)toolbars.elementAt (index - 1);
-            prev.removeNextBar (tc);
-        } catch (ArrayIndexOutOfBoundsException e) { }
-        try {
-            next = (ToolbarConstraints)toolbars.elementAt (index + 1);
-            next.removePrevBar (tc);
-        } catch (ArrayIndexOutOfBoundsException e) { }
-        if ((prev != null) && (next != null)) {
-            prev.addNextBar (next);
-            next.addPrevBar (prev);
-        }
-
-        toolbars.removeElement (tc);
-
-        if (prev != null) {
-            prev.updatePosition();
+            if( dropIndex > constraints.indexOf(dropConstraints) )
+                dropIndex--;
+            constraints.remove(dropConstraints);
+            if( dropIndex <= constraints.size() )
+                constraints.add(dropIndex, dropConstraints);
+            else
+                constraints.add( dropConstraints );
+            dropConstraints.setVisible(true);
+            dropReplacement.setVisible(true);
         } else {
-            if (next != null) {
-                next.updatePosition();
+            //drop into a free area, the new position will be either the last left bar
+            //or the first right bar
+            Rectangle freeAreaBounds = getFreeAreaBounds();
+            if( freeAreaBounds.contains(screenLocation) ) {
+                boolean leftAlign = freeAreaBounds.x + freeAreaBounds.width/2 >= screenLocation.x;
+                constraints.remove(dropConstraints);
+                int dropIndex = -1;
+                if( leftAlign ) {
+                    dropConstraints.setAlign( ToolbarConstraints.Align.left );
+                    for( int i=0; i<constraints.size(); i++ ) {
+                        ToolbarConstraints tc = constraints.get(i);
+                        if( !tc.isVisible() )
+                            continue;
+                        if( tc.getAlign() != ToolbarConstraints.Align.left ) {
+                            dropIndex = i;
+                            break;
+                        }
+                    }
+                } else {
+                    dropConstraints.setAlign( ToolbarConstraints.Align.right );
+                    for( int i=constraints.size()-1; i>=0; i-- ) {
+                        ToolbarConstraints tc = constraints.get(i);
+                        if( !tc.isVisible() )
+                            continue;
+                        if( tc.getAlign() != ToolbarConstraints.Align.right ) {
+                            dropIndex = i;
+                            break;
+                        }
+                    }
+                    if( dropIndex < 0 )
+                        dropIndex = 0; //no right bar
+                }
+                if( dropIndex >= 0 )
+                    constraints.add( dropIndex, dropConstraints );
+                else
+                    constraints.add(dropConstraints);
+                dropConstraints.setVisible(true);
+                dropReplacement.setVisible(true);
+            } else {
+                //none of the above - probably won't happen...
+                dropConstraints.setVisible(false);
+                dropReplacement.setVisible(false);
             }
         }
-        tc.removePropertyChangeListener(constraintsL);
+        invalidate();
+        revalidate();
+        repaint();
     }
 
-    /** @return Iterator of toolbars int row. */
-    Iterator<ToolbarConstraints> iterator () {
-        return toolbars.iterator();
-    }
-
-    /** Set a previous row.
-     * @param prev new previous row.
+    /**
+     * Hide dnd feedback (when the drag cursor moves out of this row).
      */
-    void setPrevRow (ToolbarRow prev) {
-        prevRow = prev;
+    void hideDropFeedback() {
+        dropConstraints.setVisible(false);
+        dropReplacement.setVisible(false);
+        dropContainter = null;
+        invalidate();
+        revalidate();
+        repaint();
     }
 
-    /** @return previous row. */
-    ToolbarRow getPrevRow () {
-        return prevRow;
-    }
-
-    /** Set a next row.
-     * @param next new next row.
+    /**
+     * Toolbar has been dropped into this row.
+     * @return New screen location of the dropped toolbar.
      */
-    void setNextRow (ToolbarRow next) {
-        nextRow = next;
+    Point drop() {
+        Point res = null;
+        if( null == dropContainter )
+            return res;
+        res = dropReplacement.getLocationOnScreen();
+        if( null != dragConstraints ) {
+            //the dropped toolbar was originally in this row, just reorder constraints
+            add( dragContainer );
+            constraints.remove(dragConstraints);
+            dragConstraints.setVisible(true);
+            dragConstraints.setAlign(dropConstraints.getAlign());
+            constraints.add( constraints.indexOf(dropConstraints), dragConstraints );
+        } else {
+            //we've got a new toolbar, create new constraints for it
+            ToolbarConstraints newConstraints = new ToolbarConstraints( dropContainter.getName(), dropConstraints.getAlign(), true, true);
+            add( dropContainter );
+            constraints.add( constraints.indexOf(dropConstraints), newConstraints );
+            name2constraint.put(newConstraints.getName(), newConstraints);
+        }
+
+        dropConstraints.setVisible(false);
+        dropReplacement.setVisible(false);
+        invalidate();
+        revalidate();
+        repaint();
+        dropContainter = null;
+        dragConstraints = null;
+        dragContainer = null;
+        return res;
     }
 
-    /** @return next row. */
-    ToolbarRow getNextRow () {
-        return nextRow;
-    }
-
-    /** @return preferred width of row. */
-    int getPrefWidth () {
-        if (toolbars.isEmpty())
-            return -1;
-        return ((ToolbarConstraints)toolbars.lastElement()).getPrefWidth();
-    }
-
-    /** @return true if row is empty */
-    boolean isEmpty () {
-        return toolbars.isEmpty();
-    }
-
-    /** @return number of toolbars int row. */
-    int toolbarCount () {
-        return toolbars.size();
-    }
-
-    /** Update bounds of all row toolbars. */
-    void updateBounds () {
-        Iterator it = toolbars.iterator();
-        ToolbarConstraints tc;
-        while (it.hasNext()) {
-            tc = (ToolbarConstraints)it.next();
-            tc.updateBounds();
+    /**
+     * D'n'd has finished successfully and the toolbar dragged from this row
+     * has been dropped elsewhere.
+     */
+    void dragSuccess() {
+        if( null != dragConstraints ) {
+            Component c = findComponent(dragConstraints.getName());
+            if( null != c )
+                remove( c );
+            constraints.remove(dragConstraints);
+            name2constraint.remove(dragConstraints.getName());
+            dragConstraints = null;
+            dragContainer = null;
         }
     }
 
-    /** Update position of rows below this one. Called when height of this row
-     * has changed.
+    /**
+     * D'n'd has been aborted (or dropped outside toolbar area) and the toolbar
+     * dragged from this row should return to its original location.
      */
-    private void updateRowsBelow () {
-        for (int i = toolbarConfig.rowIndex(this) + 1; i < toolbarConfig.getRowCount(); i++) {
-            toolbarConfig.getRow(i).updateBounds();
+    Point dragAbort() {
+        Point res = null;
+        if( null != dragConstraints ) {
+            add( dragContainer );
+            dragContainer.setVisible(true);
+            dragConstraints.setVisible(true);
+            invalidate();
+            revalidate();
+            repaint();
+            res = dragOriginalLocation;
+            dragConstraints = null;
+            dragContainer = null;
         }
+        return res;
     }
 
-    /** Switch two toolbars.
-     * @param left ToolbarConstraints
-     * @param right ToolbarConstraints
-     */
-    void switchBars (ToolbarConstraints left, ToolbarConstraints right) {
-        int leftIndex = toolbars.indexOf (left);
-        int rightIndex = toolbars.indexOf (right);
-        ToolbarConstraints leftPrev = null;
-        ToolbarConstraints rightNext = null;
-
-        try {
-            leftPrev = (ToolbarConstraints)toolbars.elementAt (leftIndex - 1);
-        } catch (ArrayIndexOutOfBoundsException e) { }
-        try {
-            rightNext = (ToolbarConstraints)toolbars.elementAt (rightIndex + 1);
-        } catch (ArrayIndexOutOfBoundsException e) { }
-
-        if (leftPrev != null)
-            leftPrev.removeNextBar (left);
-        left.removePrevBar (leftPrev);
-        left.removeNextBar (right);
-
-        right.removePrevBar (left);
-        right.removeNextBar (rightNext);
-        if (rightNext != null)
-            rightNext.removePrevBar (right);
-
-        if (leftPrev != null)
-            leftPrev.addNextBar (right);
-        left.addPrevBar (right);
-        left.addNextBar (rightNext);
-
-        right.addPrevBar (leftPrev);
-        right.addNextBar (left);
-        if (rightNext != null)
-            rightNext.addPrevBar (left);
-
-        toolbars.setElementAt (left, rightIndex);
-        toolbars.setElementAt (right, leftIndex);
+    Iterable<? extends ToolbarConstraints> getConstraints() {
+        ArrayList<ToolbarConstraints> res = new ArrayList<ToolbarConstraints>(constraints.size());
+        //filter out fake constraints for drop feedback
+        for( ToolbarConstraints tc : constraints ) {
+            if( null == name2constraint.get(tc.getName()) )
+                continue;
+            res.add( tc );
+        }
+        return res;
     }
 
-    /** Let's try switch toolbar left.
-     * @param ToolbarConstraints
+    /**
+     * @return The number of toolbars (including hidden ones) shown in this row.
      */
-    void trySwitchLeft (ToolbarConstraints tc) {
-        int index = toolbars.indexOf (tc);
-        if (index == 0)
-            return;
+    int countVisibleToolbars() {
+        int count = 0;
+        for( ToolbarConstraints tc : name2constraint.values() ) {
+            if( tc.isVisible() )
+                count++;
+        }
+        return count;
+    }
 
-        try {
-            ToolbarConstraints prev = (ToolbarConstraints)toolbars.elementAt (index - 1);
-            if (ToolbarConstraints.canSwitchLeft (tc.getPosition(), tc.getWidth(), prev.getPosition(), prev.getWidth())) {
-                switchBars (prev, tc);
+    /**
+     * @param align
+     * @return List of components that are stacked to the given side.
+     */
+    private List<Component> getContainers( ToolbarConstraints.Align align ) {
+        List<Component> res = new ArrayList<Component>(getComponentCount());
+        for( ToolbarConstraints tc : constraints ) {
+            if( !tc.isVisible() || tc.getAlign() != align )
+                continue;
+            Component c = findComponent( tc.getName() );
+            if( null != c )
+                res.add( c );
+        }
+        return res;
+    }
+
+    /**
+     * @param name
+     * @return Toolbar constraints associated with the given name.
+     */
+    private ToolbarConstraints findConstraints( String name ) {
+        for( ToolbarConstraints tc : constraints ) {
+            if( tc.getName().equals(name) )
+                return tc;
+        }
+        return null;
+    }
+
+    /**
+     * @param name
+     * @return Component associated with the given name.
+     */
+    private Component findComponent(String name) {
+        for( Component c : getComponents() ) {
+            if( name.equals(c.getName()) )
+                return c;
+        }
+        return null;
+    }
+
+    private List<ToolbarConstraints> getConstraints( ToolbarConstraints.Align align ) {
+        ArrayList<ToolbarConstraints> res = new ArrayList<ToolbarConstraints>(constraints.size());
+        for( ToolbarConstraints tc : constraints ) {
+            if( tc.getAlign() == align ) {
+                res.add( tc );
             }
-        } catch (ArrayIndexOutOfBoundsException e) { /* No left toolbar - it means tc is toolbar like Palette (:-)) */ }
+        }
+        return res;
     }
 
-    /** Let's try switch toolbar right.
-     * @param ToolbarConstraints
+    /**
+     * @return The bounds in screen coords of the free area between left and right toolbars.
      */
-    void trySwitchRight (ToolbarConstraints tc) {
-        int index = toolbars.indexOf (tc);
-
-        try {
-            ToolbarConstraints next = (ToolbarConstraints)toolbars.elementAt (index + 1);
-            if (ToolbarConstraints.canSwitchRight (tc.getPosition(), tc.getWidth(), next.getPosition(), next.getWidth())) {
-                switchBars (tc, next);
-                next.setPosition (tc.getPosition() - next.getWidth() - ToolbarLayout.HGAP);
+    Rectangle getFreeAreaBounds() {
+        int x1 = 0;
+        int x2 = getWidth();
+        for( int i=constraints.size()-1; i>=0; i-- ) {
+            ToolbarConstraints tc = constraints.get(i);
+            if( !tc.isVisible() || tc == dragConstraints)
+                continue;
+            if( tc.getAlign() == ToolbarConstraints.Align.left ) {
+                Component c = findComponent(tc.getName());
+                x1 = c.getLocation().x + c.getWidth();
+                break;
             }
-        } catch (ArrayIndexOutOfBoundsException e) { /* No right toolbar - it means tc is toolbar like Palette (:-)) */ }
+        }
+
+        for( int i=0; i<constraints.size(); i++ ) {
+            ToolbarConstraints tc = constraints.get(i);
+            if( !tc.isVisible() || tc == dragConstraints)
+                continue;
+            if( tc.getAlign() == ToolbarConstraints.Align.right ) {
+                Component c = findComponent(tc.getName());
+                x2 = c.getLocation().x;
+                break;
+            }
+        }
+        Rectangle res = new Rectangle( x1, 0, x2-x1, getHeight() );
+        Point location = res.getLocation();
+        if( isShowing() ) {
+            SwingUtilities.convertPointToScreen(location, this);
+            res.setLocation( location );
+        }
+        return res;
     }
-    
-    /** @return preferred height of this row. Computed as max from preferred
-     * heights of individual toolbars, but not bigger then BASIC_HEIGHT
+
+    /**
+     * Layout of a single toolbar row.
      */
-    int getPreferredHeight () {
-        ToolbarConstraints curConstr = null;
-        ToolbarPool pool = ToolbarPool.getDefault();
-        prefHeight = 0;
-        int curHeight = 0;
-        for (Iterator iter = toolbars.iterator(); iter.hasNext(); ) {
-            curConstr = (ToolbarConstraints)iter.next();
-            // compute only from one-row toolbars
-            if (curConstr.getRowCount() == 1) {
-                Toolbar curToolbar = pool.findToolbar(curConstr.getName());
-                // data may be out of sync, see ToolbarConfiguration.updateConfiguration
-                // for explanation
-                if (curToolbar != null) {
-                    curHeight = curToolbar.getPreferredSize().height;
-                    if (prefHeight < curHeight) {
-                        prefHeight = curHeight;
+    private class ToolbarLayout implements LayoutManager {
+
+        public ToolbarLayout() {
+        }
+
+        public void addLayoutComponent(String name, Component comp) {
+        }
+
+        public void removeLayoutComponent(Component comp) {
+        }
+
+        public Dimension preferredLayoutSize(Container parent) {
+            Dimension d = new Dimension( 0,0 );
+            d.height = getPreferredHeight();
+            for( Component c : getComponents() ) {
+                if( !c.isVisible() )
+                    continue;
+                d.width += c.getPreferredSize().width;
+            }
+            Insets borderInsets = parent.getInsets();
+            if( null != borderInsets ) {
+                d.height += borderInsets.top;
+                d.height += borderInsets.bottom;
+            }
+            return d;
+        }
+
+        public Dimension minimumLayoutSize(Container parent) {
+            Dimension d = new Dimension( 0,0 );
+            d.height = getMinimumHeight();
+            for( Component c : getComponents() ) {
+                if( !c.isVisible() )
+                    continue;
+                d.width += c.getMinimumSize().width;
+            }
+            Insets borderInsets = parent.getInsets();
+            if( null != borderInsets ) {
+                d.height += borderInsets.top;
+                d.height += borderInsets.bottom;
+            }
+            return d;
+        }
+
+        public void layoutContainer(Container parent) {
+            int w = parent.getWidth();
+            int h = parent.getHeight();
+            int top = 0;
+            Insets borderInsets = parent.getInsets();
+            if( null != borderInsets ) {
+                h -= borderInsets.top + borderInsets.bottom;
+                top = borderInsets.top;
+            }
+            Dimension prefSize = preferredLayoutSize(parent);
+
+            List<Component> leftBars = getContainers( ToolbarConstraints.Align.left );
+            List<Component> rightBars = getContainers(  ToolbarConstraints.Align.right );
+
+            Map<Component, Integer> bar2width = new HashMap<Component, Integer>(leftBars.size() + rightBars.size());
+            if( prefSize.width > w ) {
+                //we need more horizontal space than what's available, some bars will be truncated
+
+                //start truncating bars stacked to the right
+                int toCut = prefSize.width - w;
+                List<Component> reversed = new ArrayList<Component>(rightBars);
+                Collections.reverse(reversed);
+                for( Component c : reversed ) {
+                    int barPrefWidth = c.getPreferredSize().width;
+                    int barMinWidth = c.getMinimumSize().width;
+                    int availableToCut = barPrefWidth - barMinWidth;
+                    if( toCut <= availableToCut ) {
+                        bar2width.put( c, barPrefWidth-toCut );
+                        toCut = 0;
+                    } else {
+                        bar2width.put( c, barMinWidth );
+                        toCut -= availableToCut;
                     }
                 }
+
+                reversed = new ArrayList<Component>(leftBars);
+                Collections.reverse(reversed);
+                for( Component c : reversed ) {
+                    int barPrefWidth = c.getPreferredSize().width;
+                    int barMinWidth = c.getMinimumSize().width;
+                    int availableToCut = barPrefWidth - barMinWidth;
+                    if( toCut <= availableToCut ) {
+                        bar2width.put( c, barPrefWidth-toCut );
+                        toCut = 0;
+                    } else {
+                        bar2width.put( c, barMinWidth );
+                        toCut -= availableToCut;
+                    }
+                }
+            } else {
+                for( Component c : leftBars )
+                    bar2width.put(c, c.getPreferredSize().width);
+
+                for( Component c : rightBars )
+                    bar2width.put(c, c.getPreferredSize().width);
+            }
+
+            //layout left bars
+            int x = 0;
+            for( Component c : leftBars ) {
+                int barWidth = bar2width.get(c);
+                c.setBounds(x, top, barWidth, h);
+                x += barWidth;
+            }
+
+            x = w;
+            Collections.reverse(rightBars);
+            for( Component c : rightBars ) {
+                int barWidth = bar2width.get(c);
+                x -= barWidth;
+                c.setBounds(x, top, barWidth, h);
             }
         }
-        prefHeight = prefHeight <= 0 ? Toolbar.getBasicHeight() : Math.min(Toolbar.getBasicHeight(), prefHeight);
-        return prefHeight;
+
+        private int getPreferredHeight() {
+            int h = 0;
+            for( Component c : getComponents() ) {
+                if( !c.isVisible() )
+                    continue;
+                Dimension d = c.getPreferredSize();
+                if( d.height > h )
+                    h = d.height;
+            }
+            return h;
+        }
+
+        private int getMinimumHeight() {
+            int h = 0;
+            for( Component c : getComponents() ) {
+                if( !c.isVisible() )
+                    continue;
+                Dimension d = c.getMinimumSize();
+                if( d.height > h )
+                    h = d.height;
+            }
+            return h;
+        }
     }
-
-    /** Class to store row in xml format. */
-    static class WritableToolbarRow {
-        /** List of toolbars. */
-        Vector<ToolbarConstraints.WritableToolbar> toolbars;
-
-        /** Create new WritableToolbarRow.
-         */
-        public WritableToolbarRow () {
-            toolbars = new Vector<ToolbarConstraints.WritableToolbar>();
-        }
-
-        /** Create new WritableToolbarRow.
-         * @param row ToolbarRow
-         */
-        public WritableToolbarRow (ToolbarRow row) {
-            this();
-            initToolbars (row);
-        }
-
-        /** Init list of writable toolbars. */
-        void initToolbars (ToolbarRow r) {
-            Iterator<ToolbarConstraints> it = r.toolbars.iterator();
-            while (it.hasNext()) {
-                toolbars.addElement (new ToolbarConstraints.WritableToolbar (it.next()));
-            }
-        }
-
-        /** Add toolbar to list of writable toolbars.
-         * @param newTC new tested ToolbarConstraints
-         */
-        void addToolbar (ToolbarConstraints newTC) {
-            int index = 0;
-            Iterator it = toolbars.iterator();
-            ToolbarConstraints.WritableToolbar tc;
-            while (it.hasNext()) {
-                tc = (ToolbarConstraints.WritableToolbar)it.next();
-                if (newTC.getPosition() < tc.position)
-                    break;
-                index++;
-            }
-
-            toolbars.insertElementAt (new ToolbarConstraints.WritableToolbar (newTC), index);
-        }
-
-        /** @return true if row is empty */
-        boolean isEmpty () {
-            return toolbars.isEmpty();
-        }
-
-        /** @return ToolbarRow in xml format. */
-        public String toString () {
-            StringBuffer sb = new StringBuffer();
-
-            sb.append ("  <").append (ToolbarConfiguration.TAG_ROW).append (">\n"); // NOI18N
-            Iterator it = toolbars.iterator();
-            while (it.hasNext()) {
-                sb.append (it.next().toString());
-            }
-            sb.append ("  </").append (ToolbarConfiguration.TAG_ROW).append (">\n"); // NOI18N
-
-            return sb.toString();
-        }
-    } // end of class WritableToolbarRow
 } // end of class ToolbarRow
 

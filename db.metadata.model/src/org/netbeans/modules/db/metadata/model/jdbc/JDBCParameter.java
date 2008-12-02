@@ -50,22 +50,24 @@ import org.netbeans.modules.db.metadata.model.spi.ParameterImplementation;
  *
  * @author David Van Couvering
  */
-class JDBCParameter extends ParameterImplementation {
+public class JDBCParameter extends ParameterImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(JDBCParameter.class.getName());
     private final JDBCProcedure jdbcProcedure;
     private final Direction direction;
+    private final int ordinalPosition;
     private final JDBCValue value;
 
-    public JDBCParameter(JDBCProcedure jdbcProcedure, JDBCValue value, Direction direction) {
+    public JDBCParameter(JDBCProcedure jdbcProcedure, JDBCValue value, Direction direction, int ordinalPosition) {
         this.jdbcProcedure = jdbcProcedure;
         this.direction = direction;
         this.value = value;
+        this.ordinalPosition = ordinalPosition;
     }
 
     @Override
     public String toString() {
-        return "JDBCParameter[name='" + getName() + "']"; // NOI18N
+        return "JDBCParameter[" + value + ", direction=" + getDirection() + ", position=" + getOrdinalPosition() + "]"; // NOI18N
     }
 
     @Override
@@ -111,6 +113,11 @@ class JDBCParameter extends ParameterImplementation {
     @Override
     public Nullable getNullable() {
         return value.getNullable();
+    }
+
+    @Override
+    public int getOrdinalPosition() {
+        return ordinalPosition;
     }
 
 }

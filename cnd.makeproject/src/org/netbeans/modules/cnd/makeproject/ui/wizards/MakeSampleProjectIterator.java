@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
@@ -57,36 +56,35 @@ import org.openide.util.NbBundle;
 public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
 
     private static final long serialVersionUID = 4L;
-    
     private transient int index = 0;
-    private transient WizardDescriptor.Panel<WizardDescriptor>[] panels;
+    private transient WizardDescriptor.Panel<WizardDescriptor> panel;
     private transient WizardDescriptor wiz;
 
     static Object create() {
         return new MakeSampleProjectIterator();
     }
-    
+
     public MakeSampleProjectIterator() {
     }
-    
+
     public void addChangeListener(ChangeListener changeListener) {
     }
-    
+
     public void removeChangeListener(ChangeListener changeListener) {
     }
-    
+
     public WizardDescriptor.Panel<WizardDescriptor> current() {
-        return panels[index];
+        return panel;
     }
-    
+
     public boolean hasNext() {
-        return index < panels.length - 1;
+        return false;
     }
-    
+
     public boolean hasPrevious() {
-        return index > 0;
+        return false;
     }
-    
+
     public void initialize(TemplateWizard templateWizard) {
         int i = 0;
         this.wiz = templateWizard;
@@ -95,58 +93,54 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
             name = name.replaceAll(" ", ""); // NOI18N
         }
         templateWizard.putProperty("name", name); // NOI18N
-	String wizardTitle = getString("SAMPLE_PROJECT") + name; // NOI18N
-	String wizardTitleACSD = getString("SAMPLE_PROJECT_ACSD"); // NOI18N
-        
-        panels = new WizardDescriptor.Panel[1];
-        panels[i] = new PanelConfigureProject(name, -1, wizardTitle, wizardTitleACSD, false);
-        String[] steps = new String[panels.length];
-        for (i = 0; i < panels.length; i++) {
-            JComponent jc = (JComponent) panels[i].getComponent();
-            steps[i] = ((Name) panels[i]).getName();
-            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
-            jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
-        };
+        String wizardTitle = getString("SAMPLE_PROJECT") + name; // NOI18N
+        String wizardTitleACSD = getString("SAMPLE_PROJECT_ACSD"); // NOI18N
+
+        panel = new PanelConfigureProject(name, -1, wizardTitle, wizardTitleACSD, false);
+        String[] steps = new String[1];
+            JComponent jc = (JComponent) panel.getComponent();
+            steps[i] = ((Name) panel).getName();
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
     }
-    
+
     public void uninitialize(org.openide.loaders.TemplateWizard templateWizard) {
-        panels = null;
+        panel = null;
         index = -1;
-        this.wiz.putProperty("projdir",null); // NOI18N
-        this.wiz.putProperty("name",null); // NOI18N
+        this.wiz.putProperty("projdir", null); // NOI18N
+        this.wiz.putProperty("name", null); // NOI18N
     }
-    
+
     public Set<DataObject> instantiate(TemplateWizard templateWizard) throws IOException {
         File projectLocation = (File) wiz.getProperty("projdir"); // NOI18N
         String name = (String) wiz.getProperty("name"); // NOI18N
         return MakeSampleProjectGenerator.createProjectFromTemplate(templateWizard.getTemplate().getPrimaryFile(), projectLocation, name);
     }
-    
+
     public String name() {
         return current().getComponent().getName();
     }
-    
+
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
         index++;
     }
-    
+
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
         }
         index--;
     }
-
     /** Look up i18n strings here */
     private static ResourceBundle bundle;
+
     private static String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(NewMakeProjectWizardIterator.class);
-	}
-	return bundle.getString(s);
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(NewMakeProjectWizardIterator.class);
+        }
+        return bundle.getString(s);
     }
-    
 }

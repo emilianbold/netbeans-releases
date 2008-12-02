@@ -87,6 +87,19 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
     private ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
     
     private Map<CharSequence, Set<CsmUID<? extends CsmFriend>>> friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<? extends CsmFriend>>>();
+    
+    // empty stub
+    private static final DeclarationContainer EMPTY = new DeclarationContainer() {
+
+        @Override
+        public void put() {
+        }
+
+        @Override
+        public void putDeclaration(CsmOffsetableDeclaration decl) {
+        }
+
+    };
 
     /** Creates a new instance of ProjectDeclarations */
     public DeclarationContainer(ProjectBase project) {
@@ -103,6 +116,15 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
     public DeclarationContainer(DataInput input) throws IOException {
 	super(input);
 	read(input);
+    }
+
+    // only for EMPTY static field
+    private DeclarationContainer() {
+        super((org.netbeans.modules.cnd.repository.spi.Key)null);
+    }
+
+    public static DeclarationContainer empty() {
+        return EMPTY;
     }
 
     public void removeDeclaration(CsmDeclaration decl) {

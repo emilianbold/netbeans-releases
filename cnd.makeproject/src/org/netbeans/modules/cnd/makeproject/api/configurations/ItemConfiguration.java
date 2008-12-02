@@ -331,14 +331,14 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     public Object clone() {
         ItemConfiguration i = new ItemConfiguration(getConfiguration(), getItem());
 
-        i.setExcluded((BooleanConfiguration) getExcluded().clone());
+        i.setExcluded(getExcluded().clone());
         i.setTool(getTool());
 
-        i.setCustomToolConfiguration((CustomToolConfiguration) getCustomToolConfiguration().clone());
-        i.setCCompilerConfiguration((CCompilerConfiguration) getCCompilerConfiguration().clone());
-        i.setCCCompilerConfiguration((CCCompilerConfiguration) getCCCompilerConfiguration().clone());
-        i.setFortranCompilerConfiguration((FortranCompilerConfiguration) getFortranCompilerConfiguration().clone());
-        i.setAssemblerConfiguration((AssemblerConfiguration) getAssemblerConfiguration().clone());
+        i.setCustomToolConfiguration(getCustomToolConfiguration().clone());
+        i.setCCompilerConfiguration(getCCompilerConfiguration().clone());
+        i.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
+        i.setFortranCompilerConfiguration(getFortranCompilerConfiguration().clone());
+        i.setAssemblerConfiguration(getAssemblerConfiguration().clone());
         return i;
     }
 
@@ -404,7 +404,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         }
 
         public Object getValue() {
-            return new Integer(getTool());
+            return Integer.valueOf(getTool());
         }
 
         public void setValue(Object v) {
@@ -452,7 +452,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         }
     }
 
-    private static class StringRONodeProp extends PropertySupport {
+    private static class StringRONodeProp extends PropertySupport<String> {
 
         String value;
 
@@ -461,11 +461,11 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             this.value = value;
         }
 
-        public Object getValue() {
+        public String getValue() {
             return value;
         }
 
-        public void setValue(Object v) {
+        public void setValue(String v) {
         }
     }
 

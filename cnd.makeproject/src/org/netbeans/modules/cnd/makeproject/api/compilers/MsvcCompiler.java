@@ -44,6 +44,7 @@ import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.PredefinedMacro;
 
 /**
  *
@@ -93,11 +94,15 @@ public class MsvcCompiler extends GNUCCompiler {
            return systemPreprocessorSymbolsList;
        }
        systemPreprocessorSymbolsList = new PersistentList<String>();
-       systemPreprocessorSymbolsList.add("_MSC_VER=1500"); // NOI18N
-       if (getKind() == Tool.CCCompiler){
-            systemPreprocessorSymbolsList.add("__cplusplus=1"); // NOI18N
+       List<PredefinedMacro> pm = getDescriptor().getPredefinedMacros();
+       if (pm != null){
+           for(PredefinedMacro macro : pm) {
+               if (macro.getFlags() == null) {
+                   // TODO macro should be flag dependant
+                   systemPreprocessorSymbolsList.add(macro.getMacro());
+               }
+           }
        }
-       systemPreprocessorSymbolsList.add("__STDC__=1"); // NOI18N
        return systemPreprocessorSymbolsList;
    }
 

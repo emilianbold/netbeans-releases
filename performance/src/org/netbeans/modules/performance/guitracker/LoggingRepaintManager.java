@@ -353,7 +353,7 @@ public class LoggingRepaintManager extends RepaintManager {
             return "Accept paints from org.openide.text.QuietEditorPane";
         }
     };
-    
+
     /**
      * Log the action when dirty regions are painted.
      */

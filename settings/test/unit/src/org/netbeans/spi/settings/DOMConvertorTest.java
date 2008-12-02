@@ -91,8 +91,7 @@ public class DOMConvertorTest extends NbTestCase {
         
         // test reading
         FileObject fo = dobj.getPrimaryFile().copy(fs.getRoot(), dobj.getPrimaryFile().getName() + "_copy", "settings");
-        org.openide.cookies.InstanceCookie ic = (org.openide.cookies.InstanceCookie)
-            DataObject.find(fo).getCookie(org.openide.cookies.InstanceCookie.class);
+        org.openide.cookies.InstanceCookie ic = DataObject.find(fo).getCookie(org.openide.cookies.InstanceCookie.class);
         assertNotNull("missing InstanceCookie", ic);
         assertEquals(cs.getClass(), ic.instanceClass());
         
@@ -110,6 +109,39 @@ public class DOMConvertorTest extends NbTestCase {
         }
     }
     
+    public void testCreateSetting_XML() throws Exception {
+        try {
+        org.openide.filesystems.FileUtil.createFolder(fs.getRoot(), "testCreateSetting");
+        DataFolder folder = DataFolder.findFolder(fs.findResource("testCreateSetting"));
+
+        ComposedSetting cs = new ComposedSetting();
+        cs.b1 = new java.awt.Button();
+        cs.b2 = cs.b1;
+        cs.cs = new ComposedSetting();
+        cs.cs.b1 = new java.awt.Button();
+        DataObject dobj = InstanceDataObject.create(folder, "testCreateSetting", cs, null);
+
+        // test reading
+        FileObject fo = dobj.getPrimaryFile().copy(fs.getRoot(), dobj.getPrimaryFile().getName() + "_copy", "xml");
+        fo.getParent().setAttribute("recognizeXML", Boolean.TRUE);
+        org.openide.cookies.InstanceCookie ic = DataObject.find(fo).getCookie(org.openide.cookies.InstanceCookie.class);
+        assertNotNull("missing InstanceCookie", ic);
+        assertEquals(cs.getClass(), ic.instanceClass());
+
+        try {
+            ComposedSetting cs2 = (ComposedSetting) ic.instanceCreate();
+            assertEquals(cs2.b1, cs2.b2);
+        } catch (IOException e) {
+            System.err.println("File contents:\n");
+            FileUtil.copy(fo.getInputStream(), System.err);
+            throw e;
+        }
+        } catch (Exception ex) {
+            Logger.global.log(Level.WARNING, null, ex);
+            throw ex;
+        }
+    }
+
     public static class ComposedSetting {
         java.awt.Button b1;
         java.awt.Button b2;

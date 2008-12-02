@@ -217,6 +217,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     }
 
     private DelegatingInterceptor getInterceptor(FileEvent fe) {
+        if (master == null) return nullDelegatingInterceptor;
         FileObject fo = fe.getFile();
         if (fo == null) return nullDelegatingInterceptor;
         File file = FileUtil.toFile(fo);

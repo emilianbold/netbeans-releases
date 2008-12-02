@@ -15,6 +15,7 @@ import java.util.Date;
  * 
  * @version $Revision$ $Date$
  */
+@SuppressWarnings({"unchecked", "deprecation"}) //generated class
 public class ArchetypeDescriptor extends AbstractArchetypeDescriptor 
 implements java.io.Serializable
 {

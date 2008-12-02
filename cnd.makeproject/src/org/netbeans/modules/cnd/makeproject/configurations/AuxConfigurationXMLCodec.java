@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.util.Vector;
@@ -54,25 +53,24 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
     private String tag;
     private ConfigurationDescriptor configurationDescriptor;
-
-    private Vector decoders = new Vector();
+    private Vector<XMLDecoder> decoders = new Vector<XMLDecoder>();
 
     public AuxConfigurationXMLCodec(String tag,
-				    ConfigurationDescriptor configurationDescriptor) {
-	super(configurationDescriptor, false);
-	this.tag = tag;
-	this.configurationDescriptor = configurationDescriptor;
+            ConfigurationDescriptor configurationDescriptor) {
+        super(configurationDescriptor, false);
+        this.tag = tag;
+        this.configurationDescriptor = configurationDescriptor;
     }
 
     // interface XMLDecoder
     public String tag() {
-	return tag;
+        return tag;
     }
 
     // interface XMLDecoder
     public void start(Attributes atts) throws VersionException {
-	String what = "project configuration"; // NOI18N
-	checkVersion(atts, what, CURRENT_VERSION);
+        String what = "project configuration"; // NOI18N
+        checkVersion(atts, what, CURRENT_VERSION);
     }
 
     // interface XMLDecoder
@@ -81,27 +79,27 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
     // interface XMLDecoder
     public void startElement(String element, Attributes atts) {
-	if (element.equals(CONF_ELEMENT)) {
-	    String currentConfName = atts.getValue(0);
-	    Configurations confs = configurationDescriptor.getConfs();
-	    Configuration currentConf = confs.getConf(currentConfName);
+        if (element.equals(CONF_ELEMENT)) {
+            String currentConfName = atts.getValue(0);
+            Configurations confs = configurationDescriptor.getConfs();
+            Configuration currentConf = confs.getConf(currentConfName);
 
-	    // switch out old decoders
-	    for (int dx = 0; dx < decoders.size(); dx++) {
-		XMLDecoder decoder = (XMLDecoder) decoders.elementAt(dx);
-		deregisterXMLDecoder(decoder);
-	    }
+            // switch out old decoders
+            for (int dx = 0; dx < decoders.size(); dx++) {
+                XMLDecoder decoder = decoders.elementAt(dx);
+                deregisterXMLDecoder(decoder);
+            }
 
-	    // switch in new decoders
-	    ConfigurationAuxObject[] profileAuxObjects =
-		currentConf.getAuxObjects();
-	    decoders = new Vector();
-	    for (int i = 0; i < profileAuxObjects.length; i++) {
-		XMLDecoder newDecoder = profileAuxObjects[i].getXMLDecoder();
-		registerXMLDecoder(newDecoder);
-		decoders.add(newDecoder);
-	    }
-	}
+            // switch in new decoders
+            ConfigurationAuxObject[] profileAuxObjects =
+                    currentConf.getAuxObjects();
+            decoders = new Vector<XMLDecoder>();
+            for (int i = 0; i < profileAuxObjects.length; i++) {
+                XMLDecoder newDecoder = profileAuxObjects[i].getXMLDecoder();
+                registerXMLDecoder(newDecoder);
+                decoders.add(newDecoder);
+            }
+        }
     }
 
     // interface XMLDecoder

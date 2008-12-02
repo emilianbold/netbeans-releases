@@ -44,13 +44,14 @@ package org.netbeans.modules.web.core.palette.items;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ResourceBundle;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.web.core.palette.MsgHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,8 +60,11 @@ import org.openide.util.NbBundle;
  */
 public class SQLStmtCustomizer extends javax.swing.JPanel {
 
+    private static final ResourceBundle bundle = NbBundle.getBundle(SQLStmtCustomizer.class);
+
     private Dialog dialog = null;
     private DialogDescriptor descriptor = null;
+    private NotificationLineSupport statusLine;
     private boolean dialogOK = false;
     SQLStmt stmt;
     JTextComponent target;
@@ -70,7 +74,6 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
     private String stmtACSD;
     private String helpID;
     private boolean mayVariableNameBeEmpty;
-    private MsgHelper msgHelper;
 
     /**************************************************************************/
     public SQLStmtCustomizer(SQLStmt stmt, JTextComponent target,
@@ -95,7 +98,6 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         this.mayVariableNameBeEmpty = mayVariableNameBeEmpty;
         
         initComponents();
-        msgHelper = new MsgHelper(errorMessage, SQLStmtCustomizer.class);
 
         jTextField1.setText(stmt.getVariable());
         if (!mayVariableNameBeEmpty) {
@@ -121,12 +123,12 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
     /**************************************************************************/
     private void validateInput() {
         if (jTextField1.getText().trim().length() < 1) {
-            msgHelper.setInfoMsg("Error_Empty_VariableName"); // NOI18N
+            statusLine.setInformationMessage(bundle.getString("Error_Empty_VariableName")); // NOI18N
             descriptor.setValid(false);
             return;
         }
 
-        msgHelper.setErrorMsg(null);
+        statusLine.clearMessages();
         descriptor.setValid(true);
     }
     
@@ -135,7 +137,7 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         dialogOK = false;
         
         descriptor = new DialogDescriptor
-                (this, NbBundle.getMessage(SQLStmtCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,  // NOI18N
+                (this, bundle.getString("LBL_Customizer_InsertPrefix") + " " + displayName, true,  // NOI18N
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
@@ -144,9 +146,10 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
                             dialogOK = true;
                         }
                         dialog.dispose();
-		     }
-		 } 
-                );
+                     }
+                 }
+        );
+        statusLine = descriptor.createNotificationLineSupport();
         
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
@@ -190,7 +193,6 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         jTextArea1 = new javax.swing.JTextArea();
         jLabel3 = new javax.swing.JLabel();
         jTextField2 = new javax.swing.JTextField();
-        errorMessage = new javax.swing.JLabel();
 
         jFileChooser1.setCurrentDirectory(null);
 
@@ -282,24 +284,11 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jTextField2, gridBagConstraints);
 
-        errorMessage.setForeground(new java.awt.Color(255, 0, 0));
-        errorMessage.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        errorMessage.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(24, 12, 12, 12);
-        add(errorMessage, gridBagConstraints);
-
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SQLStmtCustomizer.class, "ACSD_Stmt_Dialog", displayName));
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel errorMessage;
     private javax.swing.JComboBox jComboBox2;
     private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JLabel jLabel1;

@@ -258,12 +258,10 @@ public class CustomTargetPanel extends MakefileWizardPanel {
         }
 
         if (extraLines > 0) {
-            warn(msgs, WARN_EXTRA_LINES_IN_TARGET,
-                    new Integer(extraLines).toString());
+            warn(msgs, WARN_EXTRA_LINES_IN_TARGET, String.valueOf(extraLines));
         }
         if (invalidLines > 0) {
-            warn(msgs, WARN_INVALID_LINES_IN_TARGET,
-                    new Integer(invalidLines).toString());
+            warn(msgs, WARN_INVALID_LINES_IN_TARGET, String.valueOf(invalidLines));
         }
     }
 

@@ -1,0 +1,5 @@
+Code completion result for source line:
+Colors::RED.byte|
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     bytes                                      String
+METHOD     bytesize                                   String

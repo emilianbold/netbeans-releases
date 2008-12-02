@@ -1,0 +1,857 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.php.editor.model.impl;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.Index.SearchScope;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.ClassConstantElement;
+import org.netbeans.modules.php.editor.model.ConstantElement;
+import org.netbeans.modules.php.editor.model.FieldElement;
+import org.netbeans.modules.php.editor.model.FunctionScope;
+import org.netbeans.modules.php.editor.model.IncludeElement;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelScope;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.Occurence;
+import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
+import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
+import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
+import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
+
+/**
+ * @author Radek Matous
+ */
+class OccurenceBuilder {
+
+    private Map<ASTNodeInfo<Scalar>, ConstantElement> constDeclarations;
+    private Map<ASTNodeInfo<Scalar>, Scope> constInvocations;
+    private Map<ASTNodeInfo<FunctionDeclaration>, FunctionScope> fncDeclarations;
+    private Map<ASTNodeInfo<MethodDeclaration>, MethodScope> methodDeclarations;
+    private Map<ASTNodeInfo<MethodInvocation>, Scope> methodInvocations;
+    private Map<ASTNodeInfo<Identifier>, ClassConstantElement> classConstantDeclarations;
+    private Map<ASTNodeInfo<FunctionInvocation>, Scope> fncInvocations;
+    private Map<ASTNodeInfo<StaticMethodInvocation>, Scope> staticMethodInvocations;
+    private Map<ASTNodeInfo<StaticFieldAccess>, Scope> staticFieldInvocations;
+    private Map<ASTNodeInfo<StaticConstantAccess>, Scope> staticConstantInvocations;
+    private Map<ClassDeclarationInfo, ClassScope> clasDeclarations;
+    private Map<InterfaceDeclarationInfo, InterfaceScope> ifaceDeclarations;
+    private HashMap<PhpDocTypeTagInfo, Scope> docTags;
+    private Map<ASTNodeInfo<ClassName>, Scope> clasNames;
+    private Map<ASTNodeInfo<ClassInstanceCreation>, Scope> clasInstanceCreations;
+    private Map<ASTNodeInfo<Identifier>, Scope> clasIDs;
+    private Map<ASTNodeInfo<Identifier>, Scope> ifaceIDs;
+    private Map<ASTNodeInfo<Variable>, Scope> variables;
+    private HashMap<IncludeInfo, IncludeElement> includes;
+    private HashMap<SingleFieldDeclarationInfo, FieldElementImpl> fldDeclarations;
+    private HashMap<ASTNodeInfo<FieldAccess>, Scope> fieldInvocations;
+    private int offset;
+    private ASTNodeInfo currentNodeInfo;
+
+    OccurenceBuilder(int offset) {
+        this.offset = offset;
+        this.constInvocations = new HashMap<ASTNodeInfo<Scalar>, Scope>();
+        this.constDeclarations = new HashMap<ASTNodeInfo<Scalar>, ConstantElement>();
+        this.includes = new HashMap<IncludeInfo, IncludeElement>();
+        this.fncInvocations = new HashMap<ASTNodeInfo<FunctionInvocation>, Scope>();
+        this.fncDeclarations = new HashMap<ASTNodeInfo<FunctionDeclaration>, FunctionScope>();
+        this.staticMethodInvocations = new HashMap<ASTNodeInfo<StaticMethodInvocation>, Scope>();
+        this.methodDeclarations = new HashMap<ASTNodeInfo<MethodDeclaration>, MethodScope>();
+        this.methodInvocations = new HashMap<ASTNodeInfo<MethodInvocation>, Scope>();
+        this.fieldInvocations = new HashMap<ASTNodeInfo<FieldAccess>, Scope>();
+        this.staticFieldInvocations = new HashMap<ASTNodeInfo<StaticFieldAccess>, Scope>();
+        this.staticConstantInvocations = new HashMap<ASTNodeInfo<StaticConstantAccess>, Scope>();
+        this.clasDeclarations = new HashMap<ClassDeclarationInfo, ClassScope>();
+        this.ifaceDeclarations = new HashMap<InterfaceDeclarationInfo, InterfaceScope>();
+        this.clasNames = new HashMap<ASTNodeInfo<ClassName>, Scope>();
+        this.clasInstanceCreations = new HashMap<ASTNodeInfo<ClassInstanceCreation>, Scope>();
+        this.clasIDs = new HashMap<ASTNodeInfo<Identifier>, Scope>();
+        this.ifaceIDs = new HashMap<ASTNodeInfo<Identifier>, Scope>();
+        this.classConstantDeclarations = new HashMap<ASTNodeInfo<Identifier>, ClassConstantElement>();
+        this.variables = new HashMap<ASTNodeInfo<Variable>, Scope>();
+        this.fldDeclarations = new HashMap<SingleFieldDeclarationInfo, FieldElementImpl>();
+        this.docTags = new HashMap<PhpDocTypeTagInfo, Scope>();
+    }
+
+    void prepare(FieldAccess fieldAccess, ScopeImpl scope) {
+        if (canBePrepared(fieldAccess, scope)) {
+            ASTNodeInfo<FieldAccess> node = ASTNodeInfo.create(fieldAccess);
+            fieldInvocations.put(node, scope);
+            setOccurenceAsCurrent(node);
+        }
+    }
+
+    void prepare(Include incl, IncludeElementImpl inclImpl) {
+        if (canBePrepared(incl, inclImpl)) {
+            IncludeInfo node = IncludeInfo.create(incl);
+            includes.put(node, inclImpl);
+            setOccurenceAsCurrent(node);
+        }
+    }
+
+    void prepare(MethodInvocation methodInvocation, Scope scope) {
+        if (canBePrepared(methodInvocation, scope)) {
+            ASTNodeInfo<MethodInvocation> node = ASTNodeInfo.create(methodInvocation);
+            methodInvocations.put(node, scope);
+            setOccurenceAsCurrent(node);
+        }
+    }
+
+    void prepare(SingleFieldDeclarationInfo info, FieldElementImpl fei) {
+        SingleFieldDeclaration node = info.getOriginalNode();
+        if (canBePrepared(node, fei)) {
+            fldDeclarations.put(info, fei);
+            setOccurenceAsCurrent(info);
+        }
+    }
+
+    void prepare(Variable variable, Scope scope) {
+        if (canBePrepared(variable, scope)) {
+            ASTNodeInfo<Variable> node = ASTNodeInfo.create(variable);
+            variables.put(node, scope);
+            setOccurenceAsCurrent(node);
+        }
+    }
+
+    void prepare(FunctionInvocation functionInvocation, Scope scope) {
+        if (canBePrepared(functionInvocation, scope)) {
+            ASTNodeInfo<FunctionInvocation> node = ASTNodeInfo.create(functionInvocation);
+            this.fncInvocations.put(node, scope);
+            setOccurenceAsCurrent(node);
+        }
+    }
+
+    void prepare(StaticMethodInvocation staticMethodInvocation, Scope scope) {
+        if (canBePrepared(staticMethodInvocation, scope)) {
+            ASTNodeInfo<StaticMethodInvocation> node = ASTNodeInfo.create(staticMethodInvocation);
+            this.staticMethodInvocations.put(node, scope);
+            setOccurenceAsCurrent(node);
+        }
+    }
+
+    void prepare(StaticFieldAccess staticFieldAccess, Scope scope) {
+        if (canBePrepared(staticFieldAccess, scope)) {
+            ASTNodeInfo<StaticFieldAccess> node = ASTNodeInfo.create(staticFieldAccess);
+            staticFieldInvocations.put(node, scope);
+            setOccurenceAsCurrent(node);
+        }
+    }
+
+    void prepare(StaticConstantAccess staticConstantAccess, Scope scope) {
+        if (canBePrepared(staticConstantAccess, scope)) {
+            ASTNodeInfo<StaticConstantAccess> node = ASTNodeInfo.create(staticConstantAccess);
+            staticConstantInvocations.put(node, scope);
+            setOccurenceAsCurrent(node);
+        }
+    }
+
+    void prepare(ClassName clsName, Scope scope) {
+        if (canBePrepared(clsName, scope)) {
+            ASTNodeInfo<ClassName> node = ASTNodeInfo.create(clsName);
+            clasNames.put(node, scope);
+            setOccurenceAsCurrent(node);
+        }
+    }
+
+    void prepare(Kind kind, Identifier node, Scope scope) {
+        ASTNodeInfo<Identifier> nodeInfo = ASTNodeInfo.create(kind, node);
+        if (canBePrepared(node, scope)) {
+            switch (nodeInfo.getKind()) {
+                case CLASS:
+                    clasIDs.put(nodeInfo, scope);
+                    break;
+                case IFACE:
+                    ifaceIDs.put(nodeInfo, scope);
+                    break;
+                default:
+                    throw new IllegalStateException();
+            }
+            setOccurenceAsCurrent(nodeInfo);
+        }
+    }
+
+    void prepare(ClassInstanceCreation node, Scope scope) {
+        ASTNodeInfo<ClassInstanceCreation> nodeInfo = ASTNodeInfo.create(node);
+        if (canBePrepared(node, scope)) {
+            clasInstanceCreations.put(nodeInfo, scope);
+            setOccurenceAsCurrent(nodeInfo);
+        }
+    }
+
+    void prepare(Kind kind, Scalar scalar, Scope scope) {
+        ASTNodeInfo<Scalar> nodeInfo = ASTNodeInfo.create(kind, scalar);
+        if (canBePrepared(scalar, scope)) {
+            constInvocations.put(nodeInfo, scope);
+            setOccurenceAsCurrent(nodeInfo);
+        }
+    }
+
+    void prepare(ASTNodeInfo<Scalar> nodeInfo, ConstantElement constantElement) {
+        Scalar scalar = nodeInfo.getOriginalNode();
+        if (canBePrepared(scalar, constantElement)) {
+            constDeclarations.put(nodeInfo, constantElement);
+            setOccurenceAsCurrent(nodeInfo);
+        }
+    }
+
+    void prepare(PHPDocTypeTag pHPDocTag, Scope scope) {
+        if (canBePrepared(pHPDocTag, scope)) {
+            List<? extends PhpDocTypeTagInfo> infos = PhpDocTypeTagInfo.create(pHPDocTag);
+            for (PhpDocTypeTagInfo typeTagInfo : infos) {
+                docTags.put(typeTagInfo, scope);
+                setOccurenceAsCurrent(typeTagInfo);
+            }
+        }
+    }
+
+    void prepare(ClassDeclaration classDeclaration, ClassScope scope) {
+        if (canBePrepared(classDeclaration, scope)) {
+            ClassDeclarationInfo node = ClassDeclarationInfo.create(classDeclaration);
+            clasDeclarations.put(node, scope);
+            prepare(Kind.CLASS, classDeclaration.getSuperClass(), scope);
+            List<Identifier> interfaes = classDeclaration.getInterfaes();
+            for (Identifier identifier : interfaes) {
+                prepare(Kind.IFACE, identifier, scope);
+            }
+            setOccurenceAsCurrent(node);
+        }
+    }
+
+    void prepare(InterfaceDeclaration interfaceDeclaration, InterfaceScope scope) {
+        if (canBePrepared(interfaceDeclaration, scope)) {
+            InterfaceDeclarationInfo node = InterfaceDeclarationInfo.create(interfaceDeclaration);
+            ifaceDeclarations.put(node, scope);
+            List<Identifier> interfaes = interfaceDeclaration.getInterfaes();
+            for (Identifier identifier : interfaes) {
+                prepare(Kind.IFACE, identifier, scope);
+            }
+            setOccurenceAsCurrent(node);
+        }
+    }
+
+    void prepare(FunctionDeclaration functionDeclaration, FunctionScope scope) {
+        if (canBePrepared(functionDeclaration, scope)) {
+            FunctionDeclarationInfo node = FunctionDeclarationInfo.create(functionDeclaration);
+            fncDeclarations.put(node, scope);
+            setOccurenceAsCurrent(node);
+        }
+    }
+
+    void prepare(MethodDeclaration methodDeclaration, MethodScope scope) {
+        if (canBePrepared(methodDeclaration, scope)) {
+            MethodDeclarationInfo node = MethodDeclarationInfo.create(methodDeclaration);
+            methodDeclarations.put(node, scope);
+            setOccurenceAsCurrent(node);
+        }
+    }
+
+    void prepare(ClassConstantDeclarationInfo constantNodeInfo, ClassConstantElement scope) {
+        if (constantNodeInfo != null && canBePrepared(constantNodeInfo.getOriginalNode(), scope)) {
+            classConstantDeclarations.put(constantNodeInfo, scope);
+            setOccurenceAsCurrent(constantNodeInfo);
+        }
+    }
+
+    void prepare(ASTNodeInfo nodeInfo) {
+        setOccurenceAsCurrent(nodeInfo);
+    }
+
+    private void buildFieldDeclarations(String queryName, FileScope fileScope) {
+        //queryName = queryName.startsWith("$") ? queryName : ("$"+queryName);
+        for (Entry<SingleFieldDeclarationInfo, FieldElementImpl> entry : fldDeclarations.entrySet()) {
+            SingleFieldDeclarationInfo nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+            }
+        }
+    }
+    
+    private void buildFieldInvocations(String queryName, FileScope fileScope) {
+        Map<String, List<FieldElementImpl>> unknownFieldNameCache = new HashMap<String, List<FieldElementImpl>>();
+        for (Entry<ASTNodeInfo<FieldAccess>, Scope> entry : fieldInvocations.entrySet()) {
+            ASTNodeInfo<FieldAccess> nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                //List<? extends ModelElement> elems = CachedModelSupport.getInheritedFields(queryName, fileScope);
+                List<? extends TypeScope> types = getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode());
+                List<ClassScope> classes = new ArrayList<ClassScope>();
+                for (TypeScope type : types) {
+                    if (type instanceof ClassScope) {
+                        classes.add((ClassScope) type);
+                    }
+                }
+                List<ModelElement> allFields = new ArrayList<ModelElement>();
+                if (!classes.isEmpty()) {
+                    for (ClassScope clz : classes) {
+                        List<? extends ModelElement> fields = CachedModelSupport.getInheritedFields(
+                                clz, queryName, fileScope);
+                        //TODO: if not found, then lookup inherited
+                        //use ClassScope.getTopInheritedMethods(final String queryName, final int... modifiers)
+                        allFields.addAll(fields);
+                        if (allFields.isEmpty()) {
+                            fileScope.addOccurence(new OccurenceImpl<ModelElement>(clz, nodeInfo.getRange(), fileScope));
+                        }
+                    }
+                } else {
+                    List<FieldElementImpl> name2Fields = unknownFieldNameCache.get(queryName);
+                    if (name2Fields == null) {
+                        name2Fields = name2Fields(fileScope, queryName);
+                        if (!name2Fields.isEmpty()) {
+                            unknownFieldNameCache.put(queryName, name2Fields);
+                        }
+                    }                    
+                    if (!name2Fields.isEmpty()) {
+                        @SuppressWarnings("unchecked")
+                        Occurence<? extends FieldElement> occurenceImpl = new OccurenceImpl(name2Fields, nodeInfo.getRange(), fileScope);
+                        fileScope.addOccurence(occurenceImpl);
+                    }
+                }
+                if (!allFields.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(allFields, nodeInfo.getRange(), fileScope));
+                }
+            }
+        }
+    }
+
+    private void buildMethodDeclarations(String queryName, FileScope fileScope) {
+        for (Entry<ASTNodeInfo<MethodDeclaration>, MethodScope> entry : methodDeclarations.entrySet()) {
+            ASTNodeInfo<MethodDeclaration> nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+            }
+        }
+    }
+
+    private void buildMethodInvocations(String queryName, FileScope fileScope) {
+        Map<String, List<MethodScopeImpl>> unknownMethodNameCache = new HashMap<String, List<MethodScopeImpl>>();
+        for (Entry<ASTNodeInfo<MethodInvocation>, Scope> entry : methodInvocations.entrySet()) {
+            ASTNodeInfo<MethodInvocation> nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                List<? extends TypeScope> types = getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode());
+                List<ClassScope> classes = new ArrayList<ClassScope>();
+                for (TypeScope type : types) {
+                    if (type instanceof ClassScope) {
+                        classes.add((ClassScope) type);
+                    }
+                }
+                List<ModelElement> allMethods = new ArrayList<ModelElement>();
+                if (!classes.isEmpty()) {
+                    for (ClassScope clz : classes) {
+                        List<? extends ModelElement> methods = CachedModelSupport.getInheritedMethods(
+                                clz, queryName, fileScope);
+                        //TODO: if not found, then lookup inherited
+                        //use ClassScope.getTopInheritedMethods(final String queryName, final int... modifiers)
+                        allMethods.addAll(methods);
+                    }
+                } else {
+                    List<MethodScopeImpl> name2Methods = unknownMethodNameCache.get(queryName);
+                    if (name2Methods == null) {
+                        name2Methods = name2Methods(fileScope, queryName);
+                        if (!name2Methods.isEmpty()) {
+                            unknownMethodNameCache.put(queryName, name2Methods);
+                        }
+                    }
+                    if (!name2Methods.isEmpty()) {
+                        @SuppressWarnings("unchecked")
+                        Occurence<? extends MethodScope> occurenceImpl = new OccurenceImpl(name2Methods, nodeInfo.getRange(), fileScope);
+                        fileScope.addOccurence(occurenceImpl);
+                    }
+                }
+                if (!allMethods.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(allMethods, nodeInfo.getRange(), fileScope));
+                }
+            }
+        }
+    }
+
+    private void buildIncludes(String queryName, FileScope fileScope) {
+        for (Entry<IncludeInfo, IncludeElement> entry : includes.entrySet()) {
+            IncludeInfo nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+            }
+        }
+    }
+
+    private void buildConstantInvocations(String queryName, FileScope fileScope) {
+        for (Entry<ASTNodeInfo<Scalar>, Scope> entry : constInvocations.entrySet()) {
+            ASTNodeInfo<Scalar> nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                List<? extends ModelElement> elems = CachedModelSupport.getConstants(queryName, fileScope);
+                if (!elems.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                }
+            }
+        }
+    }
+
+    private void buildConstantDeclarations(String queryName, FileScope fileScope) {
+        for (Entry<ASTNodeInfo<Scalar>, ConstantElement> entry : constDeclarations.entrySet()) {
+            ASTNodeInfo<Scalar> nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+            }
+
+        }
+    }
+
+    private void buildStaticConstantDeclarations(String queryName, FileScope fileScope) {
+        for (Entry<ASTNodeInfo<Identifier>, ClassConstantElement> entry : classConstantDeclarations.entrySet()) {
+            ASTNodeInfo<Identifier> nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+            }
+
+        }
+    }
+
+    private void buildStaticMethodInvocations(String queryName, FileScope fileScope) {
+        for (Entry<ASTNodeInfo<StaticMethodInvocation>, Scope> entry : staticMethodInvocations.entrySet()) {
+            ASTNodeInfo<StaticMethodInvocation> nodeInfo = entry.getKey();
+            String methodName = nodeInfo.getName();
+            if (queryName.equalsIgnoreCase(methodName)) {
+                String originalClzName = nodeInfo.getOriginalNode().getClassName().getName();
+                boolean isParent = originalClzName.equals("parent");//NOI18N
+                List<ModelElement> allMethods = new ArrayList<ModelElement>();
+                List<? extends ClassScope> classes = getStaticClassName(entry.getValue(), originalClzName);
+                for (ClassScope clz : classes) {
+                    List<? extends ModelElement> methods = null;
+                    if (isParent) {
+                        methods = CachedModelSupport.getInheritedMethods(clz, methodName, fileScope);
+                    } else {
+                        methods = CachedModelSupport.getInheritedMethods(clz, methodName, fileScope, PhpModifiers.STATIC);
+                    }
+//TODO: if not found, then lookup inherited
+//use ClassScope.getTopInheritedMethods(final String queryName, final int... modifiers)
+
+                    allMethods.addAll(methods);
+                }
+
+                if (!allMethods.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(allMethods, nodeInfo.getRange(), fileScope));
+                }
+
+            }
+        }
+    }
+
+    private void buildStaticFieldInvocations(String queryName, FileScope fileScope) {
+        for (Entry<ASTNodeInfo<StaticFieldAccess>, Scope> entry : staticFieldInvocations.entrySet()) {
+            ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                StaticFieldAccess sfa = nodeInfo.getOriginalNode();
+                List<ModelElement> allFields = new ArrayList<ModelElement>();
+                List<? extends ClassScope> classes = getStaticClassName(entry.getValue(), sfa.getClassName().getName());
+                for (ClassScope clz : classes) {
+                    List<? extends ModelElement> fields = clz.getInheritedFields(nodeInfo.getName());
+                    //TODO: if not found, then lookup inherited
+                    //use ClassScope.getTopInheritedFields(final String queryName, final int... modifiers)
+                    allFields.addAll(fields);
+                }
+
+                if (!allFields.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(allFields, nodeInfo.getRange(), fileScope));
+                }
+
+            }
+        }
+    }
+
+    private void buildStaticConstantInvocations(String queryName, FileScope fileScope) {
+        for (Entry<ASTNodeInfo<StaticConstantAccess>, Scope> entry : staticConstantInvocations.entrySet()) {
+            ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                StaticConstantAccess sca = nodeInfo.getOriginalNode();
+                List<ModelElement> allConstants = new ArrayList<ModelElement>();
+                List<? extends ClassScope> classes = getStaticClassName(entry.getValue(), sca.getClassName().getName());
+                for (ClassScope clz : classes) {
+                    List<? extends ModelElement> constants = clz.getInheritedConstants(queryName);
+                    //TODO: if not found, then lookup inherited
+                    //use ClassScope.getTopInheritedFields(final String queryName, final int... modifiers)
+                    allConstants.addAll(constants);
+                }
+
+                if (!allConstants.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(allConstants, nodeInfo.getRange(), fileScope));
+                }
+
+            }
+        }
+    }
+
+    private void buildDocTags(String queryName, FileScope fileScope) {
+        for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
+            PhpDocTypeTagInfo nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                List<? extends ModelElement> elems = null;
+                elems = CachedModelSupport.getClasses(nodeInfo.getName(), fileScope);
+                if (elems != null && !elems.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                }
+
+            }
+        }
+    }
+
+    private void buildClassInstanceCreation(String queryName, FileScope fileScope) {
+        for (Entry<ASTNodeInfo<ClassInstanceCreation>, Scope> entry : clasInstanceCreations.entrySet()) {
+            ASTNodeInfo<ClassInstanceCreation> nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                List<? extends ClassScope> elems = CachedModelSupport.getClasses(queryName, fileScope);
+                List<MethodScope> methods = new ArrayList<MethodScope>();
+                for (ClassScope clz : elems) {
+                    methods.addAll(CachedModelSupport.getMethods(clz, "__construct", fileScope));//NOI18N
+                }
+                if (!methods.isEmpty()) {
+                    fileScope.addOccurence(ModelUtils.getFirst(elems), new OccurenceImpl<ModelElement>(methods, nodeInfo.getRange(), fileScope));
+                } else if (!elems.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                }
+
+            }
+        }
+    }
+
+    private void buildClassNames(String queryName, FileScope fileScope) {
+        for (Entry<ASTNodeInfo<ClassName>, Scope> entry : clasNames.entrySet()) {
+            ASTNodeInfo<ClassName> nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                List<? extends ModelElement> elems = CachedModelSupport.getClasses(queryName, fileScope);
+                if (!elems.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                }
+
+            }
+        }
+    }
+
+    private void buildInterfaceIDs(String queryName, FileScope fileScope) {
+        for (Entry<ASTNodeInfo<Identifier>, Scope> entry : ifaceIDs.entrySet()) {
+            ASTNodeInfo<Identifier> nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                List<? extends ModelElement> elems = CachedModelSupport.getTypes(queryName, fileScope);
+                if (!elems.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                }
+
+            }
+        }
+    }
+
+    private void buildClassIDs(String queryName, FileScope fileScope) {
+        for (Entry<ASTNodeInfo<Identifier>, Scope> entry : clasIDs.entrySet()) {
+            ASTNodeInfo<Identifier> nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                List<? extends ModelElement> elems = CachedModelSupport.getClasses(queryName, fileScope);
+                if (!elems.isEmpty()) {
+
+                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                }
+
+            }
+        }
+    }
+
+    private void buildInterfaceDeclarations(String queryName, FileScope fileScope) {
+        for (Entry<InterfaceDeclarationInfo, InterfaceScope> entry : ifaceDeclarations.entrySet()) {
+            InterfaceDeclarationInfo nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+            }
+
+        }
+    }
+
+    private void buildClassDeclarations(String queryName, FileScope fileScope) {
+        for (Entry<ClassDeclarationInfo, ClassScope> entry : clasDeclarations.entrySet()) {
+            ClassDeclarationInfo nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+            }
+
+        }
+    }
+
+    private void buildFunctionDeclarations(String queryName, FileScope fileScope) {
+        for (Entry<ASTNodeInfo<FunctionDeclaration>, FunctionScope> entry : fncDeclarations.entrySet()) {
+            ASTNodeInfo<FunctionDeclaration> nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                fileScope.addOccurence(new OccurenceImpl<ModelElement>(entry.getValue(), nodeInfo.getRange(), fileScope));
+            }
+
+        }
+    }
+
+    private void buildFunctionInvocations(String queryName, FileScope fileScope) {
+        for (Entry<ASTNodeInfo<FunctionInvocation>, Scope> entry : fncInvocations.entrySet()) {
+            ASTNodeInfo<FunctionInvocation> nodeInfo = entry.getKey();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                List<? extends ModelElement> elems = CachedModelSupport.getFunctions(queryName, fileScope);
+                if (!elems.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                }
+
+            }
+        }
+    }
+
+    private void buildVariables(String queryName, FileScope fileScope) {
+        for (Entry<ASTNodeInfo<Variable>, Scope> entry : variables.entrySet()) {
+            ASTNodeInfo<Variable> nodeInfo = entry.getKey();
+            String name = nodeInfo.getName();
+            if (queryName.equalsIgnoreCase(nodeInfo.getName())) {
+                VariableScope varScope = (VariableScope) entry.getValue();
+                List<? extends ModelElement> elems = varScope.getVariables(name);
+                if (elems.isEmpty()) {
+                    elems = fileScope.getVariables(name);
+                }
+
+                if (!elems.isEmpty()) {
+                    fileScope.addOccurence(new OccurenceImpl<ModelElement>(elems, nodeInfo.getRange(), fileScope));
+                }
+
+            }
+        }
+    }
+
+    void build(FileScope fileScope) {
+        if (currentNodeInfo != null) {
+            ASTNodeInfo.Kind kind = currentNodeInfo.getKind();
+            String name = currentNodeInfo.getName();
+            currentNodeInfo =
+                    null;
+            switch (kind) {
+                case FUNCTION:
+                    buildFunctionInvocations(name, fileScope);
+                    buildFunctionDeclarations(name, fileScope);
+                    break;
+
+                case VARIABLE:
+                    buildVariables(name, fileScope);
+                    break;
+
+                case STATIC_METHOD:
+                    buildStaticMethodInvocations(name, fileScope);
+                    buildMethodDeclarations(name, fileScope);
+                    break;
+
+                case FIELD:
+                case STATIC_FIELD:
+                    buildFieldDeclarations(name, fileScope);
+                    buildFieldInvocations(name, fileScope);
+                    buildStaticFieldInvocations(name, fileScope);
+                    break;
+
+                case CONSTANT:
+                    buildConstantInvocations(name, fileScope);
+                    buildConstantDeclarations(name, fileScope);
+                    break;
+
+                case CLASS_CONSTANT:
+                case STATIC_CLASS_CONSTANT:
+                    buildStaticConstantInvocations(name, fileScope);
+                    buildStaticConstantDeclarations(name, fileScope);
+                    break;
+
+                case CLASS_INSTANCE_CREATION:
+                case CLASS:
+                case IFACE:
+                    buildClassNames(name, fileScope);
+                    buildClassIDs(name, fileScope);
+                    buildClassDeclarations(name, fileScope);
+                    buildDocTags(name, fileScope);
+                    buildClassInstanceCreation(name, fileScope);
+                    buildInterfaceIDs(name, fileScope);
+                    buildInterfaceDeclarations(name, fileScope);
+                    break;
+                case METHOD:
+                    buildMethodInvocations(name, fileScope);
+                    buildMethodDeclarations(name, fileScope);
+                    break;
+                case INCLUDE:
+                    buildIncludes(name, fileScope);
+                    break;
+                default:
+                    throw new IllegalStateException();
+
+            }
+
+
+        }
+    }
+
+    private boolean canBePrepared(ASTNode node, ModelElement scope) {
+        return getOffset() >= 0 && scope != null && node != null;
+    }
+
+    private void setOccurenceAsCurrent(ASTNodeInfo nodeInfo) {
+        OffsetRange range = nodeInfo.getRange();
+        if (range.containsInclusive(getOffset())) {
+            currentNodeInfo = nodeInfo;
+        }
+
+    }
+
+    private static List<? extends TypeScope> getClassName(VariableScope scp, VariableBase varBase) {
+        String vartype = VariousUtils.extractTypeFroVariableBase(varBase, new HashMap<String, VariableNameImpl>());
+        ModelScope modelScope = ModelUtils.getModelScope(scp);
+        return VariousUtils.getType(modelScope, scp, vartype, varBase.getStartOffset(), true);
+    }
+
+    private static List<? extends ClassScope> getStaticClassName(Scope inScope, String staticClzName) {
+        if (inScope instanceof MethodScopeImpl) {
+            MethodScopeImpl msi = (MethodScopeImpl) inScope;
+            ClassScope csi = (ClassScope) msi.getInScope();
+            if ("self".equals(staticClzName)) {
+                return Collections.singletonList(csi);
+            } else if ("parent".equals(staticClzName)) {
+                return csi.getSuperClasses();
+            }
+
+        }
+        return CachedModelSupport.getClasses(staticClzName, inScope);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<MethodScopeImpl> methods4TypeNames(FileScope fileScope, Set<String> typeNamesForIdentifier, final String name) {
+        List<ClassScope> classes = new ArrayList<ClassScope>();
+        for (Iterator<String> it = typeNamesForIdentifier.iterator(); it.hasNext();) {
+            String type = it.next();
+            classes.addAll(CachedModelSupport.getClasses(type, fileScope));
+        }
+        final Set<MethodScopeImpl> methodSet = new HashSet<MethodScopeImpl>();
+        for (ClassScope classScope : classes) {
+            methodSet.addAll((List<MethodScopeImpl>) CachedModelSupport.getInheritedMethods(classScope, name, fileScope));
+        }
+
+        final List<MethodScopeImpl> methods = new ArrayList<MethodScopeImpl>(methodSet);
+        return methods;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<FieldElementImpl> flds4TypeNames(FileScope fileScope, Set<String> typeNamesForIdentifier, final String name) {
+        List<ClassScope> classes = new ArrayList<ClassScope>();
+        for (Iterator<String> it = typeNamesForIdentifier.iterator(); it.hasNext();) {
+            String type = it.next();
+            classes.addAll(CachedModelSupport.getClasses(type, fileScope));
+        }
+
+        final Set<FieldElementImpl> fldSet = new HashSet<FieldElementImpl>();
+        for (ClassScope classScope : classes) {
+            fldSet.addAll((List<FieldElementImpl>) CachedModelSupport.getInheritedFields(classScope, name, fileScope, PHPIndex.ANY_ATTR));
+        }
+
+        final List<FieldElementImpl> fields = new ArrayList<FieldElementImpl>(fldSet);
+        return fields;
+    }
+
+    private static List<MethodScopeImpl> name2Methods(FileScope fileScope, final String name) {
+        IndexScopeImpl indexScope = fileScope.getIndexScope();
+        PHPIndex index = indexScope.getIndex();
+        Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(name, null, NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(SearchScope.SOURCE));
+        List<MethodScopeImpl> methods = Collections.emptyList();
+        if (typeNamesForIdentifier.size() > 0) {
+            methods = methods4TypeNames(fileScope, typeNamesForIdentifier, name);
+        }
+
+        return methods;
+    }
+
+    private static List<FieldElementImpl> name2Fields(FileScope fileScope, String name) {
+        IndexScopeImpl indexScope = fileScope.getIndexScope();
+        PHPIndex index = indexScope.getIndex();
+        Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier((name.startsWith("$")) ? name.substring(1) : name,
+                null, NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(SearchScope.SOURCE));
+        List<FieldElementImpl> fields = Collections.emptyList();
+        if (typeNamesForIdentifier.size() > 0) {
+            fields = flds4TypeNames(fileScope, typeNamesForIdentifier, name);
+        }
+        return fields;
+    }
+
+    /**
+     * @return the offset
+     */
+    int getOffset() {
+        return offset;
+    }
+}
