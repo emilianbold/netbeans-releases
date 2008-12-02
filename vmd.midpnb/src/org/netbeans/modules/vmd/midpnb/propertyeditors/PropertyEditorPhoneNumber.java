@@ -41,6 +41,7 @@
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -77,8 +78,6 @@ public class PropertyEditorPhoneNumber extends PropertyEditorUserCode implements
         super(ucLabel);
         this.label = label;
         this.parentTypeID = parentTypeID;
-        initComponents();
-        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     @Override
@@ -155,6 +154,17 @@ public class PropertyEditorPhoneNumber extends PropertyEditorUserCode implements
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
 
+    @Override
+    public Component getCustomEditor() {
+        if (customEditor == null) {
+            initComponents();
+            initElements(Collections.<PropertyEditorElement>singleton(this));
+        }
+        return super.getCustomEditor();
+    }
+
+
+
     private void saveValue(String text) {
         text = text.replaceAll("[^0-9]", ""); // NOI18N
         super.setValue(MidpTypes.createStringValue(text));
@@ -166,7 +176,6 @@ public class PropertyEditorPhoneNumber extends PropertyEditorUserCode implements
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
-
     }
 
     @Override
