@@ -291,7 +291,12 @@ public class WorkingCopy extends CompilationController {
                 return null;
             }
             Tree repl = changeMap.remove(tree);
-            Tree newRepl = super.translate(repl != null ? repl : tree);
+            Tree newRepl;
+            if (repl != null) {
+                newRepl = translate(repl);
+            } else {
+                newRepl = super.translate(tree);
+            }
             return newRepl;
         }
     }
