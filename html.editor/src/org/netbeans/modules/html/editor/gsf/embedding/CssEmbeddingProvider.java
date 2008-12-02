@@ -106,7 +106,12 @@ public class CssEmbeddingProvider extends EmbeddingProvider {
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         if (sourceMimeType.equals(snapshot.getMimeType())) {
-            return Collections.singletonList(Embedding.create(translator.getEmbeddings(snapshot)));
+            List<Embedding> embeddings = translator.getEmbeddings(snapshot);
+            if(embeddings.isEmpty()) {
+                return Collections.EMPTY_LIST;
+            } else {
+                return Collections.singletonList(Embedding.create(embeddings));
+            }
         } else {
             LOG.warning("Unexpected snapshot type: '" + snapshot.getMimeType() + "'; expecting '" + sourceMimeType + "'"); //NOI18N
             return Collections.<Embedding>emptyList();
