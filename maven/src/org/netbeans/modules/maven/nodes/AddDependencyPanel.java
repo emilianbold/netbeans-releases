@@ -243,15 +243,15 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
 
     private void checkValidState() {
         String gId = txtGroupId.getText().trim();
-        if (gId.length() == 0) {
+        if (gId.length() <= 0) {
             gId = null;
         }
         String aId = txtArtifactId.getText().trim();
-        if (aId.length() == 0) {
+        if (aId.length() <= 0) {
             aId = null;
         }
         String version = txtVersion.getText().trim();
-        if (version.length() == 0) {
+        if (version.length() <= 0) {
             version = null;
         }
 
@@ -273,15 +273,15 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             }
         }
 
-        if (gId.length() <= 0) {
+        if (gId == null) {
             okButton.setEnabled(false);
             return;
         }
-        if (aId.length() <= 0) {
+        if (aId == null) {
             okButton.setEnabled(false);
             return;
         }
-        if (version.length() <= 0 && !dmDefined) {
+        if (version == null && !dmDefined) {
             okButton.setEnabled(false);
             return;
         }
@@ -634,7 +634,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     }
 
     /**
-     * @return 0 -> no conflicts, 1 -> conflict in version, 2 -> conflict in scope 
+     * @return 0 -> no conflicts, 1 -> conflict in version, 2 -> conflict in scope
      */
     private static int findConflict (List<Dependency> deps, String groupId, String artifactId, String version, String scope) {
         if (deps == null) {
@@ -698,8 +698,10 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     public void actionPerformed(ActionEvent e) {
                         if (curTypedText.length() < 3) {
                             depPanel.searchField.setForeground(Color.RED);
+                            depPanel.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_QueryTooShort"));
                         } else {
                             depPanel.searchField.setForeground(defSearchC);
+                            depPanel.nls.clearMessages();
                             find(curTypedText);
                         }
                     }
