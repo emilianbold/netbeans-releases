@@ -380,10 +380,6 @@ public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserC
 
     // invoke in the write transaction
     private void initInstanceNameForComponent(DesignComponent component) {
-//        //TODO This is extremely incorrect! Because of stupid API in some cases UI of custom editor needs to be create it befor it's time!!
-//        if (perElement == null) {
-//            getCustomEditor();
-//        }
         String nameToBeCreated = perElement.getResourceNameSuggestion();
         PropertyValue instanceName = InstanceNameResolver.createFromSuggested(component, nameToBeCreated);
         component.writeProperty(ClassCD.PROP_INSTANCE_NAME, instanceName);
