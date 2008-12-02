@@ -82,27 +82,14 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
     private UniversalGraph<N, E> graph;
     private List<LayoutNode> nodes;
     private Collection<N> nodesSubset = null;
-    private Collection<N> nodesToLayout = null;
     private HashMap<N, LayoutNode> vertexToLayoutNode;
     private Set<E> reversedLinks;
     private List<LayoutNode>[] layers;
     private boolean animate = false;
     private boolean invert = true;
-    private ContainerAdapter containerAdapter;
 
-
-    /**
-     * 
-     * @param scene
-     * @param animate
-     * @param inverted
-     * @param xOffset
-     * @param yOffset
-     */
-    public HierarchicalLayout(GraphScene<N, E> scene,ContainerAdapter contAdapter, boolean animate,
-            boolean inverted, int xOffset, int yOffset) {
-
-        this.containerAdapter=contAdapter;
+    public HierarchicalLayout(GraphScene<N, E> scene, boolean animate,
+            boolean inverted, int xOffset, int layerOffset) {
 
         dummyWidth = DUMMY_WIDTH;
 
@@ -116,8 +103,8 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
             this.xOffset = X_OFFSET;
         }
 
-        if (yOffset > 0) {
-            this.layerOffset = yOffset;
+        if (layerOffset > 0) {
+            this.layerOffset = layerOffset;
         } else {
             this.layerOffset = LAYER_OFFSET;
         }
@@ -125,59 +112,27 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
         this.invert = inverted;
     }
 
-    public HierarchicalLayout(GraphScene<N, E> scene,ContainerAdapter cA, boolean animate, boolean inverted) {
-        this(scene,cA, animate, inverted, X_OFFSET, LAYER_OFFSET);
+    public HierarchicalLayout(GraphScene<N, E> scene, boolean animate, boolean inverted) {
+        this(scene, animate, inverted, X_OFFSET, LAYER_OFFSET);
     }
 
-    public HierarchicalLayout(GraphScene<N, E> scene,ContainerAdapter cA, boolean animate) {
-        this(scene,cA, animate, false);
+    public HierarchicalLayout(GraphScene<N, E> scene, boolean animate) {
+        this(scene, animate, false);
     }
 
     public HierarchicalLayout() {
-        this(null,null, false);
+        this(null, false);
     }
 
     private class LayoutNode {
 
-        private Integer x0;
-        private Integer y0;
-
-        public int getX() {
-            return x0;
-        }
-
-        public void setX(int x) {
-            if(vertex!=null || x0==null)this.x0 = x;
-        }
-
-        public int getY() {
-            return y0;
-        }
-
-        public void setY(int y) {
-            if(vertex!=null || y0==null)this.y0 = y;
-        }
+        public int x;
+        public int y;
         public int width;
         public int height;
         public int layer = -1;
-        private int xOffset0;
-
-        public int getXOffset() {
-            return xOffset0;
-        }
-
-        public void setXOffset(int xOffset) {
-            this.xOffset0 = xOffset;
-        }
-
-        public int getYOffset() {
-            return yOffset0;
-        }
-
-        public void setYOffset(int yOffset) {
-            this.yOffset0 = yOffset;
-        }
-        private int yOffset0;
+        public int xOffset;
+        public int yOffset;
         public int bottomYOffset;
         public N vertex; // Only used for non-dummy nodes, otherwise null
         public List<LayoutEdge> preds = new ArrayList<LayoutEdge>();
@@ -301,9 +256,7 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
             for (N v : vertices) {
                 LayoutNode node = new LayoutNode();
                 Widget w = graph.getScene().findWidget(v);
-                //
-                if(w==null || !w.isVisible())continue;
-                //
+                assert w != null;
                 Rectangle r = w.getBounds();
                 if (r == null) {
                     r = w.getPreferredBounds();
@@ -311,18 +264,7 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                 Dimension size = r.getSize();
                 node.width = (int) size.getWidth();
                 node.height = (int) size.getHeight();
-                if(containerAdapter.isInContainer(w))
-                {
-                    node.vertex = null;
-                }
-                else
-                {
-                    node.vertex = v;
-                }
-                //
-                node.setX(w.getPreferredLocation().x);
-                node.setY(w.getPreferredLocation().y);
-                //
+                node.vertex = v;
                 nodes.add(node);
                 vertexToLayoutNode.put(v, node);
             }
@@ -785,6 +727,7 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                     if (n.preds.size() > 0) {
                         sum /= n.preds.size();
                         n.crossingNumber = sum;
+                    //if(n.vertex == null) n.crossingNumber += layers[i].size();
                     }
                 }
 
@@ -817,6 +760,7 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                     if (n.succs.size() > 0) {
                         sum /= n.succs.size();
                         n.crossingNumber = sum;
+                    //if(n.vertex == null) n.crossingNumber += layers[i].size();
                     }
 
                 }
@@ -888,7 +832,7 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
         private void initialPositions() {
             for (LayoutNode n : nodes) {
-                n.setX(space[n.layer].get(n.pos));
+                n.x = space[n.layer].get(n.pos);
             }
         }
 
@@ -929,10 +873,10 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
             List<Integer> values = new ArrayList<Integer>();
             if (n.preds.size() == 0) {
-                return n.getX();
+                return n.x;
             }
             for (LayoutEdge e : n.preds) {
-                int cur = e.from.getX() + e.relativeFrom - e.relativeTo;
+                int cur = e.from.x + e.relativeFrom - e.relativeTo;
                 values.add(cur);
             }
             return median(values);
@@ -942,10 +886,10 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
             List<Integer> values = new ArrayList<Integer>();
             if (n.succs.size() == 0) {
-                return n.getX();
+                return n.x;
             }
             for (LayoutEdge e : n.succs) {
-                int cur = e.to.getX() + e.relativeTo - e.relativeFrom;
+                int cur = e.to.x + e.relativeTo - e.relativeFrom;
                 values.add(cur);
             }
             return median(values);
@@ -1006,26 +950,26 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
             int minX = Integer.MIN_VALUE;
             if (!headSet.isEmpty()) {
                 leftNeighbor = headSet.last();
-                minX = leftNeighbor.getX() + leftNeighbor.width + offset(leftNeighbor, n);
+                minX = leftNeighbor.x + leftNeighbor.width + offset(leftNeighbor, n);
             }
 
             LayoutNode rightNeighbor = null;
             int maxX = Integer.MAX_VALUE;
             if (!tailSet.isEmpty()) {
                 rightNeighbor = tailSet.first();
-                maxX = rightNeighbor.getX() - offset(n, rightNeighbor) - n.width;
+                maxX = rightNeighbor.x - offset(n, rightNeighbor) - n.width;
             }
 
             assert minX <= maxX;
 
             if (pos >= minX && pos <= maxX) {
-                n.setX(pos);
+                n.x = pos;
             } else if (Math.abs((long) pos - (long) minX) < Math.abs((long) pos - (long) maxX)) {
                 assert minX != Integer.MIN_VALUE;
-                n.setX(minX);
+                n.x = minX;
             } else {
                 assert maxX != Integer.MAX_VALUE;
-                n.setX(maxX);
+                n.x = maxX;
             }
 
             treeSet.add(n);
@@ -1042,18 +986,18 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                 int baseLine = 0;
                 int bottomBaseLine = 0;
                 for (LayoutNode n : layers[i]) {
-                    maxHeight = Math.max(maxHeight, n.height - n.getYOffset() - n.bottomYOffset);
-                    baseLine = Math.max(baseLine, n.getYOffset());
+                    maxHeight = Math.max(maxHeight, n.height - n.yOffset - n.bottomYOffset);
+                    baseLine = Math.max(baseLine, n.yOffset);
                     bottomBaseLine = Math.max(bottomBaseLine, n.bottomYOffset);
                 }
 
                 for (LayoutNode n : layers[i]) {
                     if (n.vertex == null) {
                         // Dummy node => set height to line height
-                        n.setY(curY);
+                        n.y = curY;
                         n.height = maxHeight + baseLine + bottomBaseLine;
                     } else {
-                        n.setY(curY + baseLine + (maxHeight - (n.height - n.getYOffset() - n.bottomYOffset)) / 2 - n.getYOffset());
+                        n.y = curY + baseLine + (maxHeight - (n.height - n.yOffset - n.bottomYOffset)) / 2 - n.yOffset;
                     }
                 }
 
@@ -1074,7 +1018,7 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
             for (N v : graph.getNodes()) {
                 LayoutNode n = vertexToLayoutNode.get(v);
                 assert !vertexPositions.containsKey(v);
-                vertexPositions.put(v, new Point(n.getX() + n.getXOffset(), n.getY() + n.getYOffset()));
+                vertexPositions.put(v, new Point(n.x + n.xOffset, n.y + n.yOffset));
             }
 
             for (LayoutNode n : nodes) {
@@ -1084,16 +1028,22 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                         E link = e.link;
                         ArrayList<Point> points = new ArrayList<Point>();
 
-                        Point p = new Point(e.from.getX() + e.relativeFrom, e.from.getY() + e.from.height - e.from.bottomYOffset);
+                        Point p = new Point(e.from.x + e.relativeFrom, e.from.y + e.from.height - e.from.bottomYOffset);
                         points.add(p);
 
                         LayoutNode cur = e.to;
                         LayoutNode other = e.from;
                         LayoutEdge curEdge = e;
                         while (cur.vertex == null && cur.succs.size() != 0) {
+                            //if(points.size() > 1 && points.get(points.size() -1).x == cur.x + cur.width/2 && points.get(points.size() - 2).x == cur.x + cur.width/2) {
+                            //	points.remove(points.size() - 1);
+                            //}
 
-                            points.add(new Point(cur.getX() + cur.width / 2, cur.getY()));
-                            points.add(new Point(cur.getX() + cur.width / 2, cur.getY() + cur.height));
+                            points.add(new Point(cur.x + cur.width / 2, cur.y));
+                            //if(points.size() > 1 && points.get(points.size() -1).x == cur.x + cur.width/2 && points.get(points.size() - 2).x == cur.x + cur.width/2) {
+                            //	points.remove(points.size() - 1);
+                            //	}
+                            points.add(new Point(cur.x + cur.width / 2, cur.y + cur.height));
                             if (cur.succs.size() == 0) {
                                 break;
                             }
@@ -1102,7 +1052,7 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                             cur = curEdge.to;
                         }
 
-                        p = new Point(cur.getX() + curEdge.relativeTo, cur.getY() + cur.getYOffset());
+                        p = new Point(cur.x + curEdge.relativeTo, cur.y + cur.yOffset);
                         points.add(p);
 
                         if (reversedLinks.contains(link)) {
@@ -1198,23 +1148,5 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
             System.out.println("Number of edges: " + edgeCount);
             System.out.println("Number of points: " + pointCount);
         }
-    }
-
-    public interface ContainerAdapter
-    {
-        /**
-         * check if node widget belong to any container node
-         * regardless of containment method (i.e. child widget, dependency etc)
-         * @param w
-         * @return
-         */
-        public boolean isInContainer(Widget w);
-        /**
-         * get container node
-         * regardless of containment method (i.e. child widget, dependency etc)
-         * @param w
-         * @return null if widget belong to scene, otherwise container node.
-         */
-        public Widget getConteinerNode(Widget w);
     }
 }
