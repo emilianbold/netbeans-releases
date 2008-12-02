@@ -343,6 +343,14 @@ public class MakeConfiguration extends Configuration {
         this.debuggerChooserConfiguration = debuggerChooserConfiguration;
     }
 
+    public QmakeConfiguration getQmakeConfiguration() {
+        return qmakeConfiguration;
+    }
+
+    public void setQmakeConfiguration(QmakeConfiguration qmakeConfiguration) {
+        this.qmakeConfiguration = qmakeConfiguration;
+    }
+
     public void assign(Configuration conf) {
         MakeConfiguration makeConf = (MakeConfiguration) conf;
         setName(makeConf.getName());
@@ -367,6 +375,7 @@ public class MakeConfiguration extends Configuration {
         getPackagingConfiguration().assign(makeConf.getPackagingConfiguration());
         getRequiredProjectsConfiguration().assign(makeConf.getRequiredProjectsConfiguration());
         getDebuggerChooserConfiguration().assign(makeConf.getDebuggerChooserConfiguration());
+        getQmakeConfiguration().assign(makeConf.getQmakeConfiguration());
 
         // do assign on all aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects(); // from this profile
@@ -441,6 +450,7 @@ public class MakeConfiguration extends Configuration {
         clone.setPackagingConfiguration((PackagingConfiguration) getPackagingConfiguration().clone());
         clone.setRequiredProjectsConfiguration(getRequiredProjectsConfiguration().cloneConf());
         clone.setDebuggerChooserConfiguration((DebuggerChooserConfiguration) getDebuggerChooserConfiguration().clone());
+        clone.setQmakeConfiguration(getQmakeConfiguration().clone());
 
         dhconf.addPropertyChangeListener(csconf);
         dhconf.addPropertyChangeListener(pconf);
@@ -503,10 +513,6 @@ public class MakeConfiguration extends Configuration {
         sheet.put(set2);
 
         return sheet;
-    }
-
-    public QmakeConfiguration getQmakeConfiguration() {
-        return qmakeConfiguration;
     }
 
     public void setRequiredLanguagesDirty(boolean b) {
