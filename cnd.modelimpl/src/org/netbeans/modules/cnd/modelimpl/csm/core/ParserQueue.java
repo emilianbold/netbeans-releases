@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
@@ -307,7 +308,7 @@ public final class ParserQueue {
     // do not need UIDs for ProjectBase in parsing data collection
     private Map<ProjectBase, ProjectData> projectData = new HashMap<ProjectBase, ProjectData>();
     private final Map<CsmProject, Object> projectLocks = new HashMap<CsmProject, Object>();
-    private transient int serial = 0;
+    private AtomicInteger serial = new AtomicInteger(0);
 
     private final Object lock = new Object();
 
@@ -380,7 +381,7 @@ public final class ParserQueue {
                 return;
             }
             if (queue.isEmpty()) {
-                serial = 0;
+                serial.set(0);
             }
             Set<FileImpl> files = getProjectFiles(file.getProjectImpl(true));
             Entry entry = null;
@@ -397,7 +398,8 @@ public final class ParserQueue {
                     }
                     if (position.compareTo(entry.getPosition()) < 0) {
                         queue.remove(entry);
-                        entry = new Entry(entry.getFile(), entry.getPreprocStates(), entry.getPosition(), ++serial);
+                        serial.set(serial.get()+1);
+                        entry = new Entry(entry.getFile(), entry.getPreprocStates(), entry.getPosition(), serial.get());
                         addEntry = true;
                     }
                 }
@@ -406,7 +408,8 @@ public final class ParserQueue {
                 files.add(file);
             }
             if (entry == null) {
-                entry = new Entry(file, ppStates, position, ++serial);
+                serial.set(serial.get()+1);
+                entry = new Entry(file, ppStates, position, serial.get());
                 addEntry = true;
             }
             if (addEntry) {
