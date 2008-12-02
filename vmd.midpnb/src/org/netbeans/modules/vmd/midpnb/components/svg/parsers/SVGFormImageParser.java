@@ -50,13 +50,13 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
-import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonGroupCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGCheckBoxCD;
@@ -136,9 +136,10 @@ public class SVGFormImageParser extends SVGComponentImageParser {
                                         SVGButtonGroupCD.PROP_BUTTONS, desComp );
                                 desComp.writeProperty( 
                                         SVGRadioButtonCD.PROP_BUTTON_GROUP, 
-                                        MidpTypes.createJavaCodeValue(
-                                                CodeReferencePresenter.generateAccessCode( 
-                                                        entry.getValue())));
+                                        MidpTypes.createJavaCodeValue( entry.
+                                                getValue().readProperty(
+                                                        ClassCD.PROP_INSTANCE_NAME).
+                                                        getPrimitiveValue().toString()));
                             }
                         }
                     }
