@@ -84,7 +84,7 @@ public class FileChooser extends JFileChooser {
             feedFilePathFile = new File(System.getProperty("user.home")); // NOI18N
         }
         
-        if (currectChooserFile == null && feedFilePathFile.getParentFile().exists()) {
+        if (currectChooserFile == null && feedFilePathFile.getParentFile() != null && feedFilePathFile.getParentFile().exists()) {
             currectChooserFile = feedFilePathFile.getParentFile();
             useParent = false;
         }

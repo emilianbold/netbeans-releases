@@ -52,7 +52,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class AddLibraryAction extends NodeAction<Library> {
+public final class AddLibraryAction extends NodeAction<Library> {
 
     private AddLibraryAction() {
         super(NbBundle.getMessage(AddLibraryAction.class, 
