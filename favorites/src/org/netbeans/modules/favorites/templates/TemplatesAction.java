@@ -45,6 +45,7 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -62,6 +63,8 @@ import org.openide.util.actions.CallableSystemAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
@@ -178,21 +181,23 @@ public class TemplatesAction extends CallableSystemAction {
         public void propertyChange (java.beans.PropertyChangeEvent evt) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals (evt.getPropertyName ())) {
                 Node [] nodes = (Node []) evt.getNewValue ();
-                boolean res = nodes != null;
+                boolean res = nodes != null && nodes.length > 0;
                 int i = 0;
                 while (res && i < nodes.length) {
                     Node n = nodes [i];
                     EditCookie ec = n.getLookup().lookup(EditCookie.class);
                     OpenCookie oc = n.getLookup().lookup(OpenCookie.class);
                     res = ec != null || oc != null;
-                    
+
                     // 65037: Template Manager should not offer to Open in Editor an empty pseudotemplate
                     if (res) {
                         DataObject dobj = n.getLookup().lookup(DataObject.class);
                         assert dobj != null : "DataObject for node " + n;
-                        res = dobj.getPrimaryFile ().getSize () > 0;
+                        FileObject fo = dobj.getPrimaryFile ();
+                        File f = FileUtil.toFile (fo);
+                        res = f != null || fo.getSize () > 0;
                     }
-                    
+
                     i++;
                 }
                 b.setEnabled (res);
