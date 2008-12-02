@@ -131,6 +131,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         this.clearWorkDir();
         final File _wd = this.getWorkDir();
         final FileObject wd = FileUtil.toFileObject(_wd);
+        final FileObject cache = wd.createFolder("cache");
+        CacheFolder.setCacheFolder(cache);
 
         MockServices.setServices(FooPathRecognizer.class, SFBQImpl.class, OpenProject.class);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
@@ -369,7 +371,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             }
 
             public boolean await () throws InterruptedException {
-                return latch.await(500000, TimeUnit.MILLISECONDS);
+                return latch.await(5000, TimeUnit.MILLISECONDS);
             }
 
             public Set<URL> getBinaries () {

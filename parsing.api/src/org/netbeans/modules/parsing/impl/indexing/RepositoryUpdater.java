@@ -396,17 +396,23 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             assert ctx != null;
             TEST_LEGGER.log(Level.FINEST, "scanSources", ctx.newRoots);         //NOI18N
             for (URL source : ctx.newRoots) {
-                scanSource (source);
-                ctx.scannedRoots.add(source);
+                try {
+                    scanSource (source);
+                    ctx.scannedRoots.add(source);
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+                
             }
         }
 
-        private void scanSource (URL root) {
+        private void scanSource (URL root) throws IOException {
             //todo: optimize for java.io.Files
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {
                 final Crawler crawler = new FileObjectCrawler(rootFo);
                 final Map<String,Collection<Indexable>> resources = crawler.getResources();
+                final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                 //First use custom indexers
                 for (Iterator<Map.Entry<String,Collection<Indexable>>> it = resources.entrySet().iterator(); it.hasNext();) {
                     final Map.Entry<String,Collection<Indexable>> entry = it.next();
@@ -414,12 +420,9 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                     if (factory != null) {
                         try {
                             final CustomIndexer indexer = factory.createIndexer();
-                            final Context ctx = SPIAccessor.getInstance().createContext(rootFo, root, factory.getIndexerName(), factory.getIndexVersion()); //fixme!!!!
-                            SPIAccessor.getInstance().index(indexer, entry.getValue(), ctx);
-                        } catch (IOException ioe) {
-                            Exceptions.printStackTrace(ioe);
-                        }
-                        finally {
+                            final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion());
+                            SPIAccessor.getInstance().index(indexer, entry.getValue(), ctx);                        
+                        } finally {
                             it.remove();
                         }
                     }
