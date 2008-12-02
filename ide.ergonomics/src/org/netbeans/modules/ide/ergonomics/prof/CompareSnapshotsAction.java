@@ -38,9 +38,10 @@
  */
 package org.netbeans.modules.ide.ergonomics.prof;
 
-public final class AttachAction extends ProxyProfilerAction {
+public final class CompareSnapshotsAction extends ProxyProfilerAction {
 
-    public AttachAction() {
-        super("Menu/Profile/org-netbeans-modules-profiler-actions-AttachAction.instance"); // NOI18N
+    public CompareSnapshotsAction() {
+        super("Menu/Profile/org-netbeans-modules-profiler-actions-CompareSnapshotsAction.instance"); // NOI18N
     }
+
 }

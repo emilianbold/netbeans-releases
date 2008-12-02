@@ -53,6 +53,8 @@
             <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow_hidden"/>
             <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow_hidden"/>
         </folder>
+
+        <!-- Profile menu -->
         <folder name="Profile">
             <attr name="position" intvalue="850"/>
             <file name="org-netbeans-modules-prof-actions-AttachAction.instance">
@@ -61,6 +63,32 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" stringvalue="false"/>
                 <attr name="position" intvalue="0"/>
+            </file>
+            <file name="org-netbeans-modules-prof-actions-CompareSnapshotsAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.ide.ergonomics.prof.CompareSnapshotsAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.ide.ergonomics.prof.Bundle#CTL_CompareSnapshotsAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" stringvalue="false"/>
+                <attr name="position" intvalue="1650"/>
+            </file>
+            <file name="org-netbeans-modules-prof-actions-LoadSnapshotAction-separatorBefore.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="noIconInMenu" stringvalue="false"/>
+                <attr name="position" intvalue="1425"/>
+            </file>
+            <file name="org-netbeans-modules-prof-actions-LoadSnapshotAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.ide.ergonomics.prof.LoadSnapshotAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.ide.ergonomics.prof.Bundle#CTL_LoadSnapshotAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" stringvalue="false"/>
+                <attr name="position" intvalue="1450"/>
+            </file>
+            <file name="org-netbeans-modules-prof-actions-OpenHeapWalkerAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.ide.ergonomics.prof.OpenHeapWalkerAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.ide.ergonomics.prof.Bundle#CTL_OpenHeapWalkerAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" stringvalue="false"/>
+                <attr name="position" intvalue="1475"/>
             </file>
         </folder>
 
