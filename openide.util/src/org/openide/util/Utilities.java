@@ -2061,6 +2061,7 @@ widthcheck:  {
      * @param parent
      * @param approveButtonText
      * @deprecated Not needed in JDK 1.4.
+     * @see <a href="@org-openide-filesystems@/org/openide/filesystems/FileChooserBuilder.html"><code>FileChooserBuilder</code></a>
      */
     @Deprecated
     public static final int showJFileChooser(
