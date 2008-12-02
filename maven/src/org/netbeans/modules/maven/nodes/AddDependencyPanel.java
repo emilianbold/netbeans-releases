@@ -71,6 +71,8 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.indexer.api.QueryField;
+import org.openide.DialogDescriptor;
+import org.openide.NotificationLineSupport;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.ListView;
@@ -107,6 +109,8 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     private DMListPanel artifactList;
 
     private static final String DELIMITER = " : ";
+
+    private NotificationLineSupport nls;
 
     /** Creates new form AddDependencyPanel */
     public AddDependencyPanel(MavenProject project) {
@@ -223,24 +227,50 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
         return scope;
     }
 
+    /** For gaining access to DialogDisplayer instance to manage
+     * warning messages
+     */
+    public void attachDialogDisplayer(DialogDescriptor dd) {
+        nls = dd.getNotificationLineSupport();
+        if (nls == null) {
+            nls = dd.createNotificationLineSupport();
+        }
+    }
+
     void setSelectedScope(String type) {
         comScope.setSelectedItem(type);
     }
 
     private void checkValidState() {
         String gId = txtGroupId.getText().trim();
+        if (gId.length() == 0) {
+            gId = null;
+        }
         String aId = txtArtifactId.getText().trim();
+        if (aId.length() == 0) {
+            aId = null;
+        }
         String version = txtVersion.getText().trim();
+        if (version.length() == 0) {
+            version = null;
+        }
 
         boolean dmDefined = tabPane.isEnabledAt(1);
         if (artifactList != null) {
             Color c = defaultVersionC;
+            String warn = null;
             if (dmDefined) {
                 if (findConflict(artifactList.getDMDeps(), gId, aId, version, null) == 1) {
                     c = Color.RED;
+                    warn = NbBundle.getMessage(AddDependencyPanel.class, "MSG_VersionConflict");
                 }
             }
             txtVersion.setForeground(c);
+            if (warn != null) {
+                nls.setWarningMessage(warn);
+            } else {
+                nls.clearMessages();
+            }
         }
 
         if (gId.length() <= 0) {
