@@ -47,7 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
-import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -140,7 +139,7 @@ abstract class ProxyProfilerAction implements ActionListener {
             FoDFileSystem.getInstance().waitFinished();
             FileObject delegate = Repository.getDefault().getDefaultFileSystem().findResource(actionInstance);
             InstanceCookie cookie = DataObject.find(delegate).getCookie(InstanceCookie.class);
-            final AbstractAction regularAction = (AbstractAction) cookie.instanceCreate();
+            final ActionListener regularAction = (ActionListener) cookie.instanceCreate();
             SwingUtilities.invokeAndWait(new Runnable() {
 
                 public void run() {
