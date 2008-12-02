@@ -133,7 +133,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         // #140346
         // first, create sources
         FileObject sourceDir = createSourceRoot();
-        boolean existingSources = sourceDir.getChildren(false).hasMoreElements();
+        boolean existingSources = wizardType == WizardType.EXISTING || sourceDir.getChildren(false).hasMoreElements();
 
         // project
         File projectDirectory = null;

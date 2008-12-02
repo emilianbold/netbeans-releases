@@ -41,12 +41,8 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
-import java.util.Collections;
-import java.util.List;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
-import org.netbeans.editor.TokenContext;
-import org.openide.text.IndentEngine;
 
 /**
  * Extended settings for Fortran.
@@ -55,21 +51,15 @@ public class FSettingsFactory {
 
     public static final int MAXIMUM_TEXT_WIDTH = 132;
 
-    public static Acceptor getAbbrevResetAcceptor() {
+    public static Acceptor getDefaultAbbrevResetAcceptor() {
         return AcceptorFactory.NON_JAVA_IDENTIFIER;
     }
 
-    public static Acceptor getIndentHotCharsAcceptor() {
-        return AcceptorFactory.NL;
+    public static Acceptor getDefaultIdentifierAcceptor() {
+        return AcceptorFactory.JAVA_IDENTIFIER;
     }
 
-    public static List<? extends TokenContext> getTokenContext() {
-        return Collections.singletonList(FTokenContext.context);
+    // public no-arg for creating from services
+    public FSettingsFactory() {
     }
-
-    public static IndentEngine getIndentEngine() {
-        return new FIndentEngine();
-    }
-
 }
- 

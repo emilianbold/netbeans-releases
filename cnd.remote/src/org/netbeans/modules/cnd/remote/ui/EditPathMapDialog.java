@@ -159,8 +159,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private DefaultTableModel prepareTableModel(String hkey) {
         Map<String, String> pm = getRemotePathMap(hkey).getMap();
         DefaultTableModel tableModel = new DefaultTableModel(0, 2);
-        for (String local : pm.keySet()) {
-            tableModel.addRow(new String[]{local, pm.get(local)});
+        for (Map.Entry<String, String> entry : pm.entrySet()) {
+            tableModel.addRow(new String[]{entry.getKey(), entry.getValue()});
         }
         if (tableModel.getRowCount() < 4) { // TODO: switch from JTable to a normal TableView
             for (int i = 4; i > tableModel.getRowCount(); i--) {

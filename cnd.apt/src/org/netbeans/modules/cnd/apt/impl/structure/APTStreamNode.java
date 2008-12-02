@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.Token;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTStream;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
@@ -66,7 +66,7 @@ public final class APTStreamNode extends APTStreamBaseNode
     }
     
     /** Creates a new instance of APTStreamNode */
-    public APTStreamNode(Token token) {
+    public APTStreamNode(APTToken token) {
         super(token);
         assert (validToken(token)) : "must init only from valid tokens"; // NOI18N
     }
@@ -75,7 +75,7 @@ public final class APTStreamNode extends APTStreamBaseNode
         return APT.Type.TOKEN_STREAM;
     }    
     
-    protected boolean validToken(Token t) {
+    protected boolean validToken(APTToken t) {
         if (t == null) {
             return false;
         }

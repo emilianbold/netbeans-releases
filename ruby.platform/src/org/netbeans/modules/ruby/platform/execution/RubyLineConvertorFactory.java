@@ -41,9 +41,10 @@ package org.netbeans.modules.ruby.platform.execution;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor.LineConvertorFactory;
-import org.netbeans.modules.extexecution.api.print.LineConvertor;
-import org.netbeans.modules.extexecution.api.print.LineConvertors;
+import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
+import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 
 /**
  *
@@ -65,7 +66,7 @@ public final class RubyLineConvertorFactory implements LineConvertorFactory {
     /* Keeping old one. Get rid of this with more specific recongizers? */
     static final Pattern RUBY_COMPILER_WIN =
             Pattern.compile("^(?:(?:\\[|\\]|\\-|\\:|[0-9]|\\s|\\,)*)(?:\\s*from )?" + FILE_WIN + SEP + LINE + ROL); // NOI18N
-    static final Pattern RAILS_RECOGNIZER =
+    public static final Pattern RAILS_RECOGNIZER =
             Pattern.compile(".*#\\{RAILS_ROOT\\}/" + STD_SUFFIX); // NOI18N
     public static final Pattern RUBY_TEST_OUTPUT = Pattern.compile("\\s*test.*\\[" + STD_SUFFIX); // NOI18N
     /** Regexp. for extensions. */
@@ -116,12 +117,11 @@ public final class RubyLineConvertorFactory implements LineConvertorFactory {
      * @return
      */
     public static List<LineConvertor> getStandardConvertors(FileLocator locator) {
-        LineConvertors.FileLocator wrapper = RubyProcessCreator.wrap(locator);
         List<LineConvertor> result = new ArrayList<LineConvertor>(4);
-        result.add(LineConvertors.filePattern(wrapper, RAILS_RECOGNIZER, EXT_RE, 1, 2));
-        result.add(LineConvertors.filePattern(wrapper, RUBY_COMPILER_WIN_MY, EXT_RE, 1, 2));
-        result.add(LineConvertors.filePattern(wrapper, RUBY_COMPILER, EXT_RE, 1, 2));
-        result.add(LineConvertors.filePattern(wrapper, RUBY_COMPILER_WIN, EXT_RE, 1, 2));
+        result.add(LineConvertors.filePattern(locator, RAILS_RECOGNIZER, EXT_RE, 1, 2));
+        result.add(LineConvertors.filePattern(locator, RUBY_COMPILER_WIN_MY, EXT_RE, 1, 2));
+        result.add(LineConvertors.filePattern(locator, RUBY_COMPILER, EXT_RE, 1, 2));
+        result.add(LineConvertors.filePattern(locator, RUBY_COMPILER_WIN, EXT_RE, 1, 2));
         return result;
     }
 

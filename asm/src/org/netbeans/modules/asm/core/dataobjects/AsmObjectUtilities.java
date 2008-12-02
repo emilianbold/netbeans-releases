@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.asm.core.dataobjects;
 
 import java.io.BufferedInputStream;
@@ -69,58 +67,60 @@ import org.openide.windows.TopComponent;
 import org.netbeans.modules.asm.model.AsmModel;
 import org.netbeans.modules.asm.model.AsmModelAccessor;
 
-public class AsmObjectUtilities {            
-  
-    private static final Logger LOGGER = 
+public class AsmObjectUtilities {
+
+    private static final Logger LOGGER =
             Logger.getLogger(AsmObjectUtilities.class.getName());
-    
+
     public static Document getDocument(DataObject dob) {
-       
+
         EditorCookie editorCookie = dob.getCookie(EditorCookie.class);
         if (editorCookie == null) {
             LOGGER.log(Level.INFO, "Can't determine document"); // NOI18N
             return null;
         }
-        
-        return editorCookie.getDocument();      
+
+        return editorCookie.getDocument();
     }
-       
+
     public static Document getDocument(JTextComponent pane) {
         return pane.getDocument();
     }
-        
+
     public static AsmModel getModel(DataObject dob) {
-        Document doc = getDocument(dob);   
-        
+        Document doc = getDocument(dob);
+
         if (doc == null) {
             LOGGER.log(Level.INFO, "Can't determine model for " + dob); // NOI18N
             return null;
         }
-        
+
         return (AsmModel) doc.getProperty(AsmModel.class);
     }
-    
+
     public static AsmModelAccessor getAccessor(DataObject dob) {
-        Document doc = getDocument(dob);     
-        if (doc == null)
+        Document doc = getDocument(dob);
+        if (doc == null) {
             return null;
-                    
-        return getAccessor(doc);        
+        }
+
+        return getAccessor(doc);
     }
-    
+
     public static AsmModelAccessor getAccessor(Document doc) {
         return (AsmModelAccessor) doc.getProperty(AsmModelAccessor.class);
     }
-    
-    public static AsmModelAccessor getAccessor(JTextComponent pane) {        
+
+    public static AsmModelAccessor getAccessor(JTextComponent pane) {
         Document doc = getDocument(pane);
         return getAccessor(doc);
     }
-    
+
     public static String getText(final Document doc) {
-        final String []text = new String[1];
-        
+        final String[] text = new String[1];
+
         doc.render(new Runnable() {
+
             public void run() {
                 try {
                     text[0] = doc.getText(0, doc.getLength() - 1);
@@ -130,14 +130,14 @@ public class AsmObjectUtilities {
                 }
             }
         });
-        
+
         return text[0];
     }
-    
-     public static String getText(FileObject fo)  {
+
+    public static String getText(FileObject fo) {
 
         InputStream is = null;
-        
+
         try {
             is = new BufferedInputStream(fo.getInputStream());
             Reader reader;
@@ -146,98 +146,98 @@ public class AsmObjectUtilities {
 
             return new String(readContents(reader));
         } catch (Exception ex) {
-            LOGGER.log(Level.INFO, "Can't load FileObject text " +  // NOI18N
-                                    ex.getMessage());               
+            LOGGER.log(Level.INFO, "Can't load FileObject text " + // NOI18N
+                    ex.getMessage());
             return "";
         } finally {
             try {
-                if (is != null)
+                if (is != null) {
                     is.close();
+                }
             } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Can't load FileObject text " +  // NOI18N
-                                    ex.getMessage());
+                LOGGER.log(Level.INFO, "Can't load FileObject text " + // NOI18N
+                        ex.getMessage());
                 return "";
             }
         }
     }
-    
-    public static char[] readContents(Reader r) throws IOException {        
-                        
+
+    public static char[] readContents(Reader r) throws IOException {
+
         final int READ_BY = 1024;
-        
+
         List<char[]> list = new LinkedList<char[]>();
-        
+
         int count = 0;
         int wasRead = 0;
-        
+
         do {
-            char []buf = new char[READ_BY];
-            int offset = 0;            
-            
-            wasRead = r.read(buf, offset, buf.length);            
-            if (wasRead == -1) break;
-            
+            char[] buf = new char[READ_BY];
+            int offset = 0;
+
+            wasRead = r.read(buf, offset, buf.length);
+            if (wasRead == -1) {
+                break;
+            }
+
             offset += wasRead;
-            
-            if (offset > 0) 
+
+            if (offset > 0) {
                 list.add(buf);
-            
+            }
+
             count += offset;
-            
+
         } while (wasRead >= 0);
         r.close();
 
-        char []res = new char[count];
+        char[] res = new char[count];
         Iterator<char[]> it = list.iterator();
         int offset = 0;
-        
+
         while (it.hasNext()) {
             char[] buf = it.next();
             int size = (it.hasNext()) ? buf.length : count - offset;
             System.arraycopy(buf, 0, res, offset, size);
             offset += size;
         }
-        
+
         return res;
     }
-    
-    
-    public static void goToSource(DataObject ob, int offset) {                                
-              
+
+    public static void goToSource(DataObject ob, int offset) {
+
         if (!openFileInEditor(ob)) {
             return;
         }
-        
+
         EditorCookie ed = ob.getCookie(org.openide.cookies.EditorCookie.class);
-        
+
         if (ed != null) {
             try {
                 ed.openDocument();
             } catch (IOException ex) {
                 return;
             }
-            
+
             JEditorPane pane = ed.getOpenedPanes()[0];
             pane.setCaretPosition(offset);
-            
-            TopComponent tc = (TopComponent)
-                    SwingUtilities.getAncestorOfClass(TopComponent.class,
-                                                      pane);
-            if (tc != null) { 
+
+            TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,
+                    pane);
+            if (tc != null) {
                 tc.requestActive();
             }
         }
     }
 
-  
-    
-   public static boolean openFileInEditor(DataObject ob) {
-        EditCookie ck = (EditCookie) ob.getCookie(EditCookie.class);
+    public static boolean openFileInEditor(DataObject ob) {
+        EditCookie ck = ob.getCookie(EditCookie.class);
         if (ck != null) {
             ck.edit();
             return true;
         }
-        OpenCookie oc = (OpenCookie) ob.getCookie(OpenCookie.class);
+        OpenCookie oc = ob.getCookie(OpenCookie.class);
         if (oc != null) {
             oc.open();
             return true;

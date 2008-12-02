@@ -174,7 +174,7 @@ public final class AddCast implements ErrorRule<Void> {
         
         computeType(info, offset, tm, expression, leaf);
         
-        if (tm[0] != null) {
+        if (tm[0] != null && tm[0].getKind() != TypeKind.NULL) {
             int position = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), expression[0]);
             Class interf = expression[0].getKind().asInterface();
             boolean wrapWithBrackets = interf == BinaryTree.class || interf == ConditionalExpressionTree.class;

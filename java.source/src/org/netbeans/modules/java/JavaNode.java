@@ -330,8 +330,9 @@ public final class JavaNode extends DataNode implements ChangeListener {
                     }
                 }
             }
-            
-            boolean newIsCompiled = _status != null ? _status.isBuilt() : true;
+
+            boolean isPackageInfo = "package-info.java".equals(node.getDataObject().getPrimaryFile().getNameExt());
+            boolean newIsCompiled = _status != null && !isPackageInfo ?  _status.isBuilt() : true;
             boolean oldIsCompiled = node.isCompiled.getAndSet(newIsCompiled);
 
             if (newIsCompiled != oldIsCompiled) {

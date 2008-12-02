@@ -64,9 +64,9 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
         this.projectDescriptorProvider = projectDescriptorProvider;
     }
 
-    public Collection getConfigurations() {
+    public Collection<Configuration> getConfigurations() {
         if (projectDescriptorProvider.getConfigurationDescriptor() == null) {
-            return Collections.EMPTY_SET;
+            return Collections.<Configuration>emptySet();
         }
         return projectDescriptorProvider.getConfigurationDescriptor().getConfs().getConfsAsCollection();
     }

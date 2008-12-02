@@ -42,8 +42,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.extexecution.api.print.ConvertedLine;
-import org.netbeans.modules.extexecution.api.print.LineConvertor;
+import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 
 /**
@@ -90,6 +90,7 @@ public final class TestRunnerLineConvertor implements LineConvertor {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "No handler for line: " + line);
         }
+        session.addOutput(line);
         manager.displayOutput(session, line, false);
         return null;
     }

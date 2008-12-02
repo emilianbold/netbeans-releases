@@ -42,6 +42,7 @@ package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -112,6 +113,41 @@ public class MultipleRewritesTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mods, nueMods);
             }
             
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRewriteRewrittenTree2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package hierbas.del.litoral;\n\n" +
+                "public class Test {\n" +
+                "    String a;\n" +
+                "}\n"
+                );
+        String golden =
+                "package hierbas.del.litoral;\n\n" +
+                "public class Test {\n" +
+                "    Object a;\n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                VariableTree var = (VariableTree) clazz.getMembers().get(1);
+                IdentifierTree i = make.Identifier("Test");
+
+                workingCopy.rewrite(var.getType(), i);
+                workingCopy.rewrite(i, make.Identifier("Object"));
+            }
+
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

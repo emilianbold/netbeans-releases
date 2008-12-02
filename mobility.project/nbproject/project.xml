@@ -203,6 +203,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.spi.actions</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.spi.navigator</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -403,14 +412,15 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.deployment.deviceanywhere</friend>
                 <friend>org.netbeans.modules.j2me.cdc.platform.nokias80</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project</friend>
+                <friend>org.netbeans.modules.j2me.cdc.project.bdj</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.nokiaS80</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.nsicom</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.ricoh</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.savaje</friend>
-                <friend>org.netbeans.modules.j2me.cdc.project.sjmc</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.semc</friend>
-                <friend>org.netbeans.modules.j2me.cdc.project.bdj</friend>
+                <friend>org.netbeans.modules.j2me.cdc.project.sjmc</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.ui.wizards</friend>
+                <friend>org.netbeans.modules.javame.toolbar</friend>
                 <friend>org.netbeans.modules.mobility.deployment.ricoh</friend>
                 <friend>org.netbeans.modules.mobility.editor</friend>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
@@ -422,11 +432,11 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.vmd.io.javame</friend>
                 <friend>org.netbeans.modules.vmd.midp</friend>
                 <friend>org.netbeans.modules.vmd.midp.converter</friend>
-                <friend>org.netbeans.modules.javame.toolbar</friend>
                 <package>org.netbeans.api.mobility.project</package>
                 <package>org.netbeans.api.mobility.project.ui.customizer</package>
                 <package>org.netbeans.modules.mobility.project</package>
                 <package>org.netbeans.modules.mobility.project.ui</package>
+                <package>org.netbeans.modules.mobility.project.ui.security</package>
                 <package>org.netbeans.modules.mobility.project.ui.wizard</package>
                 <package>org.netbeans.spi.mobility.project</package>
                 <package>org.netbeans.spi.mobility.project.support</package>

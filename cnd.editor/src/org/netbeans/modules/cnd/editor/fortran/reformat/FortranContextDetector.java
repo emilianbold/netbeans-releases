@@ -49,10 +49,10 @@ import static org.netbeans.cnd.api.lexer.FortranTokenId.*;
  * @author Alexander Simon
  */
 public class FortranContextDetector extends FortranExtendedTokenSequence {
-    private FortranBracesStack braces;
+    //private FortranBracesStack braces;
     /*package local*/ FortranContextDetector(TokenSequence<FortranTokenId> ts, FortranDiffLinkedList diffs, FortranBracesStack braces, int tabSize){
         super(ts, diffs, tabSize);
-        this.braces = braces;
+        //this.braces = braces;
     }
     
     /*package local*/ OperatorKind getOperatorKind(Token<FortranTokenId> current){

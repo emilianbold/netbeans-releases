@@ -47,6 +47,9 @@ import org.netbeans.modules.asm.base.syntax.*;
 
 }
 
+{
+@SuppressWarnings({"unchecked", "cast", "fallthrough"})
+}
 class DisScanner extends Lexer;
 options {
     k = 3;  

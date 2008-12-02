@@ -665,7 +665,13 @@ public class InstallSupportImpl {
 
         URL source = toUpdateImpl.getInstallInfo().getDistribution();
         err.log (Level.FINE, "Source URL for " + toUpdateImpl.getCodeName () + " is " + source);
-        
+        if(source==null) {
+            final String errorString = NbBundle.getMessage(InstallSupportImpl.class, 
+                    "InstallSupportImpl_NullSource", toUpdateImpl.getCodeName()); // NOI18N
+            err.log (Level.INFO, errorString);
+            throw new OperationException (OperationException.ERROR_TYPE.INSTALL, errorString);
+        }
+
         boolean isNbmFile = source.getFile ().toLowerCase (Locale.US).endsWith (Utilities.NBM_EXTENTSION.toLowerCase (Locale.US));
 
         File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), isNbmFile);
@@ -766,7 +772,15 @@ public class InstallSupportImpl {
             String label) throws MalformedURLException, IOException {
         
         int increment = 0;
-        BufferedInputStream bsrc = new BufferedInputStream (source.openStream());
+        InputStream is = null;
+        try {
+            is = source.openStream();
+        } catch (FileNotFoundException x) {
+            err.log (Level.INFO, x.getMessage(), x);
+            throw new IOException(NbBundle.getMessage(InstallSupportImpl.class,
+                    "InstallSupportImpl_Download_Unavailable", source));            
+        }
+        BufferedInputStream bsrc = new BufferedInputStream (is);
         BufferedOutputStream bdest = new BufferedOutputStream (new FileOutputStream (dest));
         
         err.log (Level.FINEST, "Copy " + source + " to " + dest + "[" + estimatedSize + "]");

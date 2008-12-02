@@ -61,4 +61,21 @@
             </folder>
         </folder>
     </folder>
+
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-groovy">
+                <folder name="Actions">
+                    <file name="groovy-project-separator-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="530"/>
+                    </file>
+                    <file name="RunFile.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.support.GroovyProjectModule.run"/>
+                        <attr name="position" intvalue="550"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

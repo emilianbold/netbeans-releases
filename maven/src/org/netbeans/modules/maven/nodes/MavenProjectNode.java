@@ -255,8 +255,8 @@ public class MavenProjectNode extends AbstractNode {
 
         public void actionPerformed(ActionEvent e) {
             SubprojectProvider subs = project.getLookup().lookup(SubprojectProvider.class);
-            Set lst = subs.getSubprojects();
-            Project[] arr = (Project[]) lst.toArray(new Project[lst.size()]);
+            Set<? extends Project> lst = subs.getSubprojects();
+            Project[] arr = lst.toArray(new Project[lst.size()]);
             OpenProjects.getDefault().close(arr);
         }
     }

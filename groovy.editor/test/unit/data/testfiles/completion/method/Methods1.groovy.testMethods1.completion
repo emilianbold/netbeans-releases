@@ -3,4 +3,4 @@ new URL("http://google.com").getPr|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 METHOD     getProperties()                            Map
-METHOD     getProtocol()                              String
+METHOD     getProtocol()                   [PUBLIC]   String

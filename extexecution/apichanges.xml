@@ -106,7 +106,18 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
-    <changes>      
+    <changes>
+        <change>
+            <api name="extexecution_api"/>
+            <summary>Published as a stable API</summary>
+            <version major="1" minor="13"/>
+            <date day="20" month="11" year="2008"/>
+            <author login="phejl"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible"/>
+            <description>
+                Published as a stable API. Refactored to API packages.
+            </description>
+        </change>
         <change>
             <api name="extexecution_api"/>
             <summary>Initial version released</summary>

@@ -381,7 +381,7 @@ void DbgpConnection::processCommand(char *cmdString, DbgpConnection *pDbgpConnec
         if(data[index] == _T(' ') || data[index] == _T('\0')){
             if(argValueIndex != -1) {
                 tstring argValue = args.substr(argValueIndex, index-argValueIndex);
-                argsMap.insert(pair<char, tstring>(argSwitch, argValue.c_str()));
+                argsMap.insert(pair<char, tstring>((char)argSwitch, argValue.c_str()));
                 argValueIndex = -1;
             }
         }else if(data[index] == _T('-')) {

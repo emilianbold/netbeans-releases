@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
@@ -82,7 +81,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
-import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
@@ -236,9 +234,8 @@ public class TraceXRef extends TraceModel {
     }
     private static final int FACTOR = 1;
 
-    public static void traceProjectRefsStatistics(NativeProject prj, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr, CsmProgressListener callback, AtomicBoolean canceled) {
-        CsmProject csmPrj = CsmModelAccessor.getModel().getProject(prj);
-        XRefResultSet bag = new XRefResultSet();
+    public static void traceProjectRefsStatistics(CsmProject csmPrj, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr, CsmProgressListener callback, AtomicBoolean canceled) {
+        XRefResultSet<UnresolvedEntry> bag = new XRefResultSet<UnresolvedEntry>();
         Collection<CsmFile> allFiles = new ArrayList<CsmFile>();
         int i = 0;
         for (CsmFile file : csmPrj.getAllFiles()) {
@@ -328,7 +325,7 @@ public class TraceXRef extends TraceModel {
     };
 
     private static void analyzeFile(final CsmFile file, final StatisticsParameters params,
-            final XRefResultSet bag, final PrintWriter out, final OutputWriter printErr,
+            final XRefResultSet<UnresolvedEntry> bag, final PrintWriter out, final OutputWriter printErr,
             final AtomicBoolean canceled) {
         long time = System.currentTimeMillis();
         if (params.analyzeSmartAlgorith) {
@@ -342,7 +339,7 @@ public class TraceXRef extends TraceModel {
         out.println(file.getAbsolutePath() + " took " + time + "ms"); // NOI18N
     }
 
-    private static void visitDeclarations(Collection<? extends CsmOffsetableDeclaration> decls, StatisticsParameters params, XRefResultSet bag,
+    private static void visitDeclarations(Collection<? extends CsmOffsetableDeclaration> decls, StatisticsParameters params, XRefResultSet<UnresolvedEntry> bag,
             PrintWriter printOut, OutputWriter printErr, AtomicBoolean canceled) {
         for (CsmOffsetableDeclaration decl : decls) {
             if (CsmKindUtilities.isFunctionDefinition(decl)) {
@@ -360,12 +357,12 @@ public class TraceXRef extends TraceModel {
 
     private static final class LWVisitor implements CsmFileReferences.Visitor {
 
-        private final XRefResultSet bag;
+        private final XRefResultSet<UnresolvedEntry> bag;
         private final OutputWriter printErr;
         private final AtomicBoolean canceled;
         private final boolean reportUnresolved;
 
-        public LWVisitor(XRefResultSet bag, OutputWriter printErr, AtomicBoolean canceled, boolean reportUnresolved) {
+        public LWVisitor(XRefResultSet<UnresolvedEntry> bag, OutputWriter printErr, AtomicBoolean canceled, boolean reportUnresolved) {
             this.bag = bag;
             this.printErr = printErr;
             this.canceled = canceled;
@@ -382,7 +379,7 @@ public class TraceXRef extends TraceModel {
                 bag.addEntry(XRefResultSet.ContextScope.UNRESOLVED, entry);
                 if (entry == XRefResultSet.ContextEntry.UNRESOLVED || entry == XRefResultSet.ContextEntry.UNRESOLVED_MACRO_BASED) {
                     CharSequence text = ref.getText();
-                    UnresolvedEntry unres = bag.<UnresolvedEntry>getUnresolvedEntry(text);
+                    UnresolvedEntry unres = bag.getUnresolvedEntry(text);
                     if (unres == null) {
                         unres = new UnresolvedEntry(text, new RefLink(ref));
                         bag.addUnresolvedEntry(text, unres);
@@ -393,7 +390,7 @@ public class TraceXRef extends TraceModel {
         }
     }
 
-    private static void handleFunctionDefinition(final CsmFunctionDefinition fun, final StatisticsParameters params, final XRefResultSet bag,
+    private static void handleFunctionDefinition(final CsmFunctionDefinition fun, final StatisticsParameters params, final XRefResultSet<UnresolvedEntry> bag,
             final PrintWriter printOut, final OutputWriter printErr) {
         final CsmScope scope = fun.getBody();
         if (scope != null) {
@@ -412,7 +409,7 @@ public class TraceXRef extends TraceModel {
                                 bag.addEntry(funScope, entry);
                                 if (entry == XRefResultSet.ContextEntry.UNRESOLVED) {
                                     CharSequence text = ref.getText();
-                                    UnresolvedEntry unres = bag.<UnresolvedEntry>getUnresolvedEntry(text);
+                                    UnresolvedEntry unres = bag.getUnresolvedEntry(text);
                                     if (unres == null) {
                                         unres = new UnresolvedEntry(text, new RefLink(ref));
                                         bag.addUnresolvedEntry(text, unres);
@@ -751,7 +748,7 @@ public class TraceXRef extends TraceModel {
         return null;
     }
 
-    private static void traceStatistics(XRefResultSet bag, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr) {
+    private static void traceStatistics(XRefResultSet<UnresolvedEntry> bag, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr) {
         printOut.println("Number of analyzed contexts " + bag.getNumberOfAllContexts()); // NOI18N
         Collection<XRefResultSet.ContextScope> sortedContextScopes = XRefResultSet.sortedContextScopes(bag, false);
         int numProjectProints = 0;

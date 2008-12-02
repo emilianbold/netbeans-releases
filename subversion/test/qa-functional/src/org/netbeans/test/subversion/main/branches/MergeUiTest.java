@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.junit.NbModuleSuite;
@@ -41,7 +42,6 @@ public class MergeUiTest extends JellyTestCase {
     public static final String WORK_PATH = "work";
     public static final String PROJECT_NAME = "SVNApplication";
     public File projectPath;
-    String os_name;
     static Logger log;
 
     /** Creates a new instance of MergeUiTest */
@@ -60,14 +60,6 @@ public class MergeUiTest extends JellyTestCase {
             TestKit.removeHandlers(log);
         }
     }
-
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
-    }
     
     public static Test suite() {
          return NbModuleSuite.create(
@@ -83,7 +75,11 @@ public class MergeUiTest extends JellyTestCase {
         try {
             MessageHandler mh = new MessageHandler("Committing");
             log.addHandler(mh);
+            TestKit.closeProject(PROJECT_NAME);
 
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                new NewProjectWizardOperator().invoke().close();
+                    
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);

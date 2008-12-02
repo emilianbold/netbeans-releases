@@ -105,12 +105,13 @@ public class CppLexerBatchTestCase extends TestCase {
     }
 
     public void testComments() {
-        String text = "/*ml-comment*//**//***//**\n*doxygen-comment*//* a";
+        String text = "/*ml-comment*//**//***//*! doxygen*//**\n*doxygen-comment*//* a";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.BLOCK_COMMENT, "/*ml-comment*/");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.BLOCK_COMMENT, "/**/");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DOXYGEN_COMMENT, "/***/");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DOXYGEN_COMMENT, "/*! doxygen*/");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DOXYGEN_COMMENT, "/**\n*doxygen-comment*/");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.BLOCK_COMMENT, "/* a");
         assertEquals(PartType.START, ts.token().partType());
@@ -180,7 +181,8 @@ public class CppLexerBatchTestCase extends TestCase {
 
     public void testNumberLiterals() {
         String text = "0 00 09 1 12 0L 1l 12L 0LL 1ll 0x1 0xf 0XdE 0Xbcy" +
-                " 09.5 1.5f 1.6F 6u 7U 7e3 6.1E-7f .3 3614090360UL 3614090360ul 0xffffffffull 0x1234l 0x1234L";
+                " 09.5 1.5f 1.6F 6u 7U 7e3 6.1E-7f .3 3614090360UL 3614090360ul 0xffffffffull" +
+                " 0x1234l 0x1234L 0.0747474774773784e-4L 0.0747474774773784e-4l";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INT_LITERAL, "0");
@@ -237,6 +239,10 @@ public class CppLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LONG_LITERAL, "0x1234l");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LONG_LITERAL, "0x1234L");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DOUBLE_LITERAL, "0.0747474774773784e-4L");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DOUBLE_LITERAL, "0.0747474774773784e-4l");
         assertFalse("No more tokens", ts.moveNext());
     }
 

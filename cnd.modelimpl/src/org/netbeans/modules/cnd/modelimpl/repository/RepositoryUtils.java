@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.util.ArrayList;
@@ -46,7 +45,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
@@ -63,28 +61,28 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
  * @author Vladimir Voskresensky
  */
 public final class RepositoryUtils {
-    
+
     private static final boolean TRACE_REPOSITORY_ACCESS = DebugUtils.getBoolean("cnd.modelimpl.trace.repository", false);
     private static final Repository repository = RepositoryAccessor.getRepository();
-
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 47;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 49;
+
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
     }
-    
     ////////////////////////////////////////////////////////////////////////////
     // repository access wrappers
     private static volatile int counter = 0;
+
     public static <T extends CsmIdentifiable> T get(CsmUID<T> uid) {
         Key key = UIDtoKey(uid);
         Persistent out = get(key);
         assert out == null || (out instanceof CsmIdentifiable);
-        return (T)out;
+        return (T) out;
     }
-    
+
     public static Persistent tryGet(Key key) {
         assert key != null;
         Persistent out = repository.tryGet(key);
@@ -93,7 +91,7 @@ public final class RepositoryUtils {
         }
         return out;
     }
-    
+
     public static Persistent get(Key key) {
         assert key != null;
         if (TRACE_REPOSITORY_ACCESS) {
@@ -107,11 +105,11 @@ public final class RepositoryUtils {
         }
         return repository.get(key);
     }
-    
+
     private static synchronized int nextIndex() {
         return counter++;
     }
-    
+
     public static void remove(CsmUID uid) {
         Key key = UIDtoKey(uid);
         if (key != null) {
@@ -131,7 +129,7 @@ public final class RepositoryUtils {
             }
         }
     }
-    
+
     public static void remove(Collection<? extends CsmUID> uids) {
         if (uids != null) {
             for (CsmUID uid : uids) {
@@ -139,27 +137,27 @@ public final class RepositoryUtils {
             }
         }
     }
-    
-    public static CsmUID put(CsmIdentifiable csmObj) {
-        CsmUID uid = null;
+
+    public static <T> CsmUID<T> put(CsmIdentifiable<T> csmObj) {
+        CsmUID<T> uid = null;
         if (csmObj != null) {
             uid = csmObj.getUID();
             assert uid != null;
             Key key = UIDtoKey(uid);
-	    put(key, (Persistent) csmObj);
+            put(key, (Persistent) csmObj);
         }
         return uid;
-    }    
-    
+    }
+
     public static void put(Key key, Persistent obj) {
-	    if (key != null) {
+        if (key != null) {
             if (TRACE_REPOSITORY_ACCESS) {
                 long time = System.currentTimeMillis();
                 int index = nextIndex();
                 System.err.println(index + ":putting key " + key);
                 repository.put(key, obj);
                 // A workaround for #131701
-                if( key instanceof FileKey ) {
+                if (key instanceof FileKey) {
                     repository.hang(key, obj);
                 }
                 time = System.currentTimeMillis() - time;
@@ -168,22 +166,22 @@ public final class RepositoryUtils {
             }
             repository.put(key, obj);
             // A workaround for #131701
-            if( key instanceof FileKey ) {
+            if (key instanceof FileKey) {
                 repository.hang(key, obj);
             }
-	    }
+        }
     }
-    
+
     public static void hang(CsmIdentifiable csmObj) {
         CsmUID uid = null;
         if (csmObj != null) {
             uid = csmObj.getUID();
             assert uid != null;
             Key key = UIDtoKey(uid);
-	        hang(key, (Persistent)csmObj);
+            hang(key, (Persistent) csmObj);
         }
     }
-    
+
     public static void hang(Key key, Persistent obj) {
         if (key != null) {
             if (TRACE_REPOSITORY_ACCESS) {
@@ -198,27 +196,31 @@ public final class RepositoryUtils {
             repository.hang(key, obj);
         }
     }
-    
-    public static <T extends CsmOffsetableDeclaration> List<CsmUID<T>> put(List<T> decls) {
+
+    public static <T> Collection<CsmUID<T>> put(Collection<T> decls) {
         assert decls != null;
         List<CsmUID<T>> uids = new ArrayList<CsmUID<T>>(decls.size());
-        for (T decl: decls) {
-            CsmUID<T> uid = put(decl);
-            uids.add(uid);
+        for (T decl : decls) {
+            if (decl instanceof CsmIdentifiable) {
+                @SuppressWarnings("unchecked")
+                CsmIdentifiable<T> id = (CsmIdentifiable<T>) decl;
+                CsmUID<T> uid = put(id);
+                uids.add(uid);
+            }
         }
         return uids;
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     //
     public static Key UIDtoKey(CsmUID uid) {
         if (uid instanceof KeyHolder) {
-            return ((KeyHolder)uid).getKey();
+            return ((KeyHolder) uid).getKey();
         } else {
             return null;
         }
     }
-    
+
     public static CharSequence getUnitName(CsmUID uid) {
         Key key = UIDtoKey(uid);
         assert key != null;
@@ -226,19 +228,19 @@ public final class RepositoryUtils {
 
         return unitName;
     }
-    
+
     public static void startup() {
-    	repository.startup(CURRENT_VERSION_OF_PERSISTENCY);
+        repository.startup(CURRENT_VERSION_OF_PERSISTENCY);
         repository.unregisterRepositoryListener(RepositoryListenerImpl.instance());
         repository.registerRepositoryListener(RepositoryListenerImpl.instance());
     }
-    
+
     public static void shutdown() {
         // we intentionally do not unregister listener here since it will be automatically
         // unregistered as soon as shutdown (which is async.) finishes
         repository.shutdown();
     }
-    
+
     public static void cleanCashes() {
         repository.cleanCaches();
     }
@@ -246,25 +248,25 @@ public final class RepositoryUtils {
     public static void closeUnit(CsmUID uid, Set<String> requiredUnits, boolean cleanRepository) {
         closeUnit(UIDtoKey(uid), requiredUnits, cleanRepository);
     }
-    
-    public static void closeUnit(String unitName,  Set<String> requiredUnits) {
-        closeUnit(unitName, requiredUnits, ! TraceFlags.PERSISTENT_REPOSITORY);
+
+    public static void closeUnit(String unitName, Set<String> requiredUnits) {
+        closeUnit(unitName, requiredUnits, !TraceFlags.PERSISTENT_REPOSITORY);
     }
 
-    public static void closeUnit(String unitName,  Set<String> requiredUnits, boolean cleanRepository) {
+    public static void closeUnit(String unitName, Set<String> requiredUnits, boolean cleanRepository) {
         RepositoryListenerImpl.instance().onExplicitClose(unitName);
         repository.closeUnit(unitName, cleanRepository, requiredUnits);
     }
-    
+
     public static void closeUnit(Key key, Set<String> requiredUnits) {
-        closeUnit(key, requiredUnits, ! TraceFlags.PERSISTENT_REPOSITORY);
+        closeUnit(key, requiredUnits, !TraceFlags.PERSISTENT_REPOSITORY);
     }
-    
+
     public static void closeUnit(Key key, Set<String> requiredUnits, boolean cleanRepository) {
         assert key != null;
         repository.closeUnit(key.getUnit().toString(), cleanRepository, requiredUnits);
     }
-    
+
     public static void onProjectDeleted(NativeProject nativeProject) {
         Key key = KeyUtilities.createProjectKey(nativeProject);
         repository.removeUnit(key.getUnit().toString());
@@ -276,20 +278,20 @@ public final class RepositoryUtils {
         Key key = UIDtoKey(uid);
         openUnit(key);
     }
-    
+
     public static void openUnit(Key key) {
-	openUnit(key.getUnitId(), key.getUnit().toString());
+        openUnit(key.getUnitId(), key.getUnit().toString());
     }
-    
+
     private static void openUnit(int unitId, String unitName) {
         // TODO explicit open should be called here:
         RepositoryListenerImpl.instance().onExplicitOpen(unitName);
         repository.openUnit(unitId, unitName);
     }
-    
+
     public static void unregisterRepositoryListener(RepositoryListener listener) {
         repository.unregisterRepositoryListener(listener);
-    }    
+    }
 
     static int getUnitId(String unitName) {
         return RepositoryAccessor.getTranslator().getUnitId(unitName);
@@ -310,6 +312,5 @@ public final class RepositoryUtils {
     static String getFileNameById(int unitId, int fileId) {
         return RepositoryAccessor.getTranslator().getFileNameById(unitId, fileId);
     }
-
 }
 

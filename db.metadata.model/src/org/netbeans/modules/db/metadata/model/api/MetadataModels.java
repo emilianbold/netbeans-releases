@@ -40,7 +40,6 @@
 package org.netbeans.modules.db.metadata.model.api;
 
 import java.sql.Connection;
-import java.util.WeakHashMap;
 import org.netbeans.modules.db.metadata.model.JDBCConnMetadataModel;
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 
@@ -53,31 +52,10 @@ import org.netbeans.modules.db.metadata.model.MetadataAccessor;
  */
 public class MetadataModels {
 
-    // XXX test against memory leak.
-    // XXX test if DatabaseConnection can be GC'd.
-
-    private final static WeakHashMap<Connection, MetadataModel> conn2Model = new WeakHashMap<Connection, MetadataModel>();
 
     private MetadataModels() {}
 
-    public static MetadataModel get(Connection conn, String defaultSchemaName) {
-        synchronized (MetadataModels.class) {
-            MetadataModel model = conn2Model.get(conn);
-            if (model == null) {
-                model = MetadataAccessor.getDefault().createMetadataModel(new JDBCConnMetadataModel(conn, defaultSchemaName));
-                conn2Model.put(conn, model);
-            }
-            return model;
-        }
-    }
-
-    private static JDBCConnMetadataModel getModelImpl(Connection conn) {
-        synchronized (MetadataModels.class) {
-            MetadataModel model = conn2Model.get(conn);
-            if (model != null) {
-                return (JDBCConnMetadataModel) model.impl;
-            }
-            return null;
-        }
+    public static MetadataModel createModel(Connection conn, String defaultSchemaName) {
+        return MetadataAccessor.getDefault().createMetadataModel(new JDBCConnMetadataModel(conn, defaultSchemaName));
     }
 }

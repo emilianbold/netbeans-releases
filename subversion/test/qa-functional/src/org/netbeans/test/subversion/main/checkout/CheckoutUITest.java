@@ -77,10 +77,9 @@ public class CheckoutUITest extends JellyTestCase{
     public static final String WORK_PATH = "work";
     public static final String PROJECT_NAME = "SVNApplication";
     public File projectPath;
-    String os_name;
     Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
-    
+
     /** Creates a new instance of CheckoutUITest */
     public CheckoutUITest(String name) {
         super(name);
@@ -88,17 +87,7 @@ public class CheckoutUITest extends JellyTestCase{
     
     @Override
     protected void setUp() throws Exception {
-        os_name = System.getProperty("os.name");
-        System.out.println("### "+getName()+" ###");
-        
-    }
-    
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
+        System.out.println("### "+getName()+" ###");        
     }
     
     public static Test suite() {
@@ -122,6 +111,7 @@ public class CheckoutUITest extends JellyTestCase{
     }
     
     public void testChangeAccessTypes() throws Exception {
+        TestKit.closeProject(PROJECT_NAME);
         TestKit.showStatusLabels();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();

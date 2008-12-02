@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
-import antlr.Token;
 import java.io.Serializable;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
@@ -56,7 +55,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNode 
                                                 implements Serializable {
     private static final long serialVersionUID = -5900095440680811076L;
-    private Token macroName;
+    private APTToken macroName;
     private int endOffset;
     
     /** Copy constructor */
@@ -71,11 +70,11 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
     }
     
     /** Creates a new instance of APTIfdefConditionBaseNode */
-    protected APTIfdefConditionBaseNode(Token token) {
+    protected APTIfdefConditionBaseNode(APTToken token) {
         super(token);
     }
 
-    public boolean accept(Token token) {
+    public boolean accept(APTToken token) {
         /** base implementation of #ifdef/#ifndef */        
         if (APTUtils.isID(token)) {
             if (macroName != null) {
@@ -102,7 +101,7 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
         }
         // eat all till END_PREPROC_DIRECTIVE     
         if (APTUtils.isEndDirectiveToken(token.getType())) {
-            endOffset = ((APTToken)token).getOffset();
+            endOffset = token.getOffset();
             if (macroName == null) {
                 if (DebugUtils.STANDALONE) {
                     System.err.printf("line %d: no macro name given in %s directive\n", // NOI18N
@@ -118,10 +117,12 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
         }
     }
 
+    @Override
     public int getEndOffset() {
         return endOffset;
     }
     
+    @Override
     public String getText() {
         assert (getToken() != null) : "must have valid preproc directive"; // NOI18N
         // macro name could be null for incorrect constructions
@@ -134,7 +135,7 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
     }
 
     /** base implementation for #ifdef/#ifndef */
-    public Token getMacroName() {
+    public APTToken getMacroName() {
         return macroName;
     }    
 

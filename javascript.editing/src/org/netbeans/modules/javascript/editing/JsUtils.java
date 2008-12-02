@@ -56,6 +56,10 @@ public class JsUtils {
         return f != null && "json".equals(f.getExt()); // NOI18N
     }
 
+    public static boolean isEjsFile(FileObject f) {
+        return f != null && "ejs".equals(f.getExt()); // NOI18N
+    }
+
     public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     public static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     
@@ -342,6 +346,7 @@ public class JsUtils {
         "if",
         "in",
         "instanceof",
+        "let", // New in 1.7 -- do language-specific checks here?
         "new",
 
         // Not included in the ECMAScript list of keywords - really a datatype
@@ -364,7 +369,8 @@ public class JsUtils {
         "var",
         "void",
         "while",
-        "with"
+        "with",
+        "yield" // New in 1.7 -- do language-specific checks here?
     };
 
     // Section 7.5.3 in ECMAScript Language Specification, ECMA-262

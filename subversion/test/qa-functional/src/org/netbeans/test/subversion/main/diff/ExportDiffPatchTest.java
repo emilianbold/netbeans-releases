@@ -20,6 +20,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -47,7 +48,6 @@ public class ExportDiffPatchTest extends JellyTestCase {
     public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
     public PrintStream stream;
-    String os_name;
     Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
     static Logger log;
@@ -69,14 +69,6 @@ public class ExportDiffPatchTest extends JellyTestCase {
         }
     }
     
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
-    }
-    
     public static Test suite() {
          return NbModuleSuite.create(
                  NbModuleSuite.createConfiguration(ExportDiffPatchTest.class).addTest(
@@ -91,6 +83,11 @@ public class ExportDiffPatchTest extends JellyTestCase {
         try {
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
+
+            TestKit.closeProject(PROJECT_NAME);
+            if (TestKit.getOsName().indexOf("Mac") > -1)
+                new NewProjectWizardOperator().invoke().close();
+            
             TestKit.TIME_OUT = 25;
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             VersioningOperator vo = VersioningOperator.invoke();

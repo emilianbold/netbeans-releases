@@ -62,10 +62,12 @@ public class DoxygenLexerTestCase extends NbTestCase {
     }
 
     public void testNextToken() {
-        String text = "@param aaa <code>aaa</code> xyz {@link org.Aaa#aaa()}";
+        String text = "< @param aaa <code>aaa</code> xyz {@link org.Aaa#aaa()}";
         
         TokenHierarchy<?> hi = TokenHierarchy.create(text, DoxygenTokenId.language());
         TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.POINTER_MARK, "<");
+        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.TAG, "@param");
         LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.IDENT, "aaa");
@@ -85,18 +87,4 @@ public class DoxygenLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.IDENT, "aaa");
         LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, "()}");
     }
-
-//    public void testModification1() throws Exception {
-//        PlainDocument doc = new PlainDocument();
-//        doc.putProperty(Language.class, DoxygenTokenId.language());
-//        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-//        
-//        {
-//            TokenSequence<?> ts = hi.tokenSequence();
-//            ts.moveStart();
-//            assertFalse(ts.moveNext());
-//        }
-//        
-//        doc.insertString(0, "@", null);
-//    }
 }

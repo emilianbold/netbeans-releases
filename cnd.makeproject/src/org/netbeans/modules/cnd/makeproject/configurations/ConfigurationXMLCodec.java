@@ -167,8 +167,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else if (atts.getValue(index).equals("3")) // FIXUP // NOI18N
             {
                 confType = MakeConfiguration.TYPE_STATIC_LIB;
-            } else {
-                // FIXUP
+            } else if (atts.getValue(index).equals("4")) { // NOI18N
+                confType = MakeConfiguration.TYPE_QT_APPLICATION;
+            } else if (atts.getValue(index).equals("5")) { // NOI18N
+                confType = MakeConfiguration.TYPE_QT_LIBRARY;
             }
             currentConf = createNewConfiguration(projectDirectory, atts.getValue(0), confType);
         } else if (element.equals(NEO_CONF_ELEMENT)) {
@@ -370,6 +372,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 return; // ignore
             }
             ((MakeConfiguration) currentConf).getFortranRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
+        } else if (element.equals(ASSEMBLER_REQUIRED_ELEMENT)) {
+            ((MakeConfiguration) currentConf).getAssemblerRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(PLATFORM_ELEMENT)) {
             int set = new Integer(currentText).intValue();
             if (descriptorVersion <= 37 && set == 4) {

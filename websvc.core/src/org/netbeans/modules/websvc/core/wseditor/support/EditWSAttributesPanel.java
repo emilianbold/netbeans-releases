@@ -85,15 +85,14 @@ public class EditWSAttributesPanel extends javax.swing.JPanel {
             String desc = editor.getDescription();
             if(desc != null && !desc.trim().equals("")){
                 c.getAccessibleContext().setAccessibleDescription(desc);
-                description.append(" " );
                 description.append(desc);
             }
         }
         String descText = description.toString();
         String helpText = NbBundle.getMessage(EditWSAttributesPanel.class, "MSG_PRESS_F1");
         if(!descText.equals("")){
-            descText = "<html>& " + descText + " " + helpText + " </html>";
-            org.openide.awt.Mnemonics.setLocalizedText(descLabel,descText);
+            descText = "<html>" + descText + " " + helpText + " </html>";
+            descLabel.setText(descText);
         }
     }
     class AlphabeticalComparator implements Comparator<String> {

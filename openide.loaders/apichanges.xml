@@ -106,6 +106,22 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="Toolbars.DnD">
+        <api name="awt"/>
+        <summary>Deprecation of Toolbar drag and drop API</summary>
+        <version major="7" minor="5"/>
+        <date day="28" month="11" year="2008"/>
+        <author login="saubrecht"/>
+        <compatibility binary="compatible" deprecation="yes"/>
+        <description>
+        <p>
+            Deprecated methods related to Toolbar drag and drop.
+        </p>
+        </description>
+        <class package="org.openide.awt" name="Toolbar"/>
+        <class package="org.openide.awt" name="ToolbarPool"/>
+        <issue number="59242"/>
+    </change>
      <change id="DataFilter.FileBased">
         <api name="loaders"/>
         <summary>Faster Filtering based on FileObjects</summary>

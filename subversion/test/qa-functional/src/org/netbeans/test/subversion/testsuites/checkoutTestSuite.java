@@ -69,9 +69,8 @@ public class checkoutTestSuite extends JellyTestCase {
     public static Test suite() {
         if (svnExistsChecker.check(false)) {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                    .addTest(CheckoutUITest.class, "testInvokeClose", "testChangeAccessTypes", "testIncorrentUrl", "testAvailableFields", "testRepositoryFolder")
-                    .addTest(CheckoutContentTest.class, "testCheckoutProject", "testCheckoutContent")
-                    .addTest(ImportUITest.class, "testInvoke", "testWarningMessage", "testRepositoryFolderLoad", "testCommitStep")
+                    .addTest(CheckoutContentTest.class, "testCheckoutProject")
+                    .addTest(ImportUITest.class, "testCommitStep")
                     .enableModules(".*").clusters(".*"));
         } else {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());

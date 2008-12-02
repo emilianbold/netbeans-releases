@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
 import antlr.TokenStream;
@@ -62,30 +61,29 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * @author Vladimir Kvashin
  */
 public final class LazyCompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
-    
+
     private SoftReference<List<CsmStatement>> statements = null;
-    
+
     public LazyCompoundStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
         super(ast, file, scope);
-        assert(ast.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY);
+        assert (ast.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY);
         // we need to throw away the compound statement AST under this element
         ast.setFirstChild(null);
     }
-    
+
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.COMPOUND;
     }
-    
+
     public List<CsmStatement> getStatements() {
-	if( statements == null ) {
-	    return createStatements();
-	}
-	else {
-	    List<CsmStatement> list = statements.get();
-	    return (list == null) ? createStatements() : list;
-	}
+        if (statements == null) {
+            return createStatements();
+        } else {
+            List<CsmStatement> list = statements.get();
+            return (list == null) ? createStatements() : list;
+        }
     }
-    
+
     /**
      * 1) Creates a list of statements
      * 2) If it is created successfully, stores a soft reference to this list
@@ -101,53 +99,53 @@ public final class LazyCompoundStatementImpl extends StatementBase implements Cs
             return Collections.emptyList();
         }
     }
-    
+
     private boolean renderStatements(List<CsmStatement> list) {
         FileImpl file = (FileImpl) getContainingFile();
         TokenStream stream = file.getTokenStream(getStartOffset(), getEndOffset());
         if (stream == null) {
             Utils.LOG.severe("Can't create compound statement: can't create token stream for file " + file.getAbsolutePath()); // NOI18N
             return false;
-        } else {        
+        } else {
             AST resolvedAst = resolveLazyCompoundStatement(stream);
             file.releaseTokenStream(stream);
             renderStatements(resolvedAst, list);
             return true;
         }
     }
-    
+
     private void renderStatements(AST ast, List<CsmStatement> list) {
-        for(ast = (ast == null ? null : ast.getFirstChild()); ast != null; ast = ast.getNextSibling() ) {
+        for (ast = (ast == null ? null : ast.getFirstChild()); ast != null; ast = ast.getNextSibling()) {
             CsmStatement stmt = AstRenderer.renderStatement(ast, getContainingFile(), this);
-            if( stmt != null ) {
+            if (stmt != null) {
                 list.add(stmt);
             }
         }
     }
 
     public Collection<CsmScopeElement> getScopeElements() {
-        return (Collection)getStatements();
+        return (Collection) getStatements();
     }
 
     private AST resolveLazyCompoundStatement(TokenStream tokenStream) {
         int flags = CPPParserEx.CPP_CPLUSPLUS;
-        if( ! TraceFlags.REPORT_PARSING_ERRORS || TraceFlags.DEBUG ) {
+        if (!TraceFlags.REPORT_PARSING_ERRORS || TraceFlags.DEBUG) {
             flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
-        }            
+        }
         CPPParserEx parser = CPPParserEx.getInstance(getContainingFile().getName().toString(), tokenStream, flags);
         parser.setLazyCompound(false);
         parser.compound_statement();
         AST out = parser.getAST();
         return out;
     }
-    
+
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
     }
-    
+
     public LazyCompoundStatementImpl(DataInput input) throws IOException {
         super(input);
         this.statements = null;
-    }      
+    }
 }

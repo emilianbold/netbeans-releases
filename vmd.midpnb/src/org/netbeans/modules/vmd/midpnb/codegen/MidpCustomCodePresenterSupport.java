@@ -66,6 +66,7 @@ import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonGroupCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
 
 /**
@@ -143,6 +144,11 @@ public final class MidpCustomCodePresenterSupport {
                                          .addSetters(MidpSetter.createConstructor(type, MidpVersionable.MIDP)
                                             .addParameters(SVGFORM_REFERENCE)
                                             .addParameters(SVGComponentCD.PROP_ID));
+    }
+    
+    public static Presenter createSVGButtonGroupCodePresenter() {
+        return new CodeSetterPresenter().addSetters(MidpSetter.createConstructor(
+                SVGButtonGroupCD.TYPEID, MidpVersionable.MIDP));
     }
 
     public static String getSVGMenuActionMethodAccessCode(DesignComponent menu) {

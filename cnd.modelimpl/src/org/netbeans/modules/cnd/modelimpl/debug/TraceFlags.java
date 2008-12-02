@@ -54,97 +54,99 @@ import org.netbeans.modules.cnd.apt.debug.DebugUtils;
  */
 public class TraceFlags {
     
-    public static final boolean TRACE_PARSER_QUEUE_DETAILS = Boolean.getBoolean("cnd.parser.queue.trace.details");
-    public static final boolean TRACE_PARSER_QUEUE = TRACE_PARSER_QUEUE_DETAILS || Boolean.getBoolean("cnd.parser.queue.trace");
-    public static final boolean TRACE_PARSER_QUEUE_POLL = TRACE_PARSER_QUEUE || Boolean.getBoolean("cnd.parser.queue.trace.poll");
-    public static final boolean TRACE_CLOSE_PROJECT = DebugUtils.getBoolean("cnd.trace.close.project", false);
-    public static final boolean TIMING_PARSE_PER_FILE_DEEP = Boolean.getBoolean("cnd.modelimpl.timing.per.file.deep");
-    public static final boolean TIMING_PARSE_PER_FILE_FLAT = Boolean.getBoolean("cnd.modelimpl.timing.per.file.flat");
-    public static final boolean TIMING = Boolean.getBoolean("cnd.modelimpl.timing");
+    public static final boolean TRACE_PARSER_QUEUE_DETAILS = Boolean.getBoolean("cnd.parser.queue.trace.details"); // NOI18N
+    public static final boolean TRACE_PARSER_QUEUE = TRACE_PARSER_QUEUE_DETAILS || Boolean.getBoolean("cnd.parser.queue.trace"); // NOI18N
+    public static final boolean TRACE_PARSER_QUEUE_POLL = TRACE_PARSER_QUEUE || Boolean.getBoolean("cnd.parser.queue.trace.poll"); // NOI18N
+    public static final boolean TRACE_CLOSE_PROJECT = DebugUtils.getBoolean("cnd.trace.close.project", false); // NOI18N
+    public static final boolean TIMING_PARSE_PER_FILE_DEEP = Boolean.getBoolean("cnd.modelimpl.timing.per.file.deep"); // NOI18N
+    public static final boolean TIMING_PARSE_PER_FILE_FLAT = Boolean.getBoolean("cnd.modelimpl.timing.per.file.flat"); // NOI18N
+    public static final boolean TIMING = Boolean.getBoolean("cnd.modelimpl.timing"); // NOI18N
     public static final int     SUSPEND_PARSE_TIME = Integer.getInteger("cnd.modelimpl.sleep", 0); // NOI18N
-    public static final boolean REPORT_PARSING_ERRORS = Boolean.getBoolean("parser.report.errors");
-    public static final boolean DUMP_AST = Boolean.getBoolean("parser.collect.ast");
-    public static final boolean DUMP_PROJECT_ON_OPEN = DebugUtils.getBoolean("cnd.dump.project.on.open", false);
+    public static final boolean REPORT_PARSING_ERRORS = Boolean.getBoolean("parser.report.errors"); // NOI18N
+    public static final boolean DUMP_AST = Boolean.getBoolean("parser.collect.ast"); // NOI18N
+    public static final boolean DUMP_PROJECT_ON_OPEN = DebugUtils.getBoolean("cnd.dump.project.on.open", false); // NOI18N
 
 
-    public static final boolean SMART_HEADERS_PARSE = DebugUtils.getBoolean("cnd.smart.parse", true);    
-    public static final boolean NO_HEADERS_REPARSE = DebugUtils.getBoolean("cnd.no.hdr.reparse", false);
+    public static final boolean SMART_HEADERS_PARSE = DebugUtils.getBoolean("cnd.smart.parse", true);     // NOI18N
+    public static final boolean NO_HEADERS_REPARSE = DebugUtils.getBoolean("cnd.no.hdr.reparse", false); // NOI18N
     
     /** 
      * swithces off parsing function bodies
      */
-    public static final boolean EXCLUDE_COMPOUND = DebugUtils.getBoolean("cnd.modelimpl.excl.compound", true);
+    public static final boolean EXCLUDE_COMPOUND = DebugUtils.getBoolean("cnd.modelimpl.excl.compound", true); // NOI18N
     
-    public static final boolean APT_CHECK_GET_STATE = DebugUtils.getBoolean("apt.check.get.state", true);
+    public static final boolean APT_CHECK_GET_STATE = DebugUtils.getBoolean("apt.check.get.state", true); // NOI18N
  
     public static final int     BUF_SIZE = APTTraceFlags.BUF_SIZE;
     
     /**
      * switches for cache
      */ 
-    public static final boolean CACHE_AST = DebugUtils.getBoolean("cnd.cache.ast", false);
-    public static final boolean TRACE_CACHE = DebugUtils.getBoolean("cnd.trace.cache", false);
-    public static final boolean USE_AST_CACHE = DebugUtils.getBoolean("cnd.use.ast.cache", false);
-    public static final boolean CACHE_SKIP_APT_VISIT = DebugUtils.getBoolean("cnd.cache.skip.apt.visit", false);
+    public static final boolean CACHE_AST = DebugUtils.getBoolean("cnd.cache.ast", false); // NOI18N
+    public static final boolean TRACE_CACHE = DebugUtils.getBoolean("cnd.trace.cache", false); // NOI18N
+    public static final boolean USE_AST_CACHE = DebugUtils.getBoolean("cnd.use.ast.cache", false); // NOI18N
+    public static final boolean CACHE_SKIP_APT_VISIT = DebugUtils.getBoolean("cnd.cache.skip.apt.visit", false); // NOI18N
 
-    public static final boolean CACHE_SKIP_SAVE = DebugUtils.getBoolean("cnd.cache.skip.save", true);
+    public static final boolean CACHE_SKIP_SAVE = DebugUtils.getBoolean("cnd.cache.skip.save", true); // NOI18N
     
-    public static final boolean TRACE_MODEL_STATE = Boolean.getBoolean("cnd.modelimpl.installer.trace");
+    public static final boolean TRACE_MODEL_STATE = Boolean.getBoolean("cnd.modelimpl.installer.trace"); // NOI18N
 
-    public static final boolean USE_CANONICAL_PATH = DebugUtils.getBoolean("cnd.modelimpl.use.canonical.path", false);
+    public static final boolean USE_CANONICAL_PATH = DebugUtils.getBoolean("cnd.modelimpl.use.canonical.path", false); // NOI18N
     
-    public static final boolean CHECK_MEMORY = DebugUtils.getBoolean("cnd.check.memory", false);
+    public static final boolean CHECK_MEMORY = DebugUtils.getBoolean("cnd.check.memory", false); // NOI18N
     
-    public static final boolean DUMP_PARSE_RESULTS = DebugUtils.getBoolean("cnd.dump.parse.results", false);
-    public static final boolean DUMP_REPARSE_RESULTS = DebugUtils.getBoolean("cnd.dump.reparse.results", false);
+    public static final boolean DUMP_PARSE_RESULTS = DebugUtils.getBoolean("cnd.dump.parse.results", false); // NOI18N
+    public static final boolean DUMP_REPARSE_RESULTS = DebugUtils.getBoolean("cnd.dump.reparse.results", false); // NOI18N
     
-    public static final boolean DEBUG = Boolean.getBoolean("org.netbeans.modules.cnd.modelimpl.trace")  || Boolean.getBoolean("cnd.modelimpl.trace");
+    public static final boolean DEBUG = Boolean.getBoolean("org.netbeans.modules.cnd.modelimpl.trace")  || Boolean.getBoolean("cnd.modelimpl.trace"); // NOI18N
     
-    //public static final boolean USE_REPOSITORY = DebugUtils.getBoolean("cnd.modelimpl.use.repository", true);
-    public static final boolean PERSISTENT_REPOSITORY = DebugUtils.getBoolean("cnd.modelimpl.persistent", true);
-    public static final boolean RESTORE_CONTAINER_FROM_UID = DebugUtils.getBoolean("cnd.modelimpl.use.uid.container", true);
+    //public static final boolean USE_REPOSITORY = DebugUtils.getBoolean("cnd.modelimpl.use.repository", true); // NOI18N
+    public static final boolean PERSISTENT_REPOSITORY = DebugUtils.getBoolean("cnd.modelimpl.persistent", true); // NOI18N
+    public static final boolean RESTORE_CONTAINER_FROM_UID = DebugUtils.getBoolean("cnd.modelimpl.use.uid.container", true); // NOI18N
     //public static final boolean UID_CONTAINER_MARKER = true;
 
-    public static final boolean CLEAN_MACROS_AFTER_PARSE = DebugUtils.getBoolean("cnd.clean.macros.after.parse", true);
+    public static final boolean CLEAN_MACROS_AFTER_PARSE = DebugUtils.getBoolean("cnd.clean.macros.after.parse", true); // NOI18N
     
-    public static final boolean SET_UNNAMED_QUALIFIED_NAME = DebugUtils.getBoolean("cnd.modelimpl.fqn.unnamed", false);
-    public static final boolean TRACE_UNNAMED_DECLARATIONS = DebugUtils.getBoolean("cnd.modelimpl.trace.unnamed", false);
+    public static final boolean SET_UNNAMED_QUALIFIED_NAME = DebugUtils.getBoolean("cnd.modelimpl.fqn.unnamed", false); // NOI18N
+    public static final boolean TRACE_UNNAMED_DECLARATIONS = DebugUtils.getBoolean("cnd.modelimpl.trace.unnamed", false); // NOI18N
 
-    public static final boolean TRACE_REGISTRATION = DebugUtils.getBoolean("cnd.modelimpl.trace.registration", false);
-    public static final boolean TRACE_DISPOSE = DebugUtils.getBoolean("cnd.modelimpl.trace.dispose", false);
+    public static final boolean TRACE_REGISTRATION = DebugUtils.getBoolean("cnd.modelimpl.trace.registration", false); // NOI18N
+    public static final boolean TRACE_DISPOSE = DebugUtils.getBoolean("cnd.modelimpl.trace.dispose", false); // NOI18N
 
-    public static final boolean CLOSE_AFTER_PARSE = DebugUtils.getBoolean("cnd.close.ide.after.parse", false);
+    public static final boolean CLOSE_AFTER_PARSE = DebugUtils.getBoolean("cnd.close.ide.after.parse", false); // NOI18N
     public static final int     CLOSE_TIMEOUT = Integer.getInteger("cnd.close.ide.timeout",0); // in seconds // NOI18N
 
-    public static final boolean USE_DEEP_REPARSING = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing", true);
-    public static final boolean USE_DEEP_REPARSING_TRACE = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing.trace", false);
-    public static final boolean DEEP_REPARSING_OPTIMISTIC = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing.optimistic", false);
+    public static final boolean USE_DEEP_REPARSING = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing", true); // NOI18N
+    public static final boolean USE_DEEP_REPARSING_TRACE = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing.trace", false); // NOI18N
+    public static final boolean DEEP_REPARSING_OPTIMISTIC = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing.optimistic", false); // NOI18N
 
     
-    public static final boolean SAFE_REPOSITORY_ACCESS = DebugUtils.getBoolean("cnd.modelimpl.repository.safe.access", false);
+    public static final boolean SAFE_REPOSITORY_ACCESS = DebugUtils.getBoolean("cnd.modelimpl.repository.safe.access", false); // NOI18N
 
     // see IZ#101952 and IZ#101953
-    public static final boolean SAFE_UID_ACCESS = DebugUtils.getBoolean("cnd.modelimpl.safe.uid", true);
+    public static final boolean SAFE_UID_ACCESS = DebugUtils.getBoolean("cnd.modelimpl.safe.uid", true); // NOI18N
     
-    public static final boolean TRACE_CANONICAL_FIND_FILE = DebugUtils.getBoolean("cnd.modelimpl.trace.canonical.find", false);    
+    public static final boolean TRACE_CANONICAL_FIND_FILE = DebugUtils.getBoolean("cnd.modelimpl.trace.canonical.find", false); // NOI18N
 
-    public static final boolean NEED_TO_TRACE_UNRESOLVED_INCLUDE = DebugUtils.getBoolean("cnd.modelimpl.trace.failed.include", false);   
-    public static final boolean TRACE_VALIDATION = DebugUtils.getBoolean("cnd.modelimpl.trace.validation", false);
+    public static final boolean NEED_TO_TRACE_UNRESOLVED_INCLUDE = DebugUtils.getBoolean("cnd.modelimpl.trace.failed.include", false); // NOI18N
+    public static final boolean TRACE_VALIDATION = DebugUtils.getBoolean("cnd.modelimpl.trace.validation", false); // NOI18N
 
-    public static final boolean TRACE_XREF_REPOSITORY = DebugUtils.getBoolean("cnd.modelimpl.trace.xref.repository", false);
+    public static final boolean TRACE_XREF_REPOSITORY = DebugUtils.getBoolean("cnd.modelimpl.trace.xref.repository", false); // NOI18N
 
-    public static final boolean TRACE_REPOSITORY_LISTENER = DebugUtils.getBoolean("cnd.repository.listener.trace", false);
-    public static final boolean TRACE_UP_TO_DATE_PROVIDER = DebugUtils.getBoolean("cnd.uptodate.trace", false);
-    public static final boolean TRACE_PROJECT_COMPONENT_RW = DebugUtils.getBoolean("cnd.project.compoment.rw.trace", false);
+    public static final boolean TRACE_REPOSITORY_LISTENER = DebugUtils.getBoolean("cnd.repository.listener.trace", false); // NOI18N
+    public static final boolean TRACE_UP_TO_DATE_PROVIDER = DebugUtils.getBoolean("cnd.uptodate.trace", false); // NOI18N
+    public static final boolean TRACE_PROJECT_COMPONENT_RW = DebugUtils.getBoolean("cnd.project.compoment.rw.trace", false); // NOI18N
 
-    public static final boolean TRACE_RESOLVED_LIBRARY = DebugUtils.getBoolean("cnd.project.trace.resolved.library", false);
+    public static final boolean TRACE_RESOLVED_LIBRARY = DebugUtils.getBoolean("cnd.project.trace.resolved.library", false); // NOI18N
     
-    public static final boolean TRACE_EXTERNAL_CHANGES = DebugUtils.getBoolean("cnd.modelimpl.trace.external.changes", false);
+    public static final boolean TRACE_EXTERNAL_CHANGES = DebugUtils.getBoolean("cnd.modelimpl.trace.external.changes", false); // NOI18N
     
-    public static final boolean TRACE_ERROR_PROVIDER = DebugUtils.getBoolean("cnd.modelimpl.trace.error.provider", false);
-    public static final boolean PARSE_STATISTICS = DebugUtils.getBoolean("cnd.parse.statistics", false);
-    public static final boolean TRACE_PC_STATE = DebugUtils.getBoolean("cnd.pp.condition.state.trace", false);
-    
+    public static final boolean TRACE_ERROR_PROVIDER = DebugUtils.getBoolean("cnd.modelimpl.trace.error.provider", false); // NOI18N
+    public static final boolean PARSE_STATISTICS = DebugUtils.getBoolean("cnd.parse.statistics", false); // NOI18N
+    public static final boolean TRACE_PC_STATE = DebugUtils.getBoolean("cnd.pp.condition.state.trace", false); // NOI18N
+
+    public static final int REPARSE_DELAY = DebugUtils.getInt("cnd.reparse.delay", 1001); // NOI18N
+
     public static final List<String> logMacros;
     static {
          String text = System.getProperty("parser.log.macro"); //NOI18N
@@ -157,5 +159,8 @@ public class TraceFlags {
          } else {
              logMacros = null;
          }
+    }
+
+    private TraceFlags() {
     }
 }

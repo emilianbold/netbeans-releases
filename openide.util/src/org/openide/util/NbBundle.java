@@ -78,7 +78,9 @@ import java.util.logging.Logger;
 * </pre></code>
 */
 public class NbBundle extends Object {
-    
+
+    private static final Logger LOG = Logger.getLogger(NbBundle.class.getName());
+
     private static final boolean USE_DEBUG_LOADER = Boolean.getBoolean("org.openide.util.NbBundle.DEBUG"); // NOI18N
     private static String brandingToken = null;
 
@@ -557,7 +559,7 @@ public class NbBundle extends Object {
                     }
                 } catch (IOException e) {
                     Exceptions.attachMessage(e, "While loading: " + res); // NOI18N
-                    Logger.getLogger(NbBundle.class.getName()).log(Level.WARNING, null, e);
+                    LOG.log(Level.WARNING, null, e);
 
                     return null;
                 }
@@ -604,9 +606,9 @@ public class NbBundle extends Object {
             } catch (ClassNotFoundException cnfe) {
                 // fine - ignore
             } catch (Exception e) {
-                Logger.getLogger(NbBundle.class.getName()).log(Level.WARNING, null, e);
+                LOG.log(Level.WARNING, null, e);
             } catch (LinkageError e) {
-                Logger.getLogger(NbBundle.class.getName()).log(Level.WARNING, null, e);
+                LOG.log(Level.WARNING, null, e);
             }
         }
 
@@ -770,11 +772,7 @@ public class NbBundle extends Object {
                 an = new Attributes.Name(k);
             } catch (IllegalArgumentException iae) {
                 // Robustness, and workaround for reported MRJ locale bug:
-                Exceptions.attachLocalizedMessage(iae, 
-                    getMessage(NbBundle.class, "EXC_bad_attributes_name", k, Locale.getDefault().toString()) 
-                );
-                Exceptions.printStackTrace(iae);
-
+                LOG.log(Level.FINE, null, iae);
                 return null;
             }
 

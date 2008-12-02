@@ -42,14 +42,10 @@
 package org.netbeans.modules.websvc.registry.netbeans;
 
 
-import java.io.File;
-import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 
 import java.awt.Image;
 import javax.swing.Action;
@@ -73,6 +69,7 @@ public class WebServicesRootNodeNetBeansSide extends AbstractNode implements Web
         }
     }
     
+    @Override
     public Image getIcon(int type){
         if (realNode!=null)
             return ImageUtilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservicegroup.png");
@@ -80,6 +77,7 @@ public class WebServicesRootNodeNetBeansSide extends AbstractNode implements Web
             return ImageUtilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservicegroup_invalid.png");
     }
     
+    @Override
     public Image getOpenedIcon(int type){
         if (realNode!=null)
             return ImageUtilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservicegroup.png");
@@ -87,6 +85,7 @@ public class WebServicesRootNodeNetBeansSide extends AbstractNode implements Web
             return ImageUtilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservicegroup_invalid.png");
     }
     
+    @Override
     public Action[] getActions(boolean context) {
 
         if(realNode != null) {
@@ -95,6 +94,7 @@ public class WebServicesRootNodeNetBeansSide extends AbstractNode implements Web
         return new Action[0];
     }
     
+    @Override
     public Action getPreferredAction() {
         if(realNode != null) {
             return realNode.getPreferredAction();
@@ -102,11 +102,13 @@ public class WebServicesRootNodeNetBeansSide extends AbstractNode implements Web
         return null;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(WebServicesRootNodeInterface.class);
     }
     
     
+    @Override
     public Node.Cookie getCookie (Class type) {
         if(realNode != null) {
             return realNode.getCookie(type);

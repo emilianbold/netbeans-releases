@@ -119,6 +119,8 @@ public class KeyObjectFactory extends KeyFactory {
             aHandle = KEY_MACRO_KEY;
         } else if (object instanceof IncludeKey) {
             aHandle = KEY_INCLUDE_KEY;
+        } else if (object instanceof ParamListKey) {
+            aHandle = KEY_PARAM_LIST_KEY;
         } else if (object instanceof OffsetableDeclarationKey) {
             aHandle = KEY_DECLARATION_KEY;
         } else if (object instanceof ProjectSettingsValidatorKey) {
@@ -155,6 +157,9 @@ public class KeyObjectFactory extends KeyFactory {
             case KEY_INCLUDE_KEY:
                 aKey = new IncludeKey(aStream);
                 break;
+            case KEY_PARAM_LIST_KEY:
+                aKey = new ParamListKey(aStream);
+                break;
             case KEY_DECLARATION_KEY:
                 aKey = new OffsetableDeclarationKey(aStream);
                 break;
@@ -190,7 +195,8 @@ public class KeyObjectFactory extends KeyFactory {
     public static final int KEY_FILE_KEY       = KEY_NAMESPACE_KEY + 1;
     public static final int KEY_MACRO_KEY      = KEY_FILE_KEY + 1;
     public static final int KEY_INCLUDE_KEY    = KEY_MACRO_KEY + 1;
-    public static final int KEY_DECLARATION_KEY = KEY_INCLUDE_KEY + 1;
+    public static final int KEY_PARAM_LIST_KEY    = KEY_INCLUDE_KEY + 1;
+    public static final int KEY_DECLARATION_KEY = KEY_PARAM_LIST_KEY + 1;
     public static final int KEY_PRJ_VALIDATOR_KEY = KEY_DECLARATION_KEY + 1;
     
     public static final int KEY_DECLARATION_CONTAINER_KEY = KEY_PRJ_VALIDATOR_KEY + 1;

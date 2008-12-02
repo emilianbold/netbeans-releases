@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import org.mozilla.nb.javascript.Context;
+
 /**
  * Test the "mark occurrences" feature in JavaScript
  *
@@ -52,6 +54,11 @@ public class JsOccurrenceFinderTest extends JsTestBase {
     
     public JsOccurrenceFinderTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        SupportedBrowsers.getInstance().setLanguageVersion(Context.VERSION_DEFAULT);
     }
 
     public void testMarks() throws Exception {
@@ -98,6 +105,15 @@ public class JsOccurrenceFinderTest extends JsTestBase {
         checkOccurrences("testfiles/137522.js", "updated.each(function(it^em)", true); //);false /* true */);
     }
     
+    public void testJavaScript17Stuff1() throws Exception {
+        SupportedBrowsers.getInstance().setLanguageVersion(Context.VERSION_1_7);
+        checkOccurrences("testfiles/javascript17.js", "yi^eld i;", true);
+    }
+
+    public void testJavaScript17Stuff2() throws Exception {
+        SupportedBrowsers.getInstance().setLanguageVersion(Context.VERSION_1_7);
+        checkOccurrences("testfiles/javascript17.js", "function f^ib() {", true);
+    }
     
     // TODO - test function calls
 }

@@ -462,7 +462,12 @@ public class Method {
             public Object run(CompilationInfo cinfo) {
                 List<Statement> stmts = new ArrayList<Statement>();
                 ExecutableElement execElement = execElementHandle.resolve(cinfo);
-                BlockTree block = cinfo.getTrees().getTree(execElement).getBody();
+                MethodTree methodTree = cinfo.getTrees().getTree(execElement);
+                // XXX #133882 MethodTree can be null, see the javadoc.
+                if (methodTree == null) {
+                    return stmts;
+                }
+                BlockTree block = methodTree.getBody();
                 if(name.equals(BeanStructureScanner.CTOR)) {
                     //Look for property initializers in the first try catch block, this is
                     //to support the code generated in constructor prior to FCS

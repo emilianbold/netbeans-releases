@@ -41,7 +41,6 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations.ui;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -81,8 +80,10 @@ public class CustomizerRootNodeProvider {
 
     public synchronized List<CustomizerNode> getCustomizerNodes() {
         ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
+
         // Add nodes from providers registerd old-style
         list.addAll(getCustomizerNodesRegisteredOldStyle());
+
         // Add nodes from providers register via services
         for (CustomizerNodeProvider provider : getCustomizerNodeProviders()) {
             list.add(provider.factoryCreate());

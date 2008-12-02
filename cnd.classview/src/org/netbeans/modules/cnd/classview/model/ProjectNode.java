@@ -48,10 +48,15 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.classview.Diagnostic;
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.List;
 import org.openide.nodes.*;
 
 import  org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
+import org.openide.util.Utilities;
+import org.openide.util.actions.NodeAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author Vladimir Kvasihn
@@ -61,12 +66,12 @@ public class ProjectNode extends NPNode {
     private boolean isLibrary;
     
     public ProjectNode(final CsmProject project, Children.Array key) {
-        super(key);
+        super(key, Lookups.fixed(project));
         this.project = project;
         isLibrary = project.isArtificial();
         init(project);
     }
-    
+
     private void init(CsmProject project){
         setName(project.getName().toString());
         setDisplayName(project.getName().toString());
@@ -106,7 +111,6 @@ public class ProjectNode extends NPNode {
     }
     
     private CsmProject project;
-    private Node[] loadingNodes = null;
     
     private class TraverseAction extends AbstractAction {
         private Map<BaseNode,BaseNode> map;
@@ -158,9 +162,56 @@ public class ProjectNode extends NPNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        if( Diagnostic.DEBUG || EXPORT) {
-            return new Action[] {new TraverseAction(),new ExportAction()};
+        List<? extends Action> list = Utilities.actionsForPath("NativeProjects/Actions"); // NOI18N
+        NodeAction failedIncludes = null;
+        NodeAction testReferences = null;
+        for(Action action : list){
+            if (action instanceof NodeAction){
+                if ("org.netbeans.modules.cnd.highlight.error.includes.FailedIncludesAction".equals(action.getClass().getName())){ // NOI18N
+                    failedIncludes = (NodeAction) action;
+                } else if ("org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction$AllUsagesAction".equals(action.getClass().getName())){ // NOI18N
+                    testReferences = (NodeAction) action;
+                }
+            }
         }
-        return new Action[0];
+        List<Action> res = new ArrayList<Action>();
+        if (failedIncludes != null) {
+            res.add(new NodeActionImpl(failedIncludes, this));
+        }
+        if( Diagnostic.DEBUG || EXPORT) {
+            if (testReferences != null) {
+                res.add(new NodeActionImpl(testReferences, this));
+            }
+            res.add(new TraverseAction());
+            res.add(new ExportAction());
+        }
+        return res.toArray(new Action[res.size()]);
     }
+
+    private static class NodeActionImpl extends AbstractAction {
+        private final NodeAction na;
+        private final ProjectNode node;
+        public NodeActionImpl(NodeAction na, ProjectNode node) {
+            this.na = na;
+            this.node = node;
+        }
+
+        @Override
+        public Object getValue(String key) {
+            if (Action.NAME.equals(key)) {
+                return na.getName();
+            }
+            return null;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return na.createContextAwareInstance(Lookups.fixed(node)).isEnabled();
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            na.createContextAwareInstance(Lookups.fixed(node)).actionPerformed(e);
+        }
+    }
+
 }

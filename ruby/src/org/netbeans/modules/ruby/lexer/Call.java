@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -66,6 +66,7 @@ public class Call {
     private final String lhs;
     private final boolean isStatic;
     private final boolean methodExpected;
+    private boolean isLHSConstant;
 
     public Call(String type, String lhs, boolean isStatic, boolean methodExpected) {
         super();
@@ -78,6 +79,10 @@ public class Call {
         this.isStatic = isStatic;
     }
 
+    private void setLHSConstant(boolean isLHSConstant) {
+        this.isLHSConstant = isLHSConstant;
+    }
+
     public String getType() {
         return type;
     }
@@ -88,6 +93,10 @@ public class Call {
 
     public boolean isStatic() {
         return isStatic;
+    }
+
+    public boolean isLHSConstant() {
+        return isLHSConstant;
     }
 
     public boolean isSimpleIdentifier() {
@@ -117,7 +126,7 @@ public class Call {
         } else if (this == UNKNOWN) {
             return "UNKNOWN";
         } else {
-            return "Call(" + type + "," + lhs + "," + isStatic + ")";
+            return "Call(" + type + "," + lhs + "," + isStatic + "," + isLHSConstant + ')';
         }
     }
 
@@ -127,18 +136,25 @@ public class Call {
     }
     
     /**
-     * Determine whether the given offset corresponds to a method call on another
-     * object. This would happen in these cases:
-     *    Foo::|, Foo::Bar::|, Foo.|, Foo.x|, foo.|, foo.x|
+     * Determine whether the given offset corresponds to a method call on
+     * another object. This would happen in these cases:
+     * 
+     * <pre>
+     *   Foo::|, Foo::Bar::|, Foo.|, Foo.x|, foo.|, foo.x|
+     * </pre>
+     *
      * and not here:
+     *
+     * <pre>
      *   |, Foo|, foo|
+     * </pre>
      * The method returns the left hand side token, if any, such as "Foo", Foo::Bar",
-     * and "foo". If not, it will return null.
+     * and "foo". If not, it will return null.<br>
      * Note that "self" and "super" are possible return values for the lhs, which mean
      * that you don't have a call on another object. Clients of this method should
      * handle that return value properly (I could return null here, but clients probably
      * want to distinguish self and super in this case so it's useful to return the info.)
-     *
+     * <p>
      * This method will also try to be smart such that if you have a block or array
      * call, it will return the relevant classnames (e.g. for [1,2].x| it returns "Array").
      */
@@ -333,20 +349,29 @@ public class Call {
                         // Detect constructor calls of the form String.new.^
                         if (lhs.endsWith(".new")) { // NOI18N
                             // See if it looks like a type prior to that
-                            String type = lhs.substring(0, lhs.length()-4); // 4=".new".length()
-                            if (RubyUtils.isValidRubyModuleName(type)) {
+                            String type = lhs.substring(0, lhs.length() - 4); // 4=".new".length()
+                            if (RubyUtils.isValidConstantFQN(type)) {
                                 return new Call(type, lhs, false, methodExpected);
                             }
                         }
-                        
-                        String type = null;
-                        if (RubyUtils.isValidRubyModuleName(lhs)) {
+
+                        String type = RubyUtils.RUBY_PREDEF_VARS_CLASSES.get(lhs);
+                        boolean isStatic = type == null; // predefined vars are instances
+
+                        boolean isLHSConstant = RubyUtils.isValidConstantFQN(lhs);
+                        if (type == null /* not predef. var */ && isLHSConstant) {
                             type = lhs;
                         }
 
-                        return new Call(type, lhs, true, methodExpected);
+                        Call call = new Call(type, lhs, isStatic, methodExpected);
+                        call.setLHSConstant(isLHSConstant);
+
+                        return call;
                     } else {
-                        return new Call(null, lhs, false, methodExpected);
+                        // try __FILE__ or __LINE__
+                        String type = RubyUtils.RUBY_PREDEF_VARS_CLASSES.get(lhs);
+
+                        return new Call(type, lhs, false, methodExpected);
                     }
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);

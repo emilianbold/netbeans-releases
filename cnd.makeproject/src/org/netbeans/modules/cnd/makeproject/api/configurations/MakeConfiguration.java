@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
@@ -60,7 +61,6 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodePro
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.PlatformNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -77,11 +77,18 @@ public class MakeConfiguration extends Configuration {
         getString("MakefileName"),
         getString("ApplicationName"),
         getString("DynamicLibraryName"),
-        getString("StaticLibraryName"),};
+        getString("StaticLibraryName"),
+        getString("QtAppName"),
+        getString("QtLibName")
+    };
+
     public static final int TYPE_MAKEFILE = 0;
     public static final int TYPE_APPLICATION = 1;
     public static final int TYPE_DYNAMIC_LIB = 2;
     public static final int TYPE_STATIC_LIB = 3;
+    public static final int TYPE_QT_APPLICATION = 4;
+    public static final int TYPE_QT_LIBRARY = 5;
+
     // Configurations
     private IntConfiguration configurationType;
     private MakefileConfiguration makefileConfiguration;
@@ -89,16 +96,20 @@ public class MakeConfiguration extends Configuration {
     private LanguageBooleanConfiguration cRequired;
     private LanguageBooleanConfiguration cppRequired;
     private LanguageBooleanConfiguration fortranRequired;
+    private LanguageBooleanConfiguration assemblerRequired;
     private DevelopmentHostConfiguration developmentHost;
     private PlatformConfiguration platform;
     private BooleanConfiguration dependencyChecking;
     private CCompilerConfiguration cCompilerConfiguration;
     private CCCompilerConfiguration ccCompilerConfiguration;
     private FortranCompilerConfiguration fortranCompilerConfiguration;
+    private AssemblerConfiguration assemblerConfiguration;
     private LinkerConfiguration linkerConfiguration;
     private ArchiverConfiguration archiverConfiguration;
     private PackagingConfiguration packagingConfiguration;
     private RequiredProjectsConfiguration<LibraryItem> requiredProjectsConfiguration;
+    private DebuggerChooserConfiguration debuggerChooserConfiguration;
+    private QmakeConfiguration qmakeConfiguration;
     private boolean languagesDirty = true;
 
     // Constructors
@@ -118,16 +129,20 @@ public class MakeConfiguration extends Configuration {
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
         fortranRequired = new LanguageBooleanConfiguration();
+        assemblerRequired = new LanguageBooleanConfiguration();
         platform = new PlatformConfiguration(developmentHost, compilerSet.getPlatform(), Platforms.getPlatformDisplayNames());
         makefileConfiguration = new MakefileConfiguration(this);
         dependencyChecking = new BooleanConfiguration(null, isMakefileConfiguration() ? false : MakeOptions.getInstance().getDepencyChecking());
         cCompilerConfiguration = new CCompilerConfiguration(baseDir, null);
         ccCompilerConfiguration = new CCCompilerConfiguration(baseDir, null);
         fortranCompilerConfiguration = new FortranCompilerConfiguration(baseDir, null);
+        assemblerConfiguration = new AssemblerConfiguration(baseDir, null);
         linkerConfiguration = new LinkerConfiguration(this);
         archiverConfiguration = new ArchiverConfiguration(this);
         packagingConfiguration = new PackagingConfiguration(this);
         requiredProjectsConfiguration = new RequiredProjectsConfiguration<LibraryItem>();
+        debuggerChooserConfiguration = new DebuggerChooserConfiguration();
+        qmakeConfiguration = new QmakeConfiguration();
 
         developmentHost.addPropertyChangeListener(compilerSet);
         developmentHost.addPropertyChangeListener(platform);
@@ -189,6 +204,14 @@ public class MakeConfiguration extends Configuration {
         this.fortranRequired = fortranRequired;
     }
 
+    public LanguageBooleanConfiguration getAssemblerRequired() {
+        return assemblerRequired;
+    }
+
+    public void setAssemblerRequired(LanguageBooleanConfiguration assemblerRequired) {
+        this.assemblerRequired = assemblerRequired;
+    }
+
     public PlatformInfo getPlatformInfo() {
         PlatformInfo platformInfo = PlatformInfo.getDefault(getDevelopmentHost().getName());
 //        assert platformInfo.getPlatform() == getPlatform().getValue();
@@ -243,6 +266,10 @@ public class MakeConfiguration extends Configuration {
         return getConfigurationType().getValue() == TYPE_STATIC_LIB;
     }
 
+    public boolean isQmakeConfiguration() {
+        return getConfigurationType().getValue() == TYPE_QT_APPLICATION || getConfigurationType().getValue() == TYPE_QT_LIBRARY;
+    }
+
     public void setCCompilerConfiguration(CCompilerConfiguration cCompilerConfiguration) {
         this.cCompilerConfiguration = cCompilerConfiguration;
     }
@@ -265,6 +292,14 @@ public class MakeConfiguration extends Configuration {
 
     public FortranCompilerConfiguration getFortranCompilerConfiguration() {
         return fortranCompilerConfiguration;
+    }
+
+    public void setAssemblerConfiguration(AssemblerConfiguration assemblerConfiguration) {
+        this.assemblerConfiguration = assemblerConfiguration;
+    }
+
+    public AssemblerConfiguration getAssemblerConfiguration() {
+        return assemblerConfiguration;
     }
 
     public void setLinkerConfiguration(LinkerConfiguration linkerConfiguration) {
@@ -300,6 +335,22 @@ public class MakeConfiguration extends Configuration {
         this.requiredProjectsConfiguration = requiredProjectsConfiguration;
     }
 
+    public DebuggerChooserConfiguration getDebuggerChooserConfiguration() {
+        return debuggerChooserConfiguration;
+    }
+
+    public void setDebuggerChooserConfiguration(DebuggerChooserConfiguration debuggerChooserConfiguration) {
+        this.debuggerChooserConfiguration = debuggerChooserConfiguration;
+    }
+
+    public QmakeConfiguration getQmakeConfiguration() {
+        return qmakeConfiguration;
+    }
+
+    public void setQmakeConfiguration(QmakeConfiguration qmakeConfiguration) {
+        this.qmakeConfiguration = qmakeConfiguration;
+    }
+
     public void assign(Configuration conf) {
         MakeConfiguration makeConf = (MakeConfiguration) conf;
         setName(makeConf.getName());
@@ -310,6 +361,7 @@ public class MakeConfiguration extends Configuration {
         getCRequired().assign(makeConf.getCRequired());
         getCppRequired().assign(makeConf.getCppRequired());
         getFortranRequired().assign(makeConf.getFortranRequired());
+        getAssemblerRequired().assign(makeConf.getAssemblerRequired());
         getPlatform().assign(makeConf.getPlatform());
         getDependencyChecking().assign(makeConf.getDependencyChecking());
 
@@ -317,10 +369,13 @@ public class MakeConfiguration extends Configuration {
         getCCompilerConfiguration().assign(makeConf.getCCompilerConfiguration());
         getCCCompilerConfiguration().assign(makeConf.getCCCompilerConfiguration());
         getFortranCompilerConfiguration().assign(makeConf.getFortranCompilerConfiguration());
+        getAssemblerConfiguration().assign(makeConf.getAssemblerConfiguration());
         getLinkerConfiguration().assign(makeConf.getLinkerConfiguration());
         getArchiverConfiguration().assign(makeConf.getArchiverConfiguration());
         getPackagingConfiguration().assign(makeConf.getPackagingConfiguration());
         getRequiredProjectsConfiguration().assign(makeConf.getRequiredProjectsConfiguration());
+        getDebuggerChooserConfiguration().assign(makeConf.getDebuggerChooserConfiguration());
+        getQmakeConfiguration().assign(makeConf.getQmakeConfiguration());
 
         // do assign on all aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects(); // from this profile
@@ -381,6 +436,7 @@ public class MakeConfiguration extends Configuration {
         clone.setCRequired((LanguageBooleanConfiguration) getCRequired().clone());
         clone.setCppRequired((LanguageBooleanConfiguration) getCppRequired().clone());
         clone.setFortranRequired((LanguageBooleanConfiguration) getFortranRequired().clone());
+        clone.setAssemblerRequired((LanguageBooleanConfiguration) getAssemblerRequired().clone());
         PlatformConfiguration pconf = (PlatformConfiguration) getPlatform().clone();
         clone.setPlatform(pconf);
         clone.setMakefileConfiguration((MakefileConfiguration) getMakefileConfiguration().clone());
@@ -388,10 +444,13 @@ public class MakeConfiguration extends Configuration {
         clone.setCCompilerConfiguration((CCompilerConfiguration) getCCompilerConfiguration().clone());
         clone.setCCCompilerConfiguration((CCCompilerConfiguration) getCCCompilerConfiguration().clone());
         clone.setFortranCompilerConfiguration((FortranCompilerConfiguration) getFortranCompilerConfiguration().clone());
+        clone.setAssemblerConfiguration((AssemblerConfiguration) getAssemblerConfiguration().clone());
         clone.setLinkerConfiguration((LinkerConfiguration) getLinkerConfiguration().clone());
         clone.setArchiverConfiguration((ArchiverConfiguration) getArchiverConfiguration().clone());
         clone.setPackagingConfiguration((PackagingConfiguration) getPackagingConfiguration().clone());
         clone.setRequiredProjectsConfiguration(getRequiredProjectsConfiguration().cloneConf());
+        clone.setDebuggerChooserConfiguration((DebuggerChooserConfiguration) getDebuggerChooserConfiguration().clone());
+        clone.setQmakeConfiguration(getQmakeConfiguration().clone());
 
         dhconf.addPropertyChangeListener(csconf);
         dhconf.addPropertyChangeListener(pconf);
@@ -428,9 +487,8 @@ public class MakeConfiguration extends Configuration {
         set.put(new PlatformNodeProp(getPlatform(), false, getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N
-        if (CppSettings.getDefault().isFortranEnabled()) {
-            set.put(new BooleanNodeProp(getFortranRequired(), true, "fortranRequired", getString("FortranRequiredTxt"), getString("FortranRequiredHint"))); // NOI18N
-        }
+        set.put(new BooleanNodeProp(getFortranRequired(), true, "fortranRequired", getString("FortranRequiredTxt"), getString("FortranRequiredHint"))); // NOI18N
+        set.put(new BooleanNodeProp(getAssemblerRequired(), true, "assemblerRequired", getString("AssemblerRequiredTxt"), getString("AssemblerRequiredHint"))); // NOI18N
         set.put(new IntNodeProp(getConfigurationType(), true, "ConfigurationType", getString("ConfigurationTypeTxt"), getString("ConfigurationTypeHint"))); // NOI18N
         sheet.put(set);
 
@@ -451,7 +509,7 @@ public class MakeConfiguration extends Configuration {
         set2.setName("Projects"); // NOI18N
         set2.setDisplayName(getString("ProjectsTxt1"));
         set2.setShortDescription(getString("ProjectsHint"));
-        set2.put(new RequiredProjectsNodeProp<LibraryItem>(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
+        set2.put(new RequiredProjectsNodeProp(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
         sheet.put(set2);
 
         return sheet;
@@ -480,6 +538,11 @@ public class MakeConfiguration extends Configuration {
         return fortranRequired.getValue();
     }
 
+    public boolean hasAssemblerFiles(MakeConfigurationDescriptor configurationDescriptor) {
+        reCountLanguages(configurationDescriptor);
+        return assemblerRequired.getValue();
+    }
+
 //    public boolean hasAsmFiles(MakeConfigurationDescriptor configurationDescriptor) {
 //        if (getLanguagesDirty())
 //            reCountLanguages(configurationDescriptor);
@@ -489,6 +552,7 @@ public class MakeConfiguration extends Configuration {
         boolean hasCFiles = false;
         boolean hasCPPFiles = false;
         boolean hasFortranFiles = false;
+        boolean hasAssemblerFiles = false;
         //boolean hasCAsmFiles = false;
 
 
@@ -519,6 +583,9 @@ public class MakeConfiguration extends Configuration {
                 if (itemConfiguration.getTool() == Tool.FortranCompiler) {
                     hasFortranFiles = true;
                 }
+                if (itemConfiguration.getTool() == Tool.Assembler) {
+                    hasAssemblerFiles = true;
+                }
             //            if (itemConfiguration.getTool() == Tool.AsmCompiler) {
             //                hasCAsmFiles = false;
             //            }
@@ -527,6 +594,7 @@ public class MakeConfiguration extends Configuration {
         cRequired.setDefault(hasCFiles);
         cppRequired.setDefault(hasCPPFiles);
         fortranRequired.setDefault(hasFortranFiles);
+        assemblerRequired.setDefault(hasAssemblerFiles);
         //asmRequired.setValueDef(hasCAsmFiles);
 
         languagesDirty = false;
@@ -595,7 +663,7 @@ public class MakeConfiguration extends Configuration {
         return compilerSet.getName() + "-" + Platforms.getPlatform(platform).getName(); // NOI18N
     }
 
-    public Set/*<Project>*/ getSubProjects() {
+    public Set<Project> getSubProjects() {
         Set<Project> subProjects = new HashSet<Project>();
         LibrariesConfiguration librariesConfiguration = getLinkerConfiguration().getLibrariesConfiguration();
         LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
@@ -658,6 +726,8 @@ public class MakeConfiguration extends Configuration {
             output = getArchiverConfiguration().getOutputValue();
         } else if (isMakefileConfiguration()) {
             output = getMakefileConfiguration().getOutput().getValue();
+        } else if (isQmakeConfiguration()) {
+            output = getQmakeConfiguration().getTarget().getValue();
         } else {
             assert false;
         }
@@ -675,6 +745,10 @@ public class MakeConfiguration extends Configuration {
             output = FilePathAdaptor.normalize(output);
         }
         return expandMacros(output);
+    }
+
+    public boolean hasDebugger() {
+        return DefaultProjectActionHandler.getInstance().getCustomDebugActionHandlerProvider(this) != null;
     }
 
     public String expandMacros(String val) {

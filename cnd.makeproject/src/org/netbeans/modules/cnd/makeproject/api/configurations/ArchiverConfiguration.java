@@ -261,14 +261,14 @@ public class ArchiverConfiguration implements AllOptionsProvider {
             return getOutputDefault();
     }
     
-    private class OutputNodeProp extends StringNodeProp {
+    private static class OutputNodeProp extends StringNodeProp {
         public OutputNodeProp(StringConfiguration stringConfiguration, String def, String txt1, String txt2, String txt3) {
             super(stringConfiguration, def, txt1, txt2, txt3);
         }
         
         @Override
-        public void setValue(Object v) {
-            if (IpeUtils.hasMakeSpecialCharacters((String)v)) {
+        public void setValue(String v) {
+            if (IpeUtils.hasMakeSpecialCharacters(v)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
                 return;
             }

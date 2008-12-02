@@ -49,9 +49,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.extexecution.api.ExecutionService;
-import org.netbeans.modules.extexecution.api.print.ConvertedLine;
-import org.netbeans.modules.extexecution.api.print.LineConvertor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
@@ -353,12 +353,12 @@ public final class RakeRunner {
 
     private static class RakeErrorLineConvertor implements LineConvertor {
 
-        private final RubyExecutionDescriptor desc;
+        private final RubyExecutionDescriptor template;
         private final String charsetName;
         private final String displayName;
 
         public RakeErrorLineConvertor(RubyExecutionDescriptor desc, String charsetName, String displayName) {
-            this.desc = desc;
+            this.template = desc;
             this.charsetName = charsetName;
             this.displayName = displayName;
         }
@@ -374,8 +374,19 @@ public final class RakeRunner {
                             }
 
                             public void outputLineAction(OutputEvent ev) {
-                                RubyProcessCreator rpc = new RubyProcessCreator(desc, charsetName);
-                                ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName).run();
+                                RubyProcessCreator rpc = new RubyProcessCreator(buildDescriptor(), charsetName);
+                                ExecutionService.newService(rpc, template.toExecutionDescriptor(), displayName).run();
+                            }
+
+                            private RubyExecutionDescriptor buildDescriptor() {
+                                // copy the old args from template
+                                String[] existing = template.getAdditionalArgs() != null ? template.getAdditionalArgs() : new String[0];
+                                String[] args = new String[existing.length + 1];
+                                for (int i = 0; i < existing.length; i++) {
+                                    args[i] = existing[i];
+                                }
+                                args[args.length - 1] = "--trace"; //NOI18N
+                                return new RubyExecutionDescriptor(template).additionalArgs(args);
                             }
 
                             public void outputLineCleared(OutputEvent ev) {

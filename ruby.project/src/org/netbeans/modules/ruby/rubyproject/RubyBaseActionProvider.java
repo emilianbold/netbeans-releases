@@ -49,8 +49,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.modules.extexecution.api.ExecutionService;
-import org.netbeans.modules.extexecution.api.print.LineConvertor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
@@ -150,8 +150,10 @@ public abstract class RubyBaseActionProvider implements ActionProvider, ScriptDe
         }
         RubyExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraConvertors);
         RubyProcessCreator rpc = new RubyProcessCreator(desc, getSourceEncoding());
-        ExecutionService service = ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName);
-        service.run();
+        if (rpc.isAbleToCreateProcess()) {
+            ExecutionService service = ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName);
+            service.run();
+        }
     }
 
     protected String getSourceEncoding() {

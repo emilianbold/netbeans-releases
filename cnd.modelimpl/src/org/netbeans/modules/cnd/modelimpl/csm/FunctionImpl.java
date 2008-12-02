@@ -79,7 +79,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private static final CharSequence NULL = CharSequenceKey.create("<null>"); // NOI18N
     private CharSequence name;
     private final CsmType returnType;
-    private final List<CsmUID<CsmParameter>>  parameters;
+//    private final Collection<CsmUID<CsmParameter>>  parameters;
+    private final FunctionParameterListImpl parameterList;
     private CharSequence signature;
     
     // only one of scopeRef/scopeAccessor must be used 
@@ -152,13 +153,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         returnType = initReturnType(ast);
 
         // set parameters, do it in constructor to have final fields
-        List<CsmParameter> params = initParameters(ast);
-        if (params == null) {
-            this.parameters = null;
-        } else {
-            this.parameters = RepositoryUtils.put(params);
-        }
-        if (params == null || params.size() == 0) {
+        this.parameterList = createParameterList(ast);
+        if (this.parameterList == null || this.parameterList.isEmpty()) {
             setFlags(FLAGS_VOID_PARMLIST, isVoidParameter(ast));
         } else {
             setFlags(FLAGS_VOID_PARMLIST, false);
@@ -173,6 +169,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         if (register) {
             registerInProject();
+        }
+        if (this.parameterList == null) {
+            System.err.println("not created list for " + name + " at " + AstUtil.getOffsetString(ast) + " in " + file.getAbsolutePath());
         }
     }
 
@@ -503,8 +502,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         return null;
     }
+
+    private FunctionParameterListImpl createParameterList(AST funAST) {
+        return FunctionParameterListImpl.create(getContainingFile(), funAST, this);
+    }
     
-    private List<CsmParameter> initParameters(AST node) {
+    private Collection<CsmParameter> initParameters(AST node) {
         AST ast = findParameterNode(node);
         return AstRenderer.renderParameters(ast, getContainingFile(), this);
     }
@@ -513,7 +516,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         AST ast = findParameterNode(node);
         return AstRenderer.isVoidParameter(ast);
     }
-    
+
+    public FunctionParameterListImpl  getParameterList() {
+        return parameterList;
+    }
+
     public Collection<CsmParameter>  getParameters() {
         return _getParameters();
     }
@@ -562,13 +569,22 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         // kind of canonical representation here
         StringBuilder sb = new StringBuilder(getName());
         sb.append(createTemplateSignature());
+        sb.append(createParametersSignature(getParameters()));
+        if( isConst() ) {
+            sb.append(" const"); // NOI18N
+        }
+        return sb.toString();
+    }
+
+    /*package*/static String createParametersSignature(Collection<CsmParameter> params) {
+        StringBuilder sb = new StringBuilder();
         sb.append('(');
-        for( Iterator iter = getParameters().iterator(); iter.hasNext(); ) {
-            CsmParameter param = (CsmParameter) iter.next();
+        for (Iterator<CsmParameter> iter = params.iterator(); iter.hasNext();) {
+            CsmParameter param = iter.next();
             CsmType type = param.getType();
-            if( type != null )  {
+            if (type != null) {
                 sb.append(type.getCanonicalText());
-                if( iter.hasNext() ) {
+                if (iter.hasNext()) {
                     sb.append(',');
                 }
             } else if (param.isVarArgs()) {
@@ -576,12 +592,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             }
         }
         sb.append(')');
-        if( isConst() ) {
-            sb.append(" const"); // NOI18N
-        }
-        return sb.toString();
+       return sb.toString();
     }
-
+    
     private String createTemplateSignature() {
         List<CsmTemplateParameter> allTemplateParams = getTemplateParameters();
         List<CsmTemplateParameter> params = new ArrayList<CsmTemplateParameter>();
@@ -686,17 +699,16 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     private Collection<CsmParameter> _getParameters() {
-        if (this.parameters == null) {
+        if (this.parameterList == null) {
             return Collections.<CsmParameter>emptyList();
         } else {
-            Collection<CsmParameter> out = UIDCsmConverter.UIDsToDeclarations(parameters);
-            return out;
+            return parameterList.getParameters();
         }
     }
-    
+
     private void _disposeParameters() {
-        if (parameters != null) {
-            RepositoryUtils.remove(parameters);
+        if (this.parameterList != null) {
+            parameterList.dispose();
         }
     }
     
@@ -710,12 +722,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         output.writeUTF(this.name.toString());
         PersistentUtils.writeType(this.returnType, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        factory.writeUIDCollection(this.parameters, output, false);
+        PersistentUtils.writeParameterList(this.parameterList, output);
         PersistentUtils.writeStrings(this.rawName, output);
         
         // not null UID
         assert !CHECK_SCOPE || this.scopeUID != null;
-        UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
+        factory.writeUID(this.scopeUID, output);
         
         PersistentUtils.writeUTF(this.signature, output);
         output.writeByte(flags);
@@ -730,10 +742,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         assert this.name != null;
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        this.parameters = factory.readUIDCollection(new ArrayList<CsmUID<CsmParameter>>(), input);
+        this.parameterList = (FunctionParameterListImpl) PersistentUtils.readParameterList(input);
         this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
         
-        this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        this.scopeUID = factory.readUID(input);
         // not null UID
         assert !CHECK_SCOPE || this.scopeUID != null;
         this.scopeRef = null;

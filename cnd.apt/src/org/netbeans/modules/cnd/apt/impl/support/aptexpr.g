@@ -54,12 +54,17 @@ import antlr.*;
 import antlr.collections.*;
 import antlr.debug.misc.*;
 import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
+import org.netbeans.modules.cnd.apt.support.APTBaseToken;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 }
 
 options {
 	language = "Java"; // NOI18N
 } 
 
+{
+@SuppressWarnings({"unchecked", "cast", "fallthrough"})
+}
 class APTExprParser extends Parser;
 
 options {
@@ -81,7 +86,7 @@ options {
 
     private boolean isDefined(Token id) {
         if (id != null && callback != null) {
-            return callback.isDefined(id);
+            return callback.isDefined((APTToken)id);
         }
         return false;
     }
@@ -209,8 +214,8 @@ class APTExpressionWalker extends TreeParser;
         return false;
     }
 
-    private Token astToken = new CommonToken();
-    private Token getToken(AST ast) {
+    private APTToken astToken = new APTBaseToken();
+    private APTToken getToken(AST ast) {
         astToken.setType(ast.getType());
         astToken.setText(ast.getText());
         return astToken;

@@ -44,6 +44,7 @@ import java.awt.Dialog;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -71,13 +72,20 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public class RelocateAction extends ContextAction {
          
     protected boolean enable(Node[] nodes) {
-        final Context ctx = getContext(nodes);
-        File[] roots = ctx.getRootFiles();
-        if(roots == null || roots.length != 1) {
+        if(nodes.length != 1) {
             return false;
         }
-        File file = roots[0];
-        return file != null && file.isDirectory();
+        final Context ctx = getContext(nodes);
+        File[] roots = ctx.getRootFiles();
+        if(roots == null || roots.length < 1) {
+            return false;
+        }
+        for (File file : roots) {
+            if(file.isDirectory()) {
+                return true; // at least one dir
+            }
+        }
+        return false;
     }
     
     protected int getDirectoryEnabledStatus() {
@@ -85,22 +93,7 @@ public class RelocateAction extends ContextAction {
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
-    
-    private String getCurrentURL(File root) {       
-        try {
-            SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
-            return repositoryUrl.toString();
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);            
-        }                            
-        return "";
-    }        
-    
-    private String getWorkingCopy(File root) {
-        final String working = root.getAbsolutePath();
-        return working;
-    }
-    
+       
     public void validate(RelocatePanel panel, JButton btnOk) {
         try {
             new SVNUrl(panel.getNewURL().getText());
@@ -108,7 +101,6 @@ public class RelocateAction extends ContextAction {
         } catch (MalformedURLException e) {
             btnOk.setEnabled(false);
         }
-        
     }
 
     protected String getBaseName(Node[] activatedNodes) {
@@ -125,8 +117,21 @@ public class RelocateAction extends ContextAction {
         }
         
         final RelocatePanel panel = new RelocatePanel();
-        panel.getCurrentURL().setText(getCurrentURL(roots[0]));
-        panel.getWorkingCopy().setText(getWorkingCopy(roots[0]));
+        File root = SvnUtils.getActionRoot(ctx);
+        SVNUrl repositoryUrl = null;
+        try {
+            repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return;
+        }
+        if(repositoryUrl == null) {
+            Subversion.LOG.log(Level.WARNING, "Could not retrieve repository root for context file {0}", new Object[]{ root });
+            return;
+        }
+        final String wc = root.getAbsolutePath();
+        panel.getCurrentURL().setText(repositoryUrl.toString());
+        panel.getWorkingCopy().setText(wc);
         
         final JButton btnRelocate = new JButton(loc.getString("CTL_Relocate_Action_Name"));
         btnRelocate.setEnabled(false);
@@ -159,21 +164,14 @@ public class RelocateAction extends ContextAction {
         
         final String newUrl = panel.getNewURL().getText();
         
-        final SVNUrl repositoryUrl;
-        try {            
-            repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
-            return;
-        }                  
-        final String wc = roots[0].getAbsolutePath();
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
+        final SVNUrl url = repositoryUrl;
         SvnProgressSupport support = new SvnProgressSupport() {
             SvnClient client = null;
             protected void perform() {                    
                 try {
-                    client = Subversion.getInstance().getClient(repositoryUrl);
-                    client.relocate(repositoryUrl.toString(), newUrl, wc, true);
+                    client = Subversion.getInstance().getClient(url);
+                    client.relocate(url.toString(), newUrl, wc, true);
                 } catch (SVNClientException ex) {
                     annotate(ex);
                 } 

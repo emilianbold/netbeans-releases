@@ -74,7 +74,6 @@ public class GrailsRuntimeTest extends NbTestCase {
         String path = getWorkDirPath();
         FileObject workDir = FileUtil.createFolder(FileUtil.normalizeFile(getWorkDir()));
 
-        assertFalse(runtime.isConfigured());
         settings.setGrailsBase(path);
         assertFalse(runtime.isConfigured());
 

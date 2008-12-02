@@ -145,9 +145,7 @@ public class SupportedBrowsers {
         return languageVersion;
     }
     
-    void setLanguageVersion(int version) {
-        this.languageVersion = version;
-        
+    public static String getLanguageVersionString(int version) {
         String value;
         switch (version) {
             case Context.VERSION_1_0:
@@ -172,8 +170,16 @@ public class SupportedBrowsers {
                 value = "default"; break; // NOI18N
             default:
                 assert false : version;
-                return;
+                value = "default";
         }
+
+        return value;
+    }
+
+    public void setLanguageVersion(int version) {
+        this.languageVersion = version;
+
+        String value = getLanguageVersionString(version);
         
         getPreferences().put(LANGUAGE_KEY, value);
     }

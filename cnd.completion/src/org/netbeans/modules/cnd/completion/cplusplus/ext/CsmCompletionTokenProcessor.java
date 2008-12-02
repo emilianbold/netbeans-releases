@@ -79,7 +79,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
     private int curTokenPosition;
     private String curTokenText;
     private int endScanOffset;
-    private boolean java15;
+    private boolean supportTemplates;
     private int nrQuestions = 0;
 
     CsmCompletionTokenProcessor(int endScanOffset, int lastSeparatorOffset) {
@@ -88,12 +88,12 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
     }
 
     /**
-     * Set whether Java 1.5 features should be enabled.
+     * Set whether templates features should be enabled.
      *
-     * @param java15 true to parse expression as being in java 1.5 syntax.
+     * @param supportTemplates true to parse expression as being in syntax with templates
      */
-    void setJava15(boolean java15) {
-        this.java15 = java15;
+    void enableTemplateSupport(boolean supportTemplates) {
+        this.supportTemplates = supportTemplates;
     }
 
     /** Get the expression stack from the bottom to top */
@@ -329,7 +329,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 case MINUSMINUS:
                                     break;
                                 case LT:
-                                    if (java15) {
+                                    if (supportTemplates) {
                                         break;
                                     }
 
@@ -883,6 +883,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                         // while dereference and address-of expression
                         // try to handle it the same ways as UNARY_OPERATOR
                         switch (topID) {
+                            case GENERIC_TYPE_OPEN:
                             case MEMBER_POINTER_OPEN: // next is operator as well
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
@@ -982,7 +983,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
 
                     case LT: {
                         boolean genericType = false;
-                        if (java15) { // special treatment of Java 1.5 features
+                        if (supportTemplates) { // special treatment of Java 1.5 features
                             switch (topID) {
                                 case VARIABLE:
                                 case DOT:
@@ -1035,7 +1036,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                     case GT: // ">"
                     {
                         boolean genericType = false;
-                        if (java15) { // special treatment of Java 1.5 features
+                        if (supportTemplates) { // special treatment of Java 1.5 features
                             switch (topID) {
                                 case CONSTANT: // check for "List<const" plus ">" case
                                 case VARIABLE: // check for "List<var" plus ">" case
@@ -1050,6 +1051,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 case ARRAY: // check for "List<String[]" plus ">" case
                                 case PARENTHESIS: // check for "T<(1+1)" plus ">" case
                                 case METHOD: // check for "T<func(param)" plus ">" case
+                                case UNARY_OPERATOR:
                                     int cnt = expStack.size();
                                     CsmCompletionExpression gen = null;
                                     for (int i = 0; i < cnt; i++) {
@@ -1130,7 +1132,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                     case GTGT: // ">>"
                     {
                         boolean genericType = false;
-                        if (java15) { // special treatment of Java 1.5 features
+                        if (supportTemplates) { // special treatment of C++ template features
                             switch (topID) {
                                 case CONSTANT: // check for "List<const" plus ">" case
                                 case VARIABLE: // check for "List<var" plus ">" case
@@ -1287,6 +1289,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                     case PLUSPLUS: // Prefix or postfix
                     case MINUSMINUS:
                         switch (topID) {
+                            case GENERIC_TYPE_OPEN:
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
@@ -1333,6 +1336,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 pushExp(opExp);
                                 break;
 
+                            case GENERIC_TYPE_OPEN:
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
@@ -1355,6 +1359,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                     case TILDE: // Always unary
                     case NOT:
                         switch (topID) {
+                            case GENERIC_TYPE_OPEN:
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
@@ -1430,6 +1435,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 top.setExpID(tokenID2OpenExpID(tokenID));
                                 break;
 
+                            case GENERIC_TYPE_OPEN:
                             case METHOD_OPEN:
                             case PARENTHESIS_OPEN:
                             case SPECIAL_PARENTHESIS_OPEN:

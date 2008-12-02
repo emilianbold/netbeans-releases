@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
+import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
+
 /**
  *
  * @author Alexander Simon
@@ -48,54 +50,23 @@ public class FortranFormatterSingleTestCase  extends FortranEditorBase {
     public FortranFormatterSingleTestCase(String testMethodName) {
         super(testMethodName);
     }
-    public void testIfFree() {
+    public void testFunctionFixed() {
         setLoadDocumentText(
-                "  implicit double precision (a-h)\n" +
-                "  implicit doubleprecision (o-z)\n" +
-                "  do i=-1,1\n" +
-                "  if (i.eq.0) then\n" +
-                "  write(*,*)a(i)\n" +
-                "  elseif(i.gt.0) then\n" +
-                "  write(*,*)b(i)\n" +
-                "  else if(i.lt.0) then\n" +
-                "  write(*,*)c(i)\n" +
-                "  endif\n" +
-                "  enddo\n" +
-                "  end\n" +
-                "  real*8 function a(n)\n" +
-                "  a=dble(n+10)\n" +
-                "  return\n" +
-                "  endfunction\n" +
-                "  double precision function b(n)\n" +
-                "  b=dble(n*10)\n" +
-                "  end\n" +
-                "  doubleprecision function c(n)\n" +
-                "  c=dble(n-10)\n" +
-                "  end function");
+                "      program Bug001\n" +
+                "      do 1 i = 1, 67\n" +
+                "      do 1 j = 1, 67\n" +
+                " 1    write ( 6, 100, advance = 'YES') i\n" +
+                " 100  format ( 1h, ' ', i2.2)\n" +
+                "      end program Bug001");
         setDefaultsOptions();
+        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(false);
         reformat();
-        assertDocumentText("Incorrect if reformat (free form)",
-                "implicit double precision (a - h)\n" +
-                "implicit doubleprecision (o - z)\n" +
-                "do i = -1, 1\n" +
-                "    if (i .eq. 0) then\n" +
-                "        write(*, *)a(i)\n" +
-                "    elseif (i .gt. 0) then\n" +
-                "        write(*, *)b(i)\n" +
-                "    else if(i .lt. 0) then\n" +
-                "        write(*, *)c(i)\n" +
-                "    endif\n" +
-                "enddo\n" +
-                "end\n" +
-                "real * 8 function a(n)\n" +
-                "    a = dble(n + 10)\n" +
-                "    return\n" +
-                "endfunction\n" +
-                "double precision function b(n)\n" +
-                "    b = dble(n * 10)\n" +
-                "end\n" +
-                "doubleprecision function c(n)\n" +
-                "    c = dble(n - 10)\n" +
-                "end function");
+        assertDocumentText("Incorrect function indent (fixed form)",
+                "      program Bug001\n" +
+                "          do 1 i = 1, 67\n" +
+                "              do 1 j = 1, 67\n" +
+                " 1                write ( 6, 100, advance = 'YES') i\n" +
+                " 100      format ( 1h, ' ', i2.2)\n" +
+                "      end program Bug001");
     }
 }

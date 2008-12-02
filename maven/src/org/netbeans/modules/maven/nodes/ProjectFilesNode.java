@@ -192,7 +192,7 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
         
         @Override
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<File>emptySet());
             NbMavenProject.removePropertyChangeListener(project, this);
             project.getProjectDirectory().removeFileChangeListener(fileChangeListener);
             super.removeNotify();

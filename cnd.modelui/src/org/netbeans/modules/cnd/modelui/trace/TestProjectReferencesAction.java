@@ -127,7 +127,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         return NbBundle.getMessage(getClass(), nameKey); // NOI18N
     }
 
-    protected void performAction(Collection<NativeProject> projects) {
+    protected void performAction(Collection<CsmProject> projects) {
         Boolean oldReportUnresolved = reportUnresolved;
         if (reportUnresolved == null) {
             Object option = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
@@ -142,7 +142,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
             }
         }
         if (projects != null) {
-            for (NativeProject p : projects) {
+            for (CsmProject p : projects) {
                 testProject(p);
             }
         }
@@ -150,8 +150,8 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
     }
 
     
-    private void testProject(NativeProject p) {
-        String task = (this.allReferences ? "All " : "Direct usage ") + "xRef - " + p.getProjectDisplayName() + (this.analyzeStatistics ? " Statistics" : ""); // NOI18N
+    private void testProject(CsmProject p) {
+        String task = (this.allReferences ? "All " : "Direct usage ") + "xRef - " + p.getName() + (this.analyzeStatistics ? " Statistics" : ""); // NOI18N
         InputOutput io = IOProvider.getDefault().getIO(task, false);
         io.select();
         final AtomicBoolean canceled = new AtomicBoolean(false);        
@@ -190,7 +190,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
             }
         }, canceled);
         handle.finish();
-        out.println("Analyzing " + p.getProjectDisplayName() + " took " + (time[1]-time[0]) + "ms"); // NOI18N
+        out.println("Analyzing " + p.getName() + " took " + (time[1]-time[0]) + "ms"); // NOI18N
         err.flush();
         out.flush();
     }

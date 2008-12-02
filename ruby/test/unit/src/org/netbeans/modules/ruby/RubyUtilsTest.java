@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -85,26 +85,26 @@ public class RubyUtilsTest extends TestCase {
     }
 
     public void testModuleStrings() {
-        assertTrue(RubyUtils.isValidRubyModuleName("A"));
-        assertTrue(RubyUtils.isValidRubyModuleName("AB::B::C"));
-        assertTrue(RubyUtils.isValidRubyModuleName("Abc::D1_3"));
+        assertTrue(RubyUtils.isValidConstantFQN("A"));
+        assertTrue(RubyUtils.isValidConstantFQN("AB::B::C"));
+        assertTrue(RubyUtils.isValidConstantFQN("Abc::D1_3"));
 
-        assertFalse(RubyUtils.isValidRubyModuleName("Abc::1_3"));
-        assertFalse(RubyUtils.isValidRubyModuleName("Abc:D1_3"));
-        assertFalse(RubyUtils.isValidRubyModuleName(""));
-        assertFalse(RubyUtils.isValidRubyModuleName("@foo"));
-        assertFalse(RubyUtils.isValidRubyModuleName("1::B"));
+        assertFalse(RubyUtils.isValidConstantFQN("Abc::1_3"));
+        assertFalse(RubyUtils.isValidConstantFQN("Abc:D1_3"));
+        assertFalse(RubyUtils.isValidConstantFQN(""));
+        assertFalse(RubyUtils.isValidConstantFQN("@foo"));
+        assertFalse(RubyUtils.isValidConstantFQN("1::B"));
     }
     
     public void testClassIdentifiers() {
-        assertTrue(RubyUtils.isValidRubyClassName("A"));
-        assertTrue(RubyUtils.isValidRubyClassName("AB"));
-        assertTrue(RubyUtils.isValidRubyClassName("Abc"));
-        assertTrue(!RubyUtils.isValidRubyClassName(""));
-        assertTrue(!RubyUtils.isValidRubyClassName("abc"));
-        assertTrue(!RubyUtils.isValidRubyClassName(" Abc"));
-        assertTrue(!RubyUtils.isValidRubyClassName(":Abc"));
-        assertTrue(!RubyUtils.isValidRubyClassName("def"));
+        assertTrue(RubyUtils.isValidConstantName("A"));
+        assertTrue(RubyUtils.isValidConstantName("AB"));
+        assertTrue(RubyUtils.isValidConstantName("Abc"));
+        assertTrue(!RubyUtils.isValidConstantName(""));
+        assertTrue(!RubyUtils.isValidConstantName("abc"));
+        assertTrue(!RubyUtils.isValidConstantName(" Abc"));
+        assertTrue(!RubyUtils.isValidConstantName(":Abc"));
+        assertTrue(!RubyUtils.isValidConstantName("def"));
     }
 
     public void testMethodIdentifiers() {
@@ -147,7 +147,7 @@ public class RubyUtilsTest extends TestCase {
         
         for (String s : RUBY_BUILTINS) {
             assertTrue(!RubyUtils.isValidRubyMethodName(s));
-            assertTrue(!RubyUtils.isValidRubyClassName(s));
+            assertTrue(!RubyUtils.isValidConstantName(s));
         }
     }
 

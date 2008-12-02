@@ -42,9 +42,9 @@
 package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.util.RepositoryExceptionImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 
 /**
@@ -74,7 +74,7 @@ public class MultyFileStorage implements Storage {
             theFilesHelper.write(id, obj);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    id.getUnit().toString(), new RepositoryExceptionImpl(ex));
+                    id.getUnit().toString(), new RepositoryException(ex));
         }
     }
     
@@ -89,7 +89,7 @@ public class MultyFileStorage implements Storage {
             obj = theFilesHelper.read(id);
         }  catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    id.getUnit().toString(), new RepositoryExceptionImpl(ex));
+                    id.getUnit().toString(), new RepositoryException(ex));
         }
         return obj;
     }
@@ -100,7 +100,7 @@ public class MultyFileStorage implements Storage {
         theFilesHelper.remove(id);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    id.getUnit().toString(), new RepositoryExceptionImpl(ex));
+                    id.getUnit().toString(), new RepositoryException(ex));
         }
     }
 

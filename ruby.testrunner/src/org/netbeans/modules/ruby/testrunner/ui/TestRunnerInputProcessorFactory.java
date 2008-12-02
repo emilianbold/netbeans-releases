@@ -43,8 +43,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
-import org.netbeans.modules.extexecution.api.input.InputProcessor;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.input.InputProcessor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 

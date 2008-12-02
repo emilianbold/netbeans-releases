@@ -228,7 +228,7 @@ public class ExecutionSupport extends Object
             }
 
             public void setValue(String val) throws InvocationTargetException {
-                if (val instanceof String) {
+                if (val != null) {
                     try {
                         setArguments(Utilities.parseParameters(val));
                     } catch (IOException e) {

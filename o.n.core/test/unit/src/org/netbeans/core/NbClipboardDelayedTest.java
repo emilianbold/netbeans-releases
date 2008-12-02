@@ -48,6 +48,7 @@ import junit.textui.TestRunner;
  * @author Jesse Glick
  * @see "#30923"
  */
+@RandomlyFails // testOwnershipLostEvent in NB-Core-Build #1767
 public class NbClipboardDelayedTest extends NbClipboardNativeTest {
 
     public NbClipboardDelayedTest(String name) {

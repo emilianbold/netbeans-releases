@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class, position=400)
 public class FortranDataLoader extends CndAbstractDataLoaderExt {
 
     private static FortranDataLoader instance;

@@ -53,7 +53,6 @@ public class RubyProjectTest extends RubyProjectTestBase {
     }
 
     public void testRakeFileListener() throws Exception {
-        registerLayer();
         RubyProject project = createTestProject(true);
         FileObject rakeFile = project.getRakeFile();
         assertNotNull("has rake file", rakeFile);

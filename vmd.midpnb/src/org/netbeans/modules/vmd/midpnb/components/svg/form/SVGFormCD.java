@@ -179,7 +179,7 @@ public class SVGFormCD extends ComponentDescriptor {
                 //other
                 new SVGFormFileChangePresneter(),
                 //flow
-                new SVGButtonEventSourceOrder(),
+                new SVGComponentEventSourceOrder(),
                 //delete
                 new DeleteDependencyPresenter() {
 
@@ -199,7 +199,7 @@ public class SVGFormCD extends ComponentDescriptor {
             }
         },
                 //inspector
-                MidpInspectorSVGButtonSupport.createCategory()
+                MidpInspectorSVGComponentSupport.createCategory()
                 );
     }
 
@@ -230,10 +230,13 @@ public class SVGFormCD extends ComponentDescriptor {
                     generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
                 } else if (value.getType() == SVGRadioButtonCD.TYPEID) {
                     generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                    generateSVGButtonSelectedSetter( section , value.getComponent());
                 } else if (value.getType() == SVGTextFieldCD.TYPEID) {
                     generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
                 } else if (value.getType() == SVGSliderCD.TYPEID) {
                     generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGButtonGroupCD.TYPEID) {
+                    generateButtonGroupCode( section, value.getComponent());
                 }
             }
         }
@@ -244,10 +247,36 @@ public class SVGFormCD extends ComponentDescriptor {
         section.getWriter().write(".add(" + CodeReferencePresenter.generateAccessCode(componentToAdd) + ");\n"); //NOI18N
 
     }
+    
+    private static void generateSVGButtonSelectedSetter(MultiGuardedSection section, 
+            DesignComponent button)
+    {
+        Object value = button.readProperty( SVGRadioButtonCD.PROP_SELECTED ).
+            getPrimitiveValue();
+        if ( (Boolean ) value ){
+            section.getWriter().write( CodeReferencePresenter.
+                    generateAccessCode( button )+".setSelected( true );\n");
+        }
+    }
+    
+    private static void generateButtonGroupCode(MultiGuardedSection section, 
+            DesignComponent componentToAdd) 
+    {
+        Collection<PropertyValue> buttons =componentToAdd.readProperty(
+            SVGButtonGroupCD.PROP_BUTTONS).getArray();
+        if ( buttons == null ){
+            return;
+        }
+        String buttonGroup = CodeReferencePresenter.generateAccessCode(componentToAdd);
+        for( PropertyValue value : buttons ){
+            section.getWriter().write( buttonGroup+".add(" + 
+                    CodeReferencePresenter.generateAccessCode(value.getComponent()) + ");\n"); //NOI18N
+        }
+    }
 
-    final class SVGButtonEventSourceOrder extends FlowPinOrderPresenter {
+    final class SVGComponentEventSourceOrder extends FlowPinOrderPresenter {
 
-        static final String CATEGORY_ID = "SVGButton"; //NOI18N
+        static final String CATEGORY_ID = "SVGComponent"; //NOI18N
 
         @Override
         public String getCategoryID() {
@@ -256,7 +285,8 @@ public class SVGFormCD extends ComponentDescriptor {
 
         @Override
         public String getCategoryDisplayName() {
-            return NbBundle.getMessage(SVGFormCD.class, "DISP_FlowCategory_SVGButtons"); // NOI18N; 
+            return NbBundle.getMessage(SVGFormCD.class, 
+                    "DISP_FlowCategory_SVGComponents"); // NOI18N; 
         }
 
         @Override

@@ -61,7 +61,9 @@ import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportFactory;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportProvider;
+import org.netbeans.modules.websvc.project.spi.LookupMergerSupport;
 import org.netbeans.modules.websvc.project.spi.WebServiceDataProvider;
+import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
@@ -80,19 +82,19 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
         final Project prj = baseContext.lookup(Project.class);
         JAXWSLightSupportImpl spiJAXWSSupport = new MavenJAXWSSupportIml(prj);
         final JAXWSLightSupport jaxWsSupport = JAXWSLightSupportFactory.createJAXWSSupport(spiJAXWSSupport);
-        
+
         JAXWSLightSupportProvider jaxWsSupportProvider = new JAXWSLightSupportProvider() {
 
             public JAXWSLightSupport findJAXWSSupport() {
                 return jaxWsSupport;
             }
-            
+
         };
-        
+
         ProjectOpenedHook openhook = new ProjectOpenedHook() {
 
-            PropertyChangeListener pcl;
-            PropertyChangeListener wsdlFolderListener;
+            private PropertyChangeListener pcl;
+            private PropertyChangeListener wsdlFolderListener;
 
             protected void projectOpened() {
                 final MetadataModel<WebservicesMetadata> wsModel = jaxWsSupport.getWebservicesMetadataModel();
@@ -108,12 +110,12 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
                             }
                         });
                     } catch (java.io.IOException ex) {
-
+                        ex.printStackTrace();
                     }
                 }
 
                 FileObject wsdlFolder = jaxWsSupport.getLocalWsdlFolder(false);
-                
+
                 if (wsdlFolder != null) {
                     detectWsdlClients(prj, jaxWsSupport, wsdlFolder);
                 }
@@ -134,7 +136,7 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
 
             protected void projectClosed() {
                 final MetadataModel<WebservicesMetadata> wsModel = jaxWsSupport.getWebservicesMetadataModel();
-                if (wsModel != null) { 
+                if (wsModel != null) {
                     try {
                         wsModel.runReadActionWhenReady(new MetadataModelAction<WebservicesMetadata, Void>() {
 
@@ -145,7 +147,7 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
                             }
                         });
                     } catch (java.io.IOException ex) {
-
+                        ex.printStackTrace();
                     }
                 }
                 NbMavenProject mp = prj.getLookup().lookup(NbMavenProject.class);
@@ -153,12 +155,12 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
                     mp.removePropertyChangeListener(wsdlFolderListener);
                 }
             }
-            
+
             void updateClients() {
                 // get old clients
                 List<JaxWsService> oldClients = new ArrayList<JaxWsService>();
                 Set<String> oldNames = new HashSet<String>();
-                for (JaxWsService s:jaxWsSupport.getServices()) {
+                for (JaxWsService s : jaxWsSupport.getServices()) {
                     if (!s.isServiceProvider()) {
                         oldClients.add(s);
                         oldNames.add(s.getLocalWsdl());
@@ -168,43 +170,45 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
                 if (wsdlFolder != null) {
                     List<JaxWsService> newClients = getJaxWsClients(prj, jaxWsSupport, wsdlFolder);
                     Set<String> commonNames = new HashSet<String>();
-                    for (JaxWsService client: newClients) {
+                    for (JaxWsService client : newClients) {
                         String localWsdl = client.getLocalWsdl();
                         if (oldNames.contains(localWsdl)) {
                             commonNames.add(localWsdl);
                         }
                     }
                     // removing old clients
-                    for (JaxWsService oldClient: oldClients) {
+                    for (JaxWsService oldClient : oldClients) {
                         if (!commonNames.contains(oldClient.getLocalWsdl())) {
                             jaxWsSupport.removeService(oldClient);
                         }
                     }
                     // add new clients
-                    for (JaxWsService newClient: newClients) {
+                    for (JaxWsService newClient : newClients) {
                         if (!commonNames.contains(newClient.getLocalWsdl())) {
                             jaxWsSupport.addService(newClient);
                         }
                     }
                 } else {
                     // removing all clients
-                    for (JaxWsService client: oldClients) {
+                    for (JaxWsService client : oldClients) {
                         jaxWsSupport.removeService(client);
                     }
                 }
 
             }
         };
-        WebServiceDataProvider servicedataProvider = new MavenWebServicesProvider(prj, jaxWsSupport); 
-        return Lookups.fixed(openhook, jaxWsSupportProvider, servicedataProvider);
+        WebServiceDataProvider jaxWsServiceDataProvider = new MavenJaxWsServicesProvider(prj, jaxWsSupport);
+        LookupMerger<WebServiceDataProvider> wsDataProviderMerger =
+                LookupMergerSupport.createWebServiceDataProviderMerger();
+        return Lookups.fixed(openhook, jaxWsSupportProvider, jaxWsServiceDataProvider, wsDataProviderMerger);
     }
 
     private class WebservicesChangeListener implements PropertyChangeListener {
-        
-        JAXWSLightSupport jaxWsSupport;
-        
-        MetadataModel<WebservicesMetadata> wsModel;
-        Project prj;
+
+        private JAXWSLightSupport jaxWsSupport;
+
+        private MetadataModel<WebservicesMetadata> wsModel;
+        private Project prj;
         private RequestProcessor.Task updateJaxWsTask = RequestProcessor.getDefault().create(new Runnable() {
 
             public void run() {
@@ -221,11 +225,12 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
             //requestModelUpdate();
             updateJaxWsTask.schedule(100);
         }
-        
+
         private void updateJaxWs() {
-            
+
             try {
-                Map<String, String> newServices = wsModel.runReadAction(new MetadataModelAction<WebservicesMetadata, Map<String, String>>() {
+                Map<String, String> newServices = wsModel.runReadAction(
+                        new MetadataModelAction<WebservicesMetadata, Map<String, String>>() {
 
                     public Map<String, String> run(WebservicesMetadata metadata) {
                         Map<String, String> result = new HashMap<String, String>();
@@ -250,7 +255,7 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
                 List<JaxWsService> oldJaxWsServices = jaxWsSupport.getServices();
                 Map<String, JaxWsService> oldServices = new HashMap<String, JaxWsService>();
 
-                for (JaxWsService s: oldJaxWsServices) {
+                for (JaxWsService s : oldJaxWsServices) {
                     // implementationClass -> Service
                     if (s.isServiceProvider()) {
                         oldServices.put(s.getImplementationClass(), s);
@@ -270,7 +275,7 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
                     oldServices.remove(key);
                     newServices.remove(key);
                 }
-                
+
                 // remove old services
                 boolean needToSave = false;
                 for (String key : oldServices.keySet()) {
@@ -286,7 +291,7 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
 
         }
     }
-        
+
     private void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder)  {
         String[] filepaths = PluginPropertyUtils.getPluginPropertyList(prj,
                 "org.codehaus.mojo", //NOI18N
@@ -295,11 +300,11 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
                 "wsdlFile", //NOI18N
                 "wsimport"); //NOI18N
         if (filepaths != null) {
-            for (String filePath:filepaths) {
+            for (String filePath : filepaths) {
                 JaxWsService client = new JaxWsService(filePath, false);
                 jaxWsSupport.addService(client);
             }
-        }  else {
+        } else {
             // look for wsdl in wsdl folder
 //            FileObject[] wsdlCandidates = wsdlFolder.getChildren();
 //            for (FileObject wsdlCandidate:wsdlCandidates) {
@@ -310,7 +315,7 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
 //            }
         }
     }
-    
+
     private List<JaxWsService> getJaxWsClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder) {
         String[] filepaths = PluginPropertyUtils.getPluginPropertyList(prj,
             "org.codehaus.mojo", //NOI18N
@@ -320,7 +325,7 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
             "wsimport"); //NOI18N
         if (filepaths != null) {
             List<JaxWsService> clients = new ArrayList<JaxWsService>();
-            for (String filePath:filepaths) {
+            for (String filePath : filepaths) {
                 JaxWsService client = new JaxWsService(filePath, false);
                 clients.add(client);
             }
@@ -328,6 +333,6 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
         } else {
             return Collections.<JaxWsService>emptyList();
         }
-    } 
+    }
 
 }
