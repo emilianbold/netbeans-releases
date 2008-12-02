@@ -164,10 +164,13 @@ public class ProjectNode extends NPNode {
     public Action[] getActions(boolean context) {
         List<? extends Action> list = Utilities.actionsForPath("NativeProjects/Actions"); // NOI18N
         NodeAction failedIncludes = null;
+        NodeAction testReferences = null;
         for(Action action : list){
             if (action instanceof NodeAction){
                 if ("org.netbeans.modules.cnd.highlight.error.includes.FailedIncludesAction".equals(action.getClass().getName())){ // NOI18N
                     failedIncludes = (NodeAction) action;
+                } else if ("org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction$AllUsagesAction".equals(action.getClass().getName())){ // NOI18N
+                    testReferences = (NodeAction) action;
                 }
             }
         }
@@ -176,6 +179,9 @@ public class ProjectNode extends NPNode {
             res.add(new NodeActionImpl(failedIncludes, this));
         }
         if( Diagnostic.DEBUG || EXPORT) {
+            if (testReferences != null) {
+                res.add(new NodeActionImpl(testReferences, this));
+            }
             res.add(new TraverseAction());
             res.add(new ExportAction());
         }
