@@ -40,6 +40,7 @@
 package org.netbeans.modules.ide.ergonomics;
 
 import java.util.Collections;
+import java.util.logging.Level;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport;
@@ -58,6 +59,13 @@ public class EnableKitRefreshesLayersCheck extends NbTestCase {
     public EnableKitRefreshesLayersCheck(String n) {
         super(n);
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINER;
+    }
+
+
     
     public void testJavaCanBeTurnedOn() throws Exception {
         FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Menu");

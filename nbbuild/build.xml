@@ -1671,6 +1671,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             <include name="core.windows"/>
             <include name="javahelp"/>
             <include name="ide.kit"/>
+            <include name="ide.ergonomics"/>
         </dirset>
     </subant>
     <pathconvert property="failed.tests" pathsep="${line.separator}">
