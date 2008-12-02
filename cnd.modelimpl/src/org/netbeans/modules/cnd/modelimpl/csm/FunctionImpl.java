@@ -171,7 +171,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             registerInProject();
         }
         if (this.parameterList == null) {
-            System.err.println("not created list for " + this.toString() + " at " + super.getOffsetString() + " in " + file.getAbsolutePath());
+            System.err.println("not created list for " + name + " at " + AstUtil.getOffsetString(ast) + " in " + file.getAbsolutePath());
         }
     }
 
@@ -569,13 +569,22 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         // kind of canonical representation here
         StringBuilder sb = new StringBuilder(getName());
         sb.append(createTemplateSignature());
+        sb.append(createParametersSignature(getParameters()));
+        if( isConst() ) {
+            sb.append(" const"); // NOI18N
+        }
+        return sb.toString();
+    }
+
+    /*package*/static String createParametersSignature(Collection<CsmParameter> params) {
+        StringBuilder sb = new StringBuilder();
         sb.append('(');
-        for( Iterator iter = getParameters().iterator(); iter.hasNext(); ) {
-            CsmParameter param = (CsmParameter) iter.next();
+        for (Iterator<CsmParameter> iter = params.iterator(); iter.hasNext();) {
+            CsmParameter param = iter.next();
             CsmType type = param.getType();
-            if( type != null )  {
+            if (type != null) {
                 sb.append(type.getCanonicalText());
-                if( iter.hasNext() ) {
+                if (iter.hasNext()) {
                     sb.append(',');
                 }
             } else if (param.isVarArgs()) {
@@ -583,12 +592,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             }
         }
         sb.append(')');
-        if( isConst() ) {
-            sb.append(" const"); // NOI18N
-        }
-        return sb.toString();
+       return sb.toString();
     }
-
+    
     private String createTemplateSignature() {
         List<CsmTemplateParameter> allTemplateParams = getTemplateParameters();
         List<CsmTemplateParameter> params = new ArrayList<CsmTemplateParameter>();

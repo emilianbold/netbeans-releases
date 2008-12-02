@@ -245,6 +245,8 @@ public class SVGFormFileObjectListener implements FileChangeListener, ActiveView
                 createComponent(id, SVGSpinnerCD.TYPEID, svgForm);
             } else if (MidpTypes.getSimpleClassName(SVGTextFieldCD.TYPEID).equals(type)) {
                 createComponent(id, SVGTextFieldCD.TYPEID, svgForm);
+            } else if ( MidpTypes.getSimpleClassName(SVGButtonGroupCD.TYPEID).equals(type)){
+                createComponent(id, SVGButtonGroupCD.TYPEID, svgForm);
             }
         }
     }

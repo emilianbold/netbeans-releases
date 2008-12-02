@@ -184,9 +184,76 @@ public class ConfigurationMakefileWriter {
             writeDependencyChecking(conf, bw);
             bw.flush();
             bw.close();
+            if (conf.isQmakeConfiguration()) {
+                writeQmakeProjectFile(conf);
+            }
         } catch (IOException e) {
             // FIXUP
         }
+    }
+
+    protected void writeQmakeProjectFile(MakeConfiguration conf) throws IOException {
+        String qtProFileName = projectDescriptor.getBaseDir() + "/Qt-" + conf.getName() + ".pro"; // NOI18N
+        FileOutputStream os = new FileOutputStream(qtProFileName);
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+
+        bw.write("TEMPLATE = "); // NOI18N
+        bw.write(conf.getQmakeConfiguration().getTemplate().getValue());
+        bw.write('\n'); // NOI18N
+        bw.write("TARGET = "); // NOI18N
+        bw.write(conf.getQmakeConfiguration().getTarget().getValue());
+        bw.write('\n'); // NOI18N
+        bw.write("CONFIG += "); // NOI18N
+        bw.write(conf.getQmakeConfiguration().getConfig().getValue());
+        bw.write('\n'); // NOI18N
+        bw.write("SOURCES +="); // NOI18N
+
+        Item[] items = projectDescriptor.getProjectItems();
+        for (int i = 0; i < items.length; ++i) {
+            Item item = items[i];
+            if (!item.hasHeaderOrSourceExtension(true, true) || item.hasHeaderOrSourceExtension(false, false)) {
+                continue;
+            }
+            ItemConfiguration itemConf = item.getItemConfiguration(conf);
+            if (itemConf.getExcluded().getValue()) {
+                continue;
+            }
+            bw.write(' '); // NOI18N
+            bw.write(item.getPath());
+        }
+        bw.write('\n'); // NOI18N
+
+        bw.write("HEADERS +="); // NOI18N
+        for (int i = 0; i < items.length; ++i) {
+            Item item = items[i];
+            if (!item.hasHeaderOrSourceExtension(false, false)) {
+                continue;
+            }
+            ItemConfiguration itemConf = item.getItemConfiguration(conf);
+            if (itemConf.getExcluded().getValue()) {
+                continue;
+            }
+            bw.write(' '); // NOI18N
+            bw.write(item.getPath());
+        }
+        bw.write('\n'); // NOI18N
+
+        bw.write("FORMS +="); // NOI18N
+        for (int i = 0; i < items.length; ++i) {
+            Item item = items[i];
+            if (!item.getAbsPath().endsWith(".ui")) { // NOI18N
+                continue;
+            }
+            ItemConfiguration itemConf = item.getItemConfiguration(conf);
+            if (itemConf.getExcluded().getValue()) {
+                continue;
+            }
+            bw.write(' '); // NOI18N
+            bw.write(item.getPath());
+        }
+        bw.write('\n'); // NOI18N
+
+        bw.close();
     }
 
     protected void writePrelude(MakeConfiguration conf, BufferedWriter bw) throws IOException {
@@ -296,6 +363,12 @@ public class ConfigurationMakefileWriter {
         bw.write("# Link Libraries and Options\n"); // NOI18N
         bw.write("LDLIBSOPTIONS=" + conf.getLinkerConfiguration().getLibraryItems() + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
+
+        if (conf.isQmakeConfiguration()) {
+            bw.write("Qt-${CONF}.mk: Qt-${CONF}.pro\n"); // NOI18N
+            bw.write("\tqmake -o Qt-${CONF}.mk Qt-${CONF}.pro\n"); // NOI18N
+            bw.write('\n'); // NOI18N
+        }
     }
 
     protected void writeBuildTarget(MakeConfiguration conf, BufferedWriter bw) throws IOException {
@@ -318,6 +391,9 @@ public class ConfigurationMakefileWriter {
         } else if (conf.isMakefileConfiguration()) {
             bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
             writeMakefileTargets(conf, bw);
+        } else if (conf.isQmakeConfiguration()) {
+            bw.write(".build-conf: ${BUILD_SUBPROJECTS} Qt-${CONF}.mk\n"); // NOI18N
+            bw.write("\t${MAKE} -f Qt-${CONF}.mk\n"); // NOI18N
         }
         writeSubProjectBuildTargets(conf, bw);
         bw.write("\n"); // NOI18N
@@ -537,10 +613,14 @@ public class ConfigurationMakefileWriter {
     private void writeCleanTarget(MakeConfiguration conf, BufferedWriter bw) throws IOException {
         bw.write("# Clean Targets\n"); // NOI18N
         if (hasSubprojects(conf)) {
-            bw.write(".clean-conf: ${CLEAN_SUBPROJECTS}\n"); // NOI18N
+            bw.write(".clean-conf: ${CLEAN_SUBPROJECTS}"); // NOI18N
         } else {
-            bw.write(".clean-conf:\n"); // NOI18N
+            bw.write(".clean-conf:"); // NOI18N
         }
+        if (conf.isQmakeConfiguration()) {
+            bw.write(" Qt-" + conf.getName() + ".mk"); // NOI18N
+        }
+        bw.write('\n'); // NOI18N
         if (conf.isCompileConfiguration()) {
             bw.write("\t${RM} -r " + MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + "\n"); // UNIX path // NOI18N
             bw.write("\t${RM} " + getOutput(conf) + "\n"); // NOI18N
@@ -571,13 +651,15 @@ public class ConfigurationMakefileWriter {
             String command = makefileConfiguration.getCleanCommand().getValue();
 
             bw.write("\tcd " + IpeUtils.escapeOddCharacters(cwd) + " && " + command + "\n"); // NOI18N
+        } else if (conf.isQmakeConfiguration()) {
+            bw.write("\t$(MAKE) -f Qt-" + conf.getName() + ".mk\n"); // NOI18N
         }
 
         writeSubProjectCleanTargets(conf, bw);
     }
 
     private void writeDependencyChecking(MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration()) {
+        if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration() && !conf.isQmakeConfiguration()) {
             bw.write("\n"); // NOI18N
             bw.write("# Enable dependency checking\n"); // NOI18N
             bw.write(".dep.inc: .depcheck-impl\n"); // NOI18N
@@ -597,6 +679,8 @@ public class ConfigurationMakefileWriter {
             return conf.getArchiverConfiguration().getOutputValue();
         } else if (conf.isMakefileConfiguration()) {
             return conf.getMakefileConfiguration().getOutput().getValue();
+        } else if (conf.isQmakeConfiguration()) {
+            return conf.getQmakeConfiguration().getTarget().getValue();
         }
         assert false;
         return null;

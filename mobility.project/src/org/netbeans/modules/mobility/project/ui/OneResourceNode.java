@@ -47,7 +47,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.mobility.project.J2MEProject;
-import org.netbeans.modules.mobility.project.ui.LibrariesSourceGroup;
+import org.netbeans.modules.mobility.project.ui.actions.RemoveResourceAction;
 import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
 import static org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem.TYPE_JAR;
 import static org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem.TYPE_ARTIFACT;
@@ -133,7 +133,7 @@ final class OneResourceNode extends LazyInitFilterNode implements FileMonitor {
         assert project != null;
         boolean showActions = project.canModifyLibraries(config);
         return showActions ? new Action[]{
-                    NodeActions.RemoveResourceAction.getStaticInstance(),
+                    RemoveResourceAction.getStaticInstance(),
                     SystemAction.get(CopyAction.class),} : new Action[] {
                     SystemAction.get (CopyAction.class)
         };
