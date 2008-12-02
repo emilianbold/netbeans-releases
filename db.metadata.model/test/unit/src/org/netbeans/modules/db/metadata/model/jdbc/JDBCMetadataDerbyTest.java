@@ -63,6 +63,7 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
 
     private Connection conn;
     private JDBCMetadata metadata;
+    private Statement stmt;
 
     public JDBCMetadataDerbyTest(String testName) {
         super(testName);
@@ -73,7 +74,7 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         clearWorkDir();
         Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
         conn = DriverManager.getConnection("jdbc:derby:" + getWorkDirPath() + "/test;create=true");
-        Statement stmt = conn.createStatement();
+        stmt = conn.createStatement();
         stmt.executeUpdate("CREATE TABLE FOO (" +
                 "ID INT NOT NULL, " +
                 "FOO_NAME VARCHAR(16), " +
@@ -86,7 +87,6 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
                 "DEC_COL DECIMAL(12,2), " +
                 "FOREIGN KEY (FOO_ID, FOO_NAME) REFERENCES FOO(ID,FOO_NAME))");
         stmt.executeUpdate("CREATE VIEW BARVIEW AS SELECT * FROM BAR");
-        stmt.close();
         metadata = new JDBCMetadata(conn, "APP");
     }
 
@@ -117,6 +117,29 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
 
         checkColumns(barTable, columns);
         checkPrimaryKey(fooTable);
+    }
+
+    public void testRefreshCatalog() throws Exception {
+        Catalog catalog = metadata.getDefaultCatalog();
+        Collection<Schema> schemas = catalog.getSchemas();
+
+        int numSchemas = schemas.size();
+
+        stmt.executeUpdate("CREATE SCHEMA testRefreshCatalog");
+
+        catalog.refresh();
+        schemas = catalog.getSchemas();
+        assertEquals(numSchemas + 1, schemas.size());
+        Schema schema = catalog.getSchema("testRefreshCatalog");
+        assertNotNull(schema);
+        assertTrue(schemas.contains(schema));
+
+        stmt.executeUpdate("DROP SCHEMA testRefreshCatalog");
+
+        catalog.refresh();
+        assertEquals(numSchemas, schemas.size());
+        schema = catalog.getSchema("testRefreshCatalog");
+        assertNull(schema);
     }
 
     public void testViews() throws Exception {
