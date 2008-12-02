@@ -44,6 +44,8 @@ import java.io.InputStream;
 import java.net.URL;
 import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -114,6 +116,39 @@ public final class Indexable {
         @Override
         public Indexable create(IndexableImpl delegate) {
             return new Indexable(delegate);
+        }
+
+        @Override
+        public void index(CustomIndexer indexer, Iterable<? extends Indexable> files, Context context) {
+            assert indexer != null;
+            assert files != null;
+            assert context != null;
+            indexer.index(files, context);
+        }
+
+        @Override
+        public Context createContext(FileObject indexFolder, URL rootURL, String indexerName, int indexerVersion) throws IOException {
+            return new Context(indexFolder, rootURL, indexerName, indexerVersion);
+        }
+
+        @Override
+        public String getIndexerName(Context ctx) {
+            assert ctx != null;
+            return ctx.getIndexerName();
+        }
+
+        @Override
+        public int getIndexerVersion(Context ctx) {
+            assert ctx != null;
+            return ctx.getIndexerVersion();
+        }
+
+        @Override
+        public void index(EmbeddingIndexer indexer, Result parserResult, Context ctx) {
+            assert indexer != null;
+            assert parserResult != null;
+            assert ctx != null;
+            indexer.index(parserResult, ctx);
         }
 
     }

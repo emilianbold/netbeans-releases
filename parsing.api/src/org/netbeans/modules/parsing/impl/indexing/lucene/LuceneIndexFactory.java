@@ -44,7 +44,6 @@ import java.net.URL;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexingSPIAccessor;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -71,10 +70,8 @@ public class LuceneIndexFactory implements IndexFactoryImpl {
 
     private URL getIndexFolder (final Context ctx) throws IOException {
         final FileObject indexFolder = ctx.getIndexFolder();
-        final String indexerName = null;
-        final String indexerVersion = null;
         final String indexVersion = Integer.toString(LuceneIndex.VERSION);
-        final FileObject luceneIndexFolder = FileUtil.createFolder(indexFolder,indexerName+"/"+indexerVersion+"/"+indexVersion);    //NOI18N
+        final FileObject luceneIndexFolder = FileUtil.createFolder(indexFolder,indexVersion);    //NOI18N
         return luceneIndexFolder.getURL();
     }
 

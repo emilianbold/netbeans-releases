@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,12 +69,18 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -94,6 +101,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private static final String SOURCES = "FOO_SOURCES";
     private static final String PLATFORM = "FOO_PLATFORM";
     private static final String LIBS = "FOO_LIBS";
+    private static final String MIME = "text/foo";
 
     private FileObject srcRoot1;
     private FileObject srcRoot2;
@@ -108,6 +116,10 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private FileObject unknown1;
     private FileObject unknown2;
     private FileObject unknownSrc2;
+    private FileObject srcRootWithFiles1;
+    private URL[] files;
+
+    private final FooIndexerFactory indexerFactory = new FooIndexerFactory();
 
     public RepositoryUpdaterTest (String name) {
         super (name);
@@ -121,6 +133,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         final FileObject wd = FileUtil.toFileObject(_wd);
 
         MockServices.setServices(FooPathRecognizer.class, SFBQImpl.class, OpenProject.class);
+        MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
 
         assertNotNull("No masterfs",wd);
         srcRoot1 = wd.createFolder("src1");
@@ -153,6 +166,17 @@ public class RepositoryUpdaterTest extends NbTestCase {
         SFBQImpl.register (compRoot1,compSrc1);
         SFBQImpl.register (compRoot2,compSrc2);
         SFBQImpl.register (unknown2,unknownSrc2);
+
+        srcRootWithFiles1 = wd.createFolder("srcwf1");
+        assertNotNull(srcRootWithFiles1);
+        FileUtil.setMIMEType("foo", MIME);
+        FileObject f1 = FileUtil.createData(srcRootWithFiles1,"folder/a.foo");
+        assertNotNull(f1);
+        assertEquals(MIME, f1.getMIMEType());
+        FileObject f2 = FileUtil.createData(srcRootWithFiles1,"folder/b.foo");
+        assertNotNull(f2);
+        assertEquals(MIME, f2.getMIMEType());
+        files = new URL[] {f1.getURL(), f2.getURL()};
     }
 
     public void testPathAddedRemovedChanged () throws Exception {
@@ -309,6 +333,25 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(this.compSrc2.getURL(), handler.getSources().get(0));
     }
 
+
+    public void testIndexers () throws Exception {
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        indexerFactory.indexer.setExpectedFile(files);
+        MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
+        assertTrue(indexerFactory.indexer.await());
+    }
+
+
     public static class TestHandler extends Handler {
 
             private CountDownLatch latch;
@@ -360,15 +403,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
     
     
-    
-    private static Collection<URL> collectResults () {
-        final PathRegistry pr = PathRegistry.getDefault();
-        final List<URL> result = new LinkedList<URL>();
-        result.addAll(pr.getSources());
-        result.addAll(pr.getBinaries());
-        result.addAll(pr.getUnknownRoots());
-        return result;
-    }
+        
 
     public static class PRI implements FilteringPathResourceImplementation {
 
@@ -408,22 +443,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             event.setPropagationId(propId);
             this.support.firePropertyChange(event);
         }
-    }
-    
-
-    private void assertEquals (FileObject[] expected, Collection<? extends URL> result) throws IOException {
-        assertEquals(expected.length, result.size());
-        Set<URL> expectedUrls = new HashSet<URL> ();
-        for (FileObject fo : expected) {
-            expectedUrls.add(fo.getURL());
-        }
-        for (URL url : result) {
-            if (!expectedUrls.remove (url)) {
-                assertTrue (String.format("Unknown URL: %s in: %s", url, expectedUrls),false);
-            }
-        }
-        assertEquals(expectedUrls.toString(),0,expectedUrls.size());
-    }
+    }        
     
 
     private static class MutableClassPathImplementation implements ClassPathImplementation {
@@ -575,7 +595,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         @Override
         public Set<String> getMimeType() {
-            return Collections.singleton("text/foo");
+            return Collections.singleton(MIME);
         }        
 
     }    
@@ -633,6 +653,54 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         public void setMainProject(Project project) {
             
+        }
+
+    }
+
+    private static class FooIndexerFactory extends CustomIndexerFactory {
+
+        private final FooIndexer indexer = new FooIndexer();
+
+        @Override
+        public CustomIndexer createIndexer() {
+            return this.indexer;
+        }
+
+        @Override
+        public String getIndexerName() {
+            return "foo";
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return 1;
+        }
+
+    }
+
+    private static class FooIndexer extends CustomIndexer {
+
+        private Set<URL> expectedFiles = new HashSet<URL>();
+        private CountDownLatch latch;
+
+        public void setExpectedFile (URL... files) {
+            expectedFiles.clear();
+            expectedFiles.addAll(Arrays.asList(files));
+            latch = new CountDownLatch(expectedFiles.size());
+        }
+
+        public boolean await () throws InterruptedException {
+            return this.latch.await(5000, TimeUnit.MILLISECONDS);
+        }
+
+        @Override
+        protected void index(Iterable<? extends Indexable> files, Context context) {
+            for (Indexable i : files) {
+                if (expectedFiles.remove(i.getURL())) {
+                    latch.countDown();
+                }
+
+            }
         }
 
     }

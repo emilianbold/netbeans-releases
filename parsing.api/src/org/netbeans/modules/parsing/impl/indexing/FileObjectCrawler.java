@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 
@@ -60,21 +61,23 @@ public class FileObjectCrawler extends Crawler {
     }
 
     @Override
-    protected Map<String, Collection<Indexable>> collectResources() {
+    protected Map<String, Collection<Indexable>> collectResources(final Set<? extends String> supportedMimeTypes) {
         Map<String, Collection<Indexable>> result = new HashMap<String, Collection<Indexable>>();
-        collect (root, root, result);
+        collect (root, root, result, supportedMimeTypes);
         return result;
     }
 
-    private static void collect(final FileObject dir, final FileObject root, final Map<String, Collection<Indexable>> cache) {
+    private static void collect(final FileObject dir, final FileObject root,
+            final Map<String, Collection<Indexable>> cache,
+            final Set<? extends String> supportedMimeTypes) {
         final FileObject[] fos = dir.getChildren();
         for (FileObject fo : fos) {
             if (fo.isFolder()) {
-                collect(fo, root, cache);
+                collect(fo, root, cache, supportedMimeTypes);
             }
             else {
                 final String mime = fo.getMIMEType();
-                if (mime != null) {
+                if (mime != null && supportedMimeTypes.contains(mime)) {
                     Collection<Indexable> indexable = cache.get(mime);
                     if (indexable == null) {
                         indexable = new LinkedList<Indexable>();

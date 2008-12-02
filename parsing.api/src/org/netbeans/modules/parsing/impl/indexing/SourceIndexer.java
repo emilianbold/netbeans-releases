@@ -40,7 +40,6 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -96,7 +95,7 @@ public class SourceIndexer extends CustomIndexer {
                         private void visit (final ResultIterator resultIterator,
                                 final EmbeddingIndexer currentIndexer) throws ParseException {
                             if (currentIndexer != null) {
-                                IndexingSPIAccessor.getInstance().index(currentIndexer, resultIterator.getParserResult(), context);
+                                SPIAccessor.getInstance().index(currentIndexer, resultIterator.getParserResult(), context);
                             }
                             Iterable<? extends Embedding> embeddings = resultIterator.getEmbeddings();
                             for (Embedding embedding : embeddings) {

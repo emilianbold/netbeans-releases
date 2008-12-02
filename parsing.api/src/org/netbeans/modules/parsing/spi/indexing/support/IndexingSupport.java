@@ -44,7 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
-import org.netbeans.modules.parsing.impl.indexing.IndexingSPIAccessor;
+import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
@@ -114,7 +114,7 @@ public class IndexingSupport {
     }
 
     private String createkey (final Context ctx) {
-        return ctx.getIndexFolder().getName() + IndexingSPIAccessor.getInstance().getIndexerName (ctx);
+        return ctx.getIndexFolder().getName() + SPIAccessor.getInstance().getIndexerName (ctx);
     }
    
 }

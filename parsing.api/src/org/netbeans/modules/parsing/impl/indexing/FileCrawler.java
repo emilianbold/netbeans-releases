@@ -43,6 +43,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 
 
@@ -60,7 +61,7 @@ public class FileCrawler extends Crawler {
     }
 
     @Override
-    protected  Map<String, Collection<Indexable>> collectResources() {
+    protected  Map<String, Collection<Indexable>> collectResources(final Set<? extends String> supportedMimeTypes) {
         final Map<String, Collection<Indexable>> result = new HashMap<String, Collection<Indexable>>();
         collect (root, result);
         return result;

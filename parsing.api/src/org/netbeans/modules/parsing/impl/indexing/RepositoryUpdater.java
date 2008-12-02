@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,6 +55,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.parsing.impl.Utilities;
@@ -61,6 +63,9 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -69,6 +74,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.TopologicalSortException;
 
 /**
@@ -400,7 +406,29 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {
                 final Crawler crawler = new FileObjectCrawler(rootFo);
-                final Map<String,Collection<Indexable>> resources = crawler.getResources();                
+                final Map<String,Collection<Indexable>> resources = crawler.getResources();
+                //First use custom indexers
+                for (Iterator<Map.Entry<String,Collection<Indexable>>> it = resources.entrySet().iterator(); it.hasNext();) {
+                    final Map.Entry<String,Collection<Indexable>> entry = it.next();
+                    final CustomIndexerFactory factory = MimeLookup.getLookup(entry.getKey()).lookup(CustomIndexerFactory.class);
+                    if (factory != null) {
+                        try {
+                            final CustomIndexer indexer = factory.createIndexer();
+                            final Context ctx = SPIAccessor.getInstance().createContext(rootFo, root, factory.getIndexerName(), factory.getIndexVersion()); //fixme!!!!
+                            SPIAccessor.getInstance().index(indexer, entry.getValue(), ctx);
+                        } catch (IOException ioe) {
+                            Exceptions.printStackTrace(ioe);
+                        }
+                        finally {
+                            it.remove();
+                        }
+                    }
+                }
+                //For rest use slow gsf like indexers
+                for (Iterator<Map.Entry<String,Collection<Indexable>>> it = resources.entrySet().iterator(); it.hasNext();) {
+                    final Map.Entry<String,Collection<Indexable>> entry = it.next();
+
+                }
             }
         }
 

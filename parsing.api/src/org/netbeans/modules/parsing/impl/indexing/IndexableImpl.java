@@ -57,6 +57,6 @@ public interface IndexableImpl {
 
     public URL getURL();
 
-    public InputStream openInputStream() throws IOException ;
+    public InputStream openInputStream() throws IOException;
 
 }

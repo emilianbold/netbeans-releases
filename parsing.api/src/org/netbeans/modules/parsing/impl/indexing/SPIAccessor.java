@@ -39,7 +39,14 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.io.IOException;
+import java.net.URL;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -68,5 +75,16 @@ public abstract class SPIAccessor {
     }
 
     public abstract Indexable create (final IndexableImpl delegate);
+
+    public abstract  Context createContext (final FileObject indexFolder,
+             final URL rootURL, String indexerName, int indexerVersion) throws IOException;
+
+    public abstract String getIndexerName (Context ctx);
+
+    public abstract int getIndexerVersion (Context ctx);
+
+    public abstract void index (CustomIndexer indexer, Iterable<? extends Indexable> files, Context context);
+
+    public abstract void index (EmbeddingIndexer indexer, Parser.Result parserResult, Context ctx);
 
 }
