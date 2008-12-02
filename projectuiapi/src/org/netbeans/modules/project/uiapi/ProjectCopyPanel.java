@@ -52,6 +52,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.api.project.ProjectUtils;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -264,16 +265,13 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
 
     private void browseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseActionPerformed
 // TODO add your handling code here:
-        File current = new File(projectLocation.getText());
-        JFileChooser chooser = new JFileChooser(current);
-        
-        chooser.setMultiSelectionEnabled(false);
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setDialogTitle(NbBundle.getMessage(ProjectCopyPanel.class, "TITLE_BrowseProjectLocation"));
-        chooser.setApproveButtonText(NbBundle.getMessage(ProjectCopyPanel.class, "LBL_BrowseProjectLocation_OK_Button"));
-                
-        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-            projectLocation.setText(chooser.getSelectedFile().getAbsolutePath());
+        String dlgTitle = NbBundle.getMessage(ProjectCopyPanel.class, "TITLE_BrowseProjectLocation");
+        String okText = NbBundle.getMessage(ProjectCopyPanel.class, "LBL_BrowseProjectLocation_OK_Button");
+        File dir = new FileChooserBuilder(ProjectCopyPanel.class).setDefaultWorkingDirectory(
+            new File(projectLocation.getText())).setDirectoriesOnly(
+            true).setTitle(dlgTitle).setApproveText(okText).showOpenDialog();
+        if (dir != null) {
+            projectLocation.setText(dir.getAbsolutePath());
         }
     }//GEN-LAST:event_browseActionPerformed
     

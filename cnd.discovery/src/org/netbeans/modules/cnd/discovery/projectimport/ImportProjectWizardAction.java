@@ -55,6 +55,7 @@ public final class ImportProjectWizardAction extends CallableSystemAction {
     private WizardDescriptor.Panel[] panels;
 
     public void performAction() {
+        @SuppressWarnings("unchecked")
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N

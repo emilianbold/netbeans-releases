@@ -50,7 +50,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.mobility.project.J2MEProject;
-import org.netbeans.modules.mobility.project.ui.ProjectRootNodeChildren.ChildKind;
+import org.netbeans.api.mobility.project.ChildKind;
+import org.netbeans.api.mobility.project.ProjectChildKeyProvider;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -77,13 +78,6 @@ final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> i
     private Set<NodeList> lists = new HashSet<NodeList>();
     private final Object lock = new Object();
 
-    public static enum ChildKind {
-        Sources, 
-        Resources,
-        Configurations,
-        Foreign,
-    }
-
     ProjectRootNodeChildren(J2MEProject project) {
         this.project = project;
     }
@@ -109,7 +103,13 @@ final class ProjectRootNodeChildren extends ChildFactory.Detachable<ChildKind> i
       }
     
     protected boolean createKeys(List<ChildKind> toPopulate) {
-        toPopulate.addAll(Arrays.asList(ChildKind.values()));
+        ProjectChildKeyProvider provider = Lookup.getDefault().lookup(
+                ProjectChildKeyProvider.class);
+        if (provider == null) {
+            toPopulate.addAll(Arrays.asList(ChildKind.values()));
+        } else {
+            toPopulate.addAll(provider.getKeys());
+        }
         return true;
     }
 

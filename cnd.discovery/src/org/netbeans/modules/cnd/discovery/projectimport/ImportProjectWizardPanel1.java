@@ -39,6 +39,11 @@
 package org.netbeans.modules.cnd.discovery.projectimport;
 
 import java.awt.Component;
+import java.io.File;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -50,6 +55,8 @@ public class ImportProjectWizardPanel1 implements WizardDescriptor.Panel {
      * component from this class, just use getComponent().
      */
     private Component component;
+    private WizardStorage wizardStorage= new WizardStorage();
+    private boolean isValid = false;;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -57,7 +64,7 @@ public class ImportProjectWizardPanel1 implements WizardDescriptor.Panel {
     // create only those which really need to be visible.
     public Component getComponent() {
         if (component == null) {
-            component = new ImportProjectVisualPanel1();
+            component = new ImportProjectVisualPanel1(this);
         }
         return component;
     }
@@ -70,43 +77,66 @@ public class ImportProjectWizardPanel1 implements WizardDescriptor.Panel {
     }
 
     public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
-        return true;
-    // If it depends on some condition (form filled out...), then:
-    // return someCondition();
-    // and when this condition changes (last form field filled in...) then:
-    // fireChangeEvent();
-    // and uncomment the complicated stuff below.
+        return isValid;
     }
 
-    public final void addChangeListener(ChangeListener l) {
+    private boolean check(){
+        String path = wizardStorage.getPath().trim();
+        if (path.length() == 0) {
+            return false;
+        }
+        File file = new File(path);
+        if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
+            return false;
+        }
+        file = new File(path+"/Makefile"); // NOI18N
+        if (file.exists() && file.isFile() && file.canRead()) {
+            return true;
+        }
+        file = new File(path+"/makefile"); // NOI18N
+        if (file.exists() && file.isFile() && file.canRead()) {
+            return true;
+        }
+        file = new File(path+"/configure"); // NOI18N
+        if (file.exists() && file.isFile() && file.canRead()) {
+            return true;
+        }
+        return false;
     }
 
-    public final void removeChangeListener(ChangeListener l) {
+
+    private void validate(){
+        boolean current = check();
+        if (current ^ isValid) {
+            isValid = current;
+            fireChangeEvent();
+        }
     }
-    /*
+
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
+
     public final void addChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.add(l);
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
-    }
+
     public final void removeChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.remove(l);
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
     }
-    }
+
     protected final void fireChangeEvent() {
-    Iterator<ChangeListener> it;
-    synchronized (listeners) {
-    it = new HashSet<ChangeListener>(listeners).iterator();
+        Iterator<ChangeListener> it;
+        synchronized (listeners) {
+            it = new HashSet<ChangeListener>(listeners).iterator();
+        }
+        ChangeEvent ev = new ChangeEvent(this);
+        while (it.hasNext()) {
+            it.next().stateChanged(ev);
+        }
     }
-    ChangeEvent ev = new ChangeEvent(this);
-    while (it.hasNext()) {
-    it.next().stateChanged(ev);
-    }
-    }
-     */
 
     // You can use a settings object to keep track of state. Normally the
     // settings object will be the WizardDescriptor, so you can use
@@ -116,6 +146,79 @@ public class ImportProjectWizardPanel1 implements WizardDescriptor.Panel {
     }
 
     public void storeSettings(Object settings) {
+    }
+
+    public WizardStorage getWizardStorage(){
+        return wizardStorage;
+    }
+
+    public class WizardStorage {
+        private String path = ""; // NOI18N
+        private String flags = "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\""; // NOI18N
+        private boolean setMain = true;
+        private boolean buildProject = true;
+        public WizardStorage(){
+        }
+
+        /**
+         * @return the path
+         */
+        public String getPath() {
+            return path;
+        }
+
+        /**
+         * @param path the path to set
+         */
+        public void setPath(String path) {
+            this.path = path;
+            validate();
+        }
+
+        /**
+         * @return the flags
+         */
+        public String getFlags() {
+            return flags;
+        }
+
+        /**
+         * @param flags the flags to set
+         */
+        public void setFlags(String flags) {
+            this.flags = flags;
+            validate();
+        }
+
+        /**
+         * @return the setMain
+         */
+        public boolean isSetMain() {
+            return setMain;
+        }
+
+        /**
+         * @param setMain the setMain to set
+         */
+        public void setSetMain(boolean setMain) {
+            this.setMain = setMain;
+            validate();
+        }
+
+        /**
+         * @return the buildProject
+         */
+        public boolean isBuildProject() {
+            return buildProject;
+        }
+
+        /**
+         * @param buildProject the buildProject to set
+         */
+        public void setBuildProject(boolean buildProject) {
+            this.buildProject = buildProject;
+            validate();
+        }
     }
 }
 

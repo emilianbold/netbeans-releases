@@ -428,28 +428,28 @@ public class MakeConfiguration extends Configuration {
         super.cloneConf(clone);
         clone.setCloneOf(this);
 
-        DevelopmentHostConfiguration dhconf = (DevelopmentHostConfiguration) getDevelopmentHost().clone();
+        DevelopmentHostConfiguration dhconf = getDevelopmentHost().clone();
         clone.setDevelopmentHost(dhconf);
-        CompilerSet2Configuration csconf = (CompilerSet2Configuration) getCompilerSet().clone();
+        CompilerSet2Configuration csconf = getCompilerSet().clone();
         csconf.setDevelopmentHostConfiguration(dhconf);
         clone.setCompilerSet(csconf);
-        clone.setCRequired((LanguageBooleanConfiguration) getCRequired().clone());
-        clone.setCppRequired((LanguageBooleanConfiguration) getCppRequired().clone());
-        clone.setFortranRequired((LanguageBooleanConfiguration) getFortranRequired().clone());
-        clone.setAssemblerRequired((LanguageBooleanConfiguration) getAssemblerRequired().clone());
-        PlatformConfiguration pconf = (PlatformConfiguration) getPlatform().clone();
+        clone.setCRequired(getCRequired().clone());
+        clone.setCppRequired(getCppRequired().clone());
+        clone.setFortranRequired(getFortranRequired().clone());
+        clone.setAssemblerRequired(getAssemblerRequired().clone());
+        PlatformConfiguration pconf = getPlatform().clone();
         clone.setPlatform(pconf);
-        clone.setMakefileConfiguration((MakefileConfiguration) getMakefileConfiguration().clone());
-        clone.setDependencyChecking((BooleanConfiguration) getDependencyChecking().clone());
-        clone.setCCompilerConfiguration((CCompilerConfiguration) getCCompilerConfiguration().clone());
-        clone.setCCCompilerConfiguration((CCCompilerConfiguration) getCCCompilerConfiguration().clone());
-        clone.setFortranCompilerConfiguration((FortranCompilerConfiguration) getFortranCompilerConfiguration().clone());
-        clone.setAssemblerConfiguration((AssemblerConfiguration) getAssemblerConfiguration().clone());
-        clone.setLinkerConfiguration((LinkerConfiguration) getLinkerConfiguration().clone());
-        clone.setArchiverConfiguration((ArchiverConfiguration) getArchiverConfiguration().clone());
-        clone.setPackagingConfiguration((PackagingConfiguration) getPackagingConfiguration().clone());
+        clone.setMakefileConfiguration(getMakefileConfiguration().clone());
+        clone.setDependencyChecking(getDependencyChecking().clone());
+        clone.setCCompilerConfiguration(getCCompilerConfiguration().clone());
+        clone.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
+        clone.setFortranCompilerConfiguration(getFortranCompilerConfiguration().clone());
+        clone.setAssemblerConfiguration(getAssemblerConfiguration().clone());
+        clone.setLinkerConfiguration(getLinkerConfiguration().clone());
+        clone.setArchiverConfiguration(getArchiverConfiguration().clone());
+        clone.setPackagingConfiguration(getPackagingConfiguration().clone());
         clone.setRequiredProjectsConfiguration(getRequiredProjectsConfiguration().cloneConf());
-        clone.setDebuggerChooserConfiguration((DebuggerChooserConfiguration) getDebuggerChooserConfiguration().clone());
+        clone.setDebuggerChooserConfiguration(getDebuggerChooserConfiguration().clone());
         clone.setQmakeConfiguration(getQmakeConfiguration().clone());
 
         dhconf.addPropertyChangeListener(csconf);
@@ -635,7 +635,7 @@ public class MakeConfiguration extends Configuration {
         }
 
         @Override
-        public Object clone() {
+        public LanguageBooleanConfiguration clone() {
             LanguageBooleanConfiguration clone = new LanguageBooleanConfiguration();
             clone.setValue(getValue(), getDefault());
             clone.setModified(getModified());
