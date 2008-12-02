@@ -37,72 +37,70 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.jdbc;
 
 import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.spi.IndexImplementation;
 
 /**
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Table extends Tuple {
+public class JDBCIndex extends IndexImplementation {
 
-    final TableImplementation impl;
+    private final Table parent;
+    private final String name;
+    private final Map<String,IndexColumn> columns = new LinkedHashMap<String,IndexColumn>();
+    private final IndexType indexType;
+    private final boolean isUnique;
 
-    Table(TableImplementation impl) {
-        this.impl = impl;
+    public JDBCIndex(Table parent, String name, IndexType indexType, boolean isUnique) {
+        this.parent = parent;
+        this.name = name;
+        this.indexType = indexType;
+        this.isUnique = isUnique;
     }
 
-    /**
-     * Returns the schema containing this table.
-     *
-     * @return the parent schema.
-     */
-    public Schema getParent() {
-        return impl.getParent();
-    }
-
-    /**
-     * Returns the name of this table; never {@code null}.
-     *
-     * @return the name.
-     */
-    public String getName() {
-        return impl.getName();
+    public void addColumn(IndexColumn col) {
+        columns.put(col.getName(), col);
     }
 
     @Override
-    public Collection<Column> getColumns() {
-        return impl.getColumns();
+    public IndexColumn getColumn(String name) {
+        return columns.get(name);
     }
 
-    @Override
-    public Column getColumn(String name) {
-        return impl.getColumn(name);
+    public final Table getParent() {
+        return parent;
     }
 
-    public PrimaryKey getPrimaryKey() {
-        return impl.getPrimaryKey();
-    }
-
-    public Collection<Index> getIndexes() {
-        return impl.getIndexes();
-    }
-
-    public Index getIndex(String name) {
-        return impl.getIndex(name);
-    }
-
-    /**
-     * Refresh the table metadata from the database
-     */
-    public void refresh() {
-        impl.refresh();
+    public final String getName() {
+        return name;
     }
 
     @Override
     public String toString() {
-        return "Table[name='" + getName() + "']"; // NOI18N
+        return "JDBCIndex[name='" + name + "', type=" +indexType + ", unique=" + isUnique +"]"; // NOI18N
+    }
+
+    @Override
+    public Collection<IndexColumn> getColumns() {
+        return columns.values();
+    }
+
+    @Override
+    public IndexType getIndexType() {
+        return indexType;
+    }
+
+    @Override
+    public boolean isUnique() {
+        return isUnique;
     }
 }

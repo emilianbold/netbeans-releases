@@ -47,6 +47,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Index;
+import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
+import org.netbeans.modules.db.metadata.model.api.Ordering;
 import org.netbeans.modules.db.metadata.model.api.Parameter;
 import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
 import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
@@ -88,18 +92,27 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         stmt.executeUpdate("DROP DATABASE test");
         stmt.executeUpdate("CREATE DATABASE test");
         stmt.executeUpdate("USE test");
+        
         stmt.executeUpdate("CREATE TABLE groucho (id INT NOT NULL, id2 INT NOT NULL, CONSTRAINT groucho_pk PRIMARY KEY (id2, id))");
+        
         stmt.executeUpdate("CREATE TABLE foo (" +
                 "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, " +
                 "FOO_NAME VARCHAR(16))");
+        
         stmt.executeUpdate("CREATE TABLE bar (" +
                 "`i+d` INT NOT NULL PRIMARY KEY, " +
                 "foo_id INT NOT NULL, " +
                 "bar_name  VARCHAR(16), " +
                 "bar_digit DECIMAL(12,2) NOT NULL, " +
                 "FOREIGN KEY (foo_id) REFERENCES foo(id))");
+        
         stmt.executeUpdate("CREATE VIEW barview AS SELECT * FROM bar");
-        // TODO - test precision, scale, radix
+
+        stmt.executeUpdate("CREATE UNIQUE INDEX groucho_index ON groucho(id2)");
+
+        stmt.executeUpdate("CREATE INDEX bar_name_index ON bar(bar_name, bar_digit)");
+        stmt.executeUpdate("CREATE UNIQUE INDEX bar_foo_index ON bar(foo_id)");
+        
         stmt.executeUpdate("CREATE PROCEDURE barproc(IN param1 INT, OUT result VARCHAR(255), INOUT param2 DECIMAL(5,2)) " +
                 "BEGIN SELECT * from bar; END");
         stmt.executeUpdate("CREATE PROCEDURE fooproc(IN param1 INT) " +
@@ -150,6 +163,60 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         tables = schema.getTables();
         assertNames(new HashSet<String>(Arrays.asList("foo", "bar", "groucho", "testSchemaRefresh")), tables);
 
+    }
+
+    public void testIndexes() {
+        Schema schema = metadata.getDefaultSchema();
+        Table table = schema.getTable("groucho");
+        Collection<Index> indexes = table.getIndexes();
+        assertNames(new HashSet<String>(Arrays.asList("groucho_index", "PRIMARY")), indexes);
+
+        Index index = table.getIndex("groucho_index");
+        assertEquals(index.getParent(), table);
+        assertTrue(index.isUnique());
+        assertEquals(IndexType.OTHER, index.getIndexType());
+        Collection<IndexColumn> columns = index.getColumns();
+        assertEquals(1, columns.size());
+        assertNames(new HashSet<String>(Arrays.asList("id2")), columns);
+        IndexColumn col = index.getColumn("id2");
+        assertNotNull(col);
+        assertEquals(index, col.getParent());
+        assertEquals(Ordering.ASCENDING, col.getOrdering());
+        assertEquals(1, col.getPosition());
+
+        index = table.getIndex("PRIMARY");
+        assertEquals(index.getParent(), table);
+        assertTrue(index.isUnique());
+        assertEquals(IndexType.OTHER, index.getIndexType());
+        columns = index.getColumns();
+        assertEquals(2, columns.size());
+        assertNames(new HashSet<String>(Arrays.asList("id2", "id")), columns);
+        col = index.getColumn("id2");
+        assertNotNull(col);
+        assertEquals(index, col.getParent());
+        assertEquals(Ordering.ASCENDING, col.getOrdering());
+        assertEquals(1, col.getPosition());
+
+        col = index.getColumn("id");
+        assertNotNull(col);
+        assertEquals(index, col.getParent());
+        assertEquals(Ordering.ASCENDING, col.getOrdering());
+        assertEquals(2, col.getPosition());
+        
+        table = schema.getTable("bar");
+        indexes = table.getIndexes();
+        assertNames(new HashSet<String>(Arrays.asList("bar_name_index", "bar_foo_index", "PRIMARY")), indexes);
+
+        index = table.getIndex("bar_name_index");
+        assertEquals(index.getParent(), table);
+        assertFalse(index.isUnique());
+        columns = index.getColumns();
+        assertNames(new HashSet<String>(Arrays.asList("bar_name", "bar_digit")), columns);
+        col = index.getColumn("bar_name");
+        assertEquals(index, col.getParent());
+        assertEquals(Ordering.ASCENDING, col.getOrdering());
+        assertEquals(1, col.getPosition());
+        assertEquals(col.getColumn(), table.getColumn("bar_name"));
     }
 
     public void testPrimaryKey() {

@@ -39,70 +39,68 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
+import org.netbeans.modules.db.metadata.model.spi.IndexColumnImplementation;
 
 /**
+ * This class represents a column in an index.  It provides more information
+ * about the column, such as whether it's used in the index ascending or
+ * descending
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Table extends Tuple {
+public class IndexColumn extends MetadataElement {
+    private IndexColumnImplementation impl;
 
-    final TableImplementation impl;
-
-    Table(TableImplementation impl) {
+    IndexColumn(IndexColumnImplementation impl) {
         this.impl = impl;
     }
 
     /**
-     * Returns the schema containing this table.
+     * Return the ordering for this column in the index
      *
-     * @return the parent schema.
+     * @return the ordering for this column
      */
-    public Schema getParent() {
+    public Ordering getOrdering() {
+        return impl.getOrdering();
+    }
+
+    /**
+     * Get the ordinal position for the column in this index
+     *
+     * @return the ordinal position, starting at 1
+     */
+    public int getPosition() {
+        return impl.getPosition();
+    }
+
+    @Override
+    public Index getParent() {
         return impl.getParent();
     }
 
     /**
-     * Returns the name of this table; never {@code null}.
+     * Returns the name of the column
      *
-     * @return the name.
+     * @return the column name
      */
+    @Override
     public String getName() {
         return impl.getName();
     }
 
-    @Override
-    public Collection<Column> getColumns() {
-        return impl.getColumns();
-    }
-
-    @Override
-    public Column getColumn(String name) {
-        return impl.getColumn(name);
-    }
-
-    public PrimaryKey getPrimaryKey() {
-        return impl.getPrimaryKey();
-    }
-
-    public Collection<Index> getIndexes() {
-        return impl.getIndexes();
-    }
-
-    public Index getIndex(String name) {
-        return impl.getIndex(name);
-    }
-
     /**
-     * Refresh the table metadata from the database
+     * Get the underlying column for this index column
+     *
+     * @return the column for this index column.
      */
-    public void refresh() {
-        impl.refresh();
+    public Column getColumn() {
+        return impl.getColumn();
     }
 
     @Override
     public String toString() {
-        return "Table[name='" + getName() + "']"; // NOI18N
+        return impl.toString();
     }
+
+
 }

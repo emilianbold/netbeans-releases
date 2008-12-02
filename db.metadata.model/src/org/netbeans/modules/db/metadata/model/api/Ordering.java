@@ -39,70 +39,11 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
-import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
-
 /**
+ * Defines an ordering for a metadata element
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Table extends Tuple {
-
-    final TableImplementation impl;
-
-    Table(TableImplementation impl) {
-        this.impl = impl;
-    }
-
-    /**
-     * Returns the schema containing this table.
-     *
-     * @return the parent schema.
-     */
-    public Schema getParent() {
-        return impl.getParent();
-    }
-
-    /**
-     * Returns the name of this table; never {@code null}.
-     *
-     * @return the name.
-     */
-    public String getName() {
-        return impl.getName();
-    }
-
-    @Override
-    public Collection<Column> getColumns() {
-        return impl.getColumns();
-    }
-
-    @Override
-    public Column getColumn(String name) {
-        return impl.getColumn(name);
-    }
-
-    public PrimaryKey getPrimaryKey() {
-        return impl.getPrimaryKey();
-    }
-
-    public Collection<Index> getIndexes() {
-        return impl.getIndexes();
-    }
-
-    public Index getIndex(String name) {
-        return impl.getIndex(name);
-    }
-
-    /**
-     * Refresh the table metadata from the database
-     */
-    public void refresh() {
-        impl.refresh();
-    }
-
-    @Override
-    public String toString() {
-        return "Table[name='" + getName() + "']"; // NOI18N
-    }
+public enum Ordering {
+    ASCENDING, DESCENDING, NOT_SUPPORTED
 }

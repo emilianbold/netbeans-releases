@@ -40,17 +40,18 @@
 package org.netbeans.modules.db.metadata.model.api;
 
 import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
+import org.netbeans.modules.db.metadata.model.spi.IndexImplementation;
 
 /**
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Table extends Tuple {
+public class Index extends MetadataElement {
+    public enum IndexType { CLUSTERED, HASHED, OTHER };
 
-    final TableImplementation impl;
+    final IndexImplementation impl;
 
-    Table(TableImplementation impl) {
+    Index(IndexImplementation impl) {
         this.impl = impl;
     }
 
@@ -59,7 +60,7 @@ public class Table extends Tuple {
      *
      * @return the parent schema.
      */
-    public Schema getParent() {
+    public Table getParent() {
         return impl.getParent();
     }
 
@@ -72,37 +73,44 @@ public class Table extends Tuple {
         return impl.getName();
     }
 
-    @Override
-    public Collection<Column> getColumns() {
+    /**
+     * Return the columns for this index
+     *
+     * @return the list of columns for this index
+     */
+    public Collection<IndexColumn> getColumns() {
         return impl.getColumns();
     }
 
-    @Override
-    public Column getColumn(String name) {
+    /**
+     * Return a given index column
+     * @param name the name of the column to retrieve
+     * @return the column for the given name or null if it doesn't exist
+     */
+    public IndexColumn getColumn(String name) {
         return impl.getColumn(name);
     }
 
-    public PrimaryKey getPrimaryKey() {
-        return impl.getPrimaryKey();
-    }
-
-    public Collection<Index> getIndexes() {
-        return impl.getIndexes();
-    }
-
-    public Index getIndex(String name) {
-        return impl.getIndex(name);
+    /**
+     * Return the type of index
+     *
+     * @return the index type
+     */
+    public IndexType getIndexType() {
+        return impl.getIndexType();
     }
 
     /**
-     * Refresh the table metadata from the database
+     * Return whether the index must have unique values
+     *
+     * @return true if unique, false otherwise
      */
-    public void refresh() {
-        impl.refresh();
+    public boolean isUnique() {
+        return impl.isUnique();
     }
 
     @Override
     public String toString() {
-        return "Table[name='" + getName() + "']"; // NOI18N
+        return impl.toString();
     }
 }

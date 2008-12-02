@@ -37,72 +37,35 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.spi;
 
-import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Index;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
+import org.netbeans.modules.db.metadata.model.api.Ordering;
 
 /**
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Table extends Tuple {
+public abstract class IndexColumnImplementation {
+    private IndexColumn column;
 
-    final TableImplementation impl;
-
-    Table(TableImplementation impl) {
-        this.impl = impl;
+    public final IndexColumn getIndexColumn() {
+        if (column == null) {
+            column = MetadataAccessor.getDefault().createIndexColumn(this);
+        }
+        return column;
     }
 
-    /**
-     * Returns the schema containing this table.
-     *
-     * @return the parent schema.
-     */
-    public Schema getParent() {
-        return impl.getParent();
-    }
+    public abstract Column getColumn();
 
-    /**
-     * Returns the name of this table; never {@code null}.
-     *
-     * @return the name.
-     */
-    public String getName() {
-        return impl.getName();
-    }
+    public abstract int getPosition();
 
-    @Override
-    public Collection<Column> getColumns() {
-        return impl.getColumns();
-    }
+    public abstract Ordering getOrdering();
 
-    @Override
-    public Column getColumn(String name) {
-        return impl.getColumn(name);
-    }
+    public abstract String getName();
 
-    public PrimaryKey getPrimaryKey() {
-        return impl.getPrimaryKey();
-    }
-
-    public Collection<Index> getIndexes() {
-        return impl.getIndexes();
-    }
-
-    public Index getIndex(String name) {
-        return impl.getIndex(name);
-    }
-
-    /**
-     * Refresh the table metadata from the database
-     */
-    public void refresh() {
-        impl.refresh();
-    }
-
-    @Override
-    public String toString() {
-        return "Table[name='" + getName() + "']"; // NOI18N
-    }
+    public abstract Index getParent();
 }

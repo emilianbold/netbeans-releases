@@ -47,6 +47,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Index;
+import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
+import org.netbeans.modules.db.metadata.model.api.Ordering;
 import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
 import org.netbeans.modules.db.metadata.model.api.SQLType;
 import org.netbeans.modules.db.metadata.model.api.Schema;
@@ -85,12 +89,15 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
                 "FOO_NAME VARCHAR(16) NOT NULL, " +
                 "BAR_NAME VARCHAR(16) NOT NULL, " +
                 "DEC_COL DECIMAL(12,2), " +
-                "FOREIGN KEY (FOO_ID, FOO_NAME) REFERENCES FOO(ID,FOO_NAME))");
+                "FOREIGN KEY (FOO_ID, FOO_NAME) REFERENCES FOO(ID, FOO_NAME))");
         stmt.executeUpdate("CREATE VIEW BARVIEW AS SELECT * FROM BAR");
+
+        stmt.executeUpdate("CREATE INDEX BAR_INDEX ON BAR(FOO_ID ASC, FOO_NAME DESC)");
+        stmt.executeUpdate("CREATE UNIQUE INDEX DEC_COL_INDEX ON BAR(DEC_COL)");
         metadata = new JDBCMetadata(conn, "APP");
     }
 
-    public void testRunReadAction() throws Exception {
+    public void testBasic() throws Exception {
         Catalog defaultCatalog = metadata.getDefaultCatalog();
         assertEquals(1, metadata.getCatalogs().size());
         assertTrue(metadata.getCatalogs().contains(defaultCatalog));
@@ -118,6 +125,50 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         checkColumns(barTable, columns);
         checkPrimaryKey(fooTable);
     }
+    public void testIndexes() {
+        Schema schema = metadata.getDefaultSchema();
+        Table table = schema.getTable("BAR");
+        Collection<Index> indexes = table.getIndexes();
+        assertEquals(4, indexes.size());
+
+        Index index = table.getIndex("BAR_INDEX");
+        assertNotNull(index);
+        assertEquals(index.getParent(), table);
+        assertFalse(index.isUnique());
+        assertEquals(IndexType.OTHER, index.getIndexType());
+        assertEquals("JDBCIndex[name='BAR_INDEX', type=OTHER, unique=false]", index.toString());
+        Collection<IndexColumn> columns = index.getColumns();
+        assertNames(new HashSet<String>(Arrays.asList("FOO_ID", "FOO_NAME")), columns);
+
+        IndexColumn col = index.getColumn("FOO_ID");
+        assertNotNull(col);
+        assertEquals(index, col.getParent());
+        assertEquals(Ordering.ASCENDING, col.getOrdering());
+        assertEquals(1, col.getPosition());
+
+        col = index.getColumn("FOO_NAME");
+        assertNotNull(col);
+        assertEquals(index, col.getParent());
+        assertEquals(Ordering.DESCENDING, col.getOrdering());
+        assertEquals(2, col.getPosition());
+        assertEquals("JDBCIndexColumn[name='FOO_NAME', ordering=DESCENDING, position=2, " +
+                "column=JDBCColumn[name=FOO_NAME, type=VARCHAR, length=16, precision=0, radix=0, scale=0, " +
+                "nullable=NOT_NULLABLE, ordinal_position=3]]", col.toString());
+
+        index = table.getIndex("DEC_COL_INDEX");
+        assertNotNull(index);
+        assertEquals(index.getParent(), table);
+        assertTrue(index.isUnique());
+        assertEquals(IndexType.OTHER, index.getIndexType());
+        columns = index.getColumns();
+        assertEquals(1, columns.size());
+        assertNames(new HashSet<String>(Arrays.asList("DEC_COL")), columns);
+        col = index.getColumn("DEC_COL");
+        assertNotNull(col);
+        assertEquals(index, col.getParent());
+        assertEquals(Ordering.ASCENDING, col.getOrdering());
+        assertEquals(1, col.getPosition());
+    }
 
     public void testRefreshCatalog() throws Exception {
         Catalog catalog = metadata.getDefaultCatalog();
@@ -134,9 +185,10 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         assertNotNull(schema);
         assertTrue(schemas.contains(schema));
 
-        stmt.executeUpdate("DROP SCHEMA testRefreshCatalog");
+        stmt.executeUpdate("DROP SCHEMA testRefreshCatalog RESTRICT");
 
         catalog.refresh();
+        schemas = catalog.getSchemas();
         assertEquals(numSchemas, schemas.size());
         schema = catalog.getSchema("testRefreshCatalog");
         assertNull(schema);

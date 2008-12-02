@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.db.metadata.model.jdbc;
 
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -50,7 +51,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Index;
+import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
+import org.netbeans.modules.db.metadata.model.api.Ordering;
 import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
@@ -67,6 +72,8 @@ public class JDBCTable extends TableImplementation {
     private final String name;
 
     private Map<String, Column> columns;
+    private Map<String, Index> indexes;
+    
     private PrimaryKey primaryKey;
 
     // Need a marker because there may be *no* primary key, and we don't want
@@ -97,6 +104,16 @@ public class JDBCTable extends TableImplementation {
     @Override
     public PrimaryKey getPrimaryKey() {
         return initPrimaryKey();
+    }
+
+    @Override
+    public Index getIndex(String indexName) {
+        return MetadataUtilities.find(indexName, initIndexes());
+    }
+
+    @Override
+    public Collection<Index> getIndexes() {
+        return initIndexes().values();
     }
 
     @Override
@@ -139,6 +156,64 @@ public class JDBCTable extends TableImplementation {
         columns = Collections.unmodifiableMap(newColumns);
     }
 
+    protected void createIndexes() {
+        Map<String, Index> newIndexes = new LinkedHashMap<String, Index>();
+        try {
+            ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getIndexInfo(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name, false, true);
+            try {
+                JDBCIndex index = null;
+                String currentIndexName = null;
+                while (rs.next()) {
+                    if (rs.getShort("TYPE") == DatabaseMetaData.tableIndexStatistic) {
+                        continue;
+                    }
+
+                    String indexName = rs.getString("INDEX_NAME");
+                    if (index == null || !(currentIndexName.equals(indexName))) {
+                        index = createJDBCIndex(indexName, rs);
+                        LOGGER.log(Level.FINE, "Created index " + index);
+
+                        newIndexes.put(index.getName(), index.getIndex());
+                        currentIndexName = indexName;
+                    }
+                    
+                    IndexColumn col = createJDBCIndexColumn(index, rs).getIndexColumn();
+                    index.addColumn(col);
+                    LOGGER.log(Level.FINE, "Added column " + col.getName() + " to index " + indexName);
+                }
+            } finally {
+                rs.close();
+            }
+        } catch (SQLException e) {
+            throw new MetadataException(e);
+        }
+
+        indexes = Collections.unmodifiableMap(newIndexes);
+    }
+
+    protected JDBCIndex createJDBCIndex(String name, ResultSet rs) {
+        try {
+            IndexType type = JDBCUtils.getIndexType(rs.getShort("TYPE"));
+            boolean isUnique = !rs.getBoolean("NON_UNIQUE");
+            return new JDBCIndex(this.getTable(), name, type, isUnique);
+        } catch (SQLException e) {
+            throw new MetadataException(e);
+        }
+    }
+
+    protected JDBCIndexColumn createJDBCIndexColumn(JDBCIndex parent, ResultSet rs) {
+        try {
+            Column column = getColumn(rs.getString("COLUMN_NAME"));
+            int position = rs.getInt("ORDINAL_POSITION");
+            Ordering ordering = JDBCUtils.getOrdering(rs.getString("ASC_OR_DESC"));
+
+            return new JDBCIndexColumn(parent.getIndex(), column.getName(), column, position, ordering);
+        } catch (SQLException e) {
+            throw new MetadataException(e);
+        }
+    }
+
+
     protected void createPrimaryKey() {
         String pkname = null;
         Collection<Column> pkcols = new ArrayList<Column>();
@@ -171,6 +246,16 @@ public class JDBCTable extends TableImplementation {
         return columns;
     }
 
+    private Map<String, Index> initIndexes() {
+        if (indexes != null) {
+            return indexes;
+        }
+        LOGGER.log(Level.FINE, "Initializing indexes in {0}", this);
+
+        createIndexes();
+        return indexes;
+    }
+
     private PrimaryKey initPrimaryKey() {
         if (primaryKeyInitialized) {
             return primaryKey;
@@ -182,5 +267,4 @@ public class JDBCTable extends TableImplementation {
         primaryKeyInitialized = true;
         return primaryKey;
     }
-
 }

@@ -37,72 +37,39 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.api;
+package org.netbeans.modules.db.metadata.model.spi;
 
 import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.netbeans.modules.db.metadata.model.api.Index;
+import org.netbeans.modules.db.metadata.model.api.Index.IndexType;
+import org.netbeans.modules.db.metadata.model.api.IndexColumn;
+import org.netbeans.modules.db.metadata.model.api.Table;
 
 /**
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class Table extends Tuple {
+public abstract class IndexImplementation {
+    private Index index;
 
-    final TableImplementation impl;
+    public final Index getIndex() {
+        if (index == null) {
+            index = MetadataAccessor.getDefault().createIndex(this);
+        }
+        return index;
 
-    Table(TableImplementation impl) {
-        this.impl = impl;
     }
 
-    /**
-     * Returns the schema containing this table.
-     *
-     * @return the parent schema.
-     */
-    public Schema getParent() {
-        return impl.getParent();
-    }
+    public abstract Collection<IndexColumn> getColumns();
 
-    /**
-     * Returns the name of this table; never {@code null}.
-     *
-     * @return the name.
-     */
-    public String getName() {
-        return impl.getName();
-    }
+    public abstract IndexColumn getColumn(String name);
 
-    @Override
-    public Collection<Column> getColumns() {
-        return impl.getColumns();
-    }
+    public abstract IndexType getIndexType();
 
-    @Override
-    public Column getColumn(String name) {
-        return impl.getColumn(name);
-    }
+    public abstract String getName();
 
-    public PrimaryKey getPrimaryKey() {
-        return impl.getPrimaryKey();
-    }
+    public abstract Table getParent();
 
-    public Collection<Index> getIndexes() {
-        return impl.getIndexes();
-    }
-
-    public Index getIndex(String name) {
-        return impl.getIndex(name);
-    }
-
-    /**
-     * Refresh the table metadata from the database
-     */
-    public void refresh() {
-        impl.refresh();
-    }
-
-    @Override
-    public String toString() {
-        return "Table[name='" + getName() + "']"; // NOI18N
-    }
+    public abstract boolean isUnique();
 }

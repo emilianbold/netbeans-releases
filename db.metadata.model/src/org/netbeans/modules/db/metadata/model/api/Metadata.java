@@ -45,6 +45,8 @@ import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.MetadataModelImplementation;
 import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
+import org.netbeans.modules.db.metadata.model.spi.IndexColumnImplementation;
+import org.netbeans.modules.db.metadata.model.spi.IndexImplementation;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ParameterImplementation;
 import org.netbeans.modules.db.metadata.model.spi.PrimaryKeyImplementation;
@@ -182,5 +184,14 @@ public class Metadata {
             return new PrimaryKey(impl);
         }
 
+        @Override
+        public Index createIndex(IndexImplementation impl) {
+            return new Index(impl);
+        }
+
+        @Override
+        public IndexColumn createIndexColumn(IndexColumnImplementation impl) {
+            return new IndexColumn(impl);
+        }
     }
 }
