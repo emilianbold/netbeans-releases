@@ -42,17 +42,21 @@ package org.netbeans.modules.ide.ergonomics.prof;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.Callable;
 import javax.swing.AbstractAction;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.ide.ergonomics.fod.ConfigurationPanel;
 import org.netbeans.modules.ide.ergonomics.fod.Feature2LayerMapping;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
-import org.netbeans.modules.ide.ergonomics.fod.ModulesInstaller;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
@@ -86,19 +90,9 @@ abstract class ProxyProfilerAction implements ActionListener {
                     }
                 }
                 if (featureInfo != null) {
-                    Boolean success = doDialog(featureInfo);
-                        if (success == null) return;
+                    boolean success = doDialog(featureInfo);
                     if (success) {
                         performRegular(e);
-                    } else {
-                        NotifyDescriptor descriptor = new NotifyDescriptor(
-                                "Error",
-                                "Error",
-                                NotifyDescriptor.ERROR_MESSAGE,
-                                NotifyDescriptor.INFORMATION_MESSAGE,
-                                new Object[]{NotifyDescriptor.OK_CANCEL_OPTION},
-                                "Error");
-                        DialogDisplayer.getDefault().notify(descriptor);
                     }
                 }
             }
@@ -106,18 +100,39 @@ abstract class ProxyProfilerAction implements ActionListener {
         task.schedule(0);
     }
 
-    private final Boolean doDialog(final FeatureInfo featureInfo) {
-        DialogDescriptor descriptor = new DialogDescriptor(
-                "Activate?",
-                "Not Available");
-        Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
-        d.setVisible(true);
-        d.setVisible(false);
-        d.dispose();
-        if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            return ModulesInstaller.installModules(null, featureInfo);
+    private final boolean doDialog(final FeatureInfo featureInfo) {
+        final boolean[] result = new boolean[] { false };
+        final DialogDescriptor[] descriptor = new DialogDescriptor[1];
+        final Callable<JComponent> call = new Callable<JComponent>() {
+            public JComponent call() throws Exception {
+                result[0] = true;
+                descriptor[0].setValue(DialogDescriptor.CLOSED_OPTION);
+                return new JPanel();
+            }
+        };
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                public void run() {
+                    descriptor[0] = new DialogDescriptor(new ConfigurationPanel("Profiler", call, featureInfo), "Feature Not Found");
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return null;
+        descriptor[0].setOptions(new Object[] { DialogDescriptor.CANCEL_OPTION });
+        final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor[0]);
+        descriptor[0].addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent arg0) {
+                d.setVisible(false);
+                d.dispose();
+            }
+        });
+        d.setVisible(true);
+        return result[0];
     }
 
     private void performRegular(final ActionEvent e) {
