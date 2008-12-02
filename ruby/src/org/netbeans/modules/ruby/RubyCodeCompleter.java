@@ -1267,7 +1267,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         // TODO: should only include fields etc. down to caret location??? Decide. (Depends on language semantics. Can I have forward referemces?
         if (showUpper || showSymbols) {
             addConstants(root, constants);
-//            constants.put(prefix, root);
+            RubyConstantCompleter.complete(proposals, request, anchor, caseSensitive, call);
         }
         
         // If we're in a call, add in some info and help for the code completion call
@@ -1444,8 +1444,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 proposals.add(item);
             }
         }
-//        constants1 = index.getConstants(prefix, null, kind);
-
+        
         // TODO - model globals and constants using different icons / etc.
         for (String variable : constants.keySet()) {
             if (((kind == NameKind.EXACT_NAME) && prefix.equals(variable)) ||
