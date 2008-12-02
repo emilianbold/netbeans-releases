@@ -36,19 +36,23 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.mobility.project.ui.actions;
 
-import javax.swing.Action;
+import org.netbeans.modules.mobility.project.ui.BrokenChecker;
+import org.netbeans.modules.mobility.project.ui.FileMonitor;
+import org.netbeans.spi.actions.Single;
 import org.openide.util.NbBundle;
 
-public final class DeployConfigurationAction extends AntAction {
-
-    private DeployConfigurationAction() {
-        super(NbBundle.getMessage(DeployConfigurationAction.class, 
-                "Title_CfgSelection_deploy-all"), "deploy-all"); //NOI18N
+final class BrokenLinksAction extends Single <BrokenChecker> {
+    public BrokenLinksAction() {
+        super (BrokenChecker.class);
+        putValue(NAME, NbBundle.getMessage(FileMonitor.class,
+            "LAB_ResolveReferenceProblems")); //NOI18N
     }
 
-    public static Action getStaticInstance() {
-        return new DeployConfigurationAction();
+    @Override
+    protected void actionPerformed(BrokenChecker target) {
+        target.checkBroken();
     }
 }

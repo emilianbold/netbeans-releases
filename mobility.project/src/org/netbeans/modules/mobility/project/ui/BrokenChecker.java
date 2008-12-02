@@ -36,19 +36,13 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.mobility.project.ui.actions;
 
-import javax.swing.Action;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.mobility.project.ui;
 
-public final class DeployConfigurationAction extends AntAction {
-
-    private DeployConfigurationAction() {
-        super(NbBundle.getMessage(DeployConfigurationAction.class, 
-                "Title_CfgSelection_deploy-all"), "deploy-all"); //NOI18N
-    }
-
-    public static Action getStaticInstance() {
-        return new DeployConfigurationAction();
-    }
+/**
+ *
+ * @author tim
+ */
+public interface BrokenChecker {
+    void checkBroken();
 }

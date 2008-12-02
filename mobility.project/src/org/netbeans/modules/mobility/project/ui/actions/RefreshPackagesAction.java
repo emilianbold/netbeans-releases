@@ -38,17 +38,36 @@
  */
 package org.netbeans.modules.mobility.project.ui.actions;
 
-import javax.swing.Action;
+import org.netbeans.modules.mobility.project.J2MEProject;
+import org.netbeans.modules.mobility.project.ui.FileMonitor;
+import org.netbeans.spi.actions.Single;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 
-public final class DeployConfigurationAction extends AntAction {
+final class RefreshPackagesAction extends Single<J2MEProject> {
 
-    private DeployConfigurationAction() {
-        super(NbBundle.getMessage(DeployConfigurationAction.class, 
-                "Title_CfgSelection_deploy-all"), "deploy-all"); //NOI18N
+    public RefreshPackagesAction() {
+        super (J2MEProject.class);
+        putValue(NAME, NbBundle.getMessage(FileMonitor.class,
+                "LAB_RefreshFolders")); //NOI18N
     }
 
-    public static Action getStaticInstance() {
-        return new DeployConfigurationAction();
+    private void refreshRecursively(final FileObject fo) {
+        if (fo == null) {
+            return;
+        }
+        fo.refresh();
+        for (FileObject curr : NbCollections.iterable(fo.getChildren(false))) {
+            refreshRecursively(curr);
+        }
+    }
+
+    @Override
+    protected void actionPerformed(J2MEProject target) {
+        AntProjectHelper helper = target.getLookup().lookup(AntProjectHelper.class);
+        refreshRecursively(helper.resolveFileObject(
+                helper.getStandardPropertyEvaluator().getProperty("src.dir"))); //NOI18N
     }
 }
