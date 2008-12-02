@@ -45,7 +45,6 @@ import java.io.File;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.RootPaneContainer;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.filechooser.FileFilter;
