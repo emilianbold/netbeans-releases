@@ -104,6 +104,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
@@ -745,16 +746,24 @@ public class Installer extends ModuleInstall implements Runnable {
         return hndlr.logs;
     }
 
-    private static File logFile(int revision) {
+    private static File logsDirectory(){
         String ud = System.getProperty("netbeans.user"); // NOI18N
         if (ud == null || "memory".equals(ud)) { // NOI18N
             return null;
         }
 
+        File userDir = new File(ud); // NOI18N
+        return new File(new File(userDir, "var"), "log");
+    }
+
+    private static File logFile(int revision) {
+        File logDir = logsDirectory();
+        if (logDir == null){
+            return null;
+        }
         String suffix = revision == 0 ? "" : "." + revision;
 
-        File userDir = new File(ud); // NOI18N
-        File logFile = new File(new File(new File(userDir, "var"), "log"), "uigestures" + suffix);
+        File logFile = new File(logDir, "uigestures" + suffix);
         return logFile;
     }
 
@@ -1037,14 +1046,14 @@ public class Installer extends ModuleInstall implements Runnable {
         return res instanceof String ? (String)res : null;
     }
 
-    static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType) throws IOException {
+    static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType, boolean isErrorReport) throws IOException {
         ProgressHandle h = null;
         //Do not show progress UI for metrics upload
         if (dataType != DataType.DATA_METRICS) {
             h = ProgressHandleFactory.createHandle(NbBundle.getMessage(Installer.class, "MSG_UploadProgressHandle"));
         }
         try {
-            return uLogs(h, postURL, id, attrs, recs, dataType);
+            return uLogs(h, postURL, id, attrs, recs, dataType, isErrorReport);
         } finally {
             if (h != null) {
                 h.finish();
@@ -1052,12 +1061,12 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
     
-    static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs) throws IOException {
-        return uploadLogs(postURL, id, attrs, recs, DataType.DATA_UIGESTURE);
+    static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, boolean isErrorReport) throws IOException {
+        return uploadLogs(postURL, id, attrs, recs, DataType.DATA_UIGESTURE, isErrorReport);
     }
 
     private static URL uLogs
-    (ProgressHandle h, URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType) throws IOException {
+    (ProgressHandle h, URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType, boolean isErrorReport) throws IOException {
         if (dataType != DataType.DATA_METRICS) {
             h.start(100 + recs.size());
             h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadConnecting")); // NOI18N
@@ -1067,7 +1076,7 @@ public class Installer extends ModuleInstall implements Runnable {
         URLConnection conn = postURL.openConnection();
 
         if (dataType != DataType.DATA_METRICS) {
-            h.progress(50);
+            h.progress(10);
         }
         
         conn.setReadTimeout(20000);
@@ -1079,7 +1088,7 @@ public class Installer extends ModuleInstall implements Runnable {
         conn.setRequestProperty("User-Agent", "NetBeans");
         
         if (dataType != DataType.DATA_METRICS) {
-            h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadSending"), 60);
+            h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadSending"), 20);
         }
         LOG.log(Level.FINE, "uploadLogs, header sent"); // NOI18N
 
@@ -1100,13 +1109,26 @@ public class Installer extends ModuleInstall implements Runnable {
         LOG.log(Level.FINE, "uploadLogs, attributes sent"); // NOI18N
         
         if (dataType != DataType.DATA_METRICS) {
-            h.progress(70);
+            h.progress(30);
         }
 
         os.println("----------konec<>bloku");
 
         if (id == null) {
             id = "uigestures"; // NOI18N
+        }
+
+        if (dataType != DataType.DATA_METRICS && isErrorReport) {
+            os.println("Content-Disposition: form-data; name=\"messages\"; filename=\"" + id + "_messages.gz\"");
+            os.println("Content-Type: x-application/log");
+            os.println();
+            uploadMessagesLog(os);
+            os.println();
+            os.println("\n----------konec<>bloku");
+        }
+
+        if (dataType != DataType.DATA_METRICS) {
+            h.progress(70);
         }
 
         os.println("Content-Disposition: form-data; name=\"logs\"; filename=\"" + id + "\"");
@@ -1134,7 +1156,7 @@ public class Installer extends ModuleInstall implements Runnable {
         os.println();
         os.println("----------konec<>bloku--");
         os.close();
-        
+
         if (dataType != DataType.DATA_METRICS) {
             h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadReading"), cnt + 10);
         }
@@ -1175,6 +1197,38 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
+    private static File getMessagesLog(){
+        File directory = logsDirectory();
+        if (directory == null){
+            return null;
+        }
+        File messagesLog = new File(directory, "messages.log");
+        return messagesLog;
+    }
+    
+    static void uploadMessagesLog(PrintStream os) throws IOException {
+        flushSystemLogs();
+        File messagesLog = getMessagesLog();
+        if (messagesLog == null){
+            return;
+        }
+        BufferedInputStream is = new BufferedInputStream(new FileInputStream(messagesLog));
+        GZIPOutputStream gzip = new GZIPOutputStream(os);
+        byte[] buffer = new byte[4096];
+        int readLength = is.read(buffer);
+        while (readLength != -1){
+            gzip.write(buffer, 0, readLength);
+            readLength = is.read(buffer);
+        }
+        is.close();
+        gzip.finish();
+    }
+
+    private static void flushSystemLogs(){
+        System.out.flush();
+        System.err.flush();
+    }
+    
     private static String findIdentity() {
         Preferences p = NbPreferences.root().node("org/netbeans/modules/autoupdate"); // NOI18N
         String id = p.get("qualifiedId", null);
@@ -1602,7 +1656,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 if (dataType == DataType.DATA_METRICS) {
                     logMetricsUploadFailed = false;
                 }
-                nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs, dataType);
+                nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs, dataType, report);
             } catch (IOException ex) {
                 LOG.log(Level.INFO, null, ex);
                 if (dataType == DataType.DATA_METRICS) {
@@ -1803,8 +1857,24 @@ public class Installer extends ModuleInstall implements Runnable {
                 root.getChildren().add(nodes.toArray(new Node[0]));
                 panel.getExplorerManager().setRootContext(root);
             }
-
-            DialogDescriptor viewDD = new DialogDescriptor(panel, "Data");
+            DialogDescriptor viewDD;
+            if (!report){
+                 viewDD = new DialogDescriptor(panel, NbBundle.getMessage(Installer.class, "VIEW_DATA_TILTE"));
+            } else {
+                flushSystemLogs();
+                JTabbedPane tabs = new JTabbedPane();
+                tabs.addTab(org.openide.util.NbBundle.getMessage(Installer.class, "UI_TAB_TITLE"), panel);
+                File messagesLog = getMessagesLog();
+                try {
+                    JEditorPane pane = new JEditorPane(messagesLog.toURI().toURL());
+                    pane.setEditable(false);
+                    pane.setPreferredSize(panel.getPreferredSize());
+                    tabs.addTab(org.openide.util.NbBundle.getMessage(Installer.class, "IDE_LOG_TAB_TITLE"), new JScrollPane(pane));
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                viewDD = new DialogDescriptor(tabs, NbBundle.getMessage(Installer.class, "VIEW_DATA_TILTE"));
+            }
             viewDD.setModal(true);
             viewDD.setOptions(new Object[] { DialogDescriptor.CLOSED_OPTION  });
             Dialog view = DialogDisplayer.getDefault().createDialog(viewDD);
