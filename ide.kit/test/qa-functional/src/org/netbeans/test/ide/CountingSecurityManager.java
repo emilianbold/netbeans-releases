@@ -77,10 +77,6 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         CHECK_READ, CHECK_WRITE
     };
     
-    public static void initialize(String prefix, Set<String> allowedFiles) {
-        initialize(prefix, Mode.CHECK_READ, allowedFiles);
-    }
-
     public static void initialize(String prefix, Mode mode, Set<String> allowedFiles) {
         if (System.getSecurityManager() instanceof CountingSecurityManager) {
             // ok
