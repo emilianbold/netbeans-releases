@@ -40,12 +40,14 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -55,6 +57,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -64,22 +67,22 @@ import org.openide.util.Exceptions;
  * Indexer of {@link Source} with possible embeddings
  * @author Tomas Zezula
  */
-public class SourceIndexer extends CustomIndexer {
-    
-    private final Map<String,EmbeddingIndexer> embeddedIndexers;
+public class SourceIndexer {
 
-    public SourceIndexer (final Map<String,EmbeddingIndexer> embeddedIndexers) {
-        assert embeddedIndexers != null;
-        this.embeddedIndexers = embeddedIndexers;
+    private final URL rootURL;
+    private final FileObject cache;
+    private final Map<String,EmbeddingIndexerFactory> embeddedIndexers = new HashMap<String, EmbeddingIndexerFactory>();
+
+    public SourceIndexer (final URL rootURL, final FileObject cache) {
+        assert rootURL != null;
+        assert cache != null;
+        this.rootURL = rootURL;
+        this.cache = cache;
     }
 
-    @Override
-    protected void index(Iterable<? extends Indexable> files, final Context context) {
-        final List<Indexable> dirtyFiles = new LinkedList<Indexable>();
-        try {
-        findDirtyFiles(files, context, dirtyFiles);
+    protected void index(Iterable<? extends Indexable> files) {
         //todo: Replace with multi source when done
-        for (final Indexable dirty : dirtyFiles) {
+        for (final Indexable dirty : files) {
             try {
                 final FileObject fileObject = URLMapper.findFileObject(dirty.getURL());
                 if (fileObject != null) {
@@ -88,20 +91,24 @@ public class SourceIndexer extends CustomIndexer {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
                             final String mimeType = src.getMimeType();
-                            final EmbeddingIndexer indexer = embeddedIndexers.get(mimeType);
+                            final EmbeddingIndexerFactory indexer = findIndexer (mimeType);
                             visit(resultIterator,indexer);
                         }
 
                         private void visit (final ResultIterator resultIterator,
-                                final EmbeddingIndexer currentIndexer) throws ParseException {
-                            if (currentIndexer != null) {
-                                SPIAccessor.getInstance().index(currentIndexer, resultIterator.getParserResult(), context);
+                                final EmbeddingIndexerFactory currentIndexerFactory) throws ParseException,IOException {
+                            if (currentIndexerFactory != null) {
+                                final String indexerName = currentIndexerFactory.getIndexerName();
+                                final int indexerVersion = currentIndexerFactory.getIndexVersion();
+                                final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion);
+                                final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer();
+                                SPIAccessor.getInstance().index(indexer, resultIterator.getParserResult(), context);
                             }
                             Iterable<? extends Embedding> embeddings = resultIterator.getEmbeddings();
                             for (Embedding embedding : embeddings) {
                                 final String mimeType = embedding.getMimeType();
-                                final EmbeddingIndexer indexer = embeddedIndexers.get(mimeType);                                
-                                visit(resultIterator.getResultIterator(embedding), indexer);
+                                final EmbeddingIndexerFactory indexerFactory = findIndexer(mimeType);
+                                visit(resultIterator.getResultIterator(embedding), indexerFactory);
                             }
                         }
                     });
@@ -110,33 +117,20 @@ public class SourceIndexer extends CustomIndexer {
             catch (final ParseException e) {
                 Exceptions.printStackTrace(e);
             }
-        }
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
-        }
+        }        
     }
 
-    private void findDirtyFiles (final Iterable<? extends Indexable> files, final Context ctx,
-            Collection<? super Indexable> dirtyFiles) throws IOException {
-        final Map <String,Indexable> lookup = new HashMap<String,Indexable>();
-        for (Indexable indexable : files) {
-            lookup.put(indexable.getName(), indexable);
+    private EmbeddingIndexerFactory findIndexer (final String mimeType) {
+        assert mimeType != null;
+        EmbeddingIndexerFactory indexer = embeddedIndexers.get(mimeType);
+        if (indexer != null) {
+            return indexer;
         }
-        final Map<String,Long> data = null; //todo: index should create this
-        for (Map.Entry<String,Long> e : data.entrySet()) {
-            Indexable indexable = lookup.remove(e.getKey());
-            if (indexable == null) {
-                //Removed file
-                //todo: clean the document
-            }
-            else if (indexable.getLastModified() > e.getValue()) {
-                //Modified file
-                dirtyFiles.add(indexable);
-            }
+        indexer = MimeLookup.getLookup(mimeType).lookup(EmbeddingIndexerFactory.class);
+        if (indexer != null) {
+            embeddedIndexers.put(mimeType, indexer);
         }
-        //Add new files
-        dirtyFiles.addAll(lookup.values());
-
+        return indexer;
     }
 
 }

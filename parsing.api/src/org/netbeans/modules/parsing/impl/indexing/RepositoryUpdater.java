@@ -426,12 +426,14 @@ public class RepositoryUpdater implements PathRegistryListener, FileChangeListen
                             it.remove();
                         }
                     }
-                }
+                }                
                 //For rest use slow gsf like indexers
-                for (Iterator<Map.Entry<String,Collection<Indexable>>> it = resources.entrySet().iterator(); it.hasNext();) {
-                    final Map.Entry<String,Collection<Indexable>> entry = it.next();
-
+                final List<Indexable> toIndex = new LinkedList<Indexable>();
+                for (Collection<Indexable> data : resources.values()) {
+                    toIndex.addAll(data);
                 }
+                final SourceIndexer si = new SourceIndexer(root,cacheRoot);
+                si.index(toIndex);
             }
         }
 

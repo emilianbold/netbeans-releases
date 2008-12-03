@@ -58,8 +58,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -77,9 +75,18 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
@@ -90,7 +97,9 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -98,10 +107,12 @@ import org.openide.filesystems.FileUtil;
  */
 public class RepositoryUpdaterTest extends NbTestCase {
 
+    private static final int TIME = 5000;
     private static final String SOURCES = "FOO_SOURCES";
     private static final String PLATFORM = "FOO_PLATFORM";
     private static final String LIBS = "FOO_LIBS";
     private static final String MIME = "text/foo";
+    private static final String EMIME = "text/emb";
 
     private FileObject srcRoot1;
     private FileObject srcRoot2;
@@ -117,9 +128,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private FileObject unknown2;
     private FileObject unknownSrc2;
     private FileObject srcRootWithFiles1;
-    private URL[] files;
+    private URL[] customFiles;
+    private URL[] embeddedFiles;
 
     private final FooIndexerFactory indexerFactory = new FooIndexerFactory();
+    private final EmbIndexerFactory eindexerFactory = new EmbIndexerFactory();
 
     public RepositoryUpdaterTest (String name) {
         super (name);
@@ -134,8 +147,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
         final FileObject cache = wd.createFolder("cache");
         CacheFolder.setCacheFolder(cache);
 
-        MockServices.setServices(FooPathRecognizer.class, SFBQImpl.class, OpenProject.class);
+        MockServices.setServices(FooPathRecognizer.class, EmbPathRecognizer.class, SFBQImpl.class, OpenProject.class);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
+        MockMimeLookup.setInstances(MimePath.get(EMIME), eindexerFactory, new EmbParserFactory());
 
         assertNotNull("No masterfs",wd);
         srcRoot1 = wd.createFolder("src1");
@@ -178,7 +192,16 @@ public class RepositoryUpdaterTest extends NbTestCase {
         FileObject f2 = FileUtil.createData(srcRootWithFiles1,"folder/b.foo");
         assertNotNull(f2);
         assertEquals(MIME, f2.getMIMEType());
-        files = new URL[] {f1.getURL(), f2.getURL()};
+        customFiles = new URL[] {f1.getURL(), f2.getURL()};
+
+        FileUtil.setMIMEType("emb", EMIME);
+        FileObject f3 = FileUtil.createData(srcRootWithFiles1,"folder/a.emb");
+        assertNotNull(f3);
+        assertEquals(EMIME, f3.getMIMEType());
+        FileObject f4 = FileUtil.createData(srcRootWithFiles1,"folder/b.emb");
+        assertNotNull(f4);
+        assertEquals(EMIME, f4.getMIMEType());
+        embeddedFiles = new URL[] {f3.getURL(), f4.getURL()};
     }
 
     public void testPathAddedRemovedChanged () throws Exception {
@@ -341,7 +364,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
         logger.setLevel (Level.FINEST);
         logger.addHandler(handler);
-        indexerFactory.indexer.setExpectedFile(files);
+        indexerFactory.indexer.setExpectedFile(customFiles);
+        eindexerFactory.indexer.setExpectedFile(embeddedFiles);
         MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
         mcpi1.addResource(this.srcRootWithFiles1);
         ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
@@ -351,6 +375,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(1, handler.getSources().size());
         assertEquals(this.srcRootWithFiles1.getURL(), handler.getSources().get(0));
         assertTrue(indexerFactory.indexer.await());
+        assertTrue(eindexerFactory.indexer.await());
     }
 
 
@@ -371,7 +396,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             }
 
             public boolean await () throws InterruptedException {
-                return latch.await(5000, TimeUnit.MILLISECONDS);
+                return latch.await(TIME, TimeUnit.MILLISECONDS);
             }
 
             public Set<URL> getBinaries () {
@@ -600,7 +625,29 @@ public class RepositoryUpdaterTest extends NbTestCase {
             return Collections.singleton(MIME);
         }        
 
-    }    
+    }
+
+    public static class EmbPathRecognizer extends PathRecognizer {
+
+        @Override
+        public Set<String> getSourcePathIds() {
+            return Collections.singleton(SOURCES);
+        }
+
+        @Override
+        public Set<String> getBinaryPathIds() {
+            final Set<String> res = new HashSet<String>();
+            res.add(PLATFORM);
+            res.add(LIBS);
+            return res;
+        }
+
+        @Override
+        public Set<String> getMimeType() {
+            return Collections.singleton(EMIME);
+        }
+
+    }
 
     public static class OpenProject implements  OpenProjectsTrampoline {
 
@@ -692,7 +739,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         public boolean await () throws InterruptedException {
-            return this.latch.await(5000, TimeUnit.MILLISECONDS);
+            return this.latch.await(TIME, TimeUnit.MILLISECONDS);
         }
 
         @Override
@@ -703,6 +750,110 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 }
 
             }
+        }
+
+    }
+
+    private static class EmbIndexerFactory extends EmbeddingIndexerFactory {
+
+        private EmbIndexer indexer = new EmbIndexer ();
+
+        @Override
+        public EmbeddingIndexer createIndexer() {
+            return indexer;
+        }
+
+        @Override
+        public String getIndexerName() {
+            return "emb";
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return 1;
+        }
+
+    }
+
+    private static class EmbIndexer extends EmbeddingIndexer {
+
+        private Set<URL> expectedFiles = new HashSet<URL>();
+        private CountDownLatch latch;
+
+        public void setExpectedFile (URL... files) {
+            expectedFiles.clear();
+            expectedFiles.addAll(Arrays.asList(files));
+            latch = new CountDownLatch(expectedFiles.size());
+        }
+
+        public boolean await () throws InterruptedException {
+            return this.latch.await(TIME, TimeUnit.MILLISECONDS);
+        }
+
+
+        @Override
+        protected void index(Result parserResult, Context context) {
+            try {
+                final URL url = parserResult.getSnapshot().getSource().getFileObject().getURL();
+                if (expectedFiles.remove(url)) {
+                    latch.countDown();
+                }
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+    }
+
+    private static class EmbParserFactory extends ParserFactory {
+
+        @Override
+        public Parser createParser(Collection<Snapshot> snapshots) {
+            return new EmbParser();
+        }
+
+    }
+
+    private static class EmbParser extends Parser {
+
+        private EmbResult result;
+
+        @Override
+        public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {            
+            result = new EmbResult(snapshot);
+        }
+
+        @Override
+        public Result getResult(Task task) throws ParseException {
+            return result;
+        }
+
+        @Override
+        public void cancel() {
+
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener changeListener) {
+
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener changeListener) {
+
+        }
+
+    }
+
+    private static class EmbResult extends Parser.Result {
+
+        public EmbResult(final Snapshot snapshot) {
+            super(snapshot);
+        }
+
+
+        @Override
+        protected void invalidate() {
         }
 
     }
