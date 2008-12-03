@@ -1551,7 +1551,7 @@ public class EditorContextImpl extends EditorContext {
             SourcePositions[] sourcePtr = new SourcePositions[] { null };
             // first, try to parse as a block of statements
             tree = ci.getTreeUtilities().parseStatement(
-                    "{\n" + expression + "\n}", // NOI18N
+                    "{\n" + expression + ";\n}", // NOI18N
                     sourcePtr
             );
             if (isErroneous(tree)) {
