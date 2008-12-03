@@ -317,9 +317,6 @@ public final class EmbedderFactory {
     public static MavenEmbedder createExecuteEmbedder(MavenEmbedderLogger logger) /*throws MavenEmbedderException*/ {
         ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
 
-        // need to have some location for the global plugin registry because otherwise we get NPE
-//        File globalPluginRegistry = InstalledFileLocator.getDefault().locate("maven2/plugin-registry.xml", null, false); //NOI18N
-//        System.setProperty(MavenPluginRegistryBuilder.ALT_GLOBAL_PLUGIN_REG_LOCATION, globalPluginRegistry.getAbsolutePath());
 
         ClassWorld world = new ClassWorld();
         File rootPackageFolder = FileUtil.normalizeFile(InstalledFileLocator.getDefault().locate("maven2/rootpackage", null, false)); //NOI18N
