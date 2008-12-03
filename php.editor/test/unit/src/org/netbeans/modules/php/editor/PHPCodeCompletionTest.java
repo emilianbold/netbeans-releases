@@ -439,6 +439,9 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test149519() throws Exception {
         checkCompletion("testfiles/completion/lib/issue149519.php", "$this->^", false);
     }
+    public void test154055() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue154055.php", "$book->^", false);
+    }
     // tests for class declaration until '{' like "class name extends MyClass  "
     public void testClsDeclaration() throws Exception {
         checkCompletion("testfiles/completion/lib/clsDeclaration.php", "class^", false);

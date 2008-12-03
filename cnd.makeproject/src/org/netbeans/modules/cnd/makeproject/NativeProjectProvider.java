@@ -380,6 +380,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             return;
         }
 
+        CompilerSet oldCompilerSet = oldMConf.getCompilerSet().getCompilerSet();
+        CompilerSet newCompilerSet = newMConf.getCompilerSet().getCompilerSet();
+
         // Check all items
         Item[] items = getMakeConfigurationDescriptor().getProjectItems();
         Project proj = getMakeConfigurationDescriptor().getProject();
@@ -413,7 +416,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     list.add(items[i]);
                     continue;
                 }
-                if (!oldItemConf.getCCompilerConfiguration().getIncludeDirectoriesOptions().equals(newItemConf.getCCompilerConfiguration().getIncludeDirectoriesOptions())) {
+                if (!oldItemConf.getCCompilerConfiguration().getIncludeDirectoriesOptions(oldCompilerSet).equals(newItemConf.getCCompilerConfiguration().getIncludeDirectoriesOptions(newCompilerSet))) {
                     list.add(items[i]);
                     continue;
                 }
@@ -423,7 +426,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     list.add(items[i]);
                     continue;
                 }
-                if (!oldItemConf.getCCCompilerConfiguration().getIncludeDirectoriesOptions().equals(newItemConf.getCCCompilerConfiguration().getIncludeDirectoriesOptions())) {
+                if (!oldItemConf.getCCCompilerConfiguration().getIncludeDirectoriesOptions(oldCompilerSet).equals(newItemConf.getCCCompilerConfiguration().getIncludeDirectoriesOptions(newCompilerSet))) {
                     list.add(items[i]);
                     continue;
                 }

@@ -1,8 +1,8 @@
-# 
+#
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-# 
+#
 # Copyright 2008 Sun Microsystems, Inc. All rights reserved.
-# 
+#
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common
 # Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
 # License Header, with the fields enclosed by brackets [] replaced by
 # your own identifying information:
 # "Portions Copyrighted [year] [name of copyright owner]"
-# 
+#
 # If you wish your version of this file to be governed by only the CDDL
 # or only the GPL Version 2, indicate your decision by adding
 # "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
 # However, if you add GPL Version 2 code and therefore, elected the GPL
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
-# 
+#
 # Contributor(s):
-# 
+#
 # Portions Copyrighted 2008 Sun Microsystems, Inc.
 
 require 'rubygems'
@@ -55,17 +55,19 @@ rescue LoadError
 end
 
 if rspec
+  # turn temporarily off warnings for method redefinitions
+  org_verbose_level = $VERBOSE
+  $VERBOSE = nil
   # Loads NbRspecMediator for running specs.
   class Autotest::Rspec < Autotest
-    #  remove_method :make_test_cmd
-    alias old_rspec_mtc make_test_cmd
-    # force spec to use our test mediator
-    def make_test_cmd(files_to_test)
-      options = ENV['NB_RSPEC_MEDIATOR']
-      return "#{ruby} -S #{spec_command} #{options} #{files_to_test.keys.flatten.join(' ')}"
+
+    alias_method :nb_loader_existing_add_options_if_present, :add_options_if_present unless
+    instance_methods.include?("nb_loader_existing_add_options_if_present")
+    def add_options_if_present # :nodoc:
+      "#{ENV['NB_RSPEC_MEDIATOR']} #{nb_loader_existing_add_options_if_present}"
     end
 
-    def hook(name)
+    def hook(name, *args)
       super
       # needs to done here instead of adding a hook -- that would
       # confuse the test/unit runner
@@ -86,6 +88,7 @@ if rspec
       end
     end
   end
+  $VERBOSE = org_verbose_level
 end
 
 # Loads NbTestRunner for test/unit tests

@@ -266,6 +266,9 @@ public final class EditorRegistry {
     }
 
     static void notifyClose(JComponent c) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "EditorRegistry.notifyClose(): " + dumpComponent(c) + '\n'); //NOI18N
+        }
         ArrayList<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
         synchronized (EditorRegistry.class) {
             // Go through the present items and remove those that have the "c" as parent.

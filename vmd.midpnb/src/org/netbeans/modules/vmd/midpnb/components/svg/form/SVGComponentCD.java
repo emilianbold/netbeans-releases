@@ -101,7 +101,6 @@ public class SVGComponentCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter().
                 addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES).
-                addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES).
                     addProperty(NbBundle.getMessage(SVGComponentCD.class, 
                             "DISP_SVGComponentIsFocusable"), 
                             PropertyEditorBooleanUC.createInstance(), PROP_FOCUSABLE); // NOI18N

@@ -115,10 +115,10 @@ public final class RubyProcessCreator implements Callable<Process> {
             if (debugger == null) {
                 throw new IllegalStateException("RubyDebuggerImplementation implementation is not available."); // NOI18N
             }
+            debugger.describeProcess(descriptor);
             if (!debugger.prepare()) {
                 throw new IllegalStateException("Cannot prepare application to debug. Should be checked before."); // NOI18N
             }
-            debugger.describeProcess(descriptor);
             return debugger.debug();
         }
         ExternalProcessBuilder builder = null;

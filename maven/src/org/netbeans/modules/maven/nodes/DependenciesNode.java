@@ -101,10 +101,12 @@ public class DependenciesNode extends AbstractNode {
     public static final String PREF_DEPENDENCIES_UI = "org/netbeans/modules/maven/dependencies/ui"; //NOI18N
     
     private NbMavenProjectImpl project;
+    private int type;
     
     DependenciesNode(DependenciesChildren childs, NbMavenProjectImpl mavproject, int type) {
         super(childs, Lookups.fixed(mavproject));
         setName("Dependencies" + type); //NOI18N
+        this.type = type;
         switch (type) {
             case TYPE_COMPILE : setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_Libraries")); break;
             case TYPE_TEST : setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_Test_Libraries")); break;
@@ -332,8 +334,11 @@ public class DependenciesNode extends AbstractNode {
         public AddDependencyAction() {
             putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependenciesNode.class, "BTN_Add_Library"));
         }
+
         public void actionPerformed(ActionEvent event) {
             AddDependencyPanel pnl = new AddDependencyPanel(project.getOriginalMavenProject());
+            String typeString = type == TYPE_RUNTIME ? "runtime" : (type == TYPE_TEST ? "test" : "compile"); //NOI18N
+            pnl.setSelectedScope(typeString);
         
             DialogDescriptor dd = new DialogDescriptor(pnl, org.openide.util.NbBundle.getMessage(DependenciesNode.class, "TIT_Add_Library"));
             dd.setClosingOptions(new Object[] {
@@ -344,6 +349,7 @@ public class DependenciesNode extends AbstractNode {
                 pnl.getOkButton(),
                 DialogDescriptor.CANCEL_OPTION
             });
+            pnl.attachDialogDisplayer(dd);
             Object ret = DialogDisplayer.getDefault().notify(dd);
             if (pnl.getOkButton() == ret) {
                 String version = pnl.getVersion();

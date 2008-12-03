@@ -55,6 +55,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import org.netbeans.spi.viewmodel.NodeModel;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,6 +80,10 @@ PropertyChangeListener {
         ("\\{methodName\\}");
     private static final Pattern lineNumberPattern = Pattern.compile
         ("\\{lineNumber\\}");
+    private static final Pattern exceptionClassNamePattern = Pattern.compile
+        ("\\{exceptionClassName\\}");
+    private static final Pattern exceptionMessagePattern = Pattern.compile
+        ("\\{exceptionMessage\\}");
     private static final Pattern expressionPattern = Pattern.compile
         ("\\{=(.*?)\\}");
 
@@ -294,6 +299,27 @@ PropertyChangeListener {
         else
             printText = lineNumberPattern.matcher (printText).replaceAll 
                 (String.valueOf (lineNumber));
+
+        if (event.getSource() instanceof ExceptionBreakpoint) {
+            Variable exception = event.getVariable();
+            if (exception != null) {
+                // replace {exceptionClassName}
+                String exceptionClassName = exception.getType();
+                printText = exceptionClassNamePattern.matcher (printText).replaceAll
+                    (exceptionClassName);
+                String exceptionMessage = "";
+                try {
+                    // replace {exceptionMessage}
+                    exceptionMessage = ((ObjectVariable) exception).invokeMethod("getLocalizedMessage", null, new Variable[]{}).getValue();
+                } catch (NoSuchMethodException ex) {
+                    exceptionMessage = "<"+ex.getLocalizedMessage()+">";
+                } catch (InvalidExpressionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                printText = exceptionMessagePattern.matcher (printText).replaceAll
+                    (exceptionMessage);
+            }
+        }
              
         // 5) resolve all expressions {=expression}
         for (;;) {

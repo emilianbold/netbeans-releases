@@ -44,6 +44,7 @@ import java.util.HashSet;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
+import org.netbeans.modules.cnd.highlight.semantic.ModelUtils;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
 import org.netbeans.modules.cnd.model.tasks.EditorAwareCsmFileTaskFactory;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -58,7 +59,7 @@ import org.openide.util.Cancellable;
  * @author Sergey Grinev
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position=30)
-public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory {
+public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory {
 
     @Override
     protected PhaseRunner createTask(FileObject fo) {
@@ -75,6 +76,16 @@ public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory 
             ex.printStackTrace();
         }
         return pr != null ? pr : lazyRunner();
+    }
+
+    @Override
+    protected int taskDelay() {
+        return ModelUtils.HIGHLIGHT_DELAY;
+    }
+
+    @Override
+    protected int rescheduleDelay() {
+        return ModelUtils.RESCHEDULE_HIGHLIGHT_DELAY;
     }
 
     private static class PhaseRunnerImpl implements PhaseRunner {
