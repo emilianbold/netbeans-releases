@@ -384,7 +384,7 @@ public class Retriever implements Runnable {
         }
     }
     
-    private String getDurationString(int time) {
+    static String getDurationString(int time) {
         // < 1000 -> XXX ms
         // > 1000 -> XX seconds
         // > 60000 -> XX minutes, XX seconds
