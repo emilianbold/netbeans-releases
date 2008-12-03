@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.autoupdate.ui.api;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -108,19 +110,29 @@ public final class PluginManager {
         return icon;
     }
 
-    public static void setStatusLineIconVisible (final JComponent icon, final JComponent message, boolean visible) {
-        if (icon == null) {
+    public static void setStatusLineIconVisible (final JComponent component, final JComponent message, boolean visible) {
+        if (component == null) {
             throw new IllegalArgumentException ("Icon cannot be null."); // NOI18N
         }
-        if (! (icon instanceof FlashingIcon)) {
-            throw new IllegalArgumentException ("Icon must be instanceof FlashingIcon."); // NOI18N
+        FlashingIcon flasher = null;
+        if (component instanceof FlashingIcon) {
+            flasher = (FlashingIcon) component;
+        } else if (component instanceof Container) {
+            for (Component c : ((Container) component).getComponents ()) {
+                if (c instanceof FlashingIcon) {
+                    flasher = (FlashingIcon) c;
+                    break;
+                }
+            }
         }
-        final FlashingIcon flasher = (FlashingIcon) icon;
+        if (flasher == null) {
+            throw new IllegalArgumentException ("Component must be instanceof FlashingIcon or a container of any FlashingIcon."); // NOI18N
+        }
         if (visible) {
             flasher.startFlashing ();
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
-                    BalloonManager.show (icon, message, new AbstractAction () {
+                    BalloonManager.show (component, message, new AbstractAction () {
                         public void actionPerformed (ActionEvent e) {
                             if (toRun != null) {
                                 toRun.run ();
@@ -137,7 +149,7 @@ public final class PluginManager {
                     public void mouseEntered(MouseEvent e) {
                         t = RP.post (new Runnable () {
                             public void run () {
-                                BalloonManager.show (icon, message, new AbstractAction () {
+                                BalloonManager.show (component, message, new AbstractAction () {
                                     public void actionPerformed (ActionEvent e) {
                                         if (toRun != null) {
                                             toRun.run ();
