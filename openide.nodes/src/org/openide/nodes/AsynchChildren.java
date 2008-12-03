@@ -41,7 +41,6 @@
 package org.openide.nodes;
 
 import java.awt.EventQueue;
-import java.lang.Thread;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,6 +51,7 @@ import org.openide.util.RequestProcessor;
  * implement AsynchChildren.Provider and pass that to the constructor.
  *
  * @author Tim Boudreau
+ * @param T the type of key object used to create the child nodes
  */
 final class AsynchChildren <T> extends Children.Keys <Object> implements 
                                                           ChildFactory.Observer, 
@@ -85,10 +85,16 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
     }
     
     protected @Override void removeNotify() {
-        cancelled = true;
-        task.cancel();
-        initialized = false;
-        setKeys (Collections.<Object>emptyList());
+        try {
+            cancelled = true;
+            task.cancel();
+            initialized = false;
+            setKeys (Collections.<Object>emptyList());
+        } finally {
+            if (notified) {
+                factory.removeNotify();
+            }
+        }
     }
     
     /**
@@ -128,7 +134,7 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
     
     @SuppressWarnings("unchecked") // Union2<T,Node> undesirable since refresh could not use raw keys list
     protected Node[] createNodes(Object key) {
-        if (factory.isWaitNode(key)) {
+        if (ChildFactory.isWaitNode(key)) {
             return new Node[] { (Node) key };
         } else {
             return factory.createNodesForKey ((T) key);
@@ -136,6 +142,7 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
     }
 
     volatile boolean cancelled = false;
+    volatile boolean notified;
     public void run() {
         if (Thread.interrupted()) {
             setKeys (Collections.<T>emptyList());
@@ -144,6 +151,10 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
         List <T> keys = new LinkedList <T> ();
         boolean done;
         do {
+            if (!notified) {
+                notified = true;
+                factory.addNotify();
+            }
             done = factory.createKeys (keys);
             if (cancelled || Thread.interrupted()) {
                 setKeys (Collections.<T>emptyList());

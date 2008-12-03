@@ -40,10 +40,12 @@
 package org.netbeans.modules.groovy.editor.completion;
 
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
+import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 
 /**
@@ -125,15 +127,43 @@ public enum AccessLevel {
 
     public abstract boolean accept(Set<org.netbeans.modules.gsf.api.Modifier> modifiers);
 
-    public static Set<AccessLevel> forThis() {
-        return EnumSet.allOf(AccessLevel.class);
+    public static Set<AccessLevel> create(ClassNode source, ClassNode type) {
+        Set<AccessLevel> levels;
+
+        if (type.equals(source)) {
+            levels = EnumSet.allOf(AccessLevel.class);
+        } else if (getPackageName(source).equals(getPackageName(type))) {
+            levels = EnumSet.of(AccessLevel.PUBLIC, AccessLevel.PACKAGE);
+        } else if (source.getSuperClass() == null && type.getName().equals("java.lang.Object") // NOI18N
+                || source.getSuperClass() != null && source.getSuperClass().getName().equals(type.getName())) {
+            levels = EnumSet.complementOf(EnumSet.of(AccessLevel.PRIVATE));
+        } else {
+            levels = EnumSet.of(AccessLevel.PUBLIC);
+        }
+
+        return levels;
     }
 
-    public static Set<AccessLevel> forSuper() {
-        return EnumSet.complementOf(EnumSet.of(AccessLevel.PRIVATE));
+    public static Set<AccessLevel> update(Set<AccessLevel> levels, ClassNode source, ClassNode type) {
+        HashSet<AccessLevel> modifiedAccess = new HashSet<AccessLevel>(levels);
+        // leav flag
+        if (!type.equals(source)) {
+            modifiedAccess.remove(AccessLevel.PRIVATE);
+        }
+
+        if (!getPackageName(source).equals(getPackageName(type))) {
+            modifiedAccess.remove(AccessLevel.PACKAGE);
+        } else {
+            modifiedAccess.add(AccessLevel.PACKAGE);
+        }
+
+        return modifiedAccess;
     }
 
-    public static Set<AccessLevel> forPackage() {
-        return EnumSet.of(AccessLevel.PUBLIC, AccessLevel.PACKAGE);
+    private static String getPackageName(ClassNode node) {
+        if (node.getPackageName() != null) {
+            return node.getPackageName();
+        }
+        return ""; // NOI18N
     }
 }

@@ -2877,6 +2877,7 @@ org.netbeans.modules.gsf.GsfModuleInstaller
 org.netbeans.modules.gsf.GsfTypeProvider
 org.netbeans.modules.gsf.Language
 org.netbeans.modules.gsf.LanguageRegistry
+org.netbeans.modules.gsf.LanguageRegistry$ConfigListener
 org.netbeans.modules.gsf.MimeLookupInitializerImpl
 org.netbeans.modules.gsf.api.CancellableTask
 org.netbeans.modules.gsf.api.CompilationInfo
@@ -3370,6 +3371,8 @@ org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$DescParser
 org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$FileElement
 org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$Impl
 org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$Type
+org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$Type$FileName
+org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$Type$FilePattern
 org.netbeans.modules.openide.filesystems.declmime.Util
 org.netbeans.modules.openide.filesystems.declmime.XMLMIMEComponent
 org.netbeans.modules.openide.filesystems.declmime.XMLMIMEComponent$LocalSniffingParser
@@ -3570,6 +3573,7 @@ org.netbeans.modules.project.ui.OpenProjectsTrampolineImpl
 org.netbeans.modules.project.ui.OpeningProjectPanel
 org.netbeans.modules.project.ui.ProjectTab
 org.netbeans.modules.project.ui.ProjectTab$DelegatingAction
+org.netbeans.modules.project.ui.ProjectTab$LabelPopupDisplayer
 org.netbeans.modules.project.ui.ProjectTab$ProjectTreeView
 org.netbeans.modules.project.ui.ProjectTabAction
 org.netbeans.modules.project.ui.ProjectUiModule
@@ -4942,6 +4946,7 @@ org.openide.filesystems.URLMapper
 org.openide.filesystems.URLMapper$DefaultURLMapper
 org.openide.filesystems.XMLFileSystem
 org.openide.filesystems.XMLFileSystem$FileObjRef
+org.openide.filesystems.XMLFileSystem$Handler
 org.openide.filesystems.XMLFileSystem$Impl
 org.openide.filesystems.XMLFileSystem$ResourceElem
 org.openide.filesystems.XMLMapAttr

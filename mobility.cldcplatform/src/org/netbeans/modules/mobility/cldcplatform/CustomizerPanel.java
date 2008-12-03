@@ -60,7 +60,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import javax.swing.DefaultListModel;
-import javax.swing.JFileChooser;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -72,6 +71,7 @@ import javax.swing.text.html.HTMLEditorKit;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -95,7 +95,6 @@ final public class CustomizerPanel extends javax.swing.JPanel implements ChangeL
     public static final String PROF_PROP = "kvem.profiler.enable"; // NOI18N
     public static final String FALSE = "false"; // NOI18N
     
-    String fileChooserValue;
     J2MEPlatform platform;
     DefaultListModel mSources;
     DefaultListModel mJavaDocs;
@@ -209,8 +208,6 @@ final public class CustomizerPanel extends javax.swing.JPanel implements ChangeL
         if (platform == null)
             return;
         
-        if (fileChooserValue == null)
-            fileChooserValue = platform.getHomePath();
         final DefaultListModel mDevices = new DefaultListModel();
         final J2MEPlatform.Device[] devices = platform.getDevices();
         if (devices != null) {
@@ -348,43 +345,34 @@ final public class CustomizerPanel extends javax.swing.JPanel implements ChangeL
         bJavaDocMoveUp.setEnabled(lJavaDocPaths.getSelectedIndex() > 0);
         bJavaDocMoveDown.setEnabled(lJavaDocPaths.getSelectedIndex() >= 0  &&  lJavaDocPaths.getSelectedIndex() < mJavaDocs.getSize() - 1);
     }
-    
-    private String browseArchive(final String oldValue, final String title) {
-        final JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setFileFilter(new FileFilter() {
-            public boolean accept(File f) {
-                return (f.exists() && f.canRead() && (f.isDirectory() || (f.getName().endsWith(".zip") || f.getName().endsWith(".jar")))); // NOI18N
-            }
-            public String getDescription() {
-                return NbBundle.getMessage(CustomizerPanel.class,"TXT_Customizer_ZipFilter"); // NOI18N
-            }
-        });
-        if (oldValue != null)
-            chooser.setSelectedFile(new File(oldValue));
-        chooser.setDialogTitle(title);
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            return chooser.getSelectedFile().getAbsolutePath();
+
+    private String browseArchive(final String title) {
+        File f;
+        if ((f = new FileChooserBuilder(CustomizerPanel.class).
+                setFilesOnly(true).setFileFilter(new ArchiveFilter()).
+                setTitle(title).showOpenDialog()) != null) {
+            return f.getAbsolutePath();
         }
         return null;
     }
+
+    private static final class FolderFilter extends FileFilter {
+        public boolean accept(File f) {
+            return f.exists() && f.canRead() && f.isDirectory();
+        }
+        public String getDescription() {
+            return NbBundle.getMessage(CustomizerPanel.class,"TXT_Customizer_FolderFilter"); // NOI18N
+        }
+    }
     
-    private String browseFolder(final String oldValue, final String title) {
-        final JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        chooser.setFileFilter(new FileFilter() {
-            public boolean accept(File f) {
-                return f.exists() && f.canRead() && f.isDirectory();
-            }
-            public String getDescription() {
-                return NbBundle.getMessage(CustomizerPanel.class,"TXT_Customizer_FolderFilter"); // NOI18N
-            }
-        });
-        if (oldValue != null)
-            chooser.setSelectedFile(new File(oldValue));
-        chooser.setDialogTitle(title);
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            return chooser.getSelectedFile().getAbsolutePath();
+    private String browseFolder(final String title) {
+        File defPath = platform.getHomePath() == null ? null :
+            new File(platform.getHomePath());
+        File f;
+        if ((f = new FileChooserBuilder (getClass().getName() + ".fld").
+                setFileFilter(new FolderFilter()).setTitle(title).
+                setDefaultWorkingDirectory(defPath).showOpenDialog()) != null) {
+            return f.getAbsolutePath();
         }
         return null;
     }
@@ -1016,10 +1004,9 @@ final public class CustomizerPanel extends javax.swing.JPanel implements ChangeL
     private void bJavaDocAddFolderActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bJavaDocAddFolderActionPerformed
         if (platform == null)
             return;
-        final String value = browseFolder(fileChooserValue, NbBundle.getMessage(CustomizerPanel.class, "TITLE_Customizer_SelectJavaDocFolder")); // NOI18N
+        final String value = browseFolder(NbBundle.getMessage(CustomizerPanel.class, "TITLE_Customizer_SelectJavaDocFolder")); // NOI18N
         if (value == null)
             return;
-        fileChooserValue = value;
         final URL o = J2MEPlatform.localfilepath2url(value);
         if (o != null) {
             mJavaDocs.addElement(new ListItem<URL>(o));
@@ -1038,10 +1025,9 @@ final public class CustomizerPanel extends javax.swing.JPanel implements ChangeL
     private void bSourceAddFolderActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bSourceAddFolderActionPerformed
         if (platform == null)
             return;
-        final String value = browseFolder(fileChooserValue, NbBundle.getMessage(CustomizerPanel.class, "TITLE_Customizer_SelectSourceFolder")); // NOI18N
+        final String value = browseFolder(NbBundle.getMessage(CustomizerPanel.class, "TITLE_Customizer_SelectSourceFolder")); // NOI18N
         if (value == null)
             return;
-        fileChooserValue = value;
         final FileObject o = platform.resolveRelativePathToFileObject(value);
         if (o != null) {
             mSources.addElement(new ListItem<FileObject>(o));
@@ -1068,10 +1054,9 @@ final public class CustomizerPanel extends javax.swing.JPanel implements ChangeL
     private void bJavaDocAddArchiveActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bJavaDocAddArchiveActionPerformed
         if (platform == null)
             return;
-        final String value = browseArchive(fileChooserValue, NbBundle.getMessage(CustomizerPanel.class, "TITLE_Customizer_SelectJavaDocArchive")); // NOI18N
+        final String value = browseArchive(NbBundle.getMessage(CustomizerPanel.class, "TITLE_Customizer_SelectJavaDocArchive")); // NOI18N
         if (value == null)
             return;
-        fileChooserValue = value;
         final URL o = J2MEPlatform.localfilepath2url(value);
         if (o != null) {
             mJavaDocs.addElement(new ListItem<URL>(o));
@@ -1090,10 +1075,9 @@ final public class CustomizerPanel extends javax.swing.JPanel implements ChangeL
     private void bSourceAddArchiveActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bSourceAddArchiveActionPerformed
         if (platform == null)
             return;
-        final String value = browseArchive(fileChooserValue, NbBundle.getMessage(CustomizerPanel.class, "TITLE_Customizer_SelectSourceArchive")); // NOI18N
+        final String value = browseArchive(NbBundle.getMessage(CustomizerPanel.class, "TITLE_Customizer_SelectSourceArchive")); // NOI18N
         if (value == null)
             return;
-        fileChooserValue = value;
         final FileObject o = platform.resolveRelativePathToFileObject(value);
         if (o != null) {
             mSources.addElement(new ListItem<FileObject>(o));

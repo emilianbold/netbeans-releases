@@ -68,7 +68,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public final class SvnPropertiesAction extends ContextAction {
 
     protected boolean enable(Node[] nodes) {
-        return getContext(nodes).getRootFiles().length == 1;
+        return nodes.length == 1;
     }
     
     protected int getFileEnabledStatus() {
@@ -91,25 +91,15 @@ public final class SvnPropertiesAction extends ContextAction {
 
     protected void performContextAction(Node[] nodes) {       
         final Context ctx = getContext(nodes);
-        String ctxDisplayName = getContextDisplayName(nodes);
-        File[] roots = ctx.getRootFiles();
-        
-        openProperties(roots, ctxDisplayName);
+        String ctxDisplayName = getContextDisplayName(nodes);       
+        File root = SvnUtils.getActionRoot(ctx);
+        openProperties(root, ctxDisplayName);
     }
 
-    public static void openProperties(File[ ]roots, String ctxDisplayName) {
+    public static void openProperties(File root, String ctxDisplayName) {
         if(!Subversion.getInstance().checkClientAvailable()) {            
             return;
         }       
-
-        SvnClient client;
-        try {            
-            SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);            
-            client = Subversion.getInstance().getClient(repositoryUrl);            
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
-            return;
-        }
 
         final PropertiesPanel panel = new PropertiesPanel();
         final PropertiesTable propTable;
@@ -119,7 +109,7 @@ public final class SvnPropertiesAction extends ContextAction {
         JComponent component = propTable.getComponent();
         panel.propsPanel.setLayout(new BorderLayout());
         panel.propsPanel.add(component, BorderLayout.CENTER);
-        SvnProperties svnProperties = new SvnProperties(panel, propTable, roots[0]);   
+        SvnProperties svnProperties = new SvnProperties(panel, propTable, root);   
         ResourceBundle loc = NbBundle.getBundle(SvnPropertiesAction.class);
         JButton cancel = new JButton(loc.getString("CTL_Properties_Action_Cancel"));    // NOI18N
         cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SvnPropertiesAction.class, "CTL_Properties_Action_Cancel")); // NOI18N

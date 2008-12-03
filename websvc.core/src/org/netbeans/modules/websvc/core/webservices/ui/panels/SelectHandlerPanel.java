@@ -119,7 +119,7 @@ public class SelectHandlerPanel extends JPanel implements ExplorerManager.Provid
         btv.getAccessibleContext().
                 setAccessibleName(NbBundle.getMessage(SelectHandlerPanel.class,"LBL_Class_Tree"));
         btv.getAccessibleContext().setAccessibleDescription
-                (NbBundle.getMessage(SelectHandlerPanel.class,"TTL_SelectHandler"));
+                (NbBundle.getMessage(SelectHandlerPanel.class,"ACSD_SelectHandler"));
         String projectName = project.getProjectDirectory().getName();
         String classesLabel = projectName + " " +
                 NbBundle.getMessage(SelectHandlerPanel.class, "LBL_PROJECT_CLASSES") + ":";
