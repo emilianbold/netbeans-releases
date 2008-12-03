@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,43 +31,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.wsitmodelext.rm.impl;
+package org.netbeans.modules.php.editor.model.nodes;
 
-import org.netbeans.modules.websvc.wsitmodelext.rm.RMSunClientQName;
-import org.netbeans.modules.websvc.wsitmodelext.rm.ResendInterval;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
-import org.w3c.dom.Element;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.modules.php.editor.model.Parameter;
 
 /**
  *
- * @author Martin Grebac
+ * @author Radek Matous
  */
-public class ResendIntervalImpl extends RMSunClientComponentImpl implements ResendInterval {
-    
-    /**
-     * Creates a new instance of ResendIntervalImpl
-     */
-    public ResendIntervalImpl(WSDLModel model, Element e) {
-        super(model, e);
-    }
-    
-    public ResendIntervalImpl(WSDLModel model){
-        this(model, createPrefixedElement(RMSunClientQName.RESENDINTERVAL.getQName(), model));
+class ParameterImpl implements Parameter {
+    private String name;
+    private String defaultValue;
+    ParameterImpl(String name) {
+        this(name, null);
     }
 
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
+    ParameterImpl(String name, String defaultValue) {
+        this.name = name;
+        this.defaultValue = defaultValue;
     }
 
-    public void setResendInterval(String milliseconds) {
-        setAttribute(RESENDINTERVAL_CONTENT_PROPERTY, RMAttribute.MILLISECONDS, milliseconds);
+    @NonNull
+    public String getName() {
+        return name;
     }
 
-    public String getResendInterval() {
-        return getAttribute(RMAttribute.MILLISECONDS);
+    @NonNull
+    public String getDefaultValue() {
+        return defaultValue != null ? defaultValue : "";//NOI18N
+    }
+
+    public boolean isMandatory() {
+        return defaultValue == null;
     }
 }

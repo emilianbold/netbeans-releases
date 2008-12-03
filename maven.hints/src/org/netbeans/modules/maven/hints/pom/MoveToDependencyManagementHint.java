@@ -133,7 +133,6 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
         }
 
         public ChangeInfo implement() throws Exception {
-            System.out.println("running the hint");
 
             ChangeInfo info = new ChangeInfo();
             if (!mdl.getState().equals(Model.State.VALID)) {

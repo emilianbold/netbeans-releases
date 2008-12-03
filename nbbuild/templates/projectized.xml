@@ -146,6 +146,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                 <equals arg1="${cluster.dir}" arg2="${cluster.dir.fallback}"/>
             </not>
         </condition>
+        <property name="jnlp.dest.dir" location="${nb_all}/nbbuild/build/jnlp"/>
         <property name="build.javahelp.dir" location="build/javahelp"/>
         <property name="javahelp.base" value="${code.name.base.slashes}/docs"/>
         <property name="javahelp.search" value="JavaHelpSearch"/>

@@ -34,7 +34,7 @@ public class RepresentationTypeImpl extends NamedImpl implements RepresentationT
         return getChildren(Param.class);
     }
     public void addParam(Param param) {
-        addAfter(PARAM_PROPERTY, param, TypeCollection.FOR_REPRESENTATION.types());
+        addAfter(PARAM_PROPERTY, param, TypeCollection.FOR_PARAM.types());
     }
 
     public void removeParam(Param param) {
