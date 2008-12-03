@@ -217,7 +217,12 @@ public class ParameterInfoSupport {
             } else {
                 if (state.equals(State.METHOD)) {
                     state = State.STOP;
-                    metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX);
+                    PHPTokenId id = token.id();
+                    if (id != null && PHPTokenId.PHP_NEW.equals(id)) {
+                        metaAll.insert(0, "@" + VariousUtils.CONSTRUCTOR_TYPE_PREFIX);
+                    } else {
+                        metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX);
+                    }
                     break;
                 }
             }
