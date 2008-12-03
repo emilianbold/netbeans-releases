@@ -48,7 +48,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JMenuItemOperator;
+import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbModuleSuite;
 
 import org.netbeans.test.permanentUI.utils.NbMenuItem;
@@ -193,7 +193,7 @@ public class MainMenuTest extends JellyTestCase {
     public void testRunMenu() {
         oneMenuTest("Run");
     }
-    
+
         /**
      * Tests if *Build* menu in main menu is same as permanent UI spec
      * http://wiki.netbeans.org/MainMenu#section-MainMenu-Build
@@ -402,12 +402,21 @@ public class MainMenuTest extends JellyTestCase {
             NbMenuItem menuItem = getMainMenuItem(menuName);
             ideFile = new PrintStream(menuItemsLogFile);
             Utilities.printMenuStructure(ideFile, menuItem, "---", 1);
-            assertNotNull("Cannot find menu " + menuName, menuItem);//is there such menu?
-            assertFile(Utilities.compareNbMenuItems(menuItem, permanentMenu, 1),
-                    //"[+]missing in IDE, [-] missing in spec\n"+Utilities.readFileToString(diffFile),
-                    permuiLogsFile, menuItemsLogFile, diffFile);
 
-        } catch (FileNotFoundException ex) {
+            Manager.getSystemDiff().diff(menuItemsLogFile, permuiLogsFile, diffFile);
+            //assert
+            String message = Utilities.readFileToString(diffFile);
+
+            assertNotNull("Cannot find menu " + menuName, menuItem);//is there such menu?
+
+            assertFile(message, menuItemsLogFile, permuiLogsFile, diffFile);
+
+
+//            assertFile(Utilities.compareNbMenuItems(menuItem, permanentMenu, 1),
+                    //"[+]missing in IDE, [-] missing in spec\n"+Utilities.readFileToString(diffFile),
+//                    permuiLogsFile, menuItemsLogFile, diffFile);
+
+        } catch (IOException ex) {
             ex.printStackTrace();
         } finally {
             ideFile.close();
@@ -441,7 +450,7 @@ public class MainMenuTest extends JellyTestCase {
             Utilities.printMenuStructure(goldenFile, permanentMenu, "   ", 1);
 
             ideFile = new PrintStream(menuItemsLogFile);
-            //pushMainMenuItem(submenuPath);
+            pushMainMenuItem(submenuPath);
             String submenuItems[] = submenuPath.split("\\|");
             assertTrue("submenuPath must be >= 2. - " + submenuPath, submenuItems.length >= 2); //check the size
             NbMenuItem mainM = getMainMenuItem(submenuItems[0]);
@@ -449,6 +458,8 @@ public class MainMenuTest extends JellyTestCase {
             //Utilities.printMenuStructure(System.out, mainM, "---", 100);
 
             NbMenuItem submenuItem = Utilities.getMenuByName(submenuItems[submenuItems.length-1], mainM);
+//            mainmenuOp.showMenuItem(submenuPath+"\\|"+submenuItem.getName());
+
             assertNotNull("Cannot find submenu " + submenuPath, submenuItem);//is there such submenu?
             submenuItem.setMnemo((char)0); //remove the mnemonic of the submenu item because it is not in the perm ui spec too
             //System.out.println("IDE MENU:");
@@ -456,8 +467,13 @@ public class MainMenuTest extends JellyTestCase {
             Utilities.printMenuStructure(ideFile, submenuItem, "   ", 2);
             //System.out.println("-------------SUBMENU-----------------");
             //Utilities.printMenuStructure(System.out, submenuItem, "---", 100);
-            assertFile(Utilities.compareNbMenuItems(submenuItem, permanentMenu, 1), menuItemsLogFile, permuiLogsFile, diffFile);
-        } catch (FileNotFoundException ex) {
+
+            Manager.getSystemDiff().diff(menuItemsLogFile, permuiLogsFile, diffFile);
+            //assert
+            String message = Utilities.readFileToString(diffFile);
+
+            assertFile(message, permuiLogsFile, menuItemsLogFile, diffFile);
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
@@ -472,7 +488,7 @@ public class MainMenuTest extends JellyTestCase {
      * @param menuName
      * @return
      */
-    private String getMainMenuGoldenFile(String menuName) {        
+    private String getMainMenuGoldenFile(String menuName) {
         String dataDir = "";
         try {
             dataDir = getDataDir().getCanonicalPath();
