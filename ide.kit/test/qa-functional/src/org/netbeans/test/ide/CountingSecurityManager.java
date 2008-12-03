@@ -71,8 +71,13 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     private static Set<String> allowed = Collections.emptySet();
     private static boolean disabled;
     private static SecurityManager man;
+    private static Mode mode;
+
+    public enum Mode {
+        CHECK_READ, CHECK_WRITE
+    };
     
-    public static void initialize(String prefix, Set<String> allowedFiles) {
+    public static void initialize(String prefix, Mode mode, Set<String> allowedFiles) {
         if (System.getSecurityManager() instanceof CountingSecurityManager) {
             // ok
         } else {
@@ -82,6 +87,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         msgs = new StringWriter();
         pw = new PrintWriter(msgs);
         CountingSecurityManager.prefix = prefix;
+        CountingSecurityManager.mode = mode;
         allowed = allowedFiles;
 
         Logger.getLogger("org.netbeans.TopSecurityManager").setLevel(Level.OFF);
@@ -102,10 +108,14 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     public Integer call() throws Exception {
         return cnt;
     }
+
+    public static boolean isEnabled() {
+        return System.getSecurityManager() instanceof Callable<?>;
+    }
     
     public static void assertCounts(String msg, int expectedCnt) throws Exception {
         int c = (Integer)((Callable<?>)System.getSecurityManager()).call();
-        Assert.assertEquals(msg + "\n" + System.getSecurityManager().toString(), expectedCnt,c);
+        Assert.assertEquals(msg + "\n" + System.getSecurityManager().toString(), expectedCnt, c);
         setCnt(0);
         msgs = new StringWriter();
         pw = new PrintWriter(msgs);
@@ -151,13 +161,16 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
     
     @Override
     public void checkRead(String file) {
-        /*
-        if (file.startsWith(prefix)) {
-            cnt++;
+        if (mode == Mode.CHECK_READ && acceptFileRead(file)) {
+            setCnt(getCnt() + 1);
             pw.println("checkRead: " + file);
-            new Exception().printStackTrace(pw);
+            if (who.get(file) == null) {
+                Exception now = new Exception("checkRead: " + file);
+                who.put(file, now);
+                now.printStackTrace(pw);
+                pw.flush();
+            }
         }
-         */
     }
 
     @Override
@@ -351,7 +364,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
 
     @Override
     public void checkWrite(String file) {
-        if (acceptFile(file)) {
+        if (mode == Mode.CHECK_WRITE && acceptFileWrite(file)) {
             setCnt(getCnt() + 1);
             pw.println("checkWrite: " + file);
             if (who.get(file) == null) {
@@ -364,13 +377,13 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
 
     @Override
     public void checkDelete(String file) {
-        if (acceptFile(file)) {
+        if (mode == Mode.CHECK_WRITE && acceptFileWrite(file)) {
             setCnt(getCnt() + 1);
             pw.println("checkDelete: " + file);
         }
     }
     
-    private boolean acceptFile(String file) {
+    private boolean acceptFileWrite(String file) {
         String ud = System.getProperty("netbeans.user");
         if (ud == null) {
             // still initializing
@@ -406,6 +419,14 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             if (allowed.contains(f)) {
                 return false;
             }
+        }
+
+        return prefix == null || file.startsWith(prefix);
+    }
+
+    private boolean acceptFileRead(String file) {
+        if (!file.endsWith(".jar")) {
+            return false;
         }
 
         return prefix == null || file.startsWith(prefix);

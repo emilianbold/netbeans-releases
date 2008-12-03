@@ -57,6 +57,7 @@ public enum TypeCollection {
     FOR_INCLUDE(createListForInclude()),
     FOR_METHOD(createListForMethod()),
     FOR_RESOURCE(createListForResource()),
+    FOR_RESOURCE_TYPE(createListForResourceType()),
     FOR_PARAM(createListForParam()),
     FOR_REPRESENTATION(createListForRepresentation()),
     FOR_FAULT(createListForFault()),
@@ -93,14 +94,13 @@ public enum TypeCollection {
     static Collection<Class<? extends WadlComponent>> createListForGrammars() {
         Collection<Class<? extends WadlComponent>> c = new ArrayList<Class<? extends WadlComponent>>();
         c.add(Doc.class);
-        c.add(Include.class);
         return c;
     }
 
     static Collection<Class<? extends WadlComponent>> createListForResources() {
         Collection<Class<? extends WadlComponent>> c = new ArrayList<Class<? extends WadlComponent>>();
         c.add(Doc.class);
-        c.add(Resource.class);
+        c.add(Grammars.class);
         return c;
     }
     
@@ -109,16 +109,27 @@ public enum TypeCollection {
         c.add(Doc.class);
         c.add(Param.class);
         c.add(Method.class);
-        c.add(Resource.class);
         return c;
     }
+    
+    static Collection<Class<? extends WadlComponent>> createListForResourceType() {
+        Collection<Class<? extends WadlComponent>> c = new ArrayList<Class<? extends WadlComponent>>();
+        c.add(Doc.class);
+        c.add(Grammars.class);
+        c.add(Resources.class);
+        return c;
+    }
+
     static Collection<Class<? extends WadlComponent>> createListForMethod() {
         Collection<Class<? extends WadlComponent>> c = new ArrayList<Class<? extends WadlComponent>>();
         c.add(Doc.class);
-        c.add(Request.class);
-        c.add(Response.class);
+        c.add(Param.class);
+        c.add(Grammars.class);
+        c.add(Resources.class);
+        c.add(ResourceType.class);
         return c;
     }
+
     static Collection<Class<? extends WadlComponent>> createListForInclude() {
         Collection<Class<? extends WadlComponent>> c = new ArrayList<Class<? extends WadlComponent>>();
         c.add(Doc.class);
@@ -128,8 +139,6 @@ public enum TypeCollection {
     static Collection<Class<? extends WadlComponent>> createListForParam() {
         Collection<Class<? extends WadlComponent>> c = new ArrayList<Class<? extends WadlComponent>>();
         c.add(Doc.class);
-        c.add(Option.class);
-        c.add(Link.class);
         return c;
     }
     
@@ -137,6 +146,10 @@ public enum TypeCollection {
         Collection<Class<? extends WadlComponent>> c = new ArrayList<Class<? extends WadlComponent>>();
         c.add(Doc.class);
         c.add(Param.class);
+        c.add(Grammars.class);
+        c.add(Resources.class);
+        c.add(ResourceType.class);
+        c.add(Method.class);
         return c;
     }
     
@@ -144,23 +157,24 @@ public enum TypeCollection {
         Collection<Class<? extends WadlComponent>> c = new ArrayList<Class<? extends WadlComponent>>();
         c.add(Doc.class);
         c.add(Param.class);
+        c.add(Grammars.class);
+        c.add(Resources.class);
+        c.add(ResourceType.class);
+        c.add(Method.class);
+        c.add(Representation.class);
         return c;
     }
     
     static Collection<Class<? extends WadlComponent>> createListForRequest() {
         Collection<Class<? extends WadlComponent>> c = new ArrayList<Class<? extends WadlComponent>>();
         c.add(Doc.class);
-        c.add(Param.class);
-        c.add(Representation.class);
         return c;
     }
     
     static Collection<Class<? extends WadlComponent>> createListForResponse() {
         Collection<Class<? extends WadlComponent>> c = new ArrayList<Class<? extends WadlComponent>>();
         c.add(Doc.class);
-        c.add(Param.class);
-        c.add(Representation.class);
-        c.add(Fault.class);
+        c.add(Request.class);
         return c;
     }
     
@@ -173,6 +187,7 @@ public enum TypeCollection {
     static Collection<Class<? extends WadlComponent>> createListForLink() {
         Collection<Class<? extends WadlComponent>> c = new ArrayList<Class<? extends WadlComponent>>();
         c.add(Doc.class);
+        c.add(Option.class);
         return c;
     }
     

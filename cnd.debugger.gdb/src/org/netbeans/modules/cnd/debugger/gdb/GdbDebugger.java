@@ -315,6 +315,7 @@ public class GdbDebugger implements PropertyChangeListener {
                             finish(false);
                         }
                     });
+                    return; // since we've failed, a return here keeps us from sending more gdb commands
                 } else {
                     if (isSharedLibrary) {
                         if (platform == PlatformTypes.PLATFORM_MACOSX && pgm == null) {
@@ -348,6 +349,7 @@ public class GdbDebugger implements PropertyChangeListener {
                                         finish(false);
                                     }
                                 });
+                                return; // since we've failed, a return here keeps us from sending more gdb commands
                             }
                         } else {
                             // 3) send an "info files" command to gdb. Its response should say what symbols
@@ -364,6 +366,7 @@ public class GdbDebugger implements PropertyChangeListener {
                                         finish(false);
                                     }
                                 });
+                                return; // since we've failed, a return here keeps us from sending more gdb commands
                             }
                         }
                     } else {
@@ -437,6 +440,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
             }
         } catch (Exception ex) {
+            log.warning("GdbDebugger.startDebugger: Exception during start [" + ex.getClass().getName() + "]");
             if (startupTimer != null) {
                 startupTimer.cancel();
             }
@@ -447,9 +451,15 @@ public class GdbDebugger implements PropertyChangeListener {
             if (msg == null || msg.length() == 0) {
                 msg = NbBundle.getMessage(GdbDebugger.class, "ERR_UnSpecifiedStartError");
             }
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-            setExited();
-            finish(false);
+            final String fmsg = msg;
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(fmsg));
+                    setExited();
+                    finish(false);
+                }
+            });
         }
     }
 
@@ -522,14 +532,25 @@ public class GdbDebugger implements PropertyChangeListener {
         return versionPeculiarity;
     }
 
-    // TODO: use IPEUtils
-    private String getFullPath(String rundir, String path) {
+    /**
+     * Get the full path name of the executable.
+     *
+     * Note: A comment suggested we should use IpeUtils.toAbsolutePath(). This actualy is an
+     * error because gdb <b>requires</b> forward slashes and toAbsolutePath uses File.separator.
+     * Since it can be called in non-gdb situations, its probably best not to make it always
+     * use forward slashes, either.
+     *
+     * @param base The base directory to prepend if path is relative
+     * @param path Either an absolute path or relative path component
+     * @return An absolute path
+     */
+    private String getFullPath(String base, String path) {
         if (platform == PlatformTypes.PLATFORM_WINDOWS && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':') {
             return path;
         } else if (path.charAt(0) == '/') {
             return path;
         } else {
-            return rundir + '/' + path;
+            return base + '/' + path; // gdb requires forward slashes!
         }
     }
 
@@ -615,15 +636,6 @@ public class GdbDebugger implements PropertyChangeListener {
             }
         }
         return pathMap.getRemotePath(programName.toString());
-    }
-
-    /**
-     * Get the gdb version
-     * Should not be used directly, 
-     * use versionPeculiarity for action dependent on gdb version
-     */
-    private double getGdbVersion() {
-        return gdbVersion;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

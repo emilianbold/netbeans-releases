@@ -212,7 +212,7 @@ public class EmptyStatements extends AbstractHint {
                     // getDisplayName(),
                     NbBundle.getMessage(EmptyStatements.class, "LBL_Empty_" + kind.toString()),
                     // Collections.<Fix>singletonList(new EmptyStatementFix( info.getFileObject(), TreePathHandle.create(tp, info) ) ), 
-                    Collections.<Fix>singletonList(FixFactory.createSuppressWarnings( info, tp, SUPPRESS_WARNINGS_KEY)), 
+                    FixFactory.createSuppressWarnings( info, tp, SUPPRESS_WARNINGS_KEY),
                     info.getFileObject(),
                     (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tp.getLeaf()),
                     (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), tp.getLeaf()));
