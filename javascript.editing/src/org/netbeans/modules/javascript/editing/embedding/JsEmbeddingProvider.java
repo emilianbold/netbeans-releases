@@ -216,9 +216,9 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
                     if (state.in_inlined_javascript || state.in_javascript) {
                         embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
-                        embeddings.add(snapshot.create("/*", JsTokenId.JAVASCRIPT_MIME_TYPE));
-                        embeddings.add(snapshot.create(tokenSequence.offset(), token.length() , JsTokenId.JAVASCRIPT_MIME_TYPE));
-                        embeddings.add(snapshot.create("*/", JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                        embeddings.add(snapshot.create("/*", JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                        embeddings.add(snapshot.create(tokenSequence.offset(), token.length() , JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                        embeddings.add(snapshot.create("*/", JsTokenId.JAVASCRIPT_MIME_TYPE));
                     }
                 }
             }
@@ -259,9 +259,9 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                             int sourceEnd = sourceStart + token.length();
 
                             embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
-                            embeddings.add(snapshot.create("/*", JsTokenId.JAVASCRIPT_MIME_TYPE));
-                            embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, JsTokenId.JAVASCRIPT_MIME_TYPE));
-                            embeddings.add(snapshot.create("*/", JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                            embeddings.add(snapshot.create("/*", JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                            embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                            embeddings.add(snapshot.create("*/", JsTokenId.JAVASCRIPT_MIME_TYPE));
                             break;
                         }
                     }
@@ -369,9 +369,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                         int sourceStart = tokenSequence.offset();
                         int sourceEnd = sourceStart + token.length();
 
-                        embeddings.add(snapshot.create(sourceStart, 0, JsTokenId.JAVASCRIPT_MIME_TYPE));
                         embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
-                        embeddings.add(snapshot.create(sourceEnd, 0, JsTokenId.JAVASCRIPT_MIME_TYPE));
 //                        embeddings.add(snapshot.create("/*", JsTokenId.JAVASCRIPT_MIME_TYPE));
 //                        embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, JsTokenId.JAVASCRIPT_MIME_TYPE));
 //                        embeddings.add(snapshot.create("*/", JsTokenId.JAVASCRIPT_MIME_TYPE));
@@ -440,11 +438,9 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                     }
                 }
 
-                int sourceEnd = sourceStart + text.length();
+//                int sourceEnd = sourceStart + text.length();
 
-                embeddings.add(snapshot.create(sourceStart, 0, JsTokenId.JAVASCRIPT_MIME_TYPE));
-                embeddings.add(snapshot.create(text, JsTokenId.JAVASCRIPT_MIME_TYPE));
-                embeddings.add(snapshot.create(sourceEnd, 0, JsTokenId.JAVASCRIPT_MIME_TYPE));
+                embeddings.add(snapshot.create(sourceStart, text.length(), JsTokenId.JAVASCRIPT_MIME_TYPE));
 // XXX: need better support in parsing api for this
 //                embeddings.add(snapshot.create("/*", JsTokenId.JAVASCRIPT_MIME_TYPE));
 //                embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, JsTokenId.JAVASCRIPT_MIME_TYPE));
@@ -513,12 +509,12 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                             }
 
                             // Insert a file link
-                            int sourceStart = ts.offset();
+//                            int sourceStart = ts.offset();
                             String insertText = JsAnalyzer.NETBEANS_IMPORT_FILE + "('" + src + "');\n"; // NOI18N
                             // This corresponds to a 0-size block in the source
 //                            int sourceEnd = sourceStart;
 
-                            embeddings.add(snapshot.create(sourceStart, 0, JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                            embeddings.add(snapshot.create(sourceStart, 0, JsTokenId.JAVASCRIPT_MIME_TYPE));
                             embeddings.add(snapshot.create(insertText, JsTokenId.JAVASCRIPT_MIME_TYPE));
 //                            int generatedStart = buffer.length();
 ////                            if (buffer.length() > 0 && !Character.isWhitespace(buffer.charAt(buffer.length()-1))) {
