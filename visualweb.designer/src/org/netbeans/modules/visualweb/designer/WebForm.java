@@ -2566,7 +2566,12 @@ public class WebForm implements Designer {
     }
 
     public Box findBoxForComponentRootElement(Element componentRootElement) {
-        return ModelViewMapper.findBoxForComponentRootElement(getPane().getPageBox(), componentRootElement);
+        PageBox pageBox = getPane().getPageBox();
+        if (pageBox == null) {
+            // XXX #154128 Possible NPE.
+            return null;
+        }
+        return ModelViewMapper.findBoxForComponentRootElement(pageBox, componentRootElement);
     }
     
     public Box findBoxForElement(Element element) {

@@ -642,16 +642,12 @@ public class RunProfile implements ConfigurationAuxObject {
         setTerminalType(p.getTerminalType());
     }
     
-    public RunProfile cloneProfile() {
-        return (RunProfile)clone();
-    }
-    
     /**
      * Clones the profile.
      * All fields are cloned except for 'parent'.
      */
     @Override
-    public Object clone() {
+    public RunProfile clone() {
         RunProfile p = new RunProfile(getBaseDir(), this.platform);
         //p.setParent(getParent());
         p.setCloneOf(this);

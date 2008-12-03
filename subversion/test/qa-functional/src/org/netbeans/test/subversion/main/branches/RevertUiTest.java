@@ -37,7 +37,7 @@ public class RevertUiTest extends JellyTestCase{
     public static final String TMP_PATH = "/tmp";
     public static final String REPO_PATH = "repo";
     public static final String WORK_PATH = "work";
-    public static final String PROJECT_NAME = "SVNApplication";
+    public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
     static Logger log;
     
